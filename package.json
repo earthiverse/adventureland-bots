@@ -1,0 +1,30 @@
+{
+  "name": "adventureland-ai",
+  "version": "1.0.0",
+  "description": "Adventureland AI Script",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx webpack --config ./webpack.config.js && tsc",
+    "start-server": "node build/server.js"
+  },
+  "author": "Kent Rasmussen",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "nconf": "^0.10.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.1",
+    "@types/nconf": "^0.10.0",
+    "@types/node": "^12.7.12",
+    "ts-loader": "^6.2.0",
+    "typescript": "^3.6.4",
+    "pathfinding": "^0.4.18",
+    "prioqueue": "^1.0.0",
+    "tinyqueue": "^2.0.3",
+    "tslint": "^5.20.0",
+    "webpack": "^4.41.1",
+    "webpack-cli": "^3.3.9"
+  }
+}

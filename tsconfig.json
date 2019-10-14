@@ -1,0 +1,23 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "lib": [
+            "es2015",
+            "dom"
+        ],
+        "target": "es6",
+        "moduleResolution": "node",
+        "noImplicitAny": true,
+        "outDir": "build",
+        "removeComments": true,
+        "rootDir": "source",
+        "sourceMap": false,
+        "watch": false
+    },
+    "include": [
+        "source/server.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}
