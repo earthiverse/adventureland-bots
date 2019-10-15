@@ -190,7 +190,6 @@ declare global {
    */
   function send_item(receiver: string, item: number, quantity: number): void;
   function send_gold(receiver: string, amount: number): void;
-  function can_move(destination: ALPosition): boolean;
   function can_move_to(x: number, y: number): boolean;
   function stop(what: string): void;
   function reduce_cooldown(name: SkillName, ms: number): void;
