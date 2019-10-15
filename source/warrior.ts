@@ -1,5 +1,5 @@
 import { Character } from './character'
-import { MonsterName, Entity } from './definitions/adventureland';
+import { MonsterName } from './definitions/adventureland';
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from './trade';
 
 class Warrior extends Character {
@@ -19,8 +19,8 @@ class Warrior extends Character {
         super.mainLoop();
 
         // Movement
-        super.avoidAggroMonsters();
-        super.avoidAttackingMonsters();
+        //super.avoidAggroMonsters();
+        //super.avoidAttackingMonsters();
         super.moveToMonsters();
 
         transferItemsToMerchant("earthMer");

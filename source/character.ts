@@ -7,6 +7,7 @@ export abstract class Character {
      * A list of monsters, ranked from highest priority to lowest priority.
      */
     protected abstract targetPriority: MonsterName[];
+    protected abstract mainTarget: MonsterName;
     protected movementQueue: ALPosition[] = [];
     protected movementTarget: MonsterName = null;
     protected pathfinder: Pathfinder = new Pathfinder(7);
@@ -23,7 +24,7 @@ export abstract class Character {
     }
 
     protected getTargets(numTargets: number = 1): Entity[] {
-        let targets = [];
+        let targets: Entity[] = [];
         let target = get_targeted_monster();
         if (target && numTargets == 1 && distance(character, target) < character.range) {
             targets.push(target);
@@ -35,7 +36,6 @@ export abstract class Character {
             let potentialTarget = parent.entities[id];
             let d = distance(character, potentialTarget);
             if (!this.targetPriority.includes(potentialTarget.mtype)) continue; // Not a monster we care about
-            if (d > character.range /*+ character.xrange*/) continue; // Not in range
             if (potentialTarget.type != "monster") // Not a monster
                 if (!is_pvp() && potentialTarget.type == "character") continue; // Not PVP
 
@@ -43,24 +43,27 @@ export abstract class Character {
             let priority = this.targetPriority.indexOf(potentialTarget.mtype);
             if (potentialTarget.type == "monster" && priority == -1) continue; // Not a priority
 
+            // Increase priority if it's our "main target"
+            if (potentialTarget.mtype == this.mainTarget) priority += 10;
+
             // Increase priority if it's a quest monster
             if (potentialTarget.mtype == this.getMonsterhuntTarget()) priority += 100;
 
             // Increase priority if the entity is targeting us
             if (potentialTarget.target == character.name) priority += 1000;
 
+            // Increase priority based on distance
+            priority += 10 / d;
+
             // Increase priority based on remaining HP
             priority += 1 / potentialTarget.hp
-
-            // Increase priority based on distance
-            priority += 1 / d;
 
             potentialTargets.enqueue(priority, potentialTarget);
         }
 
         if (potentialTargets.size == 0) {
             // No potential targets
-            return;
+            return targets;
         }
 
         while (targets.length < numTargets && potentialTargets.size > 0) {
@@ -71,7 +74,7 @@ export abstract class Character {
         //     this.movementTarget = null;
         //     this.movementQueue = [];
         // }
-        if (numTargets == 1)
+        if (targets.length > 0)
             change_target(targets[0])
         return targets;
     }
@@ -178,15 +181,11 @@ export abstract class Character {
         if (closestDistance > buffer) return; // No close monsters
 
         let escapePosition: ALPosition;
-        let angle = Math.atan((closestEntity.y - character.y) / (closestEntity.x - character.x));
+        let angle = Math.atan2((closestEntity.y - character.y), (closestEntity.x - character.x));
         let move_distance = closestDistance - buffer
         let x = Math.cos(angle) * move_distance
         let y = Math.sin(angle) * move_distance
-        if (closestEntity.x - character.x >= 0) {
-            escapePosition = { x: character.x + x, y: character.y + y };
-        } else {
-            escapePosition = { x: character.x - x, y: character.y - y };
-        }
+        escapePosition = { x: character.x + x, y: character.y + y };
 
         if (can_move_to(escapePosition.x, escapePosition.y)) {
             move(escapePosition.x, escapePosition.y)
@@ -233,33 +232,24 @@ export abstract class Character {
     }
 
     public moveToMonsters(): void {
-        if (character.moving) return; // Already movingc
-        let target = get_targeted_monster();
-        if (target && distance(character, target) < character.range)
+        if (character.moving) return; // Already moving
+        let targets = this.getTargets(1);
+        if (targets && distance(character, targets[0]) < character.range)
             return; // We have a target, and it's in range.
 
-        // TODO: check if entities in range.
-        let minimumDistance = 999999;
-        let closestEntity = null;
-        for (let id in parent.entities) {
-            let entity = parent.entities[id];
-            if (!this.targetPriority.includes(entity.mtype)) continue; // Not a monster we care about
-            if (entity.type != "monster") continue; // Don't move to things that aren't monsters.
-            let d = distance(character, entity);
-            if (d <= character.range) return; // Target is in attack range, don't need to move to it.
-            if (d < minimumDistance) minimumDistance = d;
-
-            closestEntity = entity;
-        }
-
-        if (can_move(closestEntity)) { // TODO: does this actually check if walls are in the way?
-            move(closestEntity.x, closestEntity.y);
+        if (can_move_to(targets[0].x, targets[0].y)) {
+            // Move normally to target
+            move(targets[0].x, targets[0].y);
         } else {
             try {
-                let path = this.pathfinder.findNextMovement(character, closestEntity);
+                // Pathfind to target
+                game_log("pathfinding to target")
+                let path = this.pathfinder.findNextMovement(character, targets[0]);
                 move(path.x, path.y);
             } catch (error) {
-                xmove(closestEntity.x, closestEntity.y);
+                // Our custom pathfinding failed, use the game's smart move.
+                game_log("smart moving to target")
+                xmove(targets[0].x, targets[0].y);
             }
         }
     }

@@ -8,7 +8,7 @@ class Ranger extends Character {
         "scorpion", "tortoise", "spider", "cgoo", "stoneworm", "boar", "iceroamer", // #2: Not that easy to kill, but killable monsters
         "goldenbat", "snowman", "mrgreen", "mrpumpkin", // #1: Event monsters
     ];
-    mainTarget: MonsterName = "poisio";
+    mainTarget: MonsterName = "rat";
 
     run(): void {
         super.run();

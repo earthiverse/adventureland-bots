@@ -5,6 +5,7 @@ import { sellUnwantedItems } from './trade';
 
 class Merchant extends Character {
     targetPriority: MonsterName[] = []; // Nothing for now, merchants can't usually attack.
+    mainTarget: MonsterName = null; // Nothing for now, merchants can't usually attack.
 
     protected mainLoop(): void {
         super.mainLoop();
@@ -46,7 +47,7 @@ class Merchant extends Character {
             }
         }
 
-        setTimeout(() => { this.luckLoop() }, Math.max(100, parent.next_skill["mluck"] - Date.now()));
+        setTimeout(() => { this.luckLoop() }, Math.max(50, parent.next_skill["mluck"] - Date.now()));
     }
 }
 
