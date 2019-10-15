@@ -1,6 +1,6 @@
-import('http://localhost:3000/merchant.js')
+import('http://localhost:3000/warrior.js')
     .then((module) => {
-        bots.merchant.run()
+        bots.warrior.run()
     });
 
 function on_party_invite(name) {
