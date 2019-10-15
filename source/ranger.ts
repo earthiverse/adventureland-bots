@@ -52,8 +52,8 @@ class Ranger extends Character {
             // Increase priority if the entity is targeting us
             if (potentialTarget.target == character.name) priority += 1000;
 
-            // Increase priority based on remaining HP
-            priority += 1 / potentialTarget.hp
+            // Adjust priority based on remaining HP
+            priority -= potentialTarget.hp
 
             // potentialTargets.enqueue(priority, potentialTarget);
             potentialTargets.push(potentialTarget)
@@ -67,6 +67,43 @@ class Ranger extends Character {
 
         use_skill("supershot", potentialTargets[0])
         setTimeout(() => { this.superShotLoop() }, Math.max(50, parent.next_skill["supershot"] - Date.now()));
+    }
+
+    attackLoop() {
+        // Try to 3shot targets
+        let targets = this.getThreeshotTargets();
+        if (targets && character.mp > 300) {
+            parent.socket.emit("skill", {
+                name: "3shot",
+                ids: [targets[0].id, targets[1].id, targets[2].id]
+            });
+            setTimeout(() => { this.attackLoop() }, Math.max(50, parent.next_skill["attack"] - Date.now()));
+            return;
+        }
+
+        // Can't do a special attack, so let's do a normal one
+        super.attackLoop();
+    }
+
+    getThreeshotTargets(): Entity[] {
+        let targets: Entity[] = [];
+
+        for (let id in parent.entities) {
+            let entity = parent.entities[id];
+            let d = distance(character, entity);
+            if (entity.type != "monster") continue; // Not a monster
+            if (!this.targetPriority.includes(entity.mtype)) continue; // Not something we want to attack
+            if (d > character.range) continue; // Too far away
+            if ((entity.target != character.name) && (entity.hp > character.attack * 0.7 * 0.9)) continue; // Too much HP to kill in one shot & not targeting us.
+
+            targets.push(entity);
+        }
+
+        if (targets.length >= 3) {
+            return targets.slice(0, 3);
+        } else {
+            return null;
+        }
     }
 
     createParty(members: string[]): void {

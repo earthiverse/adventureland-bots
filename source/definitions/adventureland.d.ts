@@ -1,6 +1,10 @@
 // This file is from https://github.com/saevarb/adventureland-typescript-starter/blob/master/src/definitions/game.d.ts
 type ItemName = string;
 export interface ICharacter extends Entity {
+  /**
+   * MP cost of attacking
+   */
+  mp_cost: number;
   party?: string;
   name: string;
   range: number;
@@ -123,6 +127,7 @@ declare global {
     npcs: any[];
     entities: { [id: string]: Entity };
     next_skill: { [T in SkillName]: number };
+    socket: SocketIO.Socket;
     start_runner(): void;
     stop_runner(): void;
   }

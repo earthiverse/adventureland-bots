@@ -52,11 +52,11 @@ export abstract class Character {
             // Increase priority if the entity is targeting us
             if (potentialTarget.target == character.name) priority += 1000;
 
-            // Increase priority based on distance
-            priority += 10 / d;
+            // Adjust priority based on distance
+            priority -= d;
 
-            // Increase priority based on remaining HP
-            priority += 1 / potentialTarget.hp
+            // Adjust priority based on remaining HP
+            priority -= potentialTarget.hp
 
             potentialTargets.enqueue(priority, potentialTarget);
         }
@@ -81,7 +81,7 @@ export abstract class Character {
 
     protected attackLoop(): void {
         let targets = this.getTargets(1);
-        if (!targets || distance(targets[0], character) > character.range) {
+        if (!targets || distance(targets[0], character) > character.range || character.mp < character.mp_cost) {
             // No target
             setTimeout(() => { this.attackLoop() }, Math.max(50, parent.next_skill["attack"] - Date.now()));
             return;

@@ -18,12 +18,14 @@
     "@types/express": "^4.17.1",
     "@types/nconf": "^0.10.0",
     "@types/node": "^12.7.12",
-    "ts-loader": "^6.2.0",
-    "typescript": "^3.6.4",
+    "@types/socket.io": "^2.1.4",
     "pathfinding": "^0.4.18",
     "prioqueue": "^1.0.0",
+    "socket.io": "^2.3.0",
     "tinyqueue": "^2.0.3",
+    "ts-loader": "^6.2.0",
     "tslint": "^5.20.0",
+    "typescript": "^3.6.4",
     "webpack": "^4.41.1",
     "webpack-cli": "^3.3.9"
   }
