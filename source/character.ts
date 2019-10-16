@@ -119,7 +119,14 @@ export abstract class Character {
     }
 
     protected healLoop(): void {
-        let hpPots: ItemName[] = ["hpot0", "hpot1"] // TODO: Create a type for itemnames.
+        if (character.rip) {
+            // Respawn if we're dead
+            respawn();
+            setTimeout(() => { this.healLoop() }, 250) // TODO: Find out something that tells us how long we have to wait before respawning.
+            return;
+        }
+
+        let hpPots: ItemName[] = ["hpot0", "hpot1"]
         let mpPots: ItemName[] = ["mpot0", "mpot1"]
         let useMpPot: ItemName = null;
         let useHpPot: ItemName = null;
@@ -211,15 +218,13 @@ export abstract class Character {
             if (d > (target.range + target.speed)) continue; // We're still far enough away to not get attacked
             if (d > minDistance) continue; // There's another target that's closer
 
-            let angle = Math.atan((target.y - character.y) / (target.x - character.x));
+            // TODO: Convert this to atan2
+            // TODO: Implement searching by changing the angle, similar to the last bot.
+            let angle = Math.atan2(target.y - character.y, target.x - character.x);
             let move_distance = d - (character.range - (0.25 * target.speed)) // TODO: Is this 0.25 smart?
             let x = Math.cos(angle) * move_distance
             let y = Math.sin(angle) * move_distance
-            if (target.x - character.x >= 0) {
-                escapePosition = { x: character.x + x, y: character.y + y };
-            } else {
-                escapePosition = { x: character.x - x, y: character.y - y };
-            }
+            escapePosition = { x: character.x + x, y: character.y + y };
         }
 
         if (!escapePosition) return; // We're safe where we are right now
