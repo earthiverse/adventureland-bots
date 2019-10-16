@@ -1,6 +1,6 @@
 import { Character } from './character'
 import { MonsterName } from './definitions/adventureland';
-import { compoundItem } from './upgrade'
+import { compoundItem, upgradeItem } from './upgrade'
 import { sellUnwantedItems } from './trade';
 
 class Merchant extends Character {
@@ -14,9 +14,44 @@ class Merchant extends Character {
 
         sellUnwantedItems();
 
-        // Target compounds
+        //// Wearables
+        // Rings
+        compoundItem("dexring", 3);
+        compoundItem("intring", 3);
+        compoundItem("strring", 3);
+
+        // Earrings
+        compoundItem("dexearring", 3);
+        compoundItem("intearring", 3);
+        compoundItem("strearring", 3);
+
+        // Belts
+        compoundItem("dexbelt", 3);
+        compoundItem("intbelt", 3);
+        compoundItem("strbelt", 3);
+
+        // Offhands
+        upgradeItem("t2quiver", 5);
+
+        // Capes
+        upgradeItem("cape", 6);
+
+        // Orbs
+        compoundItem("orbg", 2);
+
+        //// Weapons
+        upgradeItem("firestaff", 7);
+        upgradeItem("fireblade", 7);
+
+        //// Miscellaneous
         compoundItem("lostearring", 2);
-        // TODO: add more from old bot
+
+        // Merchant Set
+        upgradeItem("mcgloves", 6);
+        upgradeItem("mcpants", 6);
+        upgradeItem("mcarmor", 6);
+        upgradeItem("mcboots", 6);
+        upgradeItem("mchat", 6);
     }
 
     public run(): void {
