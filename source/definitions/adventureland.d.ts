@@ -24,6 +24,10 @@ export interface ICharacter extends Entity {
   xp: number;
   max_xp: number;
   moving: boolean;
+  /**
+   * Contains information about progressed actions (i.e. upgrades, compounds, exchanges)
+   */
+  q: any; // TODO: Change this from 'any' to something useful
 }
 
 export type EntityId = string;
