@@ -18,17 +18,17 @@ let defaultItemsToSell: ItemName[] = ["hpamulet", "hpbelt", // HP stuff
 ];
 
 export function sellUnwantedItems(itemsToSell: ItemName[] = defaultItemsToSell) {
-    let foundFancypots = false;
+    let foundNPCBuyer = false;
     for (let npc of parent.npcs) {
-        if (["fancypots"].includes(npc.id) && distance(character, {
+        if (["fancypots"].includes(npc.id) && distance(character, { // TODO: Add other NPCs that buy things
             x: npc.position[0],
             y: npc.position[1]
         }) < 250) {
-            foundFancypots = true;
+            foundNPCBuyer = true;
             break;
         }
     }
-    if (!foundFancypots) return; // Can't sell things, nobody is near.
+    if (!foundNPCBuyer) return; // Can't sell things, nobody is near.
 
     for (let itemName of itemsToSell) {
         for (let [i, item] of findItems(itemName)) {
@@ -76,4 +76,31 @@ export function transferGoldToMerchant(merchantName: string, minimumGold: number
     if (distance(character, merchant) > 250) return; // Merchant is too far away to trade
 
     send_gold(merchantName, character.gold - minimumGold);
+}
+
+export function exchangeItems(exchangeItems: ItemName[] = ["gem0", "gem1", "armorbox", "weaponbox", "candy0", "candy1", "candycane"]) {
+    let foundUpgrade = false;
+    for (let npc of parent.npcs) {
+        if (npc.id == "exchange" && distance(character, { // TODO: Add other NPCs that buy things
+            x: npc.position[0],
+            y: npc.position[1]
+        }) < 250) {
+            foundUpgrade = true;
+            break;
+        }
+    }
+    if (!foundUpgrade) return; // Can't exchange, nobody is near.
+
+    if (character.q && character.q["exchange"]) return; // Already exchanging
+
+    for (let itemName of exchangeItems) {
+        let items = findItems(itemName)
+        if (items) {
+            parent.socket.emit("exchange", {
+                item_num: items[0][0],
+                q: 1
+            });
+            return;
+        }
+    }
 }
