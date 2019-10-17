@@ -18,14 +18,13 @@ export class Pathfinder {
         this.padding = padding;
     }
 
-    public findNextMovement(from: ALPosition, to: ALPosition): ALPosition {
+    public findMovements(from: ALPosition, to: ALPosition): ALPosition[] {
         if (from.map && to.map && from.map != to.map) {
             game_log("Cross map pathfinding is not yet supported!");
             return;
         }
         if (!from.map) from.map = character.map; // Use the map on the character
         let mapName = from.map;
-
 
         if (!this.grids[from.map]) this.prepareMap(from.map); // Prepare the map if we haven't prepared it yet.
         let grid = this.grids[from.map].clone();
@@ -35,11 +34,24 @@ export class Pathfinder {
         });
 
         let path = finder.findPath(Math.floor(Math.abs(from.x - G.geometry[mapName].min_x) / this.factor), Math.floor((Math.abs(from.y - G.geometry[mapName].min_y)) / this.factor), Math.floor((Math.abs(to.x - G.geometry[mapName].min_x)) / this.factor), Math.floor((Math.abs(to.y - G.geometry[mapName].min_y)) / this.factor), grid);
-        let newPath = PF.Util.smoothenPath(grid, path);
+        let newPath: any[] = PF.Util.smoothenPath(grid, path);
 
-        if(!newPath) return; // Failed finding a path...
+        if (!newPath) return; // Failed finding a path...
 
-        return { x: G.geometry[mapName].min_x + (newPath[1][0] * this.factor), y: G.geometry[mapName].min_y + (newPath[1][1] * this.factor) };
+        // Remove the first position that indicates where we started from
+        newPath.shift();
+
+        let alPath: ALPosition[] = [];
+        for (let path of newPath)
+            alPath.push({ x: G.geometry[mapName].min_x + (path[0] * this.factor), y: G.geometry[mapName].min_y + (path[1] * this.factor) })
+
+        return alPath;
+    }
+
+    public findNextMovement(from: ALPosition, to: ALPosition): ALPosition {
+        let path = this.findMovements(from, to);
+        if (path)
+            return path[0];
     }
 
     public prepareMap(mapName: string) {

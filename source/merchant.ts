@@ -10,7 +10,9 @@ class Merchant extends Character {
     protected mainLoop(): void {
         super.mainLoop();
         super.avoidAttackingMonsters();
-        super.avoidAggroMonsters();
+        if (!smart.moving) { // TODO: Add a check that we're not using our pathfinding.
+            super.avoidAggroMonsters();
+        }
 
         sellUnwantedItems();
 
@@ -32,6 +34,7 @@ class Merchant extends Character {
 
         // Offhands
         upgradeItem("t2quiver", 5);
+        compoundItem("wbook1", 2);
 
         // Capes
         upgradeItem("cape", 6);
