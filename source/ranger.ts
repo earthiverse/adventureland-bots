@@ -94,7 +94,7 @@ class Ranger extends Character {
             if (entity.type != "monster") continue; // Not a monster
             if (!this.targetPriority.includes(entity.mtype)) continue; // Not something we want to attack
             if (d > character.range) continue; // Too far away
-            if ((entity.target != character.name) && (entity.hp > character.attack * 0.7 * 0.9)) continue; // Too much HP to kill in one shot & not targeting us.
+            if ((entity.target != character.name) && (entity.hp > character.attack * 0.7 * 0.9 * damage_multiplier(entity.armor - character.apiercing))) continue; // Too much HP to kill in one shot & not targeting us.
 
             targets.push(entity);
         }

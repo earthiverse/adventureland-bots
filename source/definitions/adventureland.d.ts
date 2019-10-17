@@ -9,15 +9,12 @@ export interface ICharacter extends Entity {
   name: string;
   range: number;
   xrange: number;
-  /**
-   * Only available if this is the active character.
-   */
+  apiercing: number;
   items: (ItemInfo)[];
   ctype: ClassName;
   rip: boolean;
   gold: number;
   /**
-   * Only available if this is the active character.
    * Time is in ms.
    */
   ping?: number;
@@ -27,7 +24,11 @@ export interface ICharacter extends Entity {
   /**
    * Contains information about progressed actions (i.e. upgrades, compounds, exchanges)
    */
-  q: any; // TODO: Change this from 'any' to something useful
+  q: {
+    upgrade?: any;
+    compound?: any;
+    exchange?: any;
+  }; // TODO: Change this from 'any' to something useful
 }
 
 export type EntityId = string;
@@ -74,6 +75,7 @@ export interface Entity extends ALPosition {
   player?: boolean;
   speed: number;
   name?: string;
+  armor: number;
   id?: string;
   hp: number;
   max_hp: number;
@@ -137,11 +139,15 @@ declare global {
   }
   var $: any;
   var character: ICharacter;
+  var smart: {
+    moving: boolean;
+  }
   var game_logs: any[];
   var G: GameInfo;
   var clear_game_logs: () => void;
   var handle_death: () => void;
   function respawn(): void;
+  function damage_multiplier(armor: number);
   function start_character(name: string, script: string): void;
   function stop_character(name: string, script: string): void;
   function map_key(key: string, thing: string, arg?: string): void;
