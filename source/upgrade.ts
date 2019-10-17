@@ -17,7 +17,7 @@ function determineGrade(item: ItemInfo) {
 export function compoundItem(itemname: string, target_level: number) {
     let foundUpgrade = false;
     for (let npc of parent.npcs) {
-        if (npc.id == "newupgrade" && distance(character, { // TODO: Add other NPCs that buy things
+        if (npc.id == "newupgrade" && distance(character, {
             x: npc.position[0],
             y: npc.position[1]
         }) < 300) {
@@ -57,7 +57,7 @@ export function compoundItem(itemname: string, target_level: number) {
 export function upgradeItem(itemname: string, target_level: number) {
     let foundUpgrade = false;
     for (let npc of parent.npcs) {
-        if (npc.id == "newupgrade" && distance(character, { // TODO: Add other NPCs that buy things
+        if (npc.id == "newupgrade" && distance(character, {
             x: npc.position[0],
             y: npc.position[1]
         }) < 300) {

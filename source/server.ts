@@ -14,7 +14,6 @@ app.use(Cors())
 app.use(Express.static(Path.join(__dirname, "./"), { index: false, extensions: ['js'] }));
 
 // Start Serving Requests
-// TODO: Create config & set port in config
 const server = app.listen(portConfig, () => {
     const info = server.address() as AddressInfo;
     console.log("Server has started on port %s!", info.port);

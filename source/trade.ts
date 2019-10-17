@@ -81,7 +81,7 @@ export function transferGoldToMerchant(merchantName: string, minimumGold: number
 export function exchangeItems(exchangeItems: ItemName[] = ["gem0", "gem1", "armorbox", "weaponbox", "candy0", "candy1", "candycane"]) {
     let foundUpgrade = false;
     for (let npc of parent.npcs) {
-        if (npc.id == "exchange" && distance(character, { // TODO: Add other NPCs that buy things
+        if (npc.id == "exchange" && distance(character, {
             x: npc.position[0],
             y: npc.position[1]
         }) < 250) {
