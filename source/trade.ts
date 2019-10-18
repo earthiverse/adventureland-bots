@@ -3,17 +3,17 @@ import { findItems } from "./functions";
 let defaultItemsToGiveToMerchant: ItemName[] = ["monstertoken",
     "gem0", "gem1", "lostearring", "candycane", "candy0", "candy1", // Tradables
     "coat1", "shoes1", "pants1", "gloves1", "helmet1", "cape", // Wearables
+    "shoes", "helmet", "coat", "gloves", "pants", // Common clothing
     "dexamulet", "intamulet", "stramulet", // Amulets
     "strring", "intring", "dexring", // Rings
     "dexbelt", "strbelt", "intbelt", // Belts
     "wbook0", "quiver", // Offhands
     "orbg", // Orbs
-    "whiteegg", "beewings", "rattail", "spores", "poison", "carrot", "smush", // Things monsters drop
+    "whiteegg", "beewings", "rattail", "spores", "poison", "carrot", "smush", "gslime" // Things monsters drop
 ];
 let defaultItemsToSell: ItemName[] = ["hpamulet", "hpbelt", // HP stuff
     "vitring", "vitearring", // Vit stuff
     "slimestaff", "ringsj", "cclaw", "spear", "throwingstars", // Common things
-    "shoes", "helmet", "coat", "gloves", "pants", // Common clothing
     "wattire", "wshoes", "wbreeches", "wgloves", "wcap" // Wanderer clothing
 ];
 
@@ -78,6 +78,7 @@ export function transferGoldToMerchant(merchantName: string, minimumGold: number
     send_gold(merchantName, character.gold - minimumGold);
 }
 
+// TODO: Add check for shells
 export function exchangeItems(exchangeItems: ItemName[] = ["gem0", "gem1", "armorbox", "weaponbox", "candy0", "candy1", "candycane"]) {
     let foundUpgrade = false;
     for (let npc of parent.npcs) {
