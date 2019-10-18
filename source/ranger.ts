@@ -16,18 +16,25 @@ class Ranger extends Character {
     }
 
     mainLoop(): void {
-        super.mainLoop();
+        try {
+            // Movement
+            if (!smart.moving) {
+                super.avoidAggroMonsters();
+                super.avoidAttackingMonsters();
+                super.moveToMonsters();
+            }
 
-        // Movement
-        super.avoidAggroMonsters();
-        super.avoidAttackingMonsters();
-        super.moveToMonsters();
+            transferItemsToMerchant("earthMer");
+            transferGoldToMerchant("earthMer");
+            sellUnwantedItems();
 
-        transferItemsToMerchant("earthMer");
-        transferGoldToMerchant("earthMer");
-        sellUnwantedItems();
+            this.createParty(["earthMag", "earthWar", "earthMer"]);
 
-        this.createParty(["earthMag", "earthWar", "earthMer"]);
+            super.mainLoop();
+        } catch (error) {
+            console.error(error)
+            setTimeout(() => { this.mainLoop(); }, 250);
+        }
     }
 
     superShotLoop(): void {

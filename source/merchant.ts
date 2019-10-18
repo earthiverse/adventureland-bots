@@ -1,60 +1,69 @@
 import { Character } from './character'
 import { MonsterName } from './definitions/adventureland';
 import { compoundItem, upgradeItem } from './upgrade'
-import { sellUnwantedItems } from './trade';
+import { sellUnwantedItems, exchangeItems } from './trade';
 
 class Merchant extends Character {
     targetPriority: MonsterName[] = []; // Nothing for now, merchants can't usually attack.
     mainTarget: MonsterName = null; // Nothing for now, merchants can't usually attack.
 
     protected mainLoop(): void {
-        super.mainLoop();
-        super.avoidAttackingMonsters();
-        if (!smart.moving) { // TODO: Add a check that we're not using our pathfinding.
-            super.avoidAggroMonsters();
+        try {
+            // Movement
+            if (!smart.moving) { // TODO: Add a check that we're not using our pathfinding.
+                super.avoidAggroMonsters();
+                super.avoidAttackingMonsters();
+            }
+
+            sellUnwantedItems();
+            exchangeItems();
+
+            //// Wearables
+            // Rings
+            compoundItem("dexring", 3);
+            compoundItem("intring", 3);
+            compoundItem("strring", 3);
+
+            // Earrings
+            compoundItem("dexearring", 3);
+            compoundItem("intearring", 3);
+            compoundItem("strearring", 3);
+
+            // Belts
+            compoundItem("dexbelt", 3);
+            compoundItem("intbelt", 3);
+            compoundItem("strbelt", 3);
+
+            // Offhands
+            upgradeItem("t2quiver", 5);
+            compoundItem("wbook0", 3);
+            compoundItem("wbook1", 2);
+
+            // Capes
+            upgradeItem("cape", 6);
+
+            // Orbs
+            compoundItem("orbg", 2);
+
+            //// Weapons
+            upgradeItem("firestaff", 7);
+            upgradeItem("fireblade", 7);
+
+            //// Miscellaneous
+            compoundItem("lostearring", 2);
+
+            // Merchant Set
+            upgradeItem("mcgloves", 6);
+            upgradeItem("mcpants", 6);
+            upgradeItem("mcarmor", 6);
+            upgradeItem("mcboots", 6);
+            upgradeItem("mchat", 6);
+
+            super.mainLoop();
+        } catch (error) {
+            console.error(error);
+            setTimeout(() => { this.mainLoop(); }, 250);
         }
-
-        sellUnwantedItems();
-
-        //// Wearables
-        // Rings
-        compoundItem("dexring", 3);
-        compoundItem("intring", 3);
-        compoundItem("strring", 3);
-
-        // Earrings
-        compoundItem("dexearring", 3);
-        compoundItem("intearring", 3);
-        compoundItem("strearring", 3);
-
-        // Belts
-        compoundItem("dexbelt", 3);
-        compoundItem("intbelt", 3);
-        compoundItem("strbelt", 3);
-
-        // Offhands
-        upgradeItem("t2quiver", 5);
-        compoundItem("wbook1", 2);
-
-        // Capes
-        upgradeItem("cape", 6);
-
-        // Orbs
-        compoundItem("orbg", 2);
-
-        //// Weapons
-        upgradeItem("firestaff", 7);
-        upgradeItem("fireblade", 7);
-
-        //// Miscellaneous
-        compoundItem("lostearring", 2);
-
-        // Merchant Set
-        upgradeItem("mcgloves", 6);
-        upgradeItem("mcpants", 6);
-        upgradeItem("mcarmor", 6);
-        upgradeItem("mcboots", 6);
-        upgradeItem("mchat", 6);
     }
 
     public run(): void {

@@ -16,16 +16,21 @@ class Warrior extends Character {
     }
 
     mainLoop(): void {
-        super.mainLoop();
+        try {
+            // Movement
+            if (!smart.moving) {
+                super.moveToMonsters();
+            }
 
-        // Movement
-        //super.avoidAggroMonsters();
-        //super.avoidAttackingMonsters();
-        super.moveToMonsters();
+            transferItemsToMerchant("earthMer");
+            transferGoldToMerchant("earthMer");
+            sellUnwantedItems();
 
-        transferItemsToMerchant("earthMer");
-        transferGoldToMerchant("earthMer");
-        sellUnwantedItems();
+            super.mainLoop();
+        } catch (error) {
+            console.error(error)
+            setTimeout(() => { this.mainLoop(); }, 250);
+        }
     }
 
     chargeLoop(): void {
