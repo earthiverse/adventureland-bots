@@ -12,9 +12,9 @@ export abstract class Character {
     protected movementTarget: MonsterName = null;
     protected pathfinder: Pathfinder = new Pathfinder(7);
 
-    protected mainLoop(loopEveryMs = 250) {
+    protected mainLoop() {
         loot();
-        setTimeout(() => { this.mainLoop(loopEveryMs); }, loopEveryMs);
+        setTimeout(() => { this.mainLoop(); }, 250);
     };
     public run() {
         this.healLoop();
@@ -25,10 +25,15 @@ export abstract class Character {
 
     protected getTargets(numTargets: number = 1): Entity[] {
         let targets: Entity[] = [];
-        let target = get_targeted_monster();
-        if (target && numTargets == 1 && distance(character, target) < character.range) {
-            targets.push(target);
-            return targets;
+
+        // Find out what targets are already claimed by our party members
+        let members = Object.keys(parent.party);
+        let claimedTargets: string[] = []
+        for (let id in parent.entities) {
+            if (members.includes(id)) {
+                let target = parent.entities[id].target;
+                if (target) claimedTargets.push(target)
+            }
         }
 
         let potentialTargets = new Queue<Entity>((x, y) => x.priority - y.priority);
@@ -43,6 +48,9 @@ export abstract class Character {
             let priority = this.targetPriority.indexOf(potentialTarget.mtype);
             if (potentialTarget.type == "monster" && priority == -1) continue; // Not a priority
 
+            // Adjust priority if a party member is already attacking it.
+            if (claimedTargets.includes(id)) priority -= 250;
+
             // Increase priority if it's our "main target"
             if (potentialTarget.mtype == this.mainTarget) priority += 10;
 
@@ -56,7 +64,7 @@ export abstract class Character {
             priority -= d;
 
             // Adjust priority based on remaining HP
-            priority -= potentialTarget.hp
+            // priority -= potentialTarget.hp
 
             potentialTargets.enqueue(priority, potentialTarget);
         }
@@ -80,95 +88,112 @@ export abstract class Character {
     }
 
     protected attackLoop(): void {
-        let targets = this.getTargets(1);
-        if (!targets || distance(targets[0], character) > character.range || character.mp < character.mp_cost) {
-            // No target
+        try {
+            let targets = this.getTargets(1);
+            if (!targets || distance(targets[0], character) > character.range || character.mp < character.mp_cost) {
+                // No target
+                setTimeout(() => { this.attackLoop() }, Math.max(50, parent.next_skill["attack"] - Date.now()));
+                return;
+            }
+            attack(targets[0]).then(() => {
+                // Attack success!
+                this.getTargets(1);
+                setTimeout(() => { this.attackLoop() }, Math.max(50, parent.next_skill["attack"] - Date.now()));
+            }, () => {
+                // Attack fail...
+                setTimeout(() => { this.attackLoop() }, Math.max(50, parent.next_skill["attack"] - Date.now()));
+            });
+        } catch (error) {
+            console.error(error)
             setTimeout(() => { this.attackLoop() }, Math.max(50, parent.next_skill["attack"] - Date.now()));
-            return;
         }
-        attack(targets[0]).then(() => {
-            // Attack success!
-            setTimeout(() => { this.attackLoop() }, Math.max(50, parent.next_skill["attack"] - Date.now()));
-        }, () => {
-            // Attack fail...
-            setTimeout(() => { this.attackLoop() }, Math.max(50, parent.next_skill["attack"] - Date.now()));
-        });
     }
 
     protected moveLoop(): void {
-        if (!this.movementQueue || this.movementQueue.length == 0) {
-            // No movements in the queue, do nothing.
-            setTimeout(() => { this.moveLoop() }, 250); // TODO: move this 250 cooldown to a setting.
-            return;
-        } else if (character.moving) {
-            // We're already moving, don't move somewhere new.
-            setTimeout(() => { this.moveLoop() }, 250) // TODO: Instead of 250, base it on how long it will take to walk to where we are going. (x && y && going_x && going_y && speed)
-            return;
-        }
+        try {
+            if (!this.movementQueue || this.movementQueue.length == 0) {
+                // No movements in the queue, do nothing.
+                setTimeout(() => { this.moveLoop() }, 250); // TODO: move this 250 cooldown to a setting.
+                return;
+            } else if (character.moving) {
+                // We're already moving, don't move somewhere new.
+                setTimeout(() => { this.moveLoop() }, 250) // TODO: Instead of 250, base it on how long it will take to walk to where we are going. (x && y && going_x && going_y && speed)
+                return;
+            }
 
-        let nextMovement = this.movementQueue[0];
-        if (nextMovement.map == character.map && can_move_to(nextMovement.x, nextMovement.y)) {
-            // We can move to the next place in the queue, so let's start moving there.
-            move(nextMovement.x, nextMovement.y)
+            let nextMovement = this.movementQueue[0];
+            if (nextMovement.map == character.map && can_move_to(nextMovement.x, nextMovement.y)) {
+                // We can move to the next place in the queue, so let's start moving there.
+                move(nextMovement.x, nextMovement.y)
+
+            } else {
+                // We can't move to the next place in the queue...
+                // TODO: Pathfind to the next place in the queue
+            }
             setTimeout(() => { this.moveLoop() }, 250); // TODO: queue up next movement based on time it will take to walk there
-        } else {
-            // We can't move to the next place in the queue...
-            // TODO: Pathfind to the next place in the queue
+        } catch (error) {
+            console.error(error)
+            setTimeout(() => { this.moveLoop() }, 250); // TODO: queue up next movement based on time it will take to walk there
         }
 
     }
 
     protected healLoop(): void {
-        if (character.rip) {
-            // Respawn if we're dead
-            respawn();
-            setTimeout(() => { this.healLoop() }, 250) // TODO: Find out something that tells us how long we have to wait before respawning.
-            return;
-        }
-
-        let hpPots: ItemName[] = ["hpot0", "hpot1"]
-        let mpPots: ItemName[] = ["mpot0", "mpot1"]
-        let useMpPot: ItemName = null;
-        let useHpPot: ItemName = null;
-
-        // TODO: find last potion in inventory
-        for (let i = character.items.length - 1; i >= 0; i--) {
-            let item = character.items[i];
-            if (!item) continue;
-
-            if (!useHpPot && hpPots.includes(item.name)) {
-                // This is the HP Pot that will be used
-                useHpPot = item.name
-            } else if (!useMpPot && mpPots.includes(item.name)) {
-                // This is the MP Pot that will be used
-                useMpPot = item.name
+        try {
+            if (character.rip) {
+                // Respawn if we're dead
+                respawn();
+                setTimeout(() => { this.healLoop() }, 250) // TODO: Find out something that tells us how long we have to wait before respawning.
+                return;
             }
 
-            if (useHpPot && useMpPot) {
-                // We've found the last two pots we're using
-                break;
+            let hpPots: ItemName[] = ["hpot0", "hpot1"]
+            let mpPots: ItemName[] = ["mpot0", "mpot1"]
+            let useMpPot: ItemName = null;
+            let useHpPot: ItemName = null;
+
+            // TODO: find last potion in inventory
+            for (let i = character.items.length - 1; i >= 0; i--) {
+                let item = character.items[i];
+                if (!item) continue;
+
+                if (!useHpPot && hpPots.includes(item.name)) {
+                    // This is the HP Pot that will be used
+                    useHpPot = item.name
+                } else if (!useMpPot && mpPots.includes(item.name)) {
+                    // This is the MP Pot that will be used
+                    useMpPot = item.name
+                }
+
+                if (useHpPot && useMpPot) {
+                    // We've found the last two pots we're using
+                    break;
+                }
             }
-        }
 
-        let hp_ratio = character.hp / character.max_hp
-        let mp_ratio = character.mp / character.max_mp
-        if (useHpPot == "hpot0" && (character.max_hp - character.hp >= 200 || character.hp < 50)) {
-            use_skill("use_hp")
-        } else if (useHpPot == "hpot1" && (character.max_hp - character.hp >= 400 || character.hp < 50)) {
-            use_skill("use_hp")
-        } else if (useMpPot == "mpot0" && (character.max_mp - character.mp >= 300 || character.mp < 50)) {
-            use_skill("use_mp")
-        } else if (useMpPot == "mpot1" && (character.max_mp - character.mp >= 500 || character.mp < 50)) {
-            use_skill("use_mp")
-        } else if (useHpPot == null && hp_ratio != 1 && hp_ratio <= mp_ratio) {
-            // Even if we don't have a potion, use_hp will heal for 50 hp.
-            use_skill("use_hp")
-        } else if (useMpPot == null && mp_ratio != 1 && mp_ratio < hp_ratio) {
-            // Even if we don't have a potion, use_mp will heal for 100 mp.
-            use_skill("use_mp")
-        }
+            let hp_ratio = character.hp / character.max_hp
+            let mp_ratio = character.mp / character.max_mp
+            if (useHpPot == "hpot0" && (character.max_hp - character.hp >= 200 || character.hp < 50)) {
+                use_skill("use_hp")
+            } else if (useHpPot == "hpot1" && (character.max_hp - character.hp >= 400 || character.hp < 50)) {
+                use_skill("use_hp")
+            } else if (useMpPot == "mpot0" && (character.max_mp - character.mp >= 300 || character.mp < 50)) {
+                use_skill("use_mp")
+            } else if (useMpPot == "mpot1" && (character.max_mp - character.mp >= 500 || character.mp < 50)) {
+                use_skill("use_mp")
+            } else if (useHpPot == null && hp_ratio != 1 && hp_ratio <= mp_ratio) {
+                // Even if we don't have a potion, use_hp will heal for 50 hp.
+                use_skill("use_hp")
+            } else if (useMpPot == null && mp_ratio != 1 && mp_ratio < hp_ratio) {
+                // Even if we don't have a potion, use_mp will heal for 100 mp.
+                use_skill("use_mp")
+            }
 
-        setTimeout(() => { this.healLoop() }, Math.max(250, parent.next_skill["use_hp"] - Date.now()))
+            setTimeout(() => { this.healLoop() }, Math.max(250, parent.next_skill["use_hp"] - Date.now()))
+        } catch (error) {
+            console.error(error)
+            setTimeout(() => { this.healLoop() }, Math.max(250, parent.next_skill["use_hp"] - Date.now()))
+        }
     }
 
     protected avoidAggroMonsters(buffer = 50): void {
