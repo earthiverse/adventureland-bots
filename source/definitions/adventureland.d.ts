@@ -46,13 +46,17 @@ export interface ItemInfo {
 }
 
 export interface BuffInfo {
+  /**
+   * If the buff is a monsterhunt, c contains the amount of monsters left to kill.
+   */
+  c?: number;
   f: string;
   // duration in ms
   ms: number;
   /**
-   * If the buff is a monsterhunt, it will contain the MonsterName in a target.
+   * If the buff is a monsterhunt, target contains the mtype to hunt.
    */
-  target?: MonsterName;
+  id?: MonsterName;
 }
 
 export interface ALPosition {
@@ -128,6 +132,8 @@ export interface GameInfo {
 declare global {
   interface Window {
     clear_game_logs(): void;
+    distance(position1: ALPosition, position2: ALPosition)
+    character: ICharacter;
     party_list: string[];
     party: { [name: string]: ICharacter };
     npcs: any[];
@@ -173,8 +179,14 @@ declare global {
    * Returns true if you can attack other players.
    */
   function is_pvp(): boolean;
+  /**
+   * Returns true if the entity is an NPC
+   */
+  function is_npc(entity: Entity): boolean;
+  function find_npc(id: string): ALPosition;
   function upgrade(itemPos: number, scrollPos: number, offeringPos?: number): void;
   function load_code(foo: string): void;
+  function send_local_cm(to: string, data: any): void;
   function send_cm(to: string, data: any): void;
   function game_log(msg: string, color?: string): void;
   function accept_party_invite(from: string): void;
@@ -185,7 +197,8 @@ declare global {
   function change_target(target: Entity, send?: boolean): void;
   function get_targeted_monster(): Entity;
   function get_target_of(entity: Entity): Entity;
-  function distance(entity1: ALPosition, entity2: ALPosition): number;
+  function distance(position1: ALPosition, position2: ALPosition): number;
+  function smart_move(destination: ALPosition | MonsterName | string);
   function move(x: number, y: number): void;
   function xmove(x: number, y: number): void;
   function show_json(stuff: any): void;

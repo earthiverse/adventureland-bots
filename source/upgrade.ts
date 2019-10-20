@@ -1,18 +1,4 @@
-import { ItemInfo } from "./definitions/adventureland";
-import { findItems, findItemsWithLevel } from "./functions";
-
-function determineGrade(item: ItemInfo) {
-    let game_item = G.items[item.name];
-    if (!game_item) {
-        return -1;
-    } else if (item.level >= game_item.grades[1]) {
-        return 2;
-    } else if (item.level >= game_item.grades[0]) {
-        return 1;
-    } else {
-        return 0;
-    }
-}
+import { determineGrade, findItems, findItemsWithLevel } from "./functions";
 
 export function compoundItem(itemname: string, target_level: number) {
     let foundUpgrade = false;

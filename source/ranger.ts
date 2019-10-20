@@ -1,6 +1,7 @@
 import { Character } from './character'
 import { MonsterName, Entity } from './definitions/adventureland';
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from './trade';
+import { getMonsterhuntTarget } from './functions';
 
 class Ranger extends Character {
     targetPriority: MonsterName[] = [
@@ -13,20 +14,23 @@ class Ranger extends Character {
     run(): void {
         super.run();
         this.superShotLoop();
+        // this.sendMonsterHuntInfoLoop(parent.party_list);
     }
 
     mainLoop(): void {
         try {
             // Movement
             if (!smart.moving) {
-                super.avoidAggroMonsters();
-                super.avoidAttackingMonsters();
-                super.moveToMonsters();
+                // this.moveToMonsterhunt();
+                this.avoidAggroMonsters();
+                this.avoidAttackingMonsters();
+                this.moveToMonsters();
             }
 
             transferItemsToMerchant("earthMer");
             transferGoldToMerchant("earthMer");
             sellUnwantedItems();
+
 
             this.createParty(["earthMag", "earthWar", "earthMer"]);
 
@@ -54,7 +58,7 @@ class Ranger extends Character {
             if (potentialTarget.mtype == this.mainTarget) priority += 100;
 
             // Increase priority if it's a quest monster
-            if (potentialTarget.mtype == this.getMonsterhuntTarget()) priority += 100;
+            if (potentialTarget.mtype == getMonsterhuntTarget()) priority += 100;
 
             // Increase priority if the entity is targeting us
             if (potentialTarget.target == character.name) priority += 1000;

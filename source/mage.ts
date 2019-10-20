@@ -4,9 +4,9 @@ import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } fr
 
 class Mage extends Character {
     targetPriority: MonsterName[] = [
-        "hen", "rooster", "goo", "crab", "bee", "osnake", "snake", "porcupine", "squigtoad", "croc", "rat", "minimush", "armadillo", "squig", "poisio", "crabx", "arcticbee", "bat", // #3: Easy to kill monsters
-        "scorpion", "tortoise", "spider", "cgoo", "stoneworm", "boar", "iceroamer", // #2: Not that easy to kill, but killable monsters
-        "goldenbat", "snowman", "mrgreen", "mrpumpkin", // #1: Event monsters
+        "stoneworm", "iceroamer", "boar", "spider", "scorpion", "tortoise", "cgoo",  // Low priority
+        "hen", "rooster", "goo", "crab", "bee", "osnake", "snake", "porcupine", "squigtoad", "croc", "rat", "minimush", "armadillo", "squig", "poisio", "crabx", "arcticbee", "bat", // Normal Priority
+        "frog", "goldenbat", "snowman", "mrgreen", "mrpumpkin", // High Priority
     ];
     mainTarget: MonsterName = "rat";
 
@@ -26,7 +26,7 @@ class Mage extends Character {
             transferItemsToMerchant("earthMer");
             transferGoldToMerchant("earthMer");
             sellUnwantedItems();
-            
+
             super.mainLoop();
         } catch (error) {
             console.error(error);

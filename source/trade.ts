@@ -2,7 +2,8 @@ import { ItemName } from "./definitions/adventureland";
 import { findItems } from "./functions";
 let defaultItemsToGiveToMerchant: ItemName[] = ["monstertoken",
     "gem0", "gem1", "lostearring", "candycane", "candy0", "candy1", // Tradables
-    "coat1", "shoes1", "pants1", "gloves1", "helmet1", "cape", // Wearables
+    "coat1", "shoes1", "pants1", "gloves1", "helmet1", "cape", "handofmidas", // Wearables
+    "bataxe", // Weapons
     "shoes", "helmet", "coat", "gloves", "pants", // Common clothing
     "dexamulet", "intamulet", "stramulet", // Amulets
     "strring", "intring", "dexring", // Rings
@@ -13,7 +14,7 @@ let defaultItemsToGiveToMerchant: ItemName[] = ["monstertoken",
 ];
 let defaultItemsToSell: ItemName[] = ["hpamulet", "hpbelt", // HP stuff
     "vitring", "vitearring", // Vit stuff
-    "slimestaff", "ringsj", "cclaw", "spear", "throwingstars", // Common things
+    "slimestaff", "ringsj", "cclaw", "spear", "throwingstars", "gphelmet", "phelmet", "maceofthedead", // Common things
     "wattire", "wshoes", "wbreeches", "wgloves", "wcap" // Wanderer clothing
 ];
 
@@ -92,14 +93,15 @@ export function exchangeItems(exchangeItems: ItemName[] = ["gem0", "gem1", "armo
     }
     if (!foundUpgrade) return; // Can't exchange, nobody is near.
 
+
     if (character.q && character.q["exchange"]) return; // Already exchanging
 
     for (let itemName of exchangeItems) {
         let items = findItems(itemName)
-        if (items) {
+        if (items.length > 0) {
             parent.socket.emit("exchange", {
                 item_num: items[0][0],
-                q: 1
+                q: items[0][1].q
             });
             return;
         }
