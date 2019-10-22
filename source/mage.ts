@@ -12,12 +12,15 @@ class Mage extends Character {
 
     run(): void {
         super.run();
+        this.energizeLoop();
+        // this.sendMonsterHuntInfoLoop(parent.party_list);
     }
 
     mainLoop(): void {
         try {
             // Movement
             if (!smart.moving) {
+                // this.moveToMonsterhunt();
                 super.avoidAggroMonsters();
                 super.avoidAttackingMonsters();
                 super.moveToMonsters();
@@ -32,6 +35,19 @@ class Mage extends Character {
             console.error(error);
             setTimeout(() => { this.mainLoop(); }, 250);
         }
+    }
+
+    energizeLoop(): void {
+        // Get nearby party members
+        for (let id in parent.party) {
+            if (id == character.name) continue; // Don't cast on ourself.
+            let member = parent.party[id];
+            if (distance(character, member) > character.range) continue; // Out of range
+
+            use_skill("energize", id)
+            break;
+        }
+        setTimeout(() => { this.energizeLoop() }, Math.max(250, parent.next_skill["energize"] - Date.now()));
     }
 }
 

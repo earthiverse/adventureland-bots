@@ -1,7 +1,7 @@
 import { Queue } from "prioqueue"
 import { MonsterName, Entity, ALPosition, ItemName } from './definitions/adventureland';
 import { Pathfinder } from './pathfinder';
-import { getMonsterhuntTarget } from "./functions";
+import { sendMassCM } from "./functions";
 
 export abstract class Character {
     /**
@@ -172,6 +172,10 @@ export abstract class Character {
 
             attackingMonsters.push(potentialTarget);
         }
+        let currentTarget = get_targeted_monster();
+        if (currentTarget) {
+            attackingMonsters.push(currentTarget);
+        }
 
         // TODO: geometry to move away from closest monster attacking us
         let minDistance = 99999;
@@ -183,11 +187,19 @@ export abstract class Character {
 
             // TODO: Convert this to atan2
             // TODO: Implement searching by changing the angle, similar to the last bot.
-            let angle = Math.atan2(target.y - character.y, target.x - character.x);
-            let move_distance = d - (character.range - (0.25 * target.speed)) // TODO: Is this 0.25 smart?
-            let x = Math.cos(angle) * move_distance
-            let y = Math.sin(angle) * move_distance
-            escapePosition = { x: character.x + x, y: character.y + y };
+            let angle: number = Math.atan2(target.y - character.y, target.x - character.x);
+            let move_distance: number = d - (character.range - (0.25 * target.speed)) // TODO: Is this 0.25 smart?
+            function calculateEscape(angle: number, move_distance: number): ALPosition {
+                let x = Math.cos(angle) * move_distance
+                let y = Math.sin(angle) * move_distance
+                return { x: character.x + x, y: character.y + y };
+            }
+            escapePosition = calculateEscape(angle, move_distance);
+            let angle_change: number = 1;
+            while (!can_move_to(escapePosition.x, escapePosition.y)) {
+                angle_change *= -2;
+                escapePosition = calculateEscape(angle + angle_change, move_distance)
+            }
         }
 
         if (!escapePosition) return; // We're safe where we are right now
@@ -200,7 +212,6 @@ export abstract class Character {
     }
 
     public moveToMonsters(): void {
-        if (character.moving) return; // Already moving
         let targets = this.getTargets(1);
         if (targets && distance(character, targets[0]) < character.range)
             return; // We have a target, and it's in range.
@@ -222,34 +233,6 @@ export abstract class Character {
         }
     }
 
-    public sendMonsterHuntInfoLoop(announceList: string[]) {
-        if (!character.s || !character.s.monsterhunt || character.s.monsterhunt.c == 0) {
-            // No quest
-            this.monsterhuntQuests[character.name] = {
-                "target": undefined
-            }
-            announceList.forEach((name) => {
-                send_local_cm(name, {
-                    "message": "quest",
-                    "target": undefined
-                });
-            })
-        } else {
-            // Yes quest
-            this.monsterhuntQuests[character.name] = {
-                "target": character.s.monsterhunt.id
-            }
-            announceList.forEach((name) => {
-                send_local_cm(name, {
-                    "message": "quest",
-                    "target": character.s.monsterhunt.id
-                });
-            })
-        }
-
-        setTimeout(() => { this.sendMonsterHuntInfoLoop(announceList) }, 60000)
-    }
-
     public moveToMonsterhunt() {
         let monsterhunter: ALPosition = { map: "main", x: 126, y: -413 }
 
@@ -258,6 +241,10 @@ export abstract class Character {
             if (distance(character, monsterhunter) < 250) {
                 parent.socket.emit('monsterhunt')
             } else if (!smart.moving) {
+                sendMassCM(parent.party_list, {
+                    "message": "quest",
+                    "target": undefined
+                })
                 smart_move(monsterhunter)
             }
             return
@@ -275,14 +262,18 @@ export abstract class Character {
         }
 
         // Move to target
-        // TODO: Look at quest info that is sent to us in cm and go to those monsters based on priority.
-        if (character.s && character.s.monsterhunt) {
+        let monsterHuntTarget = this.getMonsterhuntTarget()
+        if (monsterHuntTarget) {
             let targets = this.getTargets(1)
-            if (targets.length == 0 || targets[0].mtype != character.s.monsterhunt.id) {
+            if (targets.length == 0 || targets[0].mtype != monsterHuntTarget) {
                 if (this.targetPriority.includes(character.s.monsterhunt.id)) {
+                    sendMassCM(parent.party_list, {
+                        "message": "quest",
+                        "target": character.s.monsterhunt.id
+                    });
                     // It's in our list of monsters, go go go!
                     smart_move(character.s.monsterhunt.id)
-                } else if (targets.length == 0 || targets[0].mtype != this.mainTarget) {
+                } else if (targets.length != 0 && targets[0].mtype != this.mainTarget) {
                     // Not in our target priority, so it's probably too dangerous. Go to our default target
                     smart_move(this.mainTarget)
                 }
@@ -304,7 +295,24 @@ export abstract class Character {
         }
     }
 
-    getTargets(numTargets: number = 1): Entity[] {
+    public getMonsterhuntTarget(): MonsterName {
+        // Party monster hunts
+        let highestPriorityTarget = -1;
+        for (let questInfo in this.monsterhuntQuests) {
+            let target = this.monsterhuntQuests[questInfo].target;
+            let priorty = this.targetPriority.indexOf(target);
+            if (priorty > highestPriorityTarget) highestPriorityTarget = priorty;
+        }
+        if (highestPriorityTarget != -1) return this.targetPriority[highestPriorityTarget];
+
+        // Our monster hunt
+        if (character.s && character.s.monsterhunt)
+            return character.s.monsterhunt.id;
+
+        return null;
+    }
+
+    public getTargets(numTargets: number = 1): Entity[] {
         let targets: Entity[] = [];
 
         // Find out what targets are already claimed by our party members
@@ -321,13 +329,12 @@ export abstract class Character {
         for (let id in parent.entities) {
             let potentialTarget = parent.entities[id];
             let d = distance(character, potentialTarget);
-            if (!this.targetPriority.includes(potentialTarget.mtype)) continue; // Not a monster we care about
+            if (!this.targetPriority.includes(potentialTarget.mtype) && potentialTarget.target != character.name) continue; // Not a monster we care about, and it's not attacking us
             if (potentialTarget.type != "monster") // Not a monster
                 if (!is_pvp() && potentialTarget.type == "character") continue; // Not PVP
 
             // Set a priority based on the index of the entity 
             let priority = this.targetPriority.indexOf(potentialTarget.mtype);
-            if (potentialTarget.type == "monster" && priority == -1) continue; // Not a priority
 
             // Adjust priority if a party member is already attacking it.
             if (claimedTargets.includes(id)) priority -= 250;
@@ -339,7 +346,7 @@ export abstract class Character {
             if (potentialTarget.mtype == this.mainTarget) priority += 10;
 
             // Increase priority if it's a quest monster
-            if (potentialTarget.mtype == getMonsterhuntTarget()) priority += 1000;
+            if (potentialTarget.mtype == this.getMonsterhuntTarget()) priority += 1000;
 
             // Increase priority if the entity is targeting us
             if (potentialTarget.target == character.name) priority += 1000;

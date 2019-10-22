@@ -1,7 +1,6 @@
 import { Character } from './character'
 import { MonsterName, Entity } from './definitions/adventureland';
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from './trade';
-import { getMonsterhuntTarget } from './functions';
 
 class Ranger extends Character {
     targetPriority: MonsterName[] = [
@@ -58,7 +57,7 @@ class Ranger extends Character {
             if (potentialTarget.mtype == this.mainTarget) priority += 100;
 
             // Increase priority if it's a quest monster
-            if (potentialTarget.mtype == getMonsterhuntTarget()) priority += 100;
+            if (potentialTarget.mtype == this.getMonsterhuntTarget()) priority += 1000;
 
             // Increase priority if the entity is targeting us
             if (potentialTarget.target == character.name) priority += 1000;

@@ -43,6 +43,7 @@ export interface ItemInfo {
   name: string;
   g?: number;
   grades?: number[];
+  type?: "weapon" | "chest" | "shoes" | string;
 }
 
 export interface BuffInfo {
@@ -92,7 +93,10 @@ export interface Entity extends ALPosition {
   type: string; // TODO: can be one of 'monster', 'character'
   transform?: any;
   dead: boolean;
-  npc?: boolean;
+  /**
+   * Contains the NPC's id.
+   */
+  npc?: string;
   mtype?: MonsterName;
   /**
    * A list of conditions affecting the character
@@ -124,6 +128,8 @@ export interface GameInfo {
       groups: number[][][]
     }
   }
+  npcs: { [T in string]: any }; // TODO: Better info typing
+  maps: { [T in MapName]: any }; // TODO: Better info typing
   skills: { [T in SkillName]: SkillInfo };
   items: { [T in ItemName]: ItemInfo };
   monsters: { [id: string]: Monster };
@@ -171,7 +177,7 @@ declare global {
    */
   function compound(item1: number, item2: number, item3: number, scroll: number, offering?: number): void;
   function use(skill: SkillName, target?: Entity): void;
-  function use_skill(skill: SkillName, target?: Entity): void;
+  function use_skill(skill: SkillName, target?: Entity | string): void;
   function heal(entity: Entity): void;
   function attack(entity: Entity): Promise<any>;
   function loot(): void;
@@ -231,6 +237,47 @@ declare global {
   var on_party_invite: undefined | ((from: string) => void);
   var on_party_request: undefined | ((from: string) => void);
 }
+
+export type MapName =
+  | "tunnel"
+  | "abtesting"
+  | "resort_e"
+  | "goobrawl"
+  | "level2s"
+  | "winter_inn"
+  | "dungeon0"
+  | "cgallery"
+  | "halloween"
+  | "winterland"
+  | "old_bank"
+  | "level1"
+  | "level2"
+  | "level3"
+  | "level4"
+  | "level2n"
+  | "spookytown"
+  | "mansion"
+  | "cyberland"
+  | "woffice"
+  | "batcave"
+  | "bank"
+  | "arena"
+  | "hut"
+  | "old_main"
+  | "resort"
+  | "tavern"
+  | "desertland"
+  | "cave"
+  | "level2e"
+  | "winter_inn_rooms"
+  | "duelland"
+  | "original_main"
+  | "jail"
+  | "winter_cave"
+  | "test"
+  | "main"
+  | "level2w"
+  | "shellsisland"
 
 export type ClassName =
   | "mage"

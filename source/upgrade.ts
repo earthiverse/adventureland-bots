@@ -6,7 +6,7 @@ export function compoundItem(itemname: string, target_level: number) {
         if (npc.id == "newupgrade" && distance(character, {
             x: npc.position[0],
             y: npc.position[1]
-        }) < 300) {
+        }) < 350) {
             foundUpgrade = true;
             break;
         }
@@ -46,7 +46,7 @@ export function upgradeItem(itemname: string, target_level: number) {
         if (npc.id == "newupgrade" && distance(character, {
             x: npc.position[0],
             y: npc.position[1]
-        }) < 300) {
+        }) < 350) {
             foundUpgrade = true;
             break;
         }
@@ -71,9 +71,48 @@ export function upgradeItem(itemname: string, target_level: number) {
             } else if (grade == 2) {
                 scrolls = findItems("scroll2");
             }
-            if (scrolls)
-                upgrade(i, scrolls[0][0])
-                return;
+            if (scrolls) upgrade(i, scrolls[0][0])
+            return;
         }
+    }
+}
+
+/**
+ * This function will upgrade items in your inventory if there are more than one of the same item. It will upgrade until one breaks, keeping the higher level item, and upgrading the lower level item.
+ */
+export function upgradeIfMany() {
+    let foundUpgrade = false;
+    for (let npc of parent.npcs) {
+        if (npc.id == "newupgrade" && distance(character, {
+            x: npc.position[0],
+            y: npc.position[1]
+        }) < 350) {
+            foundUpgrade = true;
+            break;
+        }
+    }
+    if (!foundUpgrade) return; // Can't upgrade, nobody is near.
+    if (character.q && character.q["upgrade"]) return; // Already upgrading
+    for (let i = 0; i < 42; i++) {
+        if (!character.items[i]) continue; // No item in this slot
+        if (!["weapon", "chest", "shoes"].includes(G.items[character.items[i].name].type)) continue; // Not upgradable
+
+        let items = findItems(character.items[i].name)
+        if (items.length == 1) continue; // We only have one.
+
+        let minimumLevel = Math.min(...items.map(([, { level }]) => level)) // Find the minimum level
+        items = findItemsWithLevel(character.items[i].name, minimumLevel);
+
+        let grade = determineGrade(items[0][1]);
+        let scrolls;
+        if (grade == 0) {
+            scrolls = findItems("scroll0");
+        } else if (grade == 1) {
+            scrolls = findItems("scroll1");
+        } else if (grade == 2) {
+            scrolls = findItems("scroll2");
+        }
+        if (scrolls) upgrade(items[0][0], scrolls[0][0])
+        return;
     }
 }

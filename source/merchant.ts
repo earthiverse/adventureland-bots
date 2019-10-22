@@ -1,6 +1,6 @@
 import { Character } from './character'
 import { MonsterName } from './definitions/adventureland';
-import { compoundItem, upgradeItem } from './upgrade'
+import { compoundItem, upgradeItem, upgradeIfMany } from './upgrade'
 import { sellUnwantedItems, exchangeItems } from './trade';
 import { findItemsWithLevel, findItems } from './functions';
 import { isGetAccessor } from 'typescript';
@@ -111,6 +111,8 @@ class Merchant extends Character {
             // buyAndUpgrade("shoes")
             // buyAndUpgrade("helmet")
 
+            upgradeIfMany();
+
             super.mainLoop();
         } catch (error) {
             console.error(error);
@@ -127,6 +129,7 @@ class Merchant extends Character {
         // Nothing for now, merchants can't usually attack.
     }
 
+    private luckedCharacters: any = {}
     public luckLoop(): void {
         if (!character.s || !character.s["mluck"] || character.s["mluck"].ms < 10000 || character.s["mluck"].f != character.name) {
             // Luck ourself
@@ -135,18 +138,19 @@ class Merchant extends Character {
             // Luck others
             for (let id in parent.entities) {
                 let luckTarget = parent.entities[id];
-                if (!luckTarget.player || luckTarget.role) continue; // not a player
-                if (luckTarget.role) continue; // not an NPC
+                if (!luckTarget.player || luckTarget.npc) continue; // not a player
                 if (distance(character, luckTarget) > 250) continue; // out of range
+                if (this.luckedCharacters[luckTarget.name] && this.luckedCharacters[luckTarget.name] >= Date.now() - character.ping) continue; // Prevent spamming luck
                 if (!luckTarget.s || !luckTarget.s["mluck"] || luckTarget.s["mluck"].ms < 300000 || luckTarget.s["mluck"].f != character.name) {
                     use_skill("mluck", luckTarget);
                     game_log("lucking " + luckTarget.name)
+                    this.luckedCharacters[luckTarget.name] = Date.now();
                     break;
                 }
             }
         }
 
-        setTimeout(() => { this.luckLoop() }, Math.max(50, parent.next_skill["mluck"] - Date.now()));
+        setTimeout(() => { this.luckLoop() }, Math.max(100, parent.next_skill["mluck"] - Date.now()));
     }
 }
 

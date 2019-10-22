@@ -1,7 +1,7 @@
 import { ItemName } from "./definitions/adventureland";
 import { findItems } from "./functions";
 let defaultItemsToGiveToMerchant: ItemName[] = ["monstertoken",
-    "gem0", "gem1", "lostearring", "candycane", "candy0", "candy1", // Tradables
+    "gem0", "gem1", "lostearring", "candycane", "candy0", "candy1", "seashell", // Tradables
     "coat1", "shoes1", "pants1", "gloves1", "helmet1", "cape", "handofmidas", // Wearables
     "bataxe", // Weapons
     "shoes", "helmet", "coat", "gloves", "pants", // Common clothing
@@ -20,11 +20,11 @@ let defaultItemsToSell: ItemName[] = ["hpamulet", "hpbelt", // HP stuff
 
 export function sellUnwantedItems(itemsToSell: ItemName[] = defaultItemsToSell) {
     let foundNPCBuyer = false;
-    for (let npc of parent.npcs) {
-        if (["fancypots"].includes(npc.id) && distance(character, { // TODO: Add other NPCs that buy things
+    for (let npc of parent.npcs.filter(npc => G.npcs[npc.id].role == "merchant")) {
+        if (distance(character, {
             x: npc.position[0],
             y: npc.position[1]
-        }) < 250) {
+        }) < 350) {
             foundNPCBuyer = true;
             break;
         }
@@ -80,6 +80,7 @@ export function transferGoldToMerchant(merchantName: string, minimumGold: number
 }
 
 // TODO: Add check for shells
+// TODO: Add check for earrings
 export function exchangeItems(exchangeItems: ItemName[] = ["gem0", "gem1", "armorbox", "weaponbox", "candy0", "candy1", "candycane"]) {
     let foundUpgrade = false;
     for (let npc of parent.npcs) {
@@ -106,4 +107,8 @@ export function exchangeItems(exchangeItems: ItemName[] = ["gem0", "gem1", "armo
             return;
         }
     }
+}
+
+export function buyPots(hpPotName: ItemName, hpPotQuantity: number, mpPotName: ItemName, mpPotQuantity: number) {
+
 }

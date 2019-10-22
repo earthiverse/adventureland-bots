@@ -5,15 +5,14 @@ import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } fr
 class Warrior extends Character {
     targetPriority: MonsterName[] = [
         "hen", "rooster", "goo", "crab", "bee", "osnake", "snake", "porcupine", "squigtoad", "croc", "rat", "minimush", "armadillo", "squig", "poisio", "crabx", "arcticbee", "bat", // #3: Easy to kill monsters
-        "scorpion", "tortoise", "spider", // #2: Not that easy to kill, but killable monsters
+        "scorpion", "tortoise", "spider", "mvampire", // #2: Not that easy to kill, but killable monsters
         "goldenbat", "snowman", "mrgreen", "mrpumpkin", // #1: Event monsters
     ];
-    mainTarget: MonsterName = "bat";
+    mainTarget: MonsterName = "porcupine";
 
     run(): void {
         super.run();
         this.chargeLoop();
-        this.sendMonsterHuntInfoLoop(parent.party_list);
     }
 
     mainLoop(): void {

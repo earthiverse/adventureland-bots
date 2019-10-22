@@ -13,19 +13,18 @@ export function determineGrade(item: ItemInfo) {
     }
 }
 
+export function sendMassCM(names: string[], data: any) {
+    for (let name of names) {
+        send_local_cm(name, data);
+    }
+}
+
 export function buyAndUpgrade(itemName: string) {
     let items = findItemsWithLevel(itemName, 9)
     if (items.length > 0) return; // We have it!
 
     items = findItems(itemName);
     if (items.length == 0) buy_with_gold(itemName, 1); // Buy one if we don't have any to upgrade
-}
-
-export function getMonsterhuntTarget(): MonsterName {
-    if (character.s && character.s.monsterhunt)
-        return character.s.monsterhunt.id;
-
-    return null;
 }
 
 export function findItems(name: string): [number, ItemInfo][] {
