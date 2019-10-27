@@ -11,7 +11,7 @@ let defaultItemsToGiveToMerchant: ItemName[] = ["monstertoken",
     "dexbelt", "strbelt", "intbelt", // Belts
     "wbook0", "quiver", // Offhands
     "orbg", // Orbs
-    "whiteegg", "beewings", "bfur", "rattail", "spores", "poison", "carrot", "smush", "gslime", "cscale", "snakefang", "crabclaw", "ascale", "spidersilk" // Things monsters drop
+    "whiteegg", "beewings", "bfur", "rattail", "spores", "poison", "carrot", "smush", "gslime", "cscale", "snakefang", "crabclaw", "ascale", "spidersilk", "shadowstone" // Things monsters drop
 ];
 let defaultItemsToSell: ItemName[] = ["hpamulet", "hpbelt", // HP stuff
     "vitring", "vitearring", // Vit stuff

@@ -10,7 +10,9 @@ class Merchant extends Character {
     protected mainLoop(): void {
         try {
             // Movement
-            if (!smart.moving) { // TODO: Add a check that we're not using our pathfinding.
+            if (this.holdMovement) {
+                // Don't move.
+            } else if (!smart.moving) { // TODO: Add a check that we're not using our pathfinding.
                 super.avoidAggroMonsters();
                 super.avoidAttackingMonsters();
 
@@ -27,14 +29,14 @@ class Merchant extends Character {
 
                 // full inventory
                 let full = true;
-                for(let i = 0; i < 42; i++) {
-                    if(parent.character.items[i]) continue;
+                for (let i = 0; i < 42; i++) {
+                    if (parent.character.items[i]) continue;
                     full = false;
                     break;
                 }
 
                 // travel back and forth between characters
-                if(full) {
+                if (full) {
                     game_log("moving to the bank")
                     smart_move("bank")
                 } else if (event) {
@@ -76,7 +78,7 @@ class Merchant extends Character {
                     if (!character.items[i]) continue;
 
                     // Items0
-                    if (["rattail", "pumpkinspice", "beewings", "whiteegg", "smoke", "cscale", "gslime", "bfur", "spidersilk"].includes(character.items[i].name)) {
+                    if (["rattail", "pumpkinspice", "beewings", "whiteegg", "smoke", "poison", "spores", "snakefang", "cscale", "gslime", "bfur", "spidersilk", "seashell", "candycane", "carrot", "shadowstone"].includes(character.items[i].name)) {
                         bank_store(i, "items0")
                     }
 
@@ -86,12 +88,12 @@ class Merchant extends Character {
                     // }
 
                     // Items2
-                    if(["dexearring", "intearring", "strearring", "dexamulet", "intamulet", "stramulet", "wbook0", "wbook1", "lostearring"].includes(character.items[i].name)) {
+                    if (["dexearring", "intearring", "strearring", "dexamulet", "intamulet", "stramulet", "wbook0", "wbook1", "lostearring"].includes(character.items[i].name)) {
                         bank_store(i, "items2")
                     }
 
                     // Items3
-                    if(["lantern", "talkingskull", "jacko", "swordofthedead", "daggerofthedead", "staffofthedead", "bowofthedead", "wbook0", "wbook1"].includes(character.items[i].name)) {
+                    if (["lantern", "talkingskull", "jacko", "swordofthedead", "daggerofthedead", "staffofthedead", "bowofthedead", "wbook0", "wbook1"].includes(character.items[i].name)) {
                         bank_store(i, "items3")
                     }
                 }

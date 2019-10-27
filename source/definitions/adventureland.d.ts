@@ -208,7 +208,7 @@ declare global {
   function get_targeted_monster(): Entity;
   function get_target_of(entity: Entity): Entity;
   function distance(position1: ALPosition, position2: ALPosition): number;
-  function smart_move(destination: ALPosition | MonsterName | string);
+  function smart_move(destination: ALPosition | MonsterName | string, callback?: () => void);
   function move(x: number, y: number): void;
   function xmove(x: number, y: number): void;
   function show_json(stuff: any): void;

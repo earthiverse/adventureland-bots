@@ -11,6 +11,8 @@ export abstract class Character {
     protected abstract mainTarget: MonsterName;
     protected movementQueue: ALPosition[] = [];
     protected movementTarget: MonsterName = null;
+    protected holdMovement = false;
+    protected holdAttack = false;
     protected pathfinder: Pathfinder = new Pathfinder(7);
     protected monsterhuntQuests: any = {};
     protected chests = new Set<string>()
@@ -60,6 +62,11 @@ export abstract class Character {
 
     protected attackLoop(): void {
         try {
+            if (this.holdAttack) {
+                // Don't attack
+                setTimeout(() => { this.attackLoop() }, 250);
+                return;
+            }
             let targets = this.getTargets(1);
             if (!targets || distance(targets[0], character) > character.range || character.mp < character.mp_cost) {
                 // No target
@@ -231,7 +238,7 @@ export abstract class Character {
             let angle_change: number = 1;
             while (!can_move_to(escapePosition.x, escapePosition.y)) {
                 angle_change *= -2;
-                escapePosition = calculateEscape(angle + angle_change * Math.PI/180, move_distance)
+                escapePosition = calculateEscape(angle + angle_change * Math.PI / 180, move_distance)
             }
         }
 
@@ -270,6 +277,7 @@ export abstract class Character {
         let monsterhunter: ALPosition = { map: "main", x: 126, y: -413 }
 
         // Update monster hunt info
+        // TODO: Add checks to see if we've already sent the data
         if (character.s && character.s.monsterhunt) {
             if (character.s.monsterhunt.c == 0 && this.monsterhuntQuests[parent.character.name] && this.monsterhuntQuests[parent.character.name].target) {
                 sendMassCM(parent.party_list, {
@@ -351,7 +359,7 @@ export abstract class Character {
 
     public getMonsterhuntTarget(): MonsterName {
         // Prevent returning a target if we don't have an active monster hunt target ourselves.
-        if(!character.s || !character.s.monsterhunt) return null;
+        if (!character.s || !character.s.monsterhunt) return null;
 
         // Party monster hunts
         let highestPriorityTarget = -1;

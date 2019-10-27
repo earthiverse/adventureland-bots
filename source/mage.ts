@@ -19,7 +19,9 @@ class Mage extends Character {
     mainLoop(): void {
         try {
             // Movement
-            if (smart.moving) {
+            if (this.holdMovement) {
+                // Don't move.
+            } else if (smart.moving) {
                 let mhTarget = this.getMonsterhuntTarget();
                 let targets = this.getTargets(1);
                 if (targets.length > 0 && targets[0].mtype == mhTarget && parent.distance(parent.character, targets[0]) < character.range) stop();
