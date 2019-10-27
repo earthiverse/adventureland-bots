@@ -231,7 +231,7 @@ export abstract class Character {
             let angle_change: number = 1;
             while (!can_move_to(escapePosition.x, escapePosition.y)) {
                 angle_change *= -2;
-                escapePosition = calculateEscape(angle + angle_change, move_distance)
+                escapePosition = calculateEscape(angle + angle_change * Math.PI/180, move_distance)
             }
         }
 
