@@ -4,11 +4,11 @@ import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } fr
 
 class Warrior extends Character {
     targetPriority: MonsterName[] = [
-        "hen", "rooster", "goo", "crab", "bee", "osnake", "snake", "porcupine", "squigtoad", "croc", "rat", "minimush", "armadillo", "squig", "poisio", "crabx", "arcticbee", "bat", // #3: Easy to kill monsters
+        "hen", "rooster", "goo", "crab", "bee", "osnake", "snake", "squigtoad", "croc", "rat", "minimush", "squig", "poisio", "crabx", "arcticbee", "bat", // #3: Easy to kill monsters
         "scorpion", "tortoise", "spider", "mvampire", // #2: Not that easy to kill, but killable monsters
         "goldenbat", "snowman", "mrgreen", "mrpumpkin", // #1: Event monsters
     ];
-    mainTarget: MonsterName = "porcupine";
+    mainTarget: MonsterName = "croc";
 
     run(): void {
         super.run();
@@ -19,7 +19,11 @@ class Warrior extends Character {
     mainLoop(): void {
         try {
             // Movement
-            if (!smart.moving) {
+            if (smart.moving) {
+                let mhTarget = this.getMonsterhuntTarget();
+                let targets = this.getTargets(1);
+                if (targets.length > 0 && targets[0].mtype == mhTarget && parent.distance(parent.character, targets[0]) < character.range) stop();
+            } else {
                 this.moveToMonsterhunt();
                 this.moveToMonsters();
             }

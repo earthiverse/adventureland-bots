@@ -4,8 +4,8 @@ import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } fr
 
 class Ranger extends Character {
     targetPriority: MonsterName[] = [
+        "stoneworm", "iceroamer", "cgoo", "boar", "spider", "scorpion", "tortoise",  // Low priority
         "hen", "rooster", "goo", "crab", "bee", "osnake", "snake", "porcupine", "squigtoad", "croc", "rat", "minimush", "armadillo", "squig", "poisio", "crabx", "arcticbee", "bat", // #3: Easy to kill monsters
-        "scorpion", "tortoise", "spider", "cgoo", "stoneworm", "boar", "iceroamer", // #2: Not that easy to kill, but killable monsters
         "goldenbat", "snowman", "mrgreen", "mrpumpkin", // #1: Event monsters
     ];
     mainTarget: MonsterName = "rat";
@@ -19,8 +19,12 @@ class Ranger extends Character {
     mainLoop(): void {
         try {
             // Movement
-            if (!smart.moving) {
-                // this.moveToMonsterhunt();
+            if (smart.moving) {
+                let mhTarget = this.getMonsterhuntTarget();
+                let targets = this.getTargets(1);
+                if (targets.length > 0 && targets[0].mtype == mhTarget && parent.distance(parent.character, targets[0]) < character.range) stop();
+            } else {
+                this.moveToMonsterhunt();
                 this.avoidAggroMonsters();
                 this.avoidAttackingMonsters();
                 this.moveToMonsters();
@@ -41,6 +45,11 @@ class Ranger extends Character {
     }
 
     superShotLoop(): void {
+        if (parent.character.mp < 400) {
+            // No MP
+            setTimeout(() => { this.superShotLoop() }, Math.max(1000, parent.next_skill["supershot"] - Date.now()));
+            return;
+        }
         // const potentialTargets = new Queue<Entity>((x, y) => x.priority - y.priority);
         let potentialTargets: Entity[] = [];
         for (let id in parent.entities) {

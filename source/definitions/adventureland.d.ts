@@ -141,6 +141,7 @@ declare global {
     distance(position1: ALPosition, position2: ALPosition)
     character: ICharacter;
     chests: { [chestID: string]: any };
+    S: { [eventMonsterName: string]: any };
     party_list: string[];
     party: { [name: string]: ICharacter };
     npcs: any[];

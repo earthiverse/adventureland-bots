@@ -4,7 +4,7 @@ import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } fr
 
 class Mage extends Character {
     targetPriority: MonsterName[] = [
-        "stoneworm", "iceroamer", "boar", "spider", "scorpion", "tortoise", "cgoo",  // Low priority
+        "stoneworm", "iceroamer", "cgoo", "boar", "spider", "scorpion", "tortoise",  // Low priority
         "hen", "rooster", "goo", "crab", "bee", "osnake", "snake", "porcupine", "squigtoad", "croc", "rat", "minimush", "armadillo", "squig", "poisio", "crabx", "arcticbee", "bat", // Normal Priority
         "frog", "goldenbat", "snowman", "mrgreen", "mrpumpkin", // High Priority
     ];
@@ -19,8 +19,12 @@ class Mage extends Character {
     mainLoop(): void {
         try {
             // Movement
-            if (!smart.moving) {
-                // this.moveToMonsterhunt();
+            if (smart.moving) {
+                let mhTarget = this.getMonsterhuntTarget();
+                let targets = this.getTargets(1);
+                if (targets.length > 0 && targets[0].mtype == mhTarget && parent.distance(parent.character, targets[0]) < character.range) stop();
+            } else {
+                this.moveToMonsterhunt();
                 super.avoidAggroMonsters();
                 super.avoidAttackingMonsters();
                 super.moveToMonsters();

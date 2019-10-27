@@ -269,15 +269,31 @@ export abstract class Character {
     public moveToMonsterhunt() {
         let monsterhunter: ALPosition = { map: "main", x: 126, y: -413 }
 
+        // Update monster hunt info
+        if (character.s && character.s.monsterhunt) {
+            if (character.s.monsterhunt.c == 0 && this.monsterhuntQuests[parent.character.name] && this.monsterhuntQuests[parent.character.name].target) {
+                sendMassCM(parent.party_list, {
+                    "message": "quest",
+                    "target": undefined
+                })
+            } else if (this.monsterhuntQuests[parent.character.name] !== character.s.monsterhunt.id) {
+                sendMassCM(parent.party_list, {
+                    "message": "quest",
+                    "target": character.s.monsterhunt.id
+                });
+            }
+        } else if (this.monsterhuntQuests && this.monsterhuntQuests[parent.character.name] && this.monsterhuntQuests[parent.character.name].target) {
+            sendMassCM(parent.party_list, {
+                "message": "quest",
+                "target": undefined
+            })
+        }
+
         // Turn in
         if (character.s.monsterhunt && character.s.monsterhunt.c == 0) {
             if (distance(character, monsterhunter) < 250) {
                 parent.socket.emit('monsterhunt')
             } else if (!smart.moving) {
-                sendMassCM(parent.party_list, {
-                    "message": "quest",
-                    "target": undefined
-                })
                 smart_move(monsterhunter)
             }
             return
@@ -299,15 +315,13 @@ export abstract class Character {
         if (monsterHuntTarget) {
             let targets = this.getTargets(1)
             if (targets.length == 0 || targets[0].mtype != monsterHuntTarget) {
-                if (this.targetPriority.includes(character.s.monsterhunt.id)) {
-                    sendMassCM(parent.party_list, {
-                        "message": "quest",
-                        "target": character.s.monsterhunt.id
-                    });
+                if (this.targetPriority.includes(monsterHuntTarget)) {
                     // It's in our list of monsters, go go go!
-                    smart_move(character.s.monsterhunt.id)
+                    set_message("MH: " + monsterHuntTarget)
+                    smart_move(monsterHuntTarget)
                 } else if (targets.length != 0 && targets[0].mtype != this.mainTarget) {
                     // Not in our target priority, so it's probably too dangerous. Go to our default target
+                    set_message("MH Idle: " + this.mainTarget)
                     smart_move(this.mainTarget)
                 }
             }
@@ -318,6 +332,7 @@ export abstract class Character {
     public parse_cm(characterName: string, data: any) {
         if (!parent.party_list.includes(characterName)) {
             // Ignore messages from players not in our party
+            game_log("denied request from " + characterName + ": " + JSON.stringify(data));
             return;
         }
 
@@ -325,10 +340,19 @@ export abstract class Character {
             this.monsterhuntQuests[characterName] = {
                 "target": data.target
             }
+        } else if (data.message = "loot") {
+            data.chests.forEach((chest: string) => {
+                this.chests.add(chest)
+            });
+        } else {
+            game_log("unknown request: " + JSON.stringify(data));
         }
     }
 
     public getMonsterhuntTarget(): MonsterName {
+        // Prevent returning a target if we don't have an active monster hunt target ourselves.
+        if(!character.s || !character.s.monsterhunt) return null;
+
         // Party monster hunts
         let highestPriorityTarget = -1;
         for (let questInfo in this.monsterhuntQuests) {

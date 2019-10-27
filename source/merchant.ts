@@ -2,8 +2,6 @@ import { Character } from './character'
 import { MonsterName } from './definitions/adventureland';
 import { compoundItem, upgradeItem, upgradeIfMany } from './upgrade'
 import { sellUnwantedItems, exchangeItems } from './trade';
-import { findItemsWithLevel, findItems } from './functions';
-import { isGetAccessor } from 'typescript';
 
 class Merchant extends Character {
     targetPriority: MonsterName[] = []; // Nothing for now, merchants can't usually attack.
@@ -15,6 +13,17 @@ class Merchant extends Character {
             if (!smart.moving) { // TODO: Add a check that we're not using our pathfinding.
                 super.avoidAggroMonsters();
                 super.avoidAttackingMonsters();
+
+                // event monsters
+                let event = false;
+                for (let eventMonsterName in parent.S) {
+                    let eventMonster: any = parent.S[eventMonsterName]
+                    if (!eventMonster.live) continue; // Not live
+                    if (eventMonster.hp / eventMonster.max_hp > 0.9) continue; // Nobody's attacking it
+
+                    event = true;
+                    if (parent.distance(parent.character, eventMonster) > 250) smart_move(eventMonster);
+                }
 
                 // full inventory
                 let full = true;
@@ -28,6 +37,8 @@ class Merchant extends Character {
                 if(full) {
                     game_log("moving to the bank")
                     smart_move("bank")
+                } else if (event) {
+                    // We're dealing with an event, don't move to characters.
                 } else if (parent.distance(parent.character, parent.party["earthiverse"]) < 250) {
                     game_log("moving to town from earthiverse")
                     smart_move({ map: "main", x: -50, y: -390 })
@@ -62,7 +73,6 @@ class Merchant extends Character {
                     bank_deposit(character.gold - 25000000)
                 }
                 for (let i = 0; i < 42; i++) {
-                    let item = character.items[i];
                     if (!character.items[i]) continue;
 
                     // Items0
