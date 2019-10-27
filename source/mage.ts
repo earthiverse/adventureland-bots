@@ -13,7 +13,7 @@ class Mage extends Character {
     run(): void {
         super.run();
         this.energizeLoop();
-        // this.sendMonsterHuntInfoLoop(parent.party_list);
+        this.sendLootLoop();
     }
 
     mainLoop(): void {

@@ -13,6 +13,7 @@ class Warrior extends Character {
     run(): void {
         super.run();
         this.chargeLoop();
+        this.sendLootLoop();
     }
 
     mainLoop(): void {

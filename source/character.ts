@@ -13,16 +13,49 @@ export abstract class Character {
     protected movementTarget: MonsterName = null;
     protected pathfinder: Pathfinder = new Pathfinder(7);
     protected monsterhuntQuests: any = {};
+    protected chests = new Set<string>()
 
     protected mainLoop() {
-        loot();
+        // loot();
         setTimeout(() => { this.mainLoop(); }, 250);
     };
+
     public run() {
         this.healLoop();
         this.attackLoop();
         this.moveLoop();
         this.mainLoop();
+    }
+
+    protected sendLootLoop() {
+        let chests = [];
+        let i = 0;
+        for (let chestID in parent.chests) {
+            chests.push(chestID);
+            if (++i > 50) break;
+        }
+        if (i > 0) {
+            send_local_cm("earthMer", {
+                "message": "loot",
+                "chests": chests
+            })
+        }
+        setTimeout(() => { this.sendLootLoop() }, 1000);
+    }
+
+    protected lootLoop() {
+        // Don't loot in the bank
+        if (parent.character.map == "bank") {
+            setTimeout(() => { this.lootLoop() }, 1000);
+            return;
+        }
+        let i = 0;
+        for (let chestID of this.chests) {
+            parent.socket.emit("open_chest", { id: chestID });
+            this.chests.delete(chestID)
+            if (++i > 20) break;
+        }
+        setTimeout(() => { this.lootLoop() }, 1000);
     }
 
     protected attackLoop(): void {

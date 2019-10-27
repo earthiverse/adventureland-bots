@@ -16,8 +16,19 @@ class Merchant extends Character {
                 super.avoidAggroMonsters();
                 super.avoidAttackingMonsters();
 
+                // full inventory
+                let full = true;
+                for(let i = 0; i < 42; i++) {
+                    if(parent.character.items[i]) continue;
+                    full = false;
+                    break;
+                }
+
                 // travel back and forth between characters
-                if (parent.distance(parent.character, parent.party["earthiverse"]) < 250) {
+                if(full) {
+                    game_log("moving to the bank")
+                    smart_move("bank")
+                } else if (parent.distance(parent.character, parent.party["earthiverse"]) < 250) {
                     game_log("moving to town from earthiverse")
                     smart_move({ map: "main", x: -50, y: -390 })
                 } else if (parent.distance(parent.character, parent.party["earthMag"]) < 250) {
@@ -44,6 +55,38 @@ class Merchant extends Character {
             sellUnwantedItems();
             exchangeItems();
 
+            // Bank stuff
+            // TODO: Check for things we can upgrade
+            if (parent.character.map == "bank") {
+                if (parent.character.gold > 25000000) {
+                    bank_deposit(character.gold - 25000000)
+                }
+                for (let i = 0; i < 42; i++) {
+                    let item = character.items[i];
+                    if (!character.items[i]) continue;
+
+                    // Items0
+                    if (["rattail", "pumpkinspice", "beewings", "whiteegg", "smoke", "cscale", "gslime", "bfur", "spidersilk"].includes(character.items[i].name)) {
+                        bank_store(i, "items0")
+                    }
+
+                    // // Items1
+                    // if(["dexearring", "intearring", "strearring", "dexamulet", "intamulet", "stramulet"].includes(character.items[i].name)) {
+                    //     bank_store(i, "items2")
+                    // }
+
+                    // Items2
+                    if(["dexearring", "intearring", "strearring", "dexamulet", "intamulet", "stramulet", "wbook0", "wbook1", "lostearring"].includes(character.items[i].name)) {
+                        bank_store(i, "items2")
+                    }
+
+                    // Items3
+                    if(["lantern", "talkingskull", "jacko", "swordofthedead", "daggerofthedead", "staffofthedead", "bowofthedead", "wbook0", "wbook1"].includes(character.items[i].name)) {
+                        bank_store(i, "items3")
+                    }
+                }
+            }
+
             //// Wearables
             // Rings
             compoundItem("dexring", 3);
@@ -66,6 +109,7 @@ class Merchant extends Character {
             compoundItem("strbelt", 3);
 
             // Offhands
+            upgradeItem("quiver", 8);
             upgradeItem("t2quiver", 5);
             compoundItem("wbook0", 3);
             compoundItem("wbook1", 2);
@@ -75,6 +119,8 @@ class Merchant extends Character {
 
             // Orbs
             compoundItem("orbg", 2);
+            compoundItem("jacko", 2);
+            compoundItem("lantern", 2);
 
             //// Weapons
             upgradeItem("firestaff", 7);
@@ -123,6 +169,7 @@ class Merchant extends Character {
     public run(): void {
         super.run();
         this.luckLoop();
+        this.lootLoop();
     }
 
     protected attackLoop(): void {

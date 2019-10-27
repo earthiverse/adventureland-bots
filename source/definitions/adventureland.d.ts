@@ -140,6 +140,7 @@ declare global {
     clear_game_logs(): void;
     distance(position1: ALPosition, position2: ALPosition)
     character: ICharacter;
+    chests: { [chestID: string]: any };
     party_list: string[];
     party: { [name: string]: ICharacter };
     npcs: any[];
@@ -159,6 +160,8 @@ declare global {
   var clear_game_logs: () => void;
   var handle_death: () => void;
   function respawn(): void;
+  function bank_deposit(gold: number);
+  function bank_store(inventoryPosition: number, bankPack?: string, bankPackPosition?: number);
   function damage_multiplier(armor: number);
   function start_character(name: string, script: string): void;
   function stop_character(name: string, script: string): void;
