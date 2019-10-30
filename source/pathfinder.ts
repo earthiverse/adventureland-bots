@@ -1,5 +1,27 @@
-import { ALPosition } from "./definitions/adventureland";
+import { ALPosition, MonsterName } from "./definitions/adventureland";
+import { Character } from "./character";
 let PF = require("pathfinding")
+
+let saferDestinations: any = {
+    "crab": {
+        "map": "main",
+        "x": -1100,
+        "y": -100,
+        "holdMovement": false
+    },
+    "prat": {
+        "map": "level1",
+        "x": -296,
+        "y": 557,
+        "holdMovement": true
+    },
+    "xscorpion": {
+        "map": "halloween",
+        "x": -236,
+        "y": 568,
+        "holdMovement": true
+    }
+}
 
 export class Pathfinder {
     /**
@@ -10,12 +32,32 @@ export class Pathfinder {
      * Number(s) that indicate how much padding to give to walls.
      */
     private padding: number;
-
     private grids: any = {};
+    public movementTarget: MonsterName | string;
 
     constructor(factor: number = 4, padding: number = 4) {
         this.factor = factor;
         this.padding = padding;
+    }
+
+    public saferMove(c: Character, to: MonsterName | string) {
+        if (smart.moving) return; // Already moving somewhere
+
+        if (saferDestinations[to]) {
+            if (distance(parent.character, saferDestinations[to]) < 50) return; // Already here
+            smart_move(saferDestinations[to], () => {
+                c.holdAttack = false;
+            })
+            c.holdAttack = true;
+            c.holdMovement = saferDestinations[to].holdMovement;
+            this.movementTarget = to;
+        } else {
+            smart_move(to, () => {
+                c.holdAttack = false;
+            });
+            c.holdAttack = true;
+            c.holdMovement = false;
+        }
     }
 
     public findMovements(from: ALPosition, to: ALPosition): ALPosition[] {
@@ -23,8 +65,13 @@ export class Pathfinder {
             game_log("Cross map pathfinding is not yet supported!");
             return;
         }
-        if (!from.map) from.map = character.map; // Use the map on the character
+        if (!from.map) from.map = parent.character.map; // Use the map on the character
         let mapName = from.map;
+
+        if (from.real_x) from.x = from.real_x
+        if (from.real_y) from.y = from.real_y
+        if (to.real_x) to.x = to.real_x
+        if (to.real_y) to.y = to.real_y
 
         if (!this.grids[from.map]) this.prepareMap(from.map); // Prepare the map if we haven't prepared it yet.
         let grid = this.grids[from.map].clone();

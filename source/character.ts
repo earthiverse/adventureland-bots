@@ -10,9 +10,8 @@ export abstract class Character {
     protected abstract targetPriority: MonsterName[];
     protected abstract mainTarget: MonsterName;
     protected movementQueue: ALPosition[] = [];
-    protected movementTarget: MonsterName = null;
-    protected holdMovement = false;
-    protected holdAttack = false;
+    public holdMovement = false;
+    public holdAttack = false;
     protected pathfinder: Pathfinder = new Pathfinder(7);
     protected monsterhuntQuests: any = {};
     protected chests = new Set<string>()
@@ -62,13 +61,13 @@ export abstract class Character {
 
     protected attackLoop(): void {
         try {
-            if (this.holdAttack) {
+            let targets = this.getTargets(1);
+            if (this.holdAttack && targets.length > 0 && targets[0].target != parent.character.name) {
                 // Don't attack
                 setTimeout(() => { this.attackLoop() }, 250);
                 return;
             }
-            let targets = this.getTargets(1);
-            if (!targets || distance(targets[0], character) > character.range || character.mp < character.mp_cost) {
+            if (targets.length == 0 || distance(targets[0], parent.character) > parent.character.range || parent.character.mp < parent.character.mp_cost) {
                 // No target
                 setTimeout(() => { this.attackLoop() }, Math.max(50, parent.next_skill["attack"] - Date.now()));
                 return;
@@ -93,14 +92,14 @@ export abstract class Character {
                 // No movements in the queue, do nothing.
                 setTimeout(() => { this.moveLoop() }, 250); // TODO: move this 250 cooldown to a setting.
                 return;
-            } else if (character.moving) {
+            } else if (parent.character.moving) {
                 // We're already moving, don't move somewhere new.
                 setTimeout(() => { this.moveLoop() }, 250) // TODO: Instead of 250, base it on how long it will take to walk to where we are going. (x && y && going_x && going_y && speed)
                 return;
             }
 
             let nextMovement = this.movementQueue[0];
-            if (nextMovement.map == character.map && can_move_to(nextMovement.x, nextMovement.y)) {
+            if (nextMovement.map == parent.character.map && can_move_to(nextMovement.x, nextMovement.y)) {
                 // We can move to the next place in the queue, so let's start moving there.
                 move(nextMovement.x, nextMovement.y)
 
@@ -118,7 +117,7 @@ export abstract class Character {
 
     protected healLoop(): void {
         try {
-            if (character.rip) {
+            if (parent.character.rip) {
                 // Respawn if we're dead
                 respawn();
                 setTimeout(() => { this.healLoop() }, 250) // TODO: Find out something that tells us how long we have to wait before respawning.
@@ -131,8 +130,8 @@ export abstract class Character {
             let useHpPot: ItemName = null;
 
             // TODO: find last potion in inventory
-            for (let i = character.items.length - 1; i >= 0; i--) {
-                let item = character.items[i];
+            for (let i = parent.character.items.length - 1; i >= 0; i--) {
+                let item = parent.character.items[i];
                 if (!item) continue;
 
                 if (!useHpPot && hpPots.includes(item.name)) {
@@ -149,15 +148,15 @@ export abstract class Character {
                 }
             }
 
-            let hp_ratio = character.hp / character.max_hp
-            let mp_ratio = character.mp / character.max_mp
-            if (useHpPot == "hpot0" && (character.max_hp - character.hp >= 200 || character.hp < 50)) {
+            let hp_ratio = parent.character.hp / parent.character.max_hp
+            let mp_ratio = parent.character.mp / parent.character.max_mp
+            if (useHpPot == "hpot0" && hp_ratio <= mp_ratio && (parent.character.max_hp - parent.character.hp >= 200 || parent.character.hp < 50)) {
                 use_skill("use_hp")
-            } else if (useHpPot == "hpot1" && (character.max_hp - character.hp >= 400 || character.hp < 50)) {
+            } else if (useHpPot == "hpot1" && hp_ratio <= mp_ratio && (parent.character.max_hp - parent.character.hp >= 400 || parent.character.hp < 50)) {
                 use_skill("use_hp")
-            } else if (useMpPot == "mpot0" && (character.max_mp - character.mp >= 300 || character.mp < 50)) {
+            } else if (useMpPot == "mpot0" && mp_ratio < hp_ratio && (parent.character.max_mp - parent.character.mp >= 300 || parent.character.mp < 50)) {
                 use_skill("use_mp")
-            } else if (useMpPot == "mpot1" && (character.max_mp - character.mp >= 500 || character.mp < 50)) {
+            } else if (useMpPot == "mpot1" && mp_ratio < hp_ratio && (parent.character.max_mp - parent.character.mp >= 500 || parent.character.mp < 50)) {
                 use_skill("use_mp")
             } else if (useHpPot == null && hp_ratio != 1 && hp_ratio <= mp_ratio) {
                 // Even if we don't have a potion, use_hp will heal for 50 hp.
@@ -181,6 +180,7 @@ export abstract class Character {
             let potentialTarget = parent.entities[id];
             if (potentialTarget.type != "monster") continue; // Not a monster
             if (potentialTarget.aggro == 0) continue; // Not an aggressive monster
+            if (potentialTarget.target && potentialTarget.target != parent.character.name) continue; // Targeting someone else
             let d = distance(character, potentialTarget);
             if (d < closestDistance) {
                 closestEntity = potentialTarget;
@@ -191,11 +191,11 @@ export abstract class Character {
         if (closestDistance > buffer) return; // No close monsters
 
         let escapePosition: ALPosition;
-        let angle = Math.atan2((closestEntity.y - character.y), (closestEntity.x - character.x));
-        let move_distance = closestDistance - buffer
+        let angle = Math.atan2(parent.character.real_y - closestEntity.real_y, parent.character.real_x - closestEntity.real_x);
+        let move_distance = buffer - closestDistance
         let x = Math.cos(angle) * move_distance
         let y = Math.sin(angle) * move_distance
-        escapePosition = { x: character.x + x, y: character.y + y };
+        escapePosition = { x: parent.character.real_x + x, y: parent.character.real_y + y };
 
         if (can_move_to(escapePosition.x, escapePosition.y)) {
             move(escapePosition.x, escapePosition.y)
@@ -205,10 +205,11 @@ export abstract class Character {
     }
 
     protected avoidAttackingMonsters(): void {
+        // Find all monsters attacking us
         let attackingMonsters: Entity[] = [];
         for (let id in parent.entities) {
             let potentialTarget = parent.entities[id];
-            if (potentialTarget.target != character.name) continue; // Not targeting us
+            if (potentialTarget.target != parent.character.name) continue; // Not targeting us
 
             attackingMonsters.push(potentialTarget);
         }
@@ -217,32 +218,42 @@ export abstract class Character {
             attackingMonsters.push(currentTarget);
         }
 
-        // TODO: geometry to move away from closest monster attacking us
-        let minDistance = 99999;
+        if (!attackingMonsters) return; // There aren't any monsters attacking us
+
+        // Find the closest monster of those attacking us
+        let minDistance = 0;
         let escapePosition: ALPosition;
+        let minTarget: Entity = null;
         for (let target of attackingMonsters) {
             let d = distance(character, target);
             if (d > (target.range + target.speed)) continue; // We're still far enough away to not get attacked
-            if (d > minDistance) continue; // There's another target that's closer
+            if (target.hp < parent.character.attack * 0.7 * 0.9 * damage_multiplier(target.armor - parent.character.apiercing)) continue // We can kill it in one shot, don't move.
+            if (d < minDistance) continue; // There's another target that's closer
+            minDistance = d;
+            minTarget = target;
+        }
 
-            // TODO: Convert this to atan2
-            // TODO: Implement searching by changing the angle, similar to the last bot.
-            let angle: number = Math.atan2(target.y - character.y, target.x - character.x);
-            let move_distance: number = d - (character.range - (0.25 * target.speed)) // TODO: Is this 0.25 smart?
+        if (!minTarget) return; // We're far enough away not to get attacked
+
+        // Move away from the closest monster
+        let angle: number = Math.atan2(parent.character.real_y - minTarget.real_y, parent.character.real_x - minTarget.real_x);
+        let moveDistance: number = minTarget.range + minTarget.speed - (minDistance / 2)
             function calculateEscape(angle: number, move_distance: number): ALPosition {
                 let x = Math.cos(angle) * move_distance
                 let y = Math.sin(angle) * move_distance
-                return { x: character.x + x, y: character.y + y };
+            return { x: parent.character.real_x + x, y: parent.character.real_y + y };
             }
-            escapePosition = calculateEscape(angle, move_distance);
-            let angle_change: number = 1;
-            while (!can_move_to(escapePosition.x, escapePosition.y)) {
-                angle_change *= -2;
-                escapePosition = calculateEscape(angle + angle_change * Math.PI / 180, move_distance)
+        escapePosition = calculateEscape(angle, moveDistance);
+        let angleChange: number = 0;
+        while (!can_move_to(escapePosition.x, escapePosition.y) && angleChange < 180) {
+            if (angleChange <= 0) {
+                angleChange = (-angleChange) + 1;
+            } else {
+                angleChange = -angleChange;
             }
+            escapePosition = calculateEscape(angle + (angleChange * Math.PI / 180), moveDistance)
+            //game_log("angle: " + (angle + (angleChange * Math.PI / 180)) + "x: " + escapePosition.x + ", y: " + escapePosition.y)
         }
-
-        if (!escapePosition) return; // We're safe where we are right now
 
         if (can_move_to(escapePosition.x, escapePosition.y)) {
             move(escapePosition.x, escapePosition.y)
@@ -253,22 +264,22 @@ export abstract class Character {
 
     public moveToMonsters(): void {
         let targets = this.getTargets(1);
-        if (targets && distance(character, targets[0]) < character.range)
+        if (targets && distance(parent.character, targets[0]) < parent.character.range)
             return; // We have a target, and it's in range.
 
-        if (can_move_to(targets[0].x, targets[0].y)) {
+        if (can_move_to(targets[0].real_x, targets[0].real_y)) {
             // Move normally to target
-            move(targets[0].x, targets[0].y);
+            move(targets[0].real_x, targets[0].real_y);
         } else {
             try {
                 // Pathfind to target
                 game_log("pathfinding to target")
-                let path = this.pathfinder.findNextMovement(character, targets[0]);
+                let path = this.pathfinder.findNextMovement(parent.character, targets[0]);
                 move(path.x, path.y);
             } catch (error) {
                 // Our custom pathfinding failed, use the game's smart move.
                 game_log("smart moving to target")
-                xmove(targets[0].x, targets[0].y);
+                xmove(targets[0].real_x, targets[0].real_y);
             }
         }
     }
@@ -277,20 +288,19 @@ export abstract class Character {
         let monsterhunter: ALPosition = { map: "main", x: 126, y: -413 }
 
         // Update monster hunt info
-        // TODO: Add checks to see if we've already sent the data
-        if (character.s && character.s.monsterhunt) {
-            if (character.s.monsterhunt.c == 0 && this.monsterhuntQuests[parent.character.name] && this.monsterhuntQuests[parent.character.name].target) {
+        if (parent.character.s && parent.character.s.monsterhunt) {
+            if (parent.character.s.monsterhunt.c == 0 && this.monsterhuntQuests[parent.character.name] && this.monsterhuntQuests[parent.character.name].target) {
                 sendMassCM(parent.party_list, {
                     "message": "quest",
                     "target": undefined
                 })
-            } else if (this.monsterhuntQuests[parent.character.name] !== character.s.monsterhunt.id) {
+            } else if (!this.monsterhuntQuests[parent.character.name] || (this.monsterhuntQuests[parent.character.name] && this.monsterhuntQuests[parent.character.name].target !== parent.character.s.monsterhunt.id)) {
                 sendMassCM(parent.party_list, {
                     "message": "quest",
-                    "target": character.s.monsterhunt.id
+                    "target": parent.character.s.monsterhunt.id
                 });
             }
-        } else if (this.monsterhuntQuests && this.monsterhuntQuests[parent.character.name] && this.monsterhuntQuests[parent.character.name].target) {
+        } else if (this.monsterhuntQuests[parent.character.name] && this.monsterhuntQuests[parent.character.name].target) {
             sendMassCM(parent.party_list, {
                 "message": "quest",
                 "target": undefined
@@ -298,18 +308,18 @@ export abstract class Character {
         }
 
         // Turn in
-        if (character.s.monsterhunt && character.s.monsterhunt.c == 0) {
-            if (distance(character, monsterhunter) < 250) {
+        if (parent.character.s.monsterhunt && parent.character.s.monsterhunt.c == 0) {
+            if (distance(parent.character, monsterhunter) < 250) {
                 parent.socket.emit('monsterhunt')
             } else if (!smart.moving) {
-                smart_move(monsterhunter)
+                this.pathfinder.saferMove(this, "monsterhunter")
             }
             return
         }
 
         // Get a new quest
-        if (!character.s || !character.s.monsterhunt) {
-            if (distance(character, monsterhunter) < 250) {
+        if (!parent.character.s || !parent.character.s.monsterhunt) {
+            if (distance(parent.character, monsterhunter) < 250) {
                 parent.socket.emit('monsterhunt')
             } else if (!smart.moving) {
                 // Go to monster hunter to get a new quest
@@ -326,11 +336,11 @@ export abstract class Character {
                 if (this.targetPriority.includes(monsterHuntTarget)) {
                     // It's in our list of monsters, go go go!
                     set_message("MH: " + monsterHuntTarget)
-                    smart_move(monsterHuntTarget)
+                    this.pathfinder.saferMove(this, monsterHuntTarget)
                 } else if (targets.length != 0 && targets[0].mtype != this.mainTarget) {
                     // Not in our target priority, so it's probably too dangerous. Go to our default target
                     set_message("MH Idle: " + this.mainTarget)
-                    smart_move(this.mainTarget)
+                    this.pathfinder.saferMove(this, this.mainTarget)
                 }
             }
             return
@@ -359,7 +369,7 @@ export abstract class Character {
 
     public getMonsterhuntTarget(): MonsterName {
         // Prevent returning a target if we don't have an active monster hunt target ourselves.
-        if (!character.s || !character.s.monsterhunt) return null;
+        if (!character.s || !character.s.monsterhunt || (parent.character.s && parent.character.s.monsterhunt && parent.character.s.monsterhunt.c == 0)) return null;
 
         // Party monster hunts
         let highestPriorityTarget = -1;
@@ -371,8 +381,8 @@ export abstract class Character {
         if (highestPriorityTarget != -1) return this.targetPriority[highestPriorityTarget];
 
         // Our monster hunt
-        if (character.s && character.s.monsterhunt)
-            return character.s.monsterhunt.id;
+        if (parent.character.s && parent.character.s.monsterhunt)
+            return parent.character.s.monsterhunt.id;
 
         return null;
     }
@@ -394,7 +404,7 @@ export abstract class Character {
         for (let id in parent.entities) {
             let potentialTarget = parent.entities[id];
             let d = distance(character, potentialTarget);
-            if (!this.targetPriority.includes(potentialTarget.mtype) && potentialTarget.target != character.name) continue; // Not a monster we care about, and it's not attacking us
+            if (!this.targetPriority.includes(potentialTarget.mtype) && potentialTarget.target != parent.character.name) continue; // Not a monster we care about, and it's not attacking us
             if (potentialTarget.type != "monster") // Not a monster
                 if (!is_pvp() && potentialTarget.type == "character") continue; // Not PVP
 
@@ -414,7 +424,7 @@ export abstract class Character {
             if (potentialTarget.mtype == this.getMonsterhuntTarget()) priority += 1000;
 
             // Increase priority if the entity is targeting us
-            if (potentialTarget.target == character.name) priority += 1000;
+            if (potentialTarget.target == parent.character.name) priority += 1000;
 
             // Adjust priority based on distance
             priority -= d;

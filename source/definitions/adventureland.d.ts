@@ -64,6 +64,8 @@ export interface ALPosition {
   map?: string;
   x: number;
   y: number;
+  real_x?: number;
+  real_y?: number;
   going_x?: number;
   going_y?: number;
 }

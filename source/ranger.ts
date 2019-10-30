@@ -4,7 +4,7 @@ import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } fr
 
 class Ranger extends Character {
     targetPriority: MonsterName[] = [
-        "stoneworm", "iceroamer", "cgoo", "boar", "spider", "scorpion", "tortoise",  // Low priority
+        "stoneworm", "iceroamer", "ghost", "prat", "cgoo", "boar", "spider", "scorpion", "tortoise",  // Low priority
         "hen", "rooster", "goo", "crab", "bee", "osnake", "snake", "porcupine", "squigtoad", "croc", "rat", "minimush", "armadillo", "squig", "poisio", "crabx", "arcticbee", "bat", // #3: Easy to kill monsters
         "goldenbat", "snowman", "mrgreen", "mrpumpkin", // #1: Event monsters
     ];
@@ -13,6 +13,7 @@ class Ranger extends Character {
     run(): void {
         super.run();
         this.superShotLoop();
+        this.huntersmarkLoop();
         this.sendLootLoop();
     }
 
@@ -20,11 +21,11 @@ class Ranger extends Character {
         try {
             // Movement
             if (this.holdMovement) {
-                // Don't move.
+                this.moveToMonsterhunt();
             } else if (smart.moving) {
                 let mhTarget = this.getMonsterhuntTarget();
                 let targets = this.getTargets(1);
-                if (targets.length > 0 && targets[0].mtype == mhTarget && parent.distance(parent.character, targets[0]) < character.range) stop();
+                if (targets.length > 0 && targets[0].mtype == mhTarget && parent.distance(parent.character, targets[0]) < parent.character.range) stop();
             } else {
                 this.moveToMonsterhunt();
                 this.avoidAggroMonsters();
@@ -45,54 +46,38 @@ class Ranger extends Character {
         }
     }
 
+    huntersmarkLoop(): void {
+        try {
+            if (parent.character.mp < 240) {
+            // No MP
+                setTimeout(() => { this.huntersmarkLoop() }, Math.max(1000, parent.next_skill["huntersmark"] - Date.now()));
+        }
+
+            let targets = this.getTargets(1);
+            if (targets.length > 0 && targets[0].hp > parent.character.attack * 5) use_skill("huntersmark", targets[0])
+        } catch (error) {
+
+        }
+        setTimeout(() => { this.huntersmarkLoop() }, Math.max(250, parent.next_skill["huntersmark"] - Date.now()));
+        }
+
     superShotLoop(): void {
         if (parent.character.mp < 400) {
             // No MP
             setTimeout(() => { this.superShotLoop() }, Math.max(1000, parent.next_skill["supershot"] - Date.now()));
             return;
         }
-        // const potentialTargets = new Queue<Entity>((x, y) => x.priority - y.priority);
-        let potentialTargets: Entity[] = [];
-        for (let id in parent.entities) {
-            let potentialTarget = parent.entities[id];
-            if (distance(character, potentialTarget) > character.range * 3) continue; // Not in range
-            if (potentialTarget.type != "monster") // Not a monster
-                if (!is_pvp() && potentialTarget.type == "character") continue; // Not PVP
 
-            // Set a priority based on the index of the entity 
-            let priority = this.targetPriority.indexOf(potentialTarget.mtype);
-            if (potentialTarget.type == "monster" && priority == -1) continue; // Not a priority
+        let targets = this.getTargets(1);
+        if (targets.length > 0 && !this.holdAttack) use_skill("supershot", targets[0])
 
-            // Increase priority if it's our main target
-            if (potentialTarget.mtype == this.mainTarget) priority += 100;
-
-            // Increase priority if it's a quest monster
-            if (potentialTarget.mtype == this.getMonsterhuntTarget()) priority += 1000;
-
-            // Increase priority if the entity is targeting us
-            if (potentialTarget.target == character.name) priority += 1000;
-
-            // Adjust priority based on remaining HP
-            priority -= potentialTarget.hp
-
-            // potentialTargets.enqueue(priority, potentialTarget);
-            potentialTargets.push(potentialTarget)
-        }
-
-        if (potentialTargets.length == 0) {
-            // No potential targets
-            setTimeout(() => { this.superShotLoop() }, Math.max(50, parent.next_skill["supershot"] - Date.now()));
-            return;
-        }
-
-        use_skill("supershot", potentialTargets[0])
         setTimeout(() => { this.superShotLoop() }, Math.max(50, parent.next_skill["supershot"] - Date.now()));
     }
 
     attackLoop() {
         // Try to 3shot targets
         let targets = this.getThreeshotTargets();
-        if (targets && character.mp > 300) {
+        if (targets && parent.character.mp > 300) {
             parent.socket.emit("skill", {
                 name: "3shot",
                 ids: [targets[0].id, targets[1].id, targets[2].id]
@@ -113,8 +98,8 @@ class Ranger extends Character {
             let d = distance(character, entity);
             if (entity.type != "monster") continue; // Not a monster
             if (!this.targetPriority.includes(entity.mtype)) continue; // Not something we want to attack
-            if (d > character.range) continue; // Too far away
-            if ((entity.target != character.name) && (entity.hp > character.attack * 0.7 * 0.9 * damage_multiplier(entity.armor - character.apiercing))) continue; // Too much HP to kill in one shot & not targeting us.
+            if (d > parent.character.range) continue; // Too far away
+            if ((entity.target != parent.character.name) && (entity.hp > parent.character.attack * 0.7 * 0.9 * damage_multiplier(entity.armor - parent.character.apiercing))) continue; // Too much HP to kill in one shot & not targeting us.
 
             targets.push(entity);
         }

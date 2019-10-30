@@ -20,11 +20,11 @@ class Warrior extends Character {
         try {
             // Movement
             if (this.holdMovement) {
-                // Don't move.
+                this.moveToMonsterhunt();
             } else if (smart.moving) {
                 let mhTarget = this.getMonsterhuntTarget();
                 let targets = this.getTargets(1);
-                if (targets.length > 0 && targets[0].mtype == mhTarget && parent.distance(parent.character, targets[0]) < character.range) stop();
+                if (targets.length > 0 && targets[0].mtype == mhTarget && parent.distance(parent.character, targets[0]) < parent.character.range) stop();
             } else {
                 this.moveToMonsterhunt();
                 this.moveToMonsters();

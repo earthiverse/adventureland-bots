@@ -72,28 +72,28 @@ class Merchant extends Character {
             // TODO: Check for things we can upgrade
             if (parent.character.map == "bank") {
                 if (parent.character.gold > 25000000) {
-                    bank_deposit(character.gold - 25000000)
+                    bank_deposit(parent.character.gold - 25000000)
                 }
                 for (let i = 0; i < 42; i++) {
                     if (!character.items[i]) continue;
 
                     // Items0
-                    if (["rattail", "pumpkinspice", "beewings", "whiteegg", "smoke", "poison", "spores", "snakefang", "cscale", "gslime", "bfur", "spidersilk", "seashell", "candycane", "carrot", "shadowstone"].includes(character.items[i].name)) {
+                    if (["monstertoken", "vitscroll", "rattail", "pumpkinspice", "essenceoffrost", "beewings", "crabclaw", "whiteegg", "smoke", "poison", "spores", "snakefang", "smush", "cscale", "gslime", "leather", "bfur", "spidersilk", "seashell", "candycane", "carrot", "shadowstone"].includes(parent.character.items[i].name)) {
                         bank_store(i, "items0")
                     }
 
-                    // // Items1
-                    // if(["dexearring", "intearring", "strearring", "dexamulet", "intamulet", "stramulet"].includes(character.items[i].name)) {
-                    //     bank_store(i, "items2")
-                    // }
+                    // Items1
+                    if(["dexring", "intring", "strring", "dexbelt", "intbelt", "strbelt"].includes(parent.character.items[i].name)) {
+                        bank_store(i, "items1")
+                    }
 
                     // Items2
-                    if (["dexearring", "intearring", "strearring", "dexamulet", "intamulet", "stramulet", "wbook0", "wbook1", "lostearring"].includes(character.items[i].name)) {
+                    if (["dexearring", "intearring", "strearring", "dexamulet", "intamulet", "stramulet", "wbook0", "wbook1", "lostearring"].includes(parent.character.items[i].name)) {
                         bank_store(i, "items2")
                     }
 
                     // Items3
-                    if (["lantern", "talkingskull", "jacko", "swordofthedead", "daggerofthedead", "staffofthedead", "bowofthedead", "wbook0", "wbook1"].includes(character.items[i].name)) {
+                    if (["lantern", "talkingskull", "jacko", "swordofthedead", "daggerofthedead", "staffofthedead", "bowofthedead", "wbook0", "wbook1"].includes(parent.character.items[i].name)) {
                         bank_store(i, "items3")
                     }
                 }
@@ -137,6 +137,7 @@ class Merchant extends Character {
             //// Weapons
             upgradeItem("firestaff", 7);
             upgradeItem("fireblade", 7);
+            upgradeItem("t2bow", 7);
 
             //// Miscellaneous
             compoundItem("lostearring", 2);
@@ -190,7 +191,7 @@ class Merchant extends Character {
 
     private luckedCharacters: any = {}
     public luckLoop(): void {
-        if (!character.s || !character.s["mluck"] || character.s["mluck"].ms < 10000 || character.s["mluck"].f != character.name) {
+        if (!parent.character.s || !parent.character.s["mluck"] || parent.character.s["mluck"].ms < 10000 || parent.character.s["mluck"].f != parent.character.name) {
             // Luck ourself
             use_skill("mluck", character);
         } else {
@@ -199,11 +200,11 @@ class Merchant extends Character {
                 let luckTarget = parent.entities[id];
                 if (!luckTarget.player || luckTarget.npc) continue; // not a player
                 if (distance(character, luckTarget) > 250) continue; // out of range
-                if (this.luckedCharacters[luckTarget.name] && this.luckedCharacters[luckTarget.name] >= Date.now() - character.ping) continue; // Prevent spamming luck
-                if (!luckTarget.s || !luckTarget.s["mluck"] || luckTarget.s["mluck"].ms < 300000 || luckTarget.s["mluck"].f != character.name) {
+                if (this.luckedCharacters[luckTarget.name] && this.luckedCharacters[luckTarget.name] >= Date.now() - parent.character.ping) continue; // Prevent spamming luck
+                if (!luckTarget.s || !luckTarget.s["mluck"] || luckTarget.s["mluck"].ms < 300000 || luckTarget.s["mluck"].f != parent.character.name) {
+                    this.luckedCharacters[luckTarget.name] = Date.now();
                     use_skill("mluck", luckTarget);
                     game_log("lucking " + luckTarget.name)
-                    this.luckedCharacters[luckTarget.name] = Date.now();
                     break;
                 }
             }

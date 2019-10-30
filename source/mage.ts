@@ -4,7 +4,7 @@ import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } fr
 
 class Mage extends Character {
     targetPriority: MonsterName[] = [
-        "stoneworm", "iceroamer", "cgoo", "boar", "spider", "scorpion", "tortoise",  // Low priority
+        "stoneworm", "iceroamer", "ghost", "prat", "cgoo", "boar", "spider", "scorpion", "tortoise",  // Low priority
         "hen", "rooster", "goo", "crab", "bee", "osnake", "snake", "porcupine", "squigtoad", "croc", "rat", "minimush", "armadillo", "squig", "poisio", "crabx", "arcticbee", "bat", // Normal Priority
         "frog", "goldenbat", "snowman", "mrgreen", "mrpumpkin", // High Priority
     ];
@@ -20,11 +20,11 @@ class Mage extends Character {
         try {
             // Movement
             if (this.holdMovement) {
-                // Don't move.
+                this.moveToMonsterhunt();
             } else if (smart.moving) {
                 let mhTarget = this.getMonsterhuntTarget();
                 let targets = this.getTargets(1);
-                if (targets.length > 0 && targets[0].mtype == mhTarget && parent.distance(parent.character, targets[0]) < character.range) stop();
+                if (targets.length > 0 && targets[0].mtype == mhTarget && parent.distance(parent.character, targets[0]) < parent.character.range) stop();
             } else {
                 this.moveToMonsterhunt();
                 super.avoidAggroMonsters();
@@ -44,14 +44,18 @@ class Mage extends Character {
     }
 
     energizeLoop(): void {
+        try {
         // Get nearby party members
-        for (let id in parent.party) {
-            if (id == character.name) continue; // Don't cast on ourself.
+            for (let id in parent.party_list) {
+                if (id == parent.character.name) continue; // Don't cast on ourself.
             let member = parent.party[id];
-            if (distance(character, member) > character.range) continue; // Out of range
+                if (distance(parent.character, member) > parent.character.range) continue; // Out of range
 
             use_skill("energize", id)
             break;
+            }
+        } catch (error) {
+            
         }
         setTimeout(() => { this.energizeLoop() }, Math.max(250, parent.next_skill["energize"] - Date.now()));
     }

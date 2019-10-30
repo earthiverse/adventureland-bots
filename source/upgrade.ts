@@ -13,7 +13,7 @@ export function compoundItem(itemname: string, target_level: number) {
     }
     if (!foundUpgrade) return; // Can't compound, nobody is near.
 
-    if (character.q && character.q["compound"]) return; // Already compounding
+    if (parent.character.q && parent.character.q["compound"]) return; // Already compounding
 
     let items;
     let item_level;
@@ -53,7 +53,7 @@ export function upgradeItem(itemname: string, target_level: number) {
     }
     if (!foundUpgrade) return; // Can't upgrade, nobody is near.
 
-    if (character.q && character.q["upgrade"]) return; // Already upgrading
+    if (parent.character.q && parent.character.q["upgrade"]) return; // Already upgrading
 
     let items = findItems(itemname);
     if (!items)
@@ -92,16 +92,16 @@ export function upgradeIfMany() {
         }
     }
     if (!foundUpgrade) return; // Can't upgrade, nobody is near.
-    if (character.q && character.q["upgrade"]) return; // Already upgrading
+    if (parent.character.q && parent.character.q["upgrade"]) return; // Already upgrading
     for (let i = 0; i < 42; i++) {
-        if (!character.items[i]) continue; // No item in this slot
-        if (!["weapon", "chest", "shoes"].includes(G.items[character.items[i].name].type)) continue; // Not upgradable
+        if (!parent.character.items[i]) continue; // No item in this slot
+        if (!["weapon", "chest", "shoes", "shield", "pants", "gloves", "helmet", "cape"].includes(G.items[parent.character.items[i].name].type)) continue; // Not upgradable
 
-        let items = findItems(character.items[i].name)
+        let items = findItems(parent.character.items[i].name)
         if (items.length == 1) continue; // We only have one.
 
         let minimumLevel = Math.min(...items.map(([, { level }]) => level)) // Find the minimum level
-        items = findItemsWithLevel(character.items[i].name, minimumLevel);
+        items = findItemsWithLevel(parent.character.items[i].name, minimumLevel);
 
         let grade = determineGrade(items[0][1]);
         let scrolls;

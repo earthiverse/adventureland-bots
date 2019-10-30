@@ -1,9 +1,9 @@
 import { ItemName } from "./definitions/adventureland";
 import { findItems } from "./functions";
 let defaultItemsToGiveToMerchant: ItemName[] = ["monstertoken",
-    "gem0", "gem1", "lostearring", "candycane", "candy0", "candy1", "seashell", // Tradables
+    "gem0", "gem1", "lostearring", "candycane", "candy0", "candy1", "seashell", "leather", // Tradables
     "coat1", "shoes1", "pants1", "gloves1", "helmet1", "cape", "handofmidas", // Wearables
-    "bataxe", // Weapons
+    "bataxe", "sshield", "shield", "fireblade", // Weapons
     "shoes", "helmet", "coat", "gloves", "pants", // Common clothing
     "dexamulet", "intamulet", "stramulet", // Amulets
     "strring", "intring", "dexring", // Rings
@@ -11,7 +11,7 @@ let defaultItemsToGiveToMerchant: ItemName[] = ["monstertoken",
     "dexbelt", "strbelt", "intbelt", // Belts
     "wbook0", "quiver", // Offhands
     "orbg", // Orbs
-    "whiteegg", "beewings", "bfur", "rattail", "spores", "poison", "carrot", "smush", "gslime", "cscale", "snakefang", "crabclaw", "ascale", "spidersilk", "shadowstone" // Things monsters drop
+    "whiteegg", "beewings", "bfur", "rattail", "spores", "poison", "carrot", "smush", "gslime", "cscale", "snakefang", "essenceoffrost", "crabclaw", "ascale", "spidersilk", "shadowstone" // Things monsters drop
 ];
 let defaultItemsToSell: ItemName[] = ["hpamulet", "hpbelt", // HP stuff
     "vitring", "vitearring", // Vit stuff
@@ -72,12 +72,12 @@ export function transferItemsToMerchant(merchantName: string, itemsToTransfer: I
 }
 
 export function transferGoldToMerchant(merchantName: string, minimumGold: number = 0) {
-    if (character.gold <= minimumGold) return; // Not enough gold
+    if (parent.character.gold <= minimumGold) return; // Not enough gold
     let merchant = parent.entities[merchantName];
     if (!merchant) return; // No merchant nearby
-    if (distance(character, merchant) > 250) return; // Merchant is too far away to trade
+    if (distance(parent.character, merchant) > 250) return; // Merchant is too far away to trade
 
-    send_gold(merchantName, character.gold - minimumGold);
+    send_gold(merchantName, parent.character.gold - minimumGold);
 }
 
 // TODO: Add check for shells
@@ -96,7 +96,7 @@ export function exchangeItems(exchangeItems: ItemName[] = ["gem0", "gem1", "armo
     if (!foundUpgrade) return; // Can't exchange, nobody is near.
 
 
-    if (character.q && character.q["exchange"]) return; // Already exchanging
+    if (parent.character.q && parent.character.q["exchange"]) return; // Already exchanging
 
     for (let itemName of exchangeItems) {
         let items = findItems(itemName)
