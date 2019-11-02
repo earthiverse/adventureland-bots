@@ -432,7 +432,7 @@ export abstract class Character {
             if (this.newTargetPriority[potentialTarget.mtype]) priority = this.newTargetPriority[potentialTarget.mtype].priority;
 
             // Adjust priority if a party member is already attacking it.
-            // if (claimedTargets.includes(id)) priority -= 250;
+            if (claimedTargets.includes(id)) priority -= 250;
 
             // Adjust priority if it's special
             if (["goldenbat", "snowman"].includes(potentialTarget.mtype)) priority += 5000;

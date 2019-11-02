@@ -2,27 +2,6 @@ import { ALPosition, MonsterName } from "./definitions/adventureland";
 import { Character } from "./character";
 let PF = require("pathfinding")
 
-let saferDestinations: any = {
-    "crab": {
-        "map": "main",
-        "x": -1100,
-        "y": -100,
-        "holdMovement": false
-    },
-    "prat": {
-        "map": "level1",
-        "x": -296,
-        "y": 557,
-        "holdMovement": true
-    },
-    "xscorpion": {
-        "map": "halloween",
-        "x": -236,
-        "y": 568,
-        "holdMovement": true
-    }
-}
-
 export class Pathfinder {
     /**
      * A number that determines the scale of the grid to the actual map
@@ -51,11 +30,16 @@ export class Pathfinder {
         } else {
             c.holdPosition = false;
         }
-
-        if (saferDestinations[to]) {
-            if (distance(parent.character, saferDestinations[to]) < 50) return; // Already here
-            smart_move(saferDestinations[to])
+        if (c.newTargetPriority[to] && c.newTargetPriority[to].map && c.newTargetPriority[to].x && c.newTargetPriority[to].y) {
+            let p: ALPosition = {
+                map: c.newTargetPriority[to].map,
+                x: c.newTargetPriority[to].x,
+                y: c.newTargetPriority[to].y
+            }
+            if (distance(parent.character, p) < 50) return; // Already here
+            smart_move(p)
         } else {
+            if(distance(parent.character, smart) < 50) return; // Already here
             smart_move(to);
         }
     }
@@ -66,12 +50,7 @@ export class Pathfinder {
         this.movementTarget = to;
         c.holdPosition = false;
 
-        if (saferDestinations[to]) {
-            if (distance(parent.character, saferDestinations[to]) < 50) return; // Already here
-            smart_move(saferDestinations[to])
-        } else {
-            smart_move(to);
-        }
+        smart_move(to);
     }
 
     public findMovements(from: ALPosition, to: ALPosition): ALPosition[] {

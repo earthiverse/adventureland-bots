@@ -155,8 +155,8 @@ declare global {
   }
   var $: any;
   var character: ICharacter;
-  var smart: {
-    moving: boolean;
+  var smart: ALPosition & {
+    moving: boolean
   }
   var game_logs: any[];
   var G: GameInfo;

@@ -82,6 +82,7 @@ class Warrior extends Character {
                 if (targets.length > 0 // We have a target
                     && this.newTargetPriority[targets[0].mtype]
                     && this.newTargetPriority[targets[0].mtype].stopOnSight // We stop on sight of that target
+                    && this.pathfinder.movementTarget == targets[0].mtype // We're moving to that target
                     && parent.distance(parent.character, targets[0]) < parent.character.range) { // We're in range
                     stop();
                 }
