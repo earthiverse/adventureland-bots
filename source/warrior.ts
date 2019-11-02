@@ -1,14 +1,72 @@
 import { Character } from './character'
 import { MonsterName } from './definitions/adventureland';
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from './trade';
+import { TargetPriorityList } from './definitions/bots';
+
+let DIFFICULT = 10;
+let MEDIUM = 20;
+let EASY = 30;
+let SPECIAL = 5000;
 
 class Warrior extends Character {
-    targetPriority: MonsterName[] = [
-        "hen", "rooster", "goo", "crab", "bee", "osnake", "snake", "squigtoad", "croc", "rat", "minimush", "squig", "poisio", "crabx", "arcticbee", "bat", // #3: Easy to kill monsters
-        "scorpion", "tortoise", "spider", "mvampire", // #2: Not that easy to kill, but killable monsters
-        "goldenbat", "snowman", "mrgreen", "mrpumpkin", // #1: Event monsters
-    ];
-    mainTarget: MonsterName = "croc";
+    newTargetPriority: TargetPriorityList = {
+        "arcticbee": {
+            "priority": EASY
+        },
+        "bat": {
+            "priority": EASY,
+            "stopOnSight": true
+        },
+        "bee": {
+            "priority": EASY
+        },
+        "crab": {
+            "priority": EASY
+        },
+        "croc": {
+            "priority": EASY
+        },
+        "goldenbat": {
+            "priority": SPECIAL,
+            "stopOnSight": true
+        },
+        "goo": {
+            "priority": EASY,
+        },
+        "minimush": {
+            "priority": EASY,
+            "stopOnSight": true
+        },
+        "osnake": {
+            "priority": EASY
+        },
+        "rat": {
+            "priority": EASY
+        },
+        "scorpion": {
+            "priority": MEDIUM
+        },
+        "snake": {
+            "priority": EASY
+        },
+        "snowman": {
+            "priority": SPECIAL,
+            "stopOnSight": true
+        },
+        "spider": {
+            "priority": MEDIUM
+        },
+        "squig": {
+            "priority": EASY,
+        },
+        "squigtoad": {
+            "priority": EASY
+        },
+        "tortoise": {
+            "priority": EASY
+        }
+    }
+    mainTarget: MonsterName = "rat";
 
     run(): void {
         super.run();
@@ -19,15 +77,19 @@ class Warrior extends Character {
     mainLoop(): void {
         try {
             // Movement
-            if (this.holdMovement) {
-                this.moveToMonsterhunt();
-            } else if (smart.moving) {
-                let mhTarget = this.getMonsterhuntTarget();
+            if (smart.moving) {
                 let targets = this.getTargets(1);
-                if (targets.length > 0 && targets[0].mtype == mhTarget && parent.distance(parent.character, targets[0]) < parent.character.range) stop();
+                if (targets.length > 0 // We have a target
+                    && this.newTargetPriority[targets[0].mtype]
+                    && this.newTargetPriority[targets[0].mtype].stopOnSight // We stop on sight of that target
+                    && parent.distance(parent.character, targets[0]) < parent.character.range) { // We're in range
+                    stop();
+                }
             } else {
                 this.moveToMonsterhunt();
-                this.moveToMonsters();
+                if (!this.holdPosition) {
+                    this.moveToMonsters();
+                }
             }
 
             transferItemsToMerchant("earthMer");

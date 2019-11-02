@@ -2,23 +2,25 @@ import { Queue } from "prioqueue"
 import { MonsterName, Entity, ALPosition, ItemName } from './definitions/adventureland';
 import { Pathfinder } from './pathfinder';
 import { sendMassCM } from "./functions";
+import { TargetPriorityList } from "./definitions/bots";
 
 export abstract class Character {
     /**
      * A list of monsters, ranked from highest priority to lowest priority.
      */
-    protected abstract targetPriority: MonsterName[];
+    // protected abstract targetPriority: MonsterName[];
+    public abstract newTargetPriority: TargetPriorityList;
     protected abstract mainTarget: MonsterName;
     protected movementQueue: ALPosition[] = [];
-    public holdMovement = false;
+    public holdPosition = false;
     public holdAttack = false;
-    protected pathfinder: Pathfinder = new Pathfinder(7);
+    protected pathfinder: Pathfinder = new Pathfinder(6);
     protected monsterhuntQuests: any = {};
     protected chests = new Set<string>()
 
     protected mainLoop() {
         // loot();
-        setTimeout(() => { this.mainLoop(); }, 250);
+        setTimeout(() => { this.mainLoop(); }, Math.max(250, parent.character.ping));
     };
 
     public run() {
@@ -62,20 +64,20 @@ export abstract class Character {
     protected attackLoop(): void {
         try {
             let targets = this.getTargets(1);
-            if (this.holdAttack && targets.length > 0 && targets[0].target != parent.character.name) {
-                // Don't attack
-                setTimeout(() => { this.attackLoop() }, 250);
-                return;
-            }
-            if (targets.length == 0 || distance(targets[0], parent.character) > parent.character.range || parent.character.mp < parent.character.mp_cost) {
-                // No target
+            if (targets.length == 0 // No targets
+                || parent.character.mp < parent.character.mp_cost // No MP
+                || parent.next_skill["attack"] > Date.now() // On cooldown
+                || parent.distance(parent.character, targets[0]) > parent.character.range
+                || (smart.moving && this.newTargetPriority[targets[0].mtype] && this.newTargetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name) // Holding attack and not being attacked
+                || (this.holdAttack && targets[0].target != parent.character.name)) { // Holding attack and not being attacked
                 setTimeout(() => { this.attackLoop() }, Math.max(50, parent.next_skill["attack"] - Date.now()));
                 return;
             }
+
             attack(targets[0]).then(() => {
                 // Attack success!
-                this.getTargets(1);
-                setTimeout(() => { this.attackLoop() }, Math.max(50, parent.next_skill["attack"] - Date.now()));
+                this.getTargets(1); // Get a new target right away
+                setTimeout(() => { this.attackLoop() }, Math.max(parent.character.ping, parent.next_skill["attack"] - Date.now()));
             }, () => {
                 // Attack fail...
                 setTimeout(() => { this.attackLoop() }, Math.max(50, parent.next_skill["attack"] - Date.now()));
@@ -107,7 +109,7 @@ export abstract class Character {
                 // We can't move to the next place in the queue...
                 // TODO: Pathfind to the next place in the queue
             }
-            setTimeout(() => { this.moveLoop() }, 250); // TODO: queue up next movement based on time it will take to walk there
+            setTimeout(() => { this.moveLoop() }, Math.max(250, parent.character.ping)); // TODO: queue up next movement based on time it will take to walk there
         } catch (error) {
             console.error(error)
             setTimeout(() => { this.moveLoop() }, 250); // TODO: queue up next movement based on time it will take to walk there
@@ -120,7 +122,10 @@ export abstract class Character {
             if (parent.character.rip) {
                 // Respawn if we're dead
                 respawn();
-                setTimeout(() => { this.healLoop() }, 250) // TODO: Find out something that tells us how long we have to wait before respawning.
+                setTimeout(() => { this.healLoop() }, Math.max(250, parent.character.ping)) // TODO: Find out something that tells us how long we have to wait before respawning.
+                return;
+            } else if (parent.next_skill["use_hp"] > Date.now()) {
+                setTimeout(() => { this.healLoop() }, parent.next_skill["use_hp"] - Date.now())
                 return;
             }
 
@@ -166,7 +171,7 @@ export abstract class Character {
                 use_skill("use_mp")
             }
 
-            setTimeout(() => { this.healLoop() }, Math.max(250, parent.next_skill["use_hp"] - Date.now()))
+            setTimeout(() => { this.healLoop() }, Math.max(250, parent.character.ping, parent.next_skill["use_hp"] - Date.now()))
         } catch (error) {
             console.error(error)
             setTimeout(() => { this.healLoop() }, Math.max(250, parent.next_skill["use_hp"] - Date.now()))
@@ -238,11 +243,11 @@ export abstract class Character {
         // Move away from the closest monster
         let angle: number = Math.atan2(parent.character.real_y - minTarget.real_y, parent.character.real_x - minTarget.real_x);
         let moveDistance: number = minTarget.range + minTarget.speed - (minDistance / 2)
-            function calculateEscape(angle: number, move_distance: number): ALPosition {
-                let x = Math.cos(angle) * move_distance
-                let y = Math.sin(angle) * move_distance
+        function calculateEscape(angle: number, move_distance: number): ALPosition {
+            let x = Math.cos(angle) * move_distance
+            let y = Math.sin(angle) * move_distance
             return { x: parent.character.real_x + x, y: parent.character.real_y + y };
-            }
+        }
         escapePosition = calculateEscape(angle, moveDistance);
         let angleChange: number = 0;
         while (!can_move_to(escapePosition.x, escapePosition.y) && angleChange < 180) {
@@ -252,10 +257,11 @@ export abstract class Character {
                 angleChange = -angleChange;
             }
             escapePosition = calculateEscape(angle + (angleChange * Math.PI / 180), moveDistance)
-            //game_log("angle: " + (angle + (angleChange * Math.PI / 180)) + "x: " + escapePosition.x + ", y: " + escapePosition.y)
+            // game_log("angle: " + (angle + (angleChange * Math.PI / 180)) + "x: " + escapePosition.x + ", y: " + escapePosition.y)
         }
 
         if (can_move_to(escapePosition.x, escapePosition.y)) {
+            // game_log("escaping from monster");
             move(escapePosition.x, escapePosition.y)
         } else {
             // TODO: Pathfind there, and take the first movement.
@@ -264,21 +270,28 @@ export abstract class Character {
 
     public moveToMonsters(): void {
         let targets = this.getTargets(1);
-        if (targets && distance(parent.character, targets[0]) < parent.character.range)
-            return; // We have a target, and it's in range.
+        if (targets.length == 0 || // There aren't any targets to move to
+            (targets.length > 0 && distance(parent.character, targets[0]) <= parent.character.range)) // We have a target, and it's in range.
+            return;
 
         if (can_move_to(targets[0].real_x, targets[0].real_y)) {
+            let moveDistance = parent.distance(parent.character, targets[0]) - character.range + targets[0].speed
+            let angle: number = Math.atan2(targets[0].real_y - parent.character.real_y, targets[0].real_x - parent.character.real_x);
+            let x = Math.cos(angle) * moveDistance
+            let y = Math.sin(angle) * moveDistance
+
             // Move normally to target
-            move(targets[0].real_x, targets[0].real_y);
+            // game_log("moving normally to target")
+            move(parent.character.real_x + x, parent.character.real_y + y);
         } else {
             try {
                 // Pathfind to target
-                game_log("pathfinding to target")
+                // game_log("pathfinding to target")
                 let path = this.pathfinder.findNextMovement(parent.character, targets[0]);
                 move(path.x, path.y);
             } catch (error) {
                 // Our custom pathfinding failed, use the game's smart move.
-                game_log("smart moving to target")
+                // game_log("smart moving to target")
                 xmove(targets[0].real_x, targets[0].real_y);
             }
         }
@@ -312,7 +325,8 @@ export abstract class Character {
             if (distance(parent.character, monsterhunter) < 250) {
                 parent.socket.emit('monsterhunt')
             } else if (!smart.moving) {
-                this.pathfinder.saferMove(this, "monsterhunter")
+                smart_move("monsterhunter")
+                this.pathfinder.saferMovePlace(this, "monsterhunter")
             }
             return
         }
@@ -330,27 +344,31 @@ export abstract class Character {
 
         // Move to target
         let monsterHuntTarget = this.getMonsterhuntTarget()
+        let targets = this.getTargets(1)
         if (monsterHuntTarget) {
-            let targets = this.getTargets(1)
             if (targets.length == 0 || targets[0].mtype != monsterHuntTarget) {
-                if (this.targetPriority.includes(monsterHuntTarget)) {
+                if (this.newTargetPriority[monsterHuntTarget]) {
+                    // if (this.targetPriority.includes(monsterHuntTarget)) {
                     // It's in our list of monsters, go go go!
                     set_message("MH: " + monsterHuntTarget)
-                    this.pathfinder.saferMove(this, monsterHuntTarget)
+                    this.pathfinder.saferMoveMonster(this, monsterHuntTarget)
                 } else if (targets.length != 0 && targets[0].mtype != this.mainTarget) {
                     // Not in our target priority, so it's probably too dangerous. Go to our default target
                     set_message("MH Idle: " + this.mainTarget)
-                    this.pathfinder.saferMove(this, this.mainTarget)
+                    this.pathfinder.saferMoveMonster(this, this.mainTarget)
                 }
             }
-            return
+        } else if (targets.length == 0 || targets.length != 0 && targets[0].mtype != this.mainTarget) {
+            // Not in our target priority, so it's probably too dangerous. Go to our default target
+            set_message("MH Idle: " + this.mainTarget)
+            this.pathfinder.saferMoveMonster(this, this.mainTarget)
         }
     }
 
     public parse_cm(characterName: string, data: any) {
         if (!parent.party_list.includes(characterName)) {
             // Ignore messages from players not in our party
-            game_log("denied request from " + characterName + ": " + JSON.stringify(data));
+            // game_log("denied request from " + characterName + ": " + JSON.stringify(data));
             return;
         }
 
@@ -363,7 +381,7 @@ export abstract class Character {
                 this.chests.add(chest)
             });
         } else {
-            game_log("unknown request: " + JSON.stringify(data));
+            // game_log("unknown request: " + JSON.stringify(data));
         }
     }
 
@@ -373,16 +391,17 @@ export abstract class Character {
 
         // Party monster hunts
         let highestPriorityTarget = -1;
+        let highestPriorityTargetName: MonsterName = null;
         for (let questInfo in this.monsterhuntQuests) {
-            let target = this.monsterhuntQuests[questInfo].target;
-            let priorty = this.targetPriority.indexOf(target);
-            if (priorty > highestPriorityTarget) highestPriorityTarget = priorty;
+            let target: MonsterName = this.monsterhuntQuests[questInfo].target;
+            if (!this.newTargetPriority[target]) continue;
+            let priorty = this.newTargetPriority[target].priority;
+            if (priorty > highestPriorityTarget) {
+                highestPriorityTarget = priorty;
+                highestPriorityTargetName = target;
+            }
         }
-        if (highestPriorityTarget != -1) return this.targetPriority[highestPriorityTarget];
-
-        // Our monster hunt
-        if (parent.character.s && parent.character.s.monsterhunt)
-            return parent.character.s.monsterhunt.id;
+        if (highestPriorityTarget != -1) return highestPriorityTargetName;
 
         return null;
     }
@@ -404,15 +423,16 @@ export abstract class Character {
         for (let id in parent.entities) {
             let potentialTarget = parent.entities[id];
             let d = distance(character, potentialTarget);
-            if (!this.targetPriority.includes(potentialTarget.mtype) && potentialTarget.target != parent.character.name) continue; // Not a monster we care about, and it's not attacking us
+            if (!this.newTargetPriority[potentialTarget.mtype] && potentialTarget.target != parent.character.name) continue; // Not a monster we care about, and it's not attacking us
             if (potentialTarget.type != "monster") // Not a monster
                 if (!is_pvp() && potentialTarget.type == "character") continue; // Not PVP
 
             // Set a priority based on the index of the entity 
-            let priority = this.targetPriority.indexOf(potentialTarget.mtype);
+            let priority = 0;
+            if (this.newTargetPriority[potentialTarget.mtype]) priority = this.newTargetPriority[potentialTarget.mtype].priority;
 
             // Adjust priority if a party member is already attacking it.
-            if (claimedTargets.includes(id)) priority -= 250;
+            // if (claimedTargets.includes(id)) priority -= 250;
 
             // Adjust priority if it's special
             if (["goldenbat", "snowman"].includes(potentialTarget.mtype)) priority += 5000;

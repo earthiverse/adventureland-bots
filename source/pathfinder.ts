@@ -40,23 +40,37 @@ export class Pathfinder {
         this.padding = padding;
     }
 
-    public saferMove(c: Character, to: MonsterName | string) {
+    public saferMoveMonster(c: Character, to: MonsterName) {
         if (smart.moving) return; // Already moving somewhere
+
+        this.movementTarget = to;
+
+        // Hold Position
+        if (c.newTargetPriority[to] && c.newTargetPriority[to].holdPosition) {
+            c.holdPosition = true;
+        } else {
+            c.holdPosition = false;
+        }
 
         if (saferDestinations[to]) {
             if (distance(parent.character, saferDestinations[to]) < 50) return; // Already here
-            smart_move(saferDestinations[to], () => {
-                c.holdAttack = false;
-            })
-            c.holdAttack = true;
-            c.holdMovement = saferDestinations[to].holdMovement;
-            this.movementTarget = to;
+            smart_move(saferDestinations[to])
         } else {
-            smart_move(to, () => {
-                c.holdAttack = false;
-            });
-            c.holdAttack = true;
-            c.holdMovement = false;
+            smart_move(to);
+        }
+    }
+
+    public saferMovePlace(c: Character, to: string) {
+        if (smart.moving) return; // Already moving somewhere
+
+        this.movementTarget = to;
+        c.holdPosition = false;
+
+        if (saferDestinations[to]) {
+            if (distance(parent.character, saferDestinations[to]) < 50) return; // Already here
+            smart_move(saferDestinations[to])
+        } else {
+            smart_move(to);
         }
     }
 

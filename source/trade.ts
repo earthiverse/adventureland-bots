@@ -1,7 +1,7 @@
 import { ItemName } from "./definitions/adventureland";
 import { findItems } from "./functions";
 let defaultItemsToGiveToMerchant: ItemName[] = ["monstertoken",
-    "gem0", "gem1", "lostearring", "candycane", "candy0", "candy1", "seashell", "leather", // Tradables
+    "gem0", "gem1", "lostearring", "candycane", "candy0", "candy1", "seashell", "leather", "5bucks", // Tradables
     "coat1", "shoes1", "pants1", "gloves1", "helmet1", "cape", "handofmidas", // Wearables
     "bataxe", "sshield", "shield", "fireblade", // Weapons
     "shoes", "helmet", "coat", "gloves", "pants", // Common clothing
@@ -11,7 +11,7 @@ let defaultItemsToGiveToMerchant: ItemName[] = ["monstertoken",
     "dexbelt", "strbelt", "intbelt", // Belts
     "wbook0", "quiver", // Offhands
     "orbg", // Orbs
-    "whiteegg", "beewings", "bfur", "rattail", "spores", "poison", "carrot", "smush", "gslime", "cscale", "snakefang", "essenceoffrost", "crabclaw", "ascale", "spidersilk", "shadowstone" // Things monsters drop
+    "ascale", "beewings", "bfur", "carrot", "crabclaw", "cscale", "essenceoffrost", "frogt", "gslime", "ijx", "lotusf", "mistletoe", "poison", "rattail", "shadowstone", "smush", "snakefang", "snakeoil", "spidersilk", "spores", "whiteegg",  // Things monsters drop
 ];
 let defaultItemsToSell: ItemName[] = ["hpamulet", "hpbelt", // HP stuff
     "vitring", "vitearring", // Vit stuff

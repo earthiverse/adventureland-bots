@@ -5,12 +5,13 @@ import { sellUnwantedItems, exchangeItems } from './trade';
 
 class Merchant extends Character {
     targetPriority: MonsterName[] = []; // Nothing for now, merchants can't usually attack.
-    mainTarget: MonsterName = null; // Nothing for now, merchants can't usually attack.
+    newTargetPriority = {}
+    mainTarget: MonsterName = null;
 
     protected mainLoop(): void {
         try {
             // Movement
-            if (this.holdMovement) {
+            if (this.holdPosition) {
                 // Don't move.
             } else if (!smart.moving) { // TODO: Add a check that we're not using our pathfinding.
                 super.avoidAggroMonsters();
@@ -78,12 +79,12 @@ class Merchant extends Character {
                     if (!character.items[i]) continue;
 
                     // Items0
-                    if (["monstertoken", "vitscroll", "rattail", "pumpkinspice", "essenceoffrost", "beewings", "crabclaw", "whiteegg", "smoke", "poison", "spores", "snakefang", "smush", "cscale", "gslime", "leather", "bfur", "spidersilk", "seashell", "candycane", "carrot", "shadowstone"].includes(parent.character.items[i].name)) {
+                    if (["5bucks", "beewings", "bfur", "candy0", "candy1", "candycane", "carrot", "crabclaw", "cscale", "essenceoffrost", "frogt", "gslime", "ijx", "leather", "lotusf", "mistletoe", "monstertoken", "poison", "pumpkinspice", "rattail", "seashell", "shadowstone", "smoke", "smush", "snakefang", "snakeoil", "spidersilk", "spores", "vitscroll", "whiteegg"].includes(parent.character.items[i].name)) {
                         bank_store(i, "items0")
                     }
 
                     // Items1
-                    if(["dexring", "intring", "strring", "dexbelt", "intbelt", "strbelt"].includes(parent.character.items[i].name)) {
+                    if (["dexring", "intring", "strring", "dexbelt", "intbelt", "strbelt"].includes(parent.character.items[i].name)) {
                         bank_store(i, "items1")
                     }
 
@@ -200,7 +201,7 @@ class Merchant extends Character {
                 let luckTarget = parent.entities[id];
                 if (!luckTarget.player || luckTarget.npc) continue; // not a player
                 if (distance(character, luckTarget) > 250) continue; // out of range
-                if (this.luckedCharacters[luckTarget.name] && this.luckedCharacters[luckTarget.name] >= Date.now() - parent.character.ping) continue; // Prevent spamming luck
+                if (this.luckedCharacters[luckTarget.name] && this.luckedCharacters[luckTarget.name] > Date.now() - parent.character.ping) continue; // Prevent spamming luck
                 if (!luckTarget.s || !luckTarget.s["mluck"] || luckTarget.s["mluck"].ms < 300000 || luckTarget.s["mluck"].f != parent.character.name) {
                     this.luckedCharacters[luckTarget.name] = Date.now();
                     use_skill("mluck", luckTarget);
