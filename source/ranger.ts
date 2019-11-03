@@ -189,8 +189,9 @@ class Ranger extends Character {
             if (parent.character.mp < 240 // No MP
                 || parent.next_skill["huntersmark"] > Date.now() // Not usable yet
                 || targets.length == 0 // No targets
+                || targets[0].s.marked
                 || targets[0].hp < parent.character.attack * 5 // Target is easily killable
-                || parent.distance(parent.character, targets[0]) < parent.character.range) { // Not in range
+                || parent.distance(parent.character, targets[0]) > parent.character.range) { // Not in range
                 // Do nothing
             } else {
                 use_skill("huntersmark", targets[0])
