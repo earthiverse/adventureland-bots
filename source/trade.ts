@@ -41,7 +41,7 @@ export function transferItemsToMerchant(merchantName: string, itemsToKeep: ItemN
     for (let i = 0; i < parent.character.items.length; i++) {
         let item = parent.character.items[i]
         if (!item) continue // Empty slot
-        if (!defaultItemsToKeep.includes(item.name)) continue // We want to keep this
+        if (defaultItemsToKeep.includes(item.name)) continue // We want to keep this
 
         if (item.q) {
             send_item(merchantName, i, item.q)
