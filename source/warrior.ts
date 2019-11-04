@@ -40,6 +40,9 @@ class Warrior extends Character {
         "osnake": {
             "priority": EASY
         },
+        "phoenix": {
+            "priority": SPECIAL
+        },
         "rat": {
             "priority": EASY
         },
@@ -86,10 +89,14 @@ class Warrior extends Character {
                     && parent.distance(parent.character, targets[0]) < parent.character.range) { // We're in range
                     stop();
                 }
+                if (this.getMonsterhuntTarget()
+                    && this.getMonsterhuntTarget() != this.pathfinder.movementTarget) { // We're moving to the wrong target
+                    stop();
+                }
             } else {
                 this.moveToMonsterhunt();
                 if (!this.holdPosition) {
-                    this.moveToMonsters();
+                    this.moveToMonster();
                 }
             }
 
@@ -106,7 +113,18 @@ class Warrior extends Character {
 
     chargeLoop(): void {
         use_skill("charge")
-        setTimeout(() => { this.chargeLoop() }, Math.max(250, parent.next_skill["charge"] - Date.now()));
+        setTimeout(() => { this.chargeLoop() }, Math.max(parent.character.ping, parent.next_skill["charge"] - Date.now()));
+    }
+
+    hardshellLoop(): void {
+        let targets = this.getTargets(1);
+        if (parent.character.mp > 480 // Enough MP
+            && targets.length > 0 // We have a target
+            && targets[0].target == parent.character.name // It's targeting us
+            && ((parent.distance(targets[0], parent.character) < targets[0].range && parent.character.hp < targets[0].attack * 5))) { // Not a lot of HP remaining
+            use_skill("hardshell")
+        }
+        setTimeout(() => { this.chargeLoop() }, Math.max(parent.character.ping, parent.next_skill["hardshell"] - Date.now()));
     }
 }
 

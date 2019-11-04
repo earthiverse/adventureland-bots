@@ -24,6 +24,12 @@ class Ranger extends Character {
         "bee": {
             "priority": EASY
         },
+        "bigbird": {
+            // The ranger is fast enough to avoid these fairly well
+            "priority": DIFFICULT,
+            "holdAttack": true,
+            "stopOnSight": true
+        },
         "boar": {
             // Don't attack if we're walking by them, they hurt.
             "priority": DIFFICULT,
@@ -85,6 +91,9 @@ class Ranger extends Character {
         "osnake": {
             "priority": EASY
         },
+        "phoenix": {
+            "priority": SPECIAL
+        },
         "poisio": {
             "priority": EASY
         },
@@ -100,7 +109,6 @@ class Ranger extends Character {
             "x": -296,
             "y": 557,
         },
-
         "rat": {
             "priority": EASY
         },
@@ -134,6 +142,12 @@ class Ranger extends Character {
         },
         "tortoise": {
             "priority": EASY
+        },
+        "wolfie": {
+            // The ranger is fast enough to avoid these fairly well
+            "priority": DIFFICULT,
+            "holdAttack": true,
+            "stopOnSight": true
         }
     }
     mainTarget: MonsterName = "rat";
@@ -142,31 +156,36 @@ class Ranger extends Character {
         super.run();
         this.superShotLoop();
         this.huntersmarkLoop();
+        this.fourFingersLoop();
         this.sendLootLoop();
     }
 
     mainLoop(): void {
         try {
             // Movement
+            let targets = this.getTargets(1);
             if (smart.moving) {
-                let targets = this.getTargets(1);
                 if (targets.length > 0 // We have a target
                     && this.newTargetPriority[targets[0].mtype]
                     && this.newTargetPriority[targets[0].mtype].stopOnSight // We stop on sight of that target
                     && this.pathfinder.movementTarget == targets[0].mtype // We're moving to that target
                     && parent.distance(parent.character, targets[0]) < parent.character.range) { // We're in range
+                    game_log("stop on sight")
                     stop();
                 }
                 if (this.getMonsterhuntTarget()
                     && this.getMonsterhuntTarget() != this.pathfinder.movementTarget) { // We're moving to the wrong target
+                    game_log("stop on wrong target")
                     stop();
                 }
             } else {
-                this.moveToMonsterhunt();
+                if(targets.length > 0 && targets[0].target != character.target) {
+                    this.moveToMonsterhunt();
+                }
                 if (!this.holdPosition) {
                     this.avoidAggroMonsters();
                     this.avoidAttackingMonsters();
-                    this.moveToMonsters();
+                    this.moveToMonster();
                 }
             }
 
@@ -197,15 +216,36 @@ class Ranger extends Character {
                 use_skill("huntersmark", targets[0])
             }
         } catch (error) {
-
+            console.error(error)
         }
         setTimeout(() => { this.huntersmarkLoop() }, Math.max(parent.character.ping, parent.next_skill["huntersmark"] - Date.now()));
+    }
+
+    fourFingersLoop(): void {
+        try {
+            let targets = this.getTargets(1);
+            if (parent.character.mp > 260 // We have MP
+                && targets.length > 0 // We have a target
+                && distance(parent.character, targets[0]) <= 120 // The target is in range
+                && targets[0].player
+                && targets[0].target == parent.character.name // The target is targetting us
+                && (
+                    parent.character.hp < targets[0].attack * 10 // We don't have much HP
+                )
+            ) {
+                use_skill("4fingers", targets[0].id)
+            }
+        } catch (error) {
+            console.error(error)
+        }
+        setTimeout(() => { this.fourFingersLoop() }, Math.max(parent.character.ping, parent.next_skill["4fingers"] - Date.now()));
     }
 
     superShotLoop(): void {
         let targets = this.getTargets(1);
         if (parent.character.mp < 400 // No MP
             || targets.length == 0 // No targets
+            || parent.distance(parent.character, targets[0]) > character.range * 3
             || parent.next_skill["supershot"] > Date.now() // Not usable yet
             || (this.holdAttack && targets[0].target != parent.character.name)
             || (smart.moving && this.newTargetPriority[targets[0].mtype] && this.newTargetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name)) {
@@ -218,6 +258,8 @@ class Ranger extends Character {
     }
 
     attackLoop() {
+        // TODO: Try to 5shot targets
+
         // Try to 3shot targets
         let targets = this.getThreeshotTargets();
         if (targets.length >= 3

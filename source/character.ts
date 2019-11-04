@@ -1,7 +1,7 @@
 import { Queue } from "prioqueue"
 import { MonsterName, Entity, ALPosition, ItemName } from './definitions/adventureland';
 import { Pathfinder } from './pathfinder';
-import { sendMassCM } from "./functions";
+import { sendMassCM, findItems } from "./functions";
 import { TargetPriorityList } from "./definitions/bots";
 
 export abstract class Character {
@@ -26,6 +26,7 @@ export abstract class Character {
     public run() {
         this.healLoop();
         this.attackLoop();
+        this.idealEquipmentLoop();
         this.moveLoop();
         this.mainLoop();
     }
@@ -86,6 +87,30 @@ export abstract class Character {
             console.error(error)
             setTimeout(() => { this.attackLoop() }, Math.max(50, parent.next_skill["attack"] - Date.now()));
         }
+    }
+
+    protected idealEquipmentLoop(): void {
+        // TODO: If we are being attacked by more than three monsters and we have a jacko, use it.
+        // TODO: If we are low health and are being attacked by monsters, use it.
+        try {
+            let targets = this.getTargets(10);
+            let items = findItems("jacko")
+            // TODO: add a check if we have it equipped
+            if (items.length > 0) {
+                // We have a jacko, which lets us scare away all monsters targeting us
+                let jackoI = items[0][0]
+                if (parent.character.mp > 50 // We have enough MP
+                    && targets.length > 0 && !this.newTargetPriority[targets[0].mtype] && targets[0].target == parent.character.name) { // There's a monster targeting us that we don't target
+                    equip(jackoI) // Equip the jacko
+                    use_skill("scare") // Scare the monsters away
+                    equip(jackoI) // Swap back to whatever we had before
+                }
+
+            }
+        } catch (error) {
+            console.error(error);
+        }
+        setTimeout(() => { this.idealEquipmentLoop() }, Math.max(parent.character.ping, parent.next_skill["scare"]));
     }
 
     protected moveLoop(): void {
@@ -230,8 +255,8 @@ export abstract class Character {
         let escapePosition: ALPosition;
         let minTarget: Entity = null;
         for (let target of attackingMonsters) {
-            let d = distance(character, target);
-            if (d > (target.range + target.speed)) continue; // We're still far enough away to not get attacked
+            let d = distance(parent.character, target);
+            if (d > (target.range + (target.speed + character.speed) * Math.max(parent.character.ping * 0.001, 0.5))) continue; // We're still far enough away to not get attacked
             if (target.hp < parent.character.attack * 0.7 * 0.9 * damage_multiplier(target.armor - parent.character.apiercing)) continue // We can kill it in one shot, don't move.
             if (d < minDistance) continue; // There's another target that's closer
             minDistance = d;
@@ -268,14 +293,14 @@ export abstract class Character {
         }
     }
 
-    public moveToMonsters(): void {
+    public moveToMonster(): void {
         let targets = this.getTargets(1);
         if (targets.length == 0 || // There aren't any targets to move to
-            (targets.length > 0 && distance(parent.character, targets[0]) <= parent.character.range)) // We have a target, and it's in range.
+            distance(parent.character, targets[0]) <= parent.character.range) // We have a target, and it's in range.
             return;
 
         if (can_move_to(targets[0].real_x, targets[0].real_y)) {
-            let moveDistance = parent.distance(parent.character, targets[0]) - character.range + targets[0].speed
+            let moveDistance = parent.distance(parent.character, targets[0]) - character.range + (targets[0].speed * 0.5)
             let angle: number = Math.atan2(targets[0].real_y - parent.character.real_y, targets[0].real_x - parent.character.real_x);
             let x = Math.cos(angle) * moveDistance
             let y = Math.sin(angle) * moveDistance
@@ -325,7 +350,6 @@ export abstract class Character {
             if (distance(parent.character, monsterhunter) < 250) {
                 parent.socket.emit('monsterhunt')
             } else if (!smart.moving) {
-                smart_move("monsterhunter")
                 this.pathfinder.saferMovePlace(this, "monsterhunter")
             }
             return
@@ -337,7 +361,7 @@ export abstract class Character {
                 parent.socket.emit('monsterhunt')
             } else if (!smart.moving) {
                 // Go to monster hunter to get a new quest
-                smart_move(monsterhunter)
+                this.pathfinder.saferMovePlace(this, "monsterhunter")
             }
             return
         }
@@ -441,7 +465,7 @@ export abstract class Character {
             if (potentialTarget.mtype == this.mainTarget) priority += 10;
 
             // Increase priority if it's a quest monster
-            if (potentialTarget.mtype == this.getMonsterhuntTarget()) priority += 1000;
+            if (potentialTarget.mtype == this.getMonsterhuntTarget()) priority += 500;
 
             // Increase priority if the entity is targeting us
             if (potentialTarget.target == parent.character.name) priority += 1000;

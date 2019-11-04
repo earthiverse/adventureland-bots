@@ -33,7 +33,10 @@ class Mage extends Character {
         "cgoo": {
             // Our plan is to go to a spot where we're far enough away from them, and then start attacking
             "holdAttack": true,
-            "priority": DIFFICULT
+            "priority": DIFFICULT,
+            "map": "arena",
+            "x": 500,
+            "y": -50
         },
         "crab": {
             "priority": EASY
@@ -85,6 +88,9 @@ class Mage extends Character {
         "osnake": {
             "priority": EASY
         },
+        "phoenix": {
+            "priority": SPECIAL
+        },
         "poisio": {
             "priority": EASY
         },
@@ -100,7 +106,6 @@ class Mage extends Character {
             "x": -296,
             "y": 557,
         },
-
         "rat": {
             "priority": EASY
         },
@@ -156,12 +161,16 @@ class Mage extends Character {
                     && parent.distance(parent.character, targets[0]) < parent.character.range) { // We're in range
                     stop();
                 }
+                if (this.getMonsterhuntTarget()
+                    && this.getMonsterhuntTarget() != this.pathfinder.movementTarget) { // We're moving to the wrong target
+                    stop();
+                }
             } else {
                 this.moveToMonsterhunt();
                 if (!this.holdPosition) {
-                    super.avoidAggroMonsters();
-                    super.avoidAttackingMonsters();
-                    super.moveToMonsters();
+                    this.avoidAggroMonsters();
+                    this.avoidAttackingMonsters();
+                    this.moveToMonster();
                 }
             }
 
@@ -188,7 +197,7 @@ class Mage extends Character {
                 break;
             }
         } catch (error) {
-
+            console.error(error)
         }
         setTimeout(() => { this.energizeLoop() }, Math.max(250, parent.next_skill["energize"] - Date.now()));
     }

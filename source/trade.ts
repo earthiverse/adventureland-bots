@@ -1,22 +1,12 @@
 import { ItemName } from "./definitions/adventureland";
-import { findItems } from "./functions";
-let defaultItemsToGiveToMerchant: ItemName[] = ["monstertoken",
-    "gem0", "gem1", "lostearring", "candycane", "candy0", "candy1", "seashell", "leather", "5bucks", // Tradables
-    "coat1", "shoes1", "pants1", "gloves1", "helmet1", "cape", "handofmidas", // Wearables
-    "bataxe", "sshield", "shield", "fireblade", // Weapons
-    "shoes", "helmet", "coat", "gloves", "pants", // Common clothing
-    "dexamulet", "intamulet", "stramulet", // Amulets
-    "strring", "intring", "dexring", // Rings
-    "strearring", "intearring", "dexearring", // Rings
-    "dexbelt", "strbelt", "intbelt", // Belts
-    "wbook0", "quiver", // Offhands
-    "orbg", // Orbs
-    "ascale", "beewings", "bfur", "carrot", "crabclaw", "cscale", "essenceoffrost", "frogt", "gslime", "ijx", "lotusf", "mistletoe", "poison", "rattail", "shadowstone", "smush", "snakefang", "snakeoil", "spidersilk", "spores", "whiteegg",  // Things monsters drop
-];
+import { findItems, findItemsWithLevel } from "./functions";
+let defaultItemsToKeep: ItemName[] = ["tracker", // Tracker
+    "mpot0", "mpot1", "hpot0", "hpot1", // Potions
+    "jacko"] // Useful for avoiding monsters
 let defaultItemsToSell: ItemName[] = ["hpamulet", "hpbelt", // HP stuff
     "vitring", "vitearring", // Vit stuff
     "slimestaff", "ringsj", "cclaw", "spear", "throwingstars", "gphelmet", "phelmet", "maceofthedead", // Common things
-    "wattire", "wshoes", "wbreeches", "wgloves", "wcap" // Wanderer clothing
+    // "wattire", "wshoes", "wbreeches", "wgloves", "wcap" // Wanderer clothing
 ];
 
 export function sellUnwantedItems(itemsToSell: ItemName[] = defaultItemsToSell) {
@@ -43,30 +33,20 @@ export function sellUnwantedItems(itemsToSell: ItemName[] = defaultItemsToSell) 
     }
 }
 
-export function transferItemsToMerchant(merchantName: string, itemsToTransfer: ItemName[] = defaultItemsToGiveToMerchant, itemsToSell: ItemName[] = defaultItemsToSell) {
+export function transferItemsToMerchant(merchantName: string, itemsToKeep: ItemName[] = defaultItemsToKeep) {
     let merchant = parent.entities[merchantName];
     if (!merchant) return; // No merchant nearby
     if (distance(character, merchant) > 250) return; // Merchant is too far away to trade
 
-    for (let itemName of itemsToTransfer) {
-        let items = findItems(itemName);
-        for (let [i, item] of items) {
-            if (item.q) {
-                send_item(merchantName, i, item.q)
-            } else {
-                send_item(merchantName, i, 1)
-            }
-        }
-    }
+    for (let i = 0; i < parent.character.items.length; i++) {
+        let item = parent.character.items[i]
+        if (!item) continue // Empty slot
+        if (!defaultItemsToKeep.includes(item.name)) continue // We want to keep this
 
-    for (let itemName of itemsToSell) {
-        let items = findItems(itemName);
-        for (let [i, item] of items) {
-            if (item.q) {
-                send_item(merchantName, i, item.q)
-            } else {
-                send_item(merchantName, i, 1)
-            }
+        if (item.q) {
+            send_item(merchantName, i, item.q)
+        } else {
+            send_item(merchantName, i, 1)
         }
     }
 }
@@ -82,7 +62,8 @@ export function transferGoldToMerchant(merchantName: string, minimumGold: number
 
 // TODO: Add check for shells
 // TODO: Add check for earrings
-export function exchangeItems(exchangeItems: ItemName[] = ["gem0", "gem1", "armorbox", "weaponbox", "candy0", "candy1", "candycane"]) {
+export function exchangeItems(xynExchangeItems: ItemName[] = ["gem0", "gem1", "armorbox", "weaponbox", "candy0", "candy1", "candycane"]) {
+    // Xyn (Most exchanges)
     let foundUpgrade = false;
     for (let npc of parent.npcs) {
         if (npc.id == "exchange" && distance(character, {
@@ -93,13 +74,34 @@ export function exchangeItems(exchangeItems: ItemName[] = ["gem0", "gem1", "armo
             break;
         }
     }
-    if (!foundUpgrade) return; // Can't exchange, nobody is near.
+    if (foundUpgrade && !parent.character.q["exchange"]) {
+        for (let itemName of xynExchangeItems) {
+            let items = findItems(itemName)
+            if (items.length > 0) {
+                parent.socket.emit("exchange", {
+                    item_num: items[0][0],
+                    q: items[0][1].q
+                });
+                return;
+            }
+        }
+    }
 
-
-    if (parent.character.q && parent.character.q["exchange"]) return; // Already exchanging
-
-    for (let itemName of exchangeItems) {
-        let items = findItems(itemName)
+    // Pwincess
+    foundUpgrade = false;
+    for (let npc of parent.npcs) {
+        if (npc.id == "pwincess" && distance(character, {
+            x: npc.position[0],
+            y: npc.position[1]
+        }) < 250) {
+            foundUpgrade = true;
+            break;
+        }
+    }
+    if (foundUpgrade && !parent.character.q["exchange"]) {
+        // TODO: Move this to a parameter
+        // NOTE: We are only exchanging level 2 lost earrings, because we want agile quivers
+        let items = findItemsWithLevel("lostearring", 2)
         if (items.length > 0) {
             parent.socket.emit("exchange", {
                 item_num: items[0][0],

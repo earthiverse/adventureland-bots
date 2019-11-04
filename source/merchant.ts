@@ -79,7 +79,7 @@ class Merchant extends Character {
                     if (!character.items[i]) continue;
 
                     // Items0
-                    if (["5bucks", "beewings", "bfur", "candy0", "candy1", "candycane", "carrot", "crabclaw", "cscale", "essenceoffrost", "frogt", "gslime", "ijx", "leather", "lotusf", "mistletoe", "monstertoken", "poison", "pumpkinspice", "rattail", "seashell", "shadowstone", "smoke", "smush", "snakefang", "snakeoil", "spidersilk", "spores", "vitscroll", "whiteegg"].includes(parent.character.items[i].name)) {
+                    if (["5bucks", "ascale", "beewings", "bfur", "candy0", "candy1", "candycane", "carrot", "crabclaw", "cscale", "essenceoffrost", "feather0", "frogt", "gslime", "ijx", "leather", "lotusf", "mistletoe", "monstertoken", "poison", "pumpkinspice", "rattail", "seashell", "shadowstone", "smoke", "smush", "snakefang", "snakeoil", "spidersilk", "spores", "vitscroll", "whiteegg"].includes(parent.character.items[i].name)) {
                         bank_store(i, "items0")
                     }
 
@@ -192,7 +192,9 @@ class Merchant extends Character {
 
     private luckedCharacters: any = {}
     public luckLoop(): void {
-        if (!parent.character.s || !parent.character.s["mluck"] || parent.character.s["mluck"].ms < 10000 || parent.character.s["mluck"].f != parent.character.name) {
+        if (parent.character.mp < 10) {
+            // Do nothing
+        } else if (!parent.character.s || !parent.character.s["mluck"] || parent.character.s["mluck"].ms < 10000 || parent.character.s["mluck"].f != parent.character.name) {
             // Luck ourself
             use_skill("mluck", character);
         } else {
