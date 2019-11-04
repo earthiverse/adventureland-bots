@@ -203,28 +203,29 @@ export abstract class Character {
         }
     }
 
-    protected avoidAggroMonsters(buffer = 50): void {
-        let closestEntity: Entity = null;
-        let closestDistance = 999999;
+    protected avoidAggroMonsters(): void {
+        let closeEntity: Entity = null;
+        let moveDistance = 0;
         for (let id in parent.entities) {
-            let potentialTarget = parent.entities[id];
-            if (potentialTarget.type != "monster") continue; // Not a monster
-            if (potentialTarget.aggro == 0) continue; // Not an aggressive monster
-            if (potentialTarget.target && potentialTarget.target != parent.character.name) continue; // Targeting someone else
-            let d = distance(character, potentialTarget);
-            if (d < closestDistance) {
-                closestEntity = potentialTarget;
-                closestDistance = d;
+            let entity = parent.entities[id];
+            if (entity.type != "monster") continue; // Not a monster
+            if (entity.aggro == 0) continue; // Not an aggressive monster
+            if (entity.target && entity.target != parent.character.name) continue; // Targeting someone else
+            let d = Math.max(60, entity.speed * 1.5) - parent.distance(parent.character, entity);
+            if (d < 0) continue; // Far away
+
+            if(d > moveDistance) {
+                closeEntity = entity;
+                moveDistance = d;
             }
         }
 
-        if (closestDistance > buffer) return; // No close monsters
+        if (!closeEntity) return; // No close monsters
 
         let escapePosition: ALPosition;
-        let angle = Math.atan2(parent.character.real_y - closestEntity.real_y, parent.character.real_x - closestEntity.real_x);
-        let move_distance = buffer - closestDistance
-        let x = Math.cos(angle) * move_distance
-        let y = Math.sin(angle) * move_distance
+        let angle = Math.atan2(parent.character.real_y - closeEntity.real_y, parent.character.real_x - closeEntity.real_x);
+        let x = Math.cos(angle) * moveDistance
+        let y = Math.sin(angle) * moveDistance
         escapePosition = { x: parent.character.real_x + x, y: parent.character.real_y + y };
 
         if (can_move_to(escapePosition.x, escapePosition.y)) {
