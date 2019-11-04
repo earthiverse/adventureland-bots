@@ -1,6 +1,7 @@
 import { determineGrade, findItems, findItemsWithLevel } from "./functions";
+import { ItemName } from "./definitions/adventureland";
 
-export function compoundItem(itemname: string, target_level: number) {
+export function compoundItem(itemname: ItemName, target_level: number) {
     let foundUpgrade = false;
     for (let npc of parent.npcs) {
         if (npc.id == "newupgrade" && distance(character, {
@@ -40,7 +41,7 @@ export function compoundItem(itemname: string, target_level: number) {
     compound(items[0][0], items[1][0], items[2][0], scrolls[0][0])
 }
 
-export function upgradeItem(itemname: string, target_level: number) {
+export function upgradeItem(itemname: ItemName, target_level: number) {
     let foundUpgrade = false;
     for (let npc of parent.npcs) {
         if (npc.id == "newupgrade" && distance(character, {

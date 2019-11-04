@@ -1,4 +1,4 @@
-import { ItemInfo, MonsterName } from "./definitions/adventureland";
+import { ItemInfo, MonsterName, ItemName } from "./definitions/adventureland";
 
 export function determineGrade(item: ItemInfo) {
     let game_item = G.items[item.name];
@@ -19,7 +19,7 @@ export function sendMassCM(names: string[], data: any) {
     }
 }
 
-export function buyAndUpgrade(itemName: string) {
+export function buyAndUpgrade(itemName: ItemName) {
     let items = findItemsWithLevel(itemName, 9)
     if (items.length > 0) return; // We have it!
 
@@ -27,7 +27,7 @@ export function buyAndUpgrade(itemName: string) {
     if (items.length == 0) buy_with_gold(itemName, 1); // Buy one if we don't have any to upgrade
 }
 
-export function findItems(name: string): [number, ItemInfo][] {
+export function findItems(name: ItemName): [number, ItemInfo][] {
     let items: [number, ItemInfo][] = [];
     for (let i = 0; i < 42; i++) {
         if (!parent.character.items[i]) continue; // No item in this slot
@@ -38,7 +38,7 @@ export function findItems(name: string): [number, ItemInfo][] {
     return items;
 }
 
-export function findItemsWithLevel(name: string, level?: number): [number, ItemInfo][] {
+export function findItemsWithLevel(name: ItemName, level?: number): [number, ItemInfo][] {
     let items: [number, ItemInfo][] = [];
     for (let i = 0; i < 42; i++) {
         if (!parent.character.items[i]) continue; // No item in this slot
