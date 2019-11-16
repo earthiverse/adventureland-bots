@@ -33,6 +33,35 @@ export function sellUnwantedItems(itemsToSell: ItemName[] = defaultItemsToSell) 
     }
 }
 
+export function buyFromPonty(itemNames: ItemName[]) {
+    let foundPonty = false;
+    for (let npc of parent.npcs) {
+        if (npc.id == "secondhands" && distance(character, {
+            x: npc.position[0],
+            y: npc.position[1]
+        }) < 350) {
+            foundPonty = true;
+            break;
+        }
+    }
+    if (!foundPonty) return; // We're not near Ponty, so don't buy from him.
+
+    // Set up the handler
+    let items_bought = 0;
+    parent.socket.once("secondhands", (data: any) => {
+        for (let i = 0; i < data.length; i++) {
+            if (itemNames.includes(data[i].name)) {
+                parent.socket.emit("sbuy", { "rid": data[i].rid });
+                items_bought++;
+                if (items_bought >= 5) break; // Only buy a few items at a time to prevent maxing out server calls.
+            }
+        }
+    })
+
+    // Attempt to buy stuff
+    parent.socket.emit("secondhands")
+}
+
 export function transferItemsToMerchant(merchantName: string, itemsToKeep: ItemName[] = defaultItemsToKeep) {
     let merchant = parent.entities[merchantName];
     if (!merchant) return; // No merchant nearby
