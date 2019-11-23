@@ -196,7 +196,13 @@ declare global {
   function compound(item1: number, item2: number, item3: number, scroll: number, offering?: number): void;
   function use(skill: SkillName, target?: Entity): void;
   function use_skill(skill: SkillName, target?: Entity | string): void;
-  function equip(num: number, slot?: number);
+  /**
+   * Equips an item to the player
+   *
+   * @param {number} itemPos The position of the item in the inventory
+   * @param {string} [slotName] The slot that we should equip the item in
+   */
+  function equip(itemPos: number, slotName?: string);
   function heal(entity: Entity): void;
   function attack(entity: Entity): Promise<any>;
   function loot(): void;
