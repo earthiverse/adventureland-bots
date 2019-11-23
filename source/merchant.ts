@@ -1,7 +1,7 @@
 import { Character } from './character'
 import { MonsterName } from './definitions/adventureland';
 import { compoundItem, upgradeItem, upgradeIfMany } from './upgrade'
-import { sellUnwantedItems, exchangeItems } from './trade';
+import { sellUnwantedItems, exchangeItems, buyFromPonty } from './trade';
 
 class Merchant extends Character {
     targetPriority: MonsterName[] = []; // Nothing for now, merchants can't usually attack.
@@ -10,12 +10,11 @@ class Merchant extends Character {
 
     protected mainLoop(): void {
         try {
+            // TODO: move this to a custom moveLoop.
             // Movement
             if (this.holdPosition) {
                 // Don't move.
-            } else if (!smart.moving) { // TODO: Add a check that we're not using our pathfinding.
-                super.avoidAggroMonsters();
-                super.avoidAttackingMonsters();
+            } else if (!smart.moving) {
 
                 // event monsters
                 let event = false;
@@ -79,7 +78,7 @@ class Merchant extends Character {
                     if (!character.items[i]) continue;
 
                     // Items0
-                    if (["5bucks", "ascale", "beewings", "bfur", "candy0", "candy1", "candycane", "carrot", "crabclaw", "cscale", "essenceoffrost", "feather0", "frogt", "gslime", "ijx", "leather", "lotusf", "mistletoe", "monstertoken", "poison", "pumpkinspice", "rattail", "seashell", "shadowstone", "smoke", "smush", "snakefang", "snakeoil", "spidersilk", "spores", "vitscroll", "whiteegg"].includes(parent.character.items[i].name)) {
+                    if (["5bucks", "ascale", "beewings", "bfur", "candy0", "candy1", "candycane", "carrot", "crabclaw", "cscale", "essenceoffrost", "feather0", "frogt", "gslime", "hotchocolate", "ijx", "leather", "lotusf", "mistletoe", "monstertoken", "poison", "pumpkinspice", "rattail", "seashell", "shadowstone", "smoke", "smush", "snakefang", "snakeoil", "spidersilk", "spores", "vitscroll", "whiteegg"].includes(parent.character.items[i].name)) {
                         bank_store(i, "items0")
                     }
 
@@ -94,7 +93,7 @@ class Merchant extends Character {
                     }
 
                     // Items3
-                    if (["lantern", "talkingskull", "jacko", "swordofthedead", "daggerofthedead", "staffofthedead", "bowofthedead", "wbook0", "wbook1"].includes(parent.character.items[i].name)) {
+                    if (["basher", "blade", "bowofthedead", "daggerofthedead", "jacko", "lantern", "staffofthedead", "swordofthedead", "t2bow", "talkingskull", "wattire", "wbook0", "wbook1", "wbreeches", "wcap", "wshoes", "xmassweater"].includes(parent.character.items[i].name)) {
                         bank_store(i, "items3")
                     }
                 }
@@ -123,7 +122,7 @@ class Merchant extends Character {
 
             // Offhands
             upgradeItem("quiver", 8);
-            upgradeItem("t2quiver", 5);
+            upgradeItem("t2quiver", 7);
             compoundItem("wbook0", 3);
             compoundItem("wbook1", 2);
 
@@ -136,9 +135,9 @@ class Merchant extends Character {
             compoundItem("lantern", 2);
 
             //// Weapons
-            upgradeItem("firestaff", 7);
-            upgradeItem("fireblade", 7);
-            upgradeItem("t2bow", 7);
+            upgradeItem("firestaff", 8);
+            upgradeItem("fireblade", 8);
+            upgradeItem("t2bow", 8);
 
             //// Miscellaneous
             compoundItem("lostearring", 2);
@@ -158,12 +157,19 @@ class Merchant extends Character {
             upgradeItem("gloves1", 8)
 
             // Normal Set
-            upgradeItem("coat", 9);
-            upgradeItem("pants", 9);
-            upgradeItem("gloves", 9);
-            upgradeItem("shoes", 9);
-            upgradeItem("helmet", 9);
-            upgradeItem("bow", 9);
+            upgradeItem("coat", 10)
+            upgradeItem("pants", 10)
+            upgradeItem("gloves", 10)
+            upgradeItem("shoes", 10)
+            upgradeItem("helmet", 10)
+            upgradeItem("bow", 10)
+
+            // Wanderer's set
+            upgradeItem("wcap", 8)
+            upgradeItem("wattire", 8)
+            upgradeItem("wbreeches", 8)
+            upgradeItem("wshoes", 8)
+            upgradeItem("wgloves", 8)
 
             // buyAndUpgrade("coat")
             // buyAndUpgrade("pants")
@@ -176,7 +182,7 @@ class Merchant extends Character {
             super.mainLoop();
         } catch (error) {
             console.error(error);
-            setTimeout(() => { this.mainLoop(); }, 250);
+            setTimeout(() => { this.mainLoop(); }, 1000);
         }
     }
 
@@ -184,14 +190,41 @@ class Merchant extends Character {
         super.run();
         this.luckLoop();
         this.lootLoop();
+        this.pontyLoop();
     }
 
     protected attackLoop(): void {
         // Nothing for now, merchants can't usually attack.
     }
 
+    private pontyLoop(): void {
+        let foundPonty = false;
+        for (let npc of parent.npcs) {
+            if (npc.id == "secondhands" && distance(character, {
+                x: npc.position[0],
+                y: npc.position[1]
+            }) < 350) {
+                foundPonty = true;
+                break;
+            }
+        }
+        if (!foundPonty) {
+            // We're not near Ponty, so don't buy from him.
+            setTimeout(() => { this.pontyLoop() }, 250);
+            return;
+        }
+
+        buyFromPonty([/*"strbelt", "strring", "intbelt", "intring",*/ "dexbelt", "dexring", // High priority things
+            /*"intearring",*/ "dexearring", /*"strearring", "stramulet", "dexamulet", "intamulet",*/ // Low priority things
+            "wgloves", // I want to get all +8 for my mage
+            "lostearring", "jacko", "cape", "bcape", "monstertoken", "t2bow", "cupid", "candycanesword", "bowofthedead", "gbow", "hbow", "t2quiver", "oozingterror", "talkingskull", "greenbomb", "gem0", "candy0", "candy1", "xboots", "handofmidas", "goldenpowerglove", "xgloves", "powerglove", "poker", "starkillers", "xpants", "xarmor", "xhelmet", "fury", "partyhat"]); // Things that I probably won't find
+
+        // We bought things from Ponty, wait a long time before trying to buy again.
+        setTimeout(() => { this.pontyLoop() }, 15000);
+    }
+
     private luckedCharacters: any = {}
-    public luckLoop(): void {
+    private luckLoop(): void {
         if (parent.character.mp < 10) {
             // Do nothing
         } else if (!parent.character.s || !parent.character.s["mluck"] || parent.character.s["mluck"].ms < 10000 || parent.character.s["mluck"].f != parent.character.name) {

@@ -55,7 +55,6 @@ class Ranger extends Character {
             "priority": EASY
         },
         "ghost": {
-            // Don't attack if we're walking by them, they hurt.
             "holdAttack": true,
             "stopOnSight": true,
             "priority": DIFFICULT
@@ -71,7 +70,6 @@ class Ranger extends Character {
             "priority": EASY
         },
         "iceroamer": {
-            // Don't attack if we're walking by them, they hurt.
             "holdAttack": true,
             "priority": DIFFICULT,
             "stopOnSight": true,
@@ -88,6 +86,15 @@ class Ranger extends Character {
             "priority": SPECIAL,
             "stopOnSight": true
         },
+        "oneeye": {
+            // Camp out at a spot that's 99% safe.
+            "holdAttack": true,
+            "holdPosition": true,
+            "priority": DIFFICULT,
+            "map": "level2w",
+            "x": -120,
+            "y": -100
+        },
         "osnake": {
             "priority": EASY
         },
@@ -101,7 +108,7 @@ class Ranger extends Character {
             "priority": EASY
         },
         "prat": {
-            // Our plan is to go to a spot on a cliff where they can't attack us, but we can attack them.
+            // Go to a cliff where we can attack them, but they can't attack us.
             "holdAttack": true,
             "holdPosition": true,
             "priority": DIFFICULT,
@@ -135,7 +142,6 @@ class Ranger extends Character {
             "priority": EASY
         },
         "stoneworm": {
-            // Don't attack if we're walking by them, they hurt.
             "holdAttack": true,
             "stopOnSight": true,
             "priority": DIFFICULT
@@ -144,10 +150,17 @@ class Ranger extends Character {
             "priority": EASY
         },
         "wolfie": {
-            // The ranger is fast enough to avoid these fairly well
+            // The ranger is fast enough to kill these without dying too much.
             "priority": DIFFICULT,
             "holdAttack": true,
             "stopOnSight": true
+        },
+        "xscorpion": {
+            "priority": DIFFICULT,
+            "holdAttack": true,
+            "map": "halloween",
+            "x": -230,
+            "y": 570
         }
     }
     mainTarget: MonsterName = "rat";
@@ -155,39 +168,32 @@ class Ranger extends Character {
     run(): void {
         super.run();
         this.superShotLoop();
-        this.huntersmarkLoop();
-        this.fourFingersLoop();
+        // this.huntersmarkLoop();
+        // this.fourFingersLoop();
         this.sendLootLoop();
     }
 
     mainLoop(): void {
         try {
             // Movement
-            let targets = this.getTargets(1);
-            if (smart.moving) {
-                if (targets.length > 0 // We have a target
-                    && this.newTargetPriority[targets[0].mtype]
-                    && this.newTargetPriority[targets[0].mtype].stopOnSight // We stop on sight of that target
-                    && this.pathfinder.movementTarget == targets[0].mtype // We're moving to that target
-                    && parent.distance(parent.character, targets[0]) < parent.character.range) { // We're in range
-                    game_log("stop on sight")
-                    stop();
-                }
-                if (this.getMonsterhuntTarget()
-                    && this.getMonsterhuntTarget() != this.pathfinder.movementTarget) { // We're moving to the wrong target
-                    game_log("stop on wrong target")
-                    stop();
-                }
-            } else {
-                if(targets.length > 0 && targets[0].target != character.target) {
-                    this.moveToMonsterhunt();
-                }
-                if (!this.holdPosition) {
-                    this.avoidAggroMonsters();
-                    this.avoidAttackingMonsters();
-                    this.moveToMonster();
-                }
-            }
+            // let targets = this.getTargets(1);
+            // if (smart.moving) {
+            //     if (targets.length > 0 // We have a target
+            //         && this.newTargetPriority[targets[0].mtype]
+            //         && this.newTargetPriority[targets[0].mtype].stopOnSight // We stop on sight of that target
+            //         && this.pathfinder.movementTarget == targets[0].mtype // We're moving to that target
+            //         && parent.distance(parent.character, targets[0]) < parent.character.range) { // We're in range
+            //         game_log("stop on sight")
+            //         stop();
+            //     }
+            //     if (this.getMonsterhuntTarget()
+            //         && this.getMonsterhuntTarget() != this.pathfinder.movementTarget) { // We're moving to the wrong target
+            //         game_log("stop on wrong target")
+            //         stop();
+            //     }
+            // } else {
+            //     this.moveToMonsterhunt();
+            // }
 
             transferItemsToMerchant("earthMer");
             transferGoldToMerchant("earthMer");
@@ -208,6 +214,7 @@ class Ranger extends Character {
             if (parent.character.mp < 240 // No MP
                 || parent.next_skill["huntersmark"] > Date.now() // Not usable yet
                 || targets.length == 0 // No targets
+                || parent.character.stoned // Can't use skills
                 || targets[0].s.marked
                 || targets[0].hp < parent.character.attack * 5 // Target is easily killable
                 || parent.distance(parent.character, targets[0]) > parent.character.range) { // Not in range
@@ -226,6 +233,7 @@ class Ranger extends Character {
             let targets = this.getTargets(1);
             if (parent.character.mp > 260 // We have MP
                 && targets.length > 0 // We have a target
+                && !parent.character.stoned // Can use skills
                 && distance(parent.character, targets[0]) <= 120 // The target is in range
                 && targets[0].player
                 && targets[0].target == parent.character.name // The target is targetting us
@@ -242,16 +250,17 @@ class Ranger extends Character {
     }
 
     superShotLoop(): void {
-        let targets = this.getTargets(1);
+        let targets = this.getTargets(2);
         if (parent.character.mp < 400 // No MP
             || targets.length == 0 // No targets
-            || parent.distance(parent.character, targets[0]) > character.range * 3
+            || parent.character.stoned // Can't use skills
+            || parent.distance(parent.character, targets[1]) > character.range * 3 // Out of range
             || parent.next_skill["supershot"] > Date.now() // Not usable yet
-            || (this.holdAttack && targets[0].target != parent.character.name)
-            || (smart.moving && this.newTargetPriority[targets[0].mtype] && this.newTargetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name)) {
+            || (this.holdAttack && targets[1].target != parent.character.name) // Holding attack (global)
+            || (smart.moving && this.newTargetPriority[targets[1].mtype] && this.newTargetPriority[targets[1].mtype].holdAttack && targets[1].target != parent.character.name)) { // Holding attack (monster)
             // Do nothing
         } else {
-            use_skill("supershot", targets[0])
+            use_skill("supershot", targets[1])
         }
 
         setTimeout(() => { this.superShotLoop() }, Math.max(parent.character.ping, parent.next_skill["supershot"] - Date.now()));
@@ -263,9 +272,10 @@ class Ranger extends Character {
         // Try to 3shot targets
         let targets = this.getThreeshotTargets();
         if (targets.length >= 3
-            && parent.character.mp > 300
+            && parent.character.mp > 300 // Have MP
+            && !parent.character.stoned // Can use skills
             && parent.next_skill["attack"] <= Date.now()
-            && !(smart.moving && this.newTargetPriority[targets[0].mtype] && this.newTargetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name)) {// Holding attack and not being attacked
+            && !(smart.moving && this.newTargetPriority[targets[0].mtype] && this.newTargetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name)) { // Holding attack and not being attacked
             // game_log("3shot!?")
             parent.socket.emit("skill", {
                 name: "3shot",

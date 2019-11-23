@@ -1,7 +1,7 @@
 import { Queue } from "prioqueue"
-import { MonsterName, Entity, ALPosition, ItemName } from './definitions/adventureland';
+import { MonsterName, Entity, ALPosition, ItemName, ItemInfo, Slot } from './definitions/adventureland';
 import { Pathfinder } from './pathfinder';
-import { sendMassCM, findItems } from "./functions";
+import { sendMassCM, findItems, getInventory } from "./functions";
 import { TargetPriorityList } from "./definitions/bots";
 
 export abstract class Character {
@@ -15,18 +15,20 @@ export abstract class Character {
     public holdPosition = false;
     public holdAttack = false;
     protected pathfinder: Pathfinder = new Pathfinder(6);
-    protected monsterhuntQuests: any = {};
+    protected partyInfo: any = {};
     protected chests = new Set<string>()
 
     protected mainLoop() {
-        // loot();
+        // Equip better items if we have one in our inventory
+        this.equipBetterItems();
+
         setTimeout(() => { this.mainLoop(); }, Math.max(250, parent.character.ping));
     };
 
     public run() {
         this.healLoop();
         this.attackLoop();
-        this.idealEquipmentLoop();
+        this.scareLoop();
         this.moveLoop();
         this.mainLoop();
     }
@@ -66,6 +68,7 @@ export abstract class Character {
         try {
             let targets = this.getTargets(1);
             if (targets.length == 0 // No targets
+                || parent.character.stoned // Can't attack
                 || parent.character.mp < parent.character.mp_cost // No MP
                 || parent.next_skill["attack"] > Date.now() // On cooldown
                 || parent.distance(parent.character, targets[0]) > parent.character.range
@@ -89,57 +92,73 @@ export abstract class Character {
         }
     }
 
-    protected idealEquipmentLoop(): void {
-        // TODO: If we are being attacked by more than three monsters and we have a jacko, use it.
-        // TODO: If we are low health and are being attacked by monsters, use it.
+    protected scareLoop(): void {
         try {
-            let targets = this.getTargets(10);
-            let items = findItems("jacko")
-            // TODO: add a check if we have it equipped
-            if (items.length > 0) {
-                // We have a jacko, which lets us scare away all monsters targeting us
-                let jackoI = items[0][0]
-                if (parent.character.mp > 50 // We have enough MP
-                    && targets.length > 0 && !this.newTargetPriority[targets[0].mtype] && targets[0].target == parent.character.name) { // There's a monster targeting us that we don't target
+            let targets = this.getTargets(1);
+            if (Date.now() > parent.next_skill["scare"] // Scare is not on cooldown
+                && targets.length > 0 // There's a target
+                && targets[0].target == parent.character.name // It's targeting us
+                && distance(targets[0], parent.character) <= targets[0].range // We're in range of its attacks
+                && (!this.newTargetPriority[targets[0].mtype] // Either 1) there's something attacking us that isn't in our priority list
+                    || (character.hp < targets[0].attack * targets[0].frequency * 5)) // or 2) We're about to die
+                && parent.character.mp >= 50) { // We have enough MP
+                let items = findItems("jacko")
+                if (parent.character.slots.orb && parent.character.slots.orb.name == "jacko") {
+                    // We have a jacko equipped
+                    use_skill("scare")
+                } else if (items.length > 0) {
+                    // We have a jacko in our inventory
+                    // TODO: Sometimes the orb doesn't get re-equipped...
+                    let jackoI = items[0][0]
                     equip(jackoI) // Equip the jacko
                     use_skill("scare") // Scare the monsters away
                     equip(jackoI) // Swap back to whatever we had before
                 }
-
+            } else {
+                // TODO: We can't / don't want to use scare, so equip our orb
             }
         } catch (error) {
             console.error(error);
         }
-        setTimeout(() => { this.idealEquipmentLoop() }, Math.max(parent.character.ping, parent.next_skill["scare"]));
+        setTimeout(() => { this.scareLoop() }, Math.max(parent.character.ping, parent.next_skill["scare"] - Date.now()));
     }
 
     protected moveLoop(): void {
         try {
-            if (!this.movementQueue || this.movementQueue.length == 0) {
-                // No movements in the queue, do nothing.
+            if (this.holdPosition) {
+                // Don't move, we're holding position
                 setTimeout(() => { this.moveLoop() }, 250); // TODO: move this 250 cooldown to a setting.
                 return;
-            } else if (parent.character.moving) {
-                // We're already moving, don't move somewhere new.
-                setTimeout(() => { this.moveLoop() }, 250) // TODO: Instead of 250, base it on how long it will take to walk to where we are going. (x && y && going_x && going_y && speed)
-                return;
-            }
+            } else if (!smart.moving // Not smart moving
+                && (!this.movementQueue || this.movementQueue.length == 0)) { // No movement queue
+                // Default movements
+                if (character.ctype == "ranger" || character.ctype == "mage") {
+                    this.avoidAggroMonsters();
+                }
 
-            let nextMovement = this.movementQueue[0];
-            if (nextMovement.map == parent.character.map && can_move_to(nextMovement.x, nextMovement.y)) {
-                // We can move to the next place in the queue, so let's start moving there.
-                move(nextMovement.x, nextMovement.y)
+                this.avoidAttackingMonsters();
 
+                if (character.ctype == "ranger" || character.ctype == "mage" || character.ctype == "warrior") {
+                    this.moveToMonster();
+                }
             } else {
-                // We can't move to the next place in the queue...
-                // TODO: Pathfind to the next place in the queue
+                // Pathfinding movements
+                // TODO: we need to pop our movement somewhere
+                let nextMovement = this.movementQueue[0];
+                if (nextMovement.map == parent.character.map && can_move_to(nextMovement.x, nextMovement.y)) {
+                    // We can move to the next place in the queue, so let's start moving there.
+                    move(nextMovement.x, nextMovement.y)
+                } else {
+                    // We can't move to the next place in the queue...
+                    // TODO: Pathfind to the next place in the queue
+                }
             }
+
             setTimeout(() => { this.moveLoop() }, Math.max(250, parent.character.ping)); // TODO: queue up next movement based on time it will take to walk there
         } catch (error) {
             console.error(error)
-            setTimeout(() => { this.moveLoop() }, 250); // TODO: queue up next movement based on time it will take to walk there
+            setTimeout(() => { this.moveLoop() }, 250);
         }
-
     }
 
     protected healLoop(): void {
@@ -156,8 +175,8 @@ export abstract class Character {
 
             let hpPots: ItemName[] = ["hpot0", "hpot1"]
             let mpPots: ItemName[] = ["mpot0", "mpot1"]
-            let useMpPot: ItemName = null;
-            let useHpPot: ItemName = null;
+            let useMpPot: ItemInfo = null
+            let useHpPot: ItemInfo = null
 
             // TODO: find last potion in inventory
             for (let i = parent.character.items.length - 1; i >= 0; i--) {
@@ -166,34 +185,57 @@ export abstract class Character {
 
                 if (!useHpPot && hpPots.includes(item.name)) {
                     // This is the HP Pot that will be used
-                    useHpPot = item.name
+                    useHpPot = item
                 } else if (!useMpPot && mpPots.includes(item.name)) {
                     // This is the MP Pot that will be used
-                    useMpPot = item.name
+                    useMpPot = item
                 }
 
                 if (useHpPot && useMpPot) {
                     // We've found the last two pots we're using
-                    break;
+                    break
                 }
             }
 
             let hp_ratio = parent.character.hp / parent.character.max_hp
             let mp_ratio = parent.character.mp / parent.character.max_mp
-            if (useHpPot == "hpot0" && hp_ratio <= mp_ratio && (parent.character.max_hp - parent.character.hp >= 200 || parent.character.hp < 50)) {
+            if (hp_ratio <= mp_ratio
+                && hp_ratio != 1
+                && (!useHpPot
+                    || (useHpPot.name == "hpot0" && (parent.character.hp <= parent.character.max_hp - 200 || parent.character.hp < 50))
+                    || (useHpPot.name == "hpot1" && (parent.character.hp <= parent.character.max_hp - 400 || parent.character.hp < 50)))) {
                 use_skill("use_hp")
-            } else if (useHpPot == "hpot1" && hp_ratio <= mp_ratio && (parent.character.max_hp - parent.character.hp >= 400 || parent.character.hp < 50)) {
-                use_skill("use_hp")
-            } else if (useMpPot == "mpot0" && mp_ratio < hp_ratio && (parent.character.max_mp - parent.character.mp >= 300 || parent.character.mp < 50)) {
+            } else if (mp_ratio != 1
+                && (!useMpPot
+                    || (useMpPot.name == "mpot0" && (parent.character.mp <= parent.character.max_mp - 300 || parent.character.mp < 50))
+                    || (useMpPot.name == "mpot1" && (parent.character.mp <= parent.character.max_mp - 500 || parent.character.mp < 50)))) {
                 use_skill("use_mp")
-            } else if (useMpPot == "mpot1" && mp_ratio < hp_ratio && (parent.character.max_mp - parent.character.mp >= 500 || parent.character.mp < 50)) {
-                use_skill("use_mp")
-            } else if (useHpPot == null && hp_ratio != 1 && hp_ratio <= mp_ratio) {
-                // Even if we don't have a potion, use_hp will heal for 50 hp.
-                use_skill("use_hp")
-            } else if (useMpPot == null && mp_ratio != 1 && mp_ratio < hp_ratio) {
-                // Even if we don't have a potion, use_mp will heal for 100 mp.
-                use_skill("use_mp")
+            }
+
+            // Send a message to everyone with how many potions we have left.
+            // NOTE: TODO: A character could have two stacks of potions, one being 9999 and the other being 10, this only sends the quantity information about the stack that is being used for healing
+            // NOTE: TODO: This assumes we are using hpot1 and mpot1 potions.
+            if (useMpPot) {
+                sendMassCM(parent.party_list, {
+                    "message": useMpPot.name,
+                    "quantity": useMpPot.q
+                })
+            } else {
+                sendMassCM(parent.party_list, {
+                    "message": "mpot1",
+                    "quantity": 0
+                })
+            }
+            if (useHpPot) {
+                sendMassCM(parent.party_list, {
+                    "message": useHpPot.name,
+                    "quantity": useHpPot.q
+                })
+            } else {
+                sendMassCM(parent.party_list, {
+                    "message": "hpot1",
+                    "quantity": 0
+                })
             }
 
             setTimeout(() => { this.healLoop() }, Math.max(250, parent.character.ping, parent.next_skill["use_hp"] - Date.now()))
@@ -214,7 +256,7 @@ export abstract class Character {
             let d = Math.max(60, entity.speed * 1.5) - parent.distance(parent.character, entity);
             if (d < 0) continue; // Far away
 
-            if(d > moveDistance) {
+            if (d > moveDistance) {
                 closeEntity = entity;
                 moveDistance = d;
             }
@@ -257,6 +299,7 @@ export abstract class Character {
         let minTarget: Entity = null;
         for (let target of attackingMonsters) {
             let d = distance(parent.character, target);
+            if (target.speed > character.speed) continue; // We can't outrun it, don't try
             if (d > (target.range + (target.speed + character.speed) * Math.max(parent.character.ping * 0.001, 0.5))) continue; // We're still far enough away to not get attacked
             if (target.hp < parent.character.attack * 0.7 * 0.9 * damage_multiplier(target.armor - parent.character.apiercing)) continue // We can kill it in one shot, don't move.
             if (d < minDistance) continue; // There's another target that's closer
@@ -296,8 +339,9 @@ export abstract class Character {
 
     public moveToMonster(): void {
         let targets = this.getTargets(1);
-        if (targets.length == 0 || // There aren't any targets to move to
-            distance(parent.character, targets[0]) <= parent.character.range) // We have a target, and it's in range.
+        if (targets.length == 0 // There aren't any targets to move to
+            || (this.newTargetPriority[targets[0].mtype] && this.newTargetPriority[targets[0].mtype].holdPosition) // We don't want to move to these monsters
+            || distance(parent.character, targets[0]) <= parent.character.range) // We have a target, and it's in range.
             return;
 
         if (can_move_to(targets[0].real_x, targets[0].real_y)) {
@@ -328,22 +372,35 @@ export abstract class Character {
 
         // Update monster hunt info
         if (parent.character.s && parent.character.s.monsterhunt) {
-            if (parent.character.s.monsterhunt.c == 0 && this.monsterhuntQuests[parent.character.name] && this.monsterhuntQuests[parent.character.name].target) {
+            // We have a monster hunt quest
+            if (parent.character.s.monsterhunt.c == 0 && this.partyInfo[parent.character.name] && this.partyInfo[parent.character.name].target) {
+                // We've finished our monster hunt quest and are turning it in
                 sendMassCM(parent.party_list, {
                     "message": "quest",
                     "target": undefined
                 })
-            } else if (!this.monsterhuntQuests[parent.character.name] || (this.monsterhuntQuests[parent.character.name] && this.monsterhuntQuests[parent.character.name].target !== parent.character.s.monsterhunt.id)) {
+                this.partyInfo[parent.character.name] = {
+                    "target": undefined
+                }
+            } else if (!this.partyInfo[parent.character.name] || (this.partyInfo[parent.character.name] && this.partyInfo[parent.character.name].target !== parent.character.s.monsterhunt.id)) {
+                // We just got a new quest
                 sendMassCM(parent.party_list, {
                     "message": "quest",
                     "target": parent.character.s.monsterhunt.id
-                });
+                })
+                this.partyInfo[parent.character.name] = {
+                    "target": parent.character.s.monsterhunt.id
+                }
             }
-        } else if (this.monsterhuntQuests[parent.character.name] && this.monsterhuntQuests[parent.character.name].target) {
+        } else if (this.partyInfo[parent.character.name] && this.partyInfo[parent.character.name].target) {
+            // We had a monster hunt quest, but now we don't.
             sendMassCM(parent.party_list, {
                 "message": "quest",
                 "target": undefined
             })
+            this.partyInfo[parent.character.name] = {
+                "target": undefined
+            }
         }
 
         // Turn in
@@ -351,6 +408,7 @@ export abstract class Character {
             if (distance(parent.character, monsterhunter) < 250) {
                 parent.socket.emit('monsterhunt')
             } else if (!smart.moving) {
+                set_message("Finish MH")
                 this.pathfinder.saferMovePlace(this, "monsterhunter")
             }
             return
@@ -362,6 +420,7 @@ export abstract class Character {
                 parent.socket.emit('monsterhunt')
             } else if (!smart.moving) {
                 // Go to monster hunter to get a new quest
+                set_message("New MH")
                 this.pathfinder.saferMovePlace(this, "monsterhunter")
             }
             return
@@ -379,13 +438,13 @@ export abstract class Character {
                     this.pathfinder.saferMoveMonster(this, monsterHuntTarget)
                 } else if (targets.length != 0 && targets[0].mtype != this.mainTarget) {
                     // Not in our target priority, so it's probably too dangerous. Go to our default target
-                    set_message("MH Idle: " + this.mainTarget)
+                    set_message(this.mainTarget)
                     this.pathfinder.saferMoveMonster(this, this.mainTarget)
                 }
             }
-        } else if (targets.length == 0 || targets.length != 0 && targets[0].mtype != this.mainTarget) {
+        } else if (targets.length == 0 || (targets.length != 0 && targets[0].mtype != this.mainTarget)) {
             // Not in our target priority, so it's probably too dangerous. Go to our default target
-            set_message("MH Idle: " + this.mainTarget)
+            set_message(this.mainTarget)
             this.pathfinder.saferMoveMonster(this, this.mainTarget)
         }
     }
@@ -397,16 +456,21 @@ export abstract class Character {
             return;
         }
 
+        if (!this.partyInfo[characterName]) {
+            // Start tracking info for this player
+            this.partyInfo[characterName] = {}
+        }
+
         if (data.message == "quest") {
-            this.monsterhuntQuests[characterName] = {
-                "target": data.target
-            }
+            this.partyInfo[characterName].target = data.target
+        } else if (["mpot0", "mpot1", "hpot0", "hpot1"].includes(data.message)) {
+            this.partyInfo[characterName][data.message] = data.quantity
         } else if (data.message = "loot") {
             data.chests.forEach((chest: string) => {
                 this.chests.add(chest)
             });
-        } else {
-            // game_log("unknown request: " + JSON.stringify(data));
+            // } else {
+            //     game_log("unknown request: " + JSON.stringify(data));
         }
     }
 
@@ -417,8 +481,8 @@ export abstract class Character {
         // Party monster hunts
         let highestPriorityTarget = -1;
         let highestPriorityTargetName: MonsterName = null;
-        for (let questInfo in this.monsterhuntQuests) {
-            let target: MonsterName = this.monsterhuntQuests[questInfo].target;
+        for (let questInfo in this.partyInfo) {
+            let target: MonsterName = this.partyInfo[questInfo].target;
             if (!this.newTargetPriority[target]) continue;
             let priorty = this.newTargetPriority[target].priority;
             if (priorty > highestPriorityTarget) {
@@ -429,6 +493,28 @@ export abstract class Character {
         if (highestPriorityTarget != -1) return highestPriorityTargetName;
 
         return null;
+    }
+
+    /**
+     * Looks if we have items in our inventory that are the same as those equipped, only a higher level.
+     */
+    public equipBetterItems() {
+        let items = getInventory();
+
+        for (let slot in character.slots) {
+            let slotItem: ItemInfo = character.slots[slot as Slot];
+            if (!slotItem) continue; // Nothing equipped in that slot
+            for (let [i, itemInfo] of items) {
+                if (itemInfo.name !== slotItem.name) continue; // Not the same item
+                if (itemInfo.level <= slotItem.level) continue; // Not better than the currently equipped item
+
+                // It's better, equip it.
+                equip(i);
+
+                // In the off chance that we have multiple items that are better than those equipped, keep looking
+                slotItem = itemInfo;
+            }
+        }
     }
 
     public getTargets(numTargets: number = 1): Entity[] {
@@ -458,9 +544,6 @@ export abstract class Character {
 
             // Adjust priority if a party member is already attacking it.
             if (claimedTargets.includes(id)) priority -= 250;
-
-            // Adjust priority if it's special
-            if (["goldenbat", "snowman"].includes(potentialTarget.mtype)) priority += 5000;
 
             // Increase priority if it's our "main target"
             if (potentialTarget.mtype == this.mainTarget) priority += 10;

@@ -85,6 +85,15 @@ class Mage extends Character {
             "priority": SPECIAL,
             "stopOnSight": true
         },
+        "oneeye": {
+            // Camp out at a spot that's 99% safe.
+            "holdAttack": true,
+            "holdPosition": true,
+            "priority": DIFFICULT,
+            "map": "level2w",
+            "x": -120,
+            "y": -100
+        },
         "osnake": {
             "priority": EASY
         },
@@ -152,28 +161,24 @@ class Mage extends Character {
     mainLoop(): void {
         try {
             // Movement
-            if (smart.moving) {
-                let targets = this.getTargets(1);
-                if (targets.length > 0 // We have a target
-                    && this.newTargetPriority[targets[0].mtype]
-                    && this.newTargetPriority[targets[0].mtype].stopOnSight // We stop on sight of that target
-                    && this.pathfinder.movementTarget == targets[0].mtype // We're moving to that target
-                    && parent.distance(parent.character, targets[0]) < parent.character.range) { // We're in range
-                    stop();
-                }
-                if (this.getMonsterhuntTarget()
-                    && this.getMonsterhuntTarget() != this.pathfinder.movementTarget) { // We're moving to the wrong target
-                    stop();
-                }
-            } else {
-                this.moveToMonsterhunt();
-                if (!this.holdPosition) {
-                    this.avoidAggroMonsters();
-                    this.avoidAttackingMonsters();
-                    this.moveToMonster();
-                }
-            }
+            // let targets = this.getTargets(1);
+            // if (smart.moving) {
+            //     if (targets.length > 0 // We have a target
+            //         && this.newTargetPriority[targets[0].mtype]
+            //         && this.newTargetPriority[targets[0].mtype].stopOnSight // We stop on sight of that target
+            //         && this.pathfinder.movementTarget == targets[0].mtype // We're moving to that target
+            //         && parent.distance(parent.character, targets[0]) < parent.character.range) { // We're in range
+            //         stop();
+            //     }
+            //     if (this.getMonsterhuntTarget()
+            //         && this.getMonsterhuntTarget() != this.pathfinder.movementTarget) { // We're moving to the wrong target
+            //         stop();
+            //     }
+            // } else {
+            //     this.moveToMonsterhunt();
+            // }
 
+            this.equipBetterItems();
             transferItemsToMerchant("earthMer");
             transferGoldToMerchant("earthMer");
             sellUnwantedItems();
@@ -188,10 +193,10 @@ class Mage extends Character {
     energizeLoop(): void {
         try {
             // Get nearby party members
-            for (let id in parent.party_list) {
-                if (id == parent.character.name) continue; // Don't cast on ourself.
-                let member = parent.party[id];
-                if (distance(parent.character, member) > parent.character.range) continue; // Out of range
+            for (let id in parent.entities) {
+                if (id == parent.character.name) continue // Don't cast on ourself.
+                if (distance(parent.character, parent.entities[id]) > parent.character.range) continue // Out of range
+                if (!parent.party_list.includes(id)) continue // Not in our party
 
                 use_skill("energize", id)
                 break;

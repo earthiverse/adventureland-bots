@@ -33,6 +33,14 @@ export function sellUnwantedItems(itemsToSell: ItemName[] = defaultItemsToSell) 
     }
 }
 
+export function openStall() {
+    // Find the merchant stall item
+}
+
+export function closeStall() {
+    
+}
+
 export function buyFromPonty(itemNames: ItemName[]) {
     let foundPonty = false;
     for (let npc of parent.npcs) {

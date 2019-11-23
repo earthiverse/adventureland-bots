@@ -27,6 +27,18 @@ export function buyAndUpgrade(itemName: ItemName) {
     if (items.length == 0) buy_with_gold(itemName, 1); // Buy one if we don't have any to upgrade
 }
 
+/**
+ * Returns the inventory for the player, with all empty slots removed.
+ */
+export function getInventory(): [number, ItemInfo][] {
+    let items: [number, ItemInfo][] = [];
+    for (let i = 0; i < 42; i++) {
+        if (!parent.character.items[i]) continue; // No item in this slot
+        items.push([i, parent.character.items[i]])
+    }
+    return items;
+}
+
 export function findItems(name: ItemName): [number, ItemInfo][] {
     let items: [number, ItemInfo][] = [];
     for (let i = 0; i < 42; i++) {

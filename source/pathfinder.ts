@@ -24,12 +24,6 @@ export class Pathfinder {
 
         this.movementTarget = to;
 
-        // Hold Position
-        if (c.newTargetPriority[to] && c.newTargetPriority[to].holdPosition) {
-            c.holdPosition = true;
-        } else {
-            c.holdPosition = false;
-        }
         if (c.newTargetPriority[to] && c.newTargetPriority[to].map && c.newTargetPriority[to].x && c.newTargetPriority[to].y) {
             let p: ALPosition = {
                 map: c.newTargetPriority[to].map,
@@ -48,7 +42,6 @@ export class Pathfinder {
         if (smart.moving) return; // Already moving somewhere
 
         this.movementTarget = to;
-        c.holdPosition = false;
 
         smart_move(to);
     }

@@ -80,26 +80,24 @@ class Warrior extends Character {
     mainLoop(): void {
         try {
             // Movement
-            if (smart.moving) {
-                let targets = this.getTargets(1);
-                if (targets.length > 0 // We have a target
-                    && this.newTargetPriority[targets[0].mtype]
-                    && this.newTargetPriority[targets[0].mtype].stopOnSight // We stop on sight of that target
-                    && this.pathfinder.movementTarget == targets[0].mtype // We're moving to that target
-                    && parent.distance(parent.character, targets[0]) < parent.character.range) { // We're in range
-                    stop();
-                }
-                if (this.getMonsterhuntTarget()
-                    && this.getMonsterhuntTarget() != this.pathfinder.movementTarget) { // We're moving to the wrong target
-                    stop();
-                }
-            } else {
-                this.moveToMonsterhunt();
-                if (!this.holdPosition) {
-                    this.moveToMonster();
-                }
-            }
+            // let targets = this.getTargets(1);
+            // if (smart.moving) {
+            //     if (targets.length > 0 // We have a target
+            //         && this.newTargetPriority[targets[0].mtype]
+            //         && this.newTargetPriority[targets[0].mtype].stopOnSight // We stop on sight of that target
+            //         && this.pathfinder.movementTarget == targets[0].mtype // We're moving to that target
+            //         && parent.distance(parent.character, targets[0]) < parent.character.range) { // We're in range
+            //         stop();
+            //     }
+            //     if (this.getMonsterhuntTarget()
+            //         && this.getMonsterhuntTarget() != this.pathfinder.movementTarget) { // We're moving to the wrong target
+            //         stop();
+            //     }
+            // } else {
+            //     this.moveToMonsterhunt();
+            // }
 
+            this.equipBetterItems();
             transferItemsToMerchant("earthMer");
             transferGoldToMerchant("earthMer");
             sellUnwantedItems();
