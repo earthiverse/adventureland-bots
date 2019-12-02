@@ -150,38 +150,20 @@ class Mage extends Character {
             "priority": EASY
         }
     }
-    mainTarget: MonsterName = "rat";
+    mainTarget: MonsterName = "porcupine";
 
     run(): void {
         super.run();
         this.energizeLoop();
-        this.sendLootLoop();
+        // this.sendLootLoop();
     }
 
     mainLoop(): void {
         try {
-            // Movement
-            // let targets = this.getTargets(1);
-            // if (smart.moving) {
-            //     if (targets.length > 0 // We have a target
-            //         && this.newTargetPriority[targets[0].mtype]
-            //         && this.newTargetPriority[targets[0].mtype].stopOnSight // We stop on sight of that target
-            //         && this.pathfinder.movementTarget == targets[0].mtype // We're moving to that target
-            //         && parent.distance(parent.character, targets[0]) < parent.character.range) { // We're in range
-            //         stop();
-            //     }
-            //     if (this.getMonsterhuntTarget()
-            //         && this.getMonsterhuntTarget() != this.pathfinder.movementTarget) { // We're moving to the wrong target
-            //         stop();
-            //     }
-            // } else {
-            //     this.moveToMonsterhunt();
-            // }
-
-            this.equipBetterItems();
-            transferItemsToMerchant("earthMer");
+            transferItemsToMerchant("earthMer", ["tracker", "mpot1", "hpot1", "orbg", "jacko"]);
             transferGoldToMerchant("earthMer");
             sellUnwantedItems();
+            loot();
 
             super.mainLoop();
         } catch (error) {

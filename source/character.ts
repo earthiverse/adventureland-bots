@@ -11,7 +11,7 @@ export abstract class Character {
     // protected abstract targetPriority: MonsterName[];
     public abstract newTargetPriority: TargetPriorityList;
     protected abstract mainTarget: MonsterName;
-    protected movementQueue: ALPosition[] = [];
+    public movementQueue: ALPosition[] = [];
     public holdPosition = false;
     public holdAttack = false;
     protected pathfinder: Pathfinder = new Pathfinder(6);
@@ -20,7 +20,10 @@ export abstract class Character {
 
     protected mainLoop() {
         // Equip better items if we have one in our inventory
-        this.equipBetterItems();
+        if (character.ctype !== "merchant") {
+            this.equipBetterItems();
+            this.getMonsterhuntQuest();
+        }
 
         setTimeout(() => { this.mainLoop(); }, Math.max(250, parent.character.ping));
     };
@@ -94,6 +97,7 @@ export abstract class Character {
 
     protected scareLoop(): void {
         try {
+            // TODO: add a function to see if we are scared ourselves (>=3 monsters targeting us)
             let targets = this.getTargets(1);
             if (Date.now() > parent.next_skill["scare"] // Scare is not on cooldown
                 && targets.length > 0 // There's a target
@@ -125,12 +129,35 @@ export abstract class Character {
 
     protected moveLoop(): void {
         try {
-            if (this.holdPosition) {
-                // Don't move, we're holding position
+            if (this.holdPosition || smart.moving) {
+                let targets = this.getTargets(1);
+                if (targets.length > 0 /* We have a target in range */
+                    && this.newTargetPriority[targets[0].mtype] && this.newTargetPriority[targets[0].mtype].stopOnSight /* We stop on sight of that target */
+                    && this.pathfinder.movementTarget == targets[0].mtype /* We're moving to that target */
+                    && parent.distance(parent.character, targets[0]) < parent.character.range /* We're in range of that target */) {
+                    stop();
+                    this.pathfinder.movementTarget = null;
+                    this.movementQueue = []; // clear movement queue
+                }
+
+                if (character.ctype !== "merchant"
+                    && this.getMonsterhuntTarget()
+                    && this.getMonsterhuntTarget() != this.pathfinder.movementTarget) { // We're moving to the wrong target
+                    stop();
+                    this.pathfinder.movementTarget = null;
+                    this.movementQueue = []; // clear movement queue
+                }
+
+                // Don't move, we're holding position or smart moving somewhere
                 setTimeout(() => { this.moveLoop() }, 250); // TODO: move this 250 cooldown to a setting.
                 return;
-            } else if (!smart.moving // Not smart moving
-                && (!this.movementQueue || this.movementQueue.length == 0)) { // No movement queue
+            } else if (this.movementQueue.length == 0) { // No movements queued
+                // Reset movement target
+                this.pathfinder.movementTarget = null;
+
+                if (character.ctype !== "merchant")
+                    this.moveToMonsterhunt();
+
                 // Default movements
                 if (character.ctype == "ranger" || character.ctype == "mage") {
                     this.avoidAggroMonsters();
@@ -144,10 +171,17 @@ export abstract class Character {
             } else {
                 // Pathfinding movements
                 // TODO: we need to pop our movement somewhere
-                let nextMovement = this.movementQueue[0];
-                if (nextMovement.map == parent.character.map && can_move_to(nextMovement.x, nextMovement.y)) {
+                let currentMovement = this.movementQueue[0];
+                let nextMovement = this.movementQueue[0]
+                if (this.movementQueue.length > 1) {
+                    nextMovement = this.movementQueue[1];
+                }
+                if (can_move_to(nextMovement.x, nextMovement.y)) {
                     // We can move to the next place in the queue, so let's start moving there.
                     move(nextMovement.x, nextMovement.y)
+                    this.movementQueue.shift();
+                } else if (!parent.character.moving && can_move_to(currentMovement.x, currentMovement.y)) {
+                    move(currentMovement.x, currentMovement.y)
                 } else {
                     // We can't move to the next place in the queue...
                     // TODO: Pathfind to the next place in the queue
@@ -358,6 +392,7 @@ export abstract class Character {
                 // Pathfind to target
                 // game_log("pathfinding to target")
                 let path = this.pathfinder.findNextMovement(parent.character, targets[0]);
+                // TODO: check if we have a path
                 move(path.x, path.y);
             } catch (error) {
                 // Our custom pathfinding failed, use the game's smart move.
@@ -367,33 +402,12 @@ export abstract class Character {
         }
     }
 
-    public moveToMonsterhunt() {
+    public getMonsterhuntQuest() {
         let monsterhunter: ALPosition = { map: "main", x: 126, y: -413 }
-
-        // Update monster hunt info
-        if (parent.character.s && parent.character.s.monsterhunt) {
-            // We have a monster hunt quest
-            if (parent.character.s.monsterhunt.c == 0 && this.partyInfo[parent.character.name] && this.partyInfo[parent.character.name].target) {
-                // We've finished our monster hunt quest and are turning it in
-                sendMassCM(parent.party_list, {
-                    "message": "quest",
-                    "target": undefined
-                })
-                this.partyInfo[parent.character.name] = {
-                    "target": undefined
-                }
-            } else if (!this.partyInfo[parent.character.name] || (this.partyInfo[parent.character.name] && this.partyInfo[parent.character.name].target !== parent.character.s.monsterhunt.id)) {
-                // We just got a new quest
-                sendMassCM(parent.party_list, {
-                    "message": "quest",
-                    "target": parent.character.s.monsterhunt.id
-                })
-                this.partyInfo[parent.character.name] = {
-                    "target": parent.character.s.monsterhunt.id
-                }
-            }
-        } else if (this.partyInfo[parent.character.name] && this.partyInfo[parent.character.name].target) {
-            // We had a monster hunt quest, but now we don't.
+        if (distance(parent.character, monsterhunter) > 250) return; // Too far away
+        if (!parent.character.s.monsterhunt) {
+            // No quest, get a new one
+            parent.socket.emit('monsterhunt')
             sendMassCM(parent.party_list, {
                 "message": "quest",
                 "target": undefined
@@ -401,52 +415,63 @@ export abstract class Character {
             this.partyInfo[parent.character.name] = {
                 "target": undefined
             }
-        }
-
-        // Turn in
-        if (parent.character.s.monsterhunt && parent.character.s.monsterhunt.c == 0) {
-            if (distance(parent.character, monsterhunter) < 250) {
-                parent.socket.emit('monsterhunt')
-            } else if (!smart.moving) {
-                set_message("Finish MH")
-                this.pathfinder.saferMovePlace(this, "monsterhunter")
+        } else if (parent.character.s.monsterhunt.c == 0) {
+            // We've finished a quest
+            parent.socket.emit('monsterhunt')
+            sendMassCM(parent.party_list, {
+                "message": "quest",
+                "target": undefined
+            })
+            this.partyInfo[parent.character.name] = {
+                "target": undefined
             }
-            return
-        }
-
-        // Get a new quest
-        if (!parent.character.s || !parent.character.s.monsterhunt) {
-            if (distance(parent.character, monsterhunter) < 250) {
-                parent.socket.emit('monsterhunt')
-            } else if (!smart.moving) {
-                // Go to monster hunter to get a new quest
-                set_message("New MH")
-                this.pathfinder.saferMovePlace(this, "monsterhunter")
+        } else {
+            // We're on a quest
+            sendMassCM(parent.party_list, {
+                "message": "quest",
+                "target": parent.character.s.monsterhunt.id
+            })
+            this.partyInfo[parent.character.name] = {
+                "target": parent.character.s.monsterhunt.id
             }
-            return
         }
+    }
 
-        // Move to target
-        let monsterHuntTarget = this.getMonsterhuntTarget()
-        let targets = this.getTargets(1)
-        if (monsterHuntTarget) {
-            if (targets.length == 0 || targets[0].mtype != monsterHuntTarget) {
-                if (this.newTargetPriority[monsterHuntTarget]) {
-                    // if (this.targetPriority.includes(monsterHuntTarget)) {
-                    // It's in our list of monsters, go go go!
-                    set_message("MH: " + monsterHuntTarget)
-                    this.pathfinder.saferMoveMonster(this, monsterHuntTarget)
-                } else if (targets.length != 0 && targets[0].mtype != this.mainTarget) {
-                    // Not in our target priority, so it's probably too dangerous. Go to our default target
-                    set_message(this.mainTarget)
-                    this.pathfinder.saferMoveMonster(this, this.mainTarget)
+    public moveToMonsterhunt() {
+        let monsterhunter: ALPosition = { map: "main", x: 126, y: -413 }
+
+        if (!parent.character.s.monsterhunt) {
+            // Go to monster hunter to get a new quest
+            set_message("New MH")
+            this.pathfinder.saferMovePlace(this, "monsterhunter")
+        } else if (parent.character.s.monsterhunt.c == 0) {
+            // Go to monster hunter to finish our quest
+            set_message("Finish MH")
+            this.pathfinder.saferMovePlace(this, "monsterhunter")
+        } else {
+            // Go to target monster
+            let monsterHuntTarget = this.getMonsterhuntTarget()
+            let targets = this.getTargets(1)
+            if (monsterHuntTarget) {
+                if (targets.length == 0 || targets[0].mtype != monsterHuntTarget) {
+                    if (this.newTargetPriority[monsterHuntTarget]) {
+                        // if (this.targetPriority.includes(monsterHuntTarget)) {
+                        // It's in our list of monsters, go go go!
+                        set_message("MH: " + monsterHuntTarget)
+                        this.pathfinder.saferMoveMonster(this, monsterHuntTarget)
+                    } else if (targets.length != 0 && targets[0].mtype != this.mainTarget) {
+                        // Not in our target priority, so it's probably too dangerous. Go to our default target
+                        set_message(this.mainTarget)
+                        this.pathfinder.saferMoveMonster(this, this.mainTarget)
+                    }
                 }
+            } else if (targets.length == 0 || (targets.length != 0 && targets[0].mtype != this.mainTarget)) {
+                // Not in our target priority, so it's probably too dangerous. Go to our default target
+                set_message(this.mainTarget)
+                this.pathfinder.saferMoveMonster(this, this.mainTarget)
             }
-        } else if (targets.length == 0 || (targets.length != 0 && targets[0].mtype != this.mainTarget)) {
-            // Not in our target priority, so it's probably too dangerous. Go to our default target
-            set_message(this.mainTarget)
-            this.pathfinder.saferMoveMonster(this, this.mainTarget)
         }
+
     }
 
     public parse_cm(characterName: string, data: any) {
@@ -475,7 +500,7 @@ export abstract class Character {
     }
 
     public getMonsterhuntTarget(): MonsterName {
-        // Prevent returning a target if we don't have an active monster hunt target ourselves.
+        // Return monster hunter quest NPC if we don't have a target
         if (!character.s || !character.s.monsterhunt || (parent.character.s && parent.character.s.monsterhunt && parent.character.s.monsterhunt.c == 0)) return null;
 
         // Party monster hunts
@@ -509,7 +534,7 @@ export abstract class Character {
                 if (itemInfo.level <= slotItem.level) continue; // Not better than the currently equipped item
 
                 // It's better, equip it.
-                equip(i);
+                equip(i, slot);
 
                 // In the off chance that we have multiple items that are better than those equipped, keep looking
                 slotItem = itemInfo;
@@ -542,8 +567,8 @@ export abstract class Character {
             let priority = 0;
             if (this.newTargetPriority[potentialTarget.mtype]) priority = this.newTargetPriority[potentialTarget.mtype].priority;
 
-            // Adjust priority if a party member is already attacking it.
-            if (claimedTargets.includes(id)) priority -= 250;
+            // Adjust priority if a party member is already attacking it and it has low HP
+            if (claimedTargets.includes(id) && potentialTarget.hp <= parent.character.attack) priority -= 250;
 
             // Increase priority if it's our "main target"
             if (potentialTarget.mtype == this.mainTarget) priority += 10;

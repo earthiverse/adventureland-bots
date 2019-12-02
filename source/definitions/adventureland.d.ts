@@ -72,7 +72,7 @@ export interface BuffInfo {
 }
 
 export interface ALPosition {
-  map?: string;
+  map?: MapName;
   x: number;
   y: number;
   real_x?: number;
@@ -137,13 +137,21 @@ export interface GameInfo {
       min_y: number,
       max_x: number,
       max_y: number,
-      x_lines: number[][],
-      y_lines: number[][],
+      x_lines: [number, number, number][],
+      y_lines: [number, number, number][],
       groups: number[][][]
     }
   }
   npcs: { [T in string]: any }; // TODO: Better info typing
-  maps: { [T in MapName]: any }; // TODO: Better info typing
+  maps: { [T in MapName]: {
+    monsters: {
+      count: number;
+      boundary?: [number, number, number, number];
+      boundaries?: [number, number, number, number][];
+      type: MonsterName;
+      grow?: Boolean;
+    }[]
+  } }; // TODO: Better info typing
   skills: { [T in SkillName]: SkillInfo };
   items: { [T in ItemName]: ItemInfo };
   monsters: { [id: string]: Monster };
@@ -168,7 +176,8 @@ declare global {
   var $: any;
   var character: ICharacter;
   var smart: ALPosition & {
-    moving: boolean
+    moving: boolean;
+    searching: boolean;
   }
   var game_logs: any[];
   var G: GameInfo;

@@ -163,41 +163,22 @@ class Ranger extends Character {
             "y": 570
         }
     }
-    mainTarget: MonsterName = "rat";
+    mainTarget: MonsterName = "croc";
 
     run(): void {
         super.run();
         this.superShotLoop();
-        // this.huntersmarkLoop();
+        this.huntersmarkLoop();
         // this.fourFingersLoop();
-        this.sendLootLoop();
+        // this.sendLootLoop();
     }
 
     mainLoop(): void {
         try {
-            // Movement
-            // let targets = this.getTargets(1);
-            // if (smart.moving) {
-            //     if (targets.length > 0 // We have a target
-            //         && this.newTargetPriority[targets[0].mtype]
-            //         && this.newTargetPriority[targets[0].mtype].stopOnSight // We stop on sight of that target
-            //         && this.pathfinder.movementTarget == targets[0].mtype // We're moving to that target
-            //         && parent.distance(parent.character, targets[0]) < parent.character.range) { // We're in range
-            //         game_log("stop on sight")
-            //         stop();
-            //     }
-            //     if (this.getMonsterhuntTarget()
-            //         && this.getMonsterhuntTarget() != this.pathfinder.movementTarget) { // We're moving to the wrong target
-            //         game_log("stop on wrong target")
-            //         stop();
-            //     }
-            // } else {
-            //     this.moveToMonsterhunt();
-            // }
-
-            transferItemsToMerchant("earthMer");
+            transferItemsToMerchant("earthMer", ["tracker", "mpot1", "hpot1", "orbg", "jacko"]);
             transferGoldToMerchant("earthMer");
             sellUnwantedItems();
+            loot();
 
             this.createParty(["earthMag", "earthWar", "earthMer"]);
 
@@ -250,17 +231,17 @@ class Ranger extends Character {
     }
 
     superShotLoop(): void {
-        let targets = this.getTargets(2);
+        let targets = this.getTargets(1);
         if (parent.character.mp < 400 // No MP
-            || targets.length == 0 // No targets
+            || targets.length < 1 // No targets NOTE: Based on getTargets(2).
             || parent.character.stoned // Can't use skills
-            || parent.distance(parent.character, targets[1]) > character.range * 3 // Out of range
+            || parent.distance(parent.character, targets[0]) > character.range * 3 // Out of range
             || parent.next_skill["supershot"] > Date.now() // Not usable yet
             || (this.holdAttack && targets[1].target != parent.character.name) // Holding attack (global)
-            || (smart.moving && this.newTargetPriority[targets[1].mtype] && this.newTargetPriority[targets[1].mtype].holdAttack && targets[1].target != parent.character.name)) { // Holding attack (monster)
+            || (smart.moving && this.newTargetPriority[targets[0].mtype] && this.newTargetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name)) { // Holding attack (monster)
             // Do nothing
         } else {
-            use_skill("supershot", targets[1])
+            use_skill("supershot", targets[0])
         }
 
         setTimeout(() => { this.superShotLoop() }, Math.max(parent.character.ping, parent.next_skill["supershot"] - Date.now()));

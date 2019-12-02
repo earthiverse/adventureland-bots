@@ -14,3 +14,5 @@ for(let character of ["earthWar", "earthMag", "earthMer"]) {
 function on_cm(name, data) {
 	bots.ranger.parse_cm(name, data);
 }
+
+pause();

@@ -41,7 +41,9 @@ class Merchant extends Character {
                     smart_move("bank")
                 } else if (event) {
                     // We're dealing with an event, don't move to characters.
-                } else if (parent.distance(parent.character, parent.party["earthiverse"]) < 250) {
+                } else if (parent.character.map == "bank") {
+                    smart_move({ map: "main", "x": -49, "y": -334 })
+                } /*else if (parent.distance(parent.character, parent.party["earthiverse"]) < 250) {
                     game_log("moving to town from earthiverse")
                     smart_move({ map: "main", x: -50, y: -390 })
                 } else if (parent.distance(parent.character, parent.party["earthMag"]) < 250) {
@@ -62,7 +64,7 @@ class Merchant extends Character {
                 } else {
                     game_log("default moving to earthiverse")
                     smart_move(parent.party["earthiverse"])
-                }
+                }*/
             }
 
             sellUnwantedItems();
@@ -78,7 +80,7 @@ class Merchant extends Character {
                     if (!character.items[i]) continue;
 
                     // Items0
-                    if (["5bucks", "ascale", "beewings", "bfur", "candy0", "candy1", "candycane", "carrot", "crabclaw", "cscale", "essenceoffrost", "feather0", "frogt", "gslime", "hotchocolate", "ijx", "leather", "lotusf", "mistletoe", "monstertoken", "poison", "pumpkinspice", "rattail", "seashell", "shadowstone", "smoke", "smush", "snakefang", "snakeoil", "spidersilk", "spores", "vitscroll", "whiteegg"].includes(parent.character.items[i].name)) {
+                    if (["5bucks", "ascale", "beewings", "bfur", "candy0", "candy1", "candycane", "carrot", "crabclaw", "cscale", "essenceoffrost", "feather0", "frogt", "gslime", "hotchocolate", "ijx", "leather", "lotusf", "mistletoe", "monstertoken", "pleather", "poison", "pumpkinspice", "rattail", "seashell", "shadowstone", "smoke", "smush", "snakefang", "snakeoil", "spidersilk", "spores", "vitscroll", "whiteegg"].includes(parent.character.items[i].name)) {
                         bank_store(i, "items0")
                     }
 
@@ -189,7 +191,7 @@ class Merchant extends Character {
     public run(): void {
         super.run();
         this.luckLoop();
-        this.lootLoop();
+        // this.lootLoop();
         this.pontyLoop();
     }
 
@@ -214,9 +216,10 @@ class Merchant extends Character {
             return;
         }
 
-        buyFromPonty([/*"strbelt", "strring", "intbelt", "intring",*/ "dexbelt", "dexring", // High priority things
-            /*"intearring",*/ "dexearring", /*"strearring", "stramulet", "dexamulet", "intamulet",*/ // Low priority things
-            "wgloves", // I want to get all +8 for my mage
+        buyFromPonty([/*"strbelt", "strring", "intbelt",*/ "intring", "dexbelt", "dexring", // High priority things
+            /*"intearring",*/ "dexearring", /*"strearring", "dexamulet", "intamulet",*/ // Low priority things
+            "wgloves", "wbreeches", "wcap", "wshoes", "wattire",  // I want to get all +8 for my ranger
+            "bfur", "leather", "seashell", // Craftables that are usable for things
             "lostearring", "jacko", "cape", "bcape", "monstertoken", "t2bow", "cupid", "candycanesword", "bowofthedead", "gbow", "hbow", "t2quiver", "oozingterror", "talkingskull", "greenbomb", "gem0", "candy0", "candy1", "xboots", "handofmidas", "goldenpowerglove", "xgloves", "powerglove", "poker", "starkillers", "xpants", "xarmor", "xhelmet", "fury", "partyhat"]); // Things that I probably won't find
 
         // We bought things from Ponty, wait a long time before trying to buy again.
