@@ -78,20 +78,19 @@ export abstract class Character {
                 || (smart.moving && this.newTargetPriority[targets[0].mtype] && this.newTargetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name) // Holding attack and not being attacked
                 || (this.holdAttack && targets[0].target != parent.character.name)) { // Holding attack and not being attacked
                 setTimeout(() => { this.attackLoop() }, Math.max(50, parent.next_skill["attack"] - Date.now()));
-                return;
+            } else {
+                attack(targets[0]).then(() => {
+                    // Attack success!
+                    this.getTargets(1); // Get a new target right away
+                    setTimeout(() => { this.attackLoop() }, parent.next_skill["attack"] - Date.now());
+                }, () => {
+                    // Attack fail...
+                    setTimeout(() => { this.attackLoop() }, parent.next_skill["attack"] - Date.now());
+                });
             }
-
-            attack(targets[0]).then(() => {
-                // Attack success!
-                this.getTargets(1); // Get a new target right away
-                setTimeout(() => { this.attackLoop() }, Math.max(parent.character.ping, parent.next_skill["attack"] - Date.now()));
-            }, () => {
-                // Attack fail...
-                setTimeout(() => { this.attackLoop() }, Math.max(50, parent.next_skill["attack"] - Date.now()));
-            });
         } catch (error) {
             console.error(error)
-            setTimeout(() => { this.attackLoop() }, Math.max(50, parent.next_skill["attack"] - Date.now()));
+            setTimeout(() => { this.attackLoop() }, parent.next_skill["attack"] - Date.now());
         }
     }
 
@@ -129,8 +128,8 @@ export abstract class Character {
 
     protected moveLoop(): void {
         try {
+            let targets = this.getTargets(1);
             if (this.holdPosition || smart.moving) {
-                let targets = this.getTargets(1);
                 if (targets.length > 0 /* We have a target in range */
                     && this.newTargetPriority[targets[0].mtype] && this.newTargetPriority[targets[0].mtype].stopOnSight /* We stop on sight of that target */
                     && this.pathfinder.movementTarget == targets[0].mtype /* We're moving to that target */
@@ -155,17 +154,23 @@ export abstract class Character {
                 // Reset movement target
                 this.pathfinder.movementTarget = null;
 
-                if (character.ctype !== "merchant")
-                    this.moveToMonsterhunt();
+                if (character.ctype !== "merchant") {
+                    if (parent.S.snowman && this.newTargetPriority.snowman && distance(parent.character, parent.S.snowman) > parent.character.range) {
+                        smart_move(parent.S.snowman)
+                    } else if (!parent.S.snowman // Don't smart_move if there's a snowman
+                        && (targets[0] && targets[0].mtype != "goldenbat")) { // Don't smart_move if there's a golden bat
+                        this.moveToMonsterhunt();
+                    }
+                }
 
                 // Default movements
-                if (character.ctype == "ranger" || character.ctype == "mage") {
+                if (["ranger", "mage", "priest"].includes(character.ctype)) {
                     this.avoidAggroMonsters();
                 }
 
                 this.avoidAttackingMonsters();
 
-                if (character.ctype == "ranger" || character.ctype == "mage" || character.ctype == "warrior") {
+                if (["ranger", "mage", "warrior", "priest"].includes(character.ctype)) {
                     this.moveToMonster();
                 }
             } else {
