@@ -1,7 +1,8 @@
 import { Character } from './character'
-import { MonsterName } from './definitions/adventureland';
+import { MonsterName, ItemName } from './definitions/adventureland';
 import { compoundItem, upgradeItem, upgradeIfMany } from './upgrade'
 import { sellUnwantedItems, exchangeItems, buyFromPonty } from './trade';
+import { getInventory, buyAndUpgrade } from './functions';
 
 class Merchant extends Character {
     targetPriority: MonsterName[] = []; // Nothing for now, merchants can't usually attack.
@@ -19,7 +20,7 @@ class Merchant extends Character {
                 // event monsters
                 let event = false;
                 for (let eventMonsterName in parent.S) {
-                    let eventMonster: any = parent.S[eventMonsterName]
+                    let eventMonster: any = parent.S[eventMonsterName as MonsterName]
                     if (!eventMonster.live) continue; // Not live
                     if (eventMonster.hp / eventMonster.max_hp > 0.9) continue; // Nobody's attacking it
 
@@ -41,7 +42,7 @@ class Merchant extends Character {
                     smart_move("bank")
                 } else if (event) {
                     // We're dealing with an event, don't move to characters.
-                } else if (parent.character.map == "bank") {
+                } else if (parent.character.map == "bank" && this.didBankStuff) {
                     smart_move({ map: "main", "x": -49, "y": -334 })
                 } /*else if (parent.distance(parent.character, parent.party["earthiverse"]) < 250) {
                     game_log("moving to town from earthiverse")
@@ -69,37 +70,8 @@ class Merchant extends Character {
 
             sellUnwantedItems();
             exchangeItems();
-
-            // Bank stuff
-            // TODO: Check for things we can upgrade
-            if (parent.character.map == "bank") {
-                if (parent.character.gold > 25000000) {
-                    bank_deposit(parent.character.gold - 25000000)
-                }
-                for (let i = 0; i < 42; i++) {
-                    if (!character.items[i]) continue;
-
-                    // Items0
-                    if (["5bucks", "ascale", "beewings", "bfur", "candy0", "candy1", "candycane", "carrot", "crabclaw", "cscale", "essenceoffrost", "feather0", "frogt", "gslime", "hotchocolate", "ijx", "leather", "lotusf", "mistletoe", "monstertoken", "pleather", "poison", "pumpkinspice", "rattail", "seashell", "shadowstone", "smoke", "smush", "snakefang", "snakeoil", "spidersilk", "spores", "vitscroll", "whiteegg"].includes(parent.character.items[i].name)) {
-                        bank_store(i, "items0")
-                    }
-
-                    // Items1
-                    if (["dexring", "intring", "strring", "dexbelt", "intbelt", "strbelt"].includes(parent.character.items[i].name)) {
-                        bank_store(i, "items1")
-                    }
-
-                    // Items2
-                    if (["dexearring", "intearring", "strearring", "dexamulet", "intamulet", "stramulet", "wbook0", "wbook1", "lostearring"].includes(parent.character.items[i].name)) {
-                        bank_store(i, "items2")
-                    }
-
-                    // Items3
-                    if (["basher", "blade", "bowofthedead", "daggerofthedead", "jacko", "lantern", "staffofthedead", "swordofthedead", "t2bow", "talkingskull", "wattire", "wbook0", "wbook1", "wbreeches", "wcap", "wshoes", "xmassweater"].includes(parent.character.items[i].name)) {
-                        bank_store(i, "items3")
-                    }
-                }
-            }
+            
+            this.bankStuff();
 
             //// Wearables
             // Rings
@@ -124,7 +96,7 @@ class Merchant extends Character {
 
             // Offhands
             upgradeItem("quiver", 8);
-            upgradeItem("t2quiver", 7);
+            upgradeItem("t2quiver", 6);
             compoundItem("wbook0", 3);
             compoundItem("wbook1", 2);
 
@@ -132,9 +104,9 @@ class Merchant extends Character {
             upgradeItem("cape", 6);
 
             // Orbs
-            compoundItem("orbg", 2);
-            compoundItem("jacko", 2);
-            compoundItem("lantern", 2);
+            compoundItem("orbg", 3);
+            compoundItem("jacko", 3);
+            compoundItem("lantern", 3);
 
             //// Weapons
             upgradeItem("firestaff", 8);
@@ -151,35 +123,18 @@ class Merchant extends Character {
             upgradeItem("mcboots", 6);
             upgradeItem("mchat", 6);
 
-            // Heavy Set
-            upgradeItem("helmet1", 8)
-            upgradeItem("coat1", 8)
-            upgradeItem("pants1", 8)
-            upgradeItem("shoes1", 8)
-            upgradeItem("gloves1", 8)
-
-            // Normal Set
-            upgradeItem("coat", 10)
-            upgradeItem("pants", 10)
-            upgradeItem("gloves", 10)
-            upgradeItem("shoes", 10)
-            upgradeItem("helmet", 10)
-            upgradeItem("bow", 10)
-
             // Wanderer's set
-            upgradeItem("wcap", 8)
             upgradeItem("wattire", 8)
-            upgradeItem("wbreeches", 8)
             upgradeItem("wshoes", 8)
             upgradeItem("wgloves", 8)
 
-            // buyAndUpgrade("coat")
             // buyAndUpgrade("pants")
             // buyAndUpgrade("gloves")
             // buyAndUpgrade("shoes")
             // buyAndUpgrade("helmet")
 
-            upgradeIfMany();
+            // buyAndUpgrade("bow", 8, 5)
+            upgradeIfMany(8);
 
             super.mainLoop();
         } catch (error) {
@@ -218,12 +173,143 @@ class Merchant extends Character {
 
         buyFromPonty([/*"strbelt", "strring", "intbelt",*/ "intring", "dexbelt", "dexring", // High priority things
             /*"intearring",*/ "dexearring", /*"strearring", "dexamulet", "intamulet",*/ // Low priority things
-            "wgloves", "wbreeches", "wcap", "wshoes", "wattire",  // I want to get all +8 for my ranger
+            "wgloves", "wshoes", "wattire",  // I want to get all +8 for my ranger
             "bfur", "leather", "seashell", // Craftables that are usable for things
-            "lostearring", "jacko", "cape", "bcape", "monstertoken", "t2bow", "cupid", "candycanesword", "bowofthedead", "gbow", "hbow", "t2quiver", "oozingterror", "talkingskull", "greenbomb", "gem0", "candy0", "candy1", "xboots", "handofmidas", "goldenpowerglove", "xgloves", "powerglove", "poker", "starkillers", "xpants", "xarmor", "xhelmet", "fury", "partyhat"]); // Things that I probably won't find
+            "lostearring", "jacko", "cape", "bcape", "monstertoken", "t2bow", "cupid", "candycanesword", "bowofthedead", "gbow", "hbow", "t2quiver", "oozingterror", "talkingskull", "greenbomb", "gem0", "gem1", "candy0", "candy1", "xboots", "handofmidas", "goldenpowerglove", "xgloves", "powerglove", "poker", "starkillers", "xpants", "xarmor", "xhelmet", "fury", "partyhat"]); // Things that I probably won't find
 
         // We bought things from Ponty, wait a long time before trying to buy again.
         setTimeout(() => { this.pontyLoop() }, 15000);
+    }
+
+    private didBankStuff = false;
+    private bankStuff(): void {
+        if (parent.character.map !== "bank") {
+            this.didBankStuff = false;
+            return;
+        } else if(this.didBankStuff) {
+            // Withdraw items
+            return;
+        }
+        let itemsToKeep: ItemName[] = ["tracker", "cscroll0", "cscroll1", "cscroll2", "scroll0", "scroll1", "scroll2", "stand0", "dexscroll", "intscroll", "strscroll"]
+
+        // Store extra gold
+        if (parent.character.gold > 25000000) {
+            bank_deposit(parent.character.gold - 25000000)
+        } else if(parent.character.gold < 25000000) {
+            bank_withdraw(25000000 - parent.character.gold)
+        }
+
+        // name, level, inventory, slot #
+        let items: [ItemName, number, string, number][] = [];
+
+        // Add items from inventory
+        getInventory().forEach((item) => {
+            if (itemsToKeep.includes(item[1].name)) return; // Don't add items we want to keep
+
+            if (G.items[item[1].name].s) {
+                // If the item is stackable, deposit it.
+                bank_store(item[0])
+                return;
+            }
+
+            // Add it to our list of items;
+            // items.push([item[1].name, item[1].level, "items", item[0]]);
+
+            // Store all items for now
+            bank_store(item[0])
+        });
+
+        // Add items from bank
+        getInventory(parent.character.bank.items0).forEach((item) => {
+            if (itemsToKeep.includes(item[1].name)) return; // Don't add items we want to keep
+            if (G.items[item[1].name].s) return; // Don't add stackable items
+            items.push([item[1].name, item[1].level, "items0", item[0]])
+        });
+        getInventory(parent.character.bank.items1).forEach((item) => {
+            if (itemsToKeep.includes(item[1].name)) return; // Don't add items we want to keep
+            if (G.items[item[1].name].s) return; // Don't add stackable items
+            items.push([item[1].name, item[1].level, "items1", item[0]])
+        });
+        getInventory(parent.character.bank.items2).forEach((item) => {
+            if (itemsToKeep.includes(item[1].name)) return; // Don't add items we want to keep
+            if (G.items[item[1].name].s) return; // Don't add stackable items
+            items.push([item[1].name, item[1].level, "items2", item[0]])
+        });
+        getInventory(parent.character.bank.items3).forEach((item) => {
+            if (itemsToKeep.includes(item[1].name)) return; // Don't add items we want to keep
+            if (G.items[item[1].name].s) return; // Don't add stackable items
+            items.push([item[1].name, item[1].level, "items3", item[0]])
+        });
+
+        // Find things that can be upgraded, or exchanged.
+        items.sort();
+        for (let i = 0; i < items.length; i++) {
+            let itemI = items[i];
+
+            let indexes: number[] = [i];
+            for (let j = i + 1; j < items.length; j++) {
+                let itemJ = items[j]
+                if (itemJ[0] != itemI[0]) {
+                    // The name is different
+                    i = j - 1;
+                    break;
+                }
+
+                // We found another item of the same level
+                indexes.push(j);
+            }
+
+            if (["weapon", "helmet", "chest", "pants", "shoes", "shield", "quiver", "gloves", "cape"].includes(G.items[itemI[0]].type) && indexes.length >= 2) {
+                // We found two of the same weapons, move them to our inventory.
+                indexes.forEach((k) => {
+                    let level = items[k][1];
+                    if(level >= 8) return; // TODO: change this to a variable? It's used in other places to prevent upgrading things past level 8.
+                    let bankBox = items[k][2];
+                    let boxSlot = items[k][3];
+                    parent.socket.emit("bank", {
+                        operation: "swap",
+                        inv: -1,
+                        str: boxSlot,
+                        pack: bankBox
+                    });
+                })
+            }
+        }
+
+        for (let i = 0; i < items.length; i++) {
+            let itemI = items[i];
+
+            let indexes: number[] = [i];
+            for (let j = i + 1; j < items.length; j++) {
+                let itemJ = items[j]
+                if (itemJ[0] != itemI[0] || itemJ[1] != itemI[1]) {
+                    // The name or level is different
+                    i = j - 1;
+                    break;
+                }
+
+                // We found another item of the same level
+                indexes.push(j);
+            }
+
+            if(["belt", "ring", "amulet", "earring", "orb"].includes(G.items[itemI[0]].type) && indexes.length >= 3) {
+                for(let l = 0; l < 3; l++) {
+                    let k = indexes[l];
+                    let level = items[k][1];
+                    if(level >= 4) return; // TODO: change this to a variable? It's used in other places to prevent upgrading things past level 4.
+                    let bankBox = items[k][2];
+                    let boxSlot = items[k][3];
+                    parent.socket.emit("bank", {
+                        operation: "swap",
+                        inv: -1,
+                        str: boxSlot,
+                        pack: bankBox
+                    });
+                }
+            }
+        }
+
+        this.didBankStuff = true;
     }
 
     private luckedCharacters: any = {}
