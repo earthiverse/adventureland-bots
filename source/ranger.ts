@@ -180,7 +180,7 @@ class Ranger extends Character {
             sellUnwantedItems();
             loot();
 
-            this.createParty(["earthMag", "earthWar", "earthMer"]);
+            this.createParty(["earthMag", "earthWar", "earthMer", "earthPri"]);
 
             super.mainLoop();
         } catch (error) {

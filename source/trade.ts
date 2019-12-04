@@ -6,7 +6,9 @@ let defaultItemsToKeep: ItemName[] = ["tracker", // Tracker
 let defaultItemsToSell: ItemName[] = ["hpamulet", "hpbelt", // HP stuff
     "vitring", "vitearring", // Vit stuff
     "slimestaff", "ringsj", "cclaw", "spear", "throwingstars", "gphelmet", "phelmet", "maceofthedead", // Common things
-    // "wattire", "wshoes", "wbreeches", "wgloves", "wcap" // Wanderer clothing
+    "coat", "shoes", "pants", "gloves", "helmet", // Common clothing
+    "coat1", "shoes1", "pants1", "gloves1", "helmet1", // Heavy set
+    "wbreeches", "wcap" // Wanderer clothing
 ];
 
 export function sellUnwantedItems(itemsToSell: ItemName[] = defaultItemsToSell) {

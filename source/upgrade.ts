@@ -83,7 +83,7 @@ export function upgradeItem(itemname: ItemName, target_level: number) {
 /**
  * This function will upgrade items in your inventory if there are more than one of the same item. It will upgrade until one breaks, keeping the higher level item, and upgrading the lower level item.
  */
-export function upgradeIfMany() {
+export function upgradeIfMany(maxLevel: number) {
     let foundUpgrade = false;
     for (let npc of parent.npcs) {
         if (npc.id == "newupgrade" && distance(character, {
@@ -105,6 +105,8 @@ export function upgradeIfMany() {
 
         let minimumLevel = Math.min(...items.map(([, { level }]) => level)) // Find the minimum level
         items = findItemsWithLevel(parent.character.items[i].name, minimumLevel);
+        let level = items[0][1].level;
+        if (level >= maxLevel) continue; // Don't upgrade high level items
 
         let grade = determineGrade(items[0][1]);
         let scrolls;

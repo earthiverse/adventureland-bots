@@ -9,6 +9,13 @@ export interface ICharacter extends Entity {
   range: number;
   xrange: number;
   apiercing: number;
+  bank: {
+    items0: ItemInfo[];
+    items1?: ItemInfo[];
+    items2?: ItemInfo[];
+    items3?: ItemInfo[];
+    gold: number;
+  }
   /**
    *  Contains things in inventory
    */
@@ -36,7 +43,7 @@ export interface ICharacter extends Entity {
     exchange?: any;
   }; // TODO: Change this from 'any' to something useful
   /**
-   * Is set to true when we are under the status effect "stoned". Otherwise, undefined.
+   * True when we are under the status effect "stoned", otherwise it is undefined.
    */
   stoned?: boolean;
 }
@@ -47,12 +54,25 @@ export interface Drawing {
   destroy: () => void;
 }
 
+// TODO: This combines the inventory info, and the G.items info. They're fairly different, we should split them in to two.
 export interface ItemInfo {
+  /**
+   * The item's level
+   */
   level?: number;
+  /**
+   * The item's quantity for stackable objects
+   */
   q?: number;
   name: ItemName;
+  id?: ItemName;
   g?: number;
+  /**
+   * Shows if the item be stacked.
+   */
+  s?: boolean;
   grades?: number[];
+  tier?: number;
   type?: "weapon" | "chest" | "shoes" | string; // TODO: Other types of items
   stat_type?: "dex" | "str" | "int" | "vit" | string; // TODO: There should be a couple more stat types, like fortitude?
 }
@@ -163,7 +183,7 @@ declare global {
     distance(position1: ALPosition, position2: ALPosition)
     character: ICharacter;
     chests: { [chestID: string]: any };
-    S: { [eventMonsterName: string]: any };
+    S: { [eventMonsterName in MonsterName]: any };
     party_list: string[];
     party: { [name: string]: ICharacter };
     npcs: any[];
@@ -185,6 +205,7 @@ declare global {
   var handle_death: () => void;
   function respawn(): void;
   function bank_deposit(gold: number);
+  function bank_withdraw(gold: number);
   function bank_store(inventoryPosition: number, bankPack?: string, bankPackPosition?: number);
   function damage_multiplier(armor: number);
   function start_character(name: string, script: string): void;
