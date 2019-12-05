@@ -35,12 +35,19 @@ export function sellUnwantedItems(itemsToSell: ItemName[] = defaultItemsToSell) 
     }
 }
 
-export function openStall() {
-    // Find the merchant stall item
+export function openMerchantStand() {
+    // TODO: Check if it's already open?? (Is this necessary?)
+
+    let stand = findItems("stand0")
+    if (!stand) return; // No stand available.
+
+    parent.open_merchant(stand[0][0])
 }
 
-export function closeStall() {
-    
+export function closeMerchantStand() {
+    // TODO: Check if it's already closed?? (is this necessary?)
+        
+    parent.close_merchant()
 }
 
 export function buyFromPonty(itemNames: ItemName[]) {

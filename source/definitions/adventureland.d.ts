@@ -190,6 +190,16 @@ declare global {
     entities: { [id: string]: Entity };
     next_skill: { [T in SkillName]: number };
     socket: SocketIO.Socket;
+    /**
+     * Opens the merchant stall
+     *
+     * @param {number} slot Inventory slot # containing the merchant stall
+     */
+    open_merchant(slot: number): void;
+    /**
+     * Closes the merchant stall
+     */
+    close_merchant(): void;
     start_runner(): void;
     stop_runner(): void;
   }
