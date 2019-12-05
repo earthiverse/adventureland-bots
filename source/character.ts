@@ -155,10 +155,14 @@ export abstract class Character {
                 this.pathfinder.movementTarget = null;
 
                 if (character.ctype !== "merchant") {
-                    if (parent.S.snowman && this.newTargetPriority.snowman && distance(parent.character, parent.S.snowman) > parent.character.range) {
+                    if (targets.length > 0 && targets[0].mtype == "goldenbat") {
+                        // Don't smart_move if there's a golden bat
+                    } else if(targets.length > 0 && targets[0].mtype == "snowman") {
+                        // Don't move, attack the snowman!
+                    } else if(parent.S.snowman && this.newTargetPriority.snowman && distance(parent.character, parent.S.snowman) > parent.character.range)  {
+                        // Move to the snowman!
                         smart_move(parent.S.snowman)
-                    } else if (!parent.S.snowman // Don't smart_move if there's a snowman
-                        && (targets[0] && targets[0].mtype != "goldenbat")) { // Don't smart_move if there's a golden bat
+                    } else {
                         this.moveToMonsterhunt();
                     }
                 }
