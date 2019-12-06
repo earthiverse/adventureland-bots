@@ -9,7 +9,7 @@ let EASY = 30;
 let SPECIAL = 5000;
 
 class Mage extends Character {
-    newTargetPriority: TargetPriorityList = {
+    targetPriority: TargetPriorityList = {
         "arcticbee": {
             "priority": EASY
         },
@@ -163,7 +163,6 @@ class Mage extends Character {
     run(): void {
         super.run();
         this.energizeLoop();
-        // this.sendLootLoop();
     }
 
     mainLoop(): void {

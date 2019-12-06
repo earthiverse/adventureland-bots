@@ -5,8 +5,7 @@ import { sellUnwantedItems, exchangeItems, buyFromPonty } from './trade';
 import { getInventory, buyAndUpgrade } from './functions';
 
 class Merchant extends Character {
-    targetPriority: MonsterName[] = []; // Nothing for now, merchants can't usually attack.
-    newTargetPriority = {}
+    targetPriority = {}
     mainTarget: MonsterName = null;
 
     protected mainLoop(): void {

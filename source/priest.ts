@@ -9,7 +9,7 @@ let EASY = 30;
 let SPECIAL = 5000;
 
 class Priest extends Character {
-    newTargetPriority: TargetPriorityList = {
+    targetPriority: TargetPriorityList = {
         "bee": {
             "priority": EASY
         },

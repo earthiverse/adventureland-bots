@@ -9,7 +9,7 @@ let EASY = 30;
 let SPECIAL = 5000;
 
 class Ranger extends Character {
-    newTargetPriority: TargetPriorityList = {
+    targetPriority: TargetPriorityList = {
         "arcticbee": {
             "priority": EASY
         },
@@ -171,7 +171,6 @@ class Ranger extends Character {
         this.superShotLoop();
         this.huntersmarkLoop();
         // this.fourFingersLoop();
-        // this.sendLootLoop();
     }
 
     mainLoop(): void {
@@ -239,7 +238,7 @@ class Ranger extends Character {
             || parent.distance(parent.character, targets[0]) > character.range * 3 // Out of range
             || parent.next_skill["supershot"] > Date.now() // Not usable yet
             || (this.holdAttack && targets[1].target != parent.character.name) // Holding attack (global)
-            || (smart.moving && this.newTargetPriority[targets[0].mtype] && this.newTargetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name)) { // Holding attack (monster)
+            || (smart.moving && this.targetPriority[targets[0].mtype] && this.targetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name)) { // Holding attack (monster)
             // Do nothing
         } else {
             use_skill("supershot", targets[0])
@@ -257,7 +256,7 @@ class Ranger extends Character {
             && parent.character.mp > 300 // Have MP
             && !parent.character.stoned // Can use skills
             && parent.next_skill["attack"] <= Date.now()
-            && !(smart.moving && this.newTargetPriority[targets[0].mtype] && this.newTargetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name)) { // Holding attack and not being attacked
+            && !(smart.moving && this.targetPriority[targets[0].mtype] && this.targetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name)) { // Holding attack and not being attacked
             // game_log("3shot!?")
             parent.socket.emit("skill", {
                 name: "3shot",
@@ -279,7 +278,7 @@ class Ranger extends Character {
             let entity = parent.entities[id];
             let d = distance(character, entity);
             if (entity.type != "monster") continue; // Not a monster
-            if (!this.newTargetPriority[entity.mtype]) continue; // Not something we want to attack
+            if (!this.targetPriority[entity.mtype]) continue; // Not something we want to attack
             if (d > parent.character.range) continue; // Too far away
             if ((entity.target != parent.character.name) && (entity.hp > parent.character.attack * 0.7 * 0.9 * damage_multiplier(entity.armor - parent.character.apiercing))) continue; // Too much HP to kill in one shot & not targeting us.
 

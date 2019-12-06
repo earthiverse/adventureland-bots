@@ -33,11 +33,11 @@ export class Pathfinder {
         //     }
         // }
 
-        if (c.newTargetPriority[to] && c.newTargetPriority[to].map && c.newTargetPriority[to].x && c.newTargetPriority[to].y) {
+        if (c.targetPriority[to] && c.targetPriority[to].map && c.targetPriority[to].x && c.targetPriority[to].y) {
             let p: ALPosition = {
-                map: c.newTargetPriority[to].map,
-                x: c.newTargetPriority[to].x,
-                y: c.newTargetPriority[to].y
+                map: c.targetPriority[to].map,
+                x: c.targetPriority[to].x,
+                y: c.targetPriority[to].y
             }
             if (distance(parent.character, p) < 50) return; // Already here
             // if (p.map == parent.character.map) {

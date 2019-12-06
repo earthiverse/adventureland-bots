@@ -9,7 +9,7 @@ let EASY = 30;
 let SPECIAL = 5000;
 
 class Warrior extends Character {
-    newTargetPriority: TargetPriorityList = {
+    targetPriority: TargetPriorityList = {
         "arcticbee": {
             "priority": EASY
         },
@@ -74,7 +74,6 @@ class Warrior extends Character {
     run(): void {
         super.run();
         this.chargeLoop();
-        // this.sendLootLoop();
     }
 
     mainLoop(): void {
