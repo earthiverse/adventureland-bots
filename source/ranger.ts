@@ -158,12 +158,13 @@ class Ranger extends Character {
         "xscorpion": {
             "priority": DIFFICULT,
             "holdAttack": true,
+            "holdPosition": true,
             "map": "halloween",
             "x": -230,
             "y": 570
         }
     }
-    mainTarget: MonsterName = "croc";
+    mainTarget: MonsterName = "rat";
 
     run(): void {
         super.run();

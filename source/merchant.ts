@@ -16,7 +16,6 @@ class Merchant extends Character {
             if (this.holdPosition) {
                 // Don't move.
             } else if (!smart.moving) {
-
                 // event monsters
                 let event = false;
                 for (let eventMonsterName in parent.S) {
@@ -38,34 +37,19 @@ class Merchant extends Character {
 
                 // travel back and forth between characters
                 if (full) {
+                    set_message("Full!")
                     game_log("moving to the bank")
                     smart_move("bank")
                 } else if (event) {
+                    set_message("Event!")
                     // We're dealing with an event, don't move to characters.
                 } else if (parent.character.map == "bank" && this.didBankStuff) {
-                    smart_move({ map: "main", "x": -49, "y": -334 })
-                } /*else if (parent.distance(parent.character, parent.party["earthiverse"]) < 250) {
-                    game_log("moving to town from earthiverse")
-                    smart_move({ map: "main", x: -50, y: -390 })
-                } else if (parent.distance(parent.character, parent.party["earthMag"]) < 250) {
-                    game_log("moving to town from earthMag")
-                    smart_move({ map: "main", x: -60, y: -390 })
-                } else if (parent.distance(parent.character, parent.party["earthWar"]) < 250) {
-                    game_log("moving to town from earthWar")
-                    smart_move({ map: "main", x: -40, y: -390 })
-                } else if (parent.distance(parent.character, { map: "main", x: -50, y: -390 }) < 5) {
-                    game_log("moving to earthMag")
-                    smart_move(parent.party["earthMag"])
-                } else if (parent.distance(parent.character, { map: "main", x: -60, y: -390 }) < 5) {
-                    game_log("moving to earthWar")
-                    smart_move(parent.party["earthWar"])
-                } else if (parent.distance(parent.character, { map: "main", x: -40, y: -390 }) < 5) {
-                    game_log("moving to earthiverse")
-                    smart_move(parent.party["earthiverse"])
-                } else {
-                    game_log("default moving to earthiverse")
-                    smart_move(parent.party["earthiverse"])
-                }*/
+                    set_message("Vendoring!")
+                    smart_move({ map: "main", "x": 60, "y": -325 })
+                } else if (parent.character.map !== "main") {
+                    set_message("Vendoring!")
+                    smart_move({ map: "main", "x": 60, "y": -325 })
+                }
             }
 
             sellUnwantedItems();
@@ -263,7 +247,6 @@ class Merchant extends Character {
                 // We found two of the same weapons, move them to our inventory.
                 indexes.forEach((k) => {
                     let level = items[k][1];
-                    if(level >= 8) return; // TODO: change this to a variable? It's used in other places to prevent upgrading things past level 8.
                     let bankBox = items[k][2];
                     let boxSlot = items[k][3];
                     parent.socket.emit("bank", {
@@ -296,7 +279,6 @@ class Merchant extends Character {
                 for(let l = 0; l < 3; l++) {
                     let k = indexes[l];
                     let level = items[k][1];
-                    if(level >= 4) return; // TODO: change this to a variable? It's used in other places to prevent upgrading things past level 4.
                     let bankBox = items[k][2];
                     let boxSlot = items[k][3];
                     parent.socket.emit("bank", {
@@ -326,7 +308,7 @@ class Merchant extends Character {
                 if (!luckTarget.player || luckTarget.npc) continue; // not a player
                 if (distance(character, luckTarget) > 250) continue; // out of range
                 if (this.luckedCharacters[luckTarget.name] && this.luckedCharacters[luckTarget.name] > Date.now() - parent.character.ping) continue; // Prevent spamming luck
-                if (!luckTarget.s || !luckTarget.s["mluck"] || luckTarget.s["mluck"].ms < 300000 || luckTarget.s["mluck"].f != parent.character.name) {
+                if (!luckTarget.s || !luckTarget.s["mluck"] || luckTarget.s["mluck"].ms < 3540000 /* 59 minutes */ || luckTarget.s["mluck"].f != parent.character.name) {
                     this.luckedCharacters[luckTarget.name] = Date.now();
                     use_skill("mluck", luckTarget);
                     game_log("lucking " + luckTarget.name)

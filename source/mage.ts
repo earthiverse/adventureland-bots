@@ -148,6 +148,14 @@ class Mage extends Character {
         },
         "tortoise": {
             "priority": EASY
+        },
+        "xscorpion": {
+            "priority": DIFFICULT,
+            "holdAttack": true,
+            "holdPosition": true,
+            "map": "halloween",
+            "x": -230,
+            "y": 570
         }
     }
     mainTarget: MonsterName = "porcupine";
