@@ -164,7 +164,7 @@ class Ranger extends Character {
             "y": 570
         }
     }
-    mainTarget: MonsterName = "rat";
+    mainTarget: MonsterName = "goo";
 
     run(): void {
         super.run();
@@ -249,43 +249,57 @@ class Ranger extends Character {
 
     attackLoop() {
         // TODO: Try to 5shot targets
+        let targets = this.getTargets(20);
 
-        // Try to 3shot targets
-        let targets = this.getThreeshotTargets();
-        if (targets.length >= 3
-            && parent.character.mp > 300 // Have MP
-            && !parent.character.stoned // Can use skills
+        if (targets.length >= 5
+            && parent.character.mp >= 420
+            && !parent.character.stoned
             && parent.next_skill["attack"] <= Date.now()
-            && !(smart.moving && this.targetPriority[targets[0].mtype] && this.targetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name)) { // Holding attack and not being attacked
-            // game_log("3shot!?")
-            parent.socket.emit("skill", {
-                name: "3shot",
-                ids: [targets[0].id, targets[1].id, targets[2].id]
-            });
-            setTimeout(() => { this.attackLoop() }, Math.max(parent.character.ping, parent.next_skill["attack"] - Date.now()));
-            return;
+            && !(smart.moving && this.targetPriority[targets[0].mtype] && this.targetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name)) {
+            // See if we can fiveshot some enemies
+            let fiveshotTargets: Entity[] = [];
+            for (let entity of targets) {
+                if ((entity.target != parent.character.name) && (entity.hp > parent.character.attack * 0.5 * 0.9 * damage_multiplier(entity.armor - parent.character.apiercing))) continue; // Too much HP, or not targeting us
+                if (distance(parent.character, entity) > parent.character.range) continue;
+
+                fiveshotTargets.push(entity);
+                if (fiveshotTargets.length == 5) break;
+            }
+            if (fiveshotTargets.length == 5) {
+                parent.socket.emit("skill", {
+                    name: "5shot",
+                    ids: [fiveshotTargets[0].id, fiveshotTargets[1].id, fiveshotTargets[2].id, fiveshotTargets[3].id, fiveshotTargets[4].id]
+                });
+                setTimeout(() => { this.attackLoop() }, Math.max(parent.character.ping, parent.next_skill["attack"] - Date.now()));
+                return;
+            }
+        } else if (targets.length >= 3
+            && parent.character.mp >= 420
+            && !parent.character.stoned
+            && parent.next_skill["attack"] <= Date.now()
+            && !(smart.moving && this.targetPriority[targets[0].mtype] && this.targetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name)) {
+            // See if we can three shot some enemies.
+            let threeshotTargets: Entity[] = [];
+            for (let entity of targets) {
+                if ((entity.target != parent.character.name) && (entity.hp > parent.character.attack * 0.7 * 0.9 * damage_multiplier(entity.armor - parent.character.apiercing))) continue; // Too much HP, or not targeting us
+                if (distance(parent.character, entity) > parent.character.range) continue;
+
+                threeshotTargets.push(entity);
+                if (threeshotTargets.length == 3) break;
+            }
+            if (threeshotTargets.length == 3) {
+                parent.socket.emit("skill", {
+                    name: "3shot",
+                    ids: [threeshotTargets[0].id, threeshotTargets[1].id, threeshotTargets[2].id]
+                });
+                setTimeout(() => { this.attackLoop() }, Math.max(parent.character.ping, parent.next_skill["attack"] - Date.now()));
+                return;
+            }
         }
 
         // Can't do a special attack, so let's do a normal one
         // game_log("normal attack")
         super.attackLoop();
-    }
-
-    getThreeshotTargets(): Entity[] {
-        let targets: Entity[] = [];
-
-        for (let id in parent.entities) {
-            let entity = parent.entities[id];
-            let d = distance(character, entity);
-            if (entity.type != "monster") continue; // Not a monster
-            if (!this.targetPriority[entity.mtype]) continue; // Not something we want to attack
-            if (d > parent.character.range) continue; // Too far away
-            if ((entity.target != parent.character.name) && (entity.hp > parent.character.attack * 0.7 * 0.9 * damage_multiplier(entity.armor - parent.character.apiercing))) continue; // Too much HP to kill in one shot & not targeting us.
-
-            targets.push(entity);
-        }
-
-        return targets.slice(0, 3);
     }
 
     createParty(members: string[]): void {
