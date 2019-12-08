@@ -98,7 +98,7 @@ export function upgradeIfMany(maxLevel: number) {
     if (parent.character.q && parent.character.q["upgrade"]) return; // Already upgrading
     for (let i = 0; i < 42; i++) {
         if (!parent.character.items[i]) continue; // No item in this slot
-        if (!["weapon", "helmet", "chest", "pants", "shoes", "shield", "quiver", "gloves", "cape"].includes(G.items[parent.character.items[i].name].type)) continue; // Not upgradable
+        if (!(G.items[parent.character.items[i].name].upgrade)) continue; // Not upgradable
 
         let items = findItems(parent.character.items[i].name)
         if (items.length == 1) continue; // We only have one.

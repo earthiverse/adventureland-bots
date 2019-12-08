@@ -242,7 +242,7 @@ class Merchant extends Character {
                 indexes.push(j);
             }
 
-            if (["weapon", "helmet", "chest", "pants", "shoes", "shield", "quiver", "gloves", "cape"].includes(G.items[itemI[0]].type) && indexes.length >= 2) {
+            if (G.items[itemI[0]].upgrade && indexes.length >= 2) {
                 // We found two of the same weapons, move them to our inventory.
                 indexes.forEach((k) => {
                     let level = items[k][1];
@@ -274,7 +274,7 @@ class Merchant extends Character {
                 indexes.push(j);
             }
 
-            if(["belt", "ring", "amulet", "earring", "orb"].includes(G.items[itemI[0]].type) && indexes.length >= 3) {
+            if(G.items[itemI[0]].compound && indexes.length >= 3) {
                 for(let l = 0; l < 3; l++) {
                     let k = indexes[l];
                     let level = items[k][1];

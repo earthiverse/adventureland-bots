@@ -75,6 +75,14 @@ export interface ItemInfo {
   tier?: number;
   type?: "weapon" | "chest" | "shoes" | string; // TODO: Other types of items
   stat_type?: "dex" | "str" | "int" | "vit" | string; // TODO: There should be a couple more stat types, like fortitude?
+  /**
+   * Contains info about what benefits you get from upgrading
+   */
+  upgrade?: any;
+  /**
+   * Contains info about what benefits you get from compounding
+   */
+  compound?: any;
 }
 
 export interface BuffInfo {
