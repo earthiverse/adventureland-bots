@@ -16,6 +16,10 @@ export abstract class Character {
     public holdAttack = false;
     protected pathfinder: Pathfinder = new Pathfinder(6);
     protected partyInfo: any = {};
+    protected otherInfo: any = {
+        "npcs": {},
+        "players": {}
+    };
     // protected chests = new Set<string>()
 
     protected mainLoop() {
@@ -86,6 +90,29 @@ export abstract class Character {
                     "message": "quest",
                     "target": undefined
                 })
+            }
+
+            // Other players
+            for(let id in parent.entities) {
+                let entity = parent.entities[id];
+                if(entity.type != "character") continue;
+
+                sendMassCM(parent.party_list, {
+                    "message": "character",
+                    "id": id,
+                    "info": entity
+                })
+            }
+
+            // Important NPCs
+            for(let npc of ["Angel", "Kane"]) {
+                if(parent.entities[npc]) {
+                    sendMassCM(parent.party_list, {
+                        "message": "npc",
+                        "id": npc,
+                        "info": parent.entities[npc]
+                    })
+                }
             }
 
             setTimeout(() => { this.sendInfoLoop() }, 5000);
@@ -514,10 +541,14 @@ export abstract class Character {
         //     data.chests.forEach((chest: string) => {
         //         this.chests.add(chest)
         //     });
-        } else if(data.message == "inventory") {
+        } else if (data.message == "inventory") {
             this.partyInfo[characterName].inventory = data.inventory
-        } else if(data.message == "position") {
+        } else if (data.message == "position") {
             this.partyInfo[characterName].position = data.position
+        } else if (data.message == "npc") {
+            this.otherInfo.npcs[data.id] = data.info
+        } else if (data.message == "player") {
+            this.otherInfo.players[data.id] = data.info
         }
     }
 
