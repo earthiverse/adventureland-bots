@@ -279,7 +279,7 @@ export abstract class Character {
             if (parent.character.rip) {
                 // Respawn if we're dead
                 respawn();
-                setTimeout(() => { this.healLoop() }, Math.max(250, parent.character.ping)) // TODO: Find out something that tells us how long we have to wait before respawning.
+                setTimeout(() => { this.healLoop() }, Math.max(parent.next_skill["use_town"] - Date.now(), parent.character.ping)) // TODO: Find out something that tells us how long we have to wait before respawning.
                 return;
             } else if (parent.next_skill["use_hp"] > Date.now()) {
                 setTimeout(() => { this.healLoop() }, parent.next_skill["use_hp"] - Date.now())
