@@ -272,7 +272,8 @@ class Ranger extends Character {
                 setTimeout(() => { this.attackLoop() }, Math.max(parent.character.ping, parent.next_skill["attack"] - Date.now()));
                 return;
             }
-        } else if (targets.length >= 3
+        }
+        if (targets.length >= 3
             && parent.character.mp >= 300
             && !parent.character.stoned
             && parent.next_skill["attack"] <= Date.now()
@@ -297,7 +298,6 @@ class Ranger extends Character {
         }
 
         // Can't do a special attack, so let's do a normal one
-        // game_log("normal attack")
         super.attackLoop();
     }
 

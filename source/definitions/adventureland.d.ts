@@ -14,6 +14,7 @@ export interface ICharacter extends Entity {
     items1?: ItemInfo[];
     items2?: ItemInfo[];
     items3?: ItemInfo[];
+    items4?: ItemInfo[];
     gold: number;
   }
   /**
