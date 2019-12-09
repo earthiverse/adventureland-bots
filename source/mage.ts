@@ -158,7 +158,7 @@ class Mage extends Character {
             "y": 570
         }
     }
-    mainTarget: MonsterName = "porcupine";
+    mainTarget: MonsterName = "poisio";
 
     run(): void {
         super.run();
@@ -170,7 +170,6 @@ class Mage extends Character {
             transferItemsToMerchant("earthMer", ["tracker", "mpot1", "hpot1", "orbg", "jacko"]);
             transferGoldToMerchant("earthMer");
             sellUnwantedItems();
-            loot();
 
             super.mainLoop();
         } catch (error) {

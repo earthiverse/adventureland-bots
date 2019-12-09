@@ -81,7 +81,6 @@ class Warrior extends Character {
             transferItemsToMerchant("earthMer", ["tracker", "mpot1", "hpot1", "orbg", "jacko"]);
             transferGoldToMerchant("earthMer");
             sellUnwantedItems();
-            loot();
 
             super.mainLoop();
         } catch (error) {

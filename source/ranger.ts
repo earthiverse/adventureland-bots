@@ -178,7 +178,6 @@ class Ranger extends Character {
             transferItemsToMerchant("earthMer", ["tracker", "mpot1", "hpot1", "orbg", "jacko"]);
             transferGoldToMerchant("earthMer");
             sellUnwantedItems();
-            loot();
 
             this.createParty(["earthMag", "earthWar", "earthMer", "earthPri"]);
 
@@ -249,7 +248,7 @@ class Ranger extends Character {
 
     attackLoop() {
         // TODO: Try to 5shot targets
-        let targets = this.getTargets(20);
+        let targets = this.getTargets(5);
 
         if (targets.length >= 5
             && parent.character.mp >= 420
@@ -274,7 +273,7 @@ class Ranger extends Character {
                 return;
             }
         } else if (targets.length >= 3
-            && parent.character.mp >= 420
+            && parent.character.mp >= 300
             && !parent.character.stoned
             && parent.next_skill["attack"] <= Date.now()
             && !(smart.moving && this.targetPriority[targets[0].mtype] && this.targetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name)) {

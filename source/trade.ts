@@ -108,7 +108,7 @@ export function transferGoldToMerchant(merchantName: string, minimumGold: number
 
 // TODO: Add check for shells
 // TODO: Add check for earrings
-export function exchangeItems(xynExchangeItems: ItemName[] = ["gem0", "gem1", "armorbox", "weaponbox", "candy0", "candy1", "candycane"]) {
+export function exchangeItems(xynExchangeItems: ItemName[] = ["gem0", "gem1", "armorbox", "weaponbox", "candy0", "candy1", "candycane", "ornament"]) {
     // Xyn (Most exchanges)
     let foundUpgrade = false;
     for (let npc of parent.npcs) {

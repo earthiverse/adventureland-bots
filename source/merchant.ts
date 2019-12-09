@@ -1,6 +1,6 @@
 import { Character } from './character'
-import { MonsterName, ItemName } from './definitions/adventureland';
-import { compoundItem, upgradeItem, upgradeIfMany } from './upgrade'
+import { MonsterName, ItemName, ALPosition, Monster } from './definitions/adventureland';
+import { compoundItem, upgradeItem, upgradeIfMany, compoundIfMany } from './upgrade'
 import { sellUnwantedItems, exchangeItems, buyFromPonty } from './trade';
 import { getInventory, buyAndUpgrade } from './functions';
 
@@ -8,116 +8,86 @@ class Merchant extends Character {
     targetPriority = {}
     mainTarget: MonsterName = null;
 
+    public getMovementTarget(): ALPosition {
+        // Check for full inventory
+        let full = true;
+        for (let i = 0; i < 42; i++) {
+            if (parent.character.items[i]) continue;
+            full = false;
+            break;
+        }
+        if (full) {
+            set_message("Full!")
+            if (parent.character.map == "bank") {
+                // Already at the bank
+                return;
+            } else {
+                // Move to the bank
+                return { "map": "bank", "x": 0, "y": 0 }
+            }
+        }
+
+        // Check for Christmas Tree
+        if (G.maps.main.ref.newyear_tree && !character.s.holidayspirit) {
+            this.pathfinder.movementTarget = "newyear_tree";
+            this.pathfinder.movementTarget = "newyear_tree";
+            return G.maps.main.ref.newyear_tree
+        }
+
+        // Check for event monsters
+        for (let name in parent.S) {
+            let monster: any = parent.S[name as MonsterName]
+            if (monster.hp < monster.max_hp * 0.9
+                && monster.live) {
+                set_message("EV " + name.slice(0, 8))
+                this.pathfinder.movementTarget = name;
+                for (let id in parent.entities) {
+                    let entity = parent.entities[id]
+                    if (entity.mtype == name) {
+                        // There's one nearby
+                        return;
+                    }
+                }
+                return parent.S[name as MonsterName]
+            }
+        }
+
+        // TODO: If Angel and Kane haven't been seen in a while, go find them
+
+        // If our players aren't mlucked, go find them and mluck them.
+        for(let name of parent.party_list) {
+            let player = this.partyInfo[name]
+            if(player && player.s && (!player.s.mluck || player.s.mluck.f !== "earthMer")) {
+                set_message("MLuck party")
+                return player
+            }
+        }
+
+        // If there are players who we have seen recently that haven't been mlucked, go find them and mluck them
+        for (let name in this.otherInfo) {
+            let player = this.otherInfo[name]
+            if (player.s && !player.s.mluck) {
+                set_message("MLuck other")
+                return this.otherInfo[name]
+            }
+        }
+
+        // Default spot in town to hang out
+        set_message("Vendoring!")
+        return { map: "main", "x": 60, "y": -325 }
+    }
+
     protected mainLoop(): void {
         try {
-            // TODO: move this to a custom moveLoop.
-            // Movement
-            if (this.holdPosition) {
-                // Don't move.
-            } else if (!smart.moving) {
-                // event monsters
-                let event = false;
-                for (let eventMonsterName in parent.S) {
-                    let eventMonster: any = parent.S[eventMonsterName as MonsterName]
-                    if (!eventMonster.live) continue; // Not live
-                    if (eventMonster.hp / eventMonster.max_hp > 0.9) continue; // Nobody's attacking it
-
-                    event = true;
-                    if (parent.distance(parent.character, eventMonster) > 250) smart_move(eventMonster);
-                }
-
-                // full inventory
-                let full = true;
-                for (let i = 0; i < 42; i++) {
-                    if (parent.character.items[i]) continue;
-                    full = false;
-                    break;
-                }
-
-                // travel back and forth between characters
-                if (full) {
-                    set_message("Full!")
-                    game_log("moving to the bank")
-                    smart_move("bank")
-                } else if (event) {
-                    set_message("Event!")
-                    // We're dealing with an event, don't move to characters.
-                } else if (parent.character.map == "bank" && this.didBankStuff) {
-                    set_message("Vendoring!")
-                    smart_move({ map: "main", "x": 60, "y": -325 })
-                } else if (parent.character.map !== "main") {
-                    set_message("Vendoring!")
-                    smart_move({ map: "main", "x": 60, "y": -325 })
-                }
-            }
-
             sellUnwantedItems();
             exchangeItems();
-            
+
             this.bankStuff();
 
-            //// Wearables
-            // Rings
-            compoundItem("dexring", 3);
-            compoundItem("intring", 3);
-            compoundItem("strring", 3);
-
-            // Amulets
-            compoundItem("dexamulet", 3);
-            compoundItem("intamulet", 3);
-            compoundItem("stramulet", 3);
-
-            // Earrings
-            compoundItem("dexearring", 3);
-            compoundItem("intearring", 3);
-            compoundItem("strearring", 3);
-
-            // Belts
-            compoundItem("dexbelt", 3);
-            compoundItem("intbelt", 3);
-            compoundItem("strbelt", 3);
-
-            // Offhands
-            upgradeItem("quiver", 8);
-            upgradeItem("t2quiver", 6);
-            compoundItem("wbook0", 3);
-            compoundItem("wbook1", 2);
-
-            // Capes
-            upgradeItem("cape", 6);
-
-            // Orbs
-            compoundItem("orbg", 3);
-            compoundItem("jacko", 3);
-            compoundItem("lantern", 3);
-
-            //// Weapons
-            upgradeItem("firestaff", 8);
-            upgradeItem("fireblade", 8);
-            upgradeItem("t2bow", 8);
-
-            //// Miscellaneous
-            compoundItem("lostearring", 2);
-
-            // Merchant Set
-            upgradeItem("mcgloves", 6);
-            upgradeItem("mcpants", 6);
-            upgradeItem("mcarmor", 6);
-            upgradeItem("mcboots", 6);
-            upgradeItem("mchat", 6);
-
-            // Wanderer's set
-            upgradeItem("wattire", 8)
-            upgradeItem("wshoes", 8)
-            upgradeItem("wgloves", 8)
-
-            // buyAndUpgrade("pants")
-            // buyAndUpgrade("gloves")
-            // buyAndUpgrade("shoes")
-            // buyAndUpgrade("helmet")
-
             // buyAndUpgrade("bow", 8, 5)
+
             upgradeIfMany(8);
+            compoundIfMany(4);
 
             super.mainLoop();
         } catch (error) {
@@ -127,14 +97,13 @@ class Merchant extends Character {
     }
 
     public run(): void {
-        super.run();
+        this.healLoop();
+        this.scareLoop();
+        this.moveLoop();
+        this.sendInfoLoop();
+        this.mainLoop();
         this.luckLoop();
-        // this.lootLoop();
         this.pontyLoop();
-    }
-
-    protected attackLoop(): void {
-        // Nothing for now, merchants can't usually attack.
     }
 
     private pontyLoop(): void {
@@ -158,7 +127,9 @@ class Merchant extends Character {
             /*"intearring",*/ "dexearring", /*"strearring", "dexamulet", "intamulet",*/ // Low priority things
             "wgloves", "wshoes", "wattire",  // I want to get all +8 for my ranger
             "bfur", "leather", "seashell", // Craftables that are usable for things
-            "lostearring", "jacko", "cape", "bcape", "monstertoken", "t2bow", "cupid", "candycanesword", "bowofthedead", "gbow", "hbow", "t2quiver", "oozingterror", "talkingskull", "greenbomb", "gem0", "gem1", "candy0", "candy1", "xboots", "handofmidas", "goldenpowerglove", "xgloves", "powerglove", "poker", "starkillers", "xpants", "xarmor", "xhelmet", "fury", "partyhat"]); // Things that I probably won't find
+            "pmace", // I want a nice mace for my priest
+            "candycane", "ornament",
+            "lostearring", "jacko", "cape", "bcape", "monstertoken", "t2bow", "cupid", "candycanesword", "merry", "ornamentstaff", "merry", "bowofthedead", "gbow", "hbow", "t2quiver", "oozingterror", "talkingskull", "greenbomb", "gem0", "gem1", "candy0", "candy1", "xboots", "handofmidas", "goldenpowerglove", "xgloves", "powerglove", "poker", "starkillers", "xpants", "xarmor", "xhelmet", "fury", "partyhat"]); // Things that I probably won't find
 
         // We bought things from Ponty, wait a long time before trying to buy again.
         setTimeout(() => { this.pontyLoop() }, 15000);
@@ -169,16 +140,16 @@ class Merchant extends Character {
         if (parent.character.map !== "bank") {
             this.didBankStuff = false;
             return;
-        } else if(this.didBankStuff) {
+        } else if (this.didBankStuff) {
             // Withdraw items
             return;
         }
-        let itemsToKeep: ItemName[] = ["tracker", "cscroll0", "cscroll1", "cscroll2", "scroll0", "scroll1", "scroll2", "stand0", "dexscroll", "intscroll", "strscroll"]
+        let itemsToKeep: ItemName[] = ["tracker", "cscroll0", "cscroll1", "cscroll2", "scroll0", "scroll1", "scroll2", "stand0", "dexscroll", "intscroll", "strscroll", "monstertoken"]
 
         // Store extra gold
         if (parent.character.gold > 25000000) {
             bank_deposit(parent.character.gold - 25000000)
-        } else if(parent.character.gold < 25000000) {
+        } else if (parent.character.gold < 25000000) {
             bank_withdraw(25000000 - parent.character.gold)
         }
 
@@ -206,21 +177,29 @@ class Merchant extends Character {
         getInventory(parent.character.bank.items0).forEach((item) => {
             if (itemsToKeep.includes(item[1].name)) return; // Don't add items we want to keep
             if (G.items[item[1].name].s) return; // Don't add stackable items
+            if (G.items[item[1].name].upgrade && item[1].level >= 8) return; // Don't withdraw high level items
+            if (G.items[item[1].name].compound && item[1].level >= 4) return; // Don't withdraw high level items
             items.push([item[1].name, item[1].level, "items0", item[0]])
         });
         getInventory(parent.character.bank.items1).forEach((item) => {
             if (itemsToKeep.includes(item[1].name)) return; // Don't add items we want to keep
             if (G.items[item[1].name].s) return; // Don't add stackable items
+            if (G.items[item[1].name].upgrade && item[1].level >= 8) return; // Don't withdraw high level items
+            if (G.items[item[1].name].compound && item[1].level >= 4) return; // Don't withdraw high level items
             items.push([item[1].name, item[1].level, "items1", item[0]])
         });
         getInventory(parent.character.bank.items2).forEach((item) => {
             if (itemsToKeep.includes(item[1].name)) return; // Don't add items we want to keep
             if (G.items[item[1].name].s) return; // Don't add stackable items
+            if (G.items[item[1].name].upgrade && item[1].level >= 8) return; // Don't withdraw high level items
+            if (G.items[item[1].name].compound && item[1].level >= 4) return; // Don't withdraw high level items
             items.push([item[1].name, item[1].level, "items2", item[0]])
         });
         getInventory(parent.character.bank.items3).forEach((item) => {
             if (itemsToKeep.includes(item[1].name)) return; // Don't add items we want to keep
             if (G.items[item[1].name].s) return; // Don't add stackable items
+            if (G.items[item[1].name].upgrade && item[1].level >= 8) return; // Don't withdraw high level items
+            if (G.items[item[1].name].compound && item[1].level >= 4) return; // Don't withdraw high level items
             items.push([item[1].name, item[1].level, "items3", item[0]])
         });
 
@@ -246,6 +225,7 @@ class Merchant extends Character {
                 // We found two of the same weapons, move them to our inventory.
                 indexes.forEach((k) => {
                     let level = items[k][1];
+                    if (level >= 8) return; // Leave high level items
                     let bankBox = items[k][2];
                     let boxSlot = items[k][3];
                     parent.socket.emit("bank", {
@@ -274,10 +254,11 @@ class Merchant extends Character {
                 indexes.push(j);
             }
 
-            if(G.items[itemI[0]].compound && indexes.length >= 3) {
-                for(let l = 0; l < 3; l++) {
+            if (G.items[itemI[0]].compound && indexes.length >= 3) {
+                for (let l = 0; l < 3; l++) {
                     let k = indexes[l];
                     let level = items[k][1];
+                    if (level >= 4) return; // Leave high level items
                     let bankBox = items[k][2];
                     let boxSlot = items[k][3];
                     parent.socket.emit("bank", {

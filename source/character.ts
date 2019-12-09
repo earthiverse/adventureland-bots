@@ -1,8 +1,9 @@
 import { Queue } from "prioqueue"
-import { MonsterName, Entity, ALPosition, ItemName, ItemInfo, Slot } from './definitions/adventureland';
+import { MonsterName, Entity, ALPosition, ItemName, ItemInfo, Slot, MapName, MapInfo, ICharacter } from './definitions/adventureland';
 import { Pathfinder } from './pathfinder';
-import { sendMassCM, findItems, getInventory } from "./functions";
+import { sendMassCM, findItems, getInventory, getMonsterSpawnPosition, getNearbyMonsterSpawns } from "./functions";
 import { TargetPriorityList } from "./definitions/bots";
+import { parseIsolatedEntityName } from "typescript";
 
 export abstract class Character {
     /**
@@ -29,6 +30,10 @@ export abstract class Character {
             this.getMonsterhuntQuest();
         }
 
+        this.getNewYearTreeBuff();
+
+        this.loot();
+
         setTimeout(() => { this.mainLoop(); }, Math.max(250, parent.character.ping));
     };
 
@@ -49,6 +54,8 @@ export abstract class Character {
      */
     protected sendInfoLoop() {
         try {
+            let message: any;
+
             // Chests
             let chests = [];
             let i = 0;
@@ -57,61 +64,81 @@ export abstract class Character {
                 if (++i > 50) break;
             }
             if (i > 0) {
-                sendMassCM(parent.party_list, {
+                message = {
                     "message": "chests",
                     "chests": chests
-                })
+                }
+                sendMassCM(parent.party_list, message)
+                this.parse_cm(parent.character.name, message)
             }
 
             // Inventory
-            sendMassCM(parent.party_list, {
-                "message": "inventory",
-                "inventory": getInventory()
-            })
+            message = {
+                "message": "info",
+                "inventory": getInventory(),
+                "map": parent.character.map,
+                "x": parent.character.real_x,
+                "y": parent.character.real_y,
+                "s": parent.character.s
+            }
+            sendMassCM(parent.party_list, message)
+            this.parse_cm(parent.character.name, message)
 
-            // Position
-            sendMassCM(parent.party_list, {
-                "message": "position",
-                "position": {
-                    "map": parent.character.map,
-                    "x": parent.character.real_x,
-                    "y": parent.character.real_y
-                }
-            })
-
+            // TODO: We're already sending 's', so we don't need to do this anymore, we can figure it out elsewhere
             // Quests
             if (character.s.monsterhunt && character.s.monsterhunt.c > 0) {
-                sendMassCM(parent.party_list, {
+                message = {
                     "message": "quest",
                     "target": character.s.monsterhunt.id
-                })
+                }
+                sendMassCM(parent.party_list, message)
+                this.parse_cm(parent.character.name, message)
             } else if (!character.s.monsterhunt || character.s.monsterhunt.c == 0) {
-                sendMassCM(parent.party_list, {
+                message = {
                     "message": "quest",
                     "target": undefined
-                })
+                }
+                sendMassCM(parent.party_list, message)
+                this.parse_cm(parent.character.name, message)
             }
 
             // Other players
-            for(let id in parent.entities) {
-                let entity = parent.entities[id];
-                if(entity.type != "character") continue;
+            for (let id in parent.entities) {
+                if (parent.entities[id].type != "character") continue;
+                if (parent.entities[id].npc) continue;
 
-                sendMassCM(parent.party_list, {
-                    "message": "character",
+                let player = parent.entities[id] as ICharacter
+                message = {
+                    "message": "player",
                     "id": id,
-                    "info": entity
-                })
+                    "info": {
+                        "map": player.map,
+                        "x": player.real_x,
+                        "y": player.real_y,
+                        "s": player.s,
+                        "ctype": player.ctype
+                    }
+                }
+
+                sendMassCM(parent.party_list, message)
+                this.parse_cm(parent.character.name, message)
             }
 
             // Important NPCs
-            for(let npc of ["Angel", "Kane"]) {
-                if(parent.entities[npc]) {
-                    sendMassCM(parent.party_list, {
-                        "message": "npc",
-                        "id": npc,
-                        "info": parent.entities[npc]
-                    })
+            for (let npc of ["Angel", "Kane"]) {
+                if (!parent.entities[npc]) continue;
+                message = {
+                    "message": "npc",
+                    "id": npc,
+                    "info": {
+                        "map": parent.entities[npc].map,
+                        "x": parent.entities[npc].real_x,
+                        "y": parent.entities[npc].real_y
+                    }
+                }
+                if (parent.entities[npc]) {
+                    sendMassCM(parent.party_list, message)
+                    this.parse_cm(parent.character.name, message)
                 }
             }
 
@@ -122,20 +149,14 @@ export abstract class Character {
         }
     }
 
-    // protected lootLoop() {
-    //     // Don't loot in the bank
-    //     if (parent.character.map == "bank") {
-    //         setTimeout(() => { this.lootLoop() }, 1000);
-    //         return;
-    //     }
-    //     let i = 0;
-    //     for (let chestID of this.chests) {
-    //         parent.socket.emit("open_chest", { id: chestID });
-    //         this.chests.delete(chestID)
-    //         if (++i > 20) break;
-    //     }
-    //     setTimeout(() => { this.lootLoop() }, 1000);
-    // }
+    protected loot() {
+        let i = 0;
+        for (let chestID in parent.chests) {
+            let chest = parent.chests[chestID]
+            if (distance(parent.character, chest) < 800) parent.socket.emit("open_chest", { id: chestID }); // It's 800 as per @Wizard in #feedback on 11/26/2019
+            if (++i > 20) break;
+        }
+    }
 
     protected attackLoop(): void {
         try {
@@ -173,7 +194,7 @@ export abstract class Character {
                 && targets[0].target == parent.character.name // It's targeting us
                 && distance(targets[0], parent.character) <= targets[0].range // We're in range of its attacks
                 && (!this.targetPriority[targets[0].mtype] // Either 1) there's something attacking us that isn't in our priority list
-                    || (character.hp < targets[0].attack * targets[0].frequency * 5)) // or 2) We're about to die
+                    || (character.hp < targets[0].attack * 2)) // or 2) We're about to die
                 && parent.character.mp >= 50) { // We have enough MP
                 let items = findItems("jacko")
                 if (parent.character.slots.orb && parent.character.slots.orb.name == "jacko") {
@@ -185,10 +206,7 @@ export abstract class Character {
                     let jackoI = items[0][0]
                     equip(jackoI) // Equip the jacko
                     use_skill("scare") // Scare the monsters away
-                    equip(jackoI) // Swap back to whatever we had before
                 }
-            } else {
-                // TODO: We can't / don't want to use scare, so equip our orb
             }
         } catch (error) {
             console.error(error);
@@ -205,15 +223,6 @@ export abstract class Character {
                     && this.pathfinder.movementTarget == targets[0].mtype /* We're moving to that target */
                     && parent.distance(parent.character, targets[0]) < parent.character.range /* We're in range of that target */) {
                     stop();
-                    this.pathfinder.movementTarget = null;
-                    this.movementQueue = []; // clear movement queue
-                }
-
-                if (character.ctype !== "merchant"
-                    && this.getMonsterhuntTarget()
-                    && this.getMonsterhuntTarget() != this.pathfinder.movementTarget) { // We're moving to the wrong target
-                    stop();
-                    this.pathfinder.movementTarget = null;
                     this.movementQueue = []; // clear movement queue
                 }
 
@@ -222,19 +231,9 @@ export abstract class Character {
                 return;
             } else if (this.movementQueue.length == 0) { // No movements queued
                 // Reset movement target
-                this.pathfinder.movementTarget = null;
-
-                if (character.ctype !== "merchant") {
-                    if (targets.length > 0 && targets[0].mtype == "goldenbat") {
-                        // Don't smart_move if there's a golden bat
-                    } else if (targets.length > 0 && targets[0].mtype == "snowman") {
-                        // Don't move, attack the snowman!
-                    } else if (parent.S.snowman && this.targetPriority.snowman && distance(parent.character, parent.S.snowman) > parent.character.range) {
-                        // Move to the snowman!
-                        smart_move(parent.S.snowman)
-                    } else {
-                        this.moveToMonsterhunt();
-                    }
+                let movementTarget = this.getMovementTarget()
+                if (movementTarget) {
+                    this.pathfinder.saferMove(movementTarget)
                 }
 
                 // Default movements
@@ -390,11 +389,12 @@ export abstract class Character {
             if (d > (target.range + (target.speed + character.speed) * Math.max(parent.character.ping * 0.001, 0.5))) continue; // We're still far enough away to not get attacked
             if (target.hp < parent.character.attack * 0.7 * 0.9 * damage_multiplier(target.armor - parent.character.apiercing)) continue // We can kill it in one shot, don't move.
             if (d < minDistance) continue; // There's another target that's closer
+            if (target.range > character.range) continue; // We can't attack it by kiting, don't try
             minDistance = d;
             minTarget = target;
         }
 
-        if (!minTarget) return; // We're far enough away not to get attacked
+        if (!minTarget) return; // We're far enough away not to get attacked, or it's impossible to do so
 
         // Move away from the closest monster
         let angle: number = Math.atan2(parent.character.real_y - minTarget.real_y, parent.character.real_x - minTarget.real_x);
@@ -455,6 +455,14 @@ export abstract class Character {
         }
     }
 
+    public getNewYearTreeBuff() {
+        if (!G.maps.main.ref.newyear_tree) return; // Event is not live.
+        if (parent.character.s.holidayspirit) return; // We already have the buff.
+        if (distance(parent.character, G.maps.main.ref.newyear_tree) > 250) return; // Too far away
+
+        parent.socket.emit("interaction", { type: "newyear_tree" });
+    }
+
     public getMonsterhuntQuest() {
         let monsterhunter: ALPosition = { map: "main", x: 126, y: -413 }
         if (distance(parent.character, monsterhunter) > 250) return; // Too far away
@@ -490,43 +498,8 @@ export abstract class Character {
         }
     }
 
-    public moveToMonsterhunt() {
-        if (!parent.character.s.monsterhunt) {
-            // Go to monster hunter to get a new quest
-            set_message("New MH")
-            this.pathfinder.saferMovePlace(this, "monsterhunter")
-        } else if (parent.character.s.monsterhunt.c == 0) {
-            // Go to monster hunter to finish our quest
-            set_message("Finish MH")
-            this.pathfinder.saferMovePlace(this, "monsterhunter")
-        } else {
-            // Go to target monster
-            let monsterHuntTarget = this.getMonsterhuntTarget()
-            let targets = this.getTargets(1)
-            if (monsterHuntTarget) {
-                if (targets.length == 0 || targets[0].mtype != monsterHuntTarget) {
-                    if (this.targetPriority[monsterHuntTarget]) {
-                        // if (this.targetPriority.includes(monsterHuntTarget)) {
-                        // It's in our list of monsters, go go go!
-                        set_message("MH: " + monsterHuntTarget)
-                        this.pathfinder.saferMoveMonster(this, monsterHuntTarget)
-                    } else if (targets.length != 0 && targets[0].mtype != this.mainTarget) {
-                        // Not in our target priority, so it's probably too dangerous. Go to our default target
-                        set_message(this.mainTarget)
-                        this.pathfinder.saferMoveMonster(this, this.mainTarget)
-                    }
-                }
-            } else if (targets.length == 0 || (targets.length != 0 && targets[0].mtype != this.mainTarget)) {
-                // Not in our target priority, so it's probably too dangerous. Go to our default target
-                set_message(this.mainTarget)
-                this.pathfinder.saferMoveMonster(this, this.mainTarget)
-            }
-        }
-
-    }
-
     public parse_cm(characterName: string, data: any) {
-        if (!parent.party_list.includes(characterName)) {
+        if (!parent.party_list.includes(characterName) && parent.character.name !== characterName) {
             // Ignore messages from players not in our party
             game_log("Blocked CM from " + characterName);
             return;
@@ -537,40 +510,21 @@ export abstract class Character {
 
         if (data.message == "quest") {
             this.partyInfo[characterName].target = data.target
-        // } else if (data.message = "chests") {
-        //     data.chests.forEach((chest: string) => {
-        //         this.chests.add(chest)
-        //     });
-        } else if (data.message == "inventory") {
+            // } else if (data.message = "chests") {
+            //     data.chests.forEach((chest: string) => {
+            //         this.chests.add(chest)
+            //     });
+        } else if (data.message == "info") {
             this.partyInfo[characterName].inventory = data.inventory
-        } else if (data.message == "position") {
-            this.partyInfo[characterName].position = data.position
+            this.partyInfo[characterName].map = data.map
+            this.partyInfo[characterName].x = data.x
+            this.partyInfo[characterName].y = data.y
+            this.partyInfo[characterName].s = data.s
         } else if (data.message == "npc") {
             this.otherInfo.npcs[data.id] = data.info
         } else if (data.message == "player") {
             this.otherInfo.players[data.id] = data.info
         }
-    }
-
-    public getMonsterhuntTarget(): MonsterName {
-        // Return monster hunter quest NPC if we don't have a target
-        if (!character.s || !character.s.monsterhunt || (parent.character.s && parent.character.s.monsterhunt && parent.character.s.monsterhunt.c == 0)) return null;
-
-        // Party monster hunts
-        let highestPriorityTarget = -1;
-        let highestPriorityTargetName: MonsterName = null;
-        for (let questInfo in this.partyInfo) {
-            let target: MonsterName = this.partyInfo[questInfo].target;
-            if (!this.targetPriority[target]) continue;
-            let priorty = this.targetPriority[target].priority;
-            if (priorty > highestPriorityTarget) {
-                highestPriorityTarget = priorty;
-                highestPriorityTargetName = target;
-            }
-        }
-        if (highestPriorityTarget != -1) return highestPriorityTargetName;
-
-        return null;
     }
 
     /**
@@ -593,6 +547,161 @@ export abstract class Character {
                 slotItem = itemInfo;
             }
         }
+    }
+
+    public getMovementTarget(): ALPosition {
+        // Check for golden bat
+        for (let id in parent.entities) {
+            let entity = parent.entities[id]
+            if (entity.mtype == "goldenbat") {
+                set_message("goldenbat")
+                this.pathfinder.movementTarget = "goldenbat";
+                // NOTE: We should pathfind to it on our own
+                // TODO: make sure we actually do this, lol
+                return
+            }
+        }
+
+        // Check for Christmas Tree
+        if (G.maps.main.ref.newyear_tree && !character.s.holidayspirit) {
+            this.pathfinder.movementTarget = "newyear_tree";
+            return G.maps.main.ref.newyear_tree
+        }
+
+        // Check for event monsters
+        for (let name in parent.S) {
+            if (this.targetPriority[name as MonsterName]) {
+                set_message(name)
+                this.pathfinder.movementTarget = name;
+                for (let id in parent.entities) {
+                    let entity = parent.entities[id]
+                    if (entity.mtype == name) {
+                        // There's one nearby
+                        return;
+                    }
+                }
+                return parent.S[name as MonsterName]
+            }
+        }
+
+        // Check if our inventory is full
+        let full = true;
+        for(let i = 0; i < 42; i++) {
+            if(!parent.character.items[i]) {
+                full = false;
+                break;
+            }
+        }
+        if(full) {
+            // This is where our merchant usually hangs out
+            return { map: "main", "x": 60, "y": -325 }
+        }
+
+        // Check for monster hunt
+        if (!character.s.monsterhunt) {
+            set_message("New MH")
+            this.pathfinder.movementTarget = "monsterhunter";
+            return G.maps.main.ref.monsterhunter
+        } else if (character.s.monsterhunt.c == 0) {
+            set_message("Finish MH")
+            this.pathfinder.movementTarget = "monsterhunter";
+            return G.maps.main.ref.monsterhunter
+        } else {
+            // Get all party quests
+            let potentialTargets: MonsterName[] = [parent.character.s.monsterhunt.id]
+            for (let info in this.partyInfo) {
+                if (!this.partyInfo[info].target) continue;
+                potentialTargets.push(this.partyInfo[info].target as MonsterName)
+            }
+            for (let potentialTarget of potentialTargets) {
+                if (this.targetPriority[potentialTarget]) {
+
+                    // We have a doable quest
+                    set_message("MH " + potentialTarget.slice(0, 8))
+                    this.pathfinder.movementTarget = potentialTarget;
+                    for (let id in parent.entities) {
+                        let entity = parent.entities[id]
+                        if (entity.mtype == potentialTarget) {
+                            // There's one nearby
+                            return;
+                        }
+                    }
+                    // We aren't near the monster hunt target, move to it
+                    if (this.targetPriority[potentialTarget].map && this.targetPriority[potentialTarget].x && this.targetPriority[potentialTarget].y) {
+                        return this.targetPriority[potentialTarget] as ALPosition
+                    } else {
+                        return getMonsterSpawnPosition(potentialTarget)
+                    }
+                }
+            }
+        }
+
+        // Check if we can farm with +1000% gold and luck
+        let kane = parent.entities["Kane"] ? parent.entities["Kane"] : this.otherInfo.npcs.Kane
+        let angel = parent.entities["Angel"] ? parent.entities["Angel"] : this.otherInfo.npcs.Angel
+        if (kane && angel) {
+            let kaneSpawns = getNearbyMonsterSpawns(kane as ALPosition, 800)
+            let angelSpawns = getNearbyMonsterSpawns(angel as ALPosition, 800)
+
+            if(distance(parent.character, kane) < 800 && distance(parent.character, angel) < 800) {
+                // We're near both of them
+                set_message("2x1000% farm")
+                return;
+            }
+            for (let kSpawn of kaneSpawns) {
+                for (let aSpawn of angelSpawns) {
+                    if (kSpawn[1].x == aSpawn[1].x && kSpawn[1].y == aSpawn[1].y && this.targetPriority[kSpawn[0]]) {
+                        // We found a spawn where both 
+                        set_message("2x1000% farm")
+                        this.pathfinder.movementTarget = kSpawn[0];
+                        if (distance(parent.character, kSpawn[1]) > 500) {
+                            return kSpawn[1]
+                        } else {
+                            return
+                        }
+                    }
+                }
+            }
+            if(distance(parent.character, kane) < 800) {
+                set_message("1000% luck")
+                return; // We're near Kane
+            }
+            for (let kSpawn of kaneSpawns) {
+                if (this.targetPriority[kSpawn[0]]) {
+                    set_message("1000% luck")
+                    this.pathfinder.movementTarget = kSpawn[0];
+                    return kSpawn[1]
+                }
+            }
+            if(distance(parent.character, angel) < 800) {
+                set_message("1000% gold")
+                return; // We're near Angel
+            }
+            for (let aSpawn of angelSpawns) {
+                if (this.targetPriority[aSpawn[0]]) {
+                    set_message("1000% gold")
+                    this.pathfinder.movementTarget = aSpawn[0];
+                    return aSpawn[1]
+                }
+            }
+        }
+
+        // Check for our main target
+        set_message(this.mainTarget)
+        this.pathfinder.movementTarget = this.mainTarget;
+        for (let id in parent.entities) {
+            let entity = parent.entities[id]
+            if (entity.mtype == this.mainTarget) {
+                // There's one nearby
+                return;
+            }
+        }
+        if (this.targetPriority[this.mainTarget].map && this.targetPriority[this.mainTarget].x && this.targetPriority[this.mainTarget].y) {
+            return this.targetPriority[this.mainTarget] as ALPosition
+        } else {
+            return getMonsterSpawnPosition(this.mainTarget)
+        }
+
     }
 
     public getTargets(numTargets: number = 1): Entity[] {
@@ -626,8 +735,8 @@ export abstract class Character {
             // Increase priority if it's our "main target"
             if (potentialTarget.mtype == this.mainTarget) priority += 10;
 
-            // Increase priority if it's a quest monster
-            if (potentialTarget.mtype == this.getMonsterhuntTarget()) priority += 500;
+            // Increase priority if it's our movement target
+            if (potentialTarget.mtype == this.pathfinder.movementTarget) priority += 500;
 
             // Increase priority if the entity is targeting us
             if (potentialTarget.target == parent.character.name) priority += 1000;

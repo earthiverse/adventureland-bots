@@ -19,45 +19,11 @@ export class Pathfinder {
         this.padding = padding;
     }
 
-    public saferMoveMonster(c: Character, to: MonsterName) {
-        if (smart.moving) return; // Already moving somewhere
+    public saferMove(to: ALPosition) {
+        if(smart.moving) return; // Already moving somewhere
+        if(distance(parent.character, to) < 50) return; // Already nearby
 
-        this.movementTarget = to;
-
-        // // TODO: Find monster spawn so we can use our own pathfinding
-        // let monsterSpawn;
-        // for (let ms of G.maps[parent.character.map].monsters) {
-        //     if (ms.type == to) {
-        //         monsterSpawn = ms;
-        //         break;
-        //     }
-        // }
-
-        if (c.targetPriority[to] && c.targetPriority[to].map && c.targetPriority[to].x && c.targetPriority[to].y) {
-            let p: ALPosition = {
-                map: c.targetPriority[to].map,
-                x: c.targetPriority[to].x,
-                y: c.targetPriority[to].y
-            }
-            if (distance(parent.character, p) < 50) return; // Already here
-            // if (p.map == parent.character.map) {
-            //     let movements = this.findMovements(parent.character, p)
-            //     if(movements) c.movementQueue = movements;
-            // } else {
-            smart_move(p)
-            // }
-            // } else if (monsterSpawn) {
-            // if (distance(parent.character, smart) < 50) return; // Already here
-        } else {
-            if (distance(parent.character, smart) < 50) return; // Already here
-            smart_move(to);
-        }
-    }
-
-    public saferMovePlace(c: Character, to: string) {
-        if (smart.moving) return; // Already moving somewhere
-
-        this.movementTarget = to;
+        // TODO: Add pathfinding if we're on the same map
 
         smart_move(to);
     }
@@ -84,50 +50,70 @@ export class Pathfinder {
 
         let alPath: ALPosition[] = [];
 
+        // If we're too close to a wall our pathfinding fails. This next section finds us the closest walkable space so we can start searching from there
         let pathfinderFromX = Math.floor((-G.geometry[mapName].min_x + from.x) / this.factor)
         let pathfinderFromY = Math.floor((-G.geometry[mapName].min_y + from.y) / this.factor)
-        for (let i = 1; i < 6; i++) {
-            if (grid.isWalkableAt(pathfinderFromX, pathfinderFromY)) {
-                break;
-            } else if (grid.isWalkableAt(pathfinderFromX + i, pathfinderFromY)) {
-                pathfinderFromX += i;
-                alPath.push({ x: G.geometry[mapName].min_x + (pathfinderFromX * this.factor), y: G.geometry[mapName].min_y + (pathfinderFromY * this.factor) })
-                break;
-            } else if (grid.isWalkableAt(pathfinderFromX, pathfinderFromY + i)) {
-                pathfinderFromY += i;
-                alPath.push({ x: G.geometry[mapName].min_x + (pathfinderFromX * this.factor), y: G.geometry[mapName].min_y + (pathfinderFromY * this.factor) })
-                break;
-            } else if (grid.isWalkableAt(pathfinderFromX - i, pathfinderFromY)) {
-                pathfinderFromX -= i;
-                alPath.push({ x: G.geometry[mapName].min_x + (pathfinderFromX * this.factor), y: G.geometry[mapName].min_y + (pathfinderFromY * this.factor) })
-                break;
-            } else if (grid.isWalkableAt(pathfinderFromX, pathfinderFromY + i)) {
-                pathfinderFromY -= i;
-                alPath.push({ x: G.geometry[mapName].min_x + (pathfinderFromX * this.factor), y: G.geometry[mapName].min_y + (pathfinderFromY * this.factor) })
-                break;
+        if (!grid.isWalkableAt(pathfinderFromX, pathfinderFromY)) {
+            let dx = 1
+            let dy = 0
+            let segment_length = 1
+            let segment_passed = 0;
+            for (let k = 0; k < 100 /* check 100 grid spots */; k++) {
+                if (grid.isWalkableAt(pathfinderFromX, pathfinderFromY)) {
+                    alPath.push({ x: G.geometry[mapName].min_x + (pathfinderFromX * this.factor), y: G.geometry[mapName].min_y + (pathfinderFromY * this.factor) })
+                    break;
+                }
+
+                // Make a step
+                pathfinderFromX += dx;
+                pathfinderFromY += dy;
+                segment_passed += 1;
+                if (segment_passed == segment_length) {
+                    // Done with current segment
+                    segment_passed = 0
+
+                    // Rotate directions
+                    let buffer = dx
+                    dx = -dy
+                    dy = buffer;
+
+                    // Increase segment length if necessary
+                    if (dy == 0) {
+                        segment_length += 1;
+                    }
+                }
             }
         }
+
         let pathfinderToX = Math.floor((-G.geometry[mapName].min_x + to.x) / this.factor)
         let pathfinderToY = Math.floor((-G.geometry[mapName].min_y + to.y) / this.factor)
-        for (let i = 1; i < 6; i++) {
-            if (grid.isWalkableAt(pathfinderToX, pathfinderFromY)) {
-                break;
-            } else if (grid.isWalkableAt(pathfinderToX + i, pathfinderToY)) {
-                pathfinderToX += i;
+        if (!grid.isWalkableAt(pathfinderToX, pathfinderToY)) {
+            let dx = 1
+            let dy = 0
+            let segment_length = 1
+            let segment_passed = 0;
+            for (let k = 0; k < 100 /* check 100 grid spots */; k++) {
                 alPath.push({ x: G.geometry[mapName].min_x + (pathfinderToX * this.factor), y: G.geometry[mapName].min_y + (pathfinderToY * this.factor) })
                 break;
-            } else if (grid.isWalkableAt(pathfinderToX, pathfinderToY + i)) {
-                pathfinderToY += i;
-                alPath.push({ x: G.geometry[mapName].min_x + (pathfinderToX * this.factor), y: G.geometry[mapName].min_y + (pathfinderToY * this.factor) })
-                break;
-            } else if (grid.isWalkableAt(pathfinderToX - i, pathfinderToY)) {
-                pathfinderToX -= i;
-                alPath.push({ x: G.geometry[mapName].min_x + (pathfinderToX * this.factor), y: G.geometry[mapName].min_y + (pathfinderToY * this.factor) })
-                break;
-            } else if (grid.isWalkableAt(pathfinderToX, pathfinderToY - i)) {
-                pathfinderToY -= i;
-                alPath.push({ x: G.geometry[mapName].min_x + (pathfinderToX * this.factor), y: G.geometry[mapName].min_y + (pathfinderToY * this.factor) })
-                break;
+            }
+
+            // Make a step
+            pathfinderToX += dx;
+            pathfinderToY += dy;
+            segment_passed += 1;
+            if (segment_passed == segment_length) {
+                // Done with current segment
+                segment_passed = 0
+
+                // Rotate directions
+                let buffer = dx
+                dx = -dy
+                dy = buffer;
+
+                // Increase segment length if necessary
+                if (dy == 0) {
+                    segment_length += 1;
+                }
             }
         }
 
@@ -152,7 +138,7 @@ export class Pathfinder {
 
     public prepareMap(mapName: string) {
         if (this.grids[mapName]) return; // Already generated
-        
+
         let geometry = G.geometry[mapName]
 
         let width = geometry.max_x - geometry.min_x;
