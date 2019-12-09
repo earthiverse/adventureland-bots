@@ -74,6 +74,7 @@ class Merchant extends Character {
 
         // If our players have lots of items, go offload
         for(let name of parent.party_list) {
+            if(name == parent.character.name) continue; // Skip ourself
             let player = this.partyInfo[name]
             if(player && player.inventory.length > 30) {
                 set_message("Offloading!")
