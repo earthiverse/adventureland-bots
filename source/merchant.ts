@@ -72,6 +72,15 @@ class Merchant extends Character {
             }
         }
 
+        // If our players have lots of items, go offload
+        for(let name of parent.party_list) {
+            let player = this.partyInfo[name]
+            if(player && player.inventory.length > 30) {
+                set_message("Offloading!")
+                return player
+            }
+        }
+
         // Default spot in town to hang out
         set_message("Vendoring!")
         return { map: "main", "x": 60, "y": -325 }
@@ -201,6 +210,13 @@ class Merchant extends Character {
             if (G.items[item[1].name].upgrade && item[1].level >= 8) return; // Don't withdraw high level items
             if (G.items[item[1].name].compound && item[1].level >= 4) return; // Don't withdraw high level items
             items.push([item[1].name, item[1].level, "items3", item[0]])
+        });
+        getInventory(parent.character.bank.items4).forEach((item) => {
+            if (itemsToKeep.includes(item[1].name)) return; // Don't add items we want to keep
+            if (G.items[item[1].name].s) return; // Don't add stackable items
+            if (G.items[item[1].name].upgrade && item[1].level >= 8) return; // Don't withdraw high level items
+            if (G.items[item[1].name].compound && item[1].level >= 4) return; // Don't withdraw high level items
+            items.push([item[1].name, item[1].level, "items4", item[0]])
         });
 
         // Find things that can be upgraded, or exchanged.
