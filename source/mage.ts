@@ -1,7 +1,8 @@
 import { Character } from './character'
-import { MonsterName } from './definitions/adventureland';
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from './trade';
 import { TargetPriorityList } from './definitions/bots';
+import { MonsterType } from './definitions/adventureland';
+import { getCooldownMS, isAvailable } from './functions';
 
 let DIFFICULT = 10;
 let MEDIUM = 20;
@@ -158,7 +159,7 @@ class Mage extends Character {
             "y": 570
         }
     }
-    mainTarget: MonsterName = "poisio";
+    mainTarget: MonsterType = "poisio";
 
     run(): void {
         super.run();
@@ -181,18 +182,20 @@ class Mage extends Character {
     energizeLoop(): void {
         try {
             // Get nearby party members
-            for (let id in parent.entities) {
-                if (id == parent.character.name) continue // Don't cast on ourself.
-                if (distance(parent.character, parent.entities[id]) > parent.character.range) continue // Out of range
-                if (!parent.party_list.includes(id)) continue // Not in our party
+            if (isAvailable("energize"))
+                for (let id in parent.entities) {
+                    if (id == parent.character.name) continue // Don't cast on ourself.
+                    if (distance(parent.character, parent.entities[id]) > parent.character.range) continue // Out of range
+                    if (!parent.party_list.includes(id)) continue // Not in our party
 
-                use_skill("energize", id)
-                break;
-            }
+                    // TODO: See if this is broken. We used a string for the ID before
+                    use_skill("energize", parent.entities[id])
+                    break;
+                }
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.energizeLoop() }, Math.max(250, parent.next_skill["energize"] - Date.now()));
+        setTimeout(() => { this.energizeLoop() }, Math.max(250, getCooldownMS("energize")));
     }
 }
 

@@ -1,343 +1,517 @@
-// This file is from https://github.com/saevarb/adventureland-typescript-starter/blob/master/src/definitions/game.d.ts
-export interface ICharacter extends Entity {
-  /**
-   * MP cost of attacking
-   */
-  mp_cost: number;
-  party?: string;
-  name: string;
-  range: number;
-  xrange: number;
-  apiercing: number;
-  bank: {
-    items0: ItemInfo[];
-    items1?: ItemInfo[];
-    items2?: ItemInfo[];
-    items3?: ItemInfo[];
-    items4?: ItemInfo[];
-    gold: number;
-  }
-  /**
-   *  Contains things in inventory
-   */
-  items: ItemInfo[];
-  /** 
-   * Contains things that are equipped
-   */
-  slots: { [T in Slot]: ItemInfo }
-  ctype: ClassName;
-  rip: boolean;
-  gold: number;
-  /**
-   * Time is in ms.
-   */
-  ping?: number;
-  xp: number;
-  max_xp: number;
-  moving: boolean;
-  /**
-   * Contains information about progressed actions (i.e. upgrades, compounds, exchanges)
-   */
-  q: {
-    upgrade?: any;
-    compound?: any;
-    exchange?: any;
-  }; // TODO: Change this from 'any' to something useful
-  /**
-   * True when we are under the status effect "stoned", otherwise it is undefined.
-   */
-  stoned?: boolean;
-}
-
-export type EntityId = string;
-
-export interface Drawing {
-  destroy: () => void;
-}
-
-// TODO: This combines the inventory info, and the G.items info. They're fairly different, we should split them in to two.
-export interface ItemInfo {
-  /**
-   * The item's level
-   */
-  level?: number;
-  /**
-   * The item's quantity for stackable objects
-   */
-  q?: number;
-  name: ItemName;
-  id?: ItemName;
-  g?: number;
-  /**
-   * Shows if the item be stacked.
-   */
-  s?: boolean;
-  grades?: number[];
-  tier?: number;
-  type?: "weapon" | "chest" | "shoes" | string; // TODO: Other types of items
-  stat_type?: "dex" | "str" | "int" | "vit" | string; // TODO: There should be a couple more stat types, like fortitude?
-  /**
-   * Contains info about what benefits you get from upgrading
-   */
-  upgrade?: any;
-  /**
-   * Contains info about what benefits you get from compounding
-   */
-  compound?: any;
-}
-
-export interface BuffInfo {
-  /**
-   * If the buff is a monsterhunt, c contains the amount of monsters left to kill.
-   */
-  c?: number;
-  f: string;
-  // duration in ms
-  ms: number;
-  /**
-   * If the buff is a monsterhunt, target contains the mtype to hunt.
-   */
-  id?: MonsterName;
-}
-
-export interface ALPosition {
-  map?: MapName;
-  x: number;
-  y: number;
-  real_x?: number;
-  real_y?: number;
-  going_x?: number;
-  going_y?: number;
-}
-
-export interface Entity extends ALPosition {
-  aggro: number;
-  /**
-   * NPCs have roles. Players do not.
-   */
-  role: string;
-  /**
-   * Returns true if the entity is another player.
-   */
-  player?: boolean;
-  speed: number;
-  name?: string;
-  armor: number;
-  frequency: number;
-  id?: string;
-  hp: number;
-  max_hp: number;
-  mp: number;
-  max_mp: number;
-  attack: number;
-  target: string;
-  xp: number;
-  range: number;
-  type: string; // TODO: can be one of 'monster', 'character'
-  transform?: any;
-  dead: boolean;
-  /**
-   * Contains the NPC's id.
-   */
-  npc?: string;
-  mtype?: MonsterName;
-  /**
-   * A list of conditions affecting the character
-   */
-  s?: { [T in SkillName | ConditionName]: BuffInfo };
-}
-
-export interface Monster extends Entity {
-  mtype: MonsterName;
-}
-
-export interface SkillInfo {
-  mp?: number;
-  name: number;
-  cooldown: number;
-  ratio?: number;
-  range?: number;
-}
-
-export interface MapInfo {
-  /**
-   * Not sure what this is, but if it's true, we don't smart move there.
-   */
-  instance: boolean;
-  monsters: {
-    count: number;
-    boundary?: [number, number, number, number];
-    boundaries?: [MapName, number, number, number, number][];
-    type: MonsterName;
-    grow?: Boolean;
-  }[],
-  ref: {
-    [id: string]: ALPosition
-  }
-}
-
-export interface GameInfo {
-  geometry: {
-    [id: string]: {
-      min_x: number,
-      min_y: number,
-      max_x: number,
-      max_y: number,
-      x_lines: [number, number, number][],
-      y_lines: [number, number, number][],
-      groups: number[][][]
-    }
-  }
-  npcs: { [T in string]: any }; // TODO: Better info typing
-  maps: { [T in MapName]: MapInfo }; // TODO: Better info typing
-  skills: { [T in SkillName]: SkillInfo };
-  items: { [T in ItemName]: ItemInfo };
-  monsters: { [id: string]: Monster };
-}
-
 declare global {
   interface Window {
-    clear_game_logs(): void;
-    distance(position1: ALPosition, position2: ALPosition)
-    character: ICharacter;
-    chests: { [chestID: string]: any };
-    S: { [eventMonsterName in MonsterName]: any };
-    party_list: string[];
-    party: { [name: string]: ICharacter };
-    npcs: any[];
-    entities: { [id: string]: Entity };
-    next_skill: { [T in SkillName]: number };
-    socket: SocketIO.Socket;
-    /**
-     * Opens the merchant stall
-     *
-     * @param {number} slot Inventory slot # containing the merchant stall
-     */
-    open_merchant(slot: number): void;
-    /**
-     * Closes the merchant stall
-     */
-    close_merchant(): void;
-    start_runner(): void;
-    stop_runner(): void;
-  }
-  var $: any;
-  var character: ICharacter;
-  var smart: ALPosition & {
-    moving: boolean;
-    searching: boolean;
-  }
-  var game_logs: any[];
-  var G: GameInfo;
-  var clear_game_logs: () => void;
-  var handle_death: () => void;
-  function respawn(): void;
-  function bank_deposit(gold: number);
-  function bank_withdraw(gold: number);
-  function bank_store(inventoryPosition: number, bankPack?: string, bankPackPosition?: number);
-  function damage_multiplier(armor: number);
-  function start_character(name: string, script: string): void;
-  function stop_character(name: string, script: string): void;
-  function map_key(key: string, thing: string, arg?: string): void;
-  function can_use(skill: SkillName): boolean;
-  function can_attack(entity: Entity): boolean;
-  function buy_with_gold(item: ItemName, q: number): void;
-  /**
-   * Compounds three items to an item of a higher level.
-   *
-   * @param {number} item1 The inventory position of the first item
-   * @param {number} item2 The inventory position of the second item
-   * @param {number} item3 The inventory position of the third item
-   * @param {number} scroll The inventory position of the scroll
-   * @param {number} [offering] The inventory position of the offering
-   */
-  function compound(item1: number, item2: number, item3: number, scroll: number, offering?: number): void;
-  function use(skill: SkillName, target?: Entity): void;
-  function use_skill(skill: SkillName, target?: Entity | string): void;
-  /**
-   * Equips an item to the player
-   *
-   * @param {number} itemPos The position of the item in the inventory
-   * @param {string} [slotName] The slot that we should equip the item in
-   */
-  function equip(itemPos: number, slotName?: string);
-  function heal(entity: Entity): void;
-  function attack(entity: Entity): Promise<any>;
-  function loot(): void;
-  /**
-   * Returns true if you can attack other players.
-   */
-  function is_pvp(): boolean;
-  /**
-   * Returns true if the entity is an NPC
-   */
-  function is_npc(entity: Entity): boolean;
-  function find_npc(id: string): ALPosition;
-  function upgrade(itemPos: number, scrollPos: number, offeringPos?: number): void;
-  function load_code(foo: string): void;
-  function send_local_cm(to: string, data: any): void;
-  function send_cm(to: string, data: any): void;
-  function game_log(msg: string, color?: string): void;
-  function accept_party_invite(from: string): void;
-  function send_party_invite(to: string): void;
-  function request_party_invite(to: string): void;
-  function set_message(msg: string): void;
-  function get_player(name: string): Entity | undefined;
-  function change_target(target: Entity, send?: boolean): void;
-  function get_targeted_monster(): Entity;
-  function get_target_of(entity: Entity): Entity;
-  function distance(position1: ALPosition, position2: ALPosition): number;
-  function smart_move(destination: ALPosition | MonsterName | string, callback?: () => void);
-  function move(x: number, y: number): void;
-  function xmove(x: number, y: number): void;
-  function show_json(stuff: any): void;
-  /**
-   *
-   *
-   * @param {number} item The inventory position of the item to sell
-   * @param {number} quantity
-   */
-  function sell(item: number, quantity: number): void;
-  /**
-   *
-   *
-   * @param {string} receiver
-   * @param {number} item The inventory position of the item to transfer
-   * @param {number} quantity
-   */
-  function send_item(receiver: string, item: number, quantity: number): void;
-  function send_gold(receiver: string, amount: number): void;
-  function can_move_to(x: number, y: number): boolean;
-  function stop(what: string): void;
-  function reduce_cooldown(name: SkillName, ms: number): void;
+    close_merchant()
+    distance(from: IPosition | IPositionReal, to: IPosition | IPositionReal)
+    open_merchant(standInventoryPostion: number)
 
-  function draw_circle(x: number, y: number, radius: number, size?: number, color?: number): Drawing;
-  function draw_line(x: number, y: number, x2: number, y2: number, size?: number, color?: number): Drawing;
+    character: ICharacter
+    chests: (IPosition & {
+      id: string
+    })[]
+    entities: { [id: string]: IEntity }
+    next_skill: { [T in SkillName]?: Date }
+    npcs: G_NPC_1[]
+    party: { [T in string]: IPosition & {
+      level: number
+      /** This number refers to the percent of gold you get when one of the party members loots a chest */
+      share: number
+      type: CharacterType
+    } }
+    /** Contains the name of every character in your party */
+    party_list: string[]
+    socket: SocketIO.Socket
+    S: { [T in MonsterType]: IPosition & {
+      map: string
+      live: boolean
+      hp: number
+      max_hp: number
+    } };
+  }
 
-  var handle_command: undefined | ((command: string, args: string) => void);
-  var on_cm: undefined | ((from: string, data: any) => void);
-  // var on_map_click: undefined | ((x: number, y: number) => boolean);
-  var on_party_invite: undefined | ((from: string) => void);
-  var on_party_request: undefined | ((from: string) => void);
+  function attack(target: IEntity): Promise<any>
+  function bank_deposit(amount: number)
+  function bank_store(inventoryPosition: number, pack?: BankPackType, packPosition?: number)
+  function bank_withdraw(amount: number)
+  function buy_with_gold(name: ItemName, quantity: number): Promise<any>
+  function can_move_to(location: IPositionReal): boolean
+  function can_move_to(x: number, y: number): boolean
+  function change_target(target: IEntity)
+  function compound(itemInventoryPosition1: number, itemInventoryPosition2: number, itemInventoryPosition3: number, scrollInventoryPosition: number, offeringInventoryPosition?: number): Promise<any>
+  /** Feed this function a value like (character.apiercing - target.armor) and it spits out a multiplier so you can adjust your expected damage */
+  function damage_multiplier(difference: number): number
+  function distance(from: IPosition | IPositionReal, to: IPosition | IPositionReal): number
+  function equip(inventoryPostion: number, slot?: SlotType)
+  function game_log(message: string)
+  function get_targeted_monster(): IEntity
+  function heal(target: IEntity)
+  /** Checks whether or not we can attack other players */
+  function is_pvp(): boolean
+  /** Returns the inventory position of the item, or -1 if it's not found */
+  function locate_item(item: ItemName): number
+  function move(x: number, y: number)
+  function respawn()
+  /** Quantity defaults to 1 if not set */
+  function sell(inventoryPostion: number, quantity?: number)
+  function send_gold(to: string, amount: number)
+  function send_item(to: string, inventoryPostion: number, quantity?: number)
+  function send_local_cm(to: string, data: any)
+  /** If isRequest is set to true, it will send a party request */
+  function send_party_invite(name: string, isRequest?: boolean)
+  function send_party_request(name: string)
+  function set_message(text: string, color?: string)
+  function smart_move(destination: IPositionReal | MapName | MonsterType, callback?: () => void)
+  function upgrade(itemInventoryPosition: number, scrollInventoryPosition: number, offeringInventoryPosition?: number): Promise<any>
+  function use_skill(name: "3shot" | "5shot", target: IEntity[]): Promise<any>[]
+  function use_skill(name: "throw", target: IEntity, inventoryPostion: number)
+  function use_skill(name: "energize", target: IEntity, mp: number)
+  function use_skill(name: SkillName, target?: IEntity, extraArg?: any)
+  /** This function uses move() if it can, otherwise it uses smart_move() */
+  function xmove(x: number, y: number)
+
+  /** Contains information about smart_move() */
+  let smart: IPosition & {
+    /**
+     * If true, we are currently following a smart_move path
+     */
+    moving: boolean
+    plot: IPosition[]
+    start_x: number
+    start_y: number
+  }
+
+  let G: {
+    items: { [T in ItemName]: G_Item }
+    geometry: {
+      [T in MapName]: {
+        max_x: number
+        max_y: number
+        min_x: number
+        min_y: number
+        /* The line is from ([0], [2]) to ([1], [2]) */
+        x_lines: [number, number, number][]
+        /* The line is from ([2], [0]) to ([2], [1]) */
+        y_lines: [number, number, number][]
+      }
+    }
+    maps: { [T in MapName]: {
+      instance: boolean
+      monsters: {
+        count: number
+        boundary?: [number, number, number, number]
+        boundaries?: [MapName, number, number, number, number][]
+        type: MonsterType
+      }[]
+      npcs: G_NPC_1[]
+      ref: {
+        [id: string]: IPosition & {
+          map: MapName
+          in: MapName
+          id: string
+        }
+      }
+    } }
+    npcs: { [T in NPCType]: {
+      id: NPCType
+      /** Full name of NPC */
+      name: string
+      role: NPCRole
+    } }
+  }
 }
 
-export type Slot =
-  | "ring1"
-  | "ring2"
+// TODO: Get a better name for this.
+// TODO: Get a better naming convention for G data
+export interface G_NPC_1 {
+  position: [number, number]
+  name?: string
+  id: NPCType
+}
+
+export interface G_Item {
+  /** Contains information about what stats the item will gain with each compound level. Set if the item is compoundable. */
+  compound?: {
+    [T in AttributeType]?: number
+  }
+  damage?: DamageType
+  /** The first number refers to what level the item begins being "high" grade, the second for "rare" */
+  grades?: [number, number]
+  /** The full name of the item */
+  name: string
+  id: ItemName
+  /** Indicates whether or not the item is stackable */
+  s: boolean
+  /** Contains information about what stats the item will gain with each upgrade level. Set if the item is upgradable. */
+  upgrade?: {
+    [T in AttributeType]?: number
+  }
+  type: "box" | "cape" | "material" | "misc"
+}
+
+/**
+* For the current character
+*/
+export interface ICharacter extends IEntity {
+  bank: {
+    [T in BankPackType]: ItemInfo[]
+  } & {
+    gold: number
+  }
+  items: ItemInfo[]
+  gold: number
+  ping: number
+  // TODO: Actually figure this out
+  q: {
+    compound?: {
+
+    }
+    upgrade?: {
+      ms: number
+      len: number
+      num: number
+    }
+    exchange?: {
+
+    }
+  }
+}
+
+export interface IEntity extends IPositionReal {
+  /** Only set if the entity is a monster */
+  aggro: number
+  apiercing: number
+  armor: number
+  attack: number
+  ctype: CharacterType | NPCType
+  going_x: number
+  going_y: number
+  hp: number
+  /** This value is also the key for the object in parent.entities */
+  id: string
+  max_hp: number
+  max_mp: number
+  /** Is the character currently moving? */
+  moving: boolean
+  mp: number
+  /** The MP cost for doing an attack */
+  mp_cost: number
+  /** If the entity is a monster, it is set */
+  mtype?: MonsterType
+  /** Contains the full name of the monster */
+  name: string
+  /** Is set if the entity is an NPC, undefined otherwise */
+  npc?: string
+  /** Attack range */
+  range: number
+  real_x: number
+  real_y: number
+  /** Only set if the entity is a character. If true, the player is dead. */
+  rip?: boolean
+  s: { [T in ConditionName]?: {
+    /** How many ms left before this condition expires */
+    ms: number
+  } } & {
+    coop?: {
+      id: string
+      p: number
+    }
+    mluck?: {
+      /** The ID of the merchant who cast mluck */
+      f: string
+    }
+    monsterhunt?: {
+      /** The server ID where the monster hunt is valid */
+      sn: string
+      /** Number of monsters remaining to kill */
+      c: number
+      /** What monster we have to kill */
+      id: MonsterType
+    }
+  }
+  /** Set if the entity is a player */
+  slots: {
+    [T in SlotType]: ItemInfo
+  }
+  speed: number
+  /** Set if we are under the status effect "stoned" */
+  stoned?: boolean
+  /** Set if the player or monster is targeting something */
+  target: string
+  type: "character" | "monster"
+}
+
+export interface ItemInfo {
+  /** Set if the item is compoundable or upgradable */
+  level?: number
+  name: ItemName
+  /** Set if the item is stackable. */
+  q?: number
+}
+
+export interface IPositionReal extends IPosition {
+  map: MapName
+  real_x?: number
+  real_y?: number
+}
+
+export interface IPosition {
+  /**
+   * Contains the name of the map
+   */
+  map?: MapName
+  x: number
+  y: number
+}
+
+// TODO: Get all types (from G?)
+export type AttributeType =
+  | "armor"
+  | "attack"
+  | "hp"
+  | "range"
+  | "resistance"
+
+export type CharacterType =
+  | "mage"
+  | "merchant"
+  | "priest"
+  | "ranger"
+  | "rogue"
+  | "warrior"
+
+// TODO: Get all types (from G?)
+export type DamageType =
+  | "physical"
+
+export type MonsterType =
+  | "arcticbee"
+  | "armadillo"
+  | "bat"
+  | "bbpompom"
+  | "bee"
+  | "bigbird"
+  | "bluefairy"
+  | "boar"
+  | "booboo"
+  | "cgoo"
+  | "chestm"
+  | "crab"
+  | "crabx"
+  | "croc"
+  | "dknight2"
+  | "eelemental"
+  | "ent"
+  | "felemental"
+  | "fireroamer"
+  | "franky"
+  | "frog"
+  | "fvampire"
+  | "ghost"
+  | "goblin"
+  | "goldenbat"
+  | "goo"
+  | "greenfairy"
+  | "greenjr"
+  | "grinch"
+  | "gscorpion"
+  | "hen"
+  | "iceroamer"
+  | "jr"
+  | "jrat"
+  | "kitty1"
+  | "kitty2"
+  | "kitty3"
+  | "kitty4"
+  | "ligerx"
+  | "mechagnome"
+  | "minimush"
+  | "mole"
+  | "mrgreen"
+  | "mrpumpkin"
+  | "mummy"
+  | "mvampire"
+  | "nelemental"
+  | "nerfedmummy"
+  | "oneeye"
+  | "osnake"
+  | "phoenix"
+  | "pinkgoo"
+  | "plantoid"
+  | "poisio"
+  | "porcupine"
+  | "pppompom"
+  | "prat"
+  | "puppy1"
+  | "puppy2"
+  | "puppy3"
+  | "puppy4"
+  | "rat"
+  | "redfairy"
+  | "rooster"
+  | "rudolph"
+  | "scorpion"
+  | "skeletor"
+  | "snake"
+  | "snowman"
+  | "spider"
+  | "squig"
+  | "squigtoad"
+  | "stompy"
+  | "stoneworm"
+  | "target"
+  | "target_a500"
+  | "target_a750"
+  | "target_ar500red"
+  | "target_ar900"
+  | "target_r500"
+  | "target_r750"
+  | "tortoise"
+  | "wabbit"
+  | "welemental"
+  | "wolf"
+  | "wolfie"
+  | "xscorpion"
+
+export type BankPackType =
+  | "items0"
+  | "items1"
+  | "items2"
+  | "items3"
+  | "items4"
+  | "items5"
+  | "items6"
+  | "items7"
+
+export type SlotType =
+  | "amulet"
+  | "belt"
+  | "cape"
+  | "chest"
   | "earring1"
   | "earring2"
-  | "belt"
+  | "elixir"
+  | "gloves"
+  | "helmet"
   | "mainhand"
   | "offhand"
-  | "helmet"
-  | "chest"
-  | "pants"
-  | "shoes"
-  | "gloves"
-  | "amulet"
   | "orb"
-  | "elixir"
-  | "cape";
+  | "pants"
+  | "ring1"
+  | "ring2"
+  | "shoes"
+
+export type ConditionName =
+  | "authfail"
+  | "blink"
+  | "charging"
+  | "charmed"
+  | "darkblessing"
+  | "easterluck"
+  | "eburn"
+  | "eheal"
+  | "energized"
+  | "fingered"
+  | "fullguard"
+  | "hardshell"
+  | "holidayspirit"
+  | "licenced"
+  | "marked"
+  | "mcourage"
+  | "mlifesteal"
+  | "mluck"
+  | "monsterhunt"
+  | "notverified"
+  | "phasedout"
+  | "poisoned"
+  | "poisonous"
+  | "reflection"
+  | "rspeed"
+  | "slowness"
+  | "stack"
+  | "stoned"
+  | "stunned"
+  | "sugarrush"
+  | "tangled"
+  | "tarot_10cups"
+  | "tarot_10pentacles"
+  | "tarot_10swords"
+  | "tarot_10wands"
+  | "tarot_2cups"
+  | "tarot_2pentacles"
+  | "tarot_2swords"
+  | "tarot_2wands"
+  | "tarot_3cups"
+  | "tarot_3pentacles"
+  | "tarot_3swords"
+  | "tarot_3wands"
+  | "tarot_4cups"
+  | "tarot_4pentacles"
+  | "tarot_4swords"
+  | "tarot_4wands"
+  | "tarot_5cups"
+  | "tarot_5pentacles"
+  | "tarot_5swords"
+  | "tarot_5wands"
+  | "tarot_6cups"
+  | "tarot_6pentacles"
+  | "tarot_6swords"
+  | "tarot_6wands"
+  | "tarot_7cups"
+  | "tarot_7pentacles"
+  | "tarot_7swords"
+  | "tarot_7wands"
+  | "tarot_8cups"
+  | "tarot_8pentacles"
+  | "tarot_8swords"
+  | "tarot_8wands"
+  | "tarot_9cups"
+  | "tarot_9pentacles"
+  | "tarot_9swords"
+  | "tarot_9wands"
+  | "tarot_acecups"
+  | "tarot_acepentacles"
+  | "tarot_aceswords"
+  | "tarot_acewands"
+  | "tarot_chariot"
+  | "tarot_death"
+  | "tarot_devil"
+  | "tarot_emperor"
+  | "tarot_empress"
+  | "tarot_fool"
+  | "tarot_fortune"
+  | "tarot_hangman"
+  | "tarot_hermit"
+  | "tarot_hierophant"
+  | "tarot_judgment"
+  | "tarot_justice"
+  | "tarot_kingcups"
+  | "tarot_kingpentacles"
+  | "tarot_kingswords"
+  | "tarot_kingwands"
+  | "tarot_knightcups"
+  | "tarot_knightpentacles"
+  | "tarot_knightswords"
+  | "tarot_knightwands"
+  | "tarot_lovers"
+  | "tarot_magician"
+  | "tarot_moon"
+  | "tarot_pagecups"
+  | "tarot_pagepentacles"
+  | "tarot_pageswords"
+  | "tarot_pagewands"
+  | "tarot_priestess"
+  | "tarot_queencups"
+  | "tarot_queenpentacles"
+  | "tarot_queenswords"
+  | "tarot_queenwands"
+  | "tarot_star"
+  | "tarot_strength"
+  | "tarot_sun"
+  | "tarot_temperance"
+  | "tarot_theworld"
+  | "tarot_tower"
+  | "warcry"
+  | "weakness"
+  | "withdrawal"
 
 export type ItemName =
   | "5bucks"
@@ -413,6 +587,7 @@ export type ItemName =
   | "cshell"
   | "ctristone"
   | "cupid"
+  | "cxjar"
   | "daggerofthedead"
   | "darktristone"
   | "dartgun"
@@ -557,6 +732,7 @@ export type ItemName =
   | "mmpants"
   | "mmshoes"
   | "molesteeth"
+  | "monsterbox"
   | "monstertoken"
   | "mparmor"
   | "mpcostscroll"
@@ -735,258 +911,249 @@ export type ItemName =
   | "xpbooster"
   | "xpscroll"
   | "xptome"
-  | "xshield";
+  | "xshield"
 
 export type MapName =
-  | "tunnel"
   | "abtesting"
-  | "resort_e"
-  | "goobrawl"
-  | "level2s"
-  | "winter_inn"
-  | "dungeon0"
+  | "arena"
+  | "bank"
+  | "batcave"
+  | "cave"
   | "cgallery"
+  | "cyberland"
+  | "desertland"
+  | "duelland"
+  | "dungeon0"
+  | "goobrawl"
   | "halloween"
-  | "winterland"
-  | "old_bank"
+  | "hut"
+  | "jail"
   | "level1"
   | "level2"
+  | "level2e"
+  | "level2n"
+  | "level2s"
+  | "level2w"
   | "level3"
   | "level4"
-  | "level2n"
-  | "spookytown"
-  | "mansion"
-  | "cyberland"
-  | "woffice"
-  | "batcave"
-  | "bank"
-  | "arena"
-  | "hut"
-  | "old_main"
-  | "resort"
-  | "tavern"
-  | "desertland"
-  | "cave"
-  | "level2e"
-  | "winter_inn_rooms"
-  | "duelland"
-  | "original_main"
-  | "jail"
-  | "winter_cave"
-  | "test"
   | "main"
-  | "level2w"
+  | "mansion"
+  | "mtunnel"
+  | "old_bank"
+  | "old_main"
+  | "original_main"
+  | "resort"
+  | "resort_e"
   | "shellsisland"
+  | "spookytown"
+  | "tavern"
+  | "test"
+  | "tunnel"
+  | "winter_cave"
+  | "winter_inn"
+  | "winter_inn_rooms"
+  | "winterland"
+  | "woffice"
 
-export type ClassName =
-  | "mage"
+export type NPCName =
+  | "Ace"
+  | "Alia"
+  | "Angel"
+  | "Baron"
+  | "Bean"
+  | "Bobo"
+  | "Caroline"
+  | "Christie"
+  | "Christina"
+  | "Cole"
+  | "Crun"
+  | "Cue"
+  | "Daisy"
+  | "Divian"
+  | "Ernis"
+  | "Faith"
+  | "Fredric"
+  | "Gabriel"
+  | "Gabriella"
+  | "Gabrielle"
+  | "Garwyn"
+  | "Gn. Spence"
+  | "Green"
+  | "Grundur"
+  | "Guard"
+  | "Haila"
+  | "Jane"
+  | "Janet"
+  | "Jaqk"
+  | "Jayson"
+  | "Kane"
+  | "Kilgore"
+  | "Landon"
+  | "Ledia"
+  | "Leo"
+  | "Lidia"
+  | "Lilith"
+  | "Lucas"
+  | "Lucy"
+  | "Marven"
+  | "Mine Heathcliff"
+  | "Mr. Dworf"
+  | "Mr. Rich"
+  | "New Year Tree"
+  | "Pete"
+  | "Pink"
+  | "Ponty"
+  | "Princess"
+  | "Purple"
+  | "Reny"
+  | "Ron"
+  | "Rose"
+  | "Santa"
+  | "Scarf"
+  | "Smith"
+  | "Stewart"
+  | "Timmy"
+  | "Tricksy"
+  | "Tristian"
+  | "Twig"
+  | "Violet"
+  | "Warin"
+  | "Witch"
+  | "Wizard"
+  | "Wogue"
+  | "Wynifreed"
+  | "Wyr"
+  | "Xyn"
+  | "Z"
+
+export type NPCRole =
+  | "announcer"
+  | "blocker"
+  | "bouncer"
+  | "citizen"
+  | "companion"
+  | "compound"
+  | "craftsman"
+  | "cx"
+  | "daily_events"
+  | "exchange"
+  | "funtokens"
+  | "gold"
+  | "guard"
+  | "items"
+  | "jailer"
+  | "locksmith"
+  | "lostandfound"
+  | "lottery"
+  | "mcollector"
   | "merchant"
-  | "priest"
-  | "warrior"
-  | "ranger"
-  | "rogue"
+  | "monstertokens"
+  | "newupgrade"
+  | "newyear_tree"
+  | "petkeeper"
+  | "premium"
+  | "pvp_announcer"
+  | "pvptokens"
+  | "quest"
+  | "repeater"
+  | "resort"
+  | "santa"
+  | "secondhands"
+  | "shells"
+  | "ship"
+  | "shrine"
+  | "standmerchant"
+  | "tavern"
+  | "tease"
+  | "thesearch"
+  | "transport"
+  | "witch"
 
-export type MonsterName =
-  | "snowman"
-  | "wolfie"
-  | "fireroamer"
-  | "greenfairy"
-  | "skeletor"
-  | "nerfedmummy"
-  | "prat"
-  | "mrpumpkin"
-  | "scorpion"
-  | "jrat"
-  | "porcupine"
-  | "target_ar900"
-  | "bbpompom"
-  | "snake"
-  | "target_a750"
-  | "bat"
-  | "crabx"
-  | "xscorpion"
-  | "target_ar500red"
-  | "felemental"
-  | "nelemental"
-  | "puppy4"
-  | "spider"
-  | "chestm"
-  | "puppy3"
-  | "croc"
-  | "gscorpion"
-  | "goo"
-  | "mummy"
-  | "dknight2"
-  | "pinkgoo"
-  | "squigtoad"
-  | "pppompom"
-  | "mvampire"
-  | "jr"
-  | "stompy"
-  | "osnake"
-  | "target_r750"
-  | "tortoise"
-  | "wolf"
-  | "mrgreen"
-  | "ligerx"
-  | "frog"
-  | "eelemental"
-  | "boar"
-  | "franky"
-  | "poisio"
-  | "kitty4"
-  | "kitty1"
-  | "kitty3"
-  | "kitty2"
-  | "crab"
-  | "plantoid"
-  | "hen"
-  | "redfairy"
-  | "wabbit"
-  | "target_r500"
-  | "puppy1"
-  | "armadillo"
-  | "puppy2"
-  | "bluefairy"
-  | "goblin"
-  | "fvampire"
-  | "welemental"
-  | "target"
-  | "iceroamer"
-  | "bee"
-  | "minimush"
-  | "squig"
-  | "rooster"
-  | "rat"
-  | "mole"
-  | "rudolph"
-  | "ent"
-  | "target_a500"
-  | "mechagnome"
-  | "stoneworm"
-  | "phoenix"
-  | "arcticbee"
-  | "oneeye"
-  | "booboo"
-  | "greenjr"
-  | "ghost"
-  | "cgoo"
-  | "bigbird"
-  | "goldenbat"
-
-export type ConditionName =
-  "authfail"
-  | "blink"
-  | "charging"
-  | "charmed"
-  | "darkblessing"
-  | "easterluck"
-  | "eburn"
-  | "eheal"
-  | "energized"
-  | "fingered"
-  | "fullguard"
-  | "hardshell"
-  | "holidayspirit"
-  | "licenced"
-  | "marked"
-  | "mcourage"
-  | "mlifesteal"
-  | "mluck"
-  | "monsterhunt"
-  | "notverified"
-  | "phasedout"
-  | "poisoned"
-  | "poisonous"
-  | "reflection"
-  | "rspeed"
-  | "slowness"
-  | "stack"
-  | "stoned"
-  | "stunned"
-  | "sugarrush"
-  | "tangled"
-  | "tarot_10cups"
-  | "tarot_10pentacles"
-  | "tarot_10swords"
-  | "tarot_10wands"
-  | "tarot_2cups"
-  | "tarot_2pentacles"
-  | "tarot_2swords"
-  | "tarot_2wands"
-  | "tarot_3cups"
-  | "tarot_3pentacles"
-  | "tarot_3swords"
-  | "tarot_3wands"
-  | "tarot_4cups"
-  | "tarot_4pentacles"
-  | "tarot_4swords"
-  | "tarot_4wands"
-  | "tarot_5cups"
-  | "tarot_5pentacles"
-  | "tarot_5swords"
-  | "tarot_5wands"
-  | "tarot_6cups"
-  | "tarot_6pentacles"
-  | "tarot_6swords"
-  | "tarot_6wands"
-  | "tarot_7cups"
-  | "tarot_7pentacles"
-  | "tarot_7swords"
-  | "tarot_7wands"
-  | "tarot_8cups"
-  | "tarot_8pentacles"
-  | "tarot_8swords"
-  | "tarot_8wands"
-  | "tarot_9cups"
-  | "tarot_9pentacles"
-  | "tarot_9swords"
-  | "tarot_9wands"
-  | "tarot_acecups"
-  | "tarot_acepentacles"
-  | "tarot_aceswords"
-  | "tarot_acewands"
-  | "tarot_chariot"
-  | "tarot_death"
-  | "tarot_devil"
-  | "tarot_emperor"
-  | "tarot_empress"
-  | "tarot_fool"
-  | "tarot_fortune"
-  | "tarot_hangman"
-  | "tarot_hermit"
-  | "tarot_hierophant"
-  | "tarot_judgment"
-  | "tarot_justice"
-  | "tarot_kingcups"
-  | "tarot_kingpentacles"
-  | "tarot_kingswords"
-  | "tarot_kingwands"
-  | "tarot_knightcups"
-  | "tarot_knightpentacles"
-  | "tarot_knightswords"
-  | "tarot_knightwands"
-  | "tarot_lovers"
-  | "tarot_magician"
-  | "tarot_moon"
-  | "tarot_pagecups"
-  | "tarot_pagepentacles"
-  | "tarot_pageswords"
-  | "tarot_pagewands"
-  | "tarot_priestess"
-  | "tarot_queencups"
-  | "tarot_queenpentacles"
-  | "tarot_queenswords"
-  | "tarot_queenwands"
-  | "tarot_star"
-  | "tarot_strength"
-  | "tarot_sun"
-  | "tarot_temperance"
-  | "tarot_theworld"
-  | "tarot_tower"
-  | "warcry"
-  | "weakness"
-  | "withdrawal"
+export type NPCType =
+  | "antip2w"
+  | "appearance"
+  | "armors"
+  | "basics"
+  | "bean"
+  | "beans"
+  | "bouncer"
+  | "citizen0"
+  | "citizen1"
+  | "citizen10"
+  | "citizen11"
+  | "citizen12"
+  | "citizen13"
+  | "citizen14"
+  | "citizen15"
+  | "citizen2"
+  | "citizen3"
+  | "citizen4"
+  | "citizen5"
+  | "citizen6"
+  | "citizen7"
+  | "citizen8"
+  | "citizen9"
+  | "compound"
+  | "craftsman"
+  | "exchange"
+  | "fancypots"
+  | "firstc"
+  | "fisherman"
+  | "funtokens"
+  | "gemmerchant"
+  | "goldnpc"
+  | "guard"
+  | "holo"
+  | "holo0"
+  | "holo1"
+  | "holo2"
+  | "holo3"
+  | "holo4"
+  | "holo5"
+  | "items0"
+  | "items1"
+  | "items2"
+  | "items3"
+  | "items4"
+  | "items5"
+  | "items6"
+  | "items7"
+  | "jailer"
+  | "leathermerchant"
+  | "lichteaser"
+  | "locksmith"
+  | "lostandfound"
+  | "lotterylady"
+  | "mcollector"
+  | "mistletoe"
+  | "monsterhunter"
+  | "newupgrade"
+  | "newyear_tree"
+  | "ornaments"
+  | "pete"
+  | "pots"
+  | "premium"
+  | "princess"
+  | "pvp"
+  | "pvpblocker"
+  | "pvptokens"
+  | "pwincess"
+  | "santa"
+  | "scrolls"
+  | "secondhands"
+  | "shellsguy"
+  | "ship"
+  | "shrine"
+  | "standmerchant"
+  | "tavern"
+  | "tbartender"
+  | "thief"
+  | "transporter"
+  | "wbartender"
+  | "weapons"
+  | "witch"
+  | "wizardrepeater"
+  | "wnpc"
 
 export type SkillName =
   | "3shot"
@@ -1057,4 +1224,4 @@ export type SkillName =
   | "use_hp"
   | "use_mp"
   | "use_town"
-  | "warcry";
+  | "warcry"

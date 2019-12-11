@@ -1,7 +1,8 @@
 import { Character } from './character'
-import { MonsterName } from './definitions/adventureland';
+import { MonsterType } from './definitions/adventureland';
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from './trade';
 import { TargetPriorityList } from './definitions/bots';
+import { getCooldownMS } from './functions';
 
 let DIFFICULT = 10;
 let MEDIUM = 20;
@@ -89,7 +90,7 @@ class Priest extends Character {
             "priority": EASY
         }
     }
-    mainTarget: MonsterName = "bee";
+    mainTarget: MonsterType = "bee";
 
     mainLoop(): void {
         try {
@@ -106,9 +107,9 @@ class Priest extends Character {
 
     attackLoop() {
         try {
-            if(parent.character.hp < parent.character.max_hp - parent.character.attack * 0.5) {
+            if (parent.character.hp < parent.character.max_hp - parent.character.attack * 0.5) {
                 heal(parent.character)
-                setTimeout(() => { this.attackLoop() }, parent.next_skill["attack"] - Date.now())
+                setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
                 return
             }
 
@@ -118,16 +119,16 @@ class Priest extends Character {
                     if (distance(parent.character, parent.entities[member]) < parent.character.range
                         && parent.entities[member].hp <= parent.entities[member].max_hp - parent.character.attack * 0.5) {
                         heal(parent.entities[member])
-                        setTimeout(() => { this.attackLoop() }, parent.next_skill["attack"] - Date.now())
+                        setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
                         return
                     }
                 }
             }
         } catch (error) {
             console.error(error)
-            setTimeout(() => { this.attackLoop() }, parent.next_skill["attack"] - Date.now());
+            setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"));
         }
-        
+
         super.attackLoop();
     }
 }

@@ -4,7 +4,7 @@ import { ItemName } from "./definitions/adventureland";
 export function compoundItem(itemname: ItemName, target_level: number) {
     let foundUpgrade = false;
     for (let npc of parent.npcs) {
-        if (npc.id == "newupgrade" && distance(character, {
+        if (npc.id == "newupgrade" && distance(parent.character, {
             x: npc.position[0],
             y: npc.position[1]
         }) < 350) {
@@ -44,7 +44,7 @@ export function compoundItem(itemname: ItemName, target_level: number) {
 export function upgradeItem(itemname: ItemName, target_level: number) {
     let foundUpgrade = false;
     for (let npc of parent.npcs) {
-        if (npc.id == "newupgrade" && distance(character, {
+        if (npc.id == "newupgrade" && distance(parent.character, {
             x: npc.position[0],
             y: npc.position[1]
         }) < 350) {
@@ -81,7 +81,7 @@ export function upgradeItem(itemname: ItemName, target_level: number) {
 export function compoundIfMany(maxLevel: number) {
     let foundUpgrade = false;
     for (let npc of parent.npcs) {
-        if (npc.id == "newupgrade" && distance(character, {
+        if (npc.id == "newupgrade" && distance(parent.character, {
             x: npc.position[0],
             y: npc.position[1]
         }) < 350) {
@@ -93,30 +93,31 @@ export function compoundIfMany(maxLevel: number) {
     if (parent.character.q && parent.character.q["compound"]) return; // Already compounding
 
     // name, level, slot #
+    // TODO: Change this to a custom object
     let items: [ItemName, number, number][] = [];
     getInventory().forEach((item) => {
-        if (!G.items[item[1].name].compound) return; // We can't compound this item
-        if (item[1].level >= maxLevel) return; // The item level's higher than we want to upgrade
-        items.push([item[1].name, item[1].level, item[0]])
+        if (!G.items[item.name].compound) return; // We can't compound this item
+        if (item.level >= maxLevel) return; // The item level's higher than we want to upgrade
+        items.push([item.name, item.level, item.index])
     })
     items.sort();
 
     for (let i = 0; i < items.length - 2; i++) {
-        if(items[i][0] == items[i+1][0] && items[i][0] == items[i+2][0] // Match names
-            && items[i][1] == items[i+1][1] && items[i][1] == items[i+2][1] // Match levels
-            ) {
-                // Found 3 identical items to compound
-                let grade = determineGrade(items[i][0], items[i][1]);
-                let scrolls;
-                if (grade == 0) {
-                    scrolls = findItems("cscroll0");
-                } else if (grade == 1) {
-                    scrolls = findItems("cscroll1");
-                } else if (grade == 2) {
-                    scrolls = findItems("cscroll2");
-                }
-                compound(items[i][2], items[i+1][2], items[i+2][2], scrolls[0][0])
-                return;
+        if (items[i][0] == items[i + 1][0] && items[i][0] == items[i + 2][0] // Match names
+            && items[i][1] == items[i + 1][1] && items[i][1] == items[i + 2][1] // Match levels
+        ) {
+            // Found 3 identical items to compound
+            let grade = determineGrade(items[i][0], items[i][1]);
+            let scrolls;
+            if (grade == 0) {
+                scrolls = findItems("cscroll0");
+            } else if (grade == 1) {
+                scrolls = findItems("cscroll1");
+            } else if (grade == 2) {
+                scrolls = findItems("cscroll2");
+            }
+            compound(items[i][2], items[i + 1][2], items[i + 2][2], scrolls[0][0])
+            return;
         }
 
     }
@@ -128,7 +129,7 @@ export function compoundIfMany(maxLevel: number) {
 export function upgradeIfMany(maxLevel: number) {
     let foundUpgrade = false;
     for (let npc of parent.npcs) {
-        if (npc.id == "newupgrade" && distance(character, {
+        if (npc.id == "newupgrade" && distance(parent.character, {
             x: npc.position[0],
             y: npc.position[1]
         }) < 350) {

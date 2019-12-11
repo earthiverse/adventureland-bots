@@ -1,7 +1,8 @@
 import { Character } from './character'
-import { MonsterName, Entity } from './definitions/adventureland';
+import { MonsterType, IEntity } from './definitions/adventureland';
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from './trade';
 import { TargetPriorityList } from './definitions/bots';
+import { isPlayer, getCooldownMS, isAvailable } from './functions';
 
 let DIFFICULT = 10;
 let MEDIUM = 20;
@@ -164,7 +165,7 @@ class Ranger extends Character {
             "y": 570
         }
     }
-    mainTarget: MonsterName = "goo";
+    mainTarget: MonsterType = "goo";
 
     run(): void {
         super.run();
@@ -192,12 +193,12 @@ class Ranger extends Character {
         try {
             let targets = this.getTargets(1);
             if (parent.character.mp < 240 // No MP
-                || parent.next_skill["huntersmark"] > Date.now() // Not usable yet
+                || !isAvailable("huntersmark") // Not usable yet
                 || targets.length == 0 // No targets
                 || parent.character.stoned // Can't use skills
-                || targets[0].s.marked
-                || targets[0].hp < parent.character.attack * 5 // Target is easily killable
-                || parent.distance(parent.character, targets[0]) > parent.character.range) { // Not in range
+                || targets[0].s.marked // Already marked
+                || targets[0].hp < parent.character.attack * 5 // Target is "easily" killable
+                || distance(parent.character, targets[0]) > parent.character.range) { // Not in range
                 // Do nothing
             } else {
                 use_skill("huntersmark", targets[0])
@@ -205,7 +206,7 @@ class Ranger extends Character {
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.huntersmarkLoop() }, Math.max(parent.character.ping, parent.next_skill["huntersmark"] - Date.now()));
+        setTimeout(() => { this.huntersmarkLoop() }, Math.max(parent.character.ping, getCooldownMS("huntersmark")));
     }
 
     fourFingersLoop(): void {
@@ -215,18 +216,19 @@ class Ranger extends Character {
                 && targets.length > 0 // We have a target
                 && !parent.character.stoned // Can use skills
                 && distance(parent.character, targets[0]) <= 120 // The target is in range
-                && targets[0].player
+                && isPlayer(targets[0])
+                && isAvailable("4fingers")
                 && targets[0].target == parent.character.name // The target is targetting us
                 && (
                     parent.character.hp < targets[0].attack * 10 // We don't have much HP
                 )
             ) {
-                use_skill("4fingers", targets[0].id)
+                use_skill("4fingers", targets[0])
             }
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.fourFingersLoop() }, Math.max(parent.character.ping, parent.next_skill["4fingers"] - Date.now()));
+        setTimeout(() => { this.fourFingersLoop() }, Math.max(parent.character.ping, getCooldownMS("4fingers")));
     }
 
     superShotLoop(): void {
@@ -234,8 +236,8 @@ class Ranger extends Character {
         if (parent.character.mp < 400 // No MP
             || targets.length < 1 // No targets NOTE: Based on getTargets(2).
             || parent.character.stoned // Can't use skills
-            || parent.distance(parent.character, targets[0]) > character.range * 3 // Out of range
-            || parent.next_skill["supershot"] > Date.now() // Not usable yet
+            || distance(parent.character, targets[0]) > parent.character.range * 3 // Out of range
+            || !isAvailable("supershot") // Not usable yet
             || (this.holdAttack && targets[1].target != parent.character.name) // Holding attack (global)
             || (smart.moving && this.targetPriority[targets[0].mtype] && this.targetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name)) { // Holding attack (monster)
             // Do nothing
@@ -243,7 +245,7 @@ class Ranger extends Character {
             use_skill("supershot", targets[0])
         }
 
-        setTimeout(() => { this.superShotLoop() }, Math.max(parent.character.ping, parent.next_skill["supershot"] - Date.now()));
+        setTimeout(() => { this.superShotLoop() }, Math.max(parent.character.ping, getCooldownMS("supershot")));
     }
 
     attackLoop() {
@@ -253,10 +255,10 @@ class Ranger extends Character {
         if (targets.length >= 5
             && parent.character.mp >= 420
             && !parent.character.stoned
-            && parent.next_skill["attack"] <= Date.now()
+            && isAvailable("attack")
             && !(smart.moving && this.targetPriority[targets[0].mtype] && this.targetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name)) {
             // See if we can fiveshot some enemies
-            let fiveshotTargets: Entity[] = [];
+            let fiveshotTargets: IEntity[] = [];
             for (let entity of targets) {
                 if ((entity.target != parent.character.name) && (entity.hp > parent.character.attack * 0.5 * 0.9 * damage_multiplier(entity.armor - parent.character.apiercing))) continue; // Too much HP, or not targeting us
                 if (distance(parent.character, entity) > parent.character.range) continue;
@@ -269,17 +271,17 @@ class Ranger extends Character {
                     name: "5shot",
                     ids: [fiveshotTargets[0].id, fiveshotTargets[1].id, fiveshotTargets[2].id, fiveshotTargets[3].id, fiveshotTargets[4].id]
                 });
-                setTimeout(() => { this.attackLoop() }, Math.max(parent.character.ping, parent.next_skill["attack"] - Date.now()));
+                setTimeout(() => { this.attackLoop() }, Math.max(parent.character.ping, getCooldownMS("attack")));
                 return;
             }
         }
         if (targets.length >= 3
             && parent.character.mp >= 300
             && !parent.character.stoned
-            && parent.next_skill["attack"] <= Date.now()
+            && isAvailable("attack")
             && !(smart.moving && this.targetPriority[targets[0].mtype] && this.targetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name)) {
             // See if we can three shot some enemies.
-            let threeshotTargets: Entity[] = [];
+            let threeshotTargets: IEntity[] = [];
             for (let entity of targets) {
                 if ((entity.target != parent.character.name) && (entity.hp > parent.character.attack * 0.7 * 0.9 * damage_multiplier(entity.armor - parent.character.apiercing))) continue; // Too much HP, or not targeting us
                 if (distance(parent.character, entity) > parent.character.range) continue;
@@ -292,7 +294,7 @@ class Ranger extends Character {
                     name: "3shot",
                     ids: [threeshotTargets[0].id, threeshotTargets[1].id, threeshotTargets[2].id]
                 });
-                setTimeout(() => { this.attackLoop() }, Math.max(parent.character.ping, parent.next_skill["attack"] - Date.now()));
+                setTimeout(() => { this.attackLoop() }, Math.max(parent.character.ping, getCooldownMS("attack")));
                 return;
             }
         }

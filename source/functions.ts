@@ -1,4 +1,45 @@
-import { ItemInfo, MonsterName, ItemName, ALPosition, MapName, MapInfo } from "./definitions/adventureland";
+import { ItemInfo, MonsterType, ItemName, IPosition, MapName, IEntity, IPositionReal, SkillName } from "./definitions/adventureland";
+import { MyItemInfo } from "./definitions/bots";
+
+export function isNPC(entity: IEntity) {
+    return entity.npc ? true : false
+}
+
+export function isMonster(entity: IEntity) {
+    return entity.type == "monster"
+}
+
+export function isPlayer(entity: IEntity) {
+    return entity.type == "character" && !isNPC(entity)
+}
+
+/** Returns the amount of ms we have to wait to use this skill */
+export function getCooldownMS(skill: SkillName) {
+    if (parent.next_skill[skill]) {
+        let ms = parent.next_skill[skill].getTime() - Date.now();
+        return ms < 0 ? 0 : ms;
+    } else {
+        return 0
+    }
+}
+
+export function isAvailable(skill: SkillName) {
+    return parent.next_skill[skill] ? (Date.now() >= parent.next_skill[skill].getTime()) : true
+}
+
+/** Returns the entities we are being attacked by */
+export function getAttackingEntities(): IEntity[] {
+    let entitites: IEntity[] = []
+    let isPVP = is_pvp();
+    for (let id in parent.entities) {
+        let entity = parent.entities[id]
+        if (entity.target !== parent.character.id) continue; // Not being targeted by this entity
+        if (isPlayer(entity) && !isPVP) continue; // Not PVP, ignore players
+
+        entitites.push(entity)
+    }
+    return entitites;
+}
 
 export function determineGrade(itemName: ItemName, itemLevel: number) {
     let game_item = G.items[itemName];
@@ -19,10 +60,10 @@ export function sendMassCM(names: string[], data: any) {
     }
 }
 
-export function getMonsterSpawnPosition(type: MonsterName): ALPosition {
-    let potentialLocations: ALPosition[] = [];
+export function getRandomMonsterSpawnPosition(type: MonsterType): IPositionReal {
+    let potentialLocations: IPositionReal[] = [];
     for (let id in G.maps) {
-        let map: MapInfo = G.maps[id as MapName];
+        let map = G.maps[id as MapName];
         if (map.instance) continue;
         for (let monster of map.monsters || []) {
             if (monster.type !== type) continue;
@@ -39,19 +80,20 @@ export function getMonsterSpawnPosition(type: MonsterName): ALPosition {
     return potentialLocations[Math.floor(Math.random() * potentialLocations.length)];
 }
 
-export function getNearbyMonsterSpawns(position: ALPosition, threshold: number = 1000): [MonsterName, ALPosition][] {
-    let locations: [MonsterName, ALPosition][] = [];
-    let map: MapInfo = G.maps[position.map];
+// TODO: Change this to a custom typed object instead of an array
+export function getNearbyMonsterSpawns(position: IPosition, radius: number = 1000): [MonsterType, IPosition][] {
+    let locations: [MonsterType, IPosition][] = [];
+    let map = G.maps[position.map];
     if (map.instance) return;
     for (let monster of map.monsters || []) {
         if (monster.boundary) {
             let location = { "map": position.map as MapName, "x": (monster.boundary[0] + monster.boundary[2]) / 2, "y": (monster.boundary[1] + monster.boundary[3]) / 2 };
-            if (parent.distance(position, location) < threshold) locations.push([monster.type, location])
+            if (distance(position, location) < radius) locations.push([monster.type, location])
         } else if (monster.boundaries) {
             for (let boundary of monster.boundaries) {
                 if (boundary[0] !== position.map) continue;
                 let location = { "map": position.map, "x": (boundary[1] + boundary[3]) / 2, "y": (boundary[2] + boundary[4]) / 2 }
-                if (parent.distance(position, location) < threshold) locations.push([monster.type, location])
+                if (distance(position, location) < radius) locations.push([monster.type, location])
             }
         }
     }
@@ -62,7 +104,7 @@ export function getNearbyMonsterSpawns(position: ALPosition, threshold: number =
 export function buyAndUpgrade(itemName: ItemName, targetLevel: number = 9, targetQuantity: number = 1) {
     let foundNPCBuyer = false;
     for (let npc of parent.npcs.filter(npc => G.npcs[npc.id].role == "merchant")) {
-        if (distance(character, {
+        if (distance(parent.character, {
             x: npc.position[0],
             y: npc.position[1]
         }) < 350) {
@@ -79,14 +121,12 @@ export function buyAndUpgrade(itemName: ItemName, targetLevel: number = 9, targe
     if (items.length < 2) buy_with_gold(itemName, 1); // Buy one if we don't have any to upgrade
 }
 
-/**
- * Returns the inventory for the player, with all empty slots removed.
- */
-export function getInventory(inventory = parent.character.items): [number, ItemInfo][] {
-    let items: [number, ItemInfo][] = [];
+/** Returns the inventory for the player, with all empty slots removed. */
+export function getInventory(inventory = parent.character.items): MyItemInfo[] {
+    let items: MyItemInfo[] = [];
     for (let i = 0; i < 42; i++) {
         if (!inventory[i]) continue; // No item in this slot
-        items.push([i, inventory[i]])
+        items.push({ ...items[i], index: i })
     }
     return items;
 }

@@ -1,4 +1,4 @@
-import { ALPosition, MonsterName } from "./definitions/adventureland";
+import { IPosition, MonsterType, IPositionReal, MapName } from "./definitions/adventureland";
 import { Character } from "./character";
 let PF = require("pathfinding")
 
@@ -12,28 +12,27 @@ export class Pathfinder {
      */
     private padding: number[];
     private grids: any = {};
-    public movementTarget: MonsterName | string;
+    public movementTarget: MonsterType | string;
 
     constructor(factor: number = 8, padding = [10, 8, 7, 8]) {
         this.factor = factor;
         this.padding = padding;
     }
 
-    public saferMove(to: ALPosition) {
-        if(smart.moving) return; // Already moving somewhere
-        if(distance(parent.character, to) < 50) return; // Already nearby
+    public saferMove(to: IPositionReal) {
+        if (smart.moving) return; // Already moving somewhere
+        if (distance(parent.character, to) < 50) return; // Already nearby
 
         // TODO: Add pathfinding if we're on the same map
 
         smart_move(to);
     }
 
-    public findMovements(from: ALPosition, to: ALPosition): ALPosition[] {
+    public findMovements(from: IPositionReal, to: IPositionReal): IPositionReal[] {
         if (from.map && to.map && from.map != to.map) {
             game_log("Cross map pathfinding is not yet supported!");
             return;
         }
-        if (!from.map) from.map = parent.character.map; // Use the map on the character
         let mapName = from.map;
 
         if (from.real_x) from.x = from.real_x
@@ -48,7 +47,7 @@ export class Pathfinder {
             diagonalMovement: PF.DiagonalMovement.OnlyWhenNoObstacles
         });
 
-        let alPath: ALPosition[] = [];
+        let alPath: IPositionReal[] = [];
 
         // If we're too close to a wall our pathfinding fails. This next section finds us the closest walkable space so we can start searching from there
         let pathfinderFromX = Math.floor((-G.geometry[mapName].min_x + from.x) / this.factor)
@@ -60,7 +59,7 @@ export class Pathfinder {
             let segment_passed = 0;
             for (let k = 0; k < 100 /* check 100 grid spots */; k++) {
                 if (grid.isWalkableAt(pathfinderFromX, pathfinderFromY)) {
-                    alPath.push({ x: G.geometry[mapName].min_x + (pathfinderFromX * this.factor), y: G.geometry[mapName].min_y + (pathfinderFromY * this.factor) })
+                    alPath.push({ map: parent.character.map, x: G.geometry[mapName].min_x + (pathfinderFromX * this.factor), y: G.geometry[mapName].min_y + (pathfinderFromY * this.factor) })
                     break;
                 }
 
@@ -93,7 +92,7 @@ export class Pathfinder {
             let segment_length = 1
             let segment_passed = 0;
             for (let k = 0; k < 100 /* check 100 grid spots */; k++) {
-                alPath.push({ x: G.geometry[mapName].min_x + (pathfinderToX * this.factor), y: G.geometry[mapName].min_y + (pathfinderToY * this.factor) })
+                alPath.push({ map: parent.character.map, x: G.geometry[mapName].min_x + (pathfinderToX * this.factor), y: G.geometry[mapName].min_y + (pathfinderToY * this.factor) })
                 break;
             }
 
@@ -125,12 +124,12 @@ export class Pathfinder {
         newPath.shift();
 
         for (let path of newPath)
-            alPath.push({ x: G.geometry[mapName].min_x + (path[0] * this.factor), y: G.geometry[mapName].min_y + (path[1] * this.factor) })
+            alPath.push({ map: parent.character.map, x: G.geometry[mapName].min_x + (path[0] * this.factor), y: G.geometry[mapName].min_y + (path[1] * this.factor) })
 
         return alPath;
     }
 
-    public findNextMovement(from: ALPosition, to: ALPosition): ALPosition {
+    public findNextMovement(from: IPositionReal, to: IPositionReal): IPositionReal {
         let path = this.findMovements(from, to);
         if (path)
             return path[0];
@@ -139,7 +138,7 @@ export class Pathfinder {
     public prepareMap(mapName: string) {
         if (this.grids[mapName]) return; // Already generated
 
-        let geometry = G.geometry[mapName]
+        let geometry = G.geometry[mapName as MapName]
 
         let width = geometry.max_x - geometry.min_x;
         let height = geometry.max_y - geometry.min_y;

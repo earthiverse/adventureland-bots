@@ -7,14 +7,14 @@ let defaultItemsToSell: ItemName[] = ["hpamulet", "hpbelt", // HP stuff
     "vitring", "vitearring", // Vit stuff
     "slimestaff", "ringsj", "cclaw", "spear", "throwingstars", "gphelmet", "phelmet", "maceofthedead", // Common things
     "coat", "shoes", "pants", "gloves", "helmet", // Common clothing
-    "coat1", "shoes1", "pants1", "gloves1", "helmet1", // Heavy set
+    /*"coat1", "shoes1",*/ "pants1", /*"gloves1", "helmet1",*/ // Heavy set
     "wbreeches", "wcap" // Wanderer clothing
 ];
 
 export function sellUnwantedItems(itemsToSell: ItemName[] = defaultItemsToSell) {
     let foundNPCBuyer = false;
     for (let npc of parent.npcs.filter(npc => G.npcs[npc.id].role == "merchant")) {
-        if (distance(character, {
+        if (distance(parent.character, {
             x: npc.position[0],
             y: npc.position[1]
         }) < 350) {
@@ -53,7 +53,7 @@ export function closeMerchantStand() {
 export function buyFromPonty(itemNames: ItemName[]) {
     let foundPonty = false;
     for (let npc of parent.npcs) {
-        if (npc.id == "secondhands" && distance(character, {
+        if (npc.id == "secondhands" && distance(parent.character, {
             x: npc.position[0],
             y: npc.position[1]
         }) < 350) {
@@ -82,7 +82,7 @@ export function buyFromPonty(itemNames: ItemName[]) {
 export function transferItemsToMerchant(merchantName: string, itemsToKeep: ItemName[] = defaultItemsToKeep) {
     let merchant = parent.entities[merchantName];
     if (!merchant) return; // No merchant nearby
-    if (distance(character, merchant) > 250) return; // Merchant is too far away to trade
+    if (distance(parent.character, merchant) > 250) return; // Merchant is too far away to trade
 
     for (let i = 0; i < parent.character.items.length; i++) {
         let item = parent.character.items[i]
@@ -112,7 +112,7 @@ export function exchangeItems(xynExchangeItems: ItemName[] = ["gem0", "gem1", "a
     // Xyn (Most exchanges)
     let foundUpgrade = false;
     for (let npc of parent.npcs) {
-        if (npc.id == "exchange" && distance(character, {
+        if (npc.id == "exchange" && distance(parent.character, {
             x: npc.position[0],
             y: npc.position[1]
         }) < 250) {
@@ -136,7 +136,7 @@ export function exchangeItems(xynExchangeItems: ItemName[] = ["gem0", "gem1", "a
     // Pwincess
     foundUpgrade = false;
     for (let npc of parent.npcs) {
-        if (npc.id == "pwincess" && distance(character, {
+        if (npc.id == "pwincess" && distance(parent.character, {
             x: npc.position[0],
             y: npc.position[1]
         }) < 250) {

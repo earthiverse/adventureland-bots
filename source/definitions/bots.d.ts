@@ -1,7 +1,7 @@
-import { MapName, MonsterName } from "./adventureland";
+import { MapName, ItemInfo, MonsterType, NPCType, IPosition, IPositionReal, IEntity, NPCName } from "./adventureland";
 
 export type TargetPriorityList = {
-    [T in MonsterName]?: TargetPriorityInfo;
+    [T in MonsterType]?: TargetPriorityInfo;
 };
 
 export interface TargetPriorityInfo {
@@ -33,4 +33,20 @@ export interface TargetPriorityInfo {
      *  The y position where we will move to find this monster.
      */
     y?: number;
+}
+
+export interface OtherInfo {
+    npcs: {
+        [T in NPCName]?: IPositionReal
+    }
+    players: {
+        [T in string]?: IEntity
+    }
+}
+
+export interface MyItemInfo extends ItemInfo {
+    /**
+     * Specifies the index of the 
+     */
+    index: number;
 }

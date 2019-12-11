@@ -1,7 +1,8 @@
 import { Character } from './character'
-import { MonsterName } from './definitions/adventureland';
+import { MonsterType } from './definitions/adventureland';
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from './trade';
 import { TargetPriorityList } from './definitions/bots';
+import { getCooldownMS, getAttackingEntities } from './functions';
 
 let DIFFICULT = 10;
 let MEDIUM = 20;
@@ -69,7 +70,7 @@ class Warrior extends Character {
             "priority": EASY
         }
     }
-    mainTarget: MonsterName = "rat";
+    mainTarget: MonsterType = "rat";
 
     run(): void {
         super.run();
@@ -91,18 +92,17 @@ class Warrior extends Character {
 
     chargeLoop(): void {
         use_skill("charge")
-        setTimeout(() => { this.chargeLoop() }, Math.max(parent.character.ping, parent.next_skill["charge"] - Date.now()));
+        setTimeout(() => { this.chargeLoop() }, Math.max(parent.character.ping, getCooldownMS("charge")));
     }
 
     hardshellLoop(): void {
-        let targets = this.getTargets(1);
+        let targets = getAttackingEntities()
         if (parent.character.mp > 480 // Enough MP
             && targets.length > 0 // We have a target
-            && targets[0].target == parent.character.name // It's targeting us
-            && ((parent.distance(targets[0], parent.character) < targets[0].range && parent.character.hp < targets[0].attack * 5))) { // Not a lot of HP remaining
+            && ((distance(targets[0], parent.character) < targets[0].range && parent.character.hp < targets[0].attack * 5))) { // Not a lot of HP remaining
             use_skill("hardshell")
         }
-        setTimeout(() => { this.chargeLoop() }, Math.max(parent.character.ping, parent.next_skill["hardshell"] - Date.now()));
+        setTimeout(() => { this.chargeLoop() }, Math.max(parent.character.ping, getCooldownMS("hardshell")));
     }
 }
 
