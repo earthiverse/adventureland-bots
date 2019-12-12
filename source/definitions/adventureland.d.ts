@@ -19,6 +19,10 @@ declare global {
     } }
     /** Contains the name of every character in your party */
     party_list: string[]
+    // TODO: Change this to a type
+    server_identifier: string
+    // TODO: Change this to a type
+    server_region: string
     socket: SocketIO.Socket
     S: { [T in MonsterType]: IPosition & {
       map: string
@@ -35,6 +39,8 @@ declare global {
   function buy_with_gold(name: ItemName, quantity: number): Promise<any>
   function can_move_to(location: IPositionReal): boolean
   function can_move_to(x: number, y: number): boolean
+  // TODO: Change the arguments of this function to types
+  function change_server(region: string, server: string)
   function change_target(target: IEntity)
   function compound(itemInventoryPosition1: number, itemInventoryPosition2: number, itemInventoryPosition3: number, scrollInventoryPosition: number, offeringInventoryPosition?: number): Promise<any>
   /** Feed this function a value like (character.apiercing - target.armor) and it spits out a multiplier so you can adjust your expected damage */
@@ -230,6 +236,11 @@ export interface IEntity extends IPositionReal {
   /** Set if the entity is a player */
   slots: {
     [T in SlotType]: ItemInfo
+  } & {
+    [T in TradeSlotType]?: ItemInfo & {
+      price: number
+      rid: string
+    }
   }
   speed: number
   /** Set if we are under the status effect "stoned" */
@@ -398,6 +409,24 @@ export type SlotType =
   | "ring1"
   | "ring2"
   | "shoes"
+
+export type TradeSlotType =
+  | "trade1"
+  | "trade2"
+  | "trade3"
+  | "trade4"
+  | "trade5"
+  | "trade6"
+  | "trade7"
+  | "trade8"
+  | "trade9"
+  | "trade10"
+  | "trade11"
+  | "trade12"
+  | "trade13"
+  | "trade14"
+  | "trade15"
+  | "trade16"
 
 export type ConditionName =
   | "authfail"

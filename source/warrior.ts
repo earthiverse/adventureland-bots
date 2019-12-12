@@ -7,7 +7,7 @@ import { getCooldownMS, getAttackingEntities } from './functions';
 let DIFFICULT = 10;
 let MEDIUM = 20;
 let EASY = 30;
-let SPECIAL = 5000;
+let SPECIAL = 500;
 
 class Warrior extends Character {
     targetPriority: TargetPriorityList = {

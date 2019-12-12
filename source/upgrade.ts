@@ -1,5 +1,6 @@
-import { determineGrade, findItems, findItemsWithLevel, getInventory } from "./functions";
-import { ItemName } from "./definitions/adventureland";
+import { determineGrade, findItems, findItemsWithLevel, getInventory, findItem } from "./functions";
+import { ItemName, ItemInfo } from "./definitions/adventureland";
+import { MyItemInfo } from "./definitions/bots";
 
 export function compoundItem(itemname: ItemName, target_level: number) {
     let foundUpgrade = false;
@@ -16,7 +17,7 @@ export function compoundItem(itemname: ItemName, target_level: number) {
 
     if (parent.character.q && parent.character.q["compound"]) return; // Already compounding
 
-    let items;
+    let items: MyItemInfo[];
     let item_level;
     for (item_level = 0; item_level < target_level; item_level++) {
         items = findItemsWithLevel(itemname, item_level);
@@ -30,15 +31,15 @@ export function compoundItem(itemname: ItemName, target_level: number) {
         return;
 
     let grade = determineGrade(itemname, item_level);
-    let scrolls;
+    let scroll: MyItemInfo;
     if (grade == 0) {
-        scrolls = findItems("cscroll0");
+        scroll = findItem("cscroll0");
     } else if (grade == 1) {
-        scrolls = findItems("cscroll1");
+        scroll = findItem("cscroll1");
     } else if (grade == 2) {
-        scrolls = findItems("cscroll2");
+        scroll = findItem("cscroll2");
     }
-    compound(items[0][0], items[1][0], items[2][0], scrolls[0][0])
+    compound(items[0].index, items[1].index, items[2].index, scroll.index)
 }
 
 export function upgradeItem(itemname: ItemName, target_level: number) {
@@ -56,25 +57,19 @@ export function upgradeItem(itemname: ItemName, target_level: number) {
 
     if (parent.character.q && parent.character.q["upgrade"]) return; // Already upgrading
 
-    let items = findItems(itemname);
-    if (!items)
-        // No item to upgrade
-        return;
-
-    for (let [i, item] of items) {
-        if (item.level < target_level) {
-            let grade = determineGrade(itemname, item.level);
-            let scrolls;
-            if (grade == 0) {
-                scrolls = findItems("scroll0");
-            } else if (grade == 1) {
-                scrolls = findItems("scroll1");
-            } else if (grade == 2) {
-                scrolls = findItems("scroll2");
-            }
-            if (scrolls) upgrade(i, scrolls[0][0])
-            return;
+    let item = findItem(itemname);
+    if (item && item.level < target_level) {
+        let grade = determineGrade(itemname, item.level);
+        let scroll: MyItemInfo;
+        if (grade == 0) {
+            scroll = findItem("scroll0");
+        } else if (grade == 1) {
+            scroll = findItem("scroll1");
+        } else if (grade == 2) {
+            scroll = findItem("scroll2");
         }
+        if (scroll) upgrade(item.index, scroll.index)
+        return;
     }
 }
 
@@ -90,7 +85,7 @@ export function compoundIfMany(maxLevel: number) {
         }
     }
     if (!foundUpgrade) return; // Can't upgrade, nobody is near.
-    if (parent.character.q && parent.character.q["compound"]) return; // Already compounding
+    if (parent.character.q.compound) return; // Already compounding
 
     // name, level, slot #
     // TODO: Change this to a custom object
@@ -108,15 +103,15 @@ export function compoundIfMany(maxLevel: number) {
         ) {
             // Found 3 identical items to compound
             let grade = determineGrade(items[i][0], items[i][1]);
-            let scrolls;
+            let scroll;
             if (grade == 0) {
-                scrolls = findItems("cscroll0");
+                scroll = findItem("cscroll0");
             } else if (grade == 1) {
-                scrolls = findItems("cscroll1");
+                scroll = findItem("cscroll1");
             } else if (grade == 2) {
-                scrolls = findItems("cscroll2");
+                scroll = findItem("cscroll2");
             }
-            compound(items[i][2], items[i + 1][2], items[i + 2][2], scrolls[0][0])
+            compound(items[i][2], items[i + 1][2], items[i + 2][2], scroll.index)
             return;
         }
 
@@ -146,20 +141,20 @@ export function upgradeIfMany(maxLevel: number) {
         let items = findItems(parent.character.items[i].name)
         if (items.length == 1) continue; // We only have one.
 
-        let minimumLevel = Math.min(...items.map(([, { level }]) => level)) // Find the minimum level
+        let minimumLevel = Math.min(...items.map(item => item.level)) // Find the minimum level
         items = findItemsWithLevel(parent.character.items[i].name, minimumLevel);
-        if (items[0][1].level >= maxLevel) continue; // Don't upgrade high level items
+        if (items[0].level >= maxLevel) continue; // Don't upgrade high level items
 
-        let grade = determineGrade(items[0][1].name, items[0][1].level);
-        let scrolls;
+        let grade = determineGrade(items[0].name, items[0].level);
+        let scrolls: MyItemInfo;
         if (grade == 0) {
-            scrolls = findItems("scroll0");
+            scrolls = findItem("scroll0");
         } else if (grade == 1) {
-            scrolls = findItems("scroll1");
+            scrolls = findItem("scroll1");
         } else if (grade == 2) {
-            scrolls = findItems("scroll2");
+            scrolls = findItem("scroll2");
         }
-        if (scrolls) upgrade(items[0][0], scrolls[0][0])
+        if (scrolls) upgrade(items[0].index, scrolls.index)
         return;
     }
 }

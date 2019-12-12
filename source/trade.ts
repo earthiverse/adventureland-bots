@@ -1,5 +1,5 @@
 import { ItemName } from "./definitions/adventureland";
-import { findItems, findItemsWithLevel } from "./functions";
+import { findItems, findItemsWithLevel, findItem } from "./functions";
 let defaultItemsToKeep: ItemName[] = ["tracker", // Tracker
     "mpot0", "mpot1", "hpot0", "hpot1", // Potions
     "jacko"] // Useful for avoiding monsters
@@ -25,29 +25,27 @@ export function sellUnwantedItems(itemsToSell: ItemName[] = defaultItemsToSell) 
     if (!foundNPCBuyer) return; // Can't sell things, nobody is near.
 
     for (let itemName of itemsToSell) {
-        for (let [i, item] of findItems(itemName)) {
+        for (let item of findItems(itemName)) {
             if (item.q) {
-                sell(i, item.q);
+                sell(item.index, item.q);
             } else {
-                sell(i, 1);
+                sell(item.index, 1);
             }
         }
     }
 }
 
 export function openMerchantStand() {
-    // TODO: Check if it's already open?? (Is this necessary?)
-
-    let stand = findItems("stand0")
+    let stand = findItem("stand0")
     if (!stand) return; // No stand available.
 
-    parent.open_merchant(stand[0][0])
+    if (parent.character.slots.trade16 === undefined) // Checks if the stand is closed
+        parent.open_merchant(stand.index)
 }
 
 export function closeMerchantStand() {
-    // TODO: Check if it's already closed?? (is this necessary?)
-        
-    parent.close_merchant()
+    if (parent.character.slots.trade16 === null) // Checks if the stand is open
+        parent.close_merchant()
 }
 
 export function buyFromPonty(itemNames: ItemName[]) {
@@ -107,7 +105,6 @@ export function transferGoldToMerchant(merchantName: string, minimumGold: number
 }
 
 // TODO: Add check for shells
-// TODO: Add check for earrings
 export function exchangeItems(xynExchangeItems: ItemName[] = ["gem0", "gem1", "armorbox", "weaponbox", "candy0", "candy1", "candycane", "mistletoe", "ornament"]) {
     // Xyn (Most exchanges)
     let foundUpgrade = false;
@@ -125,8 +122,8 @@ export function exchangeItems(xynExchangeItems: ItemName[] = ["gem0", "gem1", "a
             let items = findItems(itemName)
             if (items.length > 0) {
                 parent.socket.emit("exchange", {
-                    item_num: items[0][0],
-                    q: items[0][1].q
+                    item_num: items[0].index,
+                    q: items[0].q
                 });
                 return;
             }
@@ -148,10 +145,10 @@ export function exchangeItems(xynExchangeItems: ItemName[] = ["gem0", "gem1", "a
         // TODO: Move this to a parameter
         // NOTE: We are only exchanging level 2 lost earrings, because we want agile quivers
         let items = findItemsWithLevel("lostearring", 2)
-        if (items.length > 0) {
+        if (items.length) {
             parent.socket.emit("exchange", {
-                item_num: items[0][0],
-                q: items[0][1].q
+                item_num: items[0].index,
+                q: items[0].q
             });
             return;
         }

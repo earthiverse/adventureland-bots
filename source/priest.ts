@@ -7,7 +7,7 @@ import { getCooldownMS } from './functions';
 let DIFFICULT = 10;
 let MEDIUM = 20;
 let EASY = 30;
-let SPECIAL = 5000;
+let SPECIAL = 500;
 
 class Priest extends Character {
     targetPriority: TargetPriorityList = {

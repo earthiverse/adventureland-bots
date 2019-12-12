@@ -1,7 +1,7 @@
 import { Character } from './character'
 import { MonsterType, ItemName, IPositionReal, IEntity } from './definitions/adventureland';
 import { upgradeIfMany, compoundIfMany } from './upgrade'
-import { sellUnwantedItems, exchangeItems, buyFromPonty } from './trade';
+import { sellUnwantedItems, exchangeItems, buyFromPonty, openMerchantStand, closeMerchantStand } from './trade';
 import { getInventory, isPlayer, getCooldownMS, isAvailable } from './functions';
 
 class Merchant extends Character {
@@ -67,8 +67,9 @@ class Merchant extends Character {
             let player = this.otherInfo.players[name]
             if (distance(parent.character, player) < 10 && !player.s.mluck) {
                 // This player moved.
-                this.otherInfo.players[name] = undefined;
-            } else if (!player.s.mluck) {
+                delete this.otherInfo.players[name];
+                break;
+            } else if (!player.s.mluck && !player.rip) {
                 set_message("MLuck other")
                 return this.otherInfo.players[name]
             }
@@ -78,7 +79,7 @@ class Merchant extends Character {
         for (let name of parent.party_list) {
             if (name == parent.character.name) continue; // Skip ourself
             let player = this.partyInfo[name]
-            if (player && player.inventory.length > 30) {
+            if (player && player.inventory.length > 20) {
                 set_message("Offloading!")
                 return player
             }
@@ -101,6 +102,12 @@ class Merchant extends Character {
             exchangeItems();
 
             this.bankStuff();
+
+            if (distance(parent.character, { map: "main", "x": 60, "y": -325 }) < 100) {
+                openMerchantStand()
+            } else {
+                closeMerchantStand()
+            }
 
             // buyAndUpgrade("bow", 9, 1)
 
@@ -141,13 +148,13 @@ class Merchant extends Character {
             return;
         }
 
-        buyFromPonty([/*"strbelt", "strring", "intbelt",*/ "intring", "dexbelt", "dexring", // High priority things
-            /*"intearring",*/ "dexearring", /*"strearring", "dexamulet", "intamulet",*/ // Low priority things
-            "wgloves", "wshoes", "wattire",  // I want to get all +8 for my ranger
-            "bfur", "leather", "seashell", // Craftables that are usable for things
+        buyFromPonty(["strbelt", "strring", "intbelt", "intring", "dexbelt", "dexring", // High priority things
+            "intearring", "dexearring", "strearring", "dexamulet", "intamulet", // Low priority things
+            "wgloves", "wshoes", "wattire", // I want to get all +8 for my ranger
+            "bfur", // Craftables that are usable for things
             "pmace", // I want a nice mace for my priest
-            "candycane", "ornament",
-            "lostearring", "jacko", "cape", "bcape", "monstertoken", "t2bow", "cupid", "candycanesword", "merry", "ornamentstaff", "merry", "bowofthedead", "gbow", "hbow", "t2quiver", "oozingterror", "talkingskull", "greenbomb", "gem0", "gem1", "candy0", "candy1", "xboots", "handofmidas", "goldenpowerglove", "xgloves", "powerglove", "poker", "starkillers", "xpants", "xarmor", "xhelmet", "fury", "partyhat"]); // Things that I probably won't find
+            "5bucks", "candy0", "candy1", "candycane", "gem0", "gem1", "leather", "mistletoe", "monstertoken", "ornament", "seashell", // Exchangables
+            "lostearring", "jacko", "cape", "bcape", "t2bow", "cupid", "candycanesword", "merry", "ornamentstaff", "merry", "bowofthedead", "gbow", "hbow", "t2quiver", "oozingterror", "talkingskull", "greenbomb", "xboots", "handofmidas", "goldenpowerglove", "xgloves", "powerglove", "poker", "starkillers", "xpants", "xarmor", "xhelmet", "fury", "partyhat"]); // Other things
 
         // We bought things from Ponty, wait a long time before trying to buy again.
         setTimeout(() => { this.pontyLoop() }, 15000);
@@ -317,7 +324,6 @@ class Merchant extends Character {
                 if (!luckTarget.s || !luckTarget.s["mluck"] || luckTarget.s["mluck"].ms < 3540000 /* 59 minutes */ || luckTarget.s["mluck"].f != parent.character.name) {
                     this.luckedCharacters[luckTarget.name] = Date.now();
                     use_skill("mluck", luckTarget);
-                    game_log("lucking " + luckTarget.name)
                     break;
                 }
             }

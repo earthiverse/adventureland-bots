@@ -13,6 +13,11 @@ export function isPlayer(entity: IEntity) {
     return entity.type == "character" && !isNPC(entity)
 }
 
+/** Also works for NPCs! */
+export function canSeePlayer(name: string) {
+    return parent.entities[name] ? true : false
+}
+
 /** Returns the amount of ms we have to wait to use this skill */
 export function getCooldownMS(skill: SkillName) {
     if (parent.next_skill[skill]) {
@@ -115,10 +120,10 @@ export function buyAndUpgrade(itemName: ItemName, targetLevel: number = 9, targe
     if (!foundNPCBuyer) return; // Can't buy things, nobody is near.
 
     let items = findItemsWithLevel(itemName, targetLevel)
-    if (items.length >= targetQuantity) return; // We have it!
+    if (items.length >= targetQuantity) return; // We have enough
 
     items = findItems(itemName);
-    if (items.length < 2) buy_with_gold(itemName, 1); // Buy one if we don't have any to upgrade
+    if (items.length < Math.min(2, targetQuantity)) buy_with_gold(itemName, 1); // Buy more if we don't have any to upgrade
 }
 
 /** Returns the inventory for the player, with all empty slots removed. */
@@ -126,30 +131,39 @@ export function getInventory(inventory = parent.character.items): MyItemInfo[] {
     let items: MyItemInfo[] = [];
     for (let i = 0; i < 42; i++) {
         if (!inventory[i]) continue; // No item in this slot
-        items.push({ ...items[i], index: i })
+        items.push({ ...inventory[i], index: i })
     }
     return items;
 }
 
-export function findItems(name: ItemName): [number, ItemInfo][] {
-    let items: [number, ItemInfo][] = [];
+export function findItem(name: ItemName): MyItemInfo {
     for (let i = 0; i < 42; i++) {
         if (!parent.character.items[i]) continue; // No item in this slot
         if (parent.character.items[i].name != name) continue; // Item doesn't match.
 
-        items.push([i, parent.character.items[i]]);
+        return { ...parent.character.items[i], index: i }
+    }
+}
+
+export function findItems(name: ItemName): MyItemInfo[] {
+    let items: MyItemInfo[] = [];
+    for (let i = 0; i < 42; i++) {
+        if (!parent.character.items[i]) continue; // No item in this slot
+        if (parent.character.items[i].name != name) continue; // Item doesn't match.
+
+        items.push({ ...parent.character.items[i], index: i });
     }
     return items;
 }
 
-export function findItemsWithLevel(name: ItemName, level: number): [number, ItemInfo][] {
-    let items: [number, ItemInfo][] = [];
+export function findItemsWithLevel(name: ItemName, level: number): MyItemInfo[] {
+    let items: MyItemInfo[] = [];
     for (let i = 0; i < 42; i++) {
         if (!parent.character.items[i]) continue; // No item in this slot
         if (parent.character.items[i].name != name) continue; // Item doesn't match.
         if (parent.character.items[i].level != level) continue; // Level doesn't match
 
-        items.push([i, parent.character.items[i]]);
+        items.push({ ...parent.character.items[i], index: i });
     }
     return items;
 }

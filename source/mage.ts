@@ -7,7 +7,7 @@ import { getCooldownMS, isAvailable } from './functions';
 let DIFFICULT = 10;
 let MEDIUM = 20;
 let EASY = 30;
-let SPECIAL = 5000;
+let SPECIAL = 500;
 
 class Mage extends Character {
     targetPriority: TargetPriorityList = {
@@ -159,7 +159,7 @@ class Mage extends Character {
             "y": 570
         }
     }
-    mainTarget: MonsterType = "poisio";
+    mainTarget: MonsterType = "goo";
 
     run(): void {
         super.run();
@@ -188,7 +188,6 @@ class Mage extends Character {
                     if (distance(parent.character, parent.entities[id]) > parent.character.range) continue // Out of range
                     if (!parent.party_list.includes(id)) continue // Not in our party
 
-                    // TODO: See if this is broken. We used a string for the ID before
                     use_skill("energize", parent.entities[id])
                     break;
                 }

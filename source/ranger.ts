@@ -7,7 +7,7 @@ import { isPlayer, getCooldownMS, isAvailable } from './functions';
 let DIFFICULT = 10;
 let MEDIUM = 20;
 let EASY = 30;
-let SPECIAL = 5000;
+let SPECIAL = 500;
 
 class Ranger extends Character {
     targetPriority: TargetPriorityList = {
@@ -165,7 +165,8 @@ class Ranger extends Character {
             "y": 570
         }
     }
-    mainTarget: MonsterType = "goo";
+    mainTarget: MonsterType = "crab";
+    start_time = Date.now();
 
     run(): void {
         super.run();
@@ -181,6 +182,27 @@ class Ranger extends Character {
             sellUnwantedItems();
 
             this.createParty(["earthMag", "earthWar", "earthMer", "earthPri"]);
+
+            // NOTE: Temporary for monster hunt coin farming
+            if (Date.now() - this.start_time > 60000) {
+                let should_switch_server = true;
+                for (let id in this.partyInfo) {
+                    let member = this.partyInfo[id]
+                    if (member.canMonsterHunt) { should_switch_server = false; break; }
+                }
+                if (should_switch_server) {
+                    if (parent.server_region == "ASIA")
+                        change_server("US", "I")
+                    else if (parent.server_region == "US" && parent.server_identifier == "I")
+                        change_server("US", "II")
+                    else if (parent.server_region == "US" && parent.server_identifier == "II")
+                        change_server("EU", "I")
+                    else if (parent.server_region == "EU" && parent.server_identifier == "I")
+                        change_server("EU", "II")
+                    else if (parent.server_region == "EU" && parent.server_identifier == "II")
+                        change_server("ASIA", "I")
+                }
+            }
 
             super.mainLoop();
         } catch (error) {
@@ -249,9 +271,7 @@ class Ranger extends Character {
     }
 
     attackLoop() {
-        // TODO: Try to 5shot targets
         let targets = this.getTargets(5);
-
         if (targets.length >= 5
             && parent.character.mp >= 420
             && !parent.character.stoned
