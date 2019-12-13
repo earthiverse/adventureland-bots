@@ -212,7 +212,34 @@ export interface IEntity extends IPositionReal {
   real_y: number
   /** Only set if the entity is a character. If true, the player is dead. */
   rip?: boolean
-  s: { [T in ConditionName]?: {
+  s: StatusInfo
+  /** Set if the entity is a player */
+  slots: {
+    [T in SlotType]: ItemInfo
+  } & {
+    [T in TradeSlotType]?: ItemInfo & {
+      price: number
+      rid: string
+    }
+  }
+  speed: number
+  /** Set if we are under the status effect "stoned" */
+  stoned?: boolean
+  /** Set if the player or monster is targeting something */
+  target: string
+  type: "character" | "monster"
+}
+
+export type ItemInfo = {
+  /** Set if the item is compoundable or upgradable */
+  level?: number
+  name: ItemName
+  /** Set if the item is stackable. */
+  q?: number
+}
+
+export type StatusInfo = {
+  [T in ConditionName]?: {
     /** How many ms left before this condition expires */
     ms: number
   } } & {
@@ -233,30 +260,6 @@ export interface IEntity extends IPositionReal {
       id: MonsterType
     }
   }
-  /** Set if the entity is a player */
-  slots: {
-    [T in SlotType]: ItemInfo
-  } & {
-    [T in TradeSlotType]?: ItemInfo & {
-      price: number
-      rid: string
-    }
-  }
-  speed: number
-  /** Set if we are under the status effect "stoned" */
-  stoned?: boolean
-  /** Set if the player or monster is targeting something */
-  target: string
-  type: "character" | "monster"
-}
-
-export interface ItemInfo {
-  /** Set if the item is compoundable or upgradable */
-  level?: number
-  name: ItemName
-  /** Set if the item is stackable. */
-  q?: number
-}
 
 export interface IPositionReal extends IPosition {
   map: MapName
@@ -264,7 +267,7 @@ export interface IPositionReal extends IPosition {
   real_y?: number
 }
 
-export interface IPosition {
+export type IPosition = {
   /**
    * Contains the name of the map
    */

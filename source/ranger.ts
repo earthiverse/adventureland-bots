@@ -186,8 +186,8 @@ class Ranger extends Character {
             // NOTE: Temporary for monster hunt coin farming
             if (Date.now() - this.start_time > 60000) {
                 let should_switch_server = true;
-                for (let id in this.partyInfo) {
-                    let member = this.partyInfo[id]
+                for (let id in this.info.party) {
+                    let member = this.info.party[id]
                     if (member.canMonsterHunt) { should_switch_server = false; break; }
                 }
                 if (should_switch_server) {

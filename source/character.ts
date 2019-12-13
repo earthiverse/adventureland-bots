@@ -15,10 +15,10 @@ export abstract class Character {
     public holdPosition = false;
     public holdAttack = false;
     protected pathfinder: Pathfinder = new Pathfinder(6);
-    protected partyInfo: any = {};
-    protected otherInfo: OtherInfo = {
-        "npcs": {},
-        "players": {}
+    protected info: OtherInfo = {
+        party: {},
+        npcs: {},
+        players: {}
     };
     // protected chests = new Set<string>()
 
@@ -76,7 +76,7 @@ export abstract class Character {
                 "message": "info",
                 "info": {
                     "canMonsterHunt": this.canMonsterHunt(),
-                    "inventory": getInventory(),
+                    "items": getInventory(),
                     "map": parent.character.map,
                     "x": parent.character.real_x,
                     "y": parent.character.real_y,
@@ -141,8 +141,8 @@ export abstract class Character {
         if (!parent.character.s.monsterhunt) return true; // No monster hunt
         if (this.targetPriority[parent.character.s.monsterhunt.id]) return true; // Monster hunt target is in our target list
 
-        for (let id of parent.party_list) {
-            let member = this.partyInfo[id]
+        for (let id in this.info.party) {
+            let member = this.info.party[id]
             if (!member.s || !member.s.monsterhunt) continue;
             if (this.targetPriority[member.s.monsterhunt.id as MonsterType]) return true; // We can do a party member's monster hunt
         }
@@ -494,15 +494,12 @@ export abstract class Character {
             return;
         }
 
-        // Start tracking info for this player if we haven't yet
-        if (!this.partyInfo[characterName]) this.partyInfo[characterName] = {}
-
         if (data.message == "info") {
-            this.partyInfo[characterName] = data.info
+            this.info.party[characterName] = data.info
         } else if (data.message == "npc") {
-            this.otherInfo.npcs[data.id as NPCName] = data.info
+            this.info.npcs[data.id as NPCName] = data.info
         } else if (data.message == "player") {
-            this.otherInfo.players[data.id] = data.info
+            this.info.players[data.id] = data.info
         }
     }
 
@@ -589,38 +586,41 @@ export abstract class Character {
             return G.maps.main.ref.monsterhunter
         } else {
             // Get all party quests
-            let potentialTargets: MonsterType[] = [parent.character.s.monsterhunt.id]
-            for (let info in this.partyInfo) {
-                if (!this.partyInfo[info].s.monsterhunt) continue; // They don't have a monster hunt
-                if (this.partyInfo[info].s.monsterhunt.c == 0) continue; // They're turning it in
-                potentialTargets.push(this.partyInfo[info].s.monsterhunt.id as MonsterType)
+            let potentialTargets: MonsterType[] = this.targetPriority[parent.character.s.monsterhunt.id] ? [parent.character.s.monsterhunt.id] : []
+            for (let info in this.info.party) {
+                if (!this.info.party[info].s.monsterhunt) continue; // They don't have a monster hunt
+                if (this.info.party[info].s.monsterhunt.c == 0) continue; // They're turning it in
+                if (!this.targetPriority[this.info.party[info].s.monsterhunt.id as MonsterType]) continue; // We can't do it
+                potentialTargets.push(this.info.party[info].s.monsterhunt.id as MonsterType)
             }
-            for (let potentialTarget of potentialTargets) {
-                if (this.targetPriority[potentialTarget]) {
 
-                    // We have a doable quest
-                    set_message("MH " + potentialTarget.slice(0, 8))
-                    this.pathfinder.movementTarget = potentialTarget;
-                    for (let id in parent.entities) {
-                        let entity = parent.entities[id]
-                        if (entity.mtype == potentialTarget) {
-                            // There's one nearby
-                            return;
-                        }
-                    }
-                    // We aren't near the monster hunt target, move to it
-                    if (this.targetPriority[potentialTarget].map && this.targetPriority[potentialTarget].x && this.targetPriority[potentialTarget].y) {
-                        return this.targetPriority[potentialTarget] as IPositionReal
-                    } else {
-                        return getRandomMonsterSpawnPosition(potentialTarget)
-                    }
+            // See if there's any nearby entities that we can monster hunt
+            for (let id in parent.entities) {
+                let entity = parent.entities[id]
+                if (potentialTargets.includes(entity.mtype)) {
+                    // There's one nearby
+                    set_message("MH " + entity.mtype.slice(0, 8))
+                    this.pathfinder.movementTarget = entity.mtype;
+                    return;
+                }
+            }
+
+            // We aren't near any monster hunts, so move to one
+            if (potentialTargets.length) {
+                let potentialTarget = potentialTargets[0];
+                set_message("MH " + potentialTarget.slice(0, 8))
+                this.pathfinder.movementTarget = potentialTarget;
+                if (this.targetPriority[potentialTarget].map && this.targetPriority[potentialTarget].x && this.targetPriority[potentialTarget].y) {
+                    return this.targetPriority[potentialTarget] as IPositionReal
+                } else {
+                    return getRandomMonsterSpawnPosition(potentialTarget)
                 }
             }
         }
 
         // Check if we can farm with +1000% luck (and maybe +1000% gold, too!)
-        let kane = parent.entities.Kane ? parent.entities.Kane : this.otherInfo.npcs.Kane
-        let angel = parent.entities.Angel ? parent.entities.Angel : this.otherInfo.npcs.Angel
+        let kane = parent.entities.Kane ? parent.entities.Kane : this.info.npcs.Kane
+        let angel = parent.entities.Angel ? parent.entities.Angel : this.info.npcs.Angel
         if (kane && angel) {
             if (canSeePlayer("Kane") && canSeePlayer("Angel")) {
                 // We're near both of them

@@ -1,4 +1,4 @@
-import { MapName, ItemInfo, MonsterType, NPCType, IPosition, IPositionReal, IEntity, NPCName } from "./adventureland";
+import { MapName, ItemInfo, MonsterType, NPCType, IPosition, IPositionReal, IEntity, NPCName, ICharacter, StatusInfo } from "./adventureland";
 
 export type TargetPriorityList = {
     [T in MonsterType]?: TargetPriorityInfo;
@@ -36,6 +36,13 @@ export interface TargetPriorityInfo {
 }
 
 export interface OtherInfo {
+    party: {
+        [T in string]?: IPositionReal & {
+            canMonsterHunt: boolean
+            items: MyItemInfo[]
+            s: StatusInfo
+        }
+    }
     npcs: {
         [T in NPCName]?: IPositionReal
     }

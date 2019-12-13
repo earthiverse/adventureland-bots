@@ -54,8 +54,8 @@ class Merchant extends Character {
         // TODO: If Angel and Kane haven't been seen in a while, go find them
 
         // If our players aren't mlucked, go find them and mluck them.
-        for (let name of parent.party_list) {
-            let player = this.partyInfo[name]
+        for (let name in this.info.party) {
+            let player = this.info.party[name]
             if (player && player.s && (!player.s.mluck || player.s.mluck.f !== "earthMer")) {
                 set_message("MLuck party")
                 return player
@@ -63,23 +63,23 @@ class Merchant extends Character {
         }
 
         // If there are players who we have seen recently that haven't been mlucked, go find them and mluck them
-        for (let name in this.otherInfo.players) {
-            let player = this.otherInfo.players[name]
+        for (let name in this.info.players) {
+            let player = this.info.players[name]
             if (distance(parent.character, player) < 10 && !player.s.mluck) {
                 // This player moved.
-                delete this.otherInfo.players[name];
-                break;
+                delete this.info.players[name];
+                return;
             } else if (!player.s.mluck && !player.rip) {
                 set_message("MLuck other")
-                return this.otherInfo.players[name]
+                return this.info.players[name]
             }
         }
 
         // If our players have lots of items, go offload
-        for (let name of parent.party_list) {
+        for (let name in this.info.party) {
             if (name == parent.character.name) continue; // Skip ourself
-            let player = this.partyInfo[name]
-            if (player && player.inventory.length > 20) {
+            let player = this.info.party[name]
+            if (player && player.items.length > 20) {
                 set_message("Offloading!")
                 return player
             }
