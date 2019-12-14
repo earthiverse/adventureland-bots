@@ -90,7 +90,7 @@ class Priest extends Character {
             "priority": EASY
         }
     }
-    mainTarget: MonsterType = "bee";
+    mainTarget: MonsterType = "rat";
 
     mainLoop(): void {
         try {

@@ -159,7 +159,7 @@ class Mage extends Character {
             "y": 570
         }
     }
-    mainTarget: MonsterType = "goo";
+    mainTarget: MonsterType = "rat";
 
     run(): void {
         super.run();

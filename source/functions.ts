@@ -1,5 +1,5 @@
-import { ItemInfo, MonsterType, ItemName, IPosition, MapName, IEntity, IPositionReal, SkillName } from "./definitions/adventureland";
-import { MyItemInfo } from "./definitions/bots";
+import { ItemInfo, MonsterType, ItemName, IPosition, MapName, IEntity, IPositionReal, SkillName, BankPackType } from "./definitions/adventureland";
+import { MyItemInfo, EmptyBankSlots, MonsterSpawnPosition } from "./definitions/bots";
 
 export function isNPC(entity: IEntity) {
     return entity.npc ? true : false
@@ -26,6 +26,22 @@ export function getCooldownMS(skill: SkillName) {
     } else {
         return 0
     }
+}
+
+export function getEmptyBankSlots(): EmptyBankSlots[] {
+    if (parent.character.map !== "bank") return; // We can only find out what bank slots we have if we're on the bank map.
+
+    let emptySlots: EmptyBankSlots[] = []
+
+    for (let store in parent.character.bank) {
+        if (store == "gold") continue;
+        for (let i = 0; i < 42; i++) {
+            let item = parent.character.bank[store as BankPackType][i]
+            if (!item) emptySlots.push({ pack: store as BankPackType, "index": i })
+        }
+    }
+
+    return emptySlots;
 }
 
 export function isAvailable(skill: SkillName) {
@@ -65,7 +81,7 @@ export function sendMassCM(names: string[], data: any) {
     }
 }
 
-export function getRandomMonsterSpawnPosition(type: MonsterType): IPositionReal {
+export function getRandomMonsterSpawnPosition(type: MonsterType): MonsterSpawnPosition {
     let potentialLocations: IPositionReal[] = [];
     for (let id in G.maps) {
         let map = G.maps[id as MapName];
@@ -82,23 +98,23 @@ export function getRandomMonsterSpawnPosition(type: MonsterType): IPositionReal 
         }
     }
 
-    return potentialLocations[Math.floor(Math.random() * potentialLocations.length)];
+    return { ...potentialLocations[Math.floor(Math.random() * potentialLocations.length)], monster: type };
 }
 
 // TODO: Change this to a custom typed object instead of an array
-export function getNearbyMonsterSpawns(position: IPosition, radius: number = 1000): [MonsterType, IPosition][] {
-    let locations: [MonsterType, IPosition][] = [];
+export function getNearbyMonsterSpawns(position: IPosition, radius: number = 1000): MonsterSpawnPosition[] {
+    let locations: MonsterSpawnPosition[] = [];
     let map = G.maps[position.map];
     if (map.instance) return;
     for (let monster of map.monsters || []) {
         if (monster.boundary) {
             let location = { "map": position.map as MapName, "x": (monster.boundary[0] + monster.boundary[2]) / 2, "y": (monster.boundary[1] + monster.boundary[3]) / 2 };
-            if (distance(position, location) < radius) locations.push([monster.type, location])
+            if (distance(position, location) < radius) locations.push({ ...location, monster: monster.type })
         } else if (monster.boundaries) {
             for (let boundary of monster.boundaries) {
                 if (boundary[0] !== position.map) continue;
                 let location = { "map": position.map, "x": (boundary[1] + boundary[3]) / 2, "y": (boundary[2] + boundary[4]) / 2 }
-                if (distance(position, location) < radius) locations.push([monster.type, location])
+                if (distance(position, location) < radius) locations.push({ ...location, monster: monster.type })
             }
         }
     }

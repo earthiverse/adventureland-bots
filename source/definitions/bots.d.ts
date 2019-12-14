@@ -1,4 +1,4 @@
-import { MapName, ItemInfo, MonsterType, NPCType, IPosition, IPositionReal, IEntity, NPCName, ICharacter, StatusInfo } from "./adventureland";
+import { MapName, ItemInfo, MonsterType, NPCType, IPosition, IPositionReal, IEntity, NPCName, ICharacter, StatusInfo, BankPackType } from "./adventureland";
 
 export type TargetPriorityList = {
     [T in MonsterType]?: TargetPriorityInfo;
@@ -35,7 +35,16 @@ export interface TargetPriorityInfo {
     y?: number;
 }
 
-export interface OtherInfo {
+export type MonsterSpawnPosition = IPositionReal & {
+    monster: MonsterType
+}
+
+export type EmptyBankSlots = {
+    pack: Exclude<BankPackType, "gold">
+    index: number
+}
+
+export type OtherInfo = {
     party: {
         [T in string]?: IPositionReal & {
             canMonsterHunt: boolean
@@ -51,7 +60,7 @@ export interface OtherInfo {
     }
 }
 
-export interface MyItemInfo extends ItemInfo {
+export type MyItemInfo = ItemInfo & {
     /**
      * Specifies the index of the 
      */

@@ -1,8 +1,8 @@
 import { Character } from './character'
-import { MonsterType, ItemName, IPositionReal, IEntity } from './definitions/adventureland';
+import { MonsterType, ItemName, IPositionReal, IEntity, BankPackType } from './definitions/adventureland';
 import { upgradeIfMany, compoundIfMany } from './upgrade'
 import { sellUnwantedItems, exchangeItems, buyFromPonty, openMerchantStand, closeMerchantStand } from './trade';
-import { getInventory, isPlayer, getCooldownMS, isAvailable } from './functions';
+import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots } from './functions';
 
 class Merchant extends Character {
     targetPriority = {}
@@ -99,7 +99,7 @@ class Merchant extends Character {
     protected mainLoop(): void {
         try {
             sellUnwantedItems();
-            exchangeItems();
+            // exchangeItems();
 
             this.bankStuff();
 
@@ -150,7 +150,7 @@ class Merchant extends Character {
 
         buyFromPonty(["strbelt", "strring", "intbelt", "intring", "dexbelt", "dexring", // High priority things
             "intearring", "dexearring", "strearring", "dexamulet", "intamulet", // Low priority things
-            "wgloves", "wshoes", "wattire", // I want to get all +8 for my ranger
+            /* "wgloves", "wshoes", "wattire", // I want to get all +8 for my ranger */
             "bfur", // Craftables that are usable for things
             "pmace", // I want a nice mace for my priest
             "5bucks", "candy0", "candy1", "candycane", "gem0", "gem1", "leather", "mistletoe", "monstertoken", "ornament", "seashell", // Exchangables
@@ -183,6 +183,7 @@ class Merchant extends Character {
         getInventory().forEach((item) => {
             if (itemsToKeep.includes(item.name)) return; // Don't add items we want to keep
 
+
             if (G.items[item.name].s) {
                 // If the item is stackable, deposit it.
                 bank_store(item.index)
@@ -193,45 +194,25 @@ class Merchant extends Character {
             // items.push([item.name, item.level, "items", item.index]);
 
             // Store all items for now
-            bank_store(item.index)
+            let i = 0;
+            let emptySlots = getEmptyBankSlots();
+            if (i < emptySlots.length) {
+                bank_store(item.index, emptySlots[i].pack, emptySlots[i].index)
+                i++;
+            }
         });
 
         // Add items from bank
-        getInventory(parent.character.bank.items0).forEach((item) => {
-            if (itemsToKeep.includes(item.name)) return; // Don't add items we want to keep
-            if (G.items[item.name].s) return; // Don't add stackable items
-            if (G.items[item.name].upgrade && item.level >= 8) return; // Don't withdraw high level items
-            if (G.items[item.name].compound && item.level >= 4) return; // Don't withdraw high level items
-            items.push([item.name, item.level, "items0", item.index])
-        });
-        getInventory(parent.character.bank.items1).forEach((item) => {
-            if (itemsToKeep.includes(item.name)) return; // Don't add items we want to keep
-            if (G.items[item.name].s) return; // Don't add stackable items
-            if (G.items[item.name].upgrade && item.level >= 8) return; // Don't withdraw high level items
-            if (G.items[item.name].compound && item.level >= 4) return; // Don't withdraw high level items
-            items.push([item.name, item.level, "items1", item.index])
-        });
-        getInventory(parent.character.bank.items2).forEach((item) => {
-            if (itemsToKeep.includes(item.name)) return; // Don't add items we want to keep
-            if (G.items[item.name].s) return; // Don't add stackable items
-            if (G.items[item.name].upgrade && item.level >= 8) return; // Don't withdraw high level items
-            if (G.items[item.name].compound && item.level >= 4) return; // Don't withdraw high level items
-            items.push([item.name, item.level, "items2", item.index])
-        });
-        getInventory(parent.character.bank.items3).forEach((item) => {
-            if (itemsToKeep.includes(item.name)) return; // Don't add items we want to keep
-            if (G.items[item.name].s) return; // Don't add stackable items
-            if (G.items[item.name].upgrade && item.level >= 8) return; // Don't withdraw high level items
-            if (G.items[item.name].compound && item.level >= 4) return; // Don't withdraw high level items
-            items.push([item.name, item.level, "items3", item.index])
-        });
-        getInventory(parent.character.bank.items4).forEach((item) => {
-            if (itemsToKeep.includes(item.name)) return; // Don't add items we want to keep
-            if (G.items[item.name].s) return; // Don't add stackable items
-            if (G.items[item.name].upgrade && item.level >= 8) return; // Don't withdraw high level items
-            if (G.items[item.name].compound && item.level >= 4) return; // Don't withdraw high level items
-            items.push([item.name, item.level, "items4", item.index])
-        });
+        for (let pack in parent.character.bank) {
+            if (pack == "gold") continue; // skip gold
+            getInventory(parent.character.bank[pack as BankPackType]).forEach((item) => {
+                if (itemsToKeep.includes(item.name)) return; // Don't add items we want to keep
+                if (G.items[item.name].s) return; // Don't add stackable items
+                if (G.items[item.name].upgrade && item.level >= 8) return; // Don't withdraw high level items
+                if (G.items[item.name].compound && item.level >= 4) return; // Don't withdraw high level items
+                items.push([item.name, item.level, pack, item.index])
+            });
+        }
 
         // Find things that can be upgraded, or exchanged.
         items.sort();

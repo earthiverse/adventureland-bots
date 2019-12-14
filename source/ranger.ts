@@ -165,7 +165,7 @@ class Ranger extends Character {
             "y": 570
         }
     }
-    mainTarget: MonsterType = "crab";
+    mainTarget: MonsterType = "rat";
     start_time = Date.now();
 
     run(): void {
@@ -201,6 +201,9 @@ class Ranger extends Character {
                         change_server("EU", "II")
                     else if (parent.server_region == "EU" && parent.server_identifier == "II")
                         change_server("ASIA", "I")
+
+                    setTimeout(() => { this.mainLoop(); }, 10000);
+                    return
                 }
             }
 

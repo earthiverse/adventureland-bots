@@ -1,7 +1,7 @@
 import { Queue } from "prioqueue"
 import { IEntity, IPosition, ItemName, ItemInfo, SlotType, ICharacter, MonsterType, IPositionReal, NPCName } from './definitions/adventureland';
 import { Pathfinder } from './pathfinder';
-import { sendMassCM, findItems, getInventory, getRandomMonsterSpawnPosition, getAttackingEntities, getCooldownMS, isAvailable, canSeePlayer } from "./functions";
+import { sendMassCM, findItems, getInventory, getRandomMonsterSpawnPosition, getAttackingEntities, getCooldownMS, isAvailable, canSeePlayer, getNearbyMonsterSpawns } from "./functions";
 import { TargetPriorityList, OtherInfo, MyItemInfo } from "./definitions/bots";
 
 export abstract class Character {
@@ -575,46 +575,48 @@ export abstract class Character {
             return { map: "main", "x": 60, "y": -325 }
         }
 
-        // Check for monster hunt
+        // Finish monster hunt
+        if (parent.character.s.monsterhunt && parent.character.s.monsterhunt.c == 0) {
+            set_message("Finish MH")
+            this.pathfinder.movementTarget = "monsterhunter";
+            return G.maps.main.ref.monsterhunter
+        }
+
+        // See if there's a nearby monster hunt (avoid moving as much as possible)
+        let monsterHuntTargets: MonsterType[] = parent.character.s.monsterhunt && this.targetPriority[parent.character.s.monsterhunt.id] ? [parent.character.s.monsterhunt.id] : []
+        for (let info in this.info.party) {
+            if (!this.info.party[info].s.monsterhunt) continue; // They don't have a monster hunt
+            if (this.info.party[info].s.monsterhunt.c == 0) continue; // They're turning it in
+            if (!this.targetPriority[this.info.party[info].s.monsterhunt.id as MonsterType]) continue; // We can't do it
+            monsterHuntTargets.push(this.info.party[info].s.monsterhunt.id as MonsterType)
+        }
+        for (let id in parent.entities) {
+            let entity = parent.entities[id]
+            if (monsterHuntTargets.includes(entity.mtype)) {
+                // There's one nearby
+                set_message("MH " + entity.mtype.slice(0, 8))
+                this.pathfinder.movementTarget = entity.mtype;
+                return;
+            }
+        }
+
+        // New monster hunt
         if (!parent.character.s.monsterhunt) {
             set_message("New MH")
             this.pathfinder.movementTarget = "monsterhunter";
             return G.maps.main.ref.monsterhunter
-        } else if (parent.character.s.monsterhunt.c == 0) {
-            set_message("Finish MH")
-            this.pathfinder.movementTarget = "monsterhunter";
-            return G.maps.main.ref.monsterhunter
-        } else {
-            // Get all party quests
-            let potentialTargets: MonsterType[] = this.targetPriority[parent.character.s.monsterhunt.id] ? [parent.character.s.monsterhunt.id] : []
-            for (let info in this.info.party) {
-                if (!this.info.party[info].s.monsterhunt) continue; // They don't have a monster hunt
-                if (this.info.party[info].s.monsterhunt.c == 0) continue; // They're turning it in
-                if (!this.targetPriority[this.info.party[info].s.monsterhunt.id as MonsterType]) continue; // We can't do it
-                potentialTargets.push(this.info.party[info].s.monsterhunt.id as MonsterType)
-            }
+        }
 
-            // See if there's any nearby entities that we can monster hunt
-            for (let id in parent.entities) {
-                let entity = parent.entities[id]
-                if (potentialTargets.includes(entity.mtype)) {
-                    // There's one nearby
-                    set_message("MH " + entity.mtype.slice(0, 8))
-                    this.pathfinder.movementTarget = entity.mtype;
-                    return;
-                }
-            }
-
-            // We aren't near any monster hunts, so move to one
-            if (potentialTargets.length) {
-                let potentialTarget = potentialTargets[0];
-                set_message("MH " + potentialTarget.slice(0, 8))
-                this.pathfinder.movementTarget = potentialTarget;
-                if (this.targetPriority[potentialTarget].map && this.targetPriority[potentialTarget].x && this.targetPriority[potentialTarget].y) {
-                    return this.targetPriority[potentialTarget] as IPositionReal
-                } else {
-                    return getRandomMonsterSpawnPosition(potentialTarget)
-                }
+        // Move to a monster hunt
+        // TODO: Implement moving to the nearest monster hunt instead of the first one in the array
+        if (monsterHuntTargets.length) {
+            let potentialTarget = monsterHuntTargets[0];
+            set_message("MH " + potentialTarget.slice(0, 8))
+            this.pathfinder.movementTarget = potentialTarget;
+            if (this.targetPriority[potentialTarget].map && this.targetPriority[potentialTarget].x && this.targetPriority[potentialTarget].y) {
+                return this.targetPriority[potentialTarget] as IPositionReal
+            } else {
+                return getRandomMonsterSpawnPosition(potentialTarget)
             }
         }
 
@@ -627,19 +629,43 @@ export abstract class Character {
                 set_message("2x1000% farm")
                 this.pathfinder.movementTarget = undefined;
                 return;
-            } else if (distance(kane, angel) < 800) {
-                // Kane and Angel are close to each other, try to farm both!
-                return { "map": kane.map, "x": (kane.x + angel.x) / 2, "y": (kane.y + angel.y) / 2 }
             }
 
+            // See if they're both near a single monster spawn
+            let kaneMonsterSpawns = getNearbyMonsterSpawns(kane, 600)
+            let angelMonsterSpawns = getNearbyMonsterSpawns(angel, 600)
+            for (let kSpawn of kaneMonsterSpawns) {
+                for (let aSpawn of angelMonsterSpawns) {
+                    if (kSpawn.x == aSpawn.x && kSpawn.y == aSpawn.y) {
+                        set_message("2x1000% farm")
+                        this.pathfinder.movementTarget = kSpawn.monster;
+                        return kSpawn
+                    }
+                }
+            }
+
+            // See if Kane is near a monster spawn
             if (canSeePlayer("Kane")) {
                 set_message("1000% luck")
-                this.pathfinder.movementTarget = undefined
-                return // We're near Kane
-            } else {
-                this.pathfinder.movementTarget = undefined
+                this.pathfinder.movementTarget = undefined;
+                return;
+            }
+            if (kaneMonsterSpawns.length) {
                 set_message("1000% luck")
-                return kane
+                this.pathfinder.movementTarget = kaneMonsterSpawns[0].monster;
+                return kaneMonsterSpawns[0]
+            }
+
+            // See if Angel is near a monster spawn
+            if (canSeePlayer("Angel")) {
+                set_message("1000% gold")
+                this.pathfinder.movementTarget = undefined;
+                return;
+            }
+            if (angelMonsterSpawns.length) {
+                set_message("1000% gold")
+                this.pathfinder.movementTarget = angelMonsterSpawns[0].monster;
+                return angelMonsterSpawns[0]
             }
         }
 
