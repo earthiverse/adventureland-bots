@@ -35,14 +35,18 @@ export class Pathfinder {
             // Pathfind
             let movements = this.findMovements(parent.character, to as IPositionReal)
             if (movements) {
-                smart.plot = movements
+                // Move to the second last point.
+                // If it's a monster, we'll start kiting it. 
+                // If it's a place, this function will be called again, and we'll just walk in a straight line to the final point
+                smart.plot = movements.slice(0, movements.length - 1)
                 smart.found = true
                 smart.moving = true
                 smart.searching = false
                 smart.start_x = parent.character.real_x
                 smart.start_y = parent.character.real_y
-                smart.x = to.x
-                smart.y = to.y
+                smart.x = movements[movements.length - 1].x
+                smart.y = movements[movements.length - 1].y
+                smart.map = to.map
                 return;
             }
         }
@@ -139,26 +143,26 @@ export class Pathfinder {
         }
 
         let path = finder.findPath(pathfinderFromX, pathfinderFromY, pathfinderToX, pathfinderToY, grid);
-        if (!path) return;
-        try {
-            let newPath: any[] = PF.Util.smoothenPath(grid, path);
+        if (path.length)
+            try {
+                let newPath: any[] = PF.Util.smoothenPath(grid, path);
 
-            // Remove the first position that indicates where we started from
-            newPath.shift();
+                // Remove the first position that indicates where we started from
+                newPath.shift();
 
-            for (let path of newPath)
-                alPath.push({ map: parent.character.map, x: G.geometry[mapName].min_x + (path[0] * this.factor), y: G.geometry[mapName].min_y + (path[1] * this.factor) })
+                for (let path of newPath)
+                    alPath.push({ map: parent.character.map, x: G.geometry[mapName].min_x + (path[0] * this.factor), y: G.geometry[mapName].min_y + (path[1] * this.factor) })
 
-            return alPath;
-        } catch (error) {
-            console.error(error)
-            return
-        }
+                return alPath;
+            } catch (error) {
+                console.error(error)
+                return
+            }
     }
 
     public findNextMovement(from: IPositionReal, to: IPositionReal): IPositionReal {
         let path = this.findMovements(from, to);
-        if (path)
+        if (path.length)
             return path[0];
     }
 

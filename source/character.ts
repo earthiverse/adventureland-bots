@@ -1,7 +1,7 @@
 import { Queue } from "prioqueue"
 import { IEntity, IPosition, ItemName, ItemInfo, SlotType, ICharacter, MonsterType, IPositionReal, NPCName } from './definitions/adventureland';
 import { Pathfinder } from './pathfinder';
-import { sendMassCM, findItems, getInventory, getRandomMonsterSpawnPosition, getAttackingEntities, getCooldownMS, isAvailable, canSeePlayer, getNearbyMonsterSpawns } from "./functions";
+import { sendMassCM, findItems, getInventory, getRandomMonsterSpawnPosition, getAttackingEntities, getCooldownMS, isAvailable, canSeePlayer, getNearbyMonsterSpawns, shouldAttack } from "./functions";
 import { TargetPriorityList, OtherInfo, MyItemInfo } from "./definitions/bots";
 
 export abstract class Character {
@@ -159,32 +159,15 @@ export abstract class Character {
         }
     }
 
-    protected attackLoop(): void {
+    protected async attackLoop(): Promise<void> {
         try {
             let targets = this.getTargets(1)
-            if (targets.length == 0 // No targets
-                || parent.character.stoned // Can't attack
-                || parent.character.mp < parent.character.mp_cost // No MP
-                || !isAvailable("attack") // On cooldown
-                || distance(parent.character, targets[0]) > parent.character.range
-                || (smart.moving && this.targetPriority[targets[0].mtype] && this.targetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name) // Holding attack and not being attacked
-                || (this.holdAttack && targets[0].target != parent.character.name)) { // Holding attack and not being attacked
-                setTimeout(() => { this.attackLoop() }, Math.max(50, getCooldownMS("attack")))
-            } else {
-                attack(targets[0]).then(() => {
-                    // Attack success!
-                    // TODO: I don't remember why we do this. I don't think we need to do this.
-                    this.getTargets(1); // Get a new target right away
-                    setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
-                }, () => {
-                    // Attack fail...
-                    setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
-                });
-            }
+            if (targets.length && shouldAttack(this, targets[0]))
+                await attack(targets[0])
         } catch (error) {
             console.error(error)
-            setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
         }
+        setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
     }
 
     protected scareLoop(): void {
@@ -202,7 +185,7 @@ export abstract class Character {
             if (!isAvailable("scare") // On cooldown
                 || parent.character.mp < 50 // No MP
                 || !wantToScare) { // Can't be easily killed
-                setTimeout(() => { this.scareLoop() }, Math.max(parent.character.ping, getCooldownMS("scare")));
+                setTimeout(() => { this.scareLoop() }, getCooldownMS("scare"));
                 return;
             }
 
@@ -223,21 +206,21 @@ export abstract class Character {
         } catch (error) {
             console.error(error);
         }
-        setTimeout(() => { this.scareLoop() }, Math.max(parent.character.ping, getCooldownMS("scare")));
+        setTimeout(() => { this.scareLoop() }, getCooldownMS("scare"));
     }
 
-    protected lastMessaage: string;
+    protected lastMessage: string;
     protected moveLoop(): void {
         try {
             let movementTarget = this.getMovementTarget()
             if (movementTarget) {
                 // Stop if our target changes
-                if (this.lastMessaage !== movementTarget.message) {
+                if (this.lastMessage !== movementTarget.message) {
                     set_message(movementTarget.message.slice(0, 11))
                     stop();
                 }
 
-                this.lastMessaage = movementTarget.message
+                this.lastMessage = movementTarget.message
 
                 // Move if we have a target
                 if (movementTarget.target)
@@ -282,7 +265,7 @@ export abstract class Character {
             if (parent.character.rip) {
                 // Respawn if we're dead
                 respawn();
-                setTimeout(() => { this.healLoop() }, Math.max(getCooldownMS("use_town"), parent.character.ping)) // TODO: Find out something that tells us how long we have to wait before respawning.
+                setTimeout(() => { this.healLoop() }, getCooldownMS("use_town"))
                 return;
             } else if (!isAvailable("use_hp")) {
                 setTimeout(() => { this.healLoop() }, getCooldownMS("use_hp"))
@@ -369,13 +352,7 @@ export abstract class Character {
 
     protected avoidAttackingMonsters(): void {
         // Find all monsters attacking us
-        let attackingMonsters: IEntity[] = [];
-        for (let id in parent.entities) {
-            let potentialTarget = parent.entities[id];
-            if (potentialTarget.target != parent.character.name) continue; // Not targeting us
-
-            attackingMonsters.push(potentialTarget);
-        }
+        let attackingMonsters: IEntity[] = getAttackingEntities();
         let currentTarget = get_targeted_monster();
         if (currentTarget) {
             attackingMonsters.push(currentTarget);
@@ -390,14 +367,12 @@ export abstract class Character {
         for (let target of attackingMonsters) {
             let d = distance(parent.character, target);
             if (target.speed > parent.character.speed) continue; // We can't outrun it, don't try
-            if (d > (target.range + (target.speed + parent.character.speed) * Math.max(parent.character.ping * 0.001, 0.5))) continue; // We're still far enough away to not get attacked
-            if (target.hp < parent.character.attack * 0.7 * 0.9 * damage_multiplier(target.armor - parent.character.apiercing)) continue // We can kill it in one shot, don't move.
+            if (target.range > parent.character.range) continue; // We can't outrange it, don't try
             if (d < minDistance) continue; // There's another target that's closer
-            if (target.range > parent.character.range) continue; // We can't attack it by kiting, don't try
+            if (d > (target.range + (target.speed + parent.character.speed) * Math.max(parent.character.ping * 0.001, 0.5))) continue; // We're still far enough away to not get attacked
             minDistance = d;
             minTarget = target;
         }
-
         if (!minTarget) return; // We're far enough away not to get attacked, or it's impossible to do so
 
         // Move away from the closest monster
@@ -523,6 +498,7 @@ export abstract class Character {
 
         // Check for Christmas Tree
         if (G.maps.main.ref.newyear_tree && !parent.character.s.holidayspirit) {
+            this.pathfinder.movementTarget = null;
             return { message: "Xmas Tree", target: G.maps.main.ref.newyear_tree }
         }
 
@@ -536,6 +512,7 @@ export abstract class Character {
         }
         if (full) {
             // This is where our merchant usually hangs out
+            this.pathfinder.movementTarget = undefined;
             return { message: "Full!", target: { map: "main", "x": 60, "y": -325 } }
         }
 
@@ -556,6 +533,7 @@ export abstract class Character {
 
         // Finish monster hunt
         if (parent.character.s.monsterhunt && parent.character.s.monsterhunt.c == 0) {
+            this.pathfinder.movementTarget = undefined;
             return { message: "Finish MH", target: G.maps.main.ref.monsterhunter }
         }
 
@@ -601,7 +579,7 @@ export abstract class Character {
             if (canSeePlayer("Kane") && canSeePlayer("Angel")) {
                 // We're near both of them
                 this.pathfinder.movementTarget = undefined;
-                return { message: "2x1000% farm", target: null };
+                return { message: "2x1000%", target: null };
             }
 
             // See if they're both near a single monster spawn
@@ -611,7 +589,7 @@ export abstract class Character {
                 for (let aSpawn of angelMonsterSpawns) {
                     if (kSpawn.x == aSpawn.x && kSpawn.y == aSpawn.y && this.targetPriority[kSpawn.monster]) {
                         this.pathfinder.movementTarget = kSpawn.monster;
-                        return { message: "2x1000% farm", target: kSpawn }
+                        return { message: "2x1000%", target: kSpawn }
                     }
                 }
             }
@@ -680,16 +658,16 @@ export abstract class Character {
             if (this.targetPriority[potentialTarget.mtype]) priority = this.targetPriority[potentialTarget.mtype].priority;
 
             // Adjust priority if a party member is already attacking it and it has low HP
-            if (claimedTargets.includes(id) && potentialTarget.hp <= parent.character.attack) priority -= 250;
+            if (claimedTargets.includes(id) && potentialTarget.hp <= parent.character.attack) priority -= parent.character.range;
 
             // Increase priority if it's our "main target"
             if (potentialTarget.mtype == this.mainTarget) priority += 10;
 
             // Increase priority if it's our movement target
-            if (potentialTarget.mtype == this.pathfinder.movementTarget) priority += 500;
+            if (potentialTarget.mtype == this.pathfinder.movementTarget) priority += parent.character.range;
 
             // Increase priority if the entity is targeting us
-            if (potentialTarget.target == parent.character.name) priority += 1000;
+            if (potentialTarget.target == parent.character.name) priority += parent.character.range * 2;
 
             // Adjust priority based on distance
             priority -= d;

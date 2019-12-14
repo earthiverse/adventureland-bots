@@ -1,5 +1,6 @@
 import { ItemInfo, MonsterType, ItemName, IPosition, MapName, IEntity, IPositionReal, SkillName, BankPackType } from "./definitions/adventureland";
 import { MyItemInfo, EmptyBankSlots, MonsterSpawnPosition } from "./definitions/bots";
+import { Character } from "./character";
 
 export function isNPC(entity: IEntity) {
     return entity.npc ? true : false
@@ -13,6 +14,41 @@ export function isPlayer(entity: IEntity) {
     return entity.type == "character" && !isNPC(entity)
 }
 
+/** Returns true if we're walking towards an entity. Used for checking if we can attack higher level enemies while we're moving somewhere */
+// TODO: Finish this function, it's currently broken, don't use it.
+export function areWalkingTowards(entity: IEntity) {
+    if (!parent.character.moving) return false
+    if (parent.character.vx < 0 && parent.character.real_x - entity.real_x > 0) return true
+}
+
+export function shouldAttack(c: Character, e: IEntity, s?: SkillName): boolean {
+    // Things that outright prevent us from attacking
+    if (s && G.skills[s].range_multiplier) {
+        if (distance(parent.character, e) > parent.character.range * G.skills[s].range_multiplier) return false // Too far away
+    } else {
+        if (distance(parent.character, e) > parent.character.range) return false // Too far away
+    }
+    if (parent.character.stoned) return false // We are stoned, we can't attack
+    if (s) {
+        if (parent.character.mp < G.skills[s].mp) return false // No MP
+        if (["3shot", "5shot"].includes(s)) {
+            if (!isAvailable("attack")) return false
+        } else {
+            if (!isAvailable(s)) return false
+        }
+    } else {
+        if (parent.character.mp < parent.character.mp_cost) return false // No MP
+        if (!isAvailable("attack")) return false
+    }
+
+    // Things where we could attack, but choose not to
+    if (!c.targetPriority[e.mtype]) return false // Not a priority
+    if (smart.moving && c.targetPriority[e.mtype].holdAttack && e.target !== parent.character.id) return false // Hold attack
+    if (c.holdAttack && e.target !== parent.character.id) return false // Hold attack
+
+    return true;
+}
+
 /** Also works for NPCs! */
 export function canSeePlayer(name: string) {
     return parent.entities[name] ? true : false
@@ -20,11 +56,11 @@ export function canSeePlayer(name: string) {
 
 /** Returns the amount of ms we have to wait to use this skill */
 export function getCooldownMS(skill: SkillName) {
-    if (parent.next_skill[skill]) {
+    if (parent.next_skill && parent.next_skill[skill]) {
         let ms = parent.next_skill[skill].getTime() - Date.now();
-        return ms < 0 ? 0 : ms;
+        return ms < parent.character.ping ? parent.character.ping : ms;
     } else {
-        return 0
+        return parent.character.ping
     }
 }
 
@@ -55,7 +91,11 @@ export function getEmptyBankSlots(): EmptyBankSlots[] {
 }
 
 export function isAvailable(skill: SkillName) {
-    return parent.next_skill[skill] ? (Date.now() >= parent.next_skill[skill].getTime()) : true
+    if (!parent.next_skill) return false
+    if (parent.next_skill[skill] === undefined) return true
+    if (parent.next_skill[skill] === null) return parent.next_skill["attack"] ? (Date.now() >= parent.next_skill["attack"].getTime()) : true
+
+    return Date.now() >= parent.next_skill[skill].getTime()
 }
 
 /** Returns the entities we are being attacked by */

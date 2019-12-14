@@ -32,8 +32,8 @@ class Mage extends Character {
             "stopOnSight": true,
         },
         "cgoo": {
-            // Our plan is to go to a spot where we're far enough away from them, and then start attacking
             "holdAttack": true,
+            "stopOnSight": true,
             "priority": DIFFICULT,
             "map": "arena",
             "x": 500,
@@ -199,7 +199,7 @@ class Mage extends Character {
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.energizeLoop() }, Math.max(250, getCooldownMS("energize")));
+        setTimeout(() => { this.energizeLoop() }, getCooldownMS("energize"));
     }
 }
 

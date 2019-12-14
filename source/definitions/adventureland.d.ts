@@ -127,6 +127,16 @@ declare global {
       name: string
       role: NPCRole
     } }
+    skills: { [T in SkillName]: {
+      cooldown: number
+      damage_multiplier?: number
+      level: number
+      /** MP Cost for skill */
+      mp: number
+      name: string
+      range: number
+      range_multiplier?: number
+    } }
   }
 }
 
@@ -238,6 +248,8 @@ export interface IEntity extends IPositionReal {
   /** Set if the player or monster is targeting something */
   target: string
   type: "character" | "monster"
+  vx: number
+  vy: number
 }
 
 export type ItemInfo = {

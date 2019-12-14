@@ -97,17 +97,18 @@ class Warrior extends Character {
 
     chargeLoop(): void {
         use_skill("charge")
-        setTimeout(() => { this.chargeLoop() }, Math.max(parent.character.ping, getCooldownMS("charge")));
+        setTimeout(() => { this.chargeLoop() }, getCooldownMS("charge"));
     }
 
     hardshellLoop(): void {
         let targets = getAttackingEntities()
-        if (parent.character.mp > 480 // Enough MP
-            && targets.length > 0 // We have a target
-            && ((distance(targets[0], parent.character) < targets[0].range && parent.character.hp < targets[0].attack * 5))) { // Not a lot of HP remaining
+        if (parent.character.mp >= 480 // Enough MP
+            && targets.length // We have a target
+            && distance(targets[0], parent.character) <= targets[0].range // In range of their attacks
+            && parent.character.hp < targets[0].attack * 5) { // Not a lot of HP remaining
             use_skill("hardshell")
         }
-        setTimeout(() => { this.chargeLoop() }, Math.max(parent.character.ping, getCooldownMS("hardshell")));
+        setTimeout(() => { this.chargeLoop() }, getCooldownMS("hardshell"));
     }
 }
 

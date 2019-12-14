@@ -2,7 +2,7 @@ import { Character } from './character'
 import { MonsterType, IEntity } from './definitions/adventureland';
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from './trade';
 import { TargetPriorityList } from './definitions/bots';
-import { isPlayer, getCooldownMS, isAvailable } from './functions';
+import { isPlayer, getCooldownMS, isAvailable, shouldAttack } from './functions';
 
 let DIFFICULT = 10;
 let MEDIUM = 20;
@@ -38,8 +38,9 @@ class Ranger extends Character {
             "stopOnSight": true,
         },
         "cgoo": {
-            // Our plan is to go to a spot where we're far enough away from them, and then start attacking
+            "attackInRange": false,
             "holdAttack": true,
+            "stopOnSight": true,
             "priority": DIFFICULT,
             "map": "arena",
             "x": 500,
@@ -236,7 +237,7 @@ class Ranger extends Character {
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.huntersmarkLoop() }, Math.max(parent.character.ping, getCooldownMS("huntersmark")));
+        setTimeout(() => { this.huntersmarkLoop() }, getCooldownMS("huntersmark"));
     }
 
     fourFingersLoop(): void {
@@ -258,33 +259,22 @@ class Ranger extends Character {
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.fourFingersLoop() }, Math.max(parent.character.ping, getCooldownMS("4fingers")));
+        setTimeout(() => { this.fourFingersLoop() }, getCooldownMS("4fingers"));
     }
 
     superShotLoop(): void {
         let targets = this.getTargets(1);
-        if (parent.character.mp < 400 // No MP
-            || targets.length < 1 // No targets NOTE: Based on getTargets(2).
-            || parent.character.stoned // Can't use skills
-            || distance(parent.character, targets[0]) > parent.character.range * 3 // Out of range
-            || !isAvailable("supershot") // Not usable yet
-            || (this.holdAttack && targets[1].target != parent.character.name) // Holding attack (global)
-            || (smart.moving && this.targetPriority[targets[0].mtype] && this.targetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name)) { // Holding attack (monster)
-            // Do nothing
-        } else {
+        if (targets.length
+            && shouldAttack(this, targets[0], "supershot"))
             use_skill("supershot", targets[0])
-        }
 
-        setTimeout(() => { this.superShotLoop() }, Math.max(parent.character.ping, getCooldownMS("supershot")));
+        setTimeout(() => { this.superShotLoop() }, getCooldownMS("supershot"));
     }
 
-    attackLoop() {
+    protected async attackLoop(): Promise<void> {
         let targets = this.getTargets(5);
         if (targets.length >= 5
-            && parent.character.mp >= 420
-            && !parent.character.stoned
-            && isAvailable("attack")
-            && !(smart.moving && this.targetPriority[targets[0].mtype] && this.targetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name)) {
+            && shouldAttack(this, targets[0], "5shot")) {
             // See if we can fiveshot some enemies
             let fiveshotTargets: IEntity[] = [];
             for (let entity of targets) {
@@ -299,15 +289,12 @@ class Ranger extends Character {
                     name: "5shot",
                     ids: [fiveshotTargets[0].id, fiveshotTargets[1].id, fiveshotTargets[2].id, fiveshotTargets[3].id, fiveshotTargets[4].id]
                 });
-                setTimeout(() => { this.attackLoop() }, Math.max(parent.character.ping, getCooldownMS("attack")));
+                setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"));
                 return;
             }
         }
         if (targets.length >= 3
-            && parent.character.mp >= 300
-            && !parent.character.stoned
-            && isAvailable("attack")
-            && !(smart.moving && this.targetPriority[targets[0].mtype] && this.targetPriority[targets[0].mtype].holdAttack && targets[0].target != parent.character.name)) {
+            && shouldAttack(this, targets[0], "3shot")) {
             // See if we can three shot some enemies.
             let threeshotTargets: IEntity[] = [];
             for (let entity of targets) {
@@ -322,7 +309,7 @@ class Ranger extends Character {
                     name: "3shot",
                     ids: [threeshotTargets[0].id, threeshotTargets[1].id, threeshotTargets[2].id]
                 });
-                setTimeout(() => { this.attackLoop() }, Math.max(parent.character.ping, getCooldownMS("attack")));
+                setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"));
                 return;
             }
         }

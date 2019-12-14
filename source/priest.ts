@@ -110,7 +110,7 @@ class Priest extends Character {
         }
     }
 
-    attackLoop() {
+    protected async attackLoop(): Promise<void> {
         try {
             if (parent.character.hp < parent.character.max_hp - parent.character.attack * 0.5) {
                 heal(parent.character)
@@ -131,7 +131,8 @@ class Priest extends Character {
             }
         } catch (error) {
             console.error(error)
-            setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"));
+            setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+            return
         }
 
         super.attackLoop();

@@ -304,7 +304,7 @@ class Merchant extends Character {
             }
         }
 
-        setTimeout(() => { this.luckLoop() }, Math.max(100, getCooldownMS("mluck")));
+        setTimeout(() => { this.luckLoop() }, getCooldownMS("mluck"));
     }
 }
 
