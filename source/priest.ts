@@ -71,7 +71,11 @@ class Priest extends Character {
             "priority": MEDIUM
         },
         "snake": {
-            "priority": EASY
+            // Farm them on the main map because of the +1000% luck and gold bonus chances
+            "priority": EASY,
+            "map": "main",
+            "x": -74,
+            "y": 1904
         },
         "snowman": {
             "priority": SPECIAL,
