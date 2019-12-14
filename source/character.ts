@@ -233,7 +233,7 @@ export abstract class Character {
             if (movementTarget) {
                 // Stop if our target changes
                 if (this.lastMessaage !== movementTarget.message) {
-                    set_message(movementTarget.message.slice(0, 12))
+                    set_message(movementTarget.message.slice(0, 11))
                     stop();
                 }
 
@@ -445,17 +445,7 @@ export abstract class Character {
             // game_log("moving normally to target")
             move(parent.character.real_x + x, parent.character.real_y + y);
         } else {
-            try {
-                // Pathfind to target
-                // game_log("pathfinding to target")
-                let path = this.pathfinder.findNextMovement(parent.character, targets[0]);
-                // TODO: check if we have a path
-                move(path.x, path.y);
-            } catch (error) {
-                // Our custom pathfinding failed, use the game's smart move.
-                // game_log("smart moving to target")
-                xmove(targets[0].real_x, targets[0].real_y);
-            }
+            this.pathfinder.saferMove(targets[0])
         }
     }
 

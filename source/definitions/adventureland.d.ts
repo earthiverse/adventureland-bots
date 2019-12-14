@@ -39,10 +39,14 @@ declare global {
   function can_move_to(x: number, y: number): boolean
   function change_server(region: ServerRegion, identifier: ServerIdentifier)
   function change_target(target: IEntity)
+  /** Clears all user made drawings */
+  function clear_drawings()
   function compound(itemInventoryPosition1: number, itemInventoryPosition2: number, itemInventoryPosition3: number, scrollInventoryPosition: number, offeringInventoryPosition?: number): Promise<any>
   /** Feed this function a value like (character.apiercing - target.armor) and it spits out a multiplier so you can adjust your expected damage */
   function damage_multiplier(difference: number): number
   function distance(from: IPosition | IPositionReal, to: IPosition | IPositionReal): number
+  /** Draws a circle on the map */
+  function draw_circle(x: number, y: number, radius: number, size: number, color: number)
   function equip(inventoryPostion: number, slot?: SlotType)
   function game_log(message: string)
   function get_targeted_monster(): IEntity
@@ -64,7 +68,7 @@ declare global {
   function send_party_invite(name: string, isRequest?: boolean)
   function send_party_request(name: string)
   function set_message(text: string, color?: string)
-  function smart_move(destination: IPositionReal | MapName | MonsterType, callback?: () => void)
+  function smart_move(destination: IPosition | MapName | MonsterType, callback?: () => void)
   function upgrade(itemInventoryPosition: number, scrollInventoryPosition: number, offeringInventoryPosition?: number): Promise<any>
   function use_skill(name: "3shot" | "5shot", target: IEntity[]): Promise<any>[]
   function use_skill(name: "throw", target: IEntity, inventoryPostion: number)
@@ -75,11 +79,13 @@ declare global {
 
   /** Contains information about smart_move() */
   let smart: IPosition & {
-    /**
-     * If true, we are currently following a smart_move path
-     */
+    /** If searching and false, we are still searching. If  */
+    found: boolean
+    /** If .moving == true, we are moving or searching */
     moving: boolean
-    plot: IPosition[]
+    plot: IPositionSmart[]
+    /** If ().moving == false && .searching == true), we are searching for a path. */
+    searching: boolean
     start_x: number
     start_y: number
   }
@@ -269,6 +275,13 @@ export interface IPositionReal extends IPosition {
   map: MapName
   real_x?: number
   real_y?: number
+}
+
+export interface IPositionSmart extends IPosition {
+  map: MapName
+  transport?: boolean
+  i?: number
+  s?: number
 }
 
 export type IPosition = {

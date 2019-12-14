@@ -22,7 +22,7 @@ class Merchant extends Character {
                 return { message: "Full!", target: null }
             } else {
                 // Move to the bank
-                return { message: "Full!", target: { "map": "bank", "x": 0, "y": 0 } }
+                return { message: "Full!", target: { "map": "bank", "x": 0, "y": -37 } }
             }
         }
 
@@ -52,6 +52,8 @@ class Merchant extends Character {
 
         // If someone in our party isn't mlucked by us, go find them and mluck them.
         for (let name in this.info.party) {
+            if (name == parent.character.name) continue; // Don't move to ourself
+
             let player = this.info.party[name]
             if (player && player.s && (!player.s.mluck || player.s.mluck.f !== "earthMer")) {
                 return { message: "ML " + name, target: player }
@@ -81,7 +83,7 @@ class Merchant extends Character {
 
         // If we haven't been to the bank in a while, go
         if (Date.now() - this.didBankStuff > 120000) {
-            return { message: "Bank", target: { "map": "bank", "x": 0, "y": 0 } }
+            return { message: "Bank", target: { "map": "bank", "x": 0, "y": -37 } }
         } else {
             // Default spot in town to hang out
             return { message: "Vendor", target: { map: "main", "x": 60, "y": -325 } }

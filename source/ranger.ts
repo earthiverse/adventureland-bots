@@ -97,7 +97,8 @@ class Ranger extends Character {
             "y": -100
         },
         "osnake": {
-            "priority": EASY
+            "priority": EASY,
+            "stopOnSight": true
         },
         "phoenix": {
             "priority": SPECIAL
@@ -114,8 +115,8 @@ class Ranger extends Character {
             "holdPosition": true,
             "priority": DIFFICULT,
             "map": "level1",
-            "x": -296,
-            "y": 557,
+            "x": -300,
+            "y": 536,
         },
         "rat": {
             "priority": EASY

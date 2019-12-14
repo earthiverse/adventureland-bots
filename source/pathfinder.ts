@@ -19,11 +19,33 @@ export class Pathfinder {
         this.padding = padding;
     }
 
-    public saferMove(to: IPositionReal) {
+    public saferMove(to: IPosition) {
         if (smart.moving) return; // Already moving somewhere
         if (distance(parent.character, to) < 50) return; // Already nearby
+        if (!to.map) to.map = parent.character.map // Add a map if we don't have one
 
-        // TODO: Add pathfinding if we're on the same map
+        // Try to use our own pathfinding if we are on the same map
+        if (parent.character.map == to.map) {
+            // Check if we can just walk in a straight line to reach the spot
+            if (can_move_to(to.x, to.y)) {
+                move(to.x, to.y)
+                return;
+            }
+
+            // Pathfind
+            let movements = this.findMovements(parent.character, to as IPositionReal)
+            if (movements) {
+                smart.plot = movements
+                smart.found = true
+                smart.moving = true
+                smart.searching = false
+                smart.start_x = parent.character.real_x
+                smart.start_y = parent.character.real_y
+                smart.x = to.x
+                smart.y = to.y
+                return;
+            }
+        }
 
         smart_move(to);
     }
@@ -117,16 +139,21 @@ export class Pathfinder {
         }
 
         let path = finder.findPath(pathfinderFromX, pathfinderFromY, pathfinderToX, pathfinderToY, grid);
-        let newPath: any[] = PF.Util.smoothenPath(grid, path);
-        if (!newPath) return; // Failed finding a path...
+        if (!path) return;
+        try {
+            let newPath: any[] = PF.Util.smoothenPath(grid, path);
 
-        // Remove the first position that indicates where we started from
-        newPath.shift();
+            // Remove the first position that indicates where we started from
+            newPath.shift();
 
-        for (let path of newPath)
-            alPath.push({ map: parent.character.map, x: G.geometry[mapName].min_x + (path[0] * this.factor), y: G.geometry[mapName].min_y + (path[1] * this.factor) })
+            for (let path of newPath)
+                alPath.push({ map: parent.character.map, x: G.geometry[mapName].min_x + (path[0] * this.factor), y: G.geometry[mapName].min_y + (path[1] * this.factor) })
 
-        return alPath;
+            return alPath;
+        } catch (error) {
+            console.error(error)
+            return
+        }
     }
 
     public findNextMovement(from: IPositionReal, to: IPositionReal): IPositionReal {
@@ -183,4 +210,13 @@ export class Pathfinder {
 
         this.grids[mapName] = grid;
     }
+
+    // public drawCircles() {
+    //     clear_drawings()
+    //     for(let x = 0; x < this.grids[parent.character.map].width; x++) {
+    //         for(let y = 0; y < this.grids[parent.character.map].height; y++) {
+    //             draw_circle();
+    //         }
+    //     }
+    // }
 }

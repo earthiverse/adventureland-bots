@@ -53,7 +53,8 @@ class Priest extends Character {
             "stopOnSight": true
         },
         "osnake": {
-            "priority": EASY
+            "priority": EASY,
+            "stopOnSight": true
         },
         "poisio": {
             "priority": EASY

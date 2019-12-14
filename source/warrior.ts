@@ -39,7 +39,8 @@ class Warrior extends Character {
             "stopOnSight": true
         },
         "osnake": {
-            "priority": EASY
+            "priority": EASY,
+            "stopOnSight": true
         },
         "phoenix": {
             "priority": SPECIAL
