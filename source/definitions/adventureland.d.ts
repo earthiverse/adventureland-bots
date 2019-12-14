@@ -19,10 +19,8 @@ declare global {
     } }
     /** Contains the name of every character in your party */
     party_list: string[]
-    // TODO: Change this to a type
-    server_identifier: string
-    // TODO: Change this to a type
-    server_region: string
+    server_identifier: ServerIdentifier
+    server_region: ServerRegion
     socket: SocketIO.Socket
     S: { [T in MonsterType]: IPosition & {
       map: string
@@ -39,8 +37,7 @@ declare global {
   function buy_with_gold(name: ItemName, quantity: number): Promise<any>
   function can_move_to(location: IPositionReal): boolean
   function can_move_to(x: number, y: number): boolean
-  // TODO: Change the arguments of this function to types
-  function change_server(region: string, server: string)
+  function change_server(region: ServerRegion, identifier: ServerIdentifier)
   function change_target(target: IEntity)
   function compound(itemInventoryPosition1: number, itemInventoryPosition2: number, itemInventoryPosition3: number, scrollInventoryPosition: number, offeringInventoryPosition?: number): Promise<any>
   /** Feed this function a value like (character.apiercing - target.armor) and it spits out a multiplier so you can adjust your expected damage */
@@ -52,6 +49,8 @@ declare global {
   function heal(target: IEntity)
   /** Checks whether or not we can attack other players */
   function is_pvp(): boolean
+  /** 0 = normal, 1 = high, 2 = rare */
+  function item_grade(item: ItemInfo): -1 | 0 | 1 | 2
   /** Returns the inventory position of the item, or -1 if it's not found */
   function locate_item(item: ItemName): number
   function move(x: number, y: number)
@@ -139,11 +138,16 @@ export interface G_Item {
     [T in AttributeType]?: number
   }
   damage?: DamageType
+  /** Refers to how many items are needed to exchange (see .quest as well!) */
+  e?: number
   /** The first number refers to what level the item begins being "high" grade, the second for "rare" */
   grades?: [number, number]
   /** The full name of the item */
   name: string
   id: ItemName
+  // TODO: Add a type for quests
+  /** Indicates the "quest" that this item is needed to complete */
+  quest: string
   /** Indicates whether or not the item is stackable */
   s: boolean
   /** Contains information about what stats the item will gain with each upgrade level. Set if the item is upgradable. */
@@ -1186,6 +1190,17 @@ export type NPCType =
   | "witch"
   | "wizardrepeater"
   | "wnpc"
+
+// TODO: Confirm that PVP is actually the identifier for PVP servers
+export type ServerIdentifier =
+  | "I"
+  | "II"
+  | "PVP"
+
+export type ServerRegion =
+  | "ASIA"
+  | "US"
+  | "EU"
 
 export type SkillName =
   | "3shot"

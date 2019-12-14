@@ -1,4 +1,4 @@
-import { determineGrade, findItems, findItemsWithLevel, getInventory, findItem } from "./functions";
+import { findItems, findItemsWithLevel, getInventory, findItem } from "./functions";
 import { ItemName, ItemInfo } from "./definitions/adventureland";
 import { MyItemInfo } from "./definitions/bots";
 
@@ -30,7 +30,7 @@ export function compoundItem(itemname: ItemName, target_level: number) {
         // Didn't find enough items to combine...
         return;
 
-    let grade = determineGrade(itemname, item_level);
+    let grade = item_grade(items[0]);
     let scroll: MyItemInfo;
     if (grade == 0) {
         scroll = findItem("cscroll0");
@@ -59,7 +59,7 @@ export function upgradeItem(itemname: ItemName, target_level: number) {
 
     let item = findItem(itemname);
     if (item && item.level < target_level) {
-        let grade = determineGrade(itemname, item.level);
+        let grade = item_grade(item);
         let scroll: MyItemInfo;
         if (grade == 0) {
             scroll = findItem("scroll0");
@@ -89,20 +89,24 @@ export function compoundIfMany(maxLevel: number) {
 
     // name, level, slot #
     // TODO: Change this to a custom object
-    let items: [ItemName, number, number][] = [];
+    let items: MyItemInfo[] = [];
     getInventory().forEach((item) => {
         if (!G.items[item.name].compound) return; // We can't compound this item
         if (item.level >= maxLevel) return; // The item level's higher than we want to upgrade
-        items.push([item.name, item.level, item.index])
+        items.push(item)
     })
-    items.sort();
+    items.sort((a, b) => {
+        if (a.name > b.name) return 1;
+        if (a.level > b.level) return 1;
+        return -1;
+    })
 
     for (let i = 0; i < items.length - 2; i++) {
-        if (items[i][0] == items[i + 1][0] && items[i][0] == items[i + 2][0] // Match names
-            && items[i][1] == items[i + 1][1] && items[i][1] == items[i + 2][1] // Match levels
+        if (items[i].name == items[i + 1].name && items[i].name == items[i + 2].name // Match names
+            && items[i].level == items[i + 1].level && items[i].level == items[i + 2].level // Match levels
         ) {
             // Found 3 identical items to compound
-            let grade = determineGrade(items[i][0], items[i][1]);
+            let grade = item_grade(items[i]);
             let scroll;
             if (grade == 0) {
                 scroll = findItem("cscroll0");
@@ -111,7 +115,7 @@ export function compoundIfMany(maxLevel: number) {
             } else if (grade == 2) {
                 scroll = findItem("cscroll2");
             }
-            compound(items[i][2], items[i + 1][2], items[i + 2][2], scroll.index)
+            compound(items[i].index, items[i + 1].index, items[i + 2].index, scroll.index)
             return;
         }
 
@@ -141,11 +145,17 @@ export function upgradeIfMany(maxLevel: number) {
         let items = findItems(parent.character.items[i].name)
         if (items.length == 1) continue; // We only have one.
 
-        let minimumLevel = Math.min(...items.map(item => item.level)) // Find the minimum level
-        items = findItemsWithLevel(parent.character.items[i].name, minimumLevel);
-        if (items[0].level >= maxLevel) continue; // Don't upgrade high level items
+        // Sort the items so we have the lowest level first
+        items.sort((a, b) => {
+            if (a.name > b.name) return 1;
+            if (a.level > b.level) return 1;
+            return -1;
+        })
 
-        let grade = determineGrade(items[0].name, items[0].level);
+        let item = items[0]
+        if (item.level >= maxLevel) continue; // Don't upgrade high level items
+
+        let grade = item_grade(item);
         let scrolls: MyItemInfo;
         if (grade == 0) {
             scrolls = findItem("scroll0");
@@ -154,7 +164,7 @@ export function upgradeIfMany(maxLevel: number) {
         } else if (grade == 2) {
             scrolls = findItem("scroll2");
         }
-        if (scrolls) upgrade(items[0].index, scrolls.index)
+        if (scrolls) upgrade(item.index, scrolls.index)
         return;
     }
 }

@@ -28,6 +28,16 @@ export function getCooldownMS(skill: SkillName) {
     }
 }
 
+export function getExchangableItems(inventory?: ItemInfo[]): MyItemInfo[] {
+    let items: MyItemInfo[] = []
+
+    for (let item of getInventory(inventory)) {
+        if (G.items[item.name].e) items.push(item)
+    }
+
+    return items;
+}
+
 export function getEmptyBankSlots(): EmptyBankSlots[] {
     if (parent.character.map !== "bank") return; // We can only find out what bank slots we have if we're on the bank map.
 
@@ -60,19 +70,6 @@ export function getAttackingEntities(): IEntity[] {
         entitites.push(entity)
     }
     return entitites;
-}
-
-export function determineGrade(itemName: ItemName, itemLevel: number) {
-    let game_item = G.items[itemName];
-    if (!game_item) {
-        return -1;
-    } else if (itemLevel >= game_item.grades[1]) {
-        return 2;
-    } else if (itemLevel >= game_item.grades[0]) {
-        return 1;
-    } else {
-        return 0;
-    }
 }
 
 export function sendMassCM(names: string[], data: any) {
@@ -118,6 +115,11 @@ export function getNearbyMonsterSpawns(position: IPosition, radius: number = 100
             }
         }
     }
+
+    // Sort them so the closest one is first.
+    locations.sort((a, b) => {
+        return distance(position, a) > distance(position, b) ? 1 : -1
+    })
 
     return locations;
 }

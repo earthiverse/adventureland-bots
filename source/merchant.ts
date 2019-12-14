@@ -8,7 +8,7 @@ class Merchant extends Character {
     targetPriority = {}
     mainTarget: MonsterType = null;
 
-    public getMovementTarget(): IPositionReal {
+    public getMovementTarget(): { message: string, target: IPositionReal } {
         // Check for full inventory
         let full = true;
         for (let i = 0; i < 42; i++) {
@@ -17,48 +17,44 @@ class Merchant extends Character {
             break;
         }
         if (full) {
-            set_message("Full!")
             if (parent.character.map == "bank") {
                 // Already at the bank
-                return;
+                return { message: "Full!", target: null }
             } else {
                 // Move to the bank
-                return { "map": "bank", "x": 0, "y": 0 }
+                return { message: "Full!", target: { "map": "bank", "x": 0, "y": 0 } }
             }
         }
 
         // Check for Christmas Tree
         if (G.maps.main.ref.newyear_tree && !parent.character.s.holidayspirit) {
-            this.pathfinder.movementTarget = "newyear_tree";
-            return G.maps.main.ref.newyear_tree
+            return { message: "Xmas Tree", target: G.maps.main.ref.newyear_tree }
         }
 
         // Check for event monsters
-        for (let name in parent.S) {
-            let monster = parent.S[name as MonsterType]
+        for (let mtype in parent.S) {
+            let monster = parent.S[mtype as MonsterType]
             if (monster.hp < monster.max_hp * 0.9
                 && monster.live) {
-                set_message("EV " + name.slice(0, 8))
-                this.pathfinder.movementTarget = name;
+                this.pathfinder.movementTarget = mtype;
                 for (let id in parent.entities) {
                     let entity = parent.entities[id]
-                    if (entity.mtype == name) {
+                    if (entity.mtype == mtype) {
                         // There's one nearby
-                        return;
+                        return { message: "EV " + mtype, target: null }
                     }
                 }
-                return parent.S[name as MonsterType]
+                return { message: "EV " + mtype, target: parent.S[mtype as MonsterType] }
             }
         }
 
         // TODO: If Angel and Kane haven't been seen in a while, go find them
 
-        // If our players aren't mlucked, go find them and mluck them.
+        // If someone in our party isn't mlucked by us, go find them and mluck them.
         for (let name in this.info.party) {
             let player = this.info.party[name]
             if (player && player.s && (!player.s.mluck || player.s.mluck.f !== "earthMer")) {
-                set_message("MLuck party")
-                return player
+                return { message: "ML " + name, target: player }
             }
         }
 
@@ -68,10 +64,9 @@ class Merchant extends Character {
             if (distance(parent.character, player) < 10 && !player.s.mluck) {
                 // This player moved.
                 delete this.info.players[name];
-                return;
+                break
             } else if (!player.s.mluck && !player.rip) {
-                set_message("MLuck other")
-                return this.info.players[name]
+                return { message: "ML Other", target: this.info.players[name] }
             }
         }
 
@@ -80,19 +75,16 @@ class Merchant extends Character {
             if (name == parent.character.name) continue; // Skip ourself
             let player = this.info.party[name]
             if (player && player.items.length > 20) {
-                set_message("Offloading!")
-                return player
+                return { message: "INV " + name, target: player }
             }
         }
 
         // If we haven't been to the bank in a while, go
         if (Date.now() - this.didBankStuff > 120000) {
-            set_message("Bank!")
-            return { "map": "bank", "x": 0, "y": 0 }
+            return { message: "Bank", target: { "map": "bank", "x": 0, "y": 0 } }
         } else {
             // Default spot in town to hang out
-            set_message("Vendoring!")
-            return { map: "main", "x": 60, "y": -325 }
+            return { message: "Vendor", target: { map: "main", "x": 60, "y": -325 } }
         }
     }
 
