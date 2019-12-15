@@ -2,7 +2,7 @@ import { Character } from './character'
 import { MonsterType, IEntity } from './definitions/adventureland';
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from './trade';
 import { TargetPriorityList } from './definitions/bots';
-import { isPlayer, getCooldownMS, isAvailable, shouldAttack } from './functions';
+import { isPlayer, getCooldownMS, isAvailable, wantToAttack, calculateDamageRange } from './functions';
 
 let DIFFICULT = 10;
 let MEDIUM = 20;
@@ -28,18 +28,19 @@ class Ranger extends Character {
         "bigbird": {
             // The ranger is fast enough to avoid these fairly well
             "priority": DIFFICULT,
-            "holdAttack": true,
+            "holdAttackInEntityRange": true,
+            "holdAttackWhileMoving": true,
             "stopOnSight": true
         },
         "boar": {
             // Don't attack if we're walking by them, they hurt.
             "priority": DIFFICULT,
-            "holdAttack": true,
+            "holdAttackWhileMoving": true,
             "stopOnSight": true,
         },
         "cgoo": {
-            "attackInRange": false,
-            "holdAttack": true,
+            "holdAttackInEntityRange": true,
+            "holdAttackWhileMoving": true,
             "stopOnSight": true,
             "priority": DIFFICULT,
             "map": "arena",
@@ -57,7 +58,7 @@ class Ranger extends Character {
             "priority": EASY
         },
         "ghost": {
-            "holdAttack": true,
+            "holdAttackWhileMoving": true,
             "stopOnSight": true,
             "priority": DIFFICULT
         },
@@ -68,13 +69,25 @@ class Ranger extends Character {
         "goo": {
             "priority": EASY,
         },
+        "greenjr": {
+            "priority": DIFFICULT,
+            "holdAttackInEntityRange": true,
+            "stopOnSight": true,
+            "moveToEntity": false
+        },
         "hen": {
             "priority": EASY
         },
         "iceroamer": {
-            "holdAttack": true,
+            "holdAttackWhileMoving": true,
             "priority": DIFFICULT,
             "stopOnSight": true,
+        },
+        "jr": {
+            "priority": DIFFICULT,
+            "holdAttackInEntityRange": true,
+            "stopOnSight": true,
+            "moveToEntity": false
         },
         "minimush": {
             "priority": EASY,
@@ -88,15 +101,16 @@ class Ranger extends Character {
             "priority": SPECIAL,
             "stopOnSight": true
         },
-        "oneeye": {
-            // Camp out at a spot that's 99% safe.
-            "holdAttack": true,
-            "holdPosition": true,
-            "priority": DIFFICULT,
-            "map": "level2w",
-            "x": -120,
-            "y": -100
-        },
+        // "oneeye": {
+        //     // Camp out at a spot that's 99% safe.
+        //     "holdAttackInEntityRange": true,
+        //     "holdAttackWhileMoving": true,
+        //     "moveToEntity": true,
+        //     "priority": DIFFICULT,
+        //     "map": "level2w",
+        //     "x": -120,
+        //     "y": -100
+        // },
         "osnake": {
             "priority": EASY,
             "stopOnSight": true
@@ -112,8 +126,9 @@ class Ranger extends Character {
         },
         "prat": {
             // Go to a cliff where we can attack them, but they can't attack us.
-            "holdAttack": true,
-            "holdPosition": true,
+            "holdAttackInEntityRange": true,
+            "holdAttackWhileMoving": true,
+            "moveToEntity": true,
             "priority": DIFFICULT,
             "map": "level1",
             "x": -300,
@@ -149,7 +164,8 @@ class Ranger extends Character {
             "priority": EASY
         },
         "stoneworm": {
-            "holdAttack": true,
+            "holdAttackInEntityRange": true,
+            "holdAttackWhileMoving": true,
             "stopOnSight": true,
             "priority": DIFFICULT
         },
@@ -159,13 +175,15 @@ class Ranger extends Character {
         "wolfie": {
             // The ranger is fast enough to kill these without dying too much.
             "priority": DIFFICULT,
-            "holdAttack": true,
+            "holdAttackInEntityRange": true,
+            "holdAttackWhileMoving": true,
             "stopOnSight": true
         },
         "xscorpion": {
             "priority": DIFFICULT,
-            "holdAttack": true,
-            "holdPosition": true,
+            "holdAttackInEntityRange": true,
+            "holdAttackWhileMoving": true,
+            "moveToEntity": true,
             "map": "halloween",
             "x": -230,
             "y": 570
@@ -223,17 +241,11 @@ class Ranger extends Character {
     huntersmarkLoop(): void {
         try {
             let targets = this.getTargets(1);
-            if (parent.character.mp < 240 // No MP
-                || !isAvailable("huntersmark") // Not usable yet
-                || targets.length == 0 // No targets
-                || parent.character.stoned // Can't use skills
-                || targets[0].s.marked // Already marked
-                || targets[0].hp < parent.character.attack * 5 // Target is "easily" killable
-                || distance(parent.character, targets[0]) > parent.character.range) { // Not in range
-                // Do nothing
-            } else {
+            if (targets.length // We have a target
+                && !targets[0].s.marked // The target isn't marked
+                && targets[0].hp > calculateDamageRange(parent.character, targets[0])[0] * 5 // The target has a lot of HP
+                && wantToAttack(this, targets[0], "huntersmark")) // We want to attack it
                 use_skill("huntersmark", targets[0])
-            }
         } catch (error) {
             console.error(error)
         }
@@ -250,9 +262,7 @@ class Ranger extends Character {
                 && isPlayer(targets[0])
                 && isAvailable("4fingers")
                 && targets[0].target == parent.character.name // The target is targetting us
-                && (
-                    parent.character.hp < targets[0].attack * 10 // We don't have much HP
-                )
+                && parent.character.hp < targets[0].attack * 10 // We don't have much HP
             ) {
                 use_skill("4fingers", targets[0])
             }
@@ -265,7 +275,7 @@ class Ranger extends Character {
     superShotLoop(): void {
         let targets = this.getTargets(1);
         if (targets.length
-            && shouldAttack(this, targets[0], "supershot"))
+            && wantToAttack(this, targets[0], "supershot"))
             use_skill("supershot", targets[0])
 
         setTimeout(() => { this.superShotLoop() }, getCooldownMS("supershot"));
@@ -274,11 +284,11 @@ class Ranger extends Character {
     protected async attackLoop(): Promise<void> {
         let targets = this.getTargets(5);
         if (targets.length >= 5
-            && shouldAttack(this, targets[0], "5shot")) {
+            && wantToAttack(this, targets[0], "5shot")) {
             // See if we can fiveshot some enemies
             let fiveshotTargets: IEntity[] = [];
             for (let entity of targets) {
-                if ((entity.target != parent.character.name) && (entity.hp > parent.character.attack * 0.5 * 0.9 * damage_multiplier(entity.armor - parent.character.apiercing))) continue; // Too much HP, or not targeting us
+                if ((entity.target != parent.character.name) && (entity.hp > calculateDamageRange(parent.character, entity)[0] * 0.5)) continue; // Too much HP, or not targeting us
                 if (distance(parent.character, entity) > parent.character.range) continue;
 
                 fiveshotTargets.push(entity);
@@ -294,11 +304,11 @@ class Ranger extends Character {
             }
         }
         if (targets.length >= 3
-            && shouldAttack(this, targets[0], "3shot")) {
+            && wantToAttack(this, targets[0], "3shot")) {
             // See if we can three shot some enemies.
             let threeshotTargets: IEntity[] = [];
             for (let entity of targets) {
-                if ((entity.target != parent.character.name) && (entity.hp > parent.character.attack * 0.7 * 0.9 * damage_multiplier(entity.armor - parent.character.apiercing))) continue; // Too much HP, or not targeting us
+                if ((entity.target != parent.character.name) && (entity.hp > calculateDamageRange(parent.character, entity)[0] * 0.7)) continue; // Too much HP, or not targeting us
                 if (distance(parent.character, entity) > parent.character.range) continue;
 
                 threeshotTargets.push(entity);

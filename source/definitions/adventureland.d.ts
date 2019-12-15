@@ -208,6 +208,9 @@ export interface IEntity extends IPositionReal {
   armor: number
   attack: number
   ctype: CharacterType | NPCType
+  damage_type?: DamageType
+  /** Related to attack speed, I think it's (1 / attacks per second) */
+  frequency: number
   going_x: number
   going_y: number
   hp: number
@@ -230,8 +233,10 @@ export interface IEntity extends IPositionReal {
   range: number
   real_x: number
   real_y: number
+  resistance: number
   /** Only set if the entity is a character. If true, the player is dead. */
   rip?: boolean
+  rpiercing: number
   s: StatusInfo
   /** Set if the entity is a player */
   slots: {
@@ -253,11 +258,23 @@ export interface IEntity extends IPositionReal {
 }
 
 export type ItemInfo = {
+  /** If true, the entity is buying this item */
+  b?: boolean
   /** Set if the item is compoundable or upgradable */
   level?: number
   name: ItemName
   /** Set if the item is stackable. */
   q?: number
+  /** If set, name == placeholder, and we are upgrading or compounding something */
+  p?: {
+    chance: number
+    name: ItemName
+    level: number
+    scroll: ItemName
+    nums: number[]
+  }
+  /** If set, the item is for sale, or purchase */
+  rid?: string
 }
 
 export type StatusInfo = {
@@ -323,6 +340,7 @@ export type CharacterType =
 
 // TODO: Get all types (from G?)
 export type DamageType =
+  | "magical"
   | "physical"
 
 export type MonsterType =

@@ -8,11 +8,11 @@ export interface TargetPriorityInfo {
     /** The higher the priority, the more likely we are to target it. */
     priority: number;
     /** When smart moving past the monster, if true, we won't attack the monster. */
-    holdAttack?: boolean;
-    /** If set to false, we will not attack the entity if we are within their attacking range */
-    attackInRange?: boolean;
-    /** When smart moving to this monster, we won't move after we reach the destination. */
-    holdPosition?: boolean;
+    holdAttackWhileMoving?: boolean;
+    /** If set to true, we will not attack the entity if we are within their attacking range */
+    holdAttackInEntityRange?: boolean;
+    /** If true, we won't move to attack the monsters. Use this with map, x, and y to go to a safe (unreachable) spot. */
+    moveToEntity?: boolean;
     /** When smart moving to this monster, if true, we will stop when we see one within attacking range. */
     stopOnSight?: boolean;
     /** The map where we will move to find this monster. */

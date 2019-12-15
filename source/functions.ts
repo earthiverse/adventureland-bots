@@ -2,6 +2,10 @@ import { ItemInfo, MonsterType, ItemName, IPosition, MapName, IEntity, IPosition
 import { MyItemInfo, EmptyBankSlots, MonsterSpawnPosition } from "./definitions/bots";
 import { Character } from "./character";
 
+export function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export function isNPC(entity: IEntity) {
     return entity.npc ? true : false
 }
@@ -14,6 +18,23 @@ export function isPlayer(entity: IEntity) {
     return entity.type == "character" && !isNPC(entity)
 }
 
+export function calculateDamageRange(attacker: IEntity, defender: IEntity): [number, number] {
+    let baseDamage: number = attacker.attack;
+    if (!attacker.apiercing) attacker.apiercing = 0
+    if (!attacker.apiercing) attacker.rpiercing = 0
+    if (!attacker.damage_type && attacker.slots.mainhand) attacker.damage_type = G.items[attacker.slots.mainhand.name].damage
+
+    if (attacker.damage_type == "physical") {
+        // Armor
+        baseDamage *= damage_multiplier(defender.armor - attacker.apiercing)
+    } else if (attacker.damage_type == "magical") {
+        // Resistance
+        baseDamage *= damage_multiplier(defender.resistance - attacker.rpiercing)
+    }
+
+    return [baseDamage * 0.9, baseDamage * 1.1]
+}
+
 /** Returns true if we're walking towards an entity. Used for checking if we can attack higher level enemies while we're moving somewhere */
 // TODO: Finish this function, it's currently broken, don't use it.
 export function areWalkingTowards(entity: IEntity) {
@@ -21,30 +42,29 @@ export function areWalkingTowards(entity: IEntity) {
     if (parent.character.vx < 0 && parent.character.real_x - entity.real_x > 0) return true
 }
 
-export function shouldAttack(c: Character, e: IEntity, s?: SkillName): boolean {
-    // Things that outright prevent us from attacking
-    if (s && G.skills[s].range_multiplier) {
-        if (distance(parent.character, e) > parent.character.range * G.skills[s].range_multiplier) return false // Too far away
-    } else {
-        if (distance(parent.character, e) > parent.character.range) return false // Too far away
-    }
+// TODO: Shouldn't this be a method on Character?
+export function wantToAttack(c: Character, e: IEntity, s: SkillName = "attack"): boolean {
     if (parent.character.stoned) return false // We are stoned, we can't attack
-    if (s) {
-        if (parent.character.mp < G.skills[s].mp) return false // No MP
-        if (["3shot", "5shot"].includes(s)) {
-            if (!isAvailable("attack")) return false
-        } else {
-            if (!isAvailable(s)) return false
-        }
-    } else {
-        if (parent.character.mp < parent.character.mp_cost) return false // No MP
-        if (!isAvailable("attack")) return false
-    }
+    if (!isAvailable(s)) return false // On cooldown
 
-    // Things where we could attack, but choose not to
+    let range = G.skills[s].range ? G.skills[s].range : parent.character.range
+    let distanceToEntity = distance(parent.character, e)
+    if (G.skills[s].range_multiplier) range *= G.skills[s].range_multiplier
+    if (distanceToEntity > range) return false // Too far away
+
+    let mp = G.skills[s].mp ? G.skills[s].mp : parent.character.mp_cost
+    if (parent.character.mp < mp) return false; // Insufficient MP
+
     if (!c.targetPriority[e.mtype]) return false // Not a priority
-    if (smart.moving && c.targetPriority[e.mtype].holdAttack && e.target !== parent.character.id) return false // Hold attack
-    if (c.holdAttack && e.target !== parent.character.id) return false // Hold attack
+    if (e.target !== parent.character.id) {
+        // Hold attack
+        if (c.holdAttack) return false
+        if (smart.moving && c.targetPriority[e.mtype].holdAttackWhileMoving) return false
+        if (c.targetPriority[e.mtype].holdAttackInEntityRange && distanceToEntity <= e.range) return false
+
+        // Low HP
+        if (calculateDamageRange(e, parent.character)[1] * 5 / e.frequency > parent.character.hp && distanceToEntity <= e.range) return false
+    }
 
     return true;
 }
@@ -74,6 +94,14 @@ export function getExchangableItems(inventory?: ItemInfo[]): MyItemInfo[] {
     return items;
 }
 
+export function getEmptySlots(store: ItemInfo[]): number[] {
+    let slots: number[] = []
+    for (let i = 0; i < store.length; i++) {
+        if (!store[i]) slots.push(i)
+    }
+    return slots;
+}
+
 export function getEmptyBankSlots(): EmptyBankSlots[] {
     if (parent.character.map !== "bank") return; // We can only find out what bank slots we have if we're on the bank map.
 
@@ -93,7 +121,7 @@ export function getEmptyBankSlots(): EmptyBankSlots[] {
 export function isAvailable(skill: SkillName) {
     if (!parent.next_skill) return false
     if (parent.next_skill[skill] === undefined) return true
-    if (parent.next_skill[skill] === null) return parent.next_skill["attack"] ? (Date.now() >= parent.next_skill["attack"].getTime()) : true
+    if (["3shot", "5shot"].includes(skill)) return parent.next_skill["attack"] ? (Date.now() >= parent.next_skill["attack"].getTime()) : true
 
     return Date.now() >= parent.next_skill[skill].getTime()
 }
@@ -164,7 +192,7 @@ export function getNearbyMonsterSpawns(position: IPosition, radius: number = 100
     return locations;
 }
 
-export function buyAndUpgrade(itemName: ItemName, targetLevel: number = 9, targetQuantity: number = 1) {
+export function buyIfNone(itemName: ItemName, targetLevel: number = 9, targetQuantity: number = 1) {
     let foundNPCBuyer = false;
     for (let npc of parent.npcs.filter(npc => G.npcs[npc.id].role == "merchant")) {
         if (distance(parent.character, {

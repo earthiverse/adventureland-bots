@@ -28,12 +28,13 @@ class Mage extends Character {
         "boar": {
             // Don't attack if we're walking by them, they hurt.
             "priority": DIFFICULT,
-            "holdAttack": true,
+            "holdAttackWhileMoving": true,
             "stopOnSight": true,
         },
         "cgoo": {
-            "holdAttack": true,
+            "holdAttackWhileMoving": true,
             "stopOnSight": true,
+            "holdAttackInEntityRange": true,
             "priority": DIFFICULT,
             "map": "arena",
             "x": 500,
@@ -54,7 +55,7 @@ class Mage extends Character {
         },
         "ghost": {
             // Don't attack if we're walking by them, they hurt.
-            "holdAttack": true,
+            "holdAttackWhileMoving": true,
             "stopOnSight": true,
             "priority": DIFFICULT
         },
@@ -65,14 +66,26 @@ class Mage extends Character {
         "goo": {
             "priority": EASY,
         },
+        "greenjr": {
+            "priority": DIFFICULT,
+            "holdAttackInEntityRange": true,
+            "stopOnSight": true,
+            "moveToEntity": false
+        },
         "hen": {
             "priority": EASY
         },
         "iceroamer": {
             // Don't attack if we're walking by them, they hurt.
-            "holdAttack": true,
+            "holdAttackWhileMoving": true,
             "priority": DIFFICULT,
             "stopOnSight": true,
+        },
+        "jr": {
+            "priority": DIFFICULT,
+            "holdAttackInEntityRange": true,
+            "stopOnSight": true,
+            "moveToEntity": false
         },
         "minimush": {
             "priority": EASY,
@@ -86,15 +99,16 @@ class Mage extends Character {
             "priority": SPECIAL,
             "stopOnSight": true
         },
-        "oneeye": {
-            // Camp out at a spot that's 99% safe.
-            "holdAttack": true,
-            "holdPosition": true,
-            "priority": DIFFICULT,
-            "map": "level2w",
-            "x": -120,
-            "y": -100
-        },
+        // "oneeye": {
+        //     // Camp out at a spot that's 99% safe.
+        //     "holdAttackWhileMoving": true,
+        //     "moveToEntity": true,
+        //     "holdAttackInEntityRange": true,
+        //     "priority": DIFFICULT,
+        //     "map": "level2w",
+        //     "x": -120,
+        //     "y": -100
+        // },
         "osnake": {
             "priority": EASY,
             "stopOnSight": true
@@ -110,8 +124,9 @@ class Mage extends Character {
         },
         "prat": {
             // Our plan is to go to a spot on a cliff where they can't attack us, but we can attack them.
-            "holdAttack": true,
-            "holdPosition": true,
+            "holdAttackWhileMoving": true,
+            "moveToEntity": true,
+            "holdAttackInEntityRange": true,
             "priority": DIFFICULT,
             "map": "level1",
             "x": -300,
@@ -148,7 +163,8 @@ class Mage extends Character {
         },
         "stoneworm": {
             // Don't attack if we're walking by them, they hurt.
-            "holdAttack": true,
+            "holdAttackInEntityRange": true,
+            "holdAttackWhileMoving": true,
             "stopOnSight": true,
             "priority": DIFFICULT
         },
@@ -157,8 +173,9 @@ class Mage extends Character {
         },
         "xscorpion": {
             "priority": DIFFICULT,
-            "holdAttack": true,
-            "holdPosition": true,
+            "holdAttackInEntityRange": true,
+            "holdAttackWhileMoving": true,
+            "moveToEntity": true,
             "map": "halloween",
             "x": -230,
             "y": 570

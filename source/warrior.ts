@@ -2,7 +2,7 @@ import { Character } from './character'
 import { MonsterType } from './definitions/adventureland';
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from './trade';
 import { TargetPriorityList } from './definitions/bots';
-import { getCooldownMS, getAttackingEntities } from './functions';
+import { getCooldownMS, getAttackingEntities, calculateDamageRange } from './functions';
 
 let DIFFICULT = 10;
 let MEDIUM = 20;
@@ -105,7 +105,7 @@ class Warrior extends Character {
         if (parent.character.mp >= 480 // Enough MP
             && targets.length // We have a target
             && distance(targets[0], parent.character) <= targets[0].range // In range of their attacks
-            && parent.character.hp < targets[0].attack * 5) { // Not a lot of HP remaining
+            && parent.character.hp < calculateDamageRange(targets[0], parent.character)[1] * 5) { // Not a lot of HP remaining
             use_skill("hardshell")
         }
         setTimeout(() => { this.chargeLoop() }, getCooldownMS("hardshell"));

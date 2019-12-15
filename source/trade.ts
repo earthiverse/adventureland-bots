@@ -26,6 +26,8 @@ export function sellUnwantedItems(itemsToSell: ItemName[] = defaultItemsToSell) 
 
     for (let itemName of itemsToSell) {
         for (let item of findItems(itemName)) {
+            if (item.level > 1) continue; // There might be a reason we upgraded it?
+
             if (item.q) {
                 sell(item.index, item.q);
             } else {

@@ -1,8 +1,8 @@
 import { Character } from './character'
 import { MonsterType, ItemName, IPositionReal, IEntity, BankPackType } from './definitions/adventureland';
-import { upgradeIfMany, compoundIfMany } from './upgrade'
+import { upgradeIfMany, compoundIfMany, upgradeItem } from './upgrade'
 import { sellUnwantedItems, exchangeItems, buyFromPonty, openMerchantStand, closeMerchantStand } from './trade';
-import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots } from './functions';
+import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots, sleep, buyIfNone, getEmptySlots } from './functions';
 
 class Merchant extends Character {
     targetPriority = {}
@@ -90,12 +90,17 @@ class Merchant extends Character {
         }
     }
 
-    protected mainLoop(): void {
+    protected async mainLoop(): Promise<void> {
         try {
             sellUnwantedItems();
-            // exchangeItems();
 
-            this.bankStuff();
+            let numItems = 0;
+            for (let i = 0; i < 42; i++) if (parent.character.items[i]) numItems++
+
+            if (numItems < 25)
+                exchangeItems();
+
+            await this.bankStuff();
 
             if (distance(parent.character, { map: "main", "x": 60, "y": -325 }) < 100) {
                 openMerchantStand()
@@ -103,10 +108,11 @@ class Merchant extends Character {
                 closeMerchantStand()
             }
 
-            // buyAndUpgrade("bow", 9, 1)
-
             upgradeIfMany(8);
             compoundIfMany(4);
+            
+            buyIfNone("blade", 9, 2)
+            upgradeItem("blade", 9)
 
             super.mainLoop();
         } catch (error) {
@@ -155,13 +161,13 @@ class Merchant extends Character {
     }
 
     private didBankStuff = 0;
-    private bankStuff(): void {
+    private async bankStuff() {
         if (parent.character.map !== "bank") {
             return;
         } else if (Date.now() - this.didBankStuff < 10000) {
             return;
         }
-        let itemsToKeep: ItemName[] = ["tracker", "cscroll0", "cscroll1", "cscroll2", "scroll0", "scroll1", "scroll2", "stand0", "dexscroll", "intscroll", "strscroll", "monstertoken", "candycane", "mistletoe", "gem0", "gem1", "candy0", "candy1", "armorbox", "weaponbox"]
+        let itemsToKeep: ItemName[] = ["blade", "tracker", "cscroll0", "cscroll1", "cscroll2", "scroll0", "scroll1", "scroll2", "stand0", "dexscroll", "intscroll", "strscroll", "monstertoken", "candycane", "mistletoe", "gem0", "gem1", "candy0", "candy1", "armorbox", "weaponbox"]
 
         // Store extra gold
         if (parent.character.gold > 25000000) {
@@ -174,14 +180,15 @@ class Merchant extends Character {
         let items: [ItemName, number, string, number][] = [];
 
         // Add items from inventory
-        getInventory().forEach((item) => {
-            if (itemsToKeep.includes(item.name)) return; // Don't add items we want to keep
+        for (let item of getInventory()) {
+            if (itemsToKeep.includes(item.name)) continue; // Don't add items we want to keep
 
 
             if (G.items[item.name].s) {
                 // If the item is stackable, deposit it.
+                await sleep(parent.character.ping)
                 bank_store(item.index)
-                return;
+                continue;
             }
 
             // Add it to our list of items;
@@ -191,25 +198,64 @@ class Merchant extends Character {
             let i = 0;
             let emptySlots = getEmptyBankSlots();
             if (i < emptySlots.length) {
+                await sleep(parent.character.ping)
                 bank_store(item.index, emptySlots[i].pack, emptySlots[i].index)
                 i++;
             }
-        });
+        }
 
         // Add items from bank
         for (let pack in parent.character.bank) {
             if (pack == "gold") continue; // skip gold
-            getInventory(parent.character.bank[pack as BankPackType]).forEach((item) => {
-                if (itemsToKeep.includes(item.name)) return; // Don't add items we want to keep
-                if (G.items[item.name].s) return; // Don't add stackable items
-                if (G.items[item.name].upgrade && item.level >= 8) return; // Don't withdraw high level items
-                if (G.items[item.name].compound && item.level >= 4) return; // Don't withdraw high level items
+            for (let item of getInventory(parent.character.bank[pack as BankPackType])) {
+                if (itemsToKeep.includes(item.name)) continue; // Don't add items we want to keep
+                if (G.items[item.name].s) continue; // Don't add stackable items
+                if (G.items[item.name].upgrade && item.level >= 8) continue; // Don't withdraw high level items
+                if (G.items[item.name].compound && item.level >= 4) continue; // Don't withdraw high level items
                 items.push([item.name, item.level, pack, item.index])
-            });
+            }
         }
 
-        // Find things that can be upgraded, or exchanged.
+        let empty = getEmptySlots(parent.character.items);
+        empty.pop();
         items.sort();
+
+        // Find compounds
+        for (let i = 0; i < items.length; i++) {
+            let itemI = items[i];
+
+            let indexes: number[] = [i];
+            for (let j = i + 1; j < items.length; j++) {
+                let itemJ = items[j]
+                if (itemJ[0] != itemI[0] || itemJ[1] != itemI[1]) {
+                    // The name or level is different
+                    i = j - 1;
+                    break;
+                }
+
+                // We found another item of the same level
+                indexes.push(j);
+            }
+
+            if (G.items[itemI[0]].compound && indexes.length >= 4) {
+                for (let l = 0; l < 4; l++) {
+                    let k = indexes[l];
+                    let level = items[k][1];
+                    let bankBox = items[k][2];
+                    let boxSlot = items[k][3];
+                    await sleep(parent.character.ping)
+                    if (empty.length)
+                        parent.socket.emit("bank", {
+                            operation: "swap",
+                            inv: empty.shift(),
+                            str: boxSlot,
+                            pack: bankBox
+                        });
+                }
+            }
+        }
+
+        // Find upgrades
         for (let i = 0; i < items.length; i++) {
             let itemI = items[i];
 
@@ -228,53 +274,23 @@ class Merchant extends Character {
 
             if (G.items[itemI[0]].upgrade && indexes.length >= 2) {
                 // We found two of the same weapons, move them to our inventory.
-                indexes.forEach((k) => {
+                for (let k of indexes) {
                     let level = items[k][1];
-                    if (level >= 8) return; // Leave high level items
                     let bankBox = items[k][2];
                     let boxSlot = items[k][3];
-                    parent.socket.emit("bank", {
-                        operation: "swap",
-                        inv: -1,
-                        str: boxSlot,
-                        pack: bankBox
-                    });
-                })
-            }
-        }
-
-        for (let i = 0; i < items.length; i++) {
-            let itemI = items[i];
-
-            let indexes: number[] = [i];
-            for (let j = i + 1; j < items.length; j++) {
-                let itemJ = items[j]
-                if (itemJ[0] != itemI[0] || itemJ[1] != itemI[1]) {
-                    // The name or level is different
-                    i = j - 1;
-                    break;
-                }
-
-                // We found another item of the same level
-                indexes.push(j);
-            }
-
-            if (G.items[itemI[0]].compound && indexes.length >= 3) {
-                for (let l = 0; l < 3; l++) {
-                    let k = indexes[l];
-                    let level = items[k][1];
-                    if (level >= 4) return; // Leave high level items
-                    let bankBox = items[k][2];
-                    let boxSlot = items[k][3];
-                    parent.socket.emit("bank", {
-                        operation: "swap",
-                        inv: -1,
-                        str: boxSlot,
-                        pack: bankBox
-                    });
+                    await sleep(parent.character.ping)
+                    if (empty.length)
+                        parent.socket.emit("bank", {
+                            operation: "swap",
+                            inv: empty.shift(),
+                            str: boxSlot,
+                            pack: bankBox
+                        })
                 }
             }
         }
+
+        // TODO: Find exchanges
 
         this.didBankStuff = Date.now();
     }

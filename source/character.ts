@@ -1,7 +1,7 @@
 import { Queue } from "prioqueue"
 import { IEntity, IPosition, ItemName, ItemInfo, SlotType, ICharacter, MonsterType, IPositionReal, NPCName } from './definitions/adventureland';
 import { Pathfinder } from './pathfinder';
-import { sendMassCM, findItems, getInventory, getRandomMonsterSpawnPosition, getAttackingEntities, getCooldownMS, isAvailable, canSeePlayer, getNearbyMonsterSpawns, shouldAttack } from "./functions";
+import { sendMassCM, findItems, getInventory, getRandomMonsterSpawnPosition, getAttackingEntities, getCooldownMS, isAvailable, canSeePlayer, getNearbyMonsterSpawns, wantToAttack, calculateDamageRange } from "./functions";
 import { TargetPriorityList, OtherInfo, MyItemInfo } from "./definitions/bots";
 
 export abstract class Character {
@@ -151,21 +151,22 @@ export abstract class Character {
     }
 
     protected loot() {
-        let i = 0;
+        let i = 0
         for (let chestID in parent.chests) {
             let chest = parent.chests[chestID]
             if (distance(parent.character, chest) < 800) parent.socket.emit("open_chest", { id: chestID }) // It's 800 as per @Wizard in #feedback on 11/26/2019
-            if (++i > 20) break
+            if (++i > 20) break // Only open 20 chests at a time help with server call costs
         }
     }
 
     protected async attackLoop(): Promise<void> {
         try {
             let targets = this.getTargets(1)
-            if (targets.length && shouldAttack(this, targets[0]))
+            if (targets.length && wantToAttack(this, targets[0]))
                 await attack(targets[0])
         } catch (error) {
-            console.error(error)
+            if (!["cooldown", "not_found", "disabled"].includes(error.reason))
+                console.error(error)
         }
         setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
     }
@@ -174,19 +175,25 @@ export abstract class Character {
         try {
             let targets = getAttackingEntities()
             let wantToScare = false
-            for (let target of targets) {
-                if (target.attack * 2 > parent.character.hp // 2 attacks and we're dead.
-                    || targets.length >= 3 // We are scared and our attack is lowered
-                    || !this.targetPriority[target.mtype]) { // Not in our target priority
+            if (targets.length >= 3) {
+                wantToScare = true
+            } else {
+                for (let target of targets) {
+                    if (!this.targetPriority[target.mtype]) {
+                        wantToScare = true
+                        break;
+                    }
+
+                    if (distance(target, parent.character) > target.range) continue; // They're out of range
+                    if (calculateDamageRange(target, parent.character)[1] * 5 / target.frequency <= parent.character.hp) continue; // We can tank a few of their shots
                     wantToScare = true
-                    break
+                    break;
                 }
             }
             if (!isAvailable("scare") // On cooldown
-                || parent.character.mp < 50 // No MP
                 || !wantToScare) { // Can't be easily killed
-                setTimeout(() => { this.scareLoop() }, getCooldownMS("scare"));
-                return;
+                setTimeout(() => { this.scareLoop() }, getCooldownMS("scare"))
+                return
             }
 
 
@@ -194,8 +201,7 @@ export abstract class Character {
                 // We have a jacko equipped
                 use_skill("scare")
             } else {
-                // We have a jacko in our inventory
-                // TODO: Sometimes the orb doesn't get re-equipped...
+                // Check if we have a jacko in our inventory
                 let items = findItems("jacko")
                 if (items.length) {
                     let jackoI = items[0].index
@@ -212,12 +218,17 @@ export abstract class Character {
     protected lastMessage: string;
     protected moveLoop(): void {
         try {
+            if(this.holdPosition) {
+                stop()
+                setTimeout(() => { this.moveLoop() }, 1000)
+                return
+            }
             let movementTarget = this.getMovementTarget()
             if (movementTarget) {
                 // Stop if our target changes
                 if (this.lastMessage !== movementTarget.message) {
                     set_message(movementTarget.message.slice(0, 11))
-                    stop();
+                    stop()
                 }
 
                 this.lastMessage = movementTarget.message
@@ -228,7 +239,7 @@ export abstract class Character {
             }
 
             let targets = this.getTargets(1);
-            if (this.holdPosition || smart.moving) {
+            if (smart.moving) {
                 if (targets.length > 0 /* We have a target in range */
                     && this.targetPriority[targets[0].mtype] && this.targetPriority[targets[0].mtype].stopOnSight /* We stop on sight of that target */
                     && this.pathfinder.movementTarget == targets[0].mtype /* We're moving to that target */
@@ -326,6 +337,8 @@ export abstract class Character {
             if (entity.type != "monster") continue; // Not a monster
             if (entity.aggro == 0) continue; // Not an aggressive monster
             if (entity.target && entity.target != parent.character.name) continue; // Targeting someone else
+            if (calculateDamageRange(entity, parent.character)[1] * 4 / entity.frequency < 400)　continue; // We can outheal the damage from this monster, don't bother moving
+
             let d = Math.max(60, entity.speed * 1.5) - distance(parent.character, entity);
             if (d < 0) continue; // Far away
 
@@ -352,26 +365,27 @@ export abstract class Character {
 
     protected avoidAttackingMonsters(): void {
         // Find all monsters attacking us
-        let attackingMonsters: IEntity[] = getAttackingEntities();
+        let attackingEntities: IEntity[] = getAttackingEntities();
         let currentTarget = get_targeted_monster();
         if (currentTarget) {
-            attackingMonsters.push(currentTarget);
+            attackingEntities.push(currentTarget);
         }
 
-        if (!attackingMonsters) return; // There aren't any monsters attacking us
+        if (!attackingEntities) return; // There aren't any monsters attacking us
 
         // Find the closest monster of those attacking us
         let minDistance = 0;
         let escapePosition: IPosition;
         let minTarget: IEntity = null;
-        for (let target of attackingMonsters) {
-            let d = distance(parent.character, target);
-            if (target.speed > parent.character.speed) continue; // We can't outrun it, don't try
-            if (target.range > parent.character.range) continue; // We can't outrange it, don't try
+        for (let entity of attackingEntities) {
+            if (calculateDamageRange(entity, parent.character)[1] * 4 / entity.frequency < 400)　continue; // We can outheal the damage 
+            let d = distance(parent.character, entity);
+            if (entity.speed > parent.character.speed) continue; // We can't outrun it, don't try
+            if (entity.range > parent.character.range) continue; // We can't outrange it, don't try
             if (d < minDistance) continue; // There's another target that's closer
-            if (d > (target.range + (target.speed + parent.character.speed) * Math.max(parent.character.ping * 0.001, 0.5))) continue; // We're still far enough away to not get attacked
+            if (d > (entity.range + (entity.speed + parent.character.speed) * Math.max(parent.character.ping * 0.001, 0.5))) continue; // We're still far enough away to not get attacked
             minDistance = d;
-            minTarget = target;
+            minTarget = entity;
         }
         if (!minTarget) return; // We're far enough away not to get attacked, or it's impossible to do so
 
@@ -406,7 +420,7 @@ export abstract class Character {
     public moveToMonster(): void {
         let targets = this.getTargets(1);
         if (targets.length == 0 // There aren't any targets to move to
-            || (this.targetPriority[targets[0].mtype] && this.targetPriority[targets[0].mtype].holdPosition) // We don't want to move to these monsters
+            || (this.targetPriority[targets[0].mtype] && this.targetPriority[targets[0].mtype].moveToEntity) // We don't want to move to these monsters
             || distance(parent.character, targets[0]) <= parent.character.range) // We have a target, and it's in range.
             return;
 
@@ -556,14 +570,24 @@ export abstract class Character {
 
         // New monster hunt
         if (!parent.character.s.monsterhunt) {
+            this.pathfinder.movementTarget = undefined;
             return { message: "New MH", target: G.maps.main.ref.monsterhunter }
         }
 
         // Move to a monster hunt
         // TODO: Implement moving to the nearest monster hunt instead of the first one in the array
         // NOTE: Is this really a good idea? What about Phoenix?
+
         if (monsterHuntTargets.length) {
             let potentialTarget = monsterHuntTargets[0];
+
+            // Frog check, because they're super easy to complete with mages or priests
+            if (monsterHuntTargets.includes("frog")
+                && G.items[parent.character.slots.mainhand.name].damage == "magical"
+                && this.targetPriority["frog"]) {
+                potentialTarget = "frog"
+            }
+
             this.pathfinder.movementTarget = potentialTarget;
             if (this.targetPriority[potentialTarget].map && this.targetPriority[potentialTarget].x && this.targetPriority[potentialTarget].y) {
                 return { message: "MH " + potentialTarget, target: this.targetPriority[potentialTarget] as IPositionReal }
@@ -658,13 +682,13 @@ export abstract class Character {
             if (this.targetPriority[potentialTarget.mtype]) priority = this.targetPriority[potentialTarget.mtype].priority;
 
             // Adjust priority if a party member is already attacking it and it has low HP
-            if (claimedTargets.includes(id) && potentialTarget.hp <= parent.character.attack) priority -= parent.character.range;
+            if (claimedTargets.includes(id) && potentialTarget.hp <= calculateDamageRange(parent.character, potentialTarget)[0]) priority -= parent.character.range;
 
             // Increase priority if it's our "main target"
             if (potentialTarget.mtype == this.mainTarget) priority += 10;
 
             // Increase priority if it's our movement target
-            if (potentialTarget.mtype == this.pathfinder.movementTarget) priority += parent.character.range;
+            if (potentialTarget.mtype == this.pathfinder.movementTarget) priority += parent.character.range * 2;
 
             // Increase priority if the entity is targeting us
             if (potentialTarget.target == parent.character.name) priority += parent.character.range * 2;

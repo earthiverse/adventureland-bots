@@ -177,7 +177,7 @@ export class Pathfinder {
         let grid = new PF.Grid(Math.ceil(width / this.factor), Math.ceil(height / this.factor));
 
         // Add the vertical as walls
-        geometry.x_lines.forEach((line) => {
+        for(let line of geometry.x_lines) {
             let x_start = -geometry.min_x + line[0] - this.padding[3]; // left
             if (x_start < 0) x_start = 0
             let x_end = -geometry.min_x + line[0] + this.padding[1]; // right
@@ -192,10 +192,10 @@ export class Pathfinder {
                     grid.setWalkableAt(x, y, false)
                 }
             }
-        })
+        }
 
         // Add the horizontal lines as walls
-        geometry.y_lines.forEach((line) => {
+        for(let line of geometry.y_lines) {
             let x_start = -geometry.min_x + (line[1] > line[2] ? line[2] : line[1]) - this.padding[3]; // left
             if (x_start < 0) x_start = 0
             let x_end = -geometry.min_x + (line[1] > line[2] ? line[1] : line[2]) + this.padding[1]; // right
@@ -210,7 +210,7 @@ export class Pathfinder {
                     grid.setWalkableAt(x, y, false)
                 }
             }
-        })
+        }
 
         this.grids[mapName] = grid;
     }

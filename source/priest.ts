@@ -112,7 +112,7 @@ class Priest extends Character {
 
     protected async attackLoop(): Promise<void> {
         try {
-            if (parent.character.hp < parent.character.max_hp - parent.character.attack * 0.5) {
+            if (parent.character.hp < parent.character.max_hp - parent.character.attack * 0.9) {
                 heal(parent.character)
                 setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
                 return
@@ -122,7 +122,7 @@ class Priest extends Character {
             for (let member of parent.party_list || []) {
                 if (parent.entities[member]) {
                     if (distance(parent.character, parent.entities[member]) < parent.character.range
-                        && parent.entities[member].hp <= parent.entities[member].max_hp - parent.character.attack * 0.5) {
+                        && parent.entities[member].hp <= parent.entities[member].max_hp - parent.character.attack * 0.9) {
                         heal(parent.entities[member])
                         setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
                         return

@@ -87,14 +87,12 @@ export function compoundIfMany(maxLevel: number) {
     if (!foundUpgrade) return; // Can't upgrade, nobody is near.
     if (parent.character.q.compound) return; // Already compounding
 
-    // name, level, slot #
-    // TODO: Change this to a custom object
     let items: MyItemInfo[] = [];
-    getInventory().forEach((item) => {
-        if (!G.items[item.name].compound) return; // We can't compound this item
-        if (item.level >= maxLevel) return; // The item level's higher than we want to upgrade
+    for (let item of getInventory()) {
+        if (!G.items[item.name].compound) continue; // We can't compound this item
+        if (item.level >= maxLevel) continue; // The item level's higher than we want to upgrade
         items.push(item)
-    })
+    }
     items.sort((a, b) => {
         if (a.name > b.name) return 1;
         if (a.level > b.level) return 1;
@@ -137,7 +135,7 @@ export function upgradeIfMany(maxLevel: number) {
         }
     }
     if (!foundUpgrade) return; // Can't upgrade, nobody is near.
-    if (parent.character.q && parent.character.q["upgrade"]) return; // Already upgrading
+    if (parent.character.q.upgrade) return; // Already upgrading
     for (let i = 0; i < 42; i++) {
         if (!parent.character.items[i]) continue; // No item in this slot
         if (!(G.items[parent.character.items[i].name].upgrade)) continue; // Not upgradable
