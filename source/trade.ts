@@ -1,5 +1,6 @@
-import { ItemName } from "./definitions/adventureland";
-import { findItems, findItemsWithLevel, findItem } from "./functions";
+import { ItemName, NPCType } from "./definitions/adventureland";
+import { findItems, findItem, getInventory } from "./functions";
+import { MyItemInfo } from "./definitions/bots";
 let defaultItemsToKeep: ItemName[] = ["tracker", // Tracker
     "mpot0", "mpot1", "hpot0", "hpot1", // Potions
     "jacko"] // Useful for avoiding monsters
@@ -46,7 +47,7 @@ export function openMerchantStand() {
 }
 
 export function closeMerchantStand() {
-    if (parent.character.slots.trade16 === null) // Checks if the stand is open
+    if (parent.character.slots.trade16 !== undefined) // Checks if the stand is open
         parent.close_merchant()
 }
 
@@ -106,57 +107,52 @@ export function transferGoldToMerchant(merchantName: string, minimumGold: number
     send_gold(merchantName, parent.character.gold - minimumGold);
 }
 
-// TODO: Add check for shells
-export function exchangeItems(xynExchangeItems: ItemName[] = ["gem0", "gem1", "armorbox", "weaponbox", "candy0", "candy1", "candycane", "mistletoe", "ornament"]) {
-    // Xyn (Most exchanges)
-    let foundUpgrade = false;
+export function exchangeItems() {
+    if (parent.character.q["exchange"]) return; // Already exchanging something
+
+    let nearbyNPCs: NPCType[] = []
     for (let npc of parent.npcs) {
-        if (npc.id == "exchange" && distance(parent.character, {
+        if (distance(parent.character, {
             x: npc.position[0],
             y: npc.position[1]
-        }) < 250) {
-            foundUpgrade = true;
-            break;
-        }
-    }
-    if (foundUpgrade && !parent.character.q["exchange"]) {
-        for (let itemName of xynExchangeItems) {
-            let items = findItems(itemName)
-            if (items.length > 0) {
-                parent.socket.emit("exchange", {
-                    item_num: items[0].index,
-                    q: items[0].q
-                });
-                return;
-            }
-        }
+        }) < 250)
+            nearbyNPCs.push(npc.id)
     }
 
-    // Pwincess
-    foundUpgrade = false;
-    for (let npc of parent.npcs) {
-        if (npc.id == "pwincess" && distance(parent.character, {
-            x: npc.position[0],
-            y: npc.position[1]
-        }) < 250) {
-            foundUpgrade = true;
-            break;
+    let exchangableItems: { [T in NPCType]?: MyItemInfo[] } = {}
+    for (let item of getInventory()) {
+        let gInfo = G.items[item.name]
+        let amountNeeded = gInfo.e
+        if (!amountNeeded || amountNeeded > item.q) continue // Not exchangable, or not enough
+
+        let npc: NPCType
+        if (gInfo.type == "quest") {
+            npc = G.quests[gInfo.quest].id
+        } else if (gInfo.type == "box" || gInfo.type == "gem") {
+            npc = "exchange"
+        } else if (item.name == "lostearring" && item.level == 2) {
+            // NOTE: We're only exchanging level 2 earrings, because we want agile quivers
+            npc = "pwincess"
         }
+
+        // Add the item to our list of exchangable items
+        if (!exchangableItems[npc]) exchangableItems[npc] = []
+        exchangableItems[npc].push(item)
     }
-    if (foundUpgrade && !parent.character.q["exchange"]) {
-        // TODO: Move this to a parameter
-        // NOTE: We are only exchanging level 2 lost earrings, because we want agile quivers
-        let items = findItemsWithLevel("lostearring", 2)
-        if (items.length) {
-            parent.socket.emit("exchange", {
-                item_num: items[0].index,
-                q: items[0].q
-            });
-            return;
-        }
+
+    for (let npc in exchangableItems) {
+        if (!nearbyNPCs.includes(npc as NPCType)) continue // Not near
+
+        // Exchange something!
+        let item = exchangableItems[npc as NPCType][0]
+        parent.socket.emit("exchange", {
+            item_num: item.index,
+            q: item.q
+        })
+        return // We can only exchange one item at a time
     }
 }
 
-export function buyPots(hpPotName: ItemName, hpPotQuantity: number, mpPotName: ItemName, mpPotQuantity: number) {
+export function buyPots() {
 
 }

@@ -127,6 +127,10 @@ declare global {
       name: string
       role: NPCRole
     } }
+    // TODO: Get list of quest names
+    quests: { [T in string]: IPositionReal & {
+      id: NPCType
+    } }
     skills: { [T in SkillName]: {
       cooldown: number
       damage_multiplier?: number
@@ -170,7 +174,7 @@ export interface G_Item {
   upgrade?: {
     [T in AttributeType]?: number
   }
-  type: "box" | "cape" | "material" | "misc"
+  type: ItemType
 }
 
 /**
@@ -342,6 +346,15 @@ export type CharacterType =
 export type DamageType =
   | "magical"
   | "physical"
+
+// TODO: Get all types
+export type ItemType =
+  | "box"
+  | "cape"
+  | "gem"
+  | "material"
+  | "misc"
+  | "quest"
 
 export type MonsterType =
   | "arcticbee"
