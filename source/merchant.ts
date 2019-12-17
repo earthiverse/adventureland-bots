@@ -55,7 +55,7 @@ class Merchant extends Character {
             if (name == parent.character.name) continue; // Don't move to ourself
 
             let player = this.info.party[name]
-            if (player && player.s && (!player.s.mluck || player.s.mluck.f !== "earthMer")) {
+            if (player && player.s && (!player.s.mluck || player.s.mluck.f != "earthMer")) {
                 return { message: "ML " + name, target: player }
             }
         }
@@ -110,7 +110,7 @@ class Merchant extends Character {
 
             upgradeIfMany(8);
             compoundIfMany(4);
-            
+
             buyIfNone("blade", 9, 2)
             upgradeItem("blade", 9)
 
@@ -151,10 +151,10 @@ class Merchant extends Character {
         buyFromPonty(["strbelt", "strring", "intbelt", "intring", "dexbelt", "dexring", // High priority things
             "intearring", "dexearring", "strearring", "dexamulet", "intamulet", // Low priority things
             /* "wgloves", "wshoes", "wattire", // I want to get all +8 for my ranger */
-            "bfur", // Craftables that are usable for things
+            "bfur", "goldnugget", "goldingot", "platinumnugget", "platinumingot", // Craftables that are usable for things
             "pmace", // I want a nice mace for my priest
             "5bucks", "candy0", "candy1", "candycane", "gem0", "gem1", "leather", "mistletoe", "monstertoken", "ornament", "seashell", // Exchangables
-            "lostearring", "jacko", "cape", "bcape", "t2bow", "cupid", "candycanesword", "merry", "ornamentstaff", "merry", "bowofthedead", "gbow", "hbow", "t2quiver", "oozingterror", "talkingskull", "greenbomb", "xboots", "handofmidas", "goldenpowerglove", "xgloves", "powerglove", "poker", "starkillers", "xpants", "xarmor", "xhelmet", "fury", "partyhat"]); // Other things
+            "luckbooster", "goldbooster", "bottleofxp", "bugbountybox", "dartgun", "networkcard", "lostearring", "jacko", "cape", "bcape", "t2bow", "cupid", "candycanesword", "merry", "ornamentstaff", "merry", "bowofthedead", "gbow", "hbow", "t2quiver", "oozingterror", "talkingskull", "greenbomb", "xboots", "handofmidas", "goldenpowerglove", "xgloves", "powerglove", "poker", "starkillers", "xpants", "xarmor", "xhelmet", "fury", "partyhat"]); // Other things
 
         // We bought things from Ponty, wait a long time before trying to buy again.
         setTimeout(() => { this.pontyLoop() }, 15000);
@@ -162,7 +162,7 @@ class Merchant extends Character {
 
     private didBankStuff = 0;
     private async bankStuff() {
-        if (parent.character.map !== "bank") {
+        if (parent.character.map != "bank") {
             return;
         } else if (Date.now() - this.didBankStuff < 10000) {
             return;

@@ -72,8 +72,8 @@ class Ranger extends Character {
         "greenjr": {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
-            "stopOnSight": true,
-            "moveToEntity": false
+            "holdAttackWhileMoving": true,
+            "stopOnSight": true
         },
         "hen": {
             "priority": EASY
@@ -86,8 +86,8 @@ class Ranger extends Character {
         "jr": {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
-            "stopOnSight": true,
-            "moveToEntity": false
+            "holdAttackWhileMoving": true,
+            "stopOnSight": true
         },
         "minimush": {
             "priority": EASY,
@@ -101,16 +101,6 @@ class Ranger extends Character {
             "priority": SPECIAL,
             "stopOnSight": true
         },
-        // "oneeye": {
-        //     // Camp out at a spot that's 99% safe.
-        //     "holdAttackInEntityRange": true,
-        //     "holdAttackWhileMoving": true,
-        //     "moveToEntity": true,
-        //     "priority": DIFFICULT,
-        //     "map": "level2w",
-        //     "x": -120,
-        //     "y": -100
-        // },
         "osnake": {
             "priority": EASY,
             "stopOnSight": true
@@ -128,7 +118,7 @@ class Ranger extends Character {
             // Go to a cliff where we can attack them, but they can't attack us.
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
-            "moveToEntity": true,
+            "holdPositionFarm": true,
             "priority": DIFFICULT,
             "map": "level1",
             "x": -300,
@@ -183,7 +173,7 @@ class Ranger extends Character {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
-            "moveToEntity": true,
+            "holdPositionFarm": true,
             "map": "halloween",
             "x": -230,
             "y": 570

@@ -56,14 +56,14 @@ export function wantToAttack(c: Character, e: IEntity, s: SkillName = "attack"):
     if (parent.character.mp < mp) return false; // Insufficient MP
 
     if (!c.targetPriority[e.mtype]) return false // Not a priority
-    if (e.target !== parent.character.id) {
+    if (e.target != parent.character.id) {
         // Hold attack
         if (c.holdAttack) return false
         if (smart.moving && c.targetPriority[e.mtype].holdAttackWhileMoving) return false
         if (c.targetPriority[e.mtype].holdAttackInEntityRange && distanceToEntity <= e.range) return false
 
         // Low HP
-        if (calculateDamageRange(e, parent.character)[1] * 5 / e.frequency > parent.character.hp && distanceToEntity <= e.range) return false
+        if (calculateDamageRange(e, parent.character)[1] * 5 * e.frequency > parent.character.hp && distanceToEntity <= e.range) return false
     }
 
     return true;
@@ -103,7 +103,7 @@ export function getEmptySlots(store: ItemInfo[]): number[] {
 }
 
 export function getEmptyBankSlots(): EmptyBankSlots[] {
-    if (parent.character.map !== "bank") return; // We can only find out what bank slots we have if we're on the bank map.
+    if (parent.character.map != "bank") return; // We can only find out what bank slots we have if we're on the bank map.
 
     let emptySlots: EmptyBankSlots[] = []
 
@@ -132,7 +132,7 @@ export function getAttackingEntities(): IEntity[] {
     let isPVP = is_pvp();
     for (let id in parent.entities) {
         let entity = parent.entities[id]
-        if (entity.target !== parent.character.id) continue; // Not being targeted by this entity
+        if (entity.target != parent.character.id) continue; // Not being targeted by this entity
         if (isPlayer(entity) && !isPVP) continue; // Not PVP, ignore players
 
         entitites.push(entity)
@@ -152,7 +152,7 @@ export function getRandomMonsterSpawnPosition(type: MonsterType): MonsterSpawnPo
         let map = G.maps[id as MapName];
         if (map.instance) continue;
         for (let monster of map.monsters || []) {
-            if (monster.type !== type) continue;
+            if (monster.type != type) continue;
             if (monster.boundary) {
                 potentialLocations.push({ "map": id as MapName, "x": (monster.boundary[0] + monster.boundary[2]) / 2, "y": (monster.boundary[1] + monster.boundary[3]) / 2 })
             } else if (monster.boundaries) {
@@ -177,7 +177,7 @@ export function getNearbyMonsterSpawns(position: IPosition, radius: number = 100
             if (distance(position, location) < radius) locations.push({ ...location, monster: monster.type })
         } else if (monster.boundaries) {
             for (let boundary of monster.boundaries) {
-                if (boundary[0] !== position.map) continue;
+                if (boundary[0] != position.map) continue;
                 let location = { "map": position.map, "x": (boundary[1] + boundary[3]) / 2, "y": (boundary[2] + boundary[4]) / 2 }
                 if (distance(position, location) < radius) locations.push({ ...location, monster: monster.type })
             }

@@ -69,8 +69,8 @@ class Mage extends Character {
         "greenjr": {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
-            "stopOnSight": true,
-            "moveToEntity": false
+            "holdAttackWhileMoving": true,
+            "stopOnSight": true
         },
         "hen": {
             "priority": EASY
@@ -84,8 +84,8 @@ class Mage extends Character {
         "jr": {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
-            "stopOnSight": true,
-            "moveToEntity": false
+            "holdAttackWhileMoving": true,
+            "stopOnSight": true
         },
         "minimush": {
             "priority": EASY,
@@ -99,22 +99,18 @@ class Mage extends Character {
             "priority": SPECIAL,
             "stopOnSight": true
         },
-        // "oneeye": {
-        //     // Camp out at a spot that's 99% safe.
-        //     "holdAttackWhileMoving": true,
-        //     "moveToEntity": true,
-        //     "holdAttackInEntityRange": true,
-        //     "priority": DIFFICULT,
-        //     "map": "level2w",
-        //     "x": -120,
-        //     "y": -100
-        // },
         "osnake": {
             "priority": EASY,
             "stopOnSight": true
         },
         "phoenix": {
             "priority": SPECIAL
+        },
+        "plantoid": {
+            "priority": DIFFICULT,
+            "holdAttackInEntityRange": true,
+            "stopOnSight": true,
+            "holdAttackWhileMoving": true
         },
         "poisio": {
             "priority": EASY
@@ -125,7 +121,7 @@ class Mage extends Character {
         "prat": {
             // Our plan is to go to a spot on a cliff where they can't attack us, but we can attack them.
             "holdAttackWhileMoving": true,
-            "moveToEntity": true,
+            "holdPositionFarm": true,
             "holdAttackInEntityRange": true,
             "priority": DIFFICULT,
             "map": "level1",
@@ -175,7 +171,7 @@ class Mage extends Character {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
-            "moveToEntity": true,
+            "holdPositionFarm": true,
             "map": "halloween",
             "x": -230,
             "y": 570

@@ -56,6 +56,12 @@ class Priest extends Character {
             "priority": EASY,
             "stopOnSight": true
         },
+        "plantoid": {
+            "priority": DIFFICULT,
+            "holdAttackInEntityRange": true,
+            "stopOnSight": true,
+            "holdAttackWhileMoving": true
+        },
         "poisio": {
             "priority": EASY
         },

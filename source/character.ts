@@ -24,7 +24,7 @@ export abstract class Character {
 
     protected mainLoop() {
         // Equip better items if we have one in our inventory
-        if (parent.character.ctype !== "merchant") {
+        if (parent.character.ctype != "merchant") {
             this.equipBetterItems()
             this.getMonsterhuntQuest()
         }
@@ -53,23 +53,21 @@ export abstract class Character {
      */
     protected sendInfoLoop() {
         try {
-            let message: any;
-
             // Chests
-            let chests = [];
-            let i = 0;
+            let chests: { [T in string]: IPositionReal } = {}
             for (let chestID in parent.chests) {
-                chests.push(chestID);
-                if (++i > 50) break;
-            }
-            if (i > 0) {
-                message = {
-                    "message": "chests",
-                    "chests": chests
+                chests[chestID] = {
+                    x: parent.chests[chestID].x,
+                    y: parent.chests[chestID].y,
+                    map: parent.chests[chestID].map
                 }
-                sendMassCM(parent.party_list, message)
-                this.parse_cm(parent.character.name, message)
             }
+            let message: any = {
+                "message": "chests",
+                "chests": chests
+            }
+            sendMassCM(parent.party_list, message)
+            this.parse_cm(parent.character.name, message)
 
             // Information about us
             message = {
@@ -77,6 +75,7 @@ export abstract class Character {
                 "info": {
                     "canMonsterHunt": this.canMonsterHunt(),
                     "items": getInventory(),
+                    "luckm": parent.character.luckm,
                     "map": parent.character.map,
                     "x": parent.character.real_x,
                     "y": parent.character.real_y,
@@ -154,8 +153,23 @@ export abstract class Character {
         let i = 0
         for (let chestID in parent.chests) {
             let chest = parent.chests[chestID]
-            if (distance(parent.character, chest) < 800) parent.socket.emit("open_chest", { id: chestID }) // It's 800 as per @Wizard in #feedback on 11/26/2019
-            if (++i > 20) break // Only open 20 chests at a time help with server call costs
+            if (distance(parent.character, chest) > 800) continue // Chests over a 800 radius have a penalty as per @Wizard in #feedback (Discord) on 11/26/2019
+
+            let shouldLoot = true;
+            // for (let id of parent.party_list) {
+            //     if (id == parent.character.id) continue // Skip ourself
+
+            //     let partyMember = parent.entities[id]
+            //     if (!partyMember) continue // Party member isn't near us, we should loot over them
+            //     if (distance(partyMember, chest) > 800) continue // Party member is too far away from the chest, we should loot over them
+            //     //if (!this.info.party[id] || parent.character.luckm > this.info.party[id].luckm) continue // We have higher +luck, we should loot over them
+
+            //     shouldLoot = false
+            //     break
+            // }
+
+            if (shouldLoot) parent.socket.emit("open_chest", { id: chestID })
+            if (++i > 10) break // Only open 10 chests at a time to help with server call costs
         }
     }
 
@@ -185,7 +199,7 @@ export abstract class Character {
                     }
 
                     if (distance(target, parent.character) > target.range) continue; // They're out of range
-                    if (calculateDamageRange(target, parent.character)[1] * 5 / target.frequency <= parent.character.hp) continue; // We can tank a few of their shots
+                    if (calculateDamageRange(target, parent.character)[1] * 6 * target.frequency <= parent.character.hp) continue; // We can tank a few of their shots
                     wantToScare = true
                     break;
                 }
@@ -218,7 +232,7 @@ export abstract class Character {
     protected lastMessage: string;
     protected moveLoop(): void {
         try {
-            if(this.holdPosition) {
+            if (this.holdPosition) {
                 stop()
                 setTimeout(() => { this.moveLoop() }, 1000)
                 return
@@ -226,7 +240,7 @@ export abstract class Character {
             let movementTarget = this.getMovementTarget()
             if (movementTarget) {
                 // Stop if our target changes
-                if (this.lastMessage !== movementTarget.message) {
+                if (this.lastMessage != movementTarget.message) {
                     set_message(movementTarget.message.slice(0, 11))
                     stop()
                 }
@@ -337,7 +351,7 @@ export abstract class Character {
             if (entity.type != "monster") continue; // Not a monster
             if (entity.aggro == 0) continue; // Not an aggressive monster
             if (entity.target && entity.target != parent.character.name) continue; // Targeting someone else
-            if (calculateDamageRange(entity, parent.character)[1] * 4 / entity.frequency < 400)　continue; // We can outheal the damage from this monster, don't bother moving
+            if (calculateDamageRange(entity, parent.character)[1] * 3 * entity.frequency < 400) continue; // We can outheal the damage from this monster, don't bother moving
 
             let d = Math.max(60, entity.speed * 1.5) - distance(parent.character, entity);
             if (d < 0) continue; // Far away
@@ -378,7 +392,7 @@ export abstract class Character {
         let escapePosition: IPosition;
         let minTarget: IEntity = null;
         for (let entity of attackingEntities) {
-            if (calculateDamageRange(entity, parent.character)[1] * 4 / entity.frequency < 400)　continue; // We can outheal the damage 
+            if (calculateDamageRange(entity, parent.character)[1] * 3 * entity.frequency < 400) continue; // We can outheal the damage 
             let d = distance(parent.character, entity);
             if (entity.speed > parent.character.speed) continue; // We can't outrun it, don't try
             if (entity.range > parent.character.range) continue; // We can't outrange it, don't try
@@ -420,7 +434,7 @@ export abstract class Character {
     public moveToMonster(): void {
         let targets = this.getTargets(1);
         if (targets.length == 0 // There aren't any targets to move to
-            || (this.targetPriority[targets[0].mtype] && this.targetPriority[targets[0].mtype].moveToEntity) // We don't want to move to these monsters
+            || (this.targetPriority[targets[0].mtype] && this.targetPriority[targets[0].mtype].holdPositionFarm) // We don't want to move to these monsters
             || distance(parent.character, targets[0]) <= parent.character.range) // We have a target, and it's in range.
             return;
 
@@ -459,10 +473,10 @@ export abstract class Character {
     }
 
     public parse_cm(characterName: string, data: any) {
-        if (!parent.party_list.includes(characterName) && parent.character.name !== characterName) {
+        if (!parent.party_list.includes(characterName) && parent.character.name != characterName) {
             // Ignore messages from players not in our party
-            game_log("Blocked CM from " + characterName);
-            return;
+            game_log("Blocked CM from " + characterName)
+            return
         }
 
         if (data.message == "info") {
@@ -471,12 +485,14 @@ export abstract class Character {
             this.info.npcs[data.id as NPCName] = data.info
         } else if (data.message == "player") {
             this.info.players[data.id] = data.info
+        } else if (data.message == "chests") {
+            for (let chestID in data.chests) {
+                if (!parent.chests[chestID]) parent.chests[chestID] = data.chests[chestID]
+            }
         }
     }
 
-    /**
-     * Looks if we have items in our inventory that are the same as those equipped, only a higher level.
-     */
+    /** Looks for equipment in our inventory, and if it's more applicable to the current situation, equip it */
     public equipBetterItems() {
         let items = getInventory();
 
@@ -485,7 +501,7 @@ export abstract class Character {
             let betterItem: MyItemInfo
             if (!slotItem) continue; // Nothing equipped in that slot
             for (let item of items) {
-                if (item.name !== slotItem.name) continue; // Not the same item
+                if (item.name != slotItem.name) continue; // Not the same item
                 if (item.level <= slotItem.level) continue; // Not better than the currently equipped item
 
                 // We found something better

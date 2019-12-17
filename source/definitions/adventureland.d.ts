@@ -5,9 +5,9 @@ declare global {
     open_merchant(standInventoryPostion: number)
 
     character: ICharacter
-    chests: (IPosition & {
-      id: string
-    })[]
+    chests: {
+      [id: string]: IPositionReal
+    }
     entities: { [id: string]: IEntity }
     next_skill: { [T in SkillName]?: Date }
     npcs: G_NPC_1[]
@@ -187,7 +187,12 @@ export interface ICharacter extends IEntity {
     gold: number
   }
   items: ItemInfo[]
+  /** Amount of gold the player has in its inventory */
   gold: number
+  /** Gold multiplier */
+  goldm: number
+  /** Luck multiplier. */
+  luckm: number
   ping: number
   // TODO: Actually figure this out
   q: {

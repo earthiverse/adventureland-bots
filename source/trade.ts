@@ -112,6 +112,8 @@ export function exchangeItems() {
 
     let nearbyNPCs: NPCType[] = []
     for (let npc of parent.npcs) {
+        if(!npc.position) continue // NPC doesn't have a position
+
         if (distance(parent.character, {
             x: npc.position[0],
             y: npc.position[1]

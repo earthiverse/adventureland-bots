@@ -12,7 +12,7 @@ export interface TargetPriorityInfo {
     /** If set to true, we will not attack the entity if we are within their attacking range */
     holdAttackInEntityRange?: boolean;
     /** If true, we won't move to attack the monsters. Use this with map, x, and y to go to a safe (unreachable) spot. */
-    moveToEntity?: boolean;
+    holdPositionFarm?: boolean;
     /** When smart moving to this monster, if true, we will stop when we see one within attacking range. */
     stopOnSight?: boolean;
     /** The map where we will move to find this monster. */
@@ -37,6 +37,7 @@ export type OtherInfo = {
         [T in string]?: IPositionReal & {
             canMonsterHunt: boolean
             items: MyItemInfo[]
+            luckm: number
             s: StatusInfo
         }
     }
@@ -49,8 +50,6 @@ export type OtherInfo = {
 }
 
 export type MyItemInfo = ItemInfo & {
-    /**
-     * Specifies the index of the 
-     */
+    /** Specifies the index of the item in the inventory */
     index: number;
 }
