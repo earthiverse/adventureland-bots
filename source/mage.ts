@@ -106,12 +106,12 @@ class Mage extends Character {
         "phoenix": {
             "priority": SPECIAL
         },
-        "plantoid": {
-            "priority": DIFFICULT,
-            "holdAttackInEntityRange": true,
-            "stopOnSight": true,
-            "holdAttackWhileMoving": true
-        },
+        // "plantoid": {
+        //     "priority": DIFFICULT,
+        //     "holdAttackInEntityRange": true,
+        //     "stopOnSight": true,
+        //     "holdAttackWhileMoving": true
+        // },
         "poisio": {
             "priority": EASY
         },
@@ -177,7 +177,7 @@ class Mage extends Character {
             "y": 570
         }
     }
-    mainTarget: MonsterType = "rat";
+    mainTarget: MonsterType = "poisio";
 
     run(): void {
         super.run();

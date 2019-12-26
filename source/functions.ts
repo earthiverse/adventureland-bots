@@ -55,12 +55,15 @@ export function wantToAttack(c: Character, e: IEntity, s: SkillName = "attack"):
     let mp = G.skills[s].mp ? G.skills[s].mp : parent.character.mp_cost
     if (parent.character.mp < mp) return false; // Insufficient MP
 
-    if (!c.targetPriority[e.mtype]) return false // Not a priority
+    if (s != "attack" && e.immune) return false // We can't damage it with non-attacks
+    if (s != "attack" && e["1hp"]) return false // We only do one damage, don't use special attacks
+
     if (e.target != parent.character.id) {
         // Hold attack
-        if (c.holdAttack) return false
-        if (smart.moving && c.targetPriority[e.mtype].holdAttackWhileMoving) return false
-        if (c.targetPriority[e.mtype].holdAttackInEntityRange && distanceToEntity <= e.range) return false
+        if (c.holdAttack) return false // Holding all attacks
+        if (!c.targetPriority[e.mtype]) return false // Holding attacks against things not in our priority list
+        if (smart.moving && c.targetPriority[e.mtype].holdAttackWhileMoving) return false // Holding attacks while moving
+        if (c.targetPriority[e.mtype].holdAttackInEntityRange && distanceToEntity <= e.range) return false // Holding attacks in range
 
         // Low HP
         if (calculateDamageRange(e, parent.character)[1] * 5 * e.frequency > parent.character.hp && distanceToEntity <= e.range) return false
@@ -175,11 +178,13 @@ export function getNearbyMonsterSpawns(position: IPosition, radius: number = 100
         if (monster.boundary) {
             let location = { "map": position.map as MapName, "x": (monster.boundary[0] + monster.boundary[2]) / 2, "y": (monster.boundary[1] + monster.boundary[3]) / 2 };
             if (distance(position, location) < radius) locations.push({ ...location, monster: monster.type })
+            else if (position.x >= monster.boundary[0] && position.x <= monster.boundary[2] && position.y >= monster.boundary[1] && position.y <= monster.boundary[3]) locations.push({ ...location, monster: monster.type })
         } else if (monster.boundaries) {
             for (let boundary of monster.boundaries) {
                 if (boundary[0] != position.map) continue;
                 let location = { "map": position.map, "x": (boundary[1] + boundary[3]) / 2, "y": (boundary[2] + boundary[4]) / 2 }
                 if (distance(position, location) < radius) locations.push({ ...location, monster: monster.type })
+                else if (position.x >= boundary[1] && position.x <= boundary[3] && position.y >= boundary[2] && position.y <= boundary[4]) locations.push({ ...location, monster: monster.type })
             }
         }
     }

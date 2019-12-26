@@ -35,14 +35,19 @@ export type EmptyBankSlots = {
 export type OtherInfo = {
     party: {
         [T in string]?: IPositionReal & {
-            canMonsterHunt: boolean
+            shouldSwitchServer: boolean
             items: MyItemInfo[]
+            goldm: number
             luckm: number
+            attack: number
+            frequency: number
             s: StatusInfo
         }
     }
     npcs: {
-        [T in NPCName]?: IPositionReal
+        [T in NPCName]?: IPositionReal & {
+            lastSeen: Date
+        }
     }
     players: {
         [T in string]?: IEntity

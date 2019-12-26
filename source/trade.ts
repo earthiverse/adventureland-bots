@@ -107,12 +107,34 @@ export function transferGoldToMerchant(merchantName: string, minimumGold: number
     send_gold(merchantName, parent.character.gold - minimumGold);
 }
 
+// TODO: Add an agrument for a list of items to dismantle
+export function dismantleItems() {
+    let foundGuy = false;
+    for (let npc of parent.npcs) {
+        if (npc.id == "craftsman" && distance(parent.character, {
+            x: npc.position[0],
+            y: npc.position[1]
+        }) < 250) {
+            foundGuy = true;
+            break;
+        }
+    }
+    if (!foundGuy) return; // We're not near the dismantle guy
+
+    let goldEarrings = findItems("lostearring")
+    if (parent.character.gold >= G.dismantle["lostearring"].cost) {
+        for (let earring of goldEarrings) {
+            parent.socket.emit("dismantle", { num: earring.index })
+        }
+    }
+}
+
 export function exchangeItems() {
     if (parent.character.q["exchange"]) return; // Already exchanging something
 
     let nearbyNPCs: NPCType[] = []
     for (let npc of parent.npcs) {
-        if(!npc.position) continue // NPC doesn't have a position
+        if (!npc.position) continue // NPC doesn't have a position
 
         if (distance(parent.character, {
             x: npc.position[0],
@@ -120,6 +142,7 @@ export function exchangeItems() {
         }) < 250)
             nearbyNPCs.push(npc.id)
     }
+    if (!nearbyNPCs.length) return;
 
     let exchangableItems: { [T in NPCType]?: MyItemInfo[] } = {}
     for (let item of getInventory()) {
@@ -128,33 +151,55 @@ export function exchangeItems() {
         if (!amountNeeded || amountNeeded > item.q) continue // Not exchangable, or not enough
 
         let npc: NPCType
-        if (gInfo.type == "quest") {
+        if (gInfo.quest) {
             npc = G.quests[gInfo.quest].id
         } else if (gInfo.type == "box" || gInfo.type == "gem") {
             npc = "exchange"
         } else if (item.name == "lostearring" && item.level == 2) {
             // NOTE: We're only exchanging level 2 earrings, because we want agile quivers
             npc = "pwincess"
+        } else {
+            continue
         }
 
         // Add the item to our list of exchangable items
         if (!exchangableItems[npc]) exchangableItems[npc] = []
         exchangableItems[npc].push(item)
     }
+    if (!Object.keys(exchangableItems).length) return
 
     for (let npc in exchangableItems) {
         if (!nearbyNPCs.includes(npc as NPCType)) continue // Not near
 
         // Exchange something!
         let item = exchangableItems[npc as NPCType][0]
-        parent.socket.emit("exchange", {
-            item_num: item.index,
-            q: item.q
-        })
+
+        console.log(item)
+
+        exchange(item.index)
         return // We can only exchange one item at a time
     }
 }
 
 export function buyPots() {
+    let foundNPC = false;
+    for (let npc of parent.npcs.filter(npc => G.npcs[npc.id].role == "merchant")) {
+        if (distance(parent.character, {
+            x: npc.position[0],
+            y: npc.position[1]
+        }) < 350) {
+            foundNPC = true;
+            break;
+        }
+    }
+    if (!foundNPC) return; // Can't buy things, nobody is near.
 
+    let numMP = findItems("mpot1").reduce((a, b) => a + b.q, 0)
+    let numHP = findItems("hpot1").reduce((a, b) => a + b.q, 0)
+
+    if (numMP < 9999) {
+        buy_with_gold("mpot1", Math.min(9999 - numMP, parent.character.gold / G.items["mpot1"].g))
+    } else if (numHP < 9999) {
+        buy_with_gold("hpot1", Math.min(9999 - numHP, parent.character.gold / G.items["hpot1"].g))
+    }
 }

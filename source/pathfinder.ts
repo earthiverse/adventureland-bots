@@ -14,14 +14,15 @@ export class Pathfinder {
     private grids: any = {};
     public movementTarget: MonsterType | string;
 
-    constructor(factor: number = 8, padding = [10, 8, 7, 8]) {
+    //constructor(factor: number = 8, padding = [10, 8, 7, 8]) {
+    constructor(factor: number = 8, padding = [11, 9, 8, 9]) {
         this.factor = factor;
         this.padding = padding;
     }
 
     public saferMove(to: IPosition) {
         if (smart.moving) return; // Already moving somewhere
-        if (distance(parent.character, to) < 50) return; // Already nearby
+        if (distance(parent.character, to) < 10) return; // Already nearby
         if (!to.map) to.map = parent.character.map // Add a map if we don't have one
 
         // Try to use our own pathfinding if we are on the same map
@@ -76,8 +77,7 @@ export class Pathfinder {
         let alPath: IPositionReal[] = [];
 
         // If we're too close to a wall our pathfinding fails. This next section finds us the closest walkable space so we can start searching from there
-        let pathfinderFromX = Math.floor((-G.geometry[mapName].min_x + from.x) / this.factor)
-        let pathfinderFromY = Math.floor((-G.geometry[mapName].min_y + from.y) / this.factor)
+        let [pathfinderFromX, pathfinderFromY] = this.realToCell(from.x, from.y, mapName)
         if (!grid.isWalkableAt(pathfinderFromX, pathfinderFromY)) {
             let dx = 1
             let dy = 0
@@ -85,7 +85,7 @@ export class Pathfinder {
             let segment_passed = 0;
             for (let k = 0; k < 100 /* check 100 grid spots */; k++) {
                 if (grid.isWalkableAt(pathfinderFromX, pathfinderFromY)) {
-                    alPath.push({ map: parent.character.map, x: G.geometry[mapName].min_x + (pathfinderFromX * this.factor), y: G.geometry[mapName].min_y + (pathfinderFromY * this.factor) })
+                    alPath.push(this.cellToReal(pathfinderFromX, pathfinderFromY, parent.character.map))
                     break;
                 }
 
@@ -110,15 +110,14 @@ export class Pathfinder {
             }
         }
 
-        let pathfinderToX = Math.floor((-G.geometry[mapName].min_x + to.x) / this.factor)
-        let pathfinderToY = Math.floor((-G.geometry[mapName].min_y + to.y) / this.factor)
+        let [pathfinderToX, pathfinderToY] = this.realToCell(to.x, to.y, mapName)
         if (!grid.isWalkableAt(pathfinderToX, pathfinderToY)) {
             let dx = 1
             let dy = 0
             let segment_length = 1
             let segment_passed = 0;
             for (let k = 0; k < 100 /* check 100 grid spots */; k++) {
-                alPath.push({ map: parent.character.map, x: G.geometry[mapName].min_x + (pathfinderToX * this.factor), y: G.geometry[mapName].min_y + (pathfinderToY * this.factor) })
+                alPath.push(this.cellToReal(pathfinderToX, pathfinderToY, parent.character.map))
                 break;
             }
 
@@ -151,7 +150,7 @@ export class Pathfinder {
                 newPath.shift();
 
                 for (let path of newPath)
-                    alPath.push({ map: parent.character.map, x: G.geometry[mapName].min_x + (path[0] * this.factor), y: G.geometry[mapName].min_y + (path[1] * this.factor) })
+                    alPath.push(this.cellToReal(path[0], path[1], parent.character.map))
 
                 return alPath;
             } catch (error) {
@@ -166,10 +165,19 @@ export class Pathfinder {
             return path[0];
     }
 
-    public prepareMap(mapName: string) {
+    public cellToReal(x: number, y: number, map: MapName): IPositionReal {
+        return { "map": map, x: G.geometry[map].min_x + (x * this.factor), y: G.geometry[map].min_y + (y * this.factor) }
+    }
+
+    public realToCell(x: number, y: number, map: MapName): [number, number] {
+        return [Math.round((-G.geometry[map].min_x + x) / this.factor), Math.round((-G.geometry[map].min_y + y) / this.factor)]
+    }
+
+    public prepareMap(mapName: MapName) {
         if (this.grids[mapName]) return; // Already generated
 
-        let geometry = G.geometry[mapName as MapName]
+        let geometry = G.geometry[mapName]
+        let mapInfo = G.maps[mapName]
 
         let width = geometry.max_x - geometry.min_x;
         let height = geometry.max_y - geometry.min_y;
@@ -177,7 +185,7 @@ export class Pathfinder {
         let grid = new PF.Grid(Math.ceil(width / this.factor), Math.ceil(height / this.factor));
 
         // Add the vertical as walls
-        for(let line of geometry.x_lines) {
+        for (let line of geometry.x_lines) {
             let x_start = -geometry.min_x + line[0] - this.padding[3]; // left
             if (x_start < 0) x_start = 0
             let x_end = -geometry.min_x + line[0] + this.padding[1]; // right
@@ -195,7 +203,7 @@ export class Pathfinder {
         }
 
         // Add the horizontal lines as walls
-        for(let line of geometry.y_lines) {
+        for (let line of geometry.y_lines) {
             let x_start = -geometry.min_x + (line[1] > line[2] ? line[2] : line[1]) - this.padding[3]; // left
             if (x_start < 0) x_start = 0
             let x_end = -geometry.min_x + (line[1] > line[2] ? line[1] : line[2]) + this.padding[1]; // right
@@ -212,15 +220,58 @@ export class Pathfinder {
             }
         }
 
+        // // Find all spawns
+        // const zeros = (m: number, n: number) => [...Array(m)].map(() => Array(n).fill(false));
+        // let walkableAt = zeros(width, height)
+        // let unvisitedNodes: any[] = []
+        // let visitedNodes: any[] = []
+        // for (let spawn of mapInfo.spawns) {
+        //     let [x, y] = this.realToCell(spawn[0], spawn[1], mapName)
+
+        //     let node = grid.getNodeAt(x, y)
+        //     if (grid.isWalkableAt(node.x, node.y)) unvisitedNodes.push(node)
+        // }
+
+        // let currentNode = unvisitedNodes[0]
+        // while (currentNode) {
+        //     let neighbors = grid.getNeighbors(currentNode, PF.DiagonalMovement.OnlyWhenNoObstacles)
+        //     for (let neighbor of neighbors) {
+        //         if (!visitedNodes.includes(neighbor)) {
+        //             if (!unvisitedNodes.includes(neighbor)) {
+        //                 unvisitedNodes.push(neighbor)
+        //             }
+        //         }
+        //     }
+
+        //     walkableAt[currentNode.x][currentNode.y] = true
+        //     visitedNodes.push(currentNode)
+        //     unvisitedNodes.shift()
+        //     currentNode = unvisitedNodes[0]
+        // }
+
+        // for (let x = 0; x < width; x++) {
+        //     for (let y = 0; y < height; y++) {
+        //         if (!walkableAt[x][y]) {
+        //             grid.setWalkableAt(x, y, false)
+        //         }
+        //     }
+        // }
+
+
         this.grids[mapName] = grid;
     }
 
-    // public drawCircles() {
-    //     clear_drawings()
-    //     for(let x = 0; x < this.grids[parent.character.map].width; x++) {
-    //         for(let y = 0; y < this.grids[parent.character.map].height; y++) {
-    //             draw_circle();
-    //         }
-    //     }
-    // }
+    public drawCircles() {
+        clear_drawings()
+
+        if (!this.grids[parent.character.map]) this.prepareMap(parent.character.map); // Prepare the map if we haven't prepared it yet.
+        let grid = this.grids[parent.character.map].clone()
+
+        for (let x = 0; x < grid.width; x++) {
+            for (let y = 0; y < grid.height; y++) {
+                if (!grid.isWalkableAt(x, y))
+                    draw_circle(x, y, this.factor / 2, 1, 0x00FF00);
+            }
+        }
+    }
 }

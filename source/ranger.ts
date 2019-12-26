@@ -84,6 +84,7 @@ class Ranger extends Character {
             "stopOnSight": true,
         },
         "jr": {
+            // jr has a high evasion %, but the ranger can kinda do it still
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
@@ -179,7 +180,7 @@ class Ranger extends Character {
             "y": 570
         }
     }
-    mainTarget: MonsterType = "rat";
+    mainTarget: MonsterType = "poisio";
     start_time = Date.now();
 
     run(): void {
@@ -199,12 +200,12 @@ class Ranger extends Character {
 
             // NOTE: Temporary for monster hunt coin farming
             if (Date.now() - this.start_time > 60000) {
-                let should_switch_server = true;
-                for (let id in this.info.party) {
+                let shouldSwitchServer = 0;
+                for (let id of parent.party_list) {
                     let member = this.info.party[id]
-                    if (member.canMonsterHunt) { should_switch_server = false; break; }
+                    if (member.shouldSwitchServer) { shouldSwitchServer += 1; }
                 }
-                if (should_switch_server) {
+                if (shouldSwitchServer == parent.party_list.length) {
                     if (parent.server_region == "ASIA")
                         change_server("US", "I")
                     else if (parent.server_region == "US" && parent.server_identifier == "I")
@@ -278,7 +279,7 @@ class Ranger extends Character {
             // See if we can fiveshot some enemies
             let fiveshotTargets: IEntity[] = [];
             for (let entity of targets) {
-                if ((entity.target != parent.character.name) && (entity.hp > calculateDamageRange(parent.character, entity)[0] * 0.5)) continue; // Too much HP, or not targeting us
+                if (!entity.target && (entity.hp > calculateDamageRange(parent.character, entity)[0] * 0.5)) continue; // Too much HP, or not targeting us
                 if (distance(parent.character, entity) > parent.character.range) continue;
 
                 fiveshotTargets.push(entity);
@@ -298,7 +299,7 @@ class Ranger extends Character {
             // See if we can three shot some enemies.
             let threeshotTargets: IEntity[] = [];
             for (let entity of targets) {
-                if ((entity.target != parent.character.name) && (entity.hp > calculateDamageRange(parent.character, entity)[0] * 0.7)) continue; // Too much HP, or not targeting us
+                if (!entity.target && (entity.hp > calculateDamageRange(parent.character, entity)[0] * 0.7)) continue; // Too much HP to kill in one shot (don't aggro too many)
                 if (distance(parent.character, entity) > parent.character.range) continue;
 
                 threeshotTargets.push(entity);

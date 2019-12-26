@@ -2,15 +2,16 @@ declare global {
   interface Window {
     close_merchant()
     distance(from: IPosition | IPositionReal, to: IPosition | IPositionReal)
+    exchange(inventoryPosition: number)
     open_merchant(standInventoryPostion: number)
 
     character: ICharacter
     chests: {
-      [id: string]: IPositionReal
+      [id: string]: ChestInfo
     }
     entities: { [id: string]: IEntity }
     next_skill: { [T in SkillName]?: Date }
-    npcs: G_NPC_1[]
+    npcs: G_Maps_NPC[]
     party: { [T in string]: IPosition & {
       level: number
       /** This number refers to the percent of gold you get when one of the party members loots a chest */
@@ -22,7 +23,7 @@ declare global {
     server_identifier: ServerIdentifier
     server_region: ServerRegion
     socket: SocketIO.Socket
-    S: { [T in MonsterType]: IPosition & {
+    S: { [T in MonsterType]?: IPosition & {
       map: string
       live: boolean
       hp: number
@@ -48,6 +49,7 @@ declare global {
   /** Draws a circle on the map */
   function draw_circle(x: number, y: number, radius: number, size: number, color: number)
   function equip(inventoryPostion: number, slot?: SlotType)
+  function exchange(inventoryPosition: number)
   function game_log(message: string)
   function get_targeted_monster(): IEntity
   function heal(target: IEntity)
@@ -91,6 +93,12 @@ declare global {
   }
 
   let G: {
+    dismantle: { [T in ItemName]?: {
+      /** The cost of dismantling the item */
+      cost: number
+      /** A list of items you will get if you dismantle. If the number is < 1, it indicates the probability of getting that item. */
+      items: [number, ItemName][]
+    }}
     items: { [T in ItemName]: G_Item }
     geometry: {
       [T in MapName]: {
@@ -112,7 +120,7 @@ declare global {
         boundaries?: [MapName, number, number, number, number][]
         type: MonsterType
       }[]
-      npcs: G_NPC_1[]
+      npcs: G_Maps_NPC[]
       ref: {
         [id: string]: IPosition & {
           map: MapName
@@ -120,7 +128,10 @@ declare global {
           id: string
         }
       }
+      /** x, y, ??? */
+      spawns: [number, number, number][]
     } }
+    monsters: { [T in MonsterType]: G_Monster }
     npcs: { [T in NPCType]: {
       id: NPCType
       /** Full name of NPC */
@@ -146,10 +157,20 @@ declare global {
 
 // TODO: Get a better name for this.
 // TODO: Get a better naming convention for G data
-export interface G_NPC_1 {
+export interface G_Maps_NPC {
   position: [number, number]
   name?: string
   id: NPCType
+}
+
+export interface G_Monster {
+  attack: number
+  damage_type: DamageType
+  frequency: number
+  hp: number
+  range: number
+  speed: number
+  xp: number
 }
 
 export interface G_Item {
@@ -160,6 +181,8 @@ export interface G_Item {
   damage?: DamageType
   /** Refers to how many items are needed to exchange (see .quest as well!) */
   e?: number
+  /** Cost of the item in gold, if an NPC were to sell this item */
+  g: number
   /** The first number refers to what level the item begins being "high" grade, the second for "rare" */
   grades?: [number, number]
   /** The full name of the item */
@@ -211,20 +234,25 @@ export interface ICharacter extends IEntity {
 }
 
 export interface IEntity extends IPositionReal {
+  [x: string]: any
+  /** If set, attacks only do 1 damage */
+  "1hp": number
   /** Only set if the entity is a monster */
   aggro: number
   apiercing: number
   armor: number
   attack: number
+  cooperative: boolean
   ctype: CharacterType | NPCType
   damage_type?: DamageType
-  /** Related to attack speed, I think it's (1 / attacks per second) */
+  /** Related to attack speed, I think it's equal to attacks per second */
   frequency: number
   going_x: number
   going_y: number
   hp: number
   /** This value is also the key for the object in parent.entities */
   id: string
+  immune: boolean
   max_hp: number
   max_mp: number
   /** Is the character currently moving? */
@@ -264,6 +292,11 @@ export interface IEntity extends IPositionReal {
   type: "character" | "monster"
   vx: number
   vy: number
+}
+
+export type ChestInfo = IPositionReal & {
+  alpha: number
+  skin: "chest3" | string
 }
 
 export type ItemInfo = {
@@ -306,6 +339,12 @@ export type StatusInfo = {
       c: number
       /** What monster we have to kill */
       id: MonsterType
+    }
+    citizen0aura?: {
+      luck: number
+    }
+    citizen4aura?: {
+      gold: number
     }
   }
 

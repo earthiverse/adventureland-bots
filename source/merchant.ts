@@ -1,7 +1,7 @@
 import { Character } from './character'
 import { MonsterType, ItemName, IPositionReal, IEntity, BankPackType } from './definitions/adventureland';
 import { upgradeIfMany, compoundIfMany, upgradeItem } from './upgrade'
-import { sellUnwantedItems, exchangeItems, buyFromPonty, openMerchantStand, closeMerchantStand } from './trade';
+import { sellUnwantedItems, exchangeItems, buyFromPonty, openMerchantStand, closeMerchantStand, dismantleItems } from './trade';
 import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots, sleep, buyIfNone, getEmptySlots } from './functions';
 
 class Merchant extends Character {
@@ -22,7 +22,7 @@ class Merchant extends Character {
                 return { message: "Full!", target: null }
             } else {
                 // Move to the bank
-                return { message: "Full!", target: { "map": "bank", "x": 0, "y": -37 } }
+                return { message: "Full!", target: { "map": "bank", "x": 0, "y": -400 } }
             }
         }
 
@@ -41,20 +41,21 @@ class Merchant extends Character {
                     let entity = parent.entities[id]
                     if (entity.mtype == mtype) {
                         // There's one nearby
-                        return { message: "EV " + mtype, target: null }
+                        if (distance(parent.character, entity) > 100)
+                            return { message: "EV " + mtype, target: entity }
+                        else
+                            return { message: "EV " + mtype, target: null }
                     }
                 }
                 return { message: "EV " + mtype, target: parent.S[mtype as MonsterType] }
             }
         }
 
-        // TODO: If Angel and Kane haven't been seen in a while, go find them
-
         // If someone in our party isn't mlucked by us, go find them and mluck them.
         for (let name in this.info.party) {
             if (name == parent.character.name) continue; // Don't move to ourself
 
-            let player = this.info.party[name]
+            let player = parent.entities[name] ? parent.entities[name] : this.info.party[name]
             if (player && player.s && (!player.s.mluck || player.s.mluck.f != "earthMer")) {
                 return { message: "ML " + name, target: player }
             }
@@ -62,8 +63,8 @@ class Merchant extends Character {
 
         // If there are players who we have seen recently that haven't been mlucked, go find them and mluck them
         for (let name in this.info.players) {
-            let player = this.info.players[name]
-            if (distance(parent.character, player) < 10 && !player.s.mluck) {
+            let player = parent.entities[name] ? parent.entities[name] : this.info.players[name]
+            if (distance(parent.character, player) <= 10 && !player.s.mluck) {
                 // This player moved.
                 delete this.info.players[name];
                 break
@@ -83,11 +84,28 @@ class Merchant extends Character {
 
         // If we haven't been to the bank in a while, go
         if (Date.now() - this.didBankStuff > 120000) {
-            return { message: "Bank", target: { "map": "bank", "x": 0, "y": -37 } }
-        } else {
-            // Default spot in town to hang out
-            return { message: "Vendor", target: { map: "main", "x": 60, "y": -325 } }
+            return { message: "Bank", target: { "map": "bank", "x": 0, "y": -400 } }
         }
+
+        // If Angel and Kane haven't been seen in a while, go find them to update their position
+        if (this.info.npcs.Kane && Date.now() - new Date(this.info.npcs.Kane.lastSeen).getTime() > 300000) {
+            return { message: "Find Kane", target: this.info.npcs.Kane }
+        } else if (this.info.npcs.Angel && Date.now() - new Date(this.info.npcs.Angel.lastSeen).getTime() > 300000) {
+            return { message: "Find Angel", target: this.info.npcs.Angel }
+        }
+
+        // If we have exchangable things, go exchange them
+        let items = getInventory();
+        if (items.length < 25) {
+            for (let item of items) {
+                if (G.items[item.name].quest && item.q > G.items[item.name].e) {
+                    return { message: "Quest", target: G.quests[item.name] }
+                }
+            }
+        }
+
+        // Default vendoring
+        return { message: "Vendor", target: { map: "main", "x": 60, "y": -325 } }
     }
 
     protected async mainLoop(): Promise<void> {
@@ -111,8 +129,8 @@ class Merchant extends Character {
             upgradeIfMany(8);
             compoundIfMany(4);
 
-            buyIfNone("blade", 9, 2)
-            upgradeItem("blade", 9)
+            // buyIfNone("blade", 9, 2)
+            // upgradeItem("blade", 9)
 
             super.mainLoop();
         } catch (error) {
@@ -167,7 +185,7 @@ class Merchant extends Character {
         } else if (Date.now() - this.didBankStuff < 10000) {
             return;
         }
-        let itemsToKeep: ItemName[] = ["blade", "tracker", "cscroll0", "cscroll1", "cscroll2", "scroll0", "scroll1", "scroll2", "stand0", "dexscroll", "intscroll", "strscroll", "monstertoken", "candycane", "mistletoe", "gem0", "gem1", "candy0", "candy1", "armorbox", "weaponbox"]
+        let itemsToKeep: ItemName[] = ["tracker", "cscroll0", "cscroll1", "cscroll2", "scroll0", "scroll1", "scroll2", "stand0", "dexscroll", "intscroll", "strscroll", "monstertoken", "candycane", "mistletoe", "gem0", "gem1", "candy0", "candy1", "armorbox", "weaponbox"]
 
         // Store extra gold
         if (parent.character.gold > 25000000) {
@@ -188,19 +206,19 @@ class Merchant extends Character {
                 // If the item is stackable, deposit it.
                 await sleep(parent.character.ping)
                 bank_store(item.index)
-                continue;
+                continue
             }
 
-            // Add it to our list of items;
-            // items.push([item.name, item.level, "items", item.index]);
+            // Add it to our list of items
+            // items.push([item.name, item.level, "items", item.index])
 
             // Store all items for now
-            let i = 0;
-            let emptySlots = getEmptyBankSlots();
+            let i = 0
+            let emptySlots = getEmptyBankSlots()
             if (i < emptySlots.length) {
                 await sleep(parent.character.ping)
                 bank_store(item.index, emptySlots[i].pack, emptySlots[i].index)
-                i++;
+                i++
             }
         }
 
@@ -208,41 +226,41 @@ class Merchant extends Character {
         for (let pack in parent.character.bank) {
             if (pack == "gold") continue; // skip gold
             for (let item of getInventory(parent.character.bank[pack as BankPackType])) {
-                if (itemsToKeep.includes(item.name)) continue; // Don't add items we want to keep
                 if (G.items[item.name].s) continue; // Don't add stackable items
                 if (G.items[item.name].upgrade && item.level >= 8) continue; // Don't withdraw high level items
                 if (G.items[item.name].compound && item.level >= 4) continue; // Don't withdraw high level items
+                if (item_grade(item) >= 2) continue; // Don't withdraw high level items
                 items.push([item.name, item.level, pack, item.index])
             }
         }
 
-        let empty = getEmptySlots(parent.character.items);
-        empty.pop();
-        items.sort();
+        let empty = getEmptySlots(parent.character.items)
+        empty.pop()
+        items.sort()
 
         // Find compounds
         for (let i = 0; i < items.length; i++) {
-            let itemI = items[i];
+            let itemI = items[i]
 
-            let indexes: number[] = [i];
+            let indexes: number[] = [i]
             for (let j = i + 1; j < items.length; j++) {
                 let itemJ = items[j]
                 if (itemJ[0] != itemI[0] || itemJ[1] != itemI[1]) {
                     // The name or level is different
-                    i = j - 1;
-                    break;
+                    i = j - 1
+                    break
                 }
 
                 // We found another item of the same level
-                indexes.push(j);
+                indexes.push(j)
             }
 
             if (G.items[itemI[0]].compound && indexes.length >= 4) {
                 for (let l = 0; l < 4; l++) {
-                    let k = indexes[l];
-                    let level = items[k][1];
-                    let bankBox = items[k][2];
-                    let boxSlot = items[k][3];
+                    let k = indexes[l]
+                    let level = items[k][1]
+                    let bankBox = items[k][2]
+                    let boxSlot = items[k][3]
                     await sleep(parent.character.ping)
                     if (empty.length)
                         parent.socket.emit("bank", {
@@ -250,7 +268,7 @@ class Merchant extends Character {
                             inv: empty.shift(),
                             str: boxSlot,
                             pack: bankBox
-                        });
+                        })
                 }
             }
         }
@@ -296,28 +314,35 @@ class Merchant extends Character {
     }
 
     private luckedCharacters: any = {}
-    private luckLoop(): void {
-        if (parent.character.mp < 10) {
-            // Do nothing
-        } else if (!parent.character.s.mluck || parent.character.s["mluck"].ms < 10000 || parent.character.s["mluck"].f != parent.character.name) {
-            // Luck ourself
-            use_skill("mluck", parent.character);
-        } else {
-            // Luck others
-            for (let id in parent.entities) {
-                let luckTarget = parent.entities[id];
+    private async luckLoop(): Promise<void> {
+        try {
+            if (parent.character.mp < 10) {
+                // Do nothing
+            } else if (!parent.character.s.mluck || parent.character.s["mluck"].ms < 10000 || parent.character.s["mluck"].f != parent.character.name) {
+                // Luck ourself
+                use_skill("mluck", parent.character);
+            } else {
+                // Luck others
+                for (let id in parent.entities) {
+                    let luckTarget = parent.entities[id];
 
-                if (!isPlayer(luckTarget) // not a player
-                    || distance(parent.character, luckTarget) > 250 // out of range
-                    || !isAvailable("mluck")) // On cooldown
-                    continue;
-                if (this.luckedCharacters[luckTarget.name] && this.luckedCharacters[luckTarget.name] > Date.now() - parent.character.ping * 2) continue; // Prevent spamming luck
-                if (!luckTarget.s || !luckTarget.s["mluck"] || luckTarget.s["mluck"].ms < 3540000 /* 59 minutes */ || luckTarget.s["mluck"].f != parent.character.name) {
-                    this.luckedCharacters[luckTarget.name] = Date.now();
-                    use_skill("mluck", luckTarget);
-                    break;
+                    if (!isPlayer(luckTarget) // not a player
+                        || distance(parent.character, luckTarget) > 250 // out of range
+                        || !isAvailable("mluck")) // On cooldown
+                        continue;
+                    if (this.luckedCharacters[luckTarget.name] && this.luckedCharacters[luckTarget.name] > Date.now() - parent.character.ping * 2) continue; // Prevent spamming luck
+                    if (!luckTarget.s || !luckTarget.s["mluck"] || luckTarget.s["mluck"].ms < 3540000 /* 59 minutes */ || luckTarget.s["mluck"].f != parent.character.name) {
+                        this.luckedCharacters[luckTarget.name] = Date.now();
+                        use_skill("mluck", luckTarget);
+                        await sleep(G.skills["mluck"].cooldown);
+                    }
                 }
             }
+        }
+        catch (error) {
+            console.error(error)
+            // NOTE: 2019-12-22 There has been a few instances of an entity not having a .type attribute?
+            console.error(parent.entities)
         }
 
         setTimeout(() => { this.luckLoop() }, getCooldownMS("mluck"));

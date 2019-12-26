@@ -34,6 +34,12 @@ class Warrior extends Character {
         "goo": {
             "priority": EASY,
         },
+        "greenjr": {
+            "priority": DIFFICULT,
+            "holdAttackInEntityRange": true,
+            "holdAttackWhileMoving": true,
+            "stopOnSight": true
+        },
         "minimush": {
             "priority": EASY,
             "stopOnSight": true
@@ -75,7 +81,7 @@ class Warrior extends Character {
             "priority": EASY
         }
     }
-    mainTarget: MonsterType = "rat";
+    mainTarget: MonsterType = "spider";
 
     run(): void {
         super.run();
@@ -84,7 +90,7 @@ class Warrior extends Character {
 
     mainLoop(): void {
         try {
-            transferItemsToMerchant("earthMer", ["tracker", "mpot1", "hpot1", "orbg", "jacko"]);
+            transferItemsToMerchant("earthMer", ["tracker", "mpot1", "hpot1", "orbg", "jacko", "basher", "bataxe", "candycanesword", "swordofthedead"]);
             transferGoldToMerchant("earthMer");
             sellUnwantedItems();
 
