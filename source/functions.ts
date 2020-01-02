@@ -46,6 +46,7 @@ export function areWalkingTowards(entity: IEntity) {
 export function wantToAttack(c: Character, e: IEntity, s: SkillName = "attack"): boolean {
     if (parent.character.stoned) return false // We are stoned, we can't attack
     if (!isAvailable(s)) return false // On cooldown
+    if(e.mtype == "grinch") return false // NOTE: CHRISTMAS EVENT -- delete after
 
     let range = G.skills[s].range ? G.skills[s].range : parent.character.range
     let distanceToEntity = distance(parent.character, e)
@@ -58,6 +59,7 @@ export function wantToAttack(c: Character, e: IEntity, s: SkillName = "attack"):
     if (s != "attack" && e.immune) return false // We can't damage it with non-attacks
     if (s != "attack" && e["1hp"]) return false // We only do one damage, don't use special attacks
 
+    // We will still attack if the target is attacking us, because we might as well die.
     if (e.target != parent.character.id) {
         // Hold attack
         if (c.holdAttack) return false // Holding all attacks
@@ -149,24 +151,44 @@ export function sendMassCM(names: string[], data: any) {
     }
 }
 
-export function getRandomMonsterSpawnPosition(type: MonsterType): MonsterSpawnPosition {
-    let potentialLocations: IPositionReal[] = [];
+export function getMonsterSpawns(type: MonsterType): IPositionReal[] {
+    let spawnLocations: IPositionReal[] = []
     for (let id in G.maps) {
-        let map = G.maps[id as MapName];
+        let map = G.maps[id as MapName]
         if (map.instance) continue;
         for (let monster of map.monsters || []) {
-            if (monster.type != type) continue;
+            if (monster.type != type) continue
             if (monster.boundary) {
-                potentialLocations.push({ "map": id as MapName, "x": (monster.boundary[0] + monster.boundary[2]) / 2, "y": (monster.boundary[1] + monster.boundary[3]) / 2 })
+                spawnLocations.push({ "map": id as MapName, "x": (monster.boundary[0] + monster.boundary[2]) / 2, "y": (monster.boundary[1] + monster.boundary[3]) / 2 })
             } else if (monster.boundaries) {
                 for (let boundary of monster.boundaries) {
-                    potentialLocations.push({ "map": boundary[0], "x": (boundary[1] + boundary[3]) / 2, "y": (boundary[2] + boundary[4]) / 2 })
+                    spawnLocations.push({ "map": boundary[0], "x": (boundary[1] + boundary[3]) / 2, "y": (boundary[2] + boundary[4]) / 2 })
                 }
             }
         }
     }
 
-    return { ...potentialLocations[Math.floor(Math.random() * potentialLocations.length)], monster: type };
+    return spawnLocations
+}
+
+export function getRandomMonsterSpawn(type: MonsterType): IPositionReal {
+    let monsterSpawns = getMonsterSpawns(type)
+    return monsterSpawns[Math.floor(Math.random() * monsterSpawns.length)]
+}
+
+export function getClosestMonsterSpawn(type: MonsterType): IPositionReal {
+    let monsterSpawns = getMonsterSpawns(type)
+    let closestSpawnDistance = Number.MAX_VALUE
+    let closestSpawn
+    for (let spawn of monsterSpawns) {
+        let d = parent.distance(parent.character, spawn)
+        if (d < closestSpawnDistance) {
+            closestSpawnDistance = d
+            closestSpawn = spawn
+        }
+    }
+
+    return closestSpawn
 }
 
 // TODO: Change this to a custom typed object instead of an array
@@ -199,7 +221,9 @@ export function getNearbyMonsterSpawns(position: IPosition, radius: number = 100
 
 export function buyIfNone(itemName: ItemName, targetLevel: number = 9, targetQuantity: number = 1) {
     let foundNPCBuyer = false;
-    for (let npc of parent.npcs.filter(npc => G.npcs[npc.id].role == "merchant")) {
+    if (!G.maps[parent.character.map].npcs) return
+    for (let npc of G.maps[parent.character.map].npcs) {
+        if (G.npcs[npc.id].role != "merchant") continue
         if (distance(parent.character, {
             x: npc.position[0],
             y: npc.position[1]

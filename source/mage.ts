@@ -106,12 +106,12 @@ class Mage extends Character {
         "phoenix": {
             "priority": SPECIAL
         },
-        // "plantoid": {
-        //     "priority": DIFFICULT,
-        //     "holdAttackInEntityRange": true,
-        //     "stopOnSight": true,
-        //     "holdAttackWhileMoving": true
-        // },
+        "plantoid": {
+            "priority": DIFFICULT,
+            "holdAttackInEntityRange": true,
+            "stopOnSight": true,
+            "holdAttackWhileMoving": true
+        },
         "poisio": {
             "priority": EASY
         },
@@ -186,8 +186,8 @@ class Mage extends Character {
 
     mainLoop(): void {
         try {
-            transferItemsToMerchant("earthMer", ["tracker", "mpot1", "hpot1", "orbg", "jacko"]);
-            transferGoldToMerchant("earthMer");
+            transferItemsToMerchant("earthMer", ["tracker", "mpot1", "hpot1", "orbg", "jacko", "luckbooster", "goldbooster", "xpbooster"]);
+            transferGoldToMerchant("earthMer", 100000);
             sellUnwantedItems();
 
             super.mainLoop();

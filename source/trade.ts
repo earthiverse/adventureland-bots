@@ -1,8 +1,9 @@
 import { ItemName, NPCType } from "./definitions/adventureland";
-import { findItems, findItem, getInventory } from "./functions";
+import { findItems, findItem, getInventory, findItemsWithLevel } from "./functions";
 import { MyItemInfo } from "./definitions/bots";
 let defaultItemsToKeep: ItemName[] = ["tracker", // Tracker
     "mpot0", "mpot1", "hpot0", "hpot1", // Potions
+    "luckbooster", "goldbooster", "xpbooster",
     "jacko"] // Useful for avoiding monsters
 let defaultItemsToSell: ItemName[] = ["hpamulet", "hpbelt", // HP stuff
     "vitring", "vitearring", // Vit stuff
@@ -14,7 +15,8 @@ let defaultItemsToSell: ItemName[] = ["hpamulet", "hpbelt", // HP stuff
 
 export function sellUnwantedItems(itemsToSell: ItemName[] = defaultItemsToSell) {
     let foundNPCBuyer = false;
-    for (let npc of parent.npcs.filter(npc => G.npcs[npc.id].role == "merchant")) {
+    if(!G.maps[parent.character.map].npcs) return
+    for (let npc of G.maps[parent.character.map].npcs.filter(npc => G.npcs[npc.id].role == "merchant")) {
         if (distance(parent.character, {
             x: npc.position[0],
             y: npc.position[1]
@@ -121,10 +123,24 @@ export function dismantleItems() {
     }
     if (!foundGuy) return; // We're not near the dismantle guy
 
-    let goldEarrings = findItems("lostearring")
+    let goldEarrings = findItemsWithLevel("lostearring", 0)
     if (parent.character.gold >= G.dismantle["lostearring"].cost) {
         for (let earring of goldEarrings) {
             parent.socket.emit("dismantle", { num: earring.index })
+        }
+    }
+
+    let fireBlades = findItemsWithLevel("fireblade", 0)
+    if (parent.character.gold >= G.dismantle["fireblade"].cost) {
+        for (let blade of fireBlades) {
+            parent.socket.emit("dismantle", { num: blade.index })
+        }
+    }
+
+    let fireStaffs = findItemsWithLevel("firestaff", 0)
+    if (parent.character.gold >= G.dismantle["firestaff"].cost) {
+        for (let staff of fireStaffs) {
+            parent.socket.emit("dismantle", { num: staff.index })
         }
     }
 }
@@ -153,7 +169,7 @@ export function exchangeItems() {
         let npc: NPCType
         if (gInfo.quest) {
             npc = G.quests[gInfo.quest].id
-        } else if (gInfo.type == "box" || gInfo.type == "gem") {
+        } else if (gInfo.type == "box" || gInfo.type == "gem" || gInfo.type == "misc") {
             npc = "exchange"
         } else if (item.name == "lostearring" && item.level == 2) {
             // NOTE: We're only exchanging level 2 earrings, because we want agile quivers
@@ -173,9 +189,6 @@ export function exchangeItems() {
 
         // Exchange something!
         let item = exchangableItems[npc as NPCType][0]
-
-        console.log(item)
-
         exchange(item.index)
         return // We can only exchange one item at a time
     }
@@ -183,7 +196,8 @@ export function exchangeItems() {
 
 export function buyPots() {
     let foundNPC = false;
-    for (let npc of parent.npcs.filter(npc => G.npcs[npc.id].role == "merchant")) {
+    if(!G.maps[parent.character.map].npcs) return
+    for (let npc of G.maps[parent.character.map].npcs.filter(npc => G.npcs[npc.id].role == "merchant")) {
         if (distance(parent.character, {
             x: npc.position[0],
             y: npc.position[1]
@@ -192,7 +206,8 @@ export function buyPots() {
             break;
         }
     }
-    if (!foundNPC) return; // Can't buy things, nobody is near.
+    if (!foundNPC) return // Can't buy things, nobody is near.
+    if (parent.character.gold < G.items["mpot1"].g) return // No money
 
     let numMP = findItems("mpot1").reduce((a, b) => a + b.q, 0)
     let numHP = findItems("hpot1").reduce((a, b) => a + b.q, 0)

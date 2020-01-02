@@ -25,6 +25,15 @@ class Priest extends Character {
         "bee": {
             "priority": EASY
         },
+        "cgoo": {
+            "holdAttackWhileMoving": true,
+            "stopOnSight": true,
+            "holdAttackInEntityRange": true,
+            "priority": DIFFICULT,
+            "map": "arena",
+            "x": 500,
+            "y": -50
+        },
         "crab": {
             "priority": EASY
         },
@@ -38,6 +47,12 @@ class Priest extends Character {
         "frog": {
             "priority": EASY
         },
+        "ghost": {
+            // Don't attack if we're walking by them, they hurt.
+            "holdAttackWhileMoving": true,
+            "stopOnSight": true,
+            "priority": DIFFICULT
+        },
         "goldenbat": {
             "priority": SPECIAL,
             "stopOnSight": true
@@ -45,16 +60,39 @@ class Priest extends Character {
         "goo": {
             "priority": EASY,
         },
+        "greenjr": {
+            "priority": DIFFICULT,
+            "holdAttackInEntityRange": true,
+            "holdAttackWhileMoving": true,
+            "stopOnSight": true
+        },
         "hen": {
             "priority": EASY
+        },
+        "jr": {
+            "priority": DIFFICULT,
+            "holdAttackInEntityRange": true,
+            "holdAttackWhileMoving": true,
+            "stopOnSight": true
         },
         "minimush": {
             "priority": EASY,
             "stopOnSight": true
         },
+        "mrgreen": {
+            "priority": SPECIAL,
+            "stopOnSight": true
+        },
+        "mrpumpkin": {
+            "priority": SPECIAL,
+            "stopOnSight": true
+        },
         "osnake": {
             "priority": EASY,
             "stopOnSight": true
+        },
+        "phoenix": {
+            "priority": SPECIAL
         },
         "plantoid": {
             "priority": DIFFICULT,
@@ -67,6 +105,16 @@ class Priest extends Character {
         },
         "porcupine": {
             "priority": EASY
+        },
+        "prat": {
+            // Our plan is to go to a spot on a cliff where they can't attack us, but we can attack them.
+            "holdAttackWhileMoving": true,
+            "holdPositionFarm": true,
+            "holdAttackInEntityRange": true,
+            "priority": DIFFICULT,
+            "map": "level1",
+            "x": -300,
+            "y": 536,
         },
         "rat": {
             "priority": EASY
@@ -101,12 +149,12 @@ class Priest extends Character {
             "priority": EASY
         }
     }
-    mainTarget: MonsterType = "rat";
+    mainTarget: MonsterType = "spider";
 
     mainLoop(): void {
         try {
-            transferItemsToMerchant("earthMer", ["tracker", "mpot1", "hpot1", "orbg", "jacko", "talkingskull"]);
-            transferGoldToMerchant("earthMer");
+            transferItemsToMerchant("earthMer", ["tracker", "mpot1", "hpot1", "orbg", "jacko", "talkingskull", "luckbooster", "goldbooster", "xpbooster"]);
+            transferGoldToMerchant("earthMer", 100000);
             sellUnwantedItems();
 
             super.mainLoop();

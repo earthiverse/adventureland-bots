@@ -1,29 +1,28 @@
 import { Queue } from "prioqueue"
 import { IEntity, IPosition, ItemName, ItemInfo, SlotType, ICharacter, MonsterType, IPositionReal, NPCName, ChestInfo } from './definitions/adventureland';
 import { Pathfinder } from './pathfinder';
-import { sendMassCM, findItems, getInventory, getRandomMonsterSpawnPosition, getAttackingEntities, getCooldownMS, isAvailable, canSeePlayer, getNearbyMonsterSpawns, wantToAttack, calculateDamageRange } from "./functions";
+import { sendMassCM, findItems, getInventory, getRandomMonsterSpawn, getAttackingEntities, getCooldownMS, isAvailable, canSeePlayer, getNearbyMonsterSpawns, wantToAttack, calculateDamageRange } from "./functions";
 import { TargetPriorityList, OtherInfo, MyItemInfo } from "./definitions/bots";
 import { dismantleItems, buyPots } from "./trade";
 
 export abstract class Character {
-    /**
-     * A list of monsters, ranked from highest priority to lowest priority.
-     */
-    // protected abstract targetPriority: MonsterName[];
+    /** A list of monsters, priorities, and locations to farm. */
     public abstract targetPriority: TargetPriorityList;
+    /** The default target if there's nothing else to attack */
     protected abstract mainTarget: MonsterType;
+    /** Set to true to stop movement */
     public holdPosition = false;
-    public holdAttack = false;
+    /** Set to true to stop attacks. We might still attack if the target is attacking us. */
+    public holdAttack = false
     protected pathfinder: Pathfinder = new Pathfinder(6);
+    /** Information about the state of the game that is useful to us */
     protected info: OtherInfo = {
         party: {},
         npcs: {},
         players: {}
-    };
-    // protected chests = new Set<string>()
+    }
 
     protected mainLoop() {
-        // Equip better items if we have one in our inventory
         try {
             if (parent.character.ctype != "merchant") {
                 this.equipBetterItems()
@@ -152,7 +151,7 @@ export abstract class Character {
         // Monster Hunts
         if (!parent.character.s.monsterhunt) return false; // We can potentially get a monster hunt, don't switch
         if (this.targetPriority[parent.character.s.monsterhunt.id]) return false; // We can do our monster hunt
-        for (let id in this.info.party) {
+        for (let id in parent.party_list) {
             let member = parent.entities[id] ? parent.entities[id] : this.info.party[id]
             if (!member.s || !member.s.monsterhunt) continue;
             if (this.targetPriority[member.s.monsterhunt.id as MonsterType]) return false; // We can do a party member's monster hunt
@@ -160,29 +159,30 @@ export abstract class Character {
 
         // Doable event monster
         for (let monster in parent.S) {
-            if (!parent.S[monster as MonsterType].live) continue;
-            if (this.targetPriority[monster as MonsterType]) return false; // We can do an event monster!
+            if (monster == "grinch") continue // The grinch is too strong.
+            if (!parent.S[monster as MonsterType].live) continue
+            if (this.targetPriority[monster as MonsterType]) return false // We can do an event monster!
         }
 
-        // +1000% luck and gold
-        let kane = parent.entities["Kane"] ? parent.entities["Kane"] : this.info.npcs.Kane
-        let angel = parent.entities["Angel"] ? parent.entities["Angel"] : this.info.npcs.Angel
-        if (kane && angel && distance(kane, angel) < 300) {
-            let kaneSpawns = getNearbyMonsterSpawns(kane, 300);
-            let angelSpawns = getNearbyMonsterSpawns(angel, 300);
+        // // +1000% luck and gold
+        // let kane = parent.entities["Kane"] ? parent.entities["Kane"] : this.info.npcs.Kane
+        // let angel = parent.entities["Angel"] ? parent.entities["Angel"] : this.info.npcs.Angel
+        // if (kane && angel && distance(kane, angel) < 300) {
+        //     let kaneSpawns = getNearbyMonsterSpawns(kane, 300);
+        //     let angelSpawns = getNearbyMonsterSpawns(angel, 300);
 
-            for (let kSpawn of kaneSpawns) {
-                for (let aSpawn of angelSpawns) {
-                    if (kSpawn.x == aSpawn.x && kSpawn.y == aSpawn.y) {
-                        // We can stack +1000% luck and gold.
-                        return false;
-                    }
-                }
-            }
-        }
+        //     for (let kSpawn of kaneSpawns) {
+        //         for (let aSpawn of angelSpawns) {
+        //             if (kSpawn.x == aSpawn.x && kSpawn.y == aSpawn.y) {
+        //                 // We can stack +1000% luck and gold.
+        //                 return false;
+        //             }
+        //         }
+        //     }
+        // }
 
-        // NOTE: While we're farming rats, don't switch servers
-        return false;
+        // // NOTE: While we're farming poisios and spiders, don't switch servers
+        // return false;
 
         return true;
     }
@@ -210,6 +210,7 @@ export abstract class Character {
                 }
 
                 shouldLoot = false
+                break
             }
 
             if (shouldLoot) {
@@ -239,15 +240,13 @@ export abstract class Character {
                 wantToScare = true
             } else {
                 for (let target of targets) {
-                    if (!this.targetPriority[target.mtype]) {
-                        wantToScare = true
-                        break;
-                    }
+                    if (target.mtype == "grinch") continue // NOTE: CHRISTMAS EVENT -- remove after Christmas.
+                    if (distance(target, parent.character) > target.range) continue // They're out of range
+                    if (calculateDamageRange(target, parent.character)[1] * 6 * target.frequency <= parent.character.hp) continue // We can tank a few of their shots
+                    if (this.targetPriority[target.mtype]) continue
 
-                    if (distance(target, parent.character) > target.range) continue; // They're out of range
-                    if (calculateDamageRange(target, parent.character)[1] * 6 * target.frequency <= parent.character.hp) continue; // We can tank a few of their shots
                     wantToScare = true
-                    break;
+                    break
                 }
             }
             if (!isAvailable("scare") // On cooldown
@@ -429,23 +428,24 @@ export abstract class Character {
         let closeEntity: IEntity = null;
         let moveDistance = 0;
         for (let id in parent.entities) {
-            let entity = parent.entities[id];
-            if (entity.type != "monster") continue; // Not a monster
-            if (entity.aggro == 0) continue; // Not an aggressive monster
-            if (entity.target && entity.target != parent.character.name) continue; // Targeting someone else
-            if (calculateDamageRange(entity, parent.character)[1] * 3 * entity.frequency < 400) continue; // We can outheal the damage from this monster, don't bother moving
+            let entity = parent.entities[id]
+            if (entity.mtype == "grinch") continue // NOTE: CHRISTMAS EVENT -- delete after
+            if (entity.type != "monster") continue // Not a monster
+            if (entity.aggro == 0) continue // Not an aggressive monster
+            if (entity.target && entity.target != parent.character.name) continue // Targeting someone else
+            if (calculateDamageRange(entity, parent.character)[1] * 3 * entity.frequency < 400) continue // We can outheal the damage from this monster, don't bother moving
 
-            let d = Math.max(60, entity.speed * 1.5) - distance(parent.character, entity);
-            if (d < 0) continue; // Far away
+            let d = Math.max(60, entity.speed * 1.5) - distance(parent.character, entity)
+            if (d < 0) continue // Far away
 
             if (d > moveDistance) {
-                closeEntity = entity;
-                moveDistance = d;
-                break;
+                closeEntity = entity
+                moveDistance = d
+                break
             }
         }
 
-        if (!closeEntity) return; // No close monsters
+        if (!closeEntity) return // No close monsters
 
         let escapePosition: IPosition;
         let angle = Math.atan2(parent.character.real_y - closeEntity.real_y, parent.character.real_x - closeEntity.real_x);
@@ -476,8 +476,9 @@ export abstract class Character {
         for (let entity of attackingEntities) {
             if (calculateDamageRange(entity, parent.character)[1] * 3 * entity.frequency < 400) continue; // We can outheal the damage 
             let d = distance(parent.character, entity);
-            if (entity.speed > parent.character.speed) continue; // We can't outrun it, don't try
-            if (entity.range > parent.character.range) continue; // We can't outrange it, don't try
+            if (entity.mtype == "grinch") continue // NOTE: CHRISTMAS EVENT -- delete after
+            if (entity.speed > parent.character.speed) continue // We can't outrun it, don't try
+            if (entity.range > parent.character.range) continue // We can't outrange it, don't try
             if (minDistance < d) continue; // There's another target that's closer
             if (d > (entity.range + (entity.speed + parent.character.speed) * Math.max(parent.character.ping * 0.001, 0.5))) continue; // We're still far enough away to not get attacked
             minDistance = d;
@@ -529,16 +530,16 @@ export abstract class Character {
     }
 
     public getNewYearTreeBuff() {
-        if (!G.maps.main.ref.newyear_tree) return; // Event is not live.
-        if (parent.character.s.holidayspirit) return; // We already have the buff.
-        if (distance(parent.character, G.maps.main.ref.newyear_tree) > 250) return; // Too far away
+        if (!G.maps.main.ref.newyear_tree) return // Event is not live.
+        if (parent.character.s.holidayspirit) return // We already have the buff.
+        if (distance(parent.character, G.maps.main.ref.newyear_tree) > 250) return // Too far away
 
-        parent.socket.emit("interaction", { type: "newyear_tree" });
+        parent.socket.emit("interaction", { type: "newyear_tree" })
     }
 
     public getMonsterhuntQuest() {
         let monsterhunter: IPosition = { map: "main", x: 126, y: -413 }
-        if (distance(parent.character, monsterhunter) > 250) return; // Too far away
+        if (distance(parent.character, monsterhunter) > 250) return // Too far away
         if (!parent.character.s.monsterhunt) {
             // No quest, get a new one
             parent.socket.emit('monsterhunt')
@@ -629,6 +630,7 @@ export abstract class Character {
 
         // Check for event monsters
         for (let mtype in parent.S) {
+            if (mtype == "grinch") continue // The grinch is too strong.
             if (!parent.S[mtype as MonsterType].live) continue;
             if (this.targetPriority[mtype as MonsterType]) {
                 this.pathfinder.movementTarget = mtype;
@@ -650,111 +652,115 @@ export abstract class Character {
         // }
         // return { message: "Cold Bois", target: getRandomMonsterSpawnPosition("arcticbee") }
 
-        // // See if there's a nearby monster hunt (avoid moving as much as possible)
-        // let monsterHuntTargets: MonsterType[] = []
-        // for (let memberName in this.info.party) {
-        //     let member = parent.entities[memberName] ? parent.entities[memberName] : this.info.party[memberName]
-        //     if (!member) continue; // No information yet
-        //     if (!member.s.monsterhunt || member.s.monsterhunt.c == 0) continue // They don't have a monster hunt, or are turning it in
-        //     if (!this.targetPriority[member.s.monsterhunt.id]) continue; // We can't do it
+        // See if there's a nearby monster hunt (avoid moving as much as possible)
+        let monsterHuntTargets: MonsterType[] = []
+        for (let memberName in parent.party_list) {
+            let member = parent.entities[memberName] ? parent.entities[memberName] : this.info.party[memberName]
+            if (!member) continue; // No information yet
+            if (!member.s.monsterhunt || member.s.monsterhunt.c == 0) continue // They don't have a monster hunt, or are turning it in
+            if (!this.targetPriority[member.s.monsterhunt.id]) continue; // We can't do it
 
-        //     // Check if it's impossible for us to complete it in the amount of time given
-        //     let partyDamageRate = 0
-        //     let damageToDeal = G.monsters[member.s.monsterhunt.id].hp * member.s.monsterhunt.c
-        //     let timeLeft = member.s.monsterhunt.ms / 1000
-        //     for (let id in this.info.party) {
-        //         partyDamageRate += this.info.party[id].attack * this.info.party[id].frequency * 0.9
-        //     }
-        //     if (damageToDeal / partyDamageRate > timeLeft) continue;
+            // Check if it's impossible for us to complete it in the amount of time given
+            let partyDamageRate = 0
+            let damageToDeal = G.monsters[member.s.monsterhunt.id].hp * member.s.monsterhunt.c
+            let timeLeft = member.s.monsterhunt.ms / 1000
+            for (let id in this.info.party) {
+                partyDamageRate += this.info.party[id].attack * this.info.party[id].frequency * 0.9
+            }
+            if (damageToDeal / partyDamageRate > timeLeft) continue;
 
-        //     monsterHuntTargets.push(member.s.monsterhunt.id)
-        // }
-        // for (let id in parent.entities) {
-        //     let entity = parent.entities[id]
-        //     if (monsterHuntTargets.includes(entity.mtype)) {
-        //         // There's one nearby
-        //         this.pathfinder.movementTarget = entity.mtype;
-        //         return { message: "MH " + entity.mtype, target: null };
-        //     }
-        // }
+            monsterHuntTargets.push(member.s.monsterhunt.id)
+        }
+        for (let id in parent.entities) {
+            let entity = parent.entities[id]
+            if (monsterHuntTargets.includes(entity.mtype)) {
+                // There's one nearby
+                this.pathfinder.movementTarget = entity.mtype;
+                if (this.targetPriority[entity.mtype].holdPositionFarm)
+                    return { message: "MH " + entity.mtype, target: this.targetPriority[entity.mtype] as IPositionReal };
+                else
+                    return { message: "MH " + entity.mtype, target: null };
+            }
+        }
 
-        // // New monster hunt
-        // if (!parent.character.s.monsterhunt) {
-        //     this.pathfinder.movementTarget = undefined;
-        //     return { message: "New MH", target: G.maps.main.ref.monsterhunter }
-        // }
+        // New monster hunt
+        if (!parent.character.s.monsterhunt) {
+            this.pathfinder.movementTarget = undefined;
+            return { message: "New MH", target: G.maps.main.ref.monsterhunter }
+        }
 
         // Move to a monster hunt
         // TODO: Implement moving to the nearest monster hunt instead of the first one in the array
         // NOTE: Is this really a good idea? What about Phoenix?
 
-        // if (monsterHuntTargets.length) {
-        //     let potentialTarget = monsterHuntTargets[0];
+        if (monsterHuntTargets.length) {
+            let potentialTarget = monsterHuntTargets[0];
 
-        //     // Frog check, because they're super easy to complete with mages or priests
-        //     if (monsterHuntTargets.includes("frog")
-        //         && G.items[parent.character.slots.mainhand.name].damage == "magical"
-        //         && this.targetPriority["frog"]) {
-        //         potentialTarget = "frog"
-        //     }
-
-        //     this.pathfinder.movementTarget = potentialTarget;
-        //     if (this.targetPriority[potentialTarget].map && this.targetPriority[potentialTarget].x && this.targetPriority[potentialTarget].y) {
-        //         return { message: "MH " + potentialTarget, target: this.targetPriority[potentialTarget] as IPositionReal }
-        //     } else {
-        //         return { message: "MH " + potentialTarget, target: getRandomMonsterSpawnPosition(potentialTarget) }
-        //     }
-        // }
-
-        // TODO: Add a check to see if we are actually near monsters with these functions.
-        // TODO: Sometimes they come out of the warp at the top of town, see Kane and Angel, and stop and just attack the odd chicken...
-        // Check if we can farm with +1000% luck (and maybe +1000% gold, too!)
-        let kane = parent.entities.Kane ? parent.entities.Kane : this.info.npcs.Kane
-        let angel = parent.entities.Angel ? parent.entities.Angel : this.info.npcs.Angel
-        if (kane && angel) {
-            // See if they're both near a single monster spawn
-            let kSpawns = getNearbyMonsterSpawns(kane, 250)
-            let aSpawns = getNearbyMonsterSpawns(angel, 250)
-            if (parent.character.s.citizen0aura && parent.character.s.citizen4aura) {
-                this.pathfinder.movementTarget = null;
-                return { message: "2x1000%", target: null }
-            }
-            for (let kSpawn of kSpawns) {
-                if (["hen", "rooster"].includes(kSpawn.monster)) continue // Ignore chickens
-                if (!this.targetPriority[kSpawn.monster]) continue // Ignore things not in our priority list
-                for (let aSpawn of aSpawns) {
-                    if (kSpawn.x == aSpawn.x && kSpawn.y == aSpawn.y) {
-                        return { message: "2x1000%", target: kSpawn }
-                    }
-                }
+            // Frog check, because they're super easy to complete with mages or priests
+            if (monsterHuntTargets.includes("frog")
+                && G.items[parent.character.slots.mainhand.name].damage == "magical"
+                && this.targetPriority["frog"]) {
+                potentialTarget = "frog"
             }
 
-            // See if Kane is near a monster spawn
-            if (parent.character.s.citizen0aura) {
-                this.pathfinder.movementTarget = null;
-                return { message: "1000% luck", target: null }
-            }
-            if (kSpawns.length
-                && !["hen", "rooster"].includes(kSpawns[0].monster) // Ignore chickens
-                && this.targetPriority[kSpawns[0].monster]) { // Ignore things not in our priority list
-                this.pathfinder.movementTarget = kSpawns[0].monster;
-                // TODO: Check for citizens aura, if we don't have it, move to the person we don't have
-                return { message: "1000% luck", target: kSpawns[0] };
-            }
-
-            // See if Angel is near a monster spawn
-            if (parent.character.s.citizen4aura) {
-                this.pathfinder.movementTarget = null;
-                return { message: "1000% gold", target: null }
-            }
-            if (aSpawns.length
-                && !["hen", "rooster"].includes(aSpawns[0].monster) // Ignore chickens
-                && this.targetPriority[aSpawns[0].monster]) { // Ignore things not in our priority list
-                this.pathfinder.movementTarget = aSpawns[0].monster;
-                // TODO: Check for citizens aura, if we don't have it, move to the person we don't have
-                return { message: "1000% gold", target: aSpawns[0] }
+            this.pathfinder.movementTarget = potentialTarget;
+            if (this.targetPriority[potentialTarget].map && this.targetPriority[potentialTarget].x && this.targetPriority[potentialTarget].y) {
+                return { message: "MH " + potentialTarget, target: this.targetPriority[potentialTarget] as IPositionReal }
+            } else {
+                return { message: "MH " + potentialTarget, target: getRandomMonsterSpawn(potentialTarget) }
             }
         }
+
+        // // TODO: Add a check to see if we are actually near monsters with these functions.
+        // // TODO: Sometimes they come out of the warp at the top of town, see Kane and Angel, and stop and just attack the odd chicken...
+        // // Check if we can farm with +1000% luck (and maybe +1000% gold, too!)
+        // let kane = parent.entities.Kane ? parent.entities.Kane : this.info.npcs.Kane
+        // let angel = parent.entities.Angel ? parent.entities.Angel : this.info.npcs.Angel
+        // let targets = this.getTargets(1)
+        // if (kane && angel) {
+        //     // See if they're both near a single monster spawn
+        //     let kSpawns = getNearbyMonsterSpawns(kane, 250)
+        //     let aSpawns = getNearbyMonsterSpawns(angel, 250)
+        //     if (parent.character.s.citizen0aura && parent.character.s.citizen4aura && targets.length) {
+        //         this.pathfinder.movementTarget = null;
+        //         return { message: "2x1000%", target: null }
+        //     }
+        //     for (let kSpawn of kSpawns) {
+        //         if (["hen", "rooster"].includes(kSpawn.monster)) continue // Ignore chickens
+        //         if (!this.targetPriority[kSpawn.monster]) continue // Ignore things not in our priority list
+        //         for (let aSpawn of aSpawns) {
+        //             if (kSpawn.x == aSpawn.x && kSpawn.y == aSpawn.y) {
+        //                 return { message: "2x1000%", target: kane }
+        //             }
+        //         }
+        //     }
+
+        //     // See if Kane is near a monster spawn
+        //     if (parent.character.s.citizen0aura && targets.length) {
+        //         this.pathfinder.movementTarget = null;
+        //         return { message: "1000% luck", target: null }
+        //     }
+        //     if (kSpawns.length
+        //         && !["hen", "rooster"].includes(kSpawns[0].monster) // Ignore chickens
+        //         && this.targetPriority[kSpawns[0].monster]) { // Ignore things not in our priority list
+        //         this.pathfinder.movementTarget = kSpawns[0].monster;
+        //         // TODO: Check for citizens aura, if we don't have it, move to the person we don't have
+        //         return { message: "1000% luck", target: kane };
+        //     }
+
+        //     // See if Angel is near a monster spawn
+        //     if (parent.character.s.citizen4aura && targets.length) {
+        //         this.pathfinder.movementTarget = null;
+        //         return { message: "1000% gold", target: null }
+        //     }
+        //     if (aSpawns.length
+        //         && !["hen", "rooster"].includes(aSpawns[0].monster) // Ignore chickens
+        //         && this.targetPriority[aSpawns[0].monster]) { // Ignore things not in our priority list
+        //         this.pathfinder.movementTarget = aSpawns[0].monster;
+        //         // TODO: Check for citizens aura, if we don't have it, move to the person we don't have
+        //         return { message: "1000% gold", target: angel }
+        //     }
+        // }
 
         // Check for our main target
         this.pathfinder.movementTarget = this.mainTarget;
@@ -768,7 +774,7 @@ export abstract class Character {
         if (this.targetPriority[this.mainTarget].map && this.targetPriority[this.mainTarget].x && this.targetPriority[this.mainTarget].y) {
             return { message: this.mainTarget, target: this.targetPriority[this.mainTarget] as IPositionReal }
         } else {
-            return { message: this.mainTarget, target: getRandomMonsterSpawnPosition(this.mainTarget) }
+            return { message: this.mainTarget, target: getRandomMonsterSpawn(this.mainTarget) }
         }
 
     }

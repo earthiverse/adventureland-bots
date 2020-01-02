@@ -5,7 +5,28 @@ import { sellUnwantedItems, exchangeItems, buyFromPonty, openMerchantStand, clos
 import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots, sleep, buyIfNone, getEmptySlots } from './functions';
 
 class Merchant extends Character {
-    targetPriority = {}
+    targetPriority = {
+        "bee": {
+            "priority": 1,
+        },
+        "crab": {
+            "priority": 1,
+        },
+        "goo": {
+            "priority": 1,
+        },
+        "hen": {
+            "priority": 1
+        },
+        "rooster": {
+            "priority": 1
+        }
+        
+        // NOTE: Temporary after christmas
+        ,"grinch": {
+            "priority": -10000
+        }
+    }
     mainTarget: MonsterType = null;
 
     public getMovementTarget(): { message: string, target: IPositionReal } {
@@ -87,18 +108,18 @@ class Merchant extends Character {
             return { message: "Bank", target: { "map": "bank", "x": 0, "y": -400 } }
         }
 
-        // If Angel and Kane haven't been seen in a while, go find them to update their position
-        if (this.info.npcs.Kane && Date.now() - new Date(this.info.npcs.Kane.lastSeen).getTime() > 300000) {
-            return { message: "Find Kane", target: this.info.npcs.Kane }
-        } else if (this.info.npcs.Angel && Date.now() - new Date(this.info.npcs.Angel.lastSeen).getTime() > 300000) {
-            return { message: "Find Angel", target: this.info.npcs.Angel }
-        }
+        // // If Angel and Kane haven't been seen in a while, go find them to update their position
+        // if (this.info.npcs.Kane && Date.now() - new Date(this.info.npcs.Kane.lastSeen).getTime() > 300000) {
+        //     return { message: "Find Kane", target: this.info.npcs.Kane }
+        // } else if (this.info.npcs.Angel && Date.now() - new Date(this.info.npcs.Angel.lastSeen).getTime() > 300000) {
+        //     return { message: "Find Angel", target: this.info.npcs.Angel }
+        // }
 
         // If we have exchangable things, go exchange them
         let items = getInventory();
         if (items.length < 25) {
             for (let item of items) {
-                if (G.items[item.name].quest && item.q > G.items[item.name].e) {
+                if (G.items[item.name].quest && item.q >= G.items[item.name].e) {
                     return { message: "Quest", target: G.quests[item.name] }
                 }
             }
@@ -140,13 +161,14 @@ class Merchant extends Character {
     }
 
     public run(): void {
-        this.healLoop();
-        this.scareLoop();
-        this.moveLoop();
-        this.sendInfoLoop();
-        this.mainLoop();
-        this.luckLoop();
-        this.pontyLoop();
+        this.attackLoop()
+        this.healLoop()
+        this.scareLoop()
+        this.moveLoop()
+        this.sendInfoLoop()
+        this.mainLoop()
+        this.luckLoop()
+        this.pontyLoop()
     }
 
     private pontyLoop(): void {
@@ -171,8 +193,8 @@ class Merchant extends Character {
             /* "wgloves", "wshoes", "wattire", // I want to get all +8 for my ranger */
             "bfur", "goldnugget", "goldingot", "platinumnugget", "platinumingot", // Craftables that are usable for things
             "pmace", // I want a nice mace for my priest
-            "5bucks", "candy0", "candy1", "candycane", "gem0", "gem1", "leather", "mistletoe", "monstertoken", "ornament", "seashell", // Exchangables
-            "luckbooster", "goldbooster", "bottleofxp", "bugbountybox", "dartgun", "networkcard", "lostearring", "jacko", "cape", "bcape", "t2bow", "cupid", "candycanesword", "merry", "ornamentstaff", "merry", "bowofthedead", "gbow", "hbow", "t2quiver", "oozingterror", "talkingskull", "greenbomb", "xboots", "handofmidas", "goldenpowerglove", "xgloves", "powerglove", "poker", "starkillers", "xpants", "xarmor", "xhelmet", "fury", "partyhat"]); // Other things
+            "5bucks", "candy0", "candy1", "candycane", "gem0", "gem1", "goldenegg", "leather", "mistletoe", "monstertoken", "ornament", "seashell", // Exchangables
+            "luckbooster", "goldbooster", "bottleofxp", "bugbountybox", "dartgun", "networkcard", "lostearring", "jacko", "cape", "bcape", "t2bow", "cupid", "candycanesword", "merry", "ornamentstaff", "bowofthedead", "gbow", "hbow", "t2quiver", "oozingterror", "talkingskull", "greenbomb", "xboots", "handofmidas", "goldenpowerglove", "xgloves", "powerglove", "poker", "starkillers", "xpants", "xarmor", "xhelmet", "fury", "partyhat"]); // Other things
 
         // We bought things from Ponty, wait a long time before trying to buy again.
         setTimeout(() => { this.pontyLoop() }, 15000);
@@ -185,13 +207,14 @@ class Merchant extends Character {
         } else if (Date.now() - this.didBankStuff < 10000) {
             return;
         }
-        let itemsToKeep: ItemName[] = ["tracker", "cscroll0", "cscroll1", "cscroll2", "scroll0", "scroll1", "scroll2", "stand0", "dexscroll", "intscroll", "strscroll", "monstertoken", "candycane", "mistletoe", "gem0", "gem1", "candy0", "candy1", "armorbox", "weaponbox"]
+        let itemsToKeep: ItemName[] = ["tracker", "cscroll0", "cscroll1", "cscroll2", "scroll0", "scroll1", "scroll2", "stand0", "dexscroll", "intscroll", "strscroll",
+            "monstertoken"]
 
         // Store extra gold
-        if (parent.character.gold > 25000000) {
-            bank_deposit(parent.character.gold - 25000000)
-        } else if (parent.character.gold < 25000000) {
-            bank_withdraw(25000000 - parent.character.gold)
+        if (parent.character.gold > 100000000) {
+            bank_deposit(parent.character.gold - 100000000)
+        } else if (parent.character.gold < 100000000) {
+            bank_withdraw(100000000 - parent.character.gold)
         }
 
         // name, level, inventory, slot #
@@ -226,10 +249,20 @@ class Merchant extends Character {
         for (let pack in parent.character.bank) {
             if (pack == "gold") continue; // skip gold
             for (let item of getInventory(parent.character.bank[pack as BankPackType])) {
+                // Keep some items
+                // TODO: Move this to a variable?
+                if (["goldenegg", "luckbooster", "goldbooster", "xpbooster"].includes(item.name)) continue
+                if (G.items[item.name].e && item.q >= G.items[item.name].e) {
+                    items.push([item.name, -1, pack, item.index])
+                    continue
+                }
                 if (G.items[item.name].s) continue; // Don't add stackable items
                 if (G.items[item.name].upgrade && item.level >= 8) continue; // Don't withdraw high level items
                 if (G.items[item.name].compound && item.level >= 4) continue; // Don't withdraw high level items
                 if (item_grade(item) >= 2) continue; // Don't withdraw high level items
+
+                if (["goldenegg", "luckbooster", "goldbooster", "xpbooster"].includes(item.name)) continue
+
                 items.push([item.name, item.level, pack, item.index])
             }
         }
@@ -308,7 +341,21 @@ class Merchant extends Character {
             }
         }
 
-        // TODO: Find exchanges
+        // Find exchanges
+        for (let i = 0; i < items.length; i++) {
+            if (!G.items[items[i][0]].e) continue
+            let bankBox = items[i][2]
+            let boxSlot = items[i][3]
+
+            await sleep(parent.character.ping)
+            if (empty.length)
+                parent.socket.emit("bank", {
+                    operation: "swap",
+                    inv: empty.shift(),
+                    str: boxSlot,
+                    pack: bankBox
+                })
+        }
 
         this.didBankStuff = Date.now();
     }

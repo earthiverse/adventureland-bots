@@ -90,8 +90,8 @@ class Warrior extends Character {
 
     mainLoop(): void {
         try {
-            transferItemsToMerchant("earthMer", ["tracker", "mpot1", "hpot1", "orbg", "jacko", "basher", "bataxe", "candycanesword", "swordofthedead"]);
-            transferGoldToMerchant("earthMer");
+            transferItemsToMerchant("earthMer", ["tracker", "mpot1", "hpot1", "orbg", "jacko", "basher", "bataxe", "candycanesword", "swordofthedead", "luckbooster", "goldbooster", "xpbooster"]);
+            transferGoldToMerchant("earthMer", 100000);
             sellUnwantedItems();
 
             super.mainLoop();

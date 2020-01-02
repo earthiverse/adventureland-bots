@@ -180,7 +180,7 @@ class Ranger extends Character {
             "y": 570
         }
     }
-    mainTarget: MonsterType = "poisio";
+    mainTarget: MonsterType = "scorpion";
     start_time = Date.now();
 
     run(): void {
@@ -192,8 +192,8 @@ class Ranger extends Character {
 
     mainLoop(): void {
         try {
-            transferItemsToMerchant("earthMer", ["tracker", "mpot1", "hpot1", "orbg", "jacko"]);
-            transferGoldToMerchant("earthMer");
+            transferItemsToMerchant("earthMer", ["tracker", "mpot1", "hpot1", "orbg", "jacko", "luckbooster", "goldbooster", "xpbooster"]);
+            transferGoldToMerchant("earthMer", 100000);
             sellUnwantedItems();
 
             this.createParty(["earthMag", "earthWar", "earthMer", "earthPri"]);
