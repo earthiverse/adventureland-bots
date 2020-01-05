@@ -45,8 +45,9 @@ export function areWalkingTowards(entity: IEntity) {
 // TODO: Shouldn't this be a method on Character?
 export function wantToAttack(c: Character, e: IEntity, s: SkillName = "attack"): boolean {
     if (parent.character.stoned) return false // We are stoned, we can't attack
+    if (G.skills[s].level && G.skills[s].level > parent.character.level) return false // Not a high enough level to use this skill
     if (!isAvailable(s)) return false // On cooldown
-    if(e.mtype == "grinch") return false // NOTE: CHRISTMAS EVENT -- delete after
+    if (e.mtype == "grinch") return false // NOTE: CHRISTMAS EVENT -- delete after
 
     let range = G.skills[s].range ? G.skills[s].range : parent.character.range
     let distanceToEntity = distance(parent.character, e)

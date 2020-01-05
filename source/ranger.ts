@@ -42,10 +42,7 @@ class Ranger extends Character {
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
             "stopOnSight": true,
-            "priority": DIFFICULT,
-            "map": "arena",
-            "x": 500,
-            "y": -50
+            "priority": DIFFICULT
         },
         "crab": {
             "priority": EASY
@@ -263,11 +260,12 @@ class Ranger extends Character {
         setTimeout(() => { this.fourFingersLoop() }, getCooldownMS("4fingers"));
     }
 
-    superShotLoop(): void {
+    async superShotLoop(): Promise<void> {
         let targets = this.getTargets(1);
         if (targets.length
-            && wantToAttack(this, targets[0], "supershot"))
-            use_skill("supershot", targets[0])
+            && wantToAttack(this, targets[0], "supershot")) {
+            await use_skill("supershot", targets[0])
+        }
 
         setTimeout(() => { this.superShotLoop() }, getCooldownMS("supershot"));
     }
@@ -286,10 +284,7 @@ class Ranger extends Character {
                 if (fiveshotTargets.length == 5) break;
             }
             if (fiveshotTargets.length == 5) {
-                parent.socket.emit("skill", {
-                    name: "5shot",
-                    ids: [fiveshotTargets[0].id, fiveshotTargets[1].id, fiveshotTargets[2].id, fiveshotTargets[3].id, fiveshotTargets[4].id]
-                });
+                await use_skill("5shot", fiveshotTargets)
                 setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"));
                 return;
             }
@@ -302,21 +297,29 @@ class Ranger extends Character {
                 if (!entity.target && (entity.hp > calculateDamageRange(parent.character, entity)[0] * 0.7)) continue; // Too much HP to kill in one shot (don't aggro too many)
                 if (distance(parent.character, entity) > parent.character.range) continue;
 
-                threeshotTargets.push(entity);
-                if (threeshotTargets.length == 3) break;
+                threeshotTargets.push(entity)
+                if (threeshotTargets.length == 3) break
             }
             if (threeshotTargets.length == 3) {
-                parent.socket.emit("skill", {
-                    name: "3shot",
-                    ids: [threeshotTargets[0].id, threeshotTargets[1].id, threeshotTargets[2].id]
-                });
+                await use_skill("3shot", threeshotTargets)
                 setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"));
                 return;
             }
         }
 
+        let piercingShotCalcCharacter = { ...parent.character }
+        piercingShotCalcCharacter.apiercing += G.skills["piercingshot"].apiercing
+        piercingShotCalcCharacter.attack *= G.skills["piercingshot"].damage_multiplier
+        if (targets.length
+            && wantToAttack(this, targets[0], "piercingshot")
+            && calculateDamageRange(piercingShotCalcCharacter, targets[0])[0] > calculateDamageRange(parent.character, targets[0])[0]) {
+            await use_skill("piercingshot", targets[0])
+            setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+            return
+        }
+
         // Can't do a special attack, so let's do a normal one
-        super.attackLoop();
+        super.attackLoop()
     }
 
     createParty(members: string[]): void {
