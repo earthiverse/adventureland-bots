@@ -35,10 +35,7 @@ class Mage extends Character {
             "holdAttackWhileMoving": true,
             "stopOnSight": true,
             "holdAttackInEntityRange": true,
-            "priority": DIFFICULT,
-            "map": "arena",
-            "x": 500,
-            "y": -50
+            "priority": DIFFICULT
         },
         "crab": {
             "priority": EASY
