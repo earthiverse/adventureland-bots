@@ -72,10 +72,10 @@ declare global {
   function set_message(text: string, color?: string)
   function smart_move(destination: IPosition | MapName | MonsterType, callback?: () => void)
   function upgrade(itemInventoryPosition: number, scrollInventoryPosition: number, offeringInventoryPosition?: number): Promise<any>
-  function use_skill(name: "3shot" | "5shot", target: IEntity[]): Promise<any>[]
-  function use_skill(name: "throw", target: IEntity, inventoryPostion: number)
-  function use_skill(name: "energize", target: IEntity, mp: number)
-  function use_skill(name: SkillName, target?: IEntity, extraArg?: any)
+  function use_skill(name: "3shot" | "5shot", targets: IEntity[]): Promise<any>[]
+  function use_skill(name: "throw", target: IEntity, inventoryPostion: number): Promise<any>
+  function use_skill(name: "energize", target: IEntity, mp: number): Promise<any>
+  function use_skill(name: SkillName, target?: IEntity, extraArg?: any): Promise<any>
   /** This function uses move() if it can, otherwise it uses smart_move() */
   function xmove(x: number, y: number)
 
@@ -98,7 +98,7 @@ declare global {
       cost: number
       /** A list of items you will get if you dismantle. If the number is < 1, it indicates the probability of getting that item. */
       items: [number, ItemName][]
-    }}
+    } }
     items: { [T in ItemName]: G_Item }
     geometry: {
       [T in MapName]: {
@@ -143,6 +143,7 @@ declare global {
       id: NPCType
     } }
     skills: { [T in SkillName]: {
+      apiercing?: number
       cooldown: number
       damage_multiplier?: number
       level: number
