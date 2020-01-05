@@ -20,11 +20,9 @@ class Merchant extends Character {
         },
         "rooster": {
             "priority": 1
-        }
-        
-        // NOTE: Temporary after christmas
-        ,"grinch": {
-            "priority": -10000
+        },
+        "snowman": {
+            "priority": 1
         }
     }
     mainTarget: MonsterType = null;
@@ -73,7 +71,7 @@ class Merchant extends Character {
         }
 
         // If someone in our party isn't mlucked by us, go find them and mluck them.
-        for (let name in this.info.party) {
+        for (let name of parent.party_list) {
             if (name == parent.character.name) continue; // Don't move to ourself
 
             let player = parent.entities[name] ? parent.entities[name] : this.info.party[name]
@@ -95,7 +93,7 @@ class Merchant extends Character {
         }
 
         // If our players have lots of items, go offload
-        for (let name in this.info.party) {
+        for (let name of parent.party_list) {
             if (name == parent.character.name) continue; // Skip ourself
             let player = this.info.party[name]
             if (player && player.items.length > 20) {

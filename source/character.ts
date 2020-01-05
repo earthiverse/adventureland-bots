@@ -151,9 +151,9 @@ export abstract class Character {
         // Monster Hunts
         if (!parent.character.s.monsterhunt) return false; // We can potentially get a monster hunt, don't switch
         if (this.targetPriority[parent.character.s.monsterhunt.id]) return false; // We can do our monster hunt
-        for (let id in parent.party_list) {
+        for (let id of parent.party_list) {
             let member = parent.entities[id] ? parent.entities[id] : this.info.party[id]
-            if (!member.s || !member.s.monsterhunt) continue;
+            if (!member || !member.s || !member.s.monsterhunt) continue;
             if (this.targetPriority[member.s.monsterhunt.id as MonsterType]) return false; // We can do a party member's monster hunt
         }
 
@@ -654,7 +654,7 @@ export abstract class Character {
 
         // See if there's a nearby monster hunt (avoid moving as much as possible)
         let monsterHuntTargets: MonsterType[] = []
-        for (let memberName in parent.party_list) {
+        for (let memberName of parent.party_list) {
             let member = parent.entities[memberName] ? parent.entities[memberName] : this.info.party[memberName]
             if (!member) continue; // No information yet
             if (!member.s.monsterhunt || member.s.monsterhunt.c == 0) continue // They don't have a monster hunt, or are turning it in
@@ -664,7 +664,7 @@ export abstract class Character {
             let partyDamageRate = 0
             let damageToDeal = G.monsters[member.s.monsterhunt.id].hp * member.s.monsterhunt.c
             let timeLeft = member.s.monsterhunt.ms / 1000
-            for (let id in this.info.party) {
+            for (let id of parent.party_list) {
                 partyDamageRate += this.info.party[id].attack * this.info.party[id].frequency * 0.9
             }
             if (damageToDeal / partyDamageRate > timeLeft) continue;
@@ -795,6 +795,9 @@ export abstract class Character {
         let potentialTargets = new Queue<IEntity>((x, y) => x.priority - y.priority);
         for (let id in parent.entities) {
             let potentialTarget = parent.entities[id];
+
+            if(potentialTarget.mtype == "grinch") continue; // NOTE: Christmas event -- delete after
+
             let d = distance(parent.character, potentialTarget);
             if (!this.targetPriority[potentialTarget.mtype] && potentialTarget.target != parent.character.name) continue; // Not a monster we care about, and it's not attacking us
             if (potentialTarget.type != "monster") // Not a monster
