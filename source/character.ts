@@ -673,7 +673,8 @@ export abstract class Character {
         }
         for (let id in parent.entities) {
             let entity = parent.entities[id]
-            if (monsterHuntTargets.includes(entity.mtype)) {
+            if (monsterHuntTargets.includes(entity.mtype)
+                && can_move_to(entity)) {
                 // There's one nearby
                 this.pathfinder.movementTarget = entity.mtype;
                 if (this.targetPriority[entity.mtype].holdPositionFarm)
@@ -796,7 +797,7 @@ export abstract class Character {
         for (let id in parent.entities) {
             let potentialTarget = parent.entities[id];
 
-            if(potentialTarget.mtype == "grinch") continue; // NOTE: Christmas event -- delete after
+            if (potentialTarget.mtype == "grinch") continue; // NOTE: Christmas event -- delete after
 
             let d = distance(parent.character, potentialTarget);
             if (!this.targetPriority[potentialTarget.mtype] && potentialTarget.target != parent.character.name) continue; // Not a monster we care about, and it's not attacking us

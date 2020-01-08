@@ -69,7 +69,7 @@ export function wantToAttack(c: Character, e: IEntity, s: SkillName = "attack"):
         if (c.targetPriority[e.mtype].holdAttackInEntityRange && distanceToEntity <= e.range) return false // Holding attacks in range
 
         // Low HP
-        if (calculateDamageRange(e, parent.character)[1] * 5 * e.frequency > parent.character.hp && distanceToEntity <= e.range) return false
+        if (calculateDamageRange(e, parent.character)[1] * 5 * e.frequency > parent.character.hp) return false
     }
 
     return true;

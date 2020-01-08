@@ -23,7 +23,11 @@ class Priest extends Character {
             "stopOnSight": true
         },
         "bee": {
-            "priority": EASY
+            "priority": EASY,
+            "holdPositionFarm": true,
+            "map": "main",
+            "x": 200,
+            "y": 1500
         },
         "cgoo": {
             "holdAttackWhileMoving": true,

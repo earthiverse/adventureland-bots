@@ -23,7 +23,11 @@ class Ranger extends Character {
             "stopOnSight": true
         },
         "bee": {
-            "priority": EASY
+            "priority": EASY,
+            "holdPositionFarm": true,
+            "map": "main",
+            "x": 550,
+            "y": 1100
         },
         "bigbird": {
             // The ranger is fast enough to avoid these fairly well
