@@ -10,7 +10,7 @@ let EASY = 30;
 let SPECIAL = 500;
 
 class Ranger extends Character {
-    targetPriority: TargetPriorityList = {
+    targets: TargetPriorityList = {
         "arcticbee": {
             "priority": EASY
         },
@@ -193,9 +193,9 @@ class Ranger extends Character {
 
     mainLoop(): void {
         try {
-            transferItemsToMerchant("earthMer", ["tracker", "mpot1", "hpot1", "orbg", "jacko", "luckbooster", "goldbooster", "xpbooster"]);
+            transferItemsToMerchant("earthMer", this.itemsToKeep);
             transferGoldToMerchant("earthMer", 100000);
-            sellUnwantedItems();
+            sellUnwantedItems(this.itemsToSell);
 
             this.createParty(["earthMag", "earthWar", "earthMer", "earthPri"]);
 

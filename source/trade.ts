@@ -1,41 +1,30 @@
 import { ItemName, NPCType } from "./definitions/adventureland";
 import { findItems, findItem, getInventory, findItemsWithLevel } from "./functions";
-import { MyItemInfo } from "./definitions/bots";
-let defaultItemsToKeep: ItemName[] = ["tracker", // Tracker
-    "mpot0", "mpot1", "hpot0", "hpot1", // Potions
-    "luckbooster", "goldbooster", "xpbooster",
-    "jacko"] // Useful for avoiding monsters
-let defaultItemsToSell: ItemName[] = ["hpamulet", "hpbelt", // HP stuff
-    "vitring", "vitearring", // Vit stuff
-    "slimestaff", "ringsj", "cclaw", "spear", "throwingstars", "gphelmet", "phelmet", "maceofthedead", // Common things
-    "coat", "shoes", "pants", "gloves", "helmet", // Common clothing
-    /*"coat1", "shoes1",*/ "pants1", /*"gloves1", "helmet1",*/ // Heavy set
-    "wbreeches", "wcap" // Wanderer clothing
-];
+import { MyItemInfo, ItemLevelInfo } from "./definitions/bots";
 
-export function sellUnwantedItems(itemsToSell: ItemName[] = defaultItemsToSell) {
-    let foundNPCBuyer = false;
-    if(!G.maps[parent.character.map].npcs) return
-    for (let npc of G.maps[parent.character.map].npcs.filter(npc => G.npcs[npc.id].role == "merchant")) {
-        if (distance(parent.character, {
-            x: npc.position[0],
-            y: npc.position[1]
-        }) < 350) {
-            foundNPCBuyer = true;
-            break;
-        }
-    }
-    if (!foundNPCBuyer) return; // Can't sell things, nobody is near.
-
-    for (let itemName of itemsToSell) {
-        for (let item of findItems(itemName)) {
-            if (item.level > 1) continue; // There might be a reason we upgraded it?
-
-            if (item.q) {
-                sell(item.index, item.q);
-            } else {
-                sell(item.index, 1);
+export function sellUnwantedItems(itemsToSell: ItemLevelInfo) {
+    if (parent.character.map == "bank") return // We can't do things in the bank
+    if (!findItems("computer").length) {
+        let foundNPCBuyer = false;
+        if (!G.maps[parent.character.map].npcs) return // No NPCs on this map
+        for (let npc of G.maps[parent.character.map].npcs.filter(npc => G.npcs[npc.id].role == "merchant")) {
+            if (distance(parent.character, {
+                x: npc.position[0],
+                y: npc.position[1]
+            }) < 350) {
+                foundNPCBuyer = true;
+                break;
             }
+        }
+        if (!foundNPCBuyer) return // Can't sell things, nobody is near.
+    }
+
+    let itemsToSell2 = Object.keys(itemsToSell)
+    for (let item of getInventory()) {
+        if (itemsToSell2.includes(item.name)) {
+            if (item.level && item.level > itemsToSell[item.name]) continue // Too high of level
+
+            item.q ? sell(item.index, item.q) : sell(item.index, 1)
         }
     }
 }
@@ -82,8 +71,8 @@ export function buyFromPonty(itemNames: ItemName[]) {
     parent.socket.emit("secondhands")
 }
 
-export function transferItemsToMerchant(merchantName: string, itemsToKeep: ItemName[] = defaultItemsToKeep) {
-    let merchant = parent.entities[merchantName];
+export function transferItemsToMerchant(merchantName: string, itemsToKeep: ItemName[]) {
+    let merchant = parent.entities[merchantName]
     if (!merchant) return; // No merchant nearby
     if (distance(parent.character, merchant) > 250) return; // Merchant is too far away to trade
 
@@ -111,23 +100,19 @@ export function transferGoldToMerchant(merchantName: string, minimumGold: number
 
 // TODO: Add an agrument for a list of items to dismantle
 export function dismantleItems() {
-    let foundGuy = false;
-    for (let npc of parent.npcs) {
-        if (npc.id == "craftsman" && distance(parent.character, {
-            x: npc.position[0],
-            y: npc.position[1]
-        }) < 250) {
-            foundGuy = true;
-            break;
+    if (parent.character.map == "bank") return // We can't do things in the bank
+    if (!findItems("computer").length) {
+        let foundGuy = false;
+        for (let npc of parent.npcs) {
+            if (npc.id == "craftsman" && distance(parent.character, {
+                x: npc.position[0],
+                y: npc.position[1]
+            }) < 250) {
+                foundGuy = true;
+                break;
+            }
         }
-    }
-    if (!foundGuy) return; // We're not near the dismantle guy
-
-    let goldEarrings = findItemsWithLevel("lostearring", 0)
-    if (parent.character.gold >= G.dismantle["lostearring"].cost) {
-        for (let earring of goldEarrings) {
-            parent.socket.emit("dismantle", { num: earring.index })
-        }
+        if (!foundGuy) return; // We're not near the dismantle guy
     }
 
     let fireBlades = findItemsWithLevel("fireblade", 0)
@@ -145,8 +130,10 @@ export function dismantleItems() {
     }
 }
 
+// TODO: We don't exchange items on maps if we have a computer, but we aren't on a map with any NPCs...
 export function exchangeItems() {
-    if (parent.character.q["exchange"]) return; // Already exchanging something
+    if (parent.character.q.exchange) return // Already exchanging something
+    if (parent.character.map == "bank") return // We can't do things in the bank
 
     let nearbyNPCs: NPCType[] = []
     for (let npc of parent.npcs) {
@@ -182,11 +169,17 @@ export function exchangeItems() {
         if (!exchangableItems[npc]) exchangableItems[npc] = []
         exchangableItems[npc].push(item)
     }
-    if (!Object.keys(exchangableItems).length) return
+    let keys = Object.keys(exchangableItems)
+    if (!keys.length) return // Nothing to exchange
+
+    if (!findItems("computer").length) {
+        let item = exchangableItems[keys[0] as NPCType][0]
+        exchange(item.index)
+        return // We can only exchange one item at a time
+    }
 
     for (let npc in exchangableItems) {
         if (!nearbyNPCs.includes(npc as NPCType)) continue // Not near
-
         // Exchange something!
         let item = exchangableItems[npc as NPCType][0]
         exchange(item.index)
@@ -195,18 +188,21 @@ export function exchangeItems() {
 }
 
 export function buyPots() {
-    let foundNPC = false;
-    if(!G.maps[parent.character.map].npcs) return
-    for (let npc of G.maps[parent.character.map].npcs.filter(npc => G.npcs[npc.id].role == "merchant")) {
-        if (distance(parent.character, {
-            x: npc.position[0],
-            y: npc.position[1]
-        }) < 350) {
-            foundNPC = true;
-            break;
+    if (parent.character.map == "bank") return // We can't do things in the bank
+    if (!findItems("computer").length) {
+        let foundNPC = false;
+        if (!G.maps[parent.character.map].npcs) return
+        for (let npc of G.maps[parent.character.map].npcs.filter(npc => G.npcs[npc.id].role == "merchant")) {
+            if (distance(parent.character, {
+                x: npc.position[0],
+                y: npc.position[1]
+            }) < 350) {
+                foundNPC = true;
+                break;
+            }
         }
+        if (!foundNPC) return // Can't buy things, nobody is near.
     }
-    if (!foundNPC) return // Can't buy things, nobody is near.
     if (parent.character.gold < G.items["mpot1"].g) return // No money
 
     let numMP = findItems("mpot1").reduce((a, b) => a + b.q, 0)

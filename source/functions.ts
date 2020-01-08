@@ -64,12 +64,12 @@ export function wantToAttack(c: Character, e: IEntity, s: SkillName = "attack"):
     if (e.target != parent.character.id) {
         // Hold attack
         if (c.holdAttack) return false // Holding all attacks
-        if (!c.targetPriority[e.mtype]) return false // Holding attacks against things not in our priority list
-        if (smart.moving && c.targetPriority[e.mtype].holdAttackWhileMoving) return false // Holding attacks while moving
-        if (c.targetPriority[e.mtype].holdAttackInEntityRange && distanceToEntity <= e.range) return false // Holding attacks in range
+        if (!c.targets[e.mtype]) return false // Holding attacks against things not in our priority list
+        if (smart.moving && c.targets[e.mtype].holdAttackWhileMoving) return false // Holding attacks while moving
+        if (c.targets[e.mtype].holdAttackInEntityRange && distanceToEntity <= e.range) return false // Holding attacks in range
 
         // Low HP
-        if (calculateDamageRange(e, parent.character)[1] * 5 * e.frequency > parent.character.hp) return false
+        if (calculateDamageRange(e, parent.character)[1] * 5 * e.frequency > parent.character.hp && distanceToEntity <= e.range) return false
     }
 
     return true;
@@ -125,6 +125,9 @@ export function getEmptyBankSlots(): EmptyBankSlots[] {
 }
 
 export function isAvailable(skill: SkillName) {
+    if (G.skills[skill].level && G.skills[skill].level > parent.character.level) return false // Not a high enough level to use this skill
+    let mp = G.skills[skill].mp ? G.skills[skill].mp : parent.character.mp_cost
+    if (parent.character.mp < mp) return false; // Insufficient MP
     if (!parent.next_skill) return false
     if (parent.next_skill[skill] === undefined) return true
     if (["3shot", "5shot"].includes(skill)) return parent.next_skill["attack"] ? (Date.now() >= parent.next_skill["attack"].getTime()) : true

@@ -2,7 +2,7 @@ import { Character } from './character'
 import { MonsterType } from './definitions/adventureland';
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from './trade';
 import { TargetPriorityList } from './definitions/bots';
-import { getCooldownMS, getAttackingEntities, calculateDamageRange } from './functions';
+import { getCooldownMS, getAttackingEntities, calculateDamageRange, wantToAttack, isAvailable } from './functions';
 
 let DIFFICULT = 10;
 let MEDIUM = 20;
@@ -10,7 +10,7 @@ let EASY = 30;
 let SPECIAL = 500;
 
 class Warrior extends Character {
-    targetPriority: TargetPriorityList = {
+    targets: TargetPriorityList = {
         "arcticbee": {
             "priority": EASY
         },
@@ -83,16 +83,26 @@ class Warrior extends Character {
     }
     mainTarget: MonsterType = "spider";
 
+    constructor() {
+        super()
+        this.itemsToKeep.push(
+            "basher", "bataxe", "candycanesword"
+        )
+    }
+
     run(): void {
-        super.run();
-        this.chargeLoop();
+        super.run()
+        this.chargeLoop()
+        this.hardshellLoop()
+        this.stompLoop()
+        this.warcryLoop()
     }
 
     mainLoop(): void {
         try {
-            transferItemsToMerchant("earthMer", ["tracker", "mpot1", "hpot1", "orbg", "jacko", "basher", "bataxe", "candycanesword", "swordofthedead", "luckbooster", "goldbooster", "xpbooster"]);
+            transferItemsToMerchant("earthMer", this.itemsToKeep);
             transferGoldToMerchant("earthMer", 100000);
-            sellUnwantedItems();
+            sellUnwantedItems(this.itemsToSell);
 
             super.mainLoop();
         } catch (error) {
@@ -101,20 +111,50 @@ class Warrior extends Character {
         }
     }
 
+    warcryLoop(): void {
+        if (isAvailable("warcry")) {
+            // Check if there are at least two party members nearby
+            let count = 0
+            for (let member of parent.party_list) {
+                let e = parent.entities[member]
+                if (e && parent.distance(parent.character, e) < G.skills["warcry"].range) {
+                    count += 1
+                }
+                if (count == 2) {
+                    use_skill("warcry")
+                    break
+                }
+            }
+        }
+        setTimeout(() => { this.warcryLoop() }, getCooldownMS("warcry"));
+    }
+
+    stompLoop(): void {
+        // Stomp monsters with high HP
+        let targets = getAttackingEntities()
+        if (isAvailable("stomp")
+            && targets.length && targets[0].hp > 25000) {
+            use_skill("stomp")
+        }
+        setTimeout(() => { this.stompLoop() }, getCooldownMS("stomp"));
+    }
+
     chargeLoop(): void {
-        use_skill("charge")
+        if (isAvailable("charge")) {
+            use_skill("charge")
+        }
         setTimeout(() => { this.chargeLoop() }, getCooldownMS("charge"));
     }
 
     hardshellLoop(): void {
         let targets = getAttackingEntities()
-        if (parent.character.mp >= 480 // Enough MP
+        if (isAvailable("hardshell")
             && targets.length // We have a target
             && distance(targets[0], parent.character) <= targets[0].range // In range of their attacks
             && parent.character.hp < calculateDamageRange(targets[0], parent.character)[1] * 5) { // Not a lot of HP remaining
             use_skill("hardshell")
         }
-        setTimeout(() => { this.chargeLoop() }, getCooldownMS("hardshell"));
+        setTimeout(() => { this.hardshellLoop() }, getCooldownMS("hardshell"));
     }
 }
 

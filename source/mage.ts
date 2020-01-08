@@ -10,7 +10,7 @@ let EASY = 30;
 let SPECIAL = 500;
 
 class Mage extends Character {
-    targetPriority: TargetPriorityList = {
+    targets: TargetPriorityList = {
         "arcticbee": {
             "priority": EASY
         },
@@ -183,9 +183,9 @@ class Mage extends Character {
 
     mainLoop(): void {
         try {
-            transferItemsToMerchant("earthMer", ["tracker", "mpot1", "hpot1", "orbg", "jacko", "luckbooster", "goldbooster", "xpbooster"]);
+            transferItemsToMerchant("earthMer", this.itemsToKeep);
             transferGoldToMerchant("earthMer", 100000);
-            sellUnwantedItems();
+            sellUnwantedItems(this.itemsToSell);
 
             super.mainLoop();
         } catch (error) {
@@ -194,6 +194,7 @@ class Mage extends Character {
         }
     }
 
+    // TODO: cast on the member of the party with the lowest mp
     energizeLoop(): void {
         try {
             // Get nearby party members
@@ -204,7 +205,7 @@ class Mage extends Character {
                     if (!parent.party_list.includes(id)) continue // Not in our party
 
                     use_skill("energize", parent.entities[id])
-                    break;
+                    break
                 }
         } catch (error) {
             console.error(error)

@@ -5,7 +5,7 @@ import { sellUnwantedItems, exchangeItems, buyFromPonty, openMerchantStand, clos
 import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots, sleep, buyIfNone, getEmptySlots } from './functions';
 
 class Merchant extends Character {
-    targetPriority = {
+    targets = {
         "bee": {
             "priority": 1,
         },
@@ -26,6 +26,17 @@ class Merchant extends Character {
         }
     }
     mainTarget: MonsterType = null;
+
+    constructor() {
+        super()
+        this.itemsToKeep.push(
+            "cscroll0", "cscroll1", "cscroll2",
+            "scroll0", "scroll1", "scroll2",
+            "stand0",
+            "dexscroll", "intscroll", "strscroll",
+            "monstertoken"
+        )
+    }
 
     public getMovementTarget(): { message: string, target: IPositionReal } {
         // Check for full inventory
@@ -113,15 +124,16 @@ class Merchant extends Character {
         //     return { message: "Find Angel", target: this.info.npcs.Angel }
         // }
 
-        // If we have exchangable things, go exchange them
-        let items = getInventory();
-        if (items.length < 25) {
-            for (let item of items) {
-                if (G.items[item.name].quest && item.q >= G.items[item.name].e) {
-                    return { message: "Quest", target: G.quests[item.name] }
-                }
-            }
-        }
+        // // If we have exchangable things, go exchange them
+        // NOTE: We have a computer now, we don't need to travel anymore
+        // let items = getInventory();
+        // if (items.length < 25) {
+        //     for (let item of items) {
+        //         if (G.items[item.name].quest && item.q >= G.items[item.name].e) {
+        //             return { message: "Quest", target: G.quests[item.name] }
+        //         }
+        //     }
+        // }
 
         // Default vendoring
         return { message: "Vendor", target: { map: "main", "x": 60, "y": -325 } }
@@ -129,7 +141,7 @@ class Merchant extends Character {
 
     protected async mainLoop(): Promise<void> {
         try {
-            sellUnwantedItems();
+            sellUnwantedItems(this.itemsToSell);
 
             let numItems = 0;
             for (let i = 0; i < 42; i++) if (parent.character.items[i]) numItems++
@@ -154,7 +166,7 @@ class Merchant extends Character {
             super.mainLoop();
         } catch (error) {
             console.error(error);
-            setTimeout(() => { this.mainLoop(); }, 1000);
+            setTimeout(() => { this.mainLoop(); }, 1000)
         }
     }
 
@@ -182,20 +194,14 @@ class Merchant extends Character {
         }
         if (!foundPonty) {
             // We're not near Ponty, so don't buy from him.
-            setTimeout(() => { this.pontyLoop() }, 250);
-            return;
+            setTimeout(() => { this.pontyLoop() }, 250)
+            return
         }
 
-        buyFromPonty(["strbelt", "strring", "intbelt", "intring", "dexbelt", "dexring", // High priority things
-            "intearring", "dexearring", "strearring", "dexamulet", "intamulet", // Low priority things
-            /* "wgloves", "wshoes", "wattire", // I want to get all +8 for my ranger */
-            "bfur", "goldnugget", "goldingot", "platinumnugget", "platinumingot", // Craftables that are usable for things
-            "pmace", // I want a nice mace for my priest
-            "5bucks", "candy0", "candy1", "candycane", "gem0", "gem1", "goldenegg", "leather", "mistletoe", "monstertoken", "ornament", "seashell", // Exchangables
-            "luckbooster", "goldbooster", "bottleofxp", "bugbountybox", "dartgun", "networkcard", "lostearring", "jacko", "cape", "bcape", "t2bow", "cupid", "candycanesword", "merry", "ornamentstaff", "bowofthedead", "gbow", "hbow", "t2quiver", "oozingterror", "talkingskull", "greenbomb", "xboots", "handofmidas", "goldenpowerglove", "xgloves", "powerglove", "poker", "starkillers", "xpants", "xarmor", "xhelmet", "fury", "partyhat"]); // Other things
+        buyFromPonty(this.itemsToBuy) // Other things
 
         // We bought things from Ponty, wait a long time before trying to buy again.
-        setTimeout(() => { this.pontyLoop() }, 15000);
+        setTimeout(() => { this.pontyLoop() }, 15000)
     }
 
     private didBankStuff = 0;
@@ -205,8 +211,6 @@ class Merchant extends Character {
         } else if (Date.now() - this.didBankStuff < 10000) {
             return;
         }
-        let itemsToKeep: ItemName[] = ["tracker", "cscroll0", "cscroll1", "cscroll2", "scroll0", "scroll1", "scroll2", "stand0", "dexscroll", "intscroll", "strscroll",
-            "monstertoken"]
 
         // Store extra gold
         if (parent.character.gold > 100000000) {
@@ -220,7 +224,7 @@ class Merchant extends Character {
 
         // Add items from inventory
         for (let item of getInventory()) {
-            if (itemsToKeep.includes(item.name)) continue; // Don't add items we want to keep
+            if (this.itemsToKeep.includes(item.name)) continue; // Don't add items we want to keep
 
 
             if (G.items[item.name].s) {
@@ -342,6 +346,22 @@ class Merchant extends Character {
         // Find exchanges
         for (let i = 0; i < items.length; i++) {
             if (!G.items[items[i][0]].e) continue
+            let bankBox = items[i][2]
+            let boxSlot = items[i][3]
+
+            await sleep(parent.character.ping)
+            if (empty.length)
+                parent.socket.emit("bank", {
+                    operation: "swap",
+                    inv: empty.shift(),
+                    str: boxSlot,
+                    pack: bankBox
+                })
+        }
+
+        // Find sellable items
+        for (let i = 0; i < items.length; i++) {
+            if(!this.itemsToSell[items[i][0]]) continue
             let bankBox = items[i][2]
             let boxSlot = items[i][3]
 

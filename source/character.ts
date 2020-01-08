@@ -2,19 +2,98 @@ import { Queue } from "prioqueue"
 import { IEntity, IPosition, ItemName, ItemInfo, SlotType, ICharacter, MonsterType, IPositionReal, NPCName, ChestInfo } from './definitions/adventureland';
 import { Pathfinder } from './pathfinder';
 import { sendMassCM, findItems, getInventory, getRandomMonsterSpawn, getAttackingEntities, getCooldownMS, isAvailable, canSeePlayer, getNearbyMonsterSpawns, wantToAttack, calculateDamageRange } from "./functions";
-import { TargetPriorityList, OtherInfo, MyItemInfo } from "./definitions/bots";
+import { TargetPriorityList, OtherInfo, MyItemInfo, ItemLevelInfo } from "./definitions/bots";
 import { dismantleItems, buyPots } from "./trade";
 
 export abstract class Character {
     /** A list of monsters, priorities, and locations to farm. */
-    public abstract targetPriority: TargetPriorityList;
+    public abstract targets: TargetPriorityList
+
     /** The default target if there's nothing else to attack */
-    protected abstract mainTarget: MonsterType;
+    protected abstract mainTarget: MonsterType
+
+    protected itemsToKeep: ItemName[] = [
+        // General
+        "computer", "tracker",
+        // Boosters
+        "goldbooster", "luckbooster", "xpbooster",
+        // Healing
+        "hpot1", "mpot1",
+        // Used to avoid monster hits
+        "jacko"
+    ]
+    protected itemsToSell: ItemLevelInfo = {
+        // Default clothing
+        "shoes": 2, "pants": 2, "coat": 2, "helmet": 2, "gloves": 2,
+        // Common & useless stuff
+        "cclaw": 2, "hpamulet": 1, "hpbelt": 1, "maceofthedead": 2, "ringsj": 1, "slimestaff": 2, "spear": 2, "throwingstars": 2, "vitearring": 1, "vitring": 1,
+    }
+    protected itemsToDismantle: ItemLevelInfo = {
+        // Fire stuff
+        "fireblade": 0, "firestaff": 0
+    }
+    protected itemsToExchange: ItemName[] = [
+        // General exchangables
+        "5bucks", "gem0", "gem1",
+        // Seashells for potions
+        "seashell",
+        // Leather for capes
+        "leather",
+        // Christmas
+        "candycane", "mistletoe", "ornament",
+        // Halloween
+        "candy0", "candy1",
+        // Boxes
+        "armorbox", "weaponbox"
+    ]
+    protected itemsToBuy: ItemName[] = [
+        // Exchangables
+        ...this.itemsToExchange,
+        // Belts
+        "dexbelt", "intbelt", "strbelt",
+        // Rings
+        "dexring", "intring", "strring",
+        // Earrings
+        "dexearring", "intearring", "lostearring", "strearring",
+        // Amulets
+        "dexamulet", "intamulet", /*"stramulet",*/ "t2dexamulet", "t2intamulet", "t2stramulet",
+        // Orbs
+        "jacko", "talkingskull",
+        // Shields
+        "t2quiver", "mshield", "xshield",
+        // Capes
+        "angelwings", "bcape", "cape", "ecape", "stealthcape",
+        // Shoes
+        "xboots",
+        // Pants
+        "starkillers", "xpants",
+        // Armor
+        "xarmor",
+        // Helmets
+        "fury", "partyhat", "xhelmet",
+        // Gloves
+        "goldenpowerglove", "handofmidas", "poker", "powerglove", "xgloves",
+        // Good weapons
+        "bowofthedead", "candycanesword", "cupid", "dartgun", "gbow", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow",
+        // Things we can exchange / craft with
+        "bfur", "cscale", "goldenegg", "goldingot", "goldnugget", "leather", "networkcard", "platinumingot", "platinumnugget", "pleather",
+        // Boosters
+        "goldbooster", "luckbooster", "xpbooster",
+        // Potions & consumables
+        "greenbomb",
+        // Misc. Things
+        "bottleofxp", "bugbountybox", "monstertoken"
+    ]
+
+
     /** Set to true to stop movement */
-    public holdPosition = false;
+    public holdPosition = false
+
     /** Set to true to stop attacks. We might still attack if the target is attacking us. */
     public holdAttack = false
+
     protected pathfinder: Pathfinder = new Pathfinder(6);
+
     /** Information about the state of the game that is useful to us */
     protected info: OtherInfo = {
         party: {},
@@ -150,18 +229,18 @@ export abstract class Character {
 
         // Monster Hunts
         if (!parent.character.s.monsterhunt) return false; // We can potentially get a monster hunt, don't switch
-        if (this.targetPriority[parent.character.s.monsterhunt.id]) return false; // We can do our monster hunt
+        if (this.targets[parent.character.s.monsterhunt.id]) return false; // We can do our monster hunt
         for (let id of parent.party_list) {
             let member = parent.entities[id] ? parent.entities[id] : this.info.party[id]
             if (!member || !member.s || !member.s.monsterhunt) continue;
-            if (this.targetPriority[member.s.monsterhunt.id as MonsterType]) return false; // We can do a party member's monster hunt
+            if (this.targets[member.s.monsterhunt.id as MonsterType]) return false; // We can do a party member's monster hunt
         }
 
         // Doable event monster
         for (let monster in parent.S) {
             if (monster == "grinch") continue // The grinch is too strong.
             if (!parent.S[monster as MonsterType].live) continue
-            if (this.targetPriority[monster as MonsterType]) return false // We can do an event monster!
+            if (this.targets[monster as MonsterType]) return false // We can do an event monster!
         }
 
         // // +1000% luck and gold
@@ -243,7 +322,7 @@ export abstract class Character {
                     if (target.mtype == "grinch") continue // NOTE: CHRISTMAS EVENT -- remove after Christmas.
                     if (distance(target, parent.character) > target.range) continue // They're out of range
                     if (calculateDamageRange(target, parent.character)[1] * 6 * target.frequency <= parent.character.hp) continue // We can tank a few of their shots
-                    if (this.targetPriority[target.mtype]) continue
+                    if (this.targets[target.mtype]) continue
 
                     wantToScare = true
                     break
@@ -298,7 +377,7 @@ export abstract class Character {
             let targets = this.getTargets(1)
             if (smart.moving) {
                 if (targets.length > 0 /* We have a target in range */
-                    && this.targetPriority[targets[0].mtype] && this.targetPriority[targets[0].mtype].stopOnSight /* We stop on sight of that target */
+                    && this.targets[targets[0].mtype] && this.targets[targets[0].mtype].stopOnSight /* We stop on sight of that target */
                     && this.pathfinder.movementTarget == targets[0].mtype /* We're moving to that target */
                     && distance(parent.character, targets[0]) < parent.character.range /* We're in range of that target */) {
                     stop()
@@ -511,7 +590,7 @@ export abstract class Character {
     public moveToMonster(): void {
         let targets = this.getTargets(1)
         if (targets.length == 0 // There aren't any targets to move to
-            || (this.targetPriority[targets[0].mtype] && this.targetPriority[targets[0].mtype].holdPositionFarm) // We don't want to move to these monsters
+            || (this.targets[targets[0].mtype] && this.targets[targets[0].mtype].holdPositionFarm) // We don't want to move to these monsters
             || distance(parent.character, targets[0]) <= parent.character.range) // We have a target, and it's in range.
             return
 
@@ -632,7 +711,7 @@ export abstract class Character {
         for (let mtype in parent.S) {
             if (mtype == "grinch") continue // The grinch is too strong.
             if (!parent.S[mtype as MonsterType].live) continue;
-            if (this.targetPriority[mtype as MonsterType]) {
+            if (this.targets[mtype as MonsterType]) {
                 this.pathfinder.movementTarget = mtype;
                 for (let id in parent.entities) {
                     let entity = parent.entities[id]
@@ -658,7 +737,7 @@ export abstract class Character {
             let member = parent.entities[memberName] ? parent.entities[memberName] : this.info.party[memberName]
             if (!member) continue; // No information yet
             if (!member.s.monsterhunt || member.s.monsterhunt.c == 0) continue // They don't have a monster hunt, or are turning it in
-            if (!this.targetPriority[member.s.monsterhunt.id]) continue; // We can't do it
+            if (!this.targets[member.s.monsterhunt.id]) continue; // We can't do it
 
             // Check if it's impossible for us to complete it in the amount of time given
             let partyDamageRate = 0
@@ -677,8 +756,8 @@ export abstract class Character {
                 && can_move_to(entity)) {
                 // There's one nearby
                 this.pathfinder.movementTarget = entity.mtype;
-                if (this.targetPriority[entity.mtype].holdPositionFarm)
-                    return { message: "MH " + entity.mtype, target: this.targetPriority[entity.mtype] as IPositionReal };
+                if (this.targets[entity.mtype].holdPositionFarm)
+                    return { message: "MH " + entity.mtype, target: this.targets[entity.mtype] as IPositionReal };
                 else
                     return { message: "MH " + entity.mtype, target: null };
             }
@@ -700,13 +779,13 @@ export abstract class Character {
             // Frog check, because they're super easy to complete with mages or priests
             if (monsterHuntTargets.includes("frog")
                 && G.items[parent.character.slots.mainhand.name].damage == "magical"
-                && this.targetPriority["frog"]) {
+                && this.targets["frog"]) {
                 potentialTarget = "frog"
             }
 
             this.pathfinder.movementTarget = potentialTarget;
-            if (this.targetPriority[potentialTarget].map && this.targetPriority[potentialTarget].x && this.targetPriority[potentialTarget].y) {
-                return { message: "MH " + potentialTarget, target: this.targetPriority[potentialTarget] as IPositionReal }
+            if (this.targets[potentialTarget].map && this.targets[potentialTarget].x && this.targets[potentialTarget].y) {
+                return { message: "MH " + potentialTarget, target: this.targets[potentialTarget] as IPositionReal }
             } else {
                 return { message: "MH " + potentialTarget, target: getRandomMonsterSpawn(potentialTarget) }
             }
@@ -772,8 +851,8 @@ export abstract class Character {
                 return { message: this.mainTarget, target: null };
             }
         }
-        if (this.targetPriority[this.mainTarget].map && this.targetPriority[this.mainTarget].x && this.targetPriority[this.mainTarget].y) {
-            return { message: this.mainTarget, target: this.targetPriority[this.mainTarget] as IPositionReal }
+        if (this.targets[this.mainTarget].map && this.targets[this.mainTarget].x && this.targets[this.mainTarget].y) {
+            return { message: this.mainTarget, target: this.targets[this.mainTarget] as IPositionReal }
         } else {
             return { message: this.mainTarget, target: getRandomMonsterSpawn(this.mainTarget) }
         }
@@ -800,13 +879,13 @@ export abstract class Character {
             if (potentialTarget.mtype == "grinch") continue; // NOTE: Christmas event -- delete after
 
             let d = distance(parent.character, potentialTarget);
-            if (!this.targetPriority[potentialTarget.mtype] && potentialTarget.target != parent.character.name) continue; // Not a monster we care about, and it's not attacking us
+            if (!this.targets[potentialTarget.mtype] && potentialTarget.target != parent.character.name) continue; // Not a monster we care about, and it's not attacking us
             if (potentialTarget.type != "monster") // Not a monster
                 if (!is_pvp() && potentialTarget.type == "character") continue; // Not PVP
 
             // Set a priority based on the index of the entity 
             let priority = 0;
-            if (this.targetPriority[potentialTarget.mtype]) priority = this.targetPriority[potentialTarget.mtype].priority;
+            if (this.targets[potentialTarget.mtype]) priority = this.targets[potentialTarget.mtype].priority;
 
             // Adjust priority if a party member is already attacking it and it has low HP
             if (claimedTargets.includes(id) && potentialTarget.hp <= calculateDamageRange(parent.character, potentialTarget)[0]) priority -= parent.character.range;

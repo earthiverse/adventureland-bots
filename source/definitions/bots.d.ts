@@ -1,4 +1,4 @@
-import { MapName, ItemInfo, MonsterType, NPCType, IPosition, IPositionReal, IEntity, NPCName, ICharacter, StatusInfo, BankPackType } from "./adventureland";
+import { MapName, ItemInfo, MonsterType, NPCType, IPosition, IPositionReal, IEntity, NPCName, ICharacter, StatusInfo, BankPackType, ItemName } from "./adventureland";
 
 export type TargetPriorityList = {
     [T in MonsterType]?: TargetPriorityInfo;
@@ -52,6 +52,11 @@ export type OtherInfo = {
     players: {
         [T in string]?: IEntity
     }
+}
+
+export type ItemLevelInfo = {
+    /** Items this level and under will be sold */
+    [T in ItemName]?: number
 }
 
 export type MyItemInfo = ItemInfo & {

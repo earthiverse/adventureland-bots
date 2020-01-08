@@ -1,19 +1,22 @@
 import { findItems, findItemsWithLevel, getInventory, findItem } from "./functions";
-import { ItemName, ItemInfo } from "./definitions/adventureland";
+import { ItemName } from "./definitions/adventureland";
 import { MyItemInfo } from "./definitions/bots";
 
 export function compoundItem(itemname: ItemName, target_level: number) {
-    let foundUpgrade = false;
-    for (let npc of parent.npcs) {
-        if (npc.id == "newupgrade" && distance(parent.character, {
-            x: npc.position[0],
-            y: npc.position[1]
-        }) < 350) {
-            foundUpgrade = true;
-            break;
+    if (parent.character.map == "bank") return // We can't do things in the bank
+    if (!findItems("computer").length) {
+        let foundUpgrade = false;
+        for (let npc of parent.npcs) {
+            if (npc.id == "newupgrade" && distance(parent.character, {
+                x: npc.position[0],
+                y: npc.position[1]
+            }) < 350) {
+                foundUpgrade = true;
+                break;
+            }
         }
+        if (!foundUpgrade) return; // Can't compound, nobody is near.
     }
-    if (!foundUpgrade) return; // Can't compound, nobody is near.
 
     if (parent.character.q && parent.character.q["compound"]) return; // Already compounding
 
@@ -43,19 +46,22 @@ export function compoundItem(itemname: ItemName, target_level: number) {
 }
 
 export function upgradeItem(itemname: ItemName, target_level: number) {
-    let foundUpgrade = false;
-    for (let npc of parent.npcs) {
-        if (npc.id == "newupgrade" && distance(parent.character, {
-            x: npc.position[0],
-            y: npc.position[1]
-        }) < 350) {
-            foundUpgrade = true;
-            break;
+    if (parent.character.map == "bank") return // We can't do things in the bank
+    if (parent.character.q.upgrade) return // Already upgrading
+    if (!findItems("computer").length) {
+        let foundUpgrade = false;
+        for (let npc of parent.npcs) {
+            if (npc.id == "newupgrade" && distance(parent.character, {
+                x: npc.position[0],
+                y: npc.position[1]
+            }) < 350) {
+                foundUpgrade = true;
+                break;
+            }
         }
+        if (!foundUpgrade) return // Can't upgrade, nobody is near.
     }
-    if (!foundUpgrade) return; // Can't upgrade, nobody is near.
 
-    if (parent.character.q && parent.character.q["upgrade"]) return; // Already upgrading
 
     let item = findItem(itemname);
     if (item && item.level < target_level) {
@@ -74,18 +80,21 @@ export function upgradeItem(itemname: ItemName, target_level: number) {
 }
 
 export function compoundIfMany(maxLevel: number) {
-    let foundUpgrade = false;
-    for (let npc of parent.npcs) {
-        if (npc.id == "newupgrade" && distance(parent.character, {
-            x: npc.position[0],
-            y: npc.position[1]
-        }) < 350) {
-            foundUpgrade = true;
-            break;
+    if (parent.character.map == "bank") return // We can't do things in the bank
+    if (parent.character.q.compound) return // Already compounding
+    if (!findItems("computer").length) {
+        let foundUpgrade = false;
+        for (let npc of parent.npcs) {
+            if (npc.id == "newupgrade" && distance(parent.character, {
+                x: npc.position[0],
+                y: npc.position[1]
+            }) < 350) {
+                foundUpgrade = true;
+                break;
+            }
         }
+        if (!foundUpgrade) return; // Can't upgrade, nobody is near.
     }
-    if (!foundUpgrade) return; // Can't upgrade, nobody is near.
-    if (parent.character.q.compound) return; // Already compounding
 
     let items: MyItemInfo[] = [];
     for (let item of getInventory()) {
@@ -124,18 +133,21 @@ export function compoundIfMany(maxLevel: number) {
  * This function will upgrade items in your inventory if there are more than one of the same item. It will upgrade until one breaks, keeping the higher level item, and upgrading the lower level item.
  */
 export function upgradeIfMany(maxLevel: number) {
-    let foundUpgrade = false;
-    for (let npc of parent.npcs) {
-        if (npc.id == "newupgrade" && distance(parent.character, {
-            x: npc.position[0],
-            y: npc.position[1]
-        }) < 350) {
-            foundUpgrade = true;
-            break;
+    if (parent.character.map == "bank") return // We can't do things in the bank
+    if (parent.character.q.upgrade) return // Already upgrading
+    if (!findItems("computer").length) {
+        let foundUpgrade = false
+        for (let npc of parent.npcs) {
+            if (npc.id == "newupgrade" && distance(parent.character, {
+                x: npc.position[0],
+                y: npc.position[1]
+            }) < 350) {
+                foundUpgrade = true;
+                break;
+            }
         }
+        if (!foundUpgrade) return; // Can't upgrade, nobody is near.
     }
-    if (!foundUpgrade) return; // Can't upgrade, nobody is near.
-    if (parent.character.q.upgrade) return; // Already upgrading
     for (let i = 0; i < 42; i++) {
         if (!parent.character.items[i]) continue; // No item in this slot
         if (!(G.items[parent.character.items[i].name].upgrade)) continue; // Not upgradable
