@@ -130,10 +130,11 @@ export function dismantleItems() {
     }
 }
 
-// TODO: We don't exchange items on maps if we have a computer, but we aren't on a map with any NPCs...
 export function exchangeItems() {
     if (parent.character.q.exchange) return // Already exchanging something
     if (parent.character.map == "bank") return // We can't do things in the bank
+
+    let haveComputer = findItems("computer").length
 
     let nearbyNPCs: NPCType[] = []
     for (let npc of parent.npcs) {
@@ -145,7 +146,7 @@ export function exchangeItems() {
         }) < 250)
             nearbyNPCs.push(npc.id)
     }
-    if (!nearbyNPCs.length) return;
+    if (!nearbyNPCs.length && !haveComputer) return;
 
     let exchangableItems: { [T in NPCType]?: MyItemInfo[] } = {}
     for (let item of getInventory()) {
@@ -169,17 +170,9 @@ export function exchangeItems() {
         if (!exchangableItems[npc]) exchangableItems[npc] = []
         exchangableItems[npc].push(item)
     }
-    let keys = Object.keys(exchangableItems)
-    if (!keys.length) return // Nothing to exchange
-
-    if (!findItems("computer").length) {
-        let item = exchangableItems[keys[0] as NPCType][0]
-        exchange(item.index)
-        return // We can only exchange one item at a time
-    }
 
     for (let npc in exchangableItems) {
-        if (!nearbyNPCs.includes(npc as NPCType)) continue // Not near
+        if (!nearbyNPCs.includes(npc as NPCType) && !haveComputer) continue // Not near
         // Exchange something!
         let item = exchangableItems[npc as NPCType][0]
         exchange(item.index)

@@ -1,4 +1,4 @@
-import { MapName, ItemInfo, MonsterType, NPCType, IPosition, IPositionReal, IEntity, NPCName, ICharacter, StatusInfo, BankPackType, ItemName } from "./adventureland";
+import { MapName, ItemInfo, MonsterType, NPCType, IPosition, IPositionReal, IEntity, NPCName, ICharacter, StatusInfo, BankPackType, ItemName, CharacterType } from "./adventureland";
 
 export type TargetPriorityList = {
     [T in MonsterType]?: TargetPriorityInfo;
@@ -6,21 +6,19 @@ export type TargetPriorityList = {
 
 export interface TargetPriorityInfo {
     /** The higher the priority, the more likely we are to target it. */
-    priority: number;
+    priority: number
+    /** If true, we will only attack the target as a team */
+    coop?: CharacterType[]
     /** When smart moving past the monster, if true, we won't attack the monster. */
-    holdAttackWhileMoving?: boolean;
+    holdAttackWhileMoving?: boolean
     /** If set to true, we will not attack the entity if we are within their attacking range */
-    holdAttackInEntityRange?: boolean;
+    holdAttackInEntityRange?: boolean
     /** If true, we won't move to attack the monsters. Use this with map, x, and y to go to a safe (unreachable) spot. */
-    holdPositionFarm?: boolean;
+    holdPositionFarm?: boolean
     /** When smart moving to this monster, if true, we will stop when we see one within attacking range. */
-    stopOnSight?: boolean;
-    /** The map where we will move to find this monster. */
-    map?: MapName;
-    /** The x position where we will move to find this monster. */
-    x?: number;
-    /** The y position where we will move to find this monster. */
-    y?: number;
+    stopOnSight?: boolean
+
+    farmingPosition?: IPositionReal
 }
 
 export type MonsterSpawnPosition = IPositionReal & {
@@ -35,6 +33,7 @@ export type EmptyBankSlots = {
 export type OtherInfo = {
     party: {
         [T in string]?: IPositionReal & {
+            lastSeen: Date
             shouldSwitchServer: boolean
             items: MyItemInfo[]
             goldm: number

@@ -22,12 +22,25 @@ class Ranger extends Character {
             "priority": EASY,
             "stopOnSight": true
         },
+        "bbpompom": {
+            "coop": ["priest"],
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "priority": DIFFICULT,
+            "farmingPosition": {
+                "map": "winter_cave",
+                "x": -50,
+                "y": -100
+            }
+        },
         "bee": {
             "priority": EASY,
             "holdPositionFarm": true,
-            "map": "main",
-            "x": 550,
-            "y": 1100
+            farmingPosition: {
+                "map": "main",
+                "x": 550,
+                "y": 1100
+            }
         },
         "bigbird": {
             // The ranger is fast enough to avoid these fairly well
@@ -91,9 +104,42 @@ class Ranger extends Character {
             "holdAttackWhileMoving": true,
             "stopOnSight": true
         },
+        "mechagnome": {
+            "coop": ["priest", "ranger"],
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "priority": DIFFICULT,
+            "farmingPosition": {
+                "map": "cyberland",
+                "x": 150,
+                "y": -150
+            }
+        },
         "minimush": {
             "priority": EASY,
             "stopOnSight": true
+        },
+        "mole": {
+            "coop": ["priest", "warrior"],
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "priority": DIFFICULT,
+            "farmingPosition": {
+                "map": "tunnel",
+                "x": -50,
+                "y": -75
+            }
+        },
+        "mummy": {
+            "coop": ["ranger", "priest", "warrior"],
+            "priority": DIFFICULT,
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "farmingPosition": {
+                "map": "spookytown",
+                "x": 270,
+                "y": -1080
+            }
         },
         "mrgreen": {
             "priority": SPECIAL,
@@ -122,9 +168,11 @@ class Ranger extends Character {
             "holdAttackWhileMoving": true,
             "holdPositionFarm": true,
             "priority": DIFFICULT,
-            "map": "level1",
-            "x": -300,
-            "y": 536,
+            farmingPosition: {
+                "map": "level1",
+                "x": -300,
+                "y": 536
+            }
         },
         "rat": {
             "priority": EASY
@@ -138,9 +186,11 @@ class Ranger extends Character {
         "snake": {
             // Farm them on the main map because of the +1000% luck and gold bonus chances
             "priority": EASY,
-            "map": "main",
-            "x": -74,
-            "y": 1904
+            farmingPosition: {
+                "map": "main",
+                "x": -74,
+                "y": 1904
+            }
         },
         "snowman": {
             "priority": SPECIAL,
@@ -176,9 +226,11 @@ class Ranger extends Character {
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
             "holdPositionFarm": true,
-            "map": "halloween",
-            "x": -230,
-            "y": 570
+            farmingPosition: {
+                "map": "halloween",
+                "x": -230,
+                "y": 570
+            }
         }
     }
     mainTarget: MonsterType = "scorpion";

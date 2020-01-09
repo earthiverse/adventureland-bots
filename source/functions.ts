@@ -68,6 +68,20 @@ export function wantToAttack(c: Character, e: IEntity, s: SkillName = "attack"):
         if (smart.moving && c.targets[e.mtype].holdAttackWhileMoving) return false // Holding attacks while moving
         if (c.targets[e.mtype].holdAttackInEntityRange && distanceToEntity <= e.range) return false // Holding attacks in range
 
+        // Don't attack if we have it as a coop target, but we don't have everyone there.
+        if (c.targets[e.mtype].coop) {
+            let availableTypes = [parent.character.ctype]
+            for (let member of parent.party_list) {
+                let e = parent.entities[member]
+                if (!e) continue
+                if (e.rip) continue // Don't add dead players
+                availableTypes.push(e.ctype)
+            }
+            for (let type of c.targets[e.mtype].coop) {
+                if (!availableTypes.includes(type)) return false
+            }
+        }
+
         // Low HP
         if (calculateDamageRange(e, parent.character)[1] * 5 * e.frequency > parent.character.hp && distanceToEntity <= e.range) return false
     }
@@ -126,7 +140,12 @@ export function getEmptyBankSlots(): EmptyBankSlots[] {
 
 export function isAvailable(skill: SkillName) {
     if (G.skills[skill].level && G.skills[skill].level > parent.character.level) return false // Not a high enough level to use this skill
-    let mp = G.skills[skill].mp ? G.skills[skill].mp : parent.character.mp_cost
+    let mp = 0
+    if (G.skills[skill].mp) {
+        mp = G.skills[skill].mp
+    } else if (["attack", "heal"].includes(skill)) {
+        mp = parent.character.mp_cost
+    }
     if (parent.character.mp < mp) return false; // Insufficient MP
     if (!parent.next_skill) return false
     if (parent.next_skill[skill] === undefined) return true
@@ -143,10 +162,23 @@ export function getAttackingEntities(): IEntity[] {
         let entity = parent.entities[id]
         if (entity.target != parent.character.id) continue; // Not being targeted by this entity
         if (isPlayer(entity) && !isPVP) continue; // Not PVP, ignore players
+        if(entity.mtype == "grinch") continue // NOTE: christmas event -- delete after
 
         entitites.push(entity)
     }
     return entitites;
+}
+
+export function getInRangeMonsters(): IEntity[] {
+    let entities: IEntity[] = []
+    for (let id in parent.entities) {
+        let e = parent.entities[id]
+        if (!isMonster(e)) continue
+        if (distance(e, parent.character) > parent.character.range) continue
+
+        entities.push(e)
+    }
+    return entities
 }
 
 export function sendMassCM(names: string[], data: any) {

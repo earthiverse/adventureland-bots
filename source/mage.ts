@@ -22,6 +22,17 @@ class Mage extends Character {
             "priority": EASY,
             "stopOnSight": true
         },
+        "bbpompom": {
+            "coop": ["priest"],
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "priority": DIFFICULT,
+            "farmingPosition": {
+                "map": "winter_cave",
+                "x": 0,
+                "y": -100
+            }
+        },
         "bee": {
             "priority": EASY
         },
@@ -30,6 +41,17 @@ class Mage extends Character {
             "priority": DIFFICULT,
             "holdAttackWhileMoving": true,
             "stopOnSight": true,
+        },
+        "booboo": {
+            "coop": ["priest", "mage"],
+            "priority": DIFFICULT,
+            "holdAttackWhileMoving": true,
+            "holdPositionFarm": true,
+            farmingPosition: {
+                "map": "spookytown",
+                "x": 250,
+                "y": -550
+            }
         },
         "cgoo": {
             "holdAttackWhileMoving": true,
@@ -84,10 +106,32 @@ class Mage extends Character {
             "holdAttackWhileMoving": true,
             "stopOnSight": true
         },
+        "mechagnome": {
+            "coop": ["priest", "ranger"],
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "priority": DIFFICULT,
+            "farmingPosition": {
+                "map": "cyberland",
+                "x": 100,
+                "y": -150
+            }
+        },
         "minimush": {
             "priority": EASY,
             "stopOnSight": true
         },
+        // "mole": {
+        //     "coop": ["priest", "mage", "ranger"],
+        //     "holdPositionFarm": true,
+        //     "holdAttackWhileMoving": true,
+        //     "priority": DIFFICULT,
+        //     "farmingPosition": {
+        //         "map": "tunnel",
+        //         "x": 0,
+        //         "y": -75
+        //     }
+        // },
         "mrgreen": {
             "priority": SPECIAL,
             "stopOnSight": true
@@ -121,9 +165,11 @@ class Mage extends Character {
             "holdPositionFarm": true,
             "holdAttackInEntityRange": true,
             "priority": DIFFICULT,
-            "map": "level1",
-            "x": -300,
-            "y": 536,
+            farmingPosition: {
+                "map": "level1",
+                "x": -300,
+                "y": 536
+            }
         },
         "rat": {
             "priority": EASY
@@ -137,9 +183,11 @@ class Mage extends Character {
         "snake": {
             // Farm them on the main map because of the +1000% luck and gold bonus chances
             "priority": EASY,
-            "map": "main",
-            "x": -74,
-            "y": 1904
+            farmingPosition: {
+                "map": "main",
+                "x": -74,
+                "y": 1904
+            }
         },
         "snowman": {
             "priority": SPECIAL,
@@ -169,9 +217,11 @@ class Mage extends Character {
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
             "holdPositionFarm": true,
-            "map": "halloween",
-            "x": -230,
-            "y": 570
+            farmingPosition: {
+                "map": "halloween",
+                "x": -230,
+                "y": 570
+            }
         }
     }
     mainTarget: MonsterType = "poisio";

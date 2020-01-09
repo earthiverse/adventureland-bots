@@ -2,7 +2,7 @@ import { Character } from './character'
 import { MonsterType } from './definitions/adventureland';
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from './trade';
 import { TargetPriorityList } from './definitions/bots';
-import { getCooldownMS, getAttackingEntities, calculateDamageRange, wantToAttack, isAvailable } from './functions';
+import { getCooldownMS, getAttackingEntities, calculateDamageRange, wantToAttack, isAvailable, isMonster, getNearbyMonsterSpawns, getInRangeMonsters } from './functions';
 
 let DIFFICULT = 10;
 let MEDIUM = 20;
@@ -17,6 +17,17 @@ class Warrior extends Character {
         "bat": {
             "priority": EASY,
             "stopOnSight": true
+        },
+        "bbpompom": {
+            "coop": ["priest"],
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "priority": DIFFICULT,
+            "farmingPosition": {
+                "map": "winter_cave",
+                "x": 0,
+                "y": -100
+            }
         },
         "bee": {
             "priority": EASY
@@ -40,9 +51,42 @@ class Warrior extends Character {
             "holdAttackWhileMoving": true,
             "stopOnSight": true
         },
+        "mechagnome": {
+            "coop": ["priest", "ranger"],
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "priority": DIFFICULT,
+            "farmingPosition": {
+                "map": "cyberland",
+                "x": 150,
+                "y": -100
+            }
+        },
         "minimush": {
             "priority": EASY,
             "stopOnSight": true
+        },
+        "mole": {
+            "coop": ["priest", "warrior"],
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "priority": DIFFICULT,
+            "farmingPosition": {
+                "map": "tunnel",
+                "x": 0,
+                "y": -75
+            }
+        },
+        "mummy": {
+            "coop": ["ranger", "priest", "warrior"],
+            "priority": DIFFICULT,
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "farmingPosition": {
+                "map": "spookytown",
+                "x": 255,
+                "y": -1060
+            }
         },
         "osnake": {
             "priority": EASY,
@@ -60,9 +104,11 @@ class Warrior extends Character {
         "snake": {
             // Farm them on the main map because of the +1000% luck and gold bonus chances
             "priority": EASY,
-            "map": "main",
-            "x": -74,
-            "y": 1904
+            farmingPosition: {
+                "map": "main",
+                "x": -74,
+                "y": 1904
+            }
         },
         "snowman": {
             "priority": SPECIAL,
@@ -96,6 +142,7 @@ class Warrior extends Character {
         this.hardshellLoop()
         this.stompLoop()
         this.warcryLoop()
+        this.tauntLoop()
     }
 
     mainLoop(): void {
@@ -131,18 +178,23 @@ class Warrior extends Character {
 
     stompLoop(): void {
         // Stomp monsters with high HP
-        let targets = getAttackingEntities()
-        if (isAvailable("stomp")
-            && targets.length && targets[0].hp > 25000) {
-            use_skill("stomp")
+        let attackingTargets = getAttackingEntities()
+        let nearbyTargets = getInRangeMonsters()
+        if (isAvailable("stomp") && attackingTargets.length) {
+
+            if (attackingTargets[0].hp > 25000) {
+                use_skill("stomp")
+            } else if (attackingTargets.length >= 2) {
+                use_skill("stomp")
+            } else if (nearbyTargets.length >= 5) {
+                use_skill("stomp")
+            }
         }
         setTimeout(() => { this.stompLoop() }, getCooldownMS("stomp"));
     }
 
     chargeLoop(): void {
-        if (isAvailable("charge")) {
-            use_skill("charge")
-        }
+        if (isAvailable("charge")) use_skill("charge")
         setTimeout(() => { this.chargeLoop() }, getCooldownMS("charge"));
     }
 
@@ -155,6 +207,23 @@ class Warrior extends Character {
             use_skill("hardshell")
         }
         setTimeout(() => { this.hardshellLoop() }, getCooldownMS("hardshell"));
+    }
+
+    tauntLoop(): void {
+        let attackingMonsters = getAttackingEntities()
+        if (isAvailable("taunt")
+            && attackingMonsters.length < 2) {
+            // Check if any nearby party members have an attacking enemy. If they do, taunt it away.
+            for (let id in parent.entities) {
+                let e = parent.entities[id]
+                if (!isMonster(e)) continue
+                if (e.target != parent.character.id && parent.party_list.includes(e.target)) {
+                    use_skill("taunt", e)
+                    break
+                }
+            }
+        }
+        setTimeout(() => { this.tauntLoop() }, getCooldownMS("taunt"));
     }
 }
 

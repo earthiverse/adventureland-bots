@@ -159,6 +159,7 @@ export abstract class Character {
             message = {
                 "message": "info",
                 "info": {
+                    "lastSeen": new Date(),
                     "shouldSwitchServer": this.shouldSwitchServer(),
                     "items": getInventory(),
                     "attack": parent.character.attack,
@@ -317,12 +318,14 @@ export abstract class Character {
             let wantToScare = false
             if (targets.length >= 3) {
                 wantToScare = true
+            } else if (targets.length && !this.targets[targets[0].mtype]) {
+                wantToScare = true
             } else {
                 for (let target of targets) {
                     if (target.mtype == "grinch") continue // NOTE: CHRISTMAS EVENT -- remove after Christmas.
                     if (distance(target, parent.character) > target.range) continue // They're out of range
                     if (calculateDamageRange(target, parent.character)[1] * 6 * target.frequency <= parent.character.hp) continue // We can tank a few of their shots
-                    if (this.targets[target.mtype]) continue
+                    // if (this.targets[target.mtype]) continue
 
                     wantToScare = true
                     break
@@ -384,7 +387,7 @@ export abstract class Character {
                 }
             } else {
                 // Default movements
-                if (["ranger", "mage", "priest"].includes(parent.character.ctype)) {
+                if (["ranger", "mage", "priest", "rogue"].includes(parent.character.ctype)) {
                     this.avoidAggroMonsters()
                 }
 
@@ -406,12 +409,12 @@ export abstract class Character {
         try {
             if (parent.character.rip) {
                 // Respawn if we're dead
-                respawn();
+                respawn()
                 setTimeout(() => { this.healLoop() }, getCooldownMS("use_town"))
-                return;
+                return
             } else if (!isAvailable("use_hp")) {
                 setTimeout(() => { this.healLoop() }, getCooldownMS("use_hp"))
-                return;
+                return
             }
 
             let hpPots: ItemName[] = ["hpot0", "hpot1"]
@@ -513,6 +516,7 @@ export abstract class Character {
             if (entity.aggro == 0) continue // Not an aggressive monster
             if (entity.target && entity.target != parent.character.name) continue // Targeting someone else
             if (calculateDamageRange(entity, parent.character)[1] * 3 * entity.frequency < 400) continue // We can outheal the damage from this monster, don't bother moving
+            if (this.targets[entity.mtype] && this.targets[entity.mtype].holdPositionFarm) continue // Don't move if we're farming them
 
             let d = Math.max(60, entity.speed * 1.5) - distance(parent.character, entity)
             if (d < 0) continue // Far away
@@ -559,6 +563,7 @@ export abstract class Character {
             if (entity.speed > parent.character.speed) continue // We can't outrun it, don't try
             if (entity.range > parent.character.range) continue // We can't outrange it, don't try
             if (minDistance < d) continue; // There's another target that's closer
+            if (this.targets[entity.mtype] && this.targets[entity.mtype].holdPositionFarm) continue // Don't move if we're farming them
             if (d > (entity.range + (entity.speed + parent.character.speed) * Math.max(parent.character.ping * 0.001, 0.5))) continue; // We're still far enough away to not get attacked
             minDistance = d;
             minTarget = entity;
@@ -733,22 +738,44 @@ export abstract class Character {
 
         // See if there's a nearby monster hunt (avoid moving as much as possible)
         let monsterHuntTargets: MonsterType[] = []
+        let lastms = Number.MAX_VALUE
         for (let memberName of parent.party_list) {
             let member = parent.entities[memberName] ? parent.entities[memberName] : this.info.party[memberName]
             if (!member) continue; // No information yet
             if (!member.s.monsterhunt || member.s.monsterhunt.c == 0) continue // They don't have a monster hunt, or are turning it in
             if (!this.targets[member.s.monsterhunt.id]) continue; // We can't do it
 
+            // Check if we have the right party members for it.
+            if(this.targets[member.s.monsterhunt.id].coop) {
+                let availableTypes = []
+                for(let member of parent.party_list) {
+                    availableTypes.push(parent.party[member].type)
+                }
+                for(let type of this.targets[member.s.monsterhunt.id].coop) {
+                    if(!availableTypes.includes(type)) {
+                        continue // We're missing a character type
+                    }
+                }
+            }
+
             // Check if it's impossible for us to complete it in the amount of time given
             let partyDamageRate = 0
             let damageToDeal = G.monsters[member.s.monsterhunt.id].hp * member.s.monsterhunt.c
             let timeLeft = member.s.monsterhunt.ms / 1000
             for (let id of parent.party_list) {
+                if (!this.info.party[id]) continue
                 partyDamageRate += this.info.party[id].attack * this.info.party[id].frequency * 0.9
             }
-            if (damageToDeal / partyDamageRate > timeLeft) continue;
+            if (damageToDeal / partyDamageRate > timeLeft) continue
 
-            monsterHuntTargets.push(member.s.monsterhunt.id)
+            // weakly sort based on time left. we want to do the monster hunt with the least time left
+            if (member.s.monsterhunt.ms < lastms) {
+                lastms = member.s.monsterhunt.ms
+                monsterHuntTargets.unshift(member.s.monsterhunt.id)
+            } else {
+                monsterHuntTargets.push(member.s.monsterhunt.id)
+            }
+
         }
         for (let id in parent.entities) {
             let entity = parent.entities[id]
@@ -757,7 +784,7 @@ export abstract class Character {
                 // There's one nearby
                 this.pathfinder.movementTarget = entity.mtype;
                 if (this.targets[entity.mtype].holdPositionFarm)
-                    return { message: "MH " + entity.mtype, target: this.targets[entity.mtype] as IPositionReal };
+                    return { message: "MH " + entity.mtype, target: this.targets[entity.mtype].farmingPosition };
                 else
                     return { message: "MH " + entity.mtype, target: null };
             }
@@ -784,8 +811,8 @@ export abstract class Character {
             }
 
             this.pathfinder.movementTarget = potentialTarget;
-            if (this.targets[potentialTarget].map && this.targets[potentialTarget].x && this.targets[potentialTarget].y) {
-                return { message: "MH " + potentialTarget, target: this.targets[potentialTarget] as IPositionReal }
+            if (this.targets[potentialTarget].farmingPosition) {
+                return { message: "MH " + potentialTarget, target: this.targets[potentialTarget].farmingPosition }
             } else {
                 return { message: "MH " + potentialTarget, target: getRandomMonsterSpawn(potentialTarget) }
             }
@@ -851,8 +878,8 @@ export abstract class Character {
                 return { message: this.mainTarget, target: null };
             }
         }
-        if (this.targets[this.mainTarget].map && this.targets[this.mainTarget].x && this.targets[this.mainTarget].y) {
-            return { message: this.mainTarget, target: this.targets[this.mainTarget] as IPositionReal }
+        if (this.targets[this.mainTarget].farmingPosition) {
+            return { message: this.mainTarget, target: this.targets[this.mainTarget].farmingPosition }
         } else {
             return { message: this.mainTarget, target: getRandomMonsterSpawn(this.mainTarget) }
         }
@@ -887,8 +914,11 @@ export abstract class Character {
             let priority = 0;
             if (this.targets[potentialTarget.mtype]) priority = this.targets[potentialTarget.mtype].priority;
 
-            // Adjust priority if a party member is already attacking it and it has low HP
-            if (claimedTargets.includes(id) && potentialTarget.hp <= calculateDamageRange(parent.character, potentialTarget)[0]) priority -= parent.character.range;
+            // Adjust priority if a party member is already attacking it
+            if (claimedTargets.includes(id)) {
+                if (this.targets[potentialTarget.mtype] && this.targets[potentialTarget.mtype].coop) priority += 10000
+                if (potentialTarget.hp <= calculateDamageRange(parent.character, potentialTarget)[0]) priority -= parent.character.range
+            }
 
             // Increase priority if it's our "main target"
             if (potentialTarget.mtype == this.mainTarget) priority += 10;

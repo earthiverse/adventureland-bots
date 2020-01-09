@@ -22,12 +22,36 @@ class Priest extends Character {
             "priority": EASY,
             "stopOnSight": true
         },
+        "bbpompom": {
+            "coop": ["priest"],
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "priority": DIFFICULT,
+            "farmingPosition": {
+                "map": "winter_cave",
+                "x": 50,
+                "y": -100
+            }
+        },
         "bee": {
             "priority": EASY,
             "holdPositionFarm": true,
-            "map": "main",
-            "x": 200,
-            "y": 1500
+            farmingPosition: {
+                "map": "main",
+                "x": 200,
+                "y": 1500
+            }
+        },
+        "booboo": {
+            "coop": ["priest", "mage"],
+            "priority": DIFFICULT,
+            "holdAttackWhileMoving": true,
+            "holdPositionFarm": true,
+            farmingPosition: {
+                "map": "spookytown",
+                "x": 250,
+                "y": -600
+            }
         },
         "cgoo": {
             "holdAttackWhileMoving": true,
@@ -76,9 +100,31 @@ class Priest extends Character {
             "holdAttackWhileMoving": true,
             "stopOnSight": true
         },
+        "mechagnome": {
+            "coop": ["priest", "ranger"],
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "priority": DIFFICULT,
+            "farmingPosition": {
+                "map": "cyberland",
+                "x": 100,
+                "y": -150
+            }
+        },
         "minimush": {
             "priority": EASY,
             "stopOnSight": true
+        },
+        "mole": {
+            "coop": ["priest", "warrior"],
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "priority": DIFFICULT,
+            "farmingPosition": {
+                "map": "tunnel",
+                "x": 50,
+                "y": -75
+            }
         },
         "mrgreen": {
             "priority": SPECIAL,
@@ -87,6 +133,17 @@ class Priest extends Character {
         "mrpumpkin": {
             "priority": SPECIAL,
             "stopOnSight": true
+        },
+        "mummy": {
+            "coop": ["ranger", "priest", "warrior"],
+            "priority": DIFFICULT,
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "farmingPosition": {
+                "map": "spookytown",
+                "x": 240,
+                "y": -1080
+            }
         },
         "osnake": {
             "priority": EASY,
@@ -113,9 +170,11 @@ class Priest extends Character {
             "holdPositionFarm": true,
             "holdAttackInEntityRange": true,
             "priority": DIFFICULT,
-            "map": "level1",
-            "x": -300,
-            "y": 536,
+            farmingPosition: {
+                "map": "level1",
+                "x": -300,
+                "y": 536
+            }
         },
         "rat": {
             "priority": EASY
@@ -129,9 +188,11 @@ class Priest extends Character {
         "snake": {
             // Farm them on the main map because of the +1000% luck and gold bonus chances
             "priority": EASY,
-            "map": "main",
-            "x": -74,
-            "y": 1904
+            farmingPosition: {
+                "map": "main",
+                "x": -74,
+                "y": 1904
+            }
         },
         "snowman": {
             "priority": SPECIAL,
