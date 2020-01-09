@@ -94,6 +94,11 @@ class Priest extends Character {
         "hen": {
             "priority": EASY
         },
+        "iceroamer": {
+            "holdAttackWhileMoving": true,
+            "priority": DIFFICULT,
+            "stopOnSight": true,
+        },
         "jr": {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
@@ -141,8 +146,8 @@ class Priest extends Character {
             "holdAttackWhileMoving": true,
             "farmingPosition": {
                 "map": "spookytown",
-                "x": 240,
-                "y": -1080
+                "x": 210,
+                "y": -1030
             }
         },
         "osnake": {

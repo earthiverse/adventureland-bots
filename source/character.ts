@@ -18,7 +18,7 @@ export abstract class Character {
         // Boosters
         "goldbooster", "luckbooster", "xpbooster",
         // Healing
-        "hpot1", "mpot1",
+        "hpot1", "mpot1", "hotchocolate",
         // Used to avoid monster hits
         "jacko"
     ]
@@ -80,7 +80,7 @@ export abstract class Character {
         // Boosters
         "goldbooster", "luckbooster", "xpbooster",
         // Potions & consumables
-        "greenbomb",
+        "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate",
         // Misc. Things
         "bottleofxp", "bugbountybox", "monstertoken"
     ]
@@ -233,8 +233,25 @@ export abstract class Character {
         if (this.targets[parent.character.s.monsterhunt.id]) return false; // We can do our monster hunt
         for (let id of parent.party_list) {
             let member = parent.entities[id] ? parent.entities[id] : this.info.party[id]
-            if (!member || !member.s || !member.s.monsterhunt) continue;
-            if (this.targets[member.s.monsterhunt.id as MonsterType]) return false; // We can do a party member's monster hunt
+            if (!member || !member.s || !member.s.monsterhunt) continue
+            if (!this.targets[member.s.monsterhunt.id]) continue
+
+            let canCoop = true
+            if (this.targets[member.s.monsterhunt.id].coop) {
+                let availableTypes = []
+                for (let member of parent.party_list) {
+                    availableTypes.push(parent.party[member].type)
+                }
+                for (let type of this.targets[member.s.monsterhunt.id].coop) {
+                    if (!availableTypes.includes(type)) {
+                        canCoop = false
+                        break // We're missing a character type
+                    }
+                }
+            }
+            if (!canCoop) continue
+
+            return false // We can do a party member's monster hunt
         }
 
         // Doable event monster
@@ -554,8 +571,7 @@ export abstract class Character {
 
         // Find the closest monster of those attacking us
         let minDistance = 9999;
-        let escapePosition: IPosition;
-        let minTarget: IEntity = null;
+        let target: IEntity = null;
         for (let entity of attackingEntities) {
             if (calculateDamageRange(entity, parent.character)[1] * 3 * entity.frequency < 400) continue; // We can outheal the damage 
             let d = distance(parent.character, entity);
@@ -565,20 +581,22 @@ export abstract class Character {
             if (minDistance < d) continue; // There's another target that's closer
             if (this.targets[entity.mtype] && this.targets[entity.mtype].holdPositionFarm) continue // Don't move if we're farming them
             if (d > (entity.range + (entity.speed + parent.character.speed) * Math.max(parent.character.ping * 0.001, 0.5))) continue; // We're still far enough away to not get attacked
-            minDistance = d;
-            minTarget = entity;
+
+            minDistance = d
+            target = entity
+            break
         }
-        if (!minTarget) return; // We're far enough away not to get attacked, or it's impossible to do so
+        if (!target) return; // We're far enough away not to get attacked, or it's impossible to do so
 
         // Move away from the closest monster
-        let angle: number = Math.atan2(parent.character.real_y - minTarget.real_y, parent.character.real_x - minTarget.real_x);
-        let moveDistance: number = minTarget.range + minTarget.speed - (minDistance / 2)
+        let angle: number = Math.atan2(parent.character.real_y - target.real_y, parent.character.real_x - target.real_x);
+        let moveDistance: number = target.range + target.speed - (minDistance / 2)
         function calculateEscape(angle: number, move_distance: number): IPosition {
             let x = Math.cos(angle) * move_distance
             let y = Math.sin(angle) * move_distance
             return { x: parent.character.real_x + x, y: parent.character.real_y + y };
         }
-        escapePosition = calculateEscape(angle, moveDistance);
+        let escapePosition = calculateEscape(angle, moveDistance);
         let angleChange: number = 0;
         while (!can_move_to(escapePosition.x, escapePosition.y) && angleChange < 180) {
             if (angleChange <= 0) {
@@ -746,17 +764,20 @@ export abstract class Character {
             if (!this.targets[member.s.monsterhunt.id]) continue; // We can't do it
 
             // Check if we have the right party members for it.
-            if(this.targets[member.s.monsterhunt.id].coop) {
+            let canCoop = true
+            if (this.targets[member.s.monsterhunt.id].coop) {
                 let availableTypes = []
-                for(let member of parent.party_list) {
+                for (let member of parent.party_list) {
                     availableTypes.push(parent.party[member].type)
                 }
-                for(let type of this.targets[member.s.monsterhunt.id].coop) {
-                    if(!availableTypes.includes(type)) {
-                        continue // We're missing a character type
+                for (let type of this.targets[member.s.monsterhunt.id].coop) {
+                    if (!availableTypes.includes(type)) {
+                        canCoop = false
+                        break // We're missing a character type
                     }
                 }
             }
+            if (!canCoop) continue
 
             // Check if it's impossible for us to complete it in the amount of time given
             let partyDamageRate = 0
@@ -777,29 +798,8 @@ export abstract class Character {
             }
 
         }
-        for (let id in parent.entities) {
-            let entity = parent.entities[id]
-            if (monsterHuntTargets.includes(entity.mtype)
-                && can_move_to(entity)) {
-                // There's one nearby
-                this.pathfinder.movementTarget = entity.mtype;
-                if (this.targets[entity.mtype].holdPositionFarm)
-                    return { message: "MH " + entity.mtype, target: this.targets[entity.mtype].farmingPosition };
-                else
-                    return { message: "MH " + entity.mtype, target: null };
-            }
-        }
-
-        // New monster hunt
-        if (!parent.character.s.monsterhunt) {
-            this.pathfinder.movementTarget = undefined;
-            return { message: "New MH", target: G.maps.main.ref.monsterhunter }
-        }
 
         // Move to a monster hunt
-        // TODO: Implement moving to the nearest monster hunt instead of the first one in the array
-        // NOTE: Is this really a good idea? What about Phoenix?
-
         if (monsterHuntTargets.length) {
             let potentialTarget = monsterHuntTargets[0];
 
@@ -810,64 +810,72 @@ export abstract class Character {
                 potentialTarget = "frog"
             }
 
-            this.pathfinder.movementTarget = potentialTarget;
+            this.pathfinder.movementTarget = potentialTarget
+            let enemies = this.getTargets(1)
             if (this.targets[potentialTarget].farmingPosition) {
                 return { message: "MH " + potentialTarget, target: this.targets[potentialTarget].farmingPosition }
+            } else if (enemies.length && enemies[0].mtype == potentialTarget) {
+                return { message: "MH " + potentialTarget, target: null }
             } else {
                 return { message: "MH " + potentialTarget, target: getRandomMonsterSpawn(potentialTarget) }
             }
         }
 
-        // // TODO: Add a check to see if we are actually near monsters with these functions.
-        // // TODO: Sometimes they come out of the warp at the top of town, see Kane and Angel, and stop and just attack the odd chicken...
-        // // Check if we can farm with +1000% luck (and maybe +1000% gold, too!)
-        // let kane = parent.entities.Kane ? parent.entities.Kane : this.info.npcs.Kane
-        // let angel = parent.entities.Angel ? parent.entities.Angel : this.info.npcs.Angel
-        // let targets = this.getTargets(1)
-        // if (kane && angel) {
-        //     // See if they're both near a single monster spawn
-        //     let kSpawns = getNearbyMonsterSpawns(kane, 250)
-        //     let aSpawns = getNearbyMonsterSpawns(angel, 250)
-        //     if (parent.character.s.citizen0aura && parent.character.s.citizen4aura && targets.length) {
-        //         this.pathfinder.movementTarget = null;
-        //         return { message: "2x1000%", target: null }
-        //     }
-        //     for (let kSpawn of kSpawns) {
-        //         if (["hen", "rooster"].includes(kSpawn.monster)) continue // Ignore chickens
-        //         if (!this.targetPriority[kSpawn.monster]) continue // Ignore things not in our priority list
-        //         for (let aSpawn of aSpawns) {
-        //             if (kSpawn.x == aSpawn.x && kSpawn.y == aSpawn.y) {
-        //                 return { message: "2x1000%", target: kane }
-        //             }
-        //         }
-        //     }
+        // New monster hunt
+        if (!parent.character.s.monsterhunt) {
+            this.pathfinder.movementTarget = undefined;
+            return { message: "New MH", target: G.maps.main.ref.monsterhunter }
+        }
 
-        //     // See if Kane is near a monster spawn
-        //     if (parent.character.s.citizen0aura && targets.length) {
-        //         this.pathfinder.movementTarget = null;
-        //         return { message: "1000% luck", target: null }
-        //     }
-        //     if (kSpawns.length
-        //         && !["hen", "rooster"].includes(kSpawns[0].monster) // Ignore chickens
-        //         && this.targetPriority[kSpawns[0].monster]) { // Ignore things not in our priority list
-        //         this.pathfinder.movementTarget = kSpawns[0].monster;
-        //         // TODO: Check for citizens aura, if we don't have it, move to the person we don't have
-        //         return { message: "1000% luck", target: kane };
-        //     }
+        // TODO: Add a check to see if we are actually near monsters with these functions.
+        // Check if we can farm with +1000% luck (and maybe +1000% gold, too!)
+        let kane = parent.entities.Kane ? parent.entities.Kane : this.info.npcs.Kane
+        let angel = parent.entities.Angel ? parent.entities.Angel : this.info.npcs.Angel
+        let targets = this.getTargets(1)
+        if (kane && angel) {
+            // See if they're both near a single monster spawn
+            let kSpawns = getNearbyMonsterSpawns(kane, 250)
+            let aSpawns = getNearbyMonsterSpawns(angel, 250)
+            if (parent.character.s.citizen0aura && parent.character.s.citizen4aura && targets.length) {
+                this.pathfinder.movementTarget = null;
+                return { message: "2x1000%", target: null }
+            }
+            for (let kSpawn of kSpawns) {
+                if (["hen", "rooster"].includes(kSpawn.monster)) continue // Ignore chickens
+                if (!this.targets[kSpawn.monster]) continue // Ignore things not in our priority list
+                for (let aSpawn of aSpawns) {
+                    if (kSpawn.x == aSpawn.x && kSpawn.y == aSpawn.y) {
+                        return { message: "2x1000%", target: kane }
+                    }
+                }
+            }
 
-        //     // See if Angel is near a monster spawn
-        //     if (parent.character.s.citizen4aura && targets.length) {
-        //         this.pathfinder.movementTarget = null;
-        //         return { message: "1000% gold", target: null }
-        //     }
-        //     if (aSpawns.length
-        //         && !["hen", "rooster"].includes(aSpawns[0].monster) // Ignore chickens
-        //         && this.targetPriority[aSpawns[0].monster]) { // Ignore things not in our priority list
-        //         this.pathfinder.movementTarget = aSpawns[0].monster;
-        //         // TODO: Check for citizens aura, if we don't have it, move to the person we don't have
-        //         return { message: "1000% gold", target: angel }
-        //     }
-        // }
+            // See if Kane is near a monster spawn
+            if (parent.character.s.citizen0aura && targets.length) {
+                this.pathfinder.movementTarget = null;
+                return { message: "1000% luck", target: null }
+            }
+            if (kSpawns.length
+                && !["hen", "rooster"].includes(kSpawns[0].monster) // Ignore chickens
+                && this.targets[kSpawns[0].monster]) { // Ignore things not in our priority list
+                this.pathfinder.movementTarget = kSpawns[0].monster;
+                // TODO: Check for citizens aura, if we don't have it, move to the person we don't have
+                return { message: "1000% luck", target: kane };
+            }
+
+            // See if Angel is near a monster spawn
+            if (parent.character.s.citizen4aura && targets.length) {
+                this.pathfinder.movementTarget = null;
+                return { message: "1000% gold", target: null }
+            }
+            if (aSpawns.length
+                && !["hen", "rooster"].includes(aSpawns[0].monster) // Ignore chickens
+                && this.targets[aSpawns[0].monster]) { // Ignore things not in our priority list
+                this.pathfinder.movementTarget = aSpawns[0].monster;
+                // TODO: Check for citizens aura, if we don't have it, move to the person we don't have
+                return { message: "1000% gold", target: angel }
+            }
+        }
 
         // Check for our main target
         this.pathfinder.movementTarget = this.mainTarget;

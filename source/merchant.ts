@@ -117,15 +117,15 @@ class Merchant extends Character {
             return { message: "Bank", target: { "map": "bank", "x": 0, "y": -400 } }
         }
 
-        // // If Angel and Kane haven't been seen in a while, go find them to update their position
-        // if (this.info.npcs.Kane && Date.now() - new Date(this.info.npcs.Kane.lastSeen).getTime() > 300000) {
-        //     return { message: "Find Kane", target: this.info.npcs.Kane }
-        // } else if (this.info.npcs.Angel && Date.now() - new Date(this.info.npcs.Angel.lastSeen).getTime() > 300000) {
-        //     return { message: "Find Angel", target: this.info.npcs.Angel }
-        // }
+        // If Angel and Kane haven't been seen in a while, go find them to update their position
+        if (this.info.npcs.Kane && Date.now() - new Date(this.info.npcs.Kane.lastSeen).getTime() > 300000) {
+            return { message: "Find Kane", target: this.info.npcs.Kane }
+        } else if (this.info.npcs.Angel && Date.now() - new Date(this.info.npcs.Angel.lastSeen).getTime() > 300000) {
+            return { message: "Find Angel", target: this.info.npcs.Angel }
+        }
 
-        // // If we have exchangable things, go exchange them
         // NOTE: We have a computer now, we don't need to travel anymore
+        // // If we have exchangable things, go exchange them
         // let items = getInventory();
         // if (items.length < 25) {
         //     for (let item of items) {
@@ -136,7 +136,11 @@ class Merchant extends Character {
         // }
 
         // Default vendoring
-        return { message: "Vendor", target: { map: "main", "x": 60, "y": -325 } }
+        if (this.info.npcs.Angel) {
+            return { message: "Vendor", target: this.info.npcs.Angel }
+        } else {
+            return { message: "Vendor", target: { map: "main", "x": 60, "y": -325 } }
+        }
     }
 
     protected async mainLoop(): Promise<void> {
@@ -151,7 +155,8 @@ class Merchant extends Character {
 
             await this.bankStuff();
 
-            if (distance(parent.character, { map: "main", "x": 60, "y": -325 }) < 100) {
+            if (!smart.moving && (distance(parent.character, { map: "main", "x": 60, "y": -325 }) < 100
+                || (this.info.npcs.Angel && distance(parent.character, this.info.npcs.Angel) < 100))) {
                 openMerchantStand()
             } else {
                 closeMerchantStand()
@@ -261,7 +266,7 @@ class Merchant extends Character {
                 if (G.items[item.name].s) continue; // Don't add stackable items
                 if (G.items[item.name].upgrade && item.level >= 8) continue; // Don't withdraw high level items
                 if (G.items[item.name].compound && item.level >= 4) continue; // Don't withdraw high level items
-                if (item_grade(item) >= 2) continue; // Don't withdraw high level items
+                // if (item_grade(item) >= 2) continue; // Don't withdraw high level items
 
                 if (["goldenegg", "luckbooster", "goldbooster", "xpbooster"].includes(item.name)) continue
 
@@ -360,7 +365,7 @@ class Merchant extends Character {
 
         // Find sellable items
         for (let i = 0; i < items.length; i++) {
-            if(!this.itemsToSell[items[i][0]]) continue
+            if (!this.itemsToSell[items[i][0]]) continue
             let bankBox = items[i][2]
             let boxSlot = items[i][3]
 

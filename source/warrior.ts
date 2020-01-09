@@ -85,7 +85,7 @@ class Warrior extends Character {
             "farmingPosition": {
                 "map": "spookytown",
                 "x": 255,
-                "y": -1060
+                "y": -1080
             }
         },
         "osnake": {
@@ -179,14 +179,9 @@ class Warrior extends Character {
     stompLoop(): void {
         // Stomp monsters with high HP
         let attackingTargets = getAttackingEntities()
-        let nearbyTargets = getInRangeMonsters()
         if (isAvailable("stomp") && attackingTargets.length) {
 
-            if (attackingTargets[0].hp > 25000) {
-                use_skill("stomp")
-            } else if (attackingTargets.length >= 2) {
-                use_skill("stomp")
-            } else if (nearbyTargets.length >= 5) {
+            if (attackingTargets[0].hp > 25000 && distance(parent.character, attackingTargets[0]) < parent.character.range) {
                 use_skill("stomp")
             }
         }
@@ -209,16 +204,18 @@ class Warrior extends Character {
         setTimeout(() => { this.hardshellLoop() }, getCooldownMS("hardshell"));
     }
 
-    tauntLoop(): void {
+    async tauntLoop(): Promise<void> {
         let attackingMonsters = getAttackingEntities()
-        if (isAvailable("taunt")
-            && attackingMonsters.length < 2) {
+        let targets = this.getTargets(1)
+        if (attackingMonsters.length == 0 && targets.length && wantToAttack(this, targets[0], "taunt")) {
+            await use_skill("taunt", targets[0])
+        } else if (isAvailable("taunt") && attackingMonsters.length < 2) {
             // Check if any nearby party members have an attacking enemy. If they do, taunt it away.
             for (let id in parent.entities) {
                 let e = parent.entities[id]
                 if (!isMonster(e)) continue
                 if (e.target != parent.character.id && parent.party_list.includes(e.target)) {
-                    use_skill("taunt", e)
+                    await use_skill("taunt", e)
                     break
                 }
             }

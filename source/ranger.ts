@@ -137,8 +137,8 @@ class Ranger extends Character {
             "holdAttackWhileMoving": true,
             "farmingPosition": {
                 "map": "spookytown",
-                "x": 270,
-                "y": -1080
+                "x": 175,
+                "y": -1060
             }
         },
         "mrgreen": {
@@ -251,7 +251,24 @@ class Ranger extends Character {
 
             this.createParty(["earthMag", "earthWar", "earthMer", "earthPri"]);
 
-            // NOTE: Temporary for monster hunt coin farming
+            // Switch between warrior and mage if they are idle
+            if (parent.party_list.includes("earthMag")
+                && this.info.party.earthMag
+                && this.info.party.earthMag.shouldSwitchServer
+                && Date.now() - this.start_time > 120000) {
+                this.start_time = Date.now()
+                stop_character("earthMag")
+                start_character("earthWar")
+            } else if (parent.party_list.includes("earthWar")
+                && this.info.party.earthWar
+                && this.info.party.earthWar.shouldSwitchServer
+                && Date.now() - this.start_time > 120000) {
+                this.start_time = Date.now()
+                stop_character("earthWar")
+                start_character("earthMag")
+            }
+
+            // Switch servers if everyone in the party wants to
             if (Date.now() - this.start_time > 60000) {
                 let shouldSwitchServer = 0;
                 for (let id of parent.party_list) {

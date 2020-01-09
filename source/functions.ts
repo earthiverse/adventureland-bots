@@ -48,6 +48,7 @@ export function wantToAttack(c: Character, e: IEntity, s: SkillName = "attack"):
     if (G.skills[s].level && G.skills[s].level > parent.character.level) return false // Not a high enough level to use this skill
     if (!isAvailable(s)) return false // On cooldown
     if (e.mtype == "grinch") return false // NOTE: CHRISTMAS EVENT -- delete after
+    if (parent.character.c.town) return false // Teleporting to town
 
     let range = G.skills[s].range ? G.skills[s].range : parent.character.range
     let distanceToEntity = distance(parent.character, e)
@@ -61,7 +62,7 @@ export function wantToAttack(c: Character, e: IEntity, s: SkillName = "attack"):
     if (s != "attack" && e["1hp"]) return false // We only do one damage, don't use special attacks
 
     // We will still attack if the target is attacking us, because we might as well die.
-    if (e.target != parent.character.id) {
+    if (!e.target) {
         // Hold attack
         if (c.holdAttack) return false // Holding all attacks
         if (!c.targets[e.mtype]) return false // Holding attacks against things not in our priority list
@@ -162,7 +163,7 @@ export function getAttackingEntities(): IEntity[] {
         let entity = parent.entities[id]
         if (entity.target != parent.character.id) continue; // Not being targeted by this entity
         if (isPlayer(entity) && !isPVP) continue; // Not PVP, ignore players
-        if(entity.mtype == "grinch") continue // NOTE: christmas event -- delete after
+        if (entity.mtype == "grinch") continue // NOTE: christmas event -- delete after
 
         entitites.push(entity)
     }

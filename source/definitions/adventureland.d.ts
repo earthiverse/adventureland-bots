@@ -71,6 +71,8 @@ declare global {
   function send_party_request(name: string)
   function set_message(text: string, color?: string)
   function smart_move(destination: IPosition | MapName | MonsterType, callback?: () => void)
+  function start_character(name: string, codeName?: string)
+  function stop_character(name: string)
   function upgrade(itemInventoryPosition: number, scrollInventoryPosition: number, offeringInventoryPosition?: number): Promise<any>
   function use_skill(name: "3shot" | "5shot", targets: IEntity[]): Promise<any>[]
   function use_skill(name: "throw", target: IEntity, inventoryPostion: number): Promise<any>
@@ -90,6 +92,8 @@ declare global {
     searching: boolean
     start_x: number
     start_y: number
+    /** A settable flag. If true, smart_move will use town teleports to move around */
+    use_town: boolean
   }
 
   let G: {
@@ -209,6 +213,12 @@ export interface ICharacter extends IEntity {
     [T in BankPackType]: ItemInfo[]
   } & {
     gold: number
+  }
+  /** Channeling actions */
+  c: {
+    town?: {
+      ms: number
+    }
   }
   items: ItemInfo[]
   /** Amount of gold the player has in its inventory */

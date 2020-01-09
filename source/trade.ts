@@ -185,7 +185,7 @@ export function buyPots() {
     if (!findItems("computer").length) {
         let foundNPC = false;
         if (!G.maps[parent.character.map].npcs) return
-        for (let npc of G.maps[parent.character.map].npcs.filter(npc => G.npcs[npc.id].role == "merchant")) {
+        for (let npc of G.maps[parent.character.map].npcs.filter(npc => npc.id == "fancypots")) {
             if (distance(parent.character, {
                 x: npc.position[0],
                 y: npc.position[1]
@@ -206,4 +206,23 @@ export function buyPots() {
     } else if (numHP < 9999) {
         buy_with_gold("hpot1", Math.min(9999 - numHP, parent.character.gold / G.items["hpot1"].g))
     }
+}
+
+export function buyScrolls() {
+    if (parent.character.map == "bank") return // We can't do things in the bank
+    if (!findItems("computer").length) {
+        let foundNPC = false;
+        if (!G.maps[parent.character.map].npcs) return
+        for (let npc of G.maps[parent.character.map].npcs.filter(npc => npc.id == "fancypots")) {
+            if (distance(parent.character, {
+                x: npc.position[0],
+                y: npc.position[1]
+            }) < 350) {
+                foundNPC = true;
+                break;
+            }
+        }
+        if (!foundNPC) return // Can't buy things, nobody is near.
+    }
+    if (parent.character.gold < G.items["mpot1"].g) return // No money
 }

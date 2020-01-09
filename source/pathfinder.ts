@@ -52,6 +52,7 @@ export class Pathfinder {
             }
         }
 
+        smart.use_town = true
         smart_move(to);
     }
 
