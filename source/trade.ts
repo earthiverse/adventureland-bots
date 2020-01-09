@@ -33,12 +33,12 @@ export function openMerchantStand() {
     let stand = findItem("stand0")
     if (!stand) return; // No stand available.
 
-    if (parent.character.slots.trade16 === undefined) // Checks if the stand is closed
+    if (parent.character.standed === undefined) // Checks if the stand is closed
         parent.open_merchant(stand.index)
 }
 
 export function closeMerchantStand() {
-    if (parent.character.slots.trade16 !== undefined) // Checks if the stand is open
+    if (parent.character.standed !== undefined) // Checks if the stand is open
         parent.close_merchant()
 }
 

@@ -291,9 +291,8 @@ class Merchant extends Character {
             }
 
             if (G.items[itemI[0]].compound && indexes.length >= 4) {
-                for (let l = 0; l < 4; l++) {
+                for (let l = 0; l < 3; l++) {
                     let k = indexes[l]
-                    let level = items[k][1]
                     let bankBox = items[k][2]
                     let boxSlot = items[k][3]
                     await sleep(parent.character.ping)

@@ -235,7 +235,6 @@ export interface ICharacter extends IEntity {
 }
 
 export interface IEntity extends IPositionReal {
-  [x: string]: any
   /** If set, attacks only do 1 damage */
   "1hp": number
   /** Only set if the entity is a monster */
@@ -254,6 +253,7 @@ export interface IEntity extends IPositionReal {
   /** This value is also the key for the object in parent.entities */
   id: string
   immune: boolean
+  level: number
   max_hp: number
   max_mp: number
   /** Is the character currently moving? */
@@ -286,6 +286,9 @@ export interface IEntity extends IPositionReal {
     }
   }
   speed: number
+  // TODO: Add the parameters to this object
+  /** If set, the merchant has a stand open */
+  standed?: any
   /** Set if we are under the status effect "stoned" */
   stoned?: boolean
   /** Set if the player or monster is targeting something */
