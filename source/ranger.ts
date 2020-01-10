@@ -243,7 +243,7 @@ class Ranger extends Character {
         // this.fourFingersLoop();
     }
 
-    mainLoop(): void {
+    async mainLoop(): Promise<void> {
         try {
             transferItemsToMerchant("earthMer", this.itemsToKeep);
             transferGoldToMerchant("earthMer", 100000);
@@ -252,9 +252,16 @@ class Ranger extends Character {
             this.createParty(["earthMag", "earthWar", "earthMer", "earthPri"]);
 
             // Switch between warrior and mage if they are idle
+            let monsterHunts = []
+            for (let member of parent.party_list) {
+                if (this.info.party[member] && this.info.party[member].monsterHuntTarget) {
+                    monsterHunts.push(this.info.party[member].monsterHuntTarget)
+                }
+            }
             if (parent.party_list.includes("earthMag")
                 && this.info.party.earthMag
                 && this.info.party.earthMag.shouldSwitchServer
+                && !monsterHunts.includes(this.info.party.earthMag.s.monsterhunt.id) // Another member is doing this member's monster hunt
                 && Date.now() - this.start_time > 120000) {
                 this.start_time = Date.now()
                 stop_character("earthMag")
@@ -262,6 +269,7 @@ class Ranger extends Character {
             } else if (parent.party_list.includes("earthWar")
                 && this.info.party.earthWar
                 && this.info.party.earthWar.shouldSwitchServer
+                && !monsterHunts.includes(this.info.party.earthWar.s.monsterhunt.id) // Another member is doing this member's monster hunt
                 && Date.now() - this.start_time > 120000) {
                 this.start_time = Date.now()
                 stop_character("earthWar")

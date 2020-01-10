@@ -35,8 +35,10 @@ export type OtherInfo = {
         [T in string]?: IPositionReal & {
             lastSeen: Date
             shouldSwitchServer: boolean
+            monsterHuntTarget: MonsterType
             items: MyItemInfo[]
             goldm: number
+            last_ms: Date
             luckm: number
             attack: number
             frequency: number

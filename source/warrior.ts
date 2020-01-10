@@ -125,7 +125,19 @@ class Warrior extends Character {
         },
         "tortoise": {
             "priority": EASY
-        }
+        },
+        "wolfie": {
+            // The ranger is fast enough to kill these without dying too much.
+            "coop": ["warrior", "priest"],
+            "priority": DIFFICULT,
+            "holdAttackWhileMoving": true,
+            "holdPositionFarm": true,
+            farmingPosition: {
+                "map": "winterland",
+                "x": 0,
+                "y": -1825
+            }
+        },
     }
     mainTarget: MonsterType = "spider";
 
@@ -145,7 +157,7 @@ class Warrior extends Character {
         this.tauntLoop()
     }
 
-    mainLoop(): void {
+    async mainLoop(): Promise<void> {
         try {
             transferItemsToMerchant("earthMer", this.itemsToKeep);
             transferGoldToMerchant("earthMer", 100000);
@@ -164,7 +176,10 @@ class Warrior extends Character {
             let count = 0
             for (let member of parent.party_list) {
                 let e = parent.entities[member]
-                if (e && parent.distance(parent.character, e) < G.skills["warcry"].range) {
+                if (!e) continue
+                if (e.ctype == "merchant") continue
+
+                if (parent.distance(parent.character, e) < G.skills["warcry"].range) {
                     count += 1
                 }
                 if (count == 2) {

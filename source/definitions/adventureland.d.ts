@@ -263,6 +263,8 @@ export interface IEntity extends IPositionReal {
   /** This value is also the key for the object in parent.entities */
   id: string
   immune: boolean
+  /** When were the ms values last updated? */
+  last_ms: Date
   level: number
   max_hp: number
   max_mp: number

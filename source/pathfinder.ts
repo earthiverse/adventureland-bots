@@ -12,7 +12,7 @@ export class Pathfinder {
      */
     private padding: number[];
     private grids: any = {};
-    public movementTarget: MonsterType | string;
+    public movementTarget: MonsterType;
 
     //constructor(factor: number = 8, padding = [10, 8, 7, 8]) {
     constructor(factor: number = 8, padding = [11, 9, 8, 9]) {

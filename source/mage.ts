@@ -36,6 +36,17 @@ class Mage extends Character {
         "bee": {
             "priority": EASY
         },
+        "bigbird": {
+            // The ranger is fast enough to avoid these fairly well
+            "priority": DIFFICULT,
+            "holdAttackWhileMoving": true,
+            "holdPositionFarm": true,
+            "farmingPosition": {
+                "map": "main",
+                "x": 1450,
+                "y": -20
+            }
+        },
         "boar": {
             // Don't attack if we're walking by them, they hurt.
             "priority": DIFFICULT,
@@ -231,7 +242,7 @@ class Mage extends Character {
         this.energizeLoop();
     }
 
-    mainLoop(): void {
+    async mainLoop(): Promise<void> {
         try {
             transferItemsToMerchant("earthMer", this.itemsToKeep);
             transferGoldToMerchant("earthMer", 100000);
@@ -242,6 +253,27 @@ class Mage extends Character {
             console.error(error);
             setTimeout(() => { this.mainLoop(); }, 250);
         }
+    }
+
+    blessingLoop(): void {
+        if (isAvailable("darkblessing")) {
+            // Check if there are at least two party members nearby
+            let count = 0
+            for (let member of parent.party_list) {
+                let e = parent.entities[member]
+                if (!e) continue
+                if (e.ctype == "merchant") continue
+
+                if (parent.distance(parent.character, e) < G.skills["darkblessing"].range) {
+                    count += 1
+                }
+                if (count == 2) {
+                    use_skill("darkblessing")
+                    break
+                }
+            }
+        }
+        setTimeout(() => { this.blessingLoop() }, getCooldownMS("darkblessing"));
     }
 
     // TODO: cast on the member of the party with the lowest mp

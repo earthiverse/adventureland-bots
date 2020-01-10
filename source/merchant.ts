@@ -1,7 +1,7 @@
 import { Character } from './character'
 import { MonsterType, ItemName, IPositionReal, IEntity, BankPackType } from './definitions/adventureland';
 import { upgradeIfMany, compoundIfMany, upgradeItem } from './upgrade'
-import { sellUnwantedItems, exchangeItems, buyFromPonty, openMerchantStand, closeMerchantStand, dismantleItems } from './trade';
+import { sellUnwantedItems, exchangeItems, buyFromPonty, openMerchantStand, closeMerchantStand, dismantleItems, buyScrolls } from './trade';
 import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots, sleep, buyIfNone, getEmptySlots } from './functions';
 
 class Merchant extends Character {
@@ -66,7 +66,7 @@ class Merchant extends Character {
             let monster = parent.S[mtype as MonsterType]
             if (monster.hp < monster.max_hp * 0.9
                 && monster.live) {
-                this.pathfinder.movementTarget = mtype;
+                this.pathfinder.movementTarget = mtype as MonsterType;
                 for (let id in parent.entities) {
                     let entity = parent.entities[id]
                     if (entity.mtype == mtype) {
@@ -136,7 +136,9 @@ class Merchant extends Character {
         // }
 
         // Default vendoring
-        if (this.info.npcs.Angel) {
+        if (this.info.npcs.Kane) {
+            return { message: "Vendor", target: this.info.npcs.Kane }
+        } else if (this.info.npcs.Angel) {
             return { message: "Vendor", target: this.info.npcs.Angel }
         } else {
             return { message: "Vendor", target: { map: "main", "x": 60, "y": -325 } }
@@ -156,19 +158,22 @@ class Merchant extends Character {
             await this.bankStuff();
 
             if (!smart.moving && (distance(parent.character, { map: "main", "x": 60, "y": -325 }) < 100
-                || (this.info.npcs.Angel && distance(parent.character, this.info.npcs.Angel) < 100))) {
+                || (this.info.npcs.Angel && distance(parent.character, this.info.npcs.Angel) < 100))
+                || (this.info.npcs.Kane && distance(parent.character, this.info.npcs.Kane) < 100)) {
                 openMerchantStand()
             } else {
                 closeMerchantStand()
             }
 
-            upgradeIfMany(8);
-            compoundIfMany(4);
+            upgradeIfMany(8)
+            compoundIfMany(4)
 
             // buyIfNone("blade", 9, 2)
             // upgradeItem("blade", 9)
 
-            super.mainLoop();
+            await buyScrolls()
+
+            super.mainLoop()
         } catch (error) {
             console.error(error);
             setTimeout(() => { this.mainLoop(); }, 1000)

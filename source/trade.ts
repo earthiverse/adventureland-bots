@@ -180,7 +180,7 @@ export function exchangeItems() {
     }
 }
 
-export function buyPots() {
+export async function buyPots() {
     if (parent.character.map == "bank") return // We can't do things in the bank
     if (!findItems("computer").length) {
         let foundNPC = false;
@@ -198,22 +198,26 @@ export function buyPots() {
     }
     if (parent.character.gold < G.items["mpot1"].g) return // No money
 
-    let numMP = findItems("mpot1").reduce((a, b) => a + b.q, 0)
-    let numHP = findItems("hpot1").reduce((a, b) => a + b.q, 0)
+    let itemsToBuy: { [T in ItemName]?: number } = {
+        "mpot1": 9999,
+        "hpot1": 9999
+    }
 
-    if (numMP < 9999) {
-        buy_with_gold("mpot1", Math.min(9999 - numMP, parent.character.gold / G.items["mpot1"].g))
-    } else if (numHP < 9999) {
-        buy_with_gold("hpot1", Math.min(9999 - numHP, parent.character.gold / G.items["hpot1"].g))
+    for (let itemName in itemsToBuy) {
+        let numberToBuy = itemsToBuy[itemName as ItemName]
+        let numItems = findItems(itemName as ItemName).reduce((a, b) => a + b.q, 0)
+        if (numItems < numberToBuy) {
+            await buy_with_gold("mpot1", Math.min(numberToBuy - numItems, parent.character.gold / G.items[itemName as ItemName].g))
+        }
     }
 }
 
-export function buyScrolls() {
+export async function buyScrolls() {
     if (parent.character.map == "bank") return // We can't do things in the bank
     if (!findItems("computer").length) {
         let foundNPC = false;
         if (!G.maps[parent.character.map].npcs) return
-        for (let npc of G.maps[parent.character.map].npcs.filter(npc => npc.id == "fancypots")) {
+        for (let npc of G.maps[parent.character.map].npcs.filter(npc => npc.id == "scrolls")) {
             if (distance(parent.character, {
                 x: npc.position[0],
                 y: npc.position[1]
@@ -224,5 +228,22 @@ export function buyScrolls() {
         }
         if (!foundNPC) return // Can't buy things, nobody is near.
     }
-    if (parent.character.gold < G.items["mpot1"].g) return // No money
+    if (parent.character.gold < G.items["scroll0"].g) return // No money
+
+    let itemsToBuy: { [T in ItemName]?: number } = {
+        "scroll0": 1000,
+        "scroll1": 100,
+        "scroll2": 10,
+        "cscroll0": 1000,
+        "cscroll1": 100,
+        "cscroll2": 10
+    }
+
+    for (let itemName in itemsToBuy) {
+        let numberToBuy = itemsToBuy[itemName as ItemName]
+        let numItems = findItems(itemName as ItemName).reduce((a, b) => a + b.q, 0)
+        if (numItems < numberToBuy) {
+            await buy_with_gold("mpot1", Math.min(numberToBuy - numItems, parent.character.gold / G.items[itemName as ItemName].g))
+        }
+    }
 }

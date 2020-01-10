@@ -76,7 +76,7 @@ export abstract class Character {
         // Good weapons
         "bowofthedead", "candycanesword", "cupid", "dartgun", "gbow", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow",
         // Things we can exchange / craft with
-        "bfur", "cscale", "goldenegg", "goldingot", "goldnugget", "leather", "networkcard", "platinumingot", "platinumnugget", "pleather",
+        "bfur", "cscale", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", "networkcard", "platinumingot", "platinumnugget", "pleather",
         // Boosters
         "goldbooster", "luckbooster", "xpbooster",
         // Potions & consumables
@@ -101,12 +101,12 @@ export abstract class Character {
         players: {}
     }
 
-    protected mainLoop() {
+    protected async mainLoop() {
         try {
             if (parent.character.ctype != "merchant") {
                 this.equipBetterItems()
                 this.getMonsterhuntQuest()
-                buyPots()
+                await buyPots()
             }
 
             this.getNewYearTreeBuff()
@@ -161,10 +161,12 @@ export abstract class Character {
                 "info": {
                     "lastSeen": new Date(),
                     "shouldSwitchServer": this.shouldSwitchServer(),
+                    "monsterHuntTarget": this.pathfinder.movementTarget,
                     "items": getInventory(),
                     "attack": parent.character.attack,
                     "frequency": parent.character.frequency,
                     "goldm": parent.character.goldm,
+                    "last_ms": parent.character.last_ms,
                     "luckm": parent.character.luckm,
                     "map": parent.character.map,
                     "x": parent.character.real_x,
@@ -217,12 +219,10 @@ export abstract class Character {
                     this.parse_cm(parent.character.name, message)
                 }
             }
-
-            setTimeout(() => { this.sendInfoLoop() }, 5000)
         } catch (error) {
             console.error(error)
-            setTimeout(() => { this.sendInfoLoop() }, 5000)
         }
+        setTimeout(() => { this.sendInfoLoop() }, 5000)
     }
 
     public shouldSwitchServer() {
@@ -336,6 +336,8 @@ export abstract class Character {
             if (targets.length >= 3) {
                 wantToScare = true
             } else if (targets.length && !this.targets[targets[0].mtype]) {
+                wantToScare = true
+            } else if (targets.length && parent.character.c.town) {
                 wantToScare = true
             } else {
                 for (let target of targets) {
@@ -735,7 +737,7 @@ export abstract class Character {
             if (mtype == "grinch") continue // The grinch is too strong.
             if (!parent.S[mtype as MonsterType].live) continue;
             if (this.targets[mtype as MonsterType]) {
-                this.pathfinder.movementTarget = mtype;
+                this.pathfinder.movementTarget = mtype as MonsterType;
                 for (let id in parent.entities) {
                     let entity = parent.entities[id]
                     if (entity.mtype == mtype) {
@@ -782,16 +784,17 @@ export abstract class Character {
             // Check if it's impossible for us to complete it in the amount of time given
             let partyDamageRate = 0
             let damageToDeal = G.monsters[member.s.monsterhunt.id].hp * member.s.monsterhunt.c
-            let timeLeft = member.s.monsterhunt.ms / 1000
+            let timeLeft = member.s.monsterhunt.ms - (Date.now() - new Date(member.last_ms).getTime())
             for (let id of parent.party_list) {
                 if (!this.info.party[id]) continue
                 partyDamageRate += this.info.party[id].attack * this.info.party[id].frequency * 0.9
             }
-            if (damageToDeal / partyDamageRate > timeLeft) continue
+            if (damageToDeal / partyDamageRate > timeLeft / 1000) continue
 
             // weakly sort based on time left. we want to do the monster hunt with the least time left
-            if (member.s.monsterhunt.ms < lastms) {
-                lastms = member.s.monsterhunt.ms
+            
+            if (timeLeft < lastms) {
+                lastms = timeLeft
                 monsterHuntTargets.unshift(member.s.monsterhunt.id)
             } else {
                 monsterHuntTargets.push(member.s.monsterhunt.id)

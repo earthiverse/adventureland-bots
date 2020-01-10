@@ -42,6 +42,17 @@ class Priest extends Character {
                 "y": 1500
             }
         },
+        "bigbird": {
+            // The ranger is fast enough to avoid these fairly well
+            "priority": DIFFICULT,
+            "holdAttackWhileMoving": true,
+            "holdPositionFarm": true,
+            "farmingPosition": {
+                "map": "main",
+                "x": 1450,
+                "y": 30
+            }
+        },
         "booboo": {
             "coop": ["priest", "mage"],
             "priority": DIFFICULT,
@@ -214,11 +225,34 @@ class Priest extends Character {
         },
         "tortoise": {
             "priority": EASY
+        },
+        "wolfie": {
+            // The ranger is fast enough to kill these without dying too much.
+            "coop": ["warrior", "priest"],
+            "priority": DIFFICULT,
+            "holdAttackWhileMoving": true,
+            "holdPositionFarm": true,
+            farmingPosition: {
+                "map": "winterland",
+                "x": -50,
+                "y": -1825
+            }
+        },
+        "xscorpion": {
+            "priority": DIFFICULT,
+            "holdAttackInEntityRange": true,
+            "holdAttackWhileMoving": true,
+            "holdPositionFarm": true,
+            farmingPosition: {
+                "map": "halloween",
+                "x": -230,
+                "y": 570
+            }
         }
     }
     mainTarget: MonsterType = "spider";
 
-    mainLoop(): void {
+    async mainLoop(): Promise<void> {
         try {
             transferItemsToMerchant("earthMer", this.itemsToKeep);
             transferGoldToMerchant("earthMer", 100000);

@@ -76,6 +76,7 @@ export function wantToAttack(c: Character, e: IEntity, s: SkillName = "attack"):
                 let e = parent.entities[member]
                 if (!e) continue
                 if (e.rip) continue // Don't add dead players
+                if (e.ctype == "priest" && distance(parent.character, e) > e.range) continue // We're not within range if we want healing
                 availableTypes.push(e.ctype)
             }
             for (let type of c.targets[e.mtype].coop) {
@@ -256,7 +257,7 @@ export function getNearbyMonsterSpawns(position: IPosition, radius: number = 100
     return locations;
 }
 
-export function buyIfNone(itemName: ItemName, targetLevel: number = 9, targetQuantity: number = 1) {
+export async function buyIfNone(itemName: ItemName, targetLevel: number = 9, targetQuantity: number = 1) {
     let foundNPCBuyer = false;
     if (!G.maps[parent.character.map].npcs) return
     for (let npc of G.maps[parent.character.map].npcs) {
@@ -275,7 +276,7 @@ export function buyIfNone(itemName: ItemName, targetLevel: number = 9, targetQua
     if (items.length >= targetQuantity) return; // We have enough
 
     items = findItems(itemName);
-    if (items.length < Math.min(2, targetQuantity)) buy_with_gold(itemName, 1); // Buy more if we don't have any to upgrade
+    if (items.length < Math.min(2, targetQuantity)) await buy_with_gold(itemName, 1); // Buy more if we don't have any to upgrade
 }
 
 /** Returns the inventory for the player, with all empty slots removed. */
