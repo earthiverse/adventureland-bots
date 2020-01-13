@@ -1,11 +1,14 @@
-import TinyQueue from 'tinyqueue'
+import FastPriorityQueue from 'fastpriorityqueue'
 import { IPositionReal, MapName } from './definitions/adventureland';
-import { SmartMoveNode, FromMap, ScoreMap, VisitedMap } from './definitions/astarsmartmove';
+import { SmartMoveNode, ScoreMap, VisitedMap } from './definitions/astarsmartmove';
 import { sleep } from './functions';
 
 export class AStarSmartMove {
+    /** The cost to move through doors (so we don't go in and out of them, like smart_move does) */
     private DOOR_MOVEMENT_COST = 25
+    /** The cost to move through NPCs (so we don't go in and out of them) */
     private NPC_MOVEMENT_COST = 25
+    /** The cost of teleporting to town (so we don't teleport if it's faster to walk) */
     private TOWN_MOVEMENT_COST = 100
     private MOVE_TOLERANCE = 1
     private TOWN_TOLERANCE = 10
@@ -16,28 +19,36 @@ export class AStarSmartMove {
         [[-100, 0], [-50, 0], [-25, 0], [-10, 0], [-5, 0]] // left
     ]
 
+    /** Date the search was finished */
     private _astar_finished: Date = undefined
+    /** Date the search was started */
     private _astart_start: Date = undefined
+    /** A list of doors and transporters we've visited */
     private _visited_doors: VisitedMap = {}
 
+    /** Returns true if we're following the path. */
     public isMoving(): boolean {
         return this._astar_finished == undefined && this._astart_start != undefined
     }
 
+    /** Returns true if we were pathfinding, but stop() was called. */
     private wasCancelled(start: Date): boolean {
         return (!this._astart_start || start < this._astart_start)
     }
 
+    /** Stop pathfinding */
     public stop() {
         this.reset()
     }
 
+    /** Resets the variables for a fresh run */
     private reset() {
         this._astar_finished = undefined
         this._astart_start = undefined
         this._visited_doors = {}
     }
 
+    /** Removes unnecessary variables, and snaps to the nearest 5th pixel */
     private cleanPosition(position: IPositionReal): IPositionReal {
         return {
             map: position.map,
@@ -60,6 +71,9 @@ export class AStarSmartMove {
             let doorPos: IPositionReal = { map: position.map, x: door[0], y: door[1] }
             let doorPosString = this.positionToString(doorPos)
             if (this._visited_doors[doorPosString] == true) continue // already visited this door
+
+            // TODO: Avoid doors that link to maps that don't have any doors linking to other maps we haven't visited
+
             let d = distance(position, doorPos)
             if (d < doorD) doorD = d
         }
@@ -151,7 +165,7 @@ export class AStarSmartMove {
 
                 let nextMove = movements[i]
 
-                if (distance(parent.character, movements[movements.length - 1]) < 5) {
+                if (distance(parent.character, movements[movements.length - 1]) < this.MOVE_TOLERANCE) {
                     // We're done!
                     game_log("a* - done")
                     this._astar_finished = new Date()
@@ -164,6 +178,8 @@ export class AStarSmartMove {
                 } else if (nextMove.transport) {
                     if (parent.character.map == nextMove.map) {
                         i += 1 // we're here -- next
+                        setTimeout(() => { movementLoop(start) }, 10)
+                        return
                     } else {
                         game_log("a* - transport")
                         transport(nextMove.map, nextMove.s)
@@ -171,11 +187,13 @@ export class AStarSmartMove {
                 } else if (nextMove.town) {
                     if (distance(parent.character, nextMove) < this.TOWN_TOLERANCE) {
                         i += 1 // we're here -- next
+                        setTimeout(() => { movementLoop(start) }, 10)
+                        return
                     } else {
                         game_log("a* - town")
                         use_skill("town")
                     }
-                    setTimeout(() => { movementLoop(start) }, 1500) // Town warps take a while
+                    setTimeout(() => { movementLoop(start) }, 1000) // Town warps take a while
                     return
                 } else if (parent.character.map == nextMove.map && can_move_to(nextMove.x, nextMove.y)) {
                     if (distance(parent.character, nextMove) < this.MOVE_TOLERANCE) {
@@ -191,7 +209,7 @@ export class AStarSmartMove {
                     reject()
                     return
                 }
-                setTimeout(() => { movementLoop(start) }, 100)
+                setTimeout(() => { movementLoop(start) }, 40)
             }
 
             game_log("a* - start")
@@ -209,11 +227,13 @@ export class AStarSmartMove {
         console.log(`starting search from ${this.positionToString(cleanStart)} to ${this.positionToString(cleanFinish)}`)
 
         /** Unvisited nodes */
-        let openSet = new TinyQueue<SmartMoveNode>([{ ...cleanStart, priority: this.heuristic(cleanStart, cleanFinish) }], function (a, b) {
+        let openSet = new FastPriorityQueue<SmartMoveNode>(function (a: SmartMoveNode, b: SmartMoveNode) {
             let h_a = a.priority
             let h_b = b.priority
-            return h_a < h_b ? -1 : h_a > h_b ? 1 : 0
-        });
+            return h_a < h_b
+        })
+        openSet.add({ ...cleanStart, priority: this.heuristic(cleanStart, cleanFinish) })
+        // let openSet = new TinyQueue<SmartMoveNode>([{ ...cleanStart, priority: this.heuristic(cleanStart, cleanFinish) }], ;
         let openSetStrings = new Set<string>(cleanStartString)
 
         /** Cost to get to the current node */
@@ -221,8 +241,8 @@ export class AStarSmartMove {
         gScore[cleanStartString] = 0
 
         let timer = Date.now()
-        while (openSet.length) {
-            let current = openSet.pop()
+        while (openSet.size) {
+            let current = openSet.poll()
             let currentString = this.positionToString(current)
             openSetStrings.delete(currentString)
 
@@ -268,7 +288,7 @@ export class AStarSmartMove {
                             neighbor.from = current
                             if (!openSetStrings.has(neighborString)) {
                                 openSetStrings.add(neighborString)
-                                openSet.push(neighbor)
+                                openSet.add(neighbor)
                             }
                         }
                     }
@@ -298,7 +318,7 @@ export class AStarSmartMove {
                         neighbor.from = current
                         if (!openSetStrings.has(neighborString)) {
                             openSetStrings.add(neighborString)
-                            openSet.push(neighbor)
+                            openSet.add(neighbor)
                         }
                     }
                 }
@@ -332,7 +352,7 @@ export class AStarSmartMove {
                         neighbor.from = current
                         if (!openSetStrings.has(neighborString)) {
                             openSetStrings.add(neighborString)
-                            openSet.push(neighbor)
+                            openSet.add(neighbor)
                         }
                     }
                 }
@@ -354,12 +374,12 @@ export class AStarSmartMove {
                 townNeighbor.from = current
                 if (!openSetStrings.has(townNeighborString)) {
                     openSetStrings.add(townNeighborString)
-                    openSet.push(townNeighbor)
+                    openSet.add(townNeighbor)
                 }
             }
 
             // Don't lock up the game
-            if (Date.now() - timer > 160) {
+            if (Date.now() - timer > 1000) {
                 // game_log(`open: ${openSet.length}`)
                 // game_log(`best: ${openSet.peek().map}, ${Math.floor(openSet.peek().y)}, ${Math.floor(openSet.peek().x)}`)
                 //game_log(`heuristic: ${openSet.peek().priority}`)
