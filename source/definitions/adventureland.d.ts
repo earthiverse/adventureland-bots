@@ -36,8 +36,14 @@ declare global {
   function bank_store(inventoryPosition: number, pack?: BankPackType, packPosition?: number)
   function bank_withdraw(amount: number)
   function buy_with_gold(name: ItemName, quantity: number): Promise<any>
+  //TODO: Figure out this function and its arguments...
+  function can_move(x: any, y?: any)
   function can_move_to(location: IPositionReal): boolean
   function can_move_to(x: number, y: number): boolean
+  function can_transport(entity: IEntity)
+  //TODO: Figure out this function and its arguments...
+  function can_use_door(f: MapName, door: any, current_x: number, current_y: number)
+  function can_walk(entity: IEntity): boolean
   function change_server(region: ServerRegion, identifier: ServerIdentifier)
   function change_target(target: IEntity)
   /** Clears all user made drawings */
@@ -55,6 +61,7 @@ declare global {
   function heal(target: IEntity)
   /** Checks whether or not we can attack other players */
   function is_pvp(): boolean
+  function is_transporting(entity: IEntity): boolean
   /** 0 = normal, 1 = high, 2 = rare */
   function item_grade(item: ItemInfo): -1 | 0 | 1 | 2
   /** Returns the inventory position of the item, or -1 if it's not found */
@@ -72,12 +79,16 @@ declare global {
   function set_message(text: string, color?: string)
   function smart_move(destination: IPosition | MapName | MonsterType, callback?: () => void)
   function start_character(name: string, codeName?: string)
+  function stop(action?: string)
   function stop_character(name: string)
+  function transport(map: MapName, spawn?: number)
   function upgrade(itemInventoryPosition: number, scrollInventoryPosition: number, offeringInventoryPosition?: number): Promise<any>
   function use_skill(name: "3shot" | "5shot", targets: IEntity[]): Promise<any>[]
   function use_skill(name: "throw", target: IEntity, inventoryPostion: number): Promise<any>
   function use_skill(name: "energize", target: IEntity, mp: number): Promise<any>
   function use_skill(name: SkillName, target?: IEntity, extraArg?: any): Promise<any>
+  // TODO: Is this the right thing to do? Town just here willy nilly?
+  function use_skill(name: "town"): Promise<any>
   /** This function uses move() if it can, otherwise it uses smart_move() */
   function xmove(x: number, y: number)
 
@@ -117,6 +128,8 @@ declare global {
       }
     }
     maps: { [T in MapName]: {
+      /**  */
+      doors: [number, number, number, number, MapName, number?, number?][]
       instance: boolean
       monsters: {
         count: number
@@ -133,13 +146,17 @@ declare global {
         }
       }
       /** x, y, ??? */
-      spawns: [number, number, number][]
+      spawns: [number, number, number?][]
     } }
     monsters: { [T in MonsterType]: G_Monster }
     npcs: { [T in NPCType]: {
       id: NPCType
       /** Full name of NPC */
       name: string
+      /** A list of places you can transport to with this NPC. The number is the spawn */
+      places?: {
+        [T in MapName]?: number
+      }
       role: NPCRole
     } }
     // TODO: Get list of quest names
@@ -163,9 +180,9 @@ declare global {
 // TODO: Get a better name for this.
 // TODO: Get a better naming convention for G data
 export interface G_Maps_NPC {
-  position: [number, number]
-  name?: string
   id: NPCType
+  name?: string
+  position: [number, number]
 }
 
 export interface G_Monster {
@@ -252,9 +269,16 @@ export interface IEntity extends IPositionReal {
   apiercing: number
   armor: number
   attack: number
+  base: {
+    "h": number,
+    "v": number,
+    "vn": number
+  }
   cooperative: boolean
   ctype: CharacterType | NPCType
   damage_type?: DamageType
+  /** A percent chance to avoid physical attacks */
+  evasion: number
   /** Related to attack speed, I think it's equal to attacks per second */
   frequency: number
   going_x: number

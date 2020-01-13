@@ -20,7 +20,12 @@ class Mage extends Character {
         },
         "bat": {
             "priority": EASY,
-            "stopOnSight": true
+            "stopOnSight": true,
+            "farmingPosition": {
+                "map": "cave",
+                "x": 1250,
+                "y": -800
+            }
         },
         "bbpompom": {
             "coop": ["priest"],
@@ -151,10 +156,10 @@ class Mage extends Character {
             "priority": SPECIAL,
             "stopOnSight": true
         },
-        "osnake": {
-            "priority": EASY,
-            "stopOnSight": true
-        },
+        // "osnake": {
+        //     "priority": EASY,
+        //     "stopOnSight": true
+        // },
         "phoenix": {
             "priority": SPECIAL
         },
@@ -210,9 +215,9 @@ class Mage extends Character {
         "squig": {
             "priority": EASY,
         },
-        "squigtoad": {
-            "priority": EASY
-        },
+        // "squigtoad": {
+        //     "priority": EASY
+        // },
         "stoneworm": {
             // Don't attack if we're walking by them, they hurt.
             "holdAttackInEntityRange": true,

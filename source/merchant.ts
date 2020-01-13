@@ -249,7 +249,7 @@ class Merchant extends Character {
 
             // Store all items for now
             let i = 0
-            let emptySlots = getEmptyBankSlots()
+            let emptySlots = getEmptyBankSlots() || []
             if (i < emptySlots.length) {
                 await sleep(parent.character.ping)
                 bank_store(item.index, emptySlots[i].pack, emptySlots[i].index)

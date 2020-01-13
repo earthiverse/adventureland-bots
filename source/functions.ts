@@ -1,4 +1,4 @@
-import { ItemInfo, MonsterType, ItemName, IPosition, MapName, IEntity, IPositionReal, SkillName, BankPackType } from "./definitions/adventureland";
+import { ItemInfo, MonsterType, ItemName, IPosition, MapName, IEntity, IPositionReal, SkillName, BankPackType, G_Monster } from "./definitions/adventureland";
 import { MyItemInfo, EmptyBankSlots, MonsterSpawnPosition } from "./definitions/bots";
 import { Character } from "./character";
 
@@ -20,9 +20,15 @@ export function isPlayer(entity: IEntity) {
 
 export function calculateDamageRange(attacker: IEntity, defender: IEntity): [number, number] {
     let baseDamage: number = attacker.attack;
+    // TODO: Are these guaranteed to be on IEntity? If they are we don't need to check and set them to zero.
     if (!attacker.apiercing) attacker.apiercing = 0
-    if (!attacker.apiercing) attacker.rpiercing = 0
+    if (!attacker.rpiercing) attacker.rpiercing = 0
+    if (!defender.armor) defender.armor = 0
     if (!attacker.damage_type && attacker.slots.mainhand) attacker.damage_type = G.items[attacker.slots.mainhand.name].damage
+
+    if (defender["1hp"]) {
+        return [1, 1]
+    }
 
     if (attacker.damage_type == "physical") {
         // Armor
@@ -104,6 +110,19 @@ export function getCooldownMS(skill: SkillName) {
     } else {
         return parent.character.ping
     }
+}
+
+/** Returns the expected amount of time to kill a given monster */
+export function estimatedTimeToKill(attacker: IEntity, defender: IEntity) {
+    let damage = calculateDamageRange(attacker, defender)[0]
+    let evasionMultiplier = 1
+    if (defender.evasion && attacker.damage_type == "physical") {
+        evasionMultiplier -= defender.evasion * 0.01
+    }
+    let attacksPerSecond = attacker.frequency
+    let numberOfAttacks = Math.ceil(evasionMultiplier * defender.hp / damage)
+
+    return numberOfAttacks / attacksPerSecond
 }
 
 export function getExchangableItems(inventory?: ItemInfo[]): MyItemInfo[] {

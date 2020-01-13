@@ -16,7 +16,12 @@ class Warrior extends Character {
         },
         "bat": {
             "priority": EASY,
-            "stopOnSight": true
+            "stopOnSight": true,
+            "farmingPosition": {
+                "map": "cave",
+                "x": 1250,
+                "y": -800
+            }
         },
         "bbpompom": {
             "coop": ["priest"],
@@ -31,6 +36,18 @@ class Warrior extends Character {
         },
         "bee": {
             "priority": EASY
+        },
+        "boar": {
+            // The ranger is fast enough to kill these without dying too much.
+            "coop": ["warrior", "priest"],
+            "priority": DIFFICULT,
+            "holdAttackWhileMoving": true,
+            "holdPositionFarm": true,
+            farmingPosition: {
+                "map": "winterland",
+                "x": 0,
+                "y": -1850
+            }
         },
         "crab": {
             "priority": EASY
@@ -88,10 +105,10 @@ class Warrior extends Character {
                 "y": -1080
             }
         },
-        "osnake": {
-            "priority": EASY,
-            "stopOnSight": true
-        },
+        // "osnake": {
+        //     "priority": EASY,
+        //     "stopOnSight": true
+        // },
         "phoenix": {
             "priority": SPECIAL
         },
@@ -120,9 +137,9 @@ class Warrior extends Character {
         "squig": {
             "priority": EASY,
         },
-        "squigtoad": {
-            "priority": EASY
-        },
+        // "squigtoad": {
+        //     "priority": EASY
+        // },
         "tortoise": {
             "priority": EASY
         },

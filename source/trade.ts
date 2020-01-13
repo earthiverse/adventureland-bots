@@ -207,7 +207,7 @@ export async function buyPots() {
         let numberToBuy = itemsToBuy[itemName as ItemName]
         let numItems = findItems(itemName as ItemName).reduce((a, b) => a + b.q, 0)
         if (numItems < numberToBuy) {
-            await buy_with_gold("mpot1", Math.min(numberToBuy - numItems, parent.character.gold / G.items[itemName as ItemName].g))
+            await buy_with_gold(itemName as ItemName, Math.min(numberToBuy - numItems, parent.character.gold / G.items[itemName as ItemName].g))
         }
     }
 }
@@ -243,7 +243,7 @@ export async function buyScrolls() {
         let numberToBuy = itemsToBuy[itemName as ItemName]
         let numItems = findItems(itemName as ItemName).reduce((a, b) => a + b.q, 0)
         if (numItems < numberToBuy) {
-            await buy_with_gold("mpot1", Math.min(numberToBuy - numItems, parent.character.gold / G.items[itemName as ItemName].g))
+            await buy_with_gold(itemName as ItemName, Math.min(numberToBuy - numItems, parent.character.gold / G.items[itemName as ItemName].g))
         }
     }
 }

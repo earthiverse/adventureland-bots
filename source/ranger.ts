@@ -2,7 +2,7 @@ import { Character } from './character'
 import { MonsterType, IEntity } from './definitions/adventureland';
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from './trade';
 import { TargetPriorityList } from './definitions/bots';
-import { isPlayer, getCooldownMS, isAvailable, wantToAttack, calculateDamageRange } from './functions';
+import { isPlayer, getCooldownMS, isAvailable, wantToAttack, calculateDamageRange, sleep } from './functions';
 
 let DIFFICULT = 10;
 let MEDIUM = 20;
@@ -20,7 +20,12 @@ class Ranger extends Character {
         },
         "bat": {
             "priority": EASY,
-            "stopOnSight": true
+            "stopOnSight": true,
+            "farmingPosition": {
+                "map": "cave",
+                "x": -200,
+                "y": -450
+            }
         },
         "bbpompom": {
             "coop": ["priest"],
@@ -266,6 +271,7 @@ class Ranger extends Character {
                 this.start_time = Date.now()
                 stop_character("earthMag")
                 start_character("earthWar")
+                await sleep(2500)
             } else if (parent.party_list.includes("earthWar")
                 && this.info.party.earthWar
                 && this.info.party.earthWar.shouldSwitchServer
@@ -274,6 +280,7 @@ class Ranger extends Character {
                 this.start_time = Date.now()
                 stop_character("earthWar")
                 start_character("earthMag")
+                await sleep(2500)
             }
 
             // Switch servers if everyone in the party wants to
@@ -404,6 +411,7 @@ class Ranger extends Character {
     }
 
     createParty(members: string[]): void {
+        if (parent.party_list.length >= 4) return; // We already have the maximum amount of party members
         for (let member of members) {
             if (!parent.party[member])
                 send_party_invite(member);

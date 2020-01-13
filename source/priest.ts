@@ -20,7 +20,12 @@ class Priest extends Character {
         },
         "bat": {
             "priority": EASY,
-            "stopOnSight": true
+            "stopOnSight": true,
+            "farmingPosition": {
+                "map": "cave",
+                "x": 300,
+                "y": -1100
+            }
         },
         "bbpompom": {
             "coop": ["priest"],
@@ -51,6 +56,18 @@ class Priest extends Character {
                 "map": "main",
                 "x": 1450,
                 "y": 30
+            }
+        },
+        "boar": {
+            // The ranger is fast enough to kill these without dying too much.
+            "coop": ["warrior", "priest"],
+            "priority": DIFFICULT,
+            "holdAttackWhileMoving": true,
+            "holdPositionFarm": true,
+            farmingPosition: {
+                "map": "winterland",
+                "x": -50,
+                "y": -850
             }
         },
         "booboo": {
@@ -161,10 +178,10 @@ class Priest extends Character {
                 "y": -1030
             }
         },
-        "osnake": {
-            "priority": EASY,
-            "stopOnSight": true
-        },
+        // "osnake": {
+        //     "priority": EASY,
+        //     "stopOnSight": true
+        // },
         "phoenix": {
             "priority": SPECIAL
         },
@@ -220,12 +237,12 @@ class Priest extends Character {
         "squig": {
             "priority": EASY,
         },
-        "squigtoad": {
-            "priority": EASY
-        },
-        "tortoise": {
-            "priority": EASY
-        },
+        // "squigtoad": {
+        //     "priority": EASY
+        // },
+        // "tortoise": {
+        //     "priority": EASY
+        // },
         "wolfie": {
             // The ranger is fast enough to kill these without dying too much.
             "coop": ["warrior", "priest"],
@@ -268,7 +285,7 @@ class Priest extends Character {
     protected async attackLoop(): Promise<void> {
         try {
             if (parent.character.hp < parent.character.max_hp - parent.character.attack * 0.9) {
-                heal(parent.character)
+                await heal(parent.character)
                 setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
                 return
             }
@@ -278,7 +295,7 @@ class Priest extends Character {
                 if (parent.entities[member]) {
                     if (distance(parent.character, parent.entities[member]) < parent.character.range
                         && parent.entities[member].hp <= parent.entities[member].max_hp - parent.character.attack * 0.9) {
-                        heal(parent.entities[member])
+                        await heal(parent.entities[member])
                         setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
                         return
                     }

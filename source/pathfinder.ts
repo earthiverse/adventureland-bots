@@ -1,5 +1,5 @@
 import { IPosition, MonsterType, IPositionReal, MapName } from "./definitions/adventureland";
-import { Character } from "./character";
+import { AStarSmartMove } from "./astarsmartmove";
 let PF = require("pathfinding")
 
 export class Pathfinder {
@@ -14,6 +14,8 @@ export class Pathfinder {
     private grids: any = {};
     public movementTarget: MonsterType;
 
+    public astart = new AStarSmartMove()
+
     //constructor(factor: number = 8, padding = [10, 8, 7, 8]) {
     constructor(factor: number = 8, padding = [11, 9, 8, 9]) {
         this.factor = factor;
@@ -24,6 +26,19 @@ export class Pathfinder {
         if (smart.moving) return; // Already moving somewhere
         if (distance(parent.character, to) < 10) return; // Already nearby
         if (!to.map) to.map = parent.character.map // Add a map if we don't have one
+
+        let fixedTo: IPositionReal = {
+            map: to.map ? to.map : parent.character.map,
+            x: to.x,
+            y: to.y
+        }
+
+        // game_log(`moving? : ${this.astart.isMoving()}`)
+        if (!this.astart.isMoving()) {
+            game_log(`navigating to ${fixedTo.map}, ${fixedTo.x}, ${fixedTo.y}`)
+            this.astart.astar_smart_move(fixedTo)
+        }
+        return
 
         // Try to use our own pathfinding if we are on the same map
         if (parent.character.map == to.map) {
@@ -178,7 +193,6 @@ export class Pathfinder {
         if (this.grids[mapName]) return; // Already generated
 
         let geometry = G.geometry[mapName]
-        let mapInfo = G.maps[mapName]
 
         let width = geometry.max_x - geometry.min_x;
         let height = geometry.max_y - geometry.min_y;

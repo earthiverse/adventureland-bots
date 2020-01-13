@@ -72,7 +72,7 @@ export abstract class Character {
         // Helmets
         "fury", "partyhat", "xhelmet",
         // Gloves
-        "goldenpowerglove", "handofmidas", "poker", "powerglove", "xgloves",
+        "goldenpowerglove", "handofmidas", "poker", "powerglove", "wgloves" /* 'earthiverse' has level 9 normal gloves, would like to upgrade */, "xgloves",
         // Good weapons
         "bowofthedead", "candycanesword", "cupid", "dartgun", "gbow", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow",
         // Things we can exchange / craft with
@@ -378,8 +378,8 @@ export abstract class Character {
     protected last: { message: string; target: IPositionReal; } = { message: "start", target: parent.character };
     protected moveLoop(): void {
         try {
-            if (this.holdPosition) {
-                setTimeout(() => { this.moveLoop() }, 1000)
+            if (this.holdPosition || parent.character.c.town) {
+                setTimeout(() => { this.moveLoop() }, Math.max(250, parent.character.ping))
                 return
             }
 
@@ -389,10 +389,10 @@ export abstract class Character {
                 if (this.last.message != movementTarget.message) {
                     set_message(movementTarget.message.slice(0, 11))
                     stop()
+                    this.pathfinder.astart.stop()
                 }
 
                 this.last = movementTarget
-
                 if (movementTarget.target) this.pathfinder.saferMove(movementTarget.target)
             }
 
@@ -403,6 +403,7 @@ export abstract class Character {
                     && this.pathfinder.movementTarget == targets[0].mtype /* We're moving to that target */
                     && distance(parent.character, targets[0]) < parent.character.range /* We're in range of that target */) {
                     stop()
+                    this.pathfinder.astart.stop()
                 }
             } else {
                 // Default movements
