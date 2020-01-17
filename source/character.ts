@@ -74,7 +74,7 @@ export abstract class Character {
         // Gloves
         "goldenpowerglove", "handofmidas", "poker", "powerglove", "wgloves" /* 'earthiverse' has level 9 normal gloves, would like to upgrade */, "xgloves",
         // Good weapons
-        "bowofthedead", "candycanesword", "cupid", "dartgun", "gbow", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow",
+        "basher", "bowofthedead", "candycanesword", "cupid", "dartgun", "gbow", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow",
         // Things we can exchange / craft with
         "bfur", "cscale", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", "networkcard", "platinumingot", "platinumnugget", "pleather",
         // Boosters
@@ -82,7 +82,7 @@ export abstract class Character {
         // Potions & consumables
         "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate",
         // Misc. Things
-        "bottleofxp", "bugbountybox", "monstertoken"
+        "bottleofxp", "bugbountybox", "monstertoken", "poison"
     ]
 
 
@@ -140,7 +140,7 @@ export abstract class Character {
 
             // Chests
             // let chests: { [T in string]: ChestInfo } = {}
-            // for (let chestID in parent.chests) {
+            // for (const chestID in parent.chests) {
             //     chests[chestID] = {
             //         alpha: parent.chests[chestID].alpha,
             //         x: parent.chests[chestID].x,
@@ -178,7 +178,7 @@ export abstract class Character {
             this.parse_cm(parent.character.name, message)
 
             // Other players
-            for (let id in parent.entities) {
+            for (const id in parent.entities) {
                 if (parent.entities[id].type != "character") continue;
                 if (parent.entities[id].npc) continue;
 
@@ -202,7 +202,7 @@ export abstract class Character {
             }
 
             // Important NPCs
-            for (let npc of ["Angel", "Kane"]) {
+            for (const npc of ["Angel", "Kane"]) {
                 if (!parent.entities[npc]) continue;
                 message = {
                     "message": "npc",
@@ -231,7 +231,7 @@ export abstract class Character {
         // Monster Hunts
         if (!parent.character.s.monsterhunt) return false; // We can potentially get a monster hunt, don't switch
         if (this.targets[parent.character.s.monsterhunt.id]) return false; // We can do our monster hunt
-        for (let id of parent.party_list) {
+        for (const id of parent.party_list) {
             let member = parent.entities[id] ? parent.entities[id] : this.info.party[id]
             if (!member || !member.s || !member.s.monsterhunt) continue
             if (!this.targets[member.s.monsterhunt.id]) continue
@@ -239,10 +239,10 @@ export abstract class Character {
             let canCoop = true
             if (this.targets[member.s.monsterhunt.id].coop) {
                 let availableTypes = []
-                for (let member of parent.party_list) {
+                for (const member of parent.party_list) {
                     availableTypes.push(parent.party[member].type)
                 }
-                for (let type of this.targets[member.s.monsterhunt.id].coop) {
+                for (const type of this.targets[member.s.monsterhunt.id].coop) {
                     if (!availableTypes.includes(type)) {
                         canCoop = false
                         break // We're missing a character type
@@ -255,7 +255,7 @@ export abstract class Character {
         }
 
         // Doable event monster
-        for (let monster in parent.S) {
+        for (const monster in parent.S) {
             if (monster == "grinch") continue // The grinch is too strong.
             if (!parent.S[monster as MonsterType].live) continue
             if (this.targets[monster as MonsterType]) return false // We can do an event monster!
@@ -286,12 +286,12 @@ export abstract class Character {
 
     protected loot() {
         let i = 0
-        for (let chestID in parent.chests) {
+        for (const chestID in parent.chests) {
             let chest = parent.chests[chestID]
             if (distance(parent.character, chest) > 800) continue // Chests over a 800 radius have a penalty as per @Wizard in #feedback (Discord) on 11/26/2019
 
             let shouldLoot = true;
-            for (let id of parent.party_list) {
+            for (const id of parent.party_list) {
                 if (id == parent.character.id) continue // Skip ourself
 
                 let partyMember = parent.entities[id]
@@ -340,7 +340,7 @@ export abstract class Character {
             } else if (targets.length && parent.character.c.town) {
                 wantToScare = true
             } else {
-                for (let target of targets) {
+                for (const target of targets) {
                     if (target.mtype == "grinch") continue // NOTE: CHRISTMAS EVENT -- remove after Christmas.
                     if (distance(target, parent.character) > target.range) continue // They're out of range
                     if (calculateDamageRange(target, parent.character)[1] * 6 * target.frequency <= parent.character.hp) continue // We can tank a few of their shots
@@ -489,7 +489,7 @@ export abstract class Character {
         let d = 0;
 
         let closeMonster = false;
-        for (let id in parent.entities) {
+        for (const id in parent.entities) {
             let entity = parent.entities[id]
             if (entity.type != "monster") continue; // Not a monster
             if (!entity.target) continue; // No target on the entity
@@ -503,7 +503,7 @@ export abstract class Character {
         if (!closeMonster) return; // No monsters are nearby to attack us
 
         let closeEntity
-        for (let id in parent.entities) {
+        for (const id in parent.entities) {
             let entity = parent.entities[id]
             if (entity.type != "character") continue; // Not a character
 
@@ -515,7 +515,7 @@ export abstract class Character {
             }
         }
         if (!closeEntity) return;
-
+        
         let escapePosition: IPosition;
         let angle = Math.atan2(parent.character.real_y - closeEntity.real_y, parent.character.real_x - closeEntity.real_x);
         let x = Math.cos(angle) * d
@@ -529,7 +529,7 @@ export abstract class Character {
     protected avoidAggroMonsters(): void {
         let closeEntity: IEntity = null;
         let moveDistance = 0;
-        for (let id in parent.entities) {
+        for (const id in parent.entities) {
             let entity = parent.entities[id]
             if (entity.mtype == "grinch") continue // NOTE: CHRISTMAS EVENT -- delete after
             if (entity.type != "monster") continue // Not a monster
@@ -575,7 +575,7 @@ export abstract class Character {
         // Find the closest monster of those attacking us
         let minDistance = 9999;
         let target: IEntity = null;
-        for (let entity of attackingEntities) {
+        for (const entity of attackingEntities) {
             if (calculateDamageRange(entity, parent.character)[1] * 3 * entity.frequency < 400) continue; // We can outheal the damage 
             let d = distance(parent.character, entity);
             if (entity.mtype == "grinch") continue // NOTE: CHRISTMAS EVENT -- delete after
@@ -668,7 +668,7 @@ export abstract class Character {
         } else if (data.message == "player") {
             this.info.players[data.id] = data.info
         } else if (data.message == "chests") {
-            for (let chestID in data.chests) {
+            for (const chestID in data.chests) {
                 if (!parent.chests[chestID]) parent.chests[chestID] = data.chests[chestID]
             }
         }
@@ -678,11 +678,11 @@ export abstract class Character {
     public equipBetterItems() {
         let items = getInventory();
 
-        for (let slot in parent.character.slots) {
+        for (const slot in parent.character.slots) {
             let slotItem: ItemInfo = parent.character.slots[slot as SlotType];
             let betterItem: MyItemInfo
             if (!slotItem) continue; // Nothing equipped in that slot
-            for (let item of items) {
+            for (const item of items) {
                 if (item.name != slotItem.name) continue; // Not the same item
                 if (item.level <= slotItem.level) continue; // Not better than the currently equipped item
 
@@ -698,7 +698,7 @@ export abstract class Character {
 
     public getMovementTarget(): { message: string, target: IPositionReal } {
         // Check for golden bat
-        for (let id in parent.entities) {
+        for (const id in parent.entities) {
             let entity = parent.entities[id]
             if (entity.mtype == "goldenbat") {
                 this.pathfinder.movementTarget = "goldenbat"
@@ -734,12 +734,12 @@ export abstract class Character {
         }
 
         // Check for event monsters
-        for (let mtype in parent.S) {
+        for (const mtype in parent.S) {
             if (mtype == "grinch") continue // The grinch is too strong.
             if (!parent.S[mtype as MonsterType].live) continue;
             if (this.targets[mtype as MonsterType]) {
                 this.pathfinder.movementTarget = mtype as MonsterType;
-                for (let id in parent.entities) {
+                for (const id in parent.entities) {
                     let entity = parent.entities[id]
                     if (entity.mtype == mtype) {
                         // There's one nearby
@@ -760,7 +760,7 @@ export abstract class Character {
         // See if there's a nearby monster hunt (avoid moving as much as possible)
         let monsterHuntTargets: MonsterType[] = []
         let lastms = Number.MAX_VALUE
-        for (let memberName of parent.party_list) {
+        for (const memberName of parent.party_list) {
             let member = parent.entities[memberName] ? parent.entities[memberName] : this.info.party[memberName]
             if (!member) continue; // No information yet
             if (!member.s.monsterhunt || member.s.monsterhunt.c == 0) continue // They don't have a monster hunt, or are turning it in
@@ -770,10 +770,10 @@ export abstract class Character {
             let canCoop = true
             if (this.targets[member.s.monsterhunt.id].coop) {
                 let availableTypes = []
-                for (let member of parent.party_list) {
+                for (const member of parent.party_list) {
                     availableTypes.push(parent.party[member].type)
                 }
-                for (let type of this.targets[member.s.monsterhunt.id].coop) {
+                for (const type of this.targets[member.s.monsterhunt.id].coop) {
                     if (!availableTypes.includes(type)) {
                         canCoop = false
                         break // We're missing a character type
@@ -786,7 +786,7 @@ export abstract class Character {
             let partyDamageRate = 0
             let damageToDeal = G.monsters[member.s.monsterhunt.id].hp * member.s.monsterhunt.c
             let timeLeft = member.s.monsterhunt.ms - (Date.now() - new Date(member.last_ms).getTime())
-            for (let id of parent.party_list) {
+            for (const id of parent.party_list) {
                 if (!this.info.party[id]) continue
                 partyDamageRate += this.info.party[id].attack * this.info.party[id].frequency * 0.9
             }
@@ -844,10 +844,10 @@ export abstract class Character {
                 this.pathfinder.movementTarget = null;
                 return { message: "2x1000%", target: null }
             }
-            for (let kSpawn of kSpawns) {
+            for (const kSpawn of kSpawns) {
                 if (["hen", "rooster"].includes(kSpawn.monster)) continue // Ignore chickens
                 if (!this.targets[kSpawn.monster]) continue // Ignore things not in our priority list
-                for (let aSpawn of aSpawns) {
+                for (const aSpawn of aSpawns) {
                     if (kSpawn.x == aSpawn.x && kSpawn.y == aSpawn.y) {
                         return { message: "2x1000%", target: kane }
                     }
@@ -883,7 +883,7 @@ export abstract class Character {
 
         // Check for our main target
         this.pathfinder.movementTarget = this.mainTarget;
-        for (let id in parent.entities) {
+        for (const id in parent.entities) {
             let entity = parent.entities[id]
             if (entity.mtype == this.mainTarget) {
                 // There's one nearby
@@ -904,7 +904,7 @@ export abstract class Character {
         // Find out what targets are already claimed by our party members
         let members = parent.party_list;
         let claimedTargets: string[] = []
-        for (let id in parent.entities) {
+        for (const id in parent.entities) {
             if (members.includes(id)) {
                 let target = parent.entities[id].target;
                 if (target) claimedTargets.push(target)
@@ -912,7 +912,7 @@ export abstract class Character {
         }
 
         let potentialTargets = new Queue<IEntity>((x, y) => x.priority - y.priority);
-        for (let id in parent.entities) {
+        for (const id in parent.entities) {
             let potentialTarget = parent.entities[id];
 
             if (potentialTarget.mtype == "grinch") continue; // NOTE: Christmas event -- delete after

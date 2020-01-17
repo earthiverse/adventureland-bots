@@ -67,25 +67,25 @@ export function wantToAttack(c: Character, e: IEntity, s: SkillName = "attack"):
     if (s != "attack" && e.immune) return false // We can't damage it with non-attacks
     if (s != "attack" && e["1hp"]) return false // We only do one damage, don't use special attacks
 
-    // We will still attack if the target is attacking us, because we might as well die.
+    if (!c.targets[e.mtype]) return false // Holding attacks against things not in our priority list
+
     if (!e.target) {
         // Hold attack
         if (c.holdAttack) return false // Holding all attacks
-        if (!c.targets[e.mtype]) return false // Holding attacks against things not in our priority list
         if (smart.moving && c.targets[e.mtype].holdAttackWhileMoving) return false // Holding attacks while moving
         if (c.targets[e.mtype].holdAttackInEntityRange && distanceToEntity <= e.range) return false // Holding attacks in range
 
         // Don't attack if we have it as a coop target, but we don't have everyone there.
         if (c.targets[e.mtype].coop) {
             let availableTypes = [parent.character.ctype]
-            for (let member of parent.party_list) {
+            for (const member of parent.party_list) {
                 let e = parent.entities[member]
                 if (!e) continue
                 if (e.rip) continue // Don't add dead players
                 if (e.ctype == "priest" && distance(parent.character, e) > e.range) continue // We're not within range if we want healing
                 availableTypes.push(e.ctype)
             }
-            for (let type of c.targets[e.mtype].coop) {
+            for (const type of c.targets[e.mtype].coop) {
                 if (!availableTypes.includes(type)) return false
             }
         }
@@ -128,7 +128,7 @@ export function estimatedTimeToKill(attacker: IEntity, defender: IEntity) {
 export function getExchangableItems(inventory?: ItemInfo[]): MyItemInfo[] {
     let items: MyItemInfo[] = []
 
-    for (let item of getInventory(inventory)) {
+    for (const item of getInventory(inventory)) {
         if (G.items[item.name].e) items.push(item)
     }
 
@@ -148,7 +148,7 @@ export function getEmptyBankSlots(): EmptyBankSlots[] {
 
     let emptySlots: EmptyBankSlots[] = []
 
-    for (let store in parent.character.bank) {
+    for (const store in parent.character.bank) {
         if (store == "gold") continue;
         for (let i = 0; i < 42; i++) {
             let item = parent.character.bank[store as BankPackType][i]
@@ -179,7 +179,7 @@ export function isAvailable(skill: SkillName) {
 export function getAttackingEntities(): IEntity[] {
     let entitites: IEntity[] = []
     let isPVP = is_pvp();
-    for (let id in parent.entities) {
+    for (const id in parent.entities) {
         let entity = parent.entities[id]
         if (entity.target != parent.character.id) continue; // Not being targeted by this entity
         if (isPlayer(entity) && !isPVP) continue; // Not PVP, ignore players
@@ -192,7 +192,7 @@ export function getAttackingEntities(): IEntity[] {
 
 export function getInRangeMonsters(): IEntity[] {
     let entities: IEntity[] = []
-    for (let id in parent.entities) {
+    for (const id in parent.entities) {
         let e = parent.entities[id]
         if (!isMonster(e)) continue
         if (distance(e, parent.character) > parent.character.range) continue
@@ -203,22 +203,22 @@ export function getInRangeMonsters(): IEntity[] {
 }
 
 export function sendMassCM(names: string[], data: any) {
-    for (let name of names) {
+    for (const name of names) {
         send_local_cm(name, data);
     }
 }
 
 export function getMonsterSpawns(type: MonsterType): IPositionReal[] {
     let spawnLocations: IPositionReal[] = []
-    for (let id in G.maps) {
+    for (const id in G.maps) {
         let map = G.maps[id as MapName]
         if (map.instance) continue;
-        for (let monster of map.monsters || []) {
+        for (const monster of map.monsters || []) {
             if (monster.type != type) continue
             if (monster.boundary) {
                 spawnLocations.push({ "map": id as MapName, "x": (monster.boundary[0] + monster.boundary[2]) / 2, "y": (monster.boundary[1] + monster.boundary[3]) / 2 })
             } else if (monster.boundaries) {
-                for (let boundary of monster.boundaries) {
+                for (const boundary of monster.boundaries) {
                     spawnLocations.push({ "map": boundary[0], "x": (boundary[1] + boundary[3]) / 2, "y": (boundary[2] + boundary[4]) / 2 })
                 }
             }
@@ -237,7 +237,7 @@ export function getClosestMonsterSpawn(type: MonsterType): IPositionReal {
     let monsterSpawns = getMonsterSpawns(type)
     let closestSpawnDistance = Number.MAX_VALUE
     let closestSpawn
-    for (let spawn of monsterSpawns) {
+    for (const spawn of monsterSpawns) {
         let d = parent.distance(parent.character, spawn)
         if (d < closestSpawnDistance) {
             closestSpawnDistance = d
@@ -253,13 +253,13 @@ export function getNearbyMonsterSpawns(position: IPosition, radius: number = 100
     let locations: MonsterSpawnPosition[] = [];
     let map = G.maps[position.map];
     if (map.instance) return;
-    for (let monster of map.monsters || []) {
+    for (const monster of map.monsters || []) {
         if (monster.boundary) {
             let location = { "map": position.map as MapName, "x": (monster.boundary[0] + monster.boundary[2]) / 2, "y": (monster.boundary[1] + monster.boundary[3]) / 2 };
             if (distance(position, location) < radius) locations.push({ ...location, monster: monster.type })
             else if (position.x >= monster.boundary[0] && position.x <= monster.boundary[2] && position.y >= monster.boundary[1] && position.y <= monster.boundary[3]) locations.push({ ...location, monster: monster.type })
         } else if (monster.boundaries) {
-            for (let boundary of monster.boundaries) {
+            for (const boundary of monster.boundaries) {
                 if (boundary[0] != position.map) continue;
                 let location = { "map": position.map, "x": (boundary[1] + boundary[3]) / 2, "y": (boundary[2] + boundary[4]) / 2 }
                 if (distance(position, location) < radius) locations.push({ ...location, monster: monster.type })
@@ -279,7 +279,7 @@ export function getNearbyMonsterSpawns(position: IPosition, radius: number = 100
 export async function buyIfNone(itemName: ItemName, targetLevel: number = 9, targetQuantity: number = 1) {
     let foundNPCBuyer = false;
     if (!G.maps[parent.character.map].npcs) return
-    for (let npc of G.maps[parent.character.map].npcs) {
+    for (const npc of G.maps[parent.character.map].npcs) {
         if (G.npcs[npc.id].role != "merchant") continue
         if (distance(parent.character, {
             x: npc.position[0],

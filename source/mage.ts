@@ -264,7 +264,7 @@ class Mage extends Character {
         if (isAvailable("darkblessing")) {
             // Check if there are at least two party members nearby
             let count = 0
-            for (let member of parent.party_list) {
+            for (const member of parent.party_list) {
                 let e = parent.entities[member]
                 if (!e) continue
                 if (e.ctype == "merchant") continue
@@ -286,9 +286,9 @@ class Mage extends Character {
         try {
             // Get nearby party members
             if (isAvailable("energize"))
-                for (let id in parent.entities) {
+                for (const id in parent.entities) {
                     if (id == parent.character.name) continue // Don't cast on ourself.
-                    if (distance(parent.character, parent.entities[id]) > parent.character.range) continue // Out of range
+                    if (distance(parent.character, parent.entities[id]) > G.skills["energize"].range) continue // Out of range
                     if (!parent.party_list.includes(id)) continue // Not in our party
 
                     use_skill("energize", parent.entities[id])

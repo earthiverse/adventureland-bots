@@ -1,16 +1,14 @@
-import { IPositionReal } from "./adventureland";
+import { IPositionReal, MapName } from "./adventureland";
 
-export type FromMap = { [T in string]: SmartMoveNode }
-export type ScoreMap = { [T in string]: number }
-export type VisitedMap = { [T in string]: boolean }
+export type FromMap = Map<string, SmartMoveNode>
+export type ScoreMap = Map<string, number>
+export type VisitedMap = Set<string>
 
 export type SmartMoveNode = IPositionReal & {
-    priority?: number
-    from?: SmartMoveNode
-
     // Transporter information
-    transport?: boolean
-    s?: number
+    transportMap?: MapName
+    transportType?: "door" | "teleport"
+    transportS?: number
 
     // Town information
     town?: boolean

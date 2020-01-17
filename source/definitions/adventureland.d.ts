@@ -259,6 +259,8 @@ export interface ICharacter extends IEntity {
 
     }
   }
+  /** A bit of extra range that we can use to attack further monsters. It's variable. If you attack a monster using this extra range, it decreases for the next attack. */
+  xrange: number
 }
 
 export interface IEntity extends IPositionReal {

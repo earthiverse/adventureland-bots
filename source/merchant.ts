@@ -62,12 +62,12 @@ class Merchant extends Character {
         }
 
         // Check for event monsters
-        for (let mtype in parent.S) {
+        for (const mtype in parent.S) {
             let monster = parent.S[mtype as MonsterType]
             if (monster.hp < monster.max_hp * 0.9
                 && monster.live) {
                 this.pathfinder.movementTarget = mtype as MonsterType;
-                for (let id in parent.entities) {
+                for (const id in parent.entities) {
                     let entity = parent.entities[id]
                     if (entity.mtype == mtype) {
                         // There's one nearby
@@ -82,7 +82,7 @@ class Merchant extends Character {
         }
 
         // If someone in our party isn't mlucked by us, go find them and mluck them.
-        for (let name of parent.party_list) {
+        for (const name of parent.party_list) {
             if (name == parent.character.name) continue; // Don't move to ourself
 
             let player = parent.entities[name] ? parent.entities[name] : this.info.party[name]
@@ -92,8 +92,8 @@ class Merchant extends Character {
         }
 
         // If there are players who we have seen recently that haven't been mlucked, go find them and mluck them
-        for (let name in this.info.players) {
-            let player = parent.entities[name] ? parent.entities[name] : this.info.players[name]
+        for (const name in this.info.players) {
+            const player = parent.entities[name] ? parent.entities[name] : this.info.players[name]
             if (distance(parent.character, player) <= 10 && !player.s.mluck) {
                 // This player moved.
                 delete this.info.players[name];
@@ -104,7 +104,7 @@ class Merchant extends Character {
         }
 
         // If our players have lots of items, go offload
-        for (let name of parent.party_list) {
+        for (const name of parent.party_list) {
             if (name == parent.character.name) continue; // Skip ourself
             let player = this.info.party[name]
             if (player && player.items.length > 20) {
@@ -128,7 +128,7 @@ class Merchant extends Character {
         // // If we have exchangable things, go exchange them
         // let items = getInventory();
         // if (items.length < 25) {
-        //     for (let item of items) {
+        //     for (const item of items) {
         //         if (G.items[item.name].quest && item.q >= G.items[item.name].e) {
         //             return { message: "Quest", target: G.quests[item.name] }
         //         }
@@ -136,13 +136,13 @@ class Merchant extends Character {
         // }
 
         // Default vendoring
-        if (this.info.npcs.Kane) {
-            return { message: "Vendor", target: this.info.npcs.Kane }
-        } else if (this.info.npcs.Angel) {
-            return { message: "Vendor", target: this.info.npcs.Angel }
-        } else {
+        // if (this.info.npcs.Kane) {
+        //     return { message: "Vendor", target: this.info.npcs.Kane }
+        // } else if (this.info.npcs.Angel) {
+        //     return { message: "Vendor", target: this.info.npcs.Angel }
+        // } else {
             return { message: "Vendor", target: { map: "main", "x": 60, "y": -325 } }
-        }
+        // }
     }
 
     protected async mainLoop(): Promise<void> {
@@ -193,7 +193,7 @@ class Merchant extends Character {
 
     private pontyLoop(): void {
         let foundPonty = false;
-        for (let npc of parent.npcs) {
+        for (const npc of parent.npcs) {
             if (npc.id == "secondhands" && distance(parent.character, {
                 x: npc.position[0],
                 y: npc.position[1]
@@ -233,7 +233,7 @@ class Merchant extends Character {
         let items: [ItemName, number, string, number][] = [];
 
         // Add items from inventory
-        for (let item of getInventory()) {
+        for (const item of getInventory()) {
             if (this.itemsToKeep.includes(item.name)) continue; // Don't add items we want to keep
 
 
@@ -258,9 +258,9 @@ class Merchant extends Character {
         }
 
         // Add items from bank
-        for (let pack in parent.character.bank) {
+        for (const pack in parent.character.bank) {
             if (pack == "gold") continue; // skip gold
-            for (let item of getInventory(parent.character.bank[pack as BankPackType])) {
+            for (const item of getInventory(parent.character.bank[pack as BankPackType])) {
                 // Keep some items
                 // TODO: Move this to a variable?
                 if (["goldenegg", "luckbooster", "goldbooster", "xpbooster"].includes(item.name)) continue
@@ -336,7 +336,7 @@ class Merchant extends Character {
 
             if (G.items[itemI[0]].upgrade && indexes.length >= 2) {
                 // We found two of the same weapons, move them to our inventory.
-                for (let k of indexes) {
+                for (const k of indexes) {
                     let level = items[k][1];
                     let bankBox = items[k][2];
                     let boxSlot = items[k][3];
@@ -397,7 +397,7 @@ class Merchant extends Character {
                 use_skill("mluck", parent.character);
             } else {
                 // Luck others
-                for (let id in parent.entities) {
+                for (const id in parent.entities) {
                     let luckTarget = parent.entities[id];
 
                     if (!isPlayer(luckTarget) // not a player
