@@ -20,8 +20,6 @@
     "@types/nconf": "^0.10.0",
     "@types/node": "^12.12.21",
     "@types/socket.io": "^2.1.4",
-    "pathfinding": "^0.4.18",
-    "prioqueue": "^1.0.0",
     "socket.io": "^2.3.0",
     "ts-loader": "^6.2.1",
     "tslint": "^5.20.1",

@@ -56,7 +56,7 @@ declare global {
   function draw_circle(x: number, y: number, radius: number, size: number, color: number)
   function equip(inventoryPostion: number, slot?: SlotType)
   function exchange(inventoryPosition: number)
-  function game_log(message: string)
+  function game_log(message: string, color?: string)
   function get_targeted_monster(): IEntity
   function heal(target: IEntity)
   /** Checks whether or not we can attack other players */
@@ -458,6 +458,7 @@ export type MonsterType =
   | "crabx"
   | "croc"
   | "dknight2"
+  | "dragold"
   | "eelemental"
   | "ent"
   | "felemental"
@@ -977,6 +978,7 @@ export type ItemName =
   | "rattail"
   | "redenvelope"
   | "redenvelopev2"
+  | "redenvelopev3"
   | "rednose"
   | "reflectionscroll"
   | "resistancering"

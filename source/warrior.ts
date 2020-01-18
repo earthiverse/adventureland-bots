@@ -55,6 +55,11 @@ class Warrior extends Character {
         "croc": {
             "priority": EASY
         },
+        "dragold": {
+            "coop": ["priest"],
+            "priority": SPECIAL,
+            "holdAttackWhileMoving": true,
+        },
         "goldenbat": {
             "priority": SPECIAL,
             "stopOnSight": true

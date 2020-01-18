@@ -1,8 +1,8 @@
-import { Queue } from "prioqueue"
+import FastPriorityQueue from 'fastpriorityqueue'
 import { IEntity, IPosition, ItemName, ItemInfo, SlotType, ICharacter, MonsterType, IPositionReal, NPCName, ChestInfo } from './definitions/adventureland';
 import { Pathfinder } from './pathfinder';
 import { sendMassCM, findItems, getInventory, getRandomMonsterSpawn, getAttackingEntities, getCooldownMS, isAvailable, canSeePlayer, getNearbyMonsterSpawns, wantToAttack, calculateDamageRange } from "./functions";
-import { TargetPriorityList, OtherInfo, MyItemInfo, ItemLevelInfo } from "./definitions/bots";
+import { TargetPriorityList, OtherInfo, MyItemInfo, ItemLevelInfo, PriorityEntity } from "./definitions/bots";
 import { dismantleItems, buyPots } from "./trade";
 
 export abstract class Character {
@@ -32,7 +32,7 @@ export abstract class Character {
         // Fire stuff
         "fireblade": 0, "firestaff": 0
     }
-    protected itemsToExchange: ItemName[] = [
+    protected itemsToExchange: Set<ItemName> = new Set([
         // General exchangables
         "5bucks", "gem0", "gem1",
         // Seashells for potions
@@ -43,16 +43,18 @@ export abstract class Character {
         "candycane", "mistletoe", "ornament",
         // Halloween
         "candy0", "candy1",
+        // Chinese New Year's
+        "redenvelopev3",
         // Boxes
-        "armorbox", "weaponbox"
-    ]
-    protected itemsToBuy: ItemName[] = [
+        "armorbox", "weaponbox", "xbox"
+    ])
+    protected itemsToBuy: Set<ItemName> = new Set([
         // Exchangables
         ...this.itemsToExchange,
         // Belts
         "dexbelt", "intbelt", "strbelt",
         // Rings
-        "dexring", "intring", "strring",
+        "ctristone", "dexring", "intring", "ringofluck", "strring", "suckerpunch", "tristone",
         // Earrings
         "dexearring", "intearring", "lostearring", "strearring",
         // Amulets
@@ -64,17 +66,17 @@ export abstract class Character {
         // Capes
         "angelwings", "bcape", "cape", "ecape", "stealthcape",
         // Shoes
-        "xboots",
+        "mrnboots", "mwboots", "xboots",
         // Pants
-        "starkillers", "xpants",
+        "mrnpants", "mwpants", "starkillers", "xpants",
         // Armor
-        "xarmor",
+        "cdragon", "mrnarmor", "mwarmor", "xarmor",
         // Helmets
-        "fury", "partyhat", "xhelmet",
+        "fury", "mrnhat", "mwhelmet", "partyhat", "xhelmet",
         // Gloves
-        "goldenpowerglove", "handofmidas", "poker", "powerglove", "wgloves" /* 'earthiverse' has level 9 normal gloves, would like to upgrade */, "xgloves",
+        "goldenpowerglove", "handofmidas", "mrngloves", "mwgloves", "poker", "powerglove", "wgloves" /* 'earthiverse' has level 9 normal gloves, would like to upgrade */, "xgloves",
         // Good weapons
-        "basher", "bowofthedead", "candycanesword", "cupid", "dartgun", "gbow", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow",
+        "basher", "bowofthedead", "candycanesword", "cupid", "dartgun", "gbow", "harbringer", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow",
         // Things we can exchange / craft with
         "bfur", "cscale", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", "networkcard", "platinumingot", "platinumnugget", "pleather",
         // Boosters
@@ -83,8 +85,7 @@ export abstract class Character {
         "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate",
         // Misc. Things
         "bottleofxp", "bugbountybox", "monstertoken", "poison"
-    ]
-
+    ])
 
     /** Set to true to stop movement */
     public holdPosition = false
@@ -92,7 +93,7 @@ export abstract class Character {
     /** Set to true to stop attacks. We might still attack if the target is attacking us. */
     public holdAttack = false
 
-    protected pathfinder: Pathfinder = new Pathfinder(6);
+    public pathfinder: Pathfinder = new Pathfinder();
 
     /** Information about the state of the game that is useful to us */
     protected info: OtherInfo = {
@@ -341,7 +342,6 @@ export abstract class Character {
                 wantToScare = true
             } else {
                 for (const target of targets) {
-                    if (target.mtype == "grinch") continue // NOTE: CHRISTMAS EVENT -- remove after Christmas.
                     if (distance(target, parent.character) > target.range) continue // They're out of range
                     if (calculateDamageRange(target, parent.character)[1] * 6 * target.frequency <= parent.character.hp) continue // We can tank a few of their shots
                     // if (this.targets[target.mtype]) continue
@@ -389,21 +389,25 @@ export abstract class Character {
                 if (this.last.message != movementTarget.message) {
                     set_message(movementTarget.message.slice(0, 11))
                     stop()
-                    this.pathfinder.astart.stop()
+                    this.pathfinder.astar.stop()
                 }
 
                 this.last = movementTarget
-                if (movementTarget.target) this.pathfinder.saferMove(movementTarget.target)
+                
+                if (movementTarget.target) {
+                    // game_log("pathfinder -- smart")
+                    this.pathfinder.saferMove(movementTarget.target)
+                }
             }
 
             let targets = this.getTargets(1)
-            if (smart.moving) {
+            if (smart.moving || this.pathfinder.astar.isMoving()) {
                 if (targets.length > 0 /* We have a target in range */
                     && this.targets[targets[0].mtype] && this.targets[targets[0].mtype].stopOnSight /* We stop on sight of that target */
                     && this.pathfinder.movementTarget == targets[0].mtype /* We're moving to that target */
                     && distance(parent.character, targets[0]) < parent.character.range /* We're in range of that target */) {
                     stop()
-                    this.pathfinder.astart.stop()
+                    this.pathfinder.astar.stop()
                 }
             } else {
                 // Default movements
@@ -515,7 +519,7 @@ export abstract class Character {
             }
         }
         if (!closeEntity) return;
-        
+
         let escapePosition: IPosition;
         let angle = Math.atan2(parent.character.real_y - closeEntity.real_y, parent.character.real_x - closeEntity.real_x);
         let x = Math.cos(angle) * d
@@ -531,7 +535,6 @@ export abstract class Character {
         let moveDistance = 0;
         for (const id in parent.entities) {
             let entity = parent.entities[id]
-            if (entity.mtype == "grinch") continue // NOTE: CHRISTMAS EVENT -- delete after
             if (entity.type != "monster") continue // Not a monster
             if (entity.aggro == 0) continue // Not an aggressive monster
             if (entity.target && entity.target != parent.character.name) continue // Targeting someone else
@@ -576,9 +579,8 @@ export abstract class Character {
         let minDistance = 9999;
         let target: IEntity = null;
         for (const entity of attackingEntities) {
-            if (calculateDamageRange(entity, parent.character)[1] * 3 * entity.frequency < 400) continue; // We can outheal the damage 
-            let d = distance(parent.character, entity);
-            if (entity.mtype == "grinch") continue // NOTE: CHRISTMAS EVENT -- delete after
+            if (calculateDamageRange(entity, parent.character)[1] * 3 * entity.frequency < 400) continue // We can outheal the damage 
+            let d = distance(parent.character, entity)
             if (entity.speed > parent.character.speed) continue // We can't outrun it, don't try
             if (entity.range > parent.character.range) continue // We can't outrange it, don't try
             if (minDistance < d) continue; // There's another target that's closer
@@ -610,6 +612,7 @@ export abstract class Character {
             escapePosition = calculateEscape(angle + (angleChange * Math.PI / 180), moveDistance)
         }
 
+        // game_log("avoidAttackingMonsters -- smart")
         this.pathfinder.saferMove(escapePosition)
     }
 
@@ -627,9 +630,10 @@ export abstract class Character {
             let y = Math.sin(angle) * moveDistance
 
             // Move normally to target
-            // game_log("moving normally to target")
+            // game_log("moveToMonster -- normal")
             move(parent.character.real_x + x, parent.character.real_y + y)
         } else {
+            // game_log("moveToMonster -- smart")
             this.pathfinder.saferMove(targets[0])
         }
     }
@@ -793,7 +797,7 @@ export abstract class Character {
             if (damageToDeal / partyDamageRate > timeLeft / 1000) continue
 
             // weakly sort based on time left. we want to do the monster hunt with the least time left
-            
+
             if (timeLeft < lastms) {
                 lastms = timeLeft
                 monsterHuntTargets.unshift(member.s.monsterhunt.id)
@@ -815,6 +819,35 @@ export abstract class Character {
             }
 
             this.pathfinder.movementTarget = potentialTarget
+
+            // Check if other party members are doing it
+            if (this.targets[potentialTarget].coop) {
+                let have_party_members = true
+                for (let type of this.targets[potentialTarget].coop) {
+                    if(type == parent.character.ctype) continue // it's us!
+                    
+                    let found = false
+                    for (let member of parent.party_list) {
+                        if (type == parent.party[member].type && this.info.party[member].monsterHuntTarget == potentialTarget) {
+                            found = true
+                            break
+                        }
+                    }
+                    if (!found) {
+                        have_party_members = false
+                        break
+                    }
+                }
+
+                if (!have_party_members) {
+                    if (this.targets[this.mainTarget].farmingPosition) {
+                        return { message: this.mainTarget, target: this.targets[this.mainTarget].farmingPosition }
+                    } else {
+                        return { message: this.mainTarget, target: getRandomMonsterSpawn(this.mainTarget) }
+                    }
+                }
+            }
+
             let enemies = this.getTargets(1)
             if (this.targets[potentialTarget].farmingPosition) {
                 return { message: "MH " + potentialTarget, target: this.targets[potentialTarget].farmingPosition }
@@ -911,11 +944,9 @@ export abstract class Character {
             }
         }
 
-        let potentialTargets = new Queue<IEntity>((x, y) => x.priority - y.priority);
+        let potentialTargets = new FastPriorityQueue<PriorityEntity>((x, y) => x.priority > y.priority);
         for (const id in parent.entities) {
-            let potentialTarget = parent.entities[id];
-
-            if (potentialTarget.mtype == "grinch") continue; // NOTE: Christmas event -- delete after
+            let potentialTarget = parent.entities[id]
 
             let d = distance(parent.character, potentialTarget);
             if (!this.targets[potentialTarget.mtype] && potentialTarget.target != parent.character.name) continue; // Not a monster we care about, and it's not attacking us
@@ -947,7 +978,8 @@ export abstract class Character {
             // We want to target cooperative monsters to multiply the amount of loot we get, so kill the one with the lowest HP first.
             if (potentialTarget.cooperative) priority += 2000 * (potentialTarget.max_hp - potentialTarget.hp) / potentialTarget.max_hp
 
-            potentialTargets.enqueue(priority, potentialTarget);
+            let priorityEntity: PriorityEntity = { ...potentialTarget, priority: priority }
+            potentialTargets.add(priorityEntity);
         }
 
         if (potentialTargets.size == 0) {
@@ -956,7 +988,7 @@ export abstract class Character {
         }
 
         while (targets.length < numTargets && potentialTargets.size > 0) {
-            targets.push(potentialTargets.dequeue().value)
+            targets.push(potentialTargets.poll())
         }
         if (targets.length > 0)
             change_target(targets[0])

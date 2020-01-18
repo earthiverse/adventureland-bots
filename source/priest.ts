@@ -97,6 +97,10 @@ class Priest extends Character {
         "croc": {
             "priority": EASY
         },
+        "dragold": {
+            "priority": SPECIAL,
+            "holdAttackWhileMoving": true,
+        },
         "frog": {
             "priority": EASY
         },
@@ -294,6 +298,7 @@ class Priest extends Character {
             for (let member of parent.party_list || []) {
                 if (parent.entities[member]) {
                     if (distance(parent.character, parent.entities[member]) < parent.character.range
+                        && !parent.entities[member].rip
                         && parent.entities[member].hp <= parent.entities[member].max_hp - parent.character.attack * 0.9) {
                         await heal(parent.entities[member])
                         setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))

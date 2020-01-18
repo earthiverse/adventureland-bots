@@ -7,10 +7,11 @@ import { IpcNetConnectOpts } from 'net';
 export class AStarSmartMove {
     /** The cost of teleporting to town (so we don't teleport if it's faster to walk) */
     private TOWN_MOVEMENT_COST = 200
-    private DOOR_TOLERANCE = 40 - 10
-    private TELEPORT_TOLERANCE = 75 - 10
-    private MOVE_TOLERANCE = 1
+    private DOOR_TOLERANCE = 40 - 7.1
+    private TELEPORT_TOLERANCE = 75 - 7.1
+    private MOVE_TOLERANCE = 7.1
     private TOWN_TOLERANCE = 10
+    /** A list of movements to search for. */
     private MOVEMENTS = [
         [[0, 25], [0, 5]], // down
         [[25, 0], [5, 0]], // right
@@ -18,12 +19,21 @@ export class AStarSmartMove {
         [[-25, 0], [-5, 0]] // left
     ]
 
+    /** If we fail pathfinding, we will randomly try to move a small distance to see if it helps */
+    private MOVE_ON_FAIL = true
+
+    private SHOW_MESSAGES = true
+    private MESSAGE_COLOR = "#F7600E"
+
     /** Date the search was finished */
     private _astar_finished: Date
     /** Date the search was started */
     private _astart_start: Date
     /** Used for the heuristic */
     private currentBest: number
+
+    /** A cache for travelling from door to door */
+    private doorCache: Map<string, SmartMoveNode[]> = new Map<string, SmartMoveNode[]>()
 
     /** Returns true if we're following the path. */
     public isMoving(): boolean {
@@ -47,17 +57,18 @@ export class AStarSmartMove {
         this.currentBest = Number.MAX_VALUE
     }
 
-    /** Removes unnecessary variables, and snaps to the nearest 5th pixel */
+    /** Removes unnecessary variables, and snaps to the nearest pixel */
     private cleanPosition(position: SmartMoveNode): SmartMoveNode {
-        return {
+        let clean = {
             map: position.map,
-            x: Math.round((position.real_x !== undefined ? position.real_x : position.x) / 5) * 5,
-            y: Math.round((position.real_y !== undefined ? position.real_y : position.y) / 5) * 5,
+            x: Math.trunc((position.real_x !== undefined ? position.real_x : position.x)),
+            y: Math.trunc((position.real_y !== undefined ? position.real_y : position.y)),
             transportS: position.transportS,
             transportMap: position.transportMap,
             transportType: position.transportType,
             town: position.town
         }
+        return clean
     }
 
     private positionToString(position: IPositionReal): string {
@@ -123,6 +134,57 @@ export class AStarSmartMove {
         return distance(position, finish)
     }
 
+    private smoothPath2(path: SmartMoveNode[]): SmartMoveNode[] {
+        console.log(`roughPath (${path.length})`)
+        console.log(path)
+
+        let newPath: SmartMoveNode[] = []
+        let currentMap = path[path.length - 1].map
+        newPath.push(path[path.length - 1])
+        for (let i = path.length - 1; i > 0; i--) {
+            let iPath = path[i]
+
+            let canWalkTo = i - 1
+            for (let j = i - 1; j > 0; j--) {
+                let jPath = path[j]
+
+                if (jPath.town) {
+                    newPath.push(jPath)
+                    // find the next map
+                    let k
+                    for (k = j - 1; k > 0; k--) {
+                        let kPath = path[k]
+                        if (kPath.map != jPath.map) {
+                            break
+                        }
+                    }
+                    i = k + 1
+                    canWalkTo = k > 0 ? k : -1
+                    break
+                }
+
+                if (iPath.map != jPath.map) break // can't walk across maps
+                if (can_move({
+                    map: iPath.map,
+                    x: iPath.x,
+                    y: iPath.y,
+                    going_x: jPath.x,
+                    going_y: jPath.y,
+                    base: parent.character.base
+                })) {
+                    canWalkTo = j
+                }
+            }
+            if (canWalkTo > 0) newPath.push(path[canWalkTo])
+        }
+
+        newPath = newPath.reverse()
+        console.log(`smooth path (${newPath.length})`)
+        console.log(newPath)
+
+        return newPath
+    }
+
     private smoothPath(path: SmartMoveNode[]): SmartMoveNode[] {
         console.log(`roughPath (${path.length})`)
         console.log(path)
@@ -135,7 +197,6 @@ export class AStarSmartMove {
             for (let j = i + 1; j < path.length; j++) {
                 let pathJ = path[j]
                 if (pathJ.map != pathI.map) break // can't smooth across maps
-                if (pathJ.town) break // can't smooth across town warps
 
                 if (can_move({
                     map: pathI.map,
@@ -153,6 +214,10 @@ export class AStarSmartMove {
         }
         console.log(`smooth path (${newPath.length})`)
         console.log(newPath)
+
+        // Remove the first move position if we're going to town
+        if (newPath[1].town) newPath.splice(0, 1)
+
         return newPath
     }
 
@@ -189,40 +254,32 @@ export class AStarSmartMove {
         this._astart_start = new Date()
 
         let movements: SmartMoveNode[] = []
+        let start = Date.now()
+        if(this.SHOW_MESSAGES) game_log("a* - start searching", this.MESSAGE_COLOR)
         let doors = this.findDoorPath(this.cleanPosition(parent.character), this.cleanPosition(destination))[1]
-
-        console.log("here is our door path")
-        console.log(doors)
-        console.log("----------")
 
         for (let i = 0; i < doors.length; i += 2) {
             const from = doors[i]
             const to = doors[i + 1]
+            const doorCacheKey = `${this.positionToString(from)}_${this.positionToString(to)}`
 
-            console.log(`starting search`)
-            console.log(`from: `)
-            console.log(from)
-            console.log(`to: `)
-            console.log(to)
-
-            let subMovements = await this.get_movements(from, to)
-
-            console.log("here are our submovements")
-            console.log(subMovements)
-            console.log("----------")
+            let subMovements;
+            if (this.doorCache.has(doorCacheKey)) {
+                subMovements = this.doorCache.get(doorCacheKey)
+            } else {
+                subMovements = await this.get_movements(from, to)
+                this.doorCache.set(doorCacheKey, subMovements)
+            }
 
             movements = movements.concat(subMovements)
         }
-
-        console.log("here are our movements")
-        console.log(movements)
-        console.log("----------")
+        if(this.SHOW_MESSAGES) game_log(`a* - finish searching (${((Date.now() - start) / 1000).toFixed(1)} s)`, this.MESSAGE_COLOR)
 
         let i = 0;
         let movementComplete = new Promise((resolve, reject) => {
             let movementLoop = (start: Date) => {
                 if (this.wasCancelled(start)) {
-                    reject("cancelled")
+                    reject("a* - cancelled moving")
                     return
                 }
 
@@ -230,7 +287,7 @@ export class AStarSmartMove {
 
                 if (distance(parent.character, movements[movements.length - 1]) < this.MOVE_TOLERANCE) {
                     // We're done!
-                    game_log("a* - done")
+                    if(this.SHOW_MESSAGES) game_log("a* - done moving", this.MESSAGE_COLOR)
                     this._astar_finished = new Date()
                     resolve()
                     return
@@ -242,32 +299,38 @@ export class AStarSmartMove {
                 } else if (nextMove.town) {
                     if (distance(parent.character, nextMove) < this.TOWN_TOLERANCE) {
                         i += 1 // we're here -- next
-                        setTimeout(() => { movementLoop(start) }, 10)
+                        movementLoop(start)
                         return
                     } else {
-                        game_log("a* - town")
                         use_skill("town")
                     }
-                    setTimeout(() => { movementLoop(start) }, 1000) // Town warps take a while
+                    setTimeout(() => { movementLoop(start) }, 900) // Town warps take a while
                     return
                 } else if (parent.character.map == nextMove.map && can_move_to(nextMove.x, nextMove.y)) {
                     if (distance(parent.character, nextMove) < this.MOVE_TOLERANCE) {
                         if (nextMove.transportMap) {
                             if (parent.character.map == nextMove.map) {
-                                game_log("a* - transport")
                                 transport(nextMove.transportMap, nextMove.transportS)
                                 i += 1 // we're here -- next
+                                setTimeout(() => { movementLoop(start) }, 100) // Transports take a bit
+                                return
                             }
                         } else {
                             i += 1 // we're here -- next
+                            movementLoop(start)
+                            return
                         }
                     } else {
-                        game_log(`a* - next movement (${nextMove.x}, ${nextMove.y})`)
                         move(nextMove.x, nextMove.y)
                     }
                 } else {
                     // Oh no! Something went wrong with our movement
-                    game_log("a* - oh no")
+                    if(this.SHOW_MESSAGES) game_log("a* - failed moving", this.MESSAGE_COLOR)
+                    if(this.MOVE_ON_FAIL) {
+                        let random_x = Math.random() * (1 - -1) + -1
+                        let random_y = Math.random() * (1 - -1) + -1
+                        move(parent.character.real_x + random_x, parent.character.real_y + random_y)
+                    }
                     this.reset()
                     reject()
                     return
@@ -275,7 +338,7 @@ export class AStarSmartMove {
                 setTimeout(() => { movementLoop(start) }, 40)
             }
 
-            game_log("a* - start")
+            if(this.SHOW_MESSAGES) game_log("a* - start moving", this.MESSAGE_COLOR)
             movementLoop(this._astart_start)
         })
 
@@ -313,7 +376,6 @@ export class AStarSmartMove {
         let neighborString = this.positionToString(neighbor)
         let tentative_gScore = gScore.get(cleanStartString) + this.TOWN_MOVEMENT_COST
         if (neighborString !== cleanStartString) {
-            console.log(`${neighborString} vs ${cleanStartString}`)
             if (!gScore.get(neighborString) /* No score yet */
                 || tentative_gScore < gScore.get(neighborString) /* This path is more efficient */) {
                 cameFrom.set(neighborString, cleanStart)
@@ -390,82 +452,16 @@ export class AStarSmartMove {
                 }
             }
 
-            // // Door Neighbors
-            // for (const door of G.maps[current.map].doors) {
-            //     if (can_use_door(current.map, door, current.x, current.y)) {
-            //         let doorPos: IPositionReal = {
-            //             map: door[4],
-            //             x: G.maps[door[4]].spawns[door[5] || 0][0],
-            //             y: G.maps[door[4]].spawns[door[5] || 0][1]
-            //         }
-            //         let neighbor: SmartMoveNode = this.cleanPosition(doorPos)
-            //         let neighborString = this.positionToString(neighbor)
-            //         neighbor.transport = true
-            //         neighbor.s = door[5]
-
-            //         let tentative_gScore = gScore.get(currentString) + this.DOOR_MOVEMENT_COST
-            //         if (!gScore.get(neighborString) /* No score yet */
-            //             || tentative_gScore < gScore.get(neighborString) /* This path is more efficient */) {
-            //             cameFrom.set(neighborString, current)
-            //             gScore.set(neighborString, tentative_gScore)
-            //             fScore.set(neighborString, tentative_gScore + this.heuristic(neighbor, cleanFinish))
-            //             if (!openSetNodes.has(neighborString)) {
-            //                 openSetNodes.add(neighborString)
-            //                 openSet.add(neighbor)
-            //             }
-            //         }
-            //     }
-            // }
-
-            // // NPC Teleport Neighbors
-            // for (const npc of G.maps[current.map].npcs) {
-            //     if (npc.id !== "transporter") continue // not a teleporter
-            //     let teleporterPos = { map: current.map, x: npc.position[0], y: npc.position[1] }
-            //     if (distance(current, teleporterPos) > 75) continue // out of range
-
-            //     for (const map in G.npcs.transporter.places) {
-            //         let s = G.npcs.transporter.places[map as MapName]
-            //         let p = G.maps[map as MapName].spawns[s]
-            //         let neighbor: SmartMoveNode = this.cleanPosition({
-            //             map: map as MapName,
-            //             x: p[0],
-            //             y: p[1]
-            //         })
-            //         let neighborString = this.positionToString(neighbor)
-            //         neighbor.transport = true
-            //         neighbor.s = s
-
-            //         let tentative_gScore = gScore.get(currentString) + this.NPC_MOVEMENT_COST
-            //         if (!gScore.get(neighborString) /* No score yet */
-            //             || tentative_gScore < gScore.get(neighborString) /* This path is more efficient */) {
-            //             cameFrom.set(neighborString, current)
-            //             gScore.set(neighborString, tentative_gScore)
-            //             fScore.set(neighborString, tentative_gScore + this.heuristic(neighbor, cleanFinish))
-            //             if (!openSetNodes.has(neighborString)) {
-            //                 openSetNodes.add(neighborString)
-            //                 openSet.add(neighbor)
-            //             }
-            //         }
-            //     }
-            // }
-
-            // // Town Teleport Neighbors
-            // if (cameFrom.get(currentString) == undefined) {
-
-            // }
 
             // Don't lock up the game
-            if (Date.now() - timer > 40) {
-                // game_log(`open: ${openSet.length}`)
-                // game_log(`best: ${openSet.peek().map}, ${Math.floor(openSet.peek().y)}, ${Math.floor(openSet.peek().x)}`)
-                //game_log(`heuristic: ${openSet.peek().priority}`)
+            if (Date.now() - timer > 80) {
                 await sleep(40)
                 timer = Date.now()
                 if (this.wasCancelled(startTime)) return Promise.reject("cancelled")
             }
         }
 
-        game_log("fail")
+        if(this.SHOW_MESSAGES) game_log("a* - failed searching", this.MESSAGE_COLOR)
         this.reset()
         return Promise.reject("Failed to find a path...")
     }

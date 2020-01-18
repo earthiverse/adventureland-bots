@@ -2,11 +2,11 @@ const Path = require('path');
 
 module.exports = {
   entry: {
-    // ranger: './source/ranger.ts',
+    ranger: './source/ranger.ts',
     merchant: './source/merchant.ts',
-    // warrior: './source/warrior.ts',
-    // mage: './source/mage.ts',
-    // priest: './source/priest.ts'
+    warrior: './source/warrior.ts',
+    mage: './source/mage.ts',
+    priest: './source/priest.ts'
   },
   module: {
     rules: [{

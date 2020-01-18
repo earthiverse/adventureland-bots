@@ -39,6 +39,8 @@ class Merchant extends Character {
     }
 
     public getMovementTarget(): { message: string, target: IPositionReal } {
+        let vendorPlace: IPositionReal = { map: "main", "x": 60, "y": -325 }
+
         // Check for full inventory
         let full = true;
         for (let i = 0; i < 42; i++) {
@@ -47,9 +49,9 @@ class Merchant extends Character {
             break;
         }
         if (full) {
-            if (parent.character.map == "bank") {
-                // Already at the bank
-                return { message: "Full!", target: null }
+            if (parent.character.map == "bank" || parent.character.q && (parent.character.q.compound || parent.character.q.exchange || parent.character.q.upgrade)) {
+                // Dealing with the fullness already
+                return { message: "Full!", target: vendorPlace }
             } else {
                 // Move to the bank
                 return { message: "Full!", target: { "map": "bank", "x": 0, "y": -400 } }
@@ -141,7 +143,7 @@ class Merchant extends Character {
         // } else if (this.info.npcs.Angel) {
         //     return { message: "Vendor", target: this.info.npcs.Angel }
         // } else {
-            return { message: "Vendor", target: { map: "main", "x": 60, "y": -325 } }
+        return { message: "Vendor", target: vendorPlace }
         // }
     }
 
@@ -153,13 +155,13 @@ class Merchant extends Character {
             for (let i = 0; i < 42; i++) if (parent.character.items[i]) numItems++
 
             if (numItems < 25)
-                exchangeItems();
+                exchangeItems(this.itemsToExchange);
 
             await this.bankStuff();
 
-            if (!smart.moving && (distance(parent.character, { map: "main", "x": 60, "y": -325 }) < 100
-                || (this.info.npcs.Angel && distance(parent.character, this.info.npcs.Angel) < 100))
-                || (this.info.npcs.Kane && distance(parent.character, this.info.npcs.Kane) < 100)) {
+            if (!(smart.moving || this.pathfinder.astar.isMoving()) && (distance(parent.character, { map: "main", "x": 60, "y": -325 }) < 100
+                || (this.info.npcs.Angel && distance(parent.character, this.info.npcs.Angel) < 100)
+                || (this.info.npcs.Kane && distance(parent.character, this.info.npcs.Kane) < 100))) {
                 openMerchantStand()
             } else {
                 closeMerchantStand()
@@ -271,9 +273,6 @@ class Merchant extends Character {
                 if (G.items[item.name].s) continue; // Don't add stackable items
                 if (G.items[item.name].upgrade && item.level >= 8) continue; // Don't withdraw high level items
                 if (G.items[item.name].compound && item.level >= 4) continue; // Don't withdraw high level items
-                // if (item_grade(item) >= 2) continue; // Don't withdraw high level items
-
-                if (["goldenegg", "luckbooster", "goldbooster", "xpbooster"].includes(item.name)) continue
 
                 items.push([item.name, item.level, pack, item.index])
             }

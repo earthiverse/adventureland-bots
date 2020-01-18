@@ -76,6 +76,11 @@ class Ranger extends Character {
         "croc": {
             "priority": EASY
         },
+        "dragold": {
+            "coop": ["priest"],
+            "priority": SPECIAL,
+            "holdAttackWhileMoving": true,
+        },
         "ghost": {
             "holdAttackWhileMoving": true,
             "stopOnSight": true,

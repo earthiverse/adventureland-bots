@@ -30,6 +30,10 @@ export type EmptyBankSlots = {
     index: number
 }
 
+export type PriorityEntity = IEntity & {
+    priority: number
+}
+
 export type OtherInfo = {
     party: {
         [T in string]?: IPositionReal & {

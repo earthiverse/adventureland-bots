@@ -42,7 +42,7 @@ export function closeMerchantStand() {
         parent.close_merchant()
 }
 
-export function buyFromPonty(itemNames: ItemName[]) {
+export function buyFromPonty(itemNames: Set<ItemName>) {
     let foundPonty = false;
     for (let npc of parent.npcs) {
         if (npc.id == "secondhands" && distance(parent.character, {
@@ -59,7 +59,7 @@ export function buyFromPonty(itemNames: ItemName[]) {
     let items_bought = 0;
     parent.socket.once("secondhands", (data: any) => {
         for (let i = 0; i < data.length; i++) {
-            if (itemNames.includes(data[i].name)) {
+            if (itemNames.has(data[i].name)) {
                 parent.socket.emit("sbuy", { "rid": data[i].rid });
                 items_bought++;
                 if (items_bought >= 5) break; // Only buy a few items at a time to prevent maxing out server calls.
@@ -130,7 +130,8 @@ export function dismantleItems() {
     }
 }
 
-export function exchangeItems() {
+// TODO: Implement to only exchange items in our whitelist
+export function exchangeItems(itemsToExchange: Set<ItemName>) {
     if (parent.character.q.exchange) return // Already exchanging something
     if (parent.character.map == "bank") return // We can't do things in the bank
 
