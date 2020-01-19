@@ -159,9 +159,7 @@ class Merchant extends Character {
 
             await this.bankStuff();
 
-            if (!(smart.moving || this.pathfinder.astar.isMoving()) && (distance(parent.character, { map: "main", "x": 60, "y": -325 }) < 100
-                || (this.info.npcs.Angel && distance(parent.character, this.info.npcs.Angel) < 100)
-                || (this.info.npcs.Kane && distance(parent.character, this.info.npcs.Kane) < 100))) {
+            if (!parent.character.moving) {
                 openMerchantStand()
             } else {
                 closeMerchantStand()

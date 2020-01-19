@@ -45,7 +45,7 @@ declare global {
   function can_use_door(f: MapName, door: any, current_x: number, current_y: number)
   function can_walk(entity: IEntity): boolean
   function change_server(region: ServerRegion, identifier: ServerIdentifier)
-  function change_target(target: IEntity)
+  function change_target(target: IEntity, public: boolean)
   /** Clears all user made drawings */
   function clear_drawings()
   function compound(itemInventoryPosition1: number, itemInventoryPosition2: number, itemInventoryPosition3: number, scrollInventoryPosition: number, offeringInventoryPosition?: number): Promise<any>

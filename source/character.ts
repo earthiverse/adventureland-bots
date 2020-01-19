@@ -72,13 +72,13 @@ export abstract class Character {
         // Armor
         "cdragon", "mrnarmor", "mwarmor", "xarmor",
         // Helmets
-        "fury", "mrnhat", "mwhelmet", "partyhat", "xhelmet",
+        "fury", "mrnhat", "mwhelmet", "partyhat", "rednose", "xhelmet",
         // Gloves
-        "goldenpowerglove", "handofmidas", "mrngloves", "mwgloves", "poker", "powerglove", "wgloves" /* 'earthiverse' has level 9 normal gloves, would like to upgrade */, "xgloves",
+        "goldenpowerglove", "handofmidas", "mrngloves", "mwgloves", "poker", "powerglove", "xgloves",
         // Good weapons
         "basher", "bowofthedead", "candycanesword", "cupid", "dartgun", "gbow", "harbringer", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow",
         // Things we can exchange / craft with
-        "bfur", "cscale", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", "networkcard", "platinumingot", "platinumnugget", "pleather",
+        "ascale", "bfur", "cscale", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", "networkcard", "platinumingot", "platinumnugget", "pleather", "snakefang",
         // Boosters
         "goldbooster", "luckbooster", "xpbooster",
         // Potions & consumables
@@ -991,7 +991,7 @@ export abstract class Character {
             targets.push(potentialTargets.poll())
         }
         if (targets.length > 0)
-            change_target(targets[0])
+            change_target(targets[0], true)
         return targets;
     }
 }
