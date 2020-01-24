@@ -226,17 +226,16 @@ export class AStarSmartMove {
         // NOTE: At this point, the path is reversed. We're working backwards, and we will reverse it in to the correct order after this loop
         for (let i = 0; i < path.length - 1; i++) {
             let iPath = path[i]
+            
+            if(iPath.town) {
+                // The warp is the first move we do, so we don't need to do anything before this
+                newPath.push(iPath)
+                break
+            }
 
             let canWalkTo = i + 1
             for (let j = i + 1; j < path.length; j++) {
                 let jPath = path[j]
-
-                if(jPath.town) {
-                    // The warp is the first move we do, so we don't need to do anything before this
-                    canWalkTo = j
-                    i = path.length
-                    break
-                }
 
                 if (can_move({
                     map: iPath.map,
