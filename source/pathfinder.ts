@@ -5,21 +5,16 @@ export class Pathfinder {
     public movementTarget: MonsterType;
     public astar = new AStarSmartMove()
 
-    public saferMove(to: IPosition) {
-        if (smart.moving || this.astar.isMoving()) return; // Already moving somewhere
-        if (distance(parent.character, to) < 10) return; // Already nearby
-        if (!to.map) to.map = parent.character.map
+    public saferMove(to: IPositionReal) {
+        if (smart.moving || this.astar.isMoving()) return // Already moving somewhere
+        if (distance(parent.character, to) < 10) return // Already nearby
 
         // Check if we can just walk in a straight line to reach the spot
-        if (parent.character.map == to.map && can_move_to(to.x, to.y)) {
-            move(to.x, to.y)
+        if (parent.character.map == to.map && to.real_x && to.real_y && can_move_to(to.real_x, to.real_y)) {
+            move(to.real_x, to.real_y)
             return
         }
 
-        this.astar.astar_smart_move({
-            map: to.map,
-            x: to.x,
-            y: to.y
-        })
+        this.astar.astar_smart_move(to as IPositionReal)
     }
 }

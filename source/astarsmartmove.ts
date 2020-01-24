@@ -59,8 +59,8 @@ export class AStarSmartMove {
     private cleanPosition(position: SmartMoveNode): SmartMoveNode {
         let clean = {
             map: position.map,
-            x: Math.trunc((position.real_x !== undefined ? position.real_x : position.x)),
-            y: Math.trunc((position.real_y !== undefined ? position.real_y : position.y)),
+            x: (position.real_x !== undefined ? position.real_x : position.x),
+            y: (position.real_y !== undefined ? position.real_y : position.y),
             transportS: position.transportS,
             transportMap: position.transportMap,
             transportType: position.transportType,
@@ -87,76 +87,76 @@ export class AStarSmartMove {
         }
     }
 
-    public findDoorPath2(position: IPositionReal, destination: IPositionReal, visitedNodes: Set<SmartMoveNode> = new Set<SmartMoveNode>(), visitedDoors: Set<string> = new Set<string>()): [number, SmartMoveNode[]] {
-        // Add our current position to the visited nodes
-        visitedNodes.add(position)
+    // public findDoorPath2(position: IPositionReal, destination: IPositionReal, visitedNodes: Set<SmartMoveNode> = new Set<SmartMoveNode>(), visitedDoors: Set<string> = new Set<string>()): [number, SmartMoveNode[]] {
+    //     // Add our current position to the visited nodes
+    //     visitedNodes.add(position)
 
-        // Exit case -- when we find the map we're supposed to be on
-        if (position.map == destination.map) {
-            let d = distance(position, destination)
-            let path: IPositionReal[] = []
-            for (const door of visitedNodes) {
-                path.push(door)
-            }
-            path.push(destination)
-            return [d, path]
-        }
+    //     // Exit case -- when we find the map we're supposed to be on
+    //     if (position.map == destination.map) {
+    //         let d = distance(position, destination)
+    //         let path: IPositionReal[] = []
+    //         for (const door of visitedNodes) {
+    //             path.push(door)
+    //         }
+    //         path.push(destination)
+    //         return [d, path]
+    //     }
 
-        // Traverse Doors
-        // Physical doors
-        let doors = [...G.maps[position.map].doors]
-        // Transporter doors
-        for (const npc of G.maps[position.map].npcs) {
-            if (npc.id !== "transporter") continue // not a teleporter
+    //     // Traverse Doors
+    //     // Physical doors
+    //     let doors = [...G.maps[position.map].doors]
+    //     // Transporter doors
+    //     for (const npc of G.maps[position.map].npcs) {
+    //         if (npc.id !== "transporter") continue // not a teleporter
 
-            for (const map in G.npcs.transporter.places) {
-                doors.push([npc.position[0], npc.position[1], -1, -1, map as MapName, G.npcs.transporter.places[map as MapName]])
-            }
-            break
-        }
+    //         for (const map in G.npcs.transporter.places) {
+    //             doors.push([npc.position[0], npc.position[1], -1, -1, map as MapName, G.npcs.transporter.places[map as MapName]])
+    //         }
+    //         break
+    //     }
 
-        let currentBestDistance: number = Number.MAX_VALUE
-        let currentBestPath: IPositionReal[]
-        for (const door of doors) {
-            let doorExitMap = door[4]
+    //     let currentBestDistance: number = Number.MAX_VALUE
+    //     let currentBestPath: IPositionReal[]
+    //     for (const door of doors) {
+    //         let doorExitMap = door[4]
 
-            let doorEntrance: SmartMoveNode = { map: position.map, x: door[0], y: door[1], transportS: door[5], transportMap: doorExitMap, transportType: door[3] == -1 ? "teleport" : "door" }
-            let doorExit: SmartMoveNode = { map: doorExitMap, x: G.maps[doorExitMap].spawns[door[5]][0], y: G.maps[doorExitMap].spawns[door[5]][1] }
-            let doorExitString = this.positionToString(doorExit)
-            if (visitedDoors.has(doorExitString)) continue // don't revisit maps we've already visited
+    //         let doorEntrance: SmartMoveNode = { map: position.map, x: door[0], y: door[1], transportS: door[5], transportMap: doorExitMap, transportType: door[3] == -1 ? "teleport" : "door" }
+    //         let doorExit: SmartMoveNode = { map: doorExitMap, x: G.maps[doorExitMap].spawns[door[5]][0], y: G.maps[doorExitMap].spawns[door[5]][1] }
+    //         let doorExitString = this.positionToString(doorExit)
+    //         if (visitedDoors.has(doorExitString)) continue // don't revisit maps we've already visited
 
-            let newVisitedMaps = new Set(visitedDoors)
-            newVisitedMaps.add(doorExitString)
+    //         let newVisitedMaps = new Set(visitedDoors)
+    //         newVisitedMaps.add(doorExitString)
 
-            let newVisitedNodes = new Set(visitedNodes)
-            newVisitedNodes.add(doorEntrance)
+    //         let newVisitedNodes = new Set(visitedNodes)
+    //         newVisitedNodes.add(doorEntrance)
 
-            let doorEntranceString = this.positionToString(doorEntrance)
-            const doorCacheKey = `${doorEntranceString}_${doorExitString}`
+    //         let doorEntranceString = this.positionToString(doorEntrance)
+    //         const doorCacheKey = `${doorEntranceString}_${doorExitString}`
 
-            let d
-            if (this.doorCache.has(doorCacheKey)) { // use the actual distance instead of the heuristic
-                let path = this.doorCache.get(doorCacheKey)
-                let lastMovement = path[0]
-                d = 0
-                for (let i = 1; i < path.length; i++) {
-                    let pathI = path[i]
-                    d += distance(lastMovement, pathI)
-                    lastMovement = pathI
-                }
-            } else {
-                d = distance(position, doorEntrance)
-            }
-            if (currentBestDistance < d) continue // We have a better path
-            let [d2, path] = this.findDoorPath(doorExit, destination, newVisitedNodes, newVisitedMaps)
-            if (currentBestDistance > d2 + d) {
-                currentBestDistance = d2 + d
-                currentBestPath = path
-            }
-        }
+    //         let d
+    //         if (this.doorCache.has(doorCacheKey)) { // use the actual distance instead of the heuristic
+    //             let path = this.doorCache.get(doorCacheKey)
+    //             let lastMovement = path[0]
+    //             d = 0
+    //             for (let i = 1; i < path.length; i++) {
+    //                 let pathI = path[i]
+    //                 d += distance(lastMovement, pathI)
+    //                 lastMovement = pathI
+    //             }
+    //         } else {
+    //             d = distance(position, doorEntrance)
+    //         }
+    //         if (currentBestDistance < d) continue // We have a better path
+    //         let [d2, path] = this.findDoorPath(doorExit, destination, newVisitedNodes, newVisitedMaps)
+    //         if (currentBestDistance > d2 + d) {
+    //             currentBestDistance = d2 + d
+    //             currentBestPath = path
+    //         }
+    //     }
 
-        return [currentBestDistance, currentBestPath]
-    }
+    //     return [currentBestDistance, currentBestPath]
+    // }
 
     public findDoorPath(position: IPositionReal, destination: IPositionReal, visitedNodes: Set<SmartMoveNode> = new Set<SmartMoveNode>(), visitedMaps: Set<string> = new Set<string>()): [number, SmartMoveNode[]] {
         // Add our current position to the visited nodes
@@ -222,40 +222,32 @@ export class AStarSmartMove {
         console.log(path)
 
         let newPath: SmartMoveNode[] = []
-        let currentMap = path[path.length - 1].map
-        newPath.push(path[path.length - 1])
-        for (let i = path.length - 1; i > 0; i--) {
+        newPath.push(path[0])
+        // NOTE: At this point, the path is reversed. We're working backwards, and we will reverse it in to the correct order after this loop
+        for (let i = 0; i < path.length - 1; i++) {
             let iPath = path[i]
 
-            let canWalkTo = i - 1
-            for (let j = i - 1; j > 0; j--) {
+            let canWalkTo = i + 1
+            for (let j = i + 1; j < path.length; j++) {
                 let jPath = path[j]
 
-                if (jPath.town) {
-                    newPath.push(jPath)
-                    // find the next map
-                    let k
-                    for (k = j - 1; k > 0; k--) {
-                        let kPath = path[k]
-                        if (kPath.map != jPath.map) {
-                            break
-                        }
-                    }
-                    i = k + 1
-                    canWalkTo = k > 0 ? k : -1
+                if(jPath.town) {
+                    // The warp is the first move we do, so we don't need to do anything before this
+                    canWalkTo = j
+                    i = path.length
                     break
                 }
 
-                if (iPath.map != jPath.map) break // can't walk across maps
                 if (can_move({
                     map: iPath.map,
-                    x: iPath.x,
-                    y: iPath.y,
-                    going_x: jPath.x,
-                    going_y: jPath.y,
+                    x: jPath.x,
+                    y: jPath.y,
+                    going_x: iPath.x,
+                    going_y: iPath.y,
                     base: parent.character.base
                 })) {
                     canWalkTo = j
+                    i = j - 1
                 }
             }
             if (canWalkTo > 0) newPath.push(path[canWalkTo])
@@ -268,41 +260,41 @@ export class AStarSmartMove {
         return newPath
     }
 
-    private smoothPath(path: SmartMoveNode[]): SmartMoveNode[] {
-        console.log(`roughPath (${path.length})`)
-        console.log(path)
-        let newPath: SmartMoveNode[] = []
-        newPath.push(path[0])
-        for (let i = 0; i < path.length - 1; i++) {
-            let pathI = path[i]
+    // private smoothPath(path: SmartMoveNode[]): SmartMoveNode[] {
+    //     console.log(`roughPath (${path.length})`)
+    //     console.log(path)
+    //     let newPath: SmartMoveNode[] = []
+    //     newPath.push(path[0])
+    //     for (let i = 0; i < path.length - 1; i++) {
+    //         let pathI = path[i]
 
-            let canWalkTo = i + 1
-            for (let j = i + 1; j < path.length; j++) {
-                let pathJ = path[j]
-                if (pathJ.map != pathI.map) break // can't smooth across maps
+    //         let canWalkTo = i + 1
+    //         for (let j = i + 1; j < path.length; j++) {
+    //             let pathJ = path[j]
+    //             if (pathJ.map != pathI.map) break // can't smooth across maps
 
-                if (can_move({
-                    map: pathI.map,
-                    x: pathI.x,
-                    y: pathI.y,
-                    going_x: pathJ.x,
-                    going_y: pathJ.y,
-                    base: parent.character.base
-                })) {
-                    canWalkTo = j
-                }
-            }
-            newPath.push(path[canWalkTo])
-            i = canWalkTo - 1
-        }
-        console.log(`smooth path (${newPath.length})`)
-        console.log(newPath)
+    //             if (can_move({
+    //                 map: pathI.map,
+    //                 x: pathI.x,
+    //                 y: pathI.y,
+    //                 going_x: pathJ.x,
+    //                 going_y: pathJ.y,
+    //                 base: parent.character.base
+    //             })) {
+    //                 canWalkTo = j
+    //             }
+    //         }
+    //         newPath.push(path[canWalkTo])
+    //         i = canWalkTo - 1
+    //     }
+    //     console.log(`smooth path (${newPath.length})`)
+    //     console.log(newPath)
 
-        // Remove the first move position if we're going to town
-        if (newPath[1].town) newPath.splice(0, 1)
+    //     // Remove the first move position if we're going to town
+    //     if (newPath[1].town) newPath.splice(0, 1)
 
-        return newPath
-    }
+    //     return newPath
+    // }
 
     private reconstructPath(current: SmartMoveNode, finish: SmartMoveNode, cameFrom: FromMap): SmartMoveNode[] {
         let path: SmartMoveNode[] = []
@@ -329,7 +321,7 @@ export class AStarSmartMove {
             })
             current = cameFrom.get(this.positionToString(current))
         }
-        return this.smoothPath(path.reverse())
+        return this.smoothPath2(path)
     }
 
     public async astar_smart_move(destination: IPositionReal) {
@@ -351,7 +343,13 @@ export class AStarSmartMove {
                 subMovements = this.doorCache.get(doorCacheKey)
             } else {
                 subMovements = await this.get_movements(from, to)
-                this.doorCache.set(doorCacheKey, subMovements)
+
+                // Cache all the submovements
+                for(let i = 0; i < subMovements.length; i++) {
+                    let cachePath2 = [...subMovements].splice(i, subMovements.length - i)
+                    let cacheKey2 = `${this.positionToString(cachePath2[0])}_${this.positionToString(to)}`
+                    this.doorCache.set(cacheKey2, cachePath2)
+                }
             }
 
             movements = movements.concat(subMovements)
@@ -379,7 +377,7 @@ export class AStarSmartMove {
                 if (parent.character.moving || is_transporting(parent.character) || !can_walk(parent.character)) {
                     // We are moving, we need to be patient.
                     // TODO: Cooldown based on how much time it will take to walk there
-                } else if (nextMove.town) {
+                } else if (nextMove.map == parent.character.map && nextMove.town) {
                     if (distance(parent.character, nextMove) < this.TOWN_TOLERANCE) {
                         i += 1 // we're here -- next
                         movementLoop(start)
@@ -507,8 +505,8 @@ export class AStarSmartMove {
                 for (const subMovement of subMovements) {
                     let neighbor: SmartMoveNode = this.cleanPosition({
                         map: current.map,
-                        x: current.x + subMovement[0],
-                        y: current.y + subMovement[1]
+                        x: Math.trunc(current.x + subMovement[0]),
+                        y: Math.trunc(current.y + subMovement[1])
                     })
                     let neighborString = this.positionToString(neighbor)
 
@@ -537,8 +535,8 @@ export class AStarSmartMove {
 
 
             // Don't lock up the game
-            if (Date.now() - timer > 80) {
-                await sleep(40)
+            if (Date.now() - timer > 40) {
+                await sleep(1)
                 timer = Date.now()
                 if (this.wasCancelled(startTime)) return Promise.reject("cancelled")
             }
