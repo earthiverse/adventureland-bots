@@ -20,7 +20,6 @@ class Mage extends Character {
         },
         "bat": {
             "priority": EASY,
-            "stopOnSight": true,
             "farmingPosition": {
                 "map": "cave",
                 "x": 1250,
@@ -226,6 +225,7 @@ class Mage extends Character {
             "priority": DIFFICULT
         },
         "tortoise": {
+            "stopOnSight": true,
             "priority": EASY
         },
         "xscorpion": {

@@ -821,6 +821,7 @@ export type ItemName =
   | "feather0"
   | "figurine"
   | "fireblade"
+  | "firebow"
   | "firecrackers"
   | "firestaff"
   | "flute"

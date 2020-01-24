@@ -13,6 +13,9 @@ export class Pathfinder {
         if (parent.character.map == to.map && to.real_x && to.real_y && can_move_to(to.real_x, to.real_y)) {
             move(to.real_x, to.real_y)
             return
+        } else if (parent.character.map == to.map && to.real_x == undefined && to.real_y == undefined && can_move_to(to.x, to.y)) {
+            move(to.x, to.y)
+            return
         }
 
         this.astar.astar_smart_move(to as IPositionReal)

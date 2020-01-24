@@ -223,6 +223,7 @@ class Ranger extends Character {
             "priority": DIFFICULT
         },
         "tortoise": {
+            "stopOnSight": true,
             "priority": EASY
         },
         "wolfie": {

@@ -147,6 +147,7 @@ class Warrior extends Character {
         //     "priority": EASY
         // },
         "tortoise": {
+            "stopOnSight": true,
             "priority": EASY
         },
         "wolfie": {

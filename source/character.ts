@@ -78,7 +78,7 @@ export abstract class Character {
         // Gloves
         "goldenpowerglove", "handofmidas", "mrngloves", "mwgloves", "poker", "powerglove", "xgloves",
         // Good weapons
-        "basher", "bowofthedead", "candycanesword", "cupid", "dartgun", "gbow", "harbringer", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow",
+        "basher", "bowofthedead", "candycanesword", "cupid", "dartgun", "firebow", "gbow", "harbringer", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow",
         // Things we can exchange / craft with
         "ascale", "bfur", "cscale", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", "networkcard", "platinumingot", "platinumnugget", "pleather", "snakefang",
         // Things to make xbox
@@ -717,10 +717,10 @@ export abstract class Character {
         // Check for golden bat
         for (const id in parent.entities) {
             let entity = parent.entities[id]
-            if (entity.mtype == "goldenbat") {
-                this.pathfinder.movementTarget = "goldenbat"
+            if (entity.mtype == "goldenbat" || entity.mtype == "phoenix") {
+                this.pathfinder.movementTarget = entity.mtype
                 // NOTE: We automatically pathfind on our own with moveToMonster()
-                return { message: "goldenbat", target: null }
+                return { message: entity.mtype, target: null }
             }
         }
 
@@ -862,11 +862,17 @@ export abstract class Character {
             }
 
             let enemies = this.getTargets(1)
-            if (this.targets[potentialTarget].farmingPosition) {
+            if (this.targets[potentialTarget].farmingPosition && this.targets[potentialTarget].holdPositionFarm) {
+                // We want to hold position at a certain location
                 return { message: "MH " + potentialTarget, target: this.targets[potentialTarget].farmingPosition }
             } else if (enemies.length && enemies[0].mtype == potentialTarget) {
+                // We have an enemy in our sights
                 return { message: "MH " + potentialTarget, target: null }
+            } else if (this.targets[potentialTarget].farmingPosition) {
+                // We don't have an enemy, but we have a farming position we'd like to go to
+                return { message: "MH " + potentialTarget, target: this.targets[potentialTarget].farmingPosition }
             } else {
+                // We don't have a farming position, go to any random spawn
                 return { message: "MH " + potentialTarget, target: getRandomMonsterSpawn(potentialTarget) }
             }
         }
