@@ -45,6 +45,8 @@ export abstract class Character {
         "candy0", "candy1",
         // Chinese New Year's
         "redenvelopev3",
+        // Easter
+        "basketofeggs",
         // Boxes
         "armorbox", "weaponbox", "xbox"
     ])
@@ -62,23 +64,29 @@ export abstract class Character {
         // Orbs
         "jacko", "talkingskull",
         // Shields
-        "t2quiver", "mshield", "xshield",
+        "t2quiver", "mshield", "quiver" /* I'd like a +10 quiver if possible */, "xshield",
         // Capes
         "angelwings", "bcape", "cape", "ecape", "stealthcape",
         // Shoes
-        "mrnboots", "mwboots", "xboots",
+        "eslippers", "mrnboots", "mwboots", "xboots",
         // Pants
         "mrnpants", "mwpants", "starkillers", "xpants",
         // Armor
         "cdragon", "mrnarmor", "mwarmor", "xarmor",
         // Helmets
-        "fury", "mrnhat", "mwhelmet", "partyhat", "rednose", "xhelmet",
+        "eears", "fury", "mrnhat", "mwhelmet", "partyhat", "rednose", "xhelmet",
         // Gloves
         "goldenpowerglove", "handofmidas", "mrngloves", "mwgloves", "poker", "powerglove", "xgloves",
         // Good weapons
         "basher", "bowofthedead", "candycanesword", "cupid", "dartgun", "gbow", "harbringer", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow",
         // Things we can exchange / craft with
         "ascale", "bfur", "cscale", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", "networkcard", "platinumingot", "platinumnugget", "pleather", "snakefang",
+        // Things to make xbox
+        "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8",
+        // Things to make easter basket
+        "egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8",
+        // Essences
+        "essenceofether", "essenceoffire", "essenceoffrost", "essenceoflife", "essenceofnature",
         // Boosters
         "goldbooster", "luckbooster", "xpbooster",
         // Potions & consumables
@@ -258,6 +266,7 @@ export abstract class Character {
         // Doable event monster
         for (const monster in parent.S) {
             if (monster == "grinch") continue // The grinch is too strong.
+            if (parent.S[monster as MonsterType].hp / parent.S[monster as MonsterType].max_hp > 0.9) continue // Still at a high HP
             if (!parent.S[monster as MonsterType].live) continue
             if (this.targets[monster as MonsterType]) return false // We can do an event monster!
         }
@@ -393,7 +402,7 @@ export abstract class Character {
                 }
 
                 this.last = movementTarget
-                
+
                 if (movementTarget.target) {
                     // game_log("pathfinder -- smart")
                     this.pathfinder.saferMove(movementTarget.target)
@@ -526,8 +535,10 @@ export abstract class Character {
         let y = Math.sin(angle) * d
         escapePosition = { x: parent.character.real_x + x, y: parent.character.real_y + y };
 
-        if (can_move_to(escapePosition.x, escapePosition.y))
+        if (can_move_to(escapePosition.x, escapePosition.y)) {
+            // game_log("moving -- avoidStacking")
             move(escapePosition.x, escapePosition.y)
+        }
     }
 
     protected avoidAggroMonsters(): void {
@@ -559,8 +570,10 @@ export abstract class Character {
         let y = Math.sin(angle) * moveDistance
         escapePosition = { x: parent.character.real_x + x, y: parent.character.real_y + y };
 
-        if (can_move_to(escapePosition.x, escapePosition.y))
+        if (can_move_to(escapePosition.x, escapePosition.y)) {
+            // game_log("moving -- avoidaggro")
             move(escapePosition.x, escapePosition.y)
+        }
     }
 
     // TODO: If we are being attacked by 2 different monsters, one with long range, one with short range,
@@ -612,8 +625,8 @@ export abstract class Character {
             escapePosition = calculateEscape(angle + (angleChange * Math.PI / 180), moveDistance)
         }
 
-        // game_log("avoidAttackingMonsters -- smart")
-        this.pathfinder.saferMove(escapePosition)
+        // game_log("moving -- avoid attacking")
+        move(escapePosition.x, escapePosition.y)
     }
 
     public moveToMonster(): void {
@@ -824,8 +837,8 @@ export abstract class Character {
             if (this.targets[potentialTarget].coop) {
                 let have_party_members = true
                 for (let type of this.targets[potentialTarget].coop) {
-                    if(type == parent.character.ctype) continue // it's us!
-                    
+                    if (type == parent.character.ctype) continue // it's us!
+
                     let found = false
                     for (let member of parent.party_list) {
                         if (type == parent.party[member].type && this.info.party[member].monsterHuntTarget == potentialTarget) {

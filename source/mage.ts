@@ -85,11 +85,6 @@ class Mage extends Character {
         "croc": {
             "priority": EASY
         },
-        "dragold": {
-            "coop": ["priest"],
-            "priority": SPECIAL,
-            "holdAttackWhileMoving": true,
-        },
         "frog": {
             "priority": EASY
         },

@@ -97,10 +97,12 @@ class Priest extends Character {
         "croc": {
             "priority": EASY
         },
-        "dragold": {
-            "priority": SPECIAL,
-            "holdAttackWhileMoving": true,
-        },
+        // "dragold": {
+        //     "coop": ["warrior"],
+        //     "priority": SPECIAL,
+        //     "holdAttackWhileMoving": true,
+        //     "stopOnSight": true,
+        // },
         "frog": {
             "priority": EASY
         },
@@ -299,8 +301,21 @@ class Priest extends Character {
                 if (parent.entities[member]) {
                     if (distance(parent.character, parent.entities[member]) < parent.character.range
                         && !parent.entities[member].rip
-                        && parent.entities[member].hp <= parent.entities[member].max_hp - parent.character.attack * 0.9) {
+                        && parent.entities[member].hp < parent.entities[member].max_hp) {
                         await heal(parent.entities[member])
+                        setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+                        return
+                    }
+                }
+            }
+
+            // Heal our target's target. (The player the monster we want to attack is attacking)
+            let target = this.getTargets(1)
+            if (target.length && target[0].target) {
+                if (parent.entities[target[0].target]) {
+                    let targetTarget = parent.entities[target[0].target]
+                    if (targetTarget.hp < targetTarget.max_hp && distance(parent.character, targetTarget) < parent.character.range) {
+                        await heal(targetTarget)
                         setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
                         return
                     }

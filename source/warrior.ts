@@ -55,11 +55,12 @@ class Warrior extends Character {
         "croc": {
             "priority": EASY
         },
-        "dragold": {
-            "coop": ["priest"],
-            "priority": SPECIAL,
-            "holdAttackWhileMoving": true,
-        },
+        // "dragold": {
+        //     "coop": ["priest"],
+        //     "priority": SPECIAL,
+        //     "holdAttackWhileMoving": true,
+        //     "stopOnSight": true,
+        // },
         "goldenbat": {
             "priority": SPECIAL,
             "stopOnSight": true
@@ -107,7 +108,7 @@ class Warrior extends Character {
             "farmingPosition": {
                 "map": "spookytown",
                 "x": 255,
-                "y": -1080
+                "y": -1090
             }
         },
         // "osnake": {
@@ -172,6 +173,7 @@ class Warrior extends Character {
 
     run(): void {
         super.run()
+        this.agitateLoop()
         this.chargeLoop()
         this.hardshellLoop()
         this.stompLoop()
@@ -190,6 +192,40 @@ class Warrior extends Character {
             console.error(error)
             setTimeout(() => { this.mainLoop(); }, 250);
         }
+    }
+
+    agitateLoop(): void {
+        if (isAvailable("agitate")) {
+            let inAgitateCount = 0
+            for (let id in parent.entities) {
+                let e = parent.entities[id]
+                if(e.type != "monster") continue
+
+                let d = distance(parent.character, e)
+                if (e.target == parent.character.id) {
+                    // Something is already targeting us
+                    inAgitateCount = 0
+                    break
+                }
+                if (d <= G.skills["agitate"].range) {
+                    if (!wantToAttack(this, e)) {
+                        // There's something we don't want to attack in agitate range, so don't use it.
+                        inAgitateCount = 0
+                        break
+                    }
+                    if (d <= parent.character.range) {
+                        // There's something in attacking range already, we don't need to agitate to attack stuff
+                        inAgitateCount = 0
+                        break
+                    }
+                    inAgitateCount += 1
+                }
+            }
+            if (inAgitateCount == 1 || inAgitateCount == 2) {
+                use_skill("agitate")
+            }
+        }
+        setTimeout(() => { this.agitateLoop() }, getCooldownMS("agitate"));
     }
 
     warcryLoop(): void {
