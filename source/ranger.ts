@@ -1,16 +1,16 @@
-import { Character } from './character'
-import { MonsterType, IEntity } from './definitions/adventureland';
-import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from './trade';
-import { TargetPriorityList } from './definitions/bots';
-import { isPlayer, getCooldownMS, isAvailable, wantToAttack, calculateDamageRange, sleep } from './functions';
+import { Character } from "./character"
+import { MonsterType, Entity } from "./definitions/adventureland"
+import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from "./trade"
+import { TargetPriorityList } from "./definitions/bots"
+import { isPlayer, getCooldownMS, isAvailable, calculateDamageRange, sleep } from "./functions"
 
-let DIFFICULT = 10;
-let MEDIUM = 20;
-let EASY = 30;
-let SPECIAL = 500;
+const DIFFICULT = 10
+const MEDIUM = 20
+const EASY = 30
+const SPECIAL = 500
 
 class Ranger extends Character {
-    targets: TargetPriorityList = {
+    targetPriority: TargetPriorityList = {
         "arcticbee": {
             "priority": EASY
         },
@@ -246,26 +246,26 @@ class Ranger extends Character {
         }
     }
     mainTarget: MonsterType = "scorpion";
-    start_time = Date.now();
+    startTime = Date.now();
 
     run(): void {
-        super.run();
-        this.superShotLoop();
-        this.huntersmarkLoop();
+        super.run()
+        this.superShotLoop()
+        this.huntersmarkLoop()
         // this.fourFingersLoop();
     }
 
     async mainLoop(): Promise<void> {
         try {
-            transferItemsToMerchant("earthMer", this.itemsToKeep);
-            transferGoldToMerchant("earthMer", 100000);
-            sellUnwantedItems(this.itemsToSell);
+            transferItemsToMerchant("earthMer", this.itemsToKeep)
+            transferGoldToMerchant("earthMer", 100000)
+            sellUnwantedItems(this.itemsToSell)
 
-            this.createParty(["earthMag", "earthWar", "earthMer", "earthPri"]);
+            this.createParty(["earthMag", "earthWar", "earthMer", "earthPri"])
 
             // Switch between warrior and mage if they are idle
-            let monsterHunts = []
-            for (let member of parent.party_list) {
+            const monsterHunts = []
+            for (const member of parent.party_list) {
                 if (this.info.party[member] && this.info.party[member].monsterHuntTarget) {
                     monsterHunts.push(this.info.party[member].monsterHuntTarget)
                 }
@@ -274,8 +274,8 @@ class Ranger extends Character {
                 && this.info.party.earthMag
                 && this.info.party.earthMag.shouldSwitchServer
                 && !monsterHunts.includes(this.info.party.earthMag.s.monsterhunt.id) // Another member is doing this member's monster hunt
-                && Date.now() - this.start_time > 120000) {
-                this.start_time = Date.now()
+                && Date.now() - this.startTime > 120000) {
+                this.startTime = Date.now()
                 stop_character("earthMag")
                 start_character("earthWar")
                 await sleep(2500)
@@ -283,19 +283,19 @@ class Ranger extends Character {
                 && this.info.party.earthWar
                 && this.info.party.earthWar.shouldSwitchServer
                 && !monsterHunts.includes(this.info.party.earthWar.s.monsterhunt.id) // Another member is doing this member's monster hunt
-                && Date.now() - this.start_time > 120000) {
-                this.start_time = Date.now()
+                && Date.now() - this.startTime > 120000) {
+                this.startTime = Date.now()
                 stop_character("earthWar")
                 start_character("earthMag")
                 await sleep(2500)
             }
 
             // Switch servers if everyone in the party wants to
-            if (Date.now() - this.start_time > 60000) {
-                let shouldSwitchServer = 0;
-                for (let id of parent.party_list) {
-                    let member = this.info.party[id]
-                    if (member.shouldSwitchServer) { shouldSwitchServer += 1; }
+            if (Date.now() - this.startTime > 60000) {
+                let shouldSwitchServer = 0
+                for (const id of parent.party_list) {
+                    const member = this.info.party[id]
+                    if (member.shouldSwitchServer) { shouldSwitchServer += 1 }
                 }
                 if (shouldSwitchServer == parent.party_list.length) {
                     if (parent.server_region == "ASIA")
@@ -309,35 +309,35 @@ class Ranger extends Character {
                     else if (parent.server_region == "EU" && parent.server_identifier == "II")
                         change_server("ASIA", "I")
 
-                    setTimeout(() => { this.mainLoop(); }, 10000);
+                    setTimeout(() => { this.mainLoop() }, 10000)
                     return
                 }
             }
 
-            super.mainLoop();
+            super.mainLoop()
         } catch (error) {
             console.error(error)
-            setTimeout(() => { this.mainLoop(); }, 250);
+            setTimeout(() => { this.mainLoop() }, 250)
         }
     }
 
     huntersmarkLoop(): void {
         try {
-            let targets = this.getTargets(1);
+            const targets = this.getTargets(1)
             if (targets.length // We have a target
                 && !targets[0].s.marked // The target isn't marked
                 && targets[0].hp > calculateDamageRange(parent.character, targets[0])[0] * 5 // The target has a lot of HP
-                && wantToAttack(this, targets[0], "huntersmark")) // We want to attack it
+                && this.wantToAttack(targets[0], "huntersmark")) // We want to attack it
                 use_skill("huntersmark", targets[0])
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.huntersmarkLoop() }, getCooldownMS("huntersmark"));
+        setTimeout(() => { this.huntersmarkLoop() }, getCooldownMS("huntersmark"))
     }
 
     fourFingersLoop(): void {
         try {
-            let targets = this.getTargets(1);
+            const targets = this.getTargets(1)
             if (parent.character.mp > 260 // We have MP
                 && targets.length > 0 // We have a target
                 && !parent.character.stoned // Can use skills
@@ -352,61 +352,61 @@ class Ranger extends Character {
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.fourFingersLoop() }, getCooldownMS("4fingers"));
+        setTimeout(() => { this.fourFingersLoop() }, getCooldownMS("4fingers"))
     }
 
     async superShotLoop(): Promise<void> {
-        let targets = this.getTargets(1);
+        const targets = this.getTargets(1)
         if (targets.length
-            && wantToAttack(this, targets[0], "supershot")) {
+            && this.wantToAttack(targets[0], "supershot")) {
             await use_skill("supershot", targets[0])
         }
 
-        setTimeout(() => { this.superShotLoop() }, getCooldownMS("supershot"));
+        setTimeout(() => { this.superShotLoop() }, getCooldownMS("supershot"))
     }
 
     protected async attackLoop(): Promise<void> {
-        let targets = this.getTargets(5);
+        const targets = this.getTargets(5)
         if (targets.length >= 5
-            && wantToAttack(this, targets[0], "5shot")) {
+            && this.wantToAttack(targets[0], "5shot")) {
             // See if we can fiveshot some enemies
-            let fiveshotTargets: IEntity[] = [];
-            for (let entity of targets) {
-                if (!entity.target && (entity.hp > calculateDamageRange(parent.character, entity)[0] * 0.5)) continue; // Too much HP, or not targeting us
-                if (distance(parent.character, entity) > parent.character.range) continue;
+            const fiveshotTargets: Entity[] = []
+            for (const entity of targets) {
+                if (!entity.target && (entity.hp > calculateDamageRange(parent.character, entity)[0] * 0.5)) continue // Too much HP, or not targeting us
+                if (distance(parent.character, entity) > parent.character.range) continue
 
-                fiveshotTargets.push(entity);
-                if (fiveshotTargets.length == 5) break;
+                fiveshotTargets.push(entity)
+                if (fiveshotTargets.length == 5) break
             }
             if (fiveshotTargets.length == 5) {
                 await use_skill("5shot", fiveshotTargets)
-                setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"));
-                return;
+                setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+                return
             }
         }
         if (targets.length >= 3
-            && wantToAttack(this, targets[0], "3shot")) {
+            && this.wantToAttack(targets[0], "3shot")) {
             // See if we can three shot some enemies.
-            let threeshotTargets: IEntity[] = [];
-            for (let entity of targets) {
-                if (!entity.target && (entity.hp > calculateDamageRange(parent.character, entity)[0] * 0.7)) continue; // Too much HP to kill in one shot (don't aggro too many)
-                if (distance(parent.character, entity) > parent.character.range) continue;
+            const threeshotTargets: Entity[] = []
+            for (const entity of targets) {
+                if (!entity.target && (entity.hp > calculateDamageRange(parent.character, entity)[0] * 0.7)) continue // Too much HP to kill in one shot (don't aggro too many)
+                if (distance(parent.character, entity) > parent.character.range) continue
 
                 threeshotTargets.push(entity)
                 if (threeshotTargets.length == 3) break
             }
             if (threeshotTargets.length == 3) {
                 await use_skill("3shot", threeshotTargets)
-                setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"));
-                return;
+                setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+                return
             }
         }
 
-        let piercingShotCalcCharacter = { ...parent.character }
+        const piercingShotCalcCharacter = { ...parent.character }
         piercingShotCalcCharacter.apiercing += G.skills["piercingshot"].apiercing
         piercingShotCalcCharacter.attack *= G.skills["piercingshot"].damage_multiplier
         if (targets.length
-            && wantToAttack(this, targets[0], "piercingshot")
+            && this.wantToAttack(targets[0], "piercingshot")
             && calculateDamageRange(piercingShotCalcCharacter, targets[0])[0] > calculateDamageRange(parent.character, targets[0])[0]) {
             await use_skill("piercingshot", targets[0])
             setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
@@ -418,13 +418,13 @@ class Ranger extends Character {
     }
 
     createParty(members: string[]): void {
-        if (parent.party_list.length >= 4) return; // We already have the maximum amount of party members
-        for (let member of members) {
+        if (parent.party_list.length >= 4) return // We already have the maximum amount of party members
+        for (const member of members) {
             if (!parent.party[member])
-                send_party_invite(member);
+                send_party_invite(member)
         }
     }
 }
 
-let ranger = new Ranger();
+const ranger = new Ranger()
 export { ranger }

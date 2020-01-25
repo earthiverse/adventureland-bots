@@ -1,16 +1,16 @@
-import { Character } from './character'
-import { MonsterType } from './definitions/adventureland';
-import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from './trade';
-import { TargetPriorityList } from './definitions/bots';
-import { getCooldownMS, getAttackingEntities, calculateDamageRange, wantToAttack, isAvailable, isMonster, getNearbyMonsterSpawns, getInRangeMonsters } from './functions';
+import { Character } from "./character"
+import { MonsterType } from "./definitions/adventureland"
+import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from "./trade"
+import { TargetPriorityList } from "./definitions/bots"
+import { getCooldownMS, getAttackingEntities, calculateDamageRange, isAvailable, isMonster } from "./functions"
 
-let DIFFICULT = 10;
-let MEDIUM = 20;
-let EASY = 30;
-let SPECIAL = 500;
+const DIFFICULT = 10
+const MEDIUM = 20
+const EASY = 30
+const SPECIAL = 500
 
 class Warrior extends Character {
-    targets: TargetPriorityList = {
+    targetPriority: TargetPriorityList = {
         "arcticbee": {
             "priority": EASY
         },
@@ -184,32 +184,32 @@ class Warrior extends Character {
 
     async mainLoop(): Promise<void> {
         try {
-            transferItemsToMerchant("earthMer", this.itemsToKeep);
-            transferGoldToMerchant("earthMer", 100000);
-            sellUnwantedItems(this.itemsToSell);
+            transferItemsToMerchant("earthMer", this.itemsToKeep)
+            transferGoldToMerchant("earthMer", 100000)
+            sellUnwantedItems(this.itemsToSell)
 
-            super.mainLoop();
+            super.mainLoop()
         } catch (error) {
             console.error(error)
-            setTimeout(() => { this.mainLoop(); }, 250);
+            setTimeout(() => { this.mainLoop() }, 250)
         }
     }
 
     agitateLoop(): void {
         if (isAvailable("agitate")) {
             let inAgitateCount = 0
-            for (let id in parent.entities) {
-                let e = parent.entities[id]
+            for (const id in parent.entities) {
+                const e = parent.entities[id]
                 if(e.type != "monster") continue
 
-                let d = distance(parent.character, e)
+                const d = distance(parent.character, e)
                 if (e.target == parent.character.id) {
                     // Something is already targeting us
                     inAgitateCount = 0
                     break
                 }
                 if (d <= G.skills["agitate"].range) {
-                    if (!wantToAttack(this, e)) {
+                    if (!this.wantToAttack(e)) {
                         // There's something we don't want to attack in agitate range, so don't use it.
                         inAgitateCount = 0
                         break
@@ -226,15 +226,15 @@ class Warrior extends Character {
                 use_skill("agitate")
             }
         }
-        setTimeout(() => { this.agitateLoop() }, getCooldownMS("agitate"));
+        setTimeout(() => { this.agitateLoop() }, getCooldownMS("agitate"))
     }
 
     warcryLoop(): void {
         if (isAvailable("warcry")) {
             // Check if there are at least two party members nearby
             let count = 0
-            for (let member of parent.party_list) {
-                let e = parent.entities[member]
+            for (const member of parent.party_list) {
+                const e = parent.entities[member]
                 if (!e) continue
                 if (e.ctype == "merchant") continue
 
@@ -247,46 +247,46 @@ class Warrior extends Character {
                 }
             }
         }
-        setTimeout(() => { this.warcryLoop() }, getCooldownMS("warcry"));
+        setTimeout(() => { this.warcryLoop() }, getCooldownMS("warcry"))
     }
 
     stompLoop(): void {
         // Stomp monsters with high HP
-        let attackingTargets = getAttackingEntities()
+        const attackingTargets = getAttackingEntities()
         if (isAvailable("stomp") && attackingTargets.length) {
 
             if (attackingTargets[0].hp > 25000 && distance(parent.character, attackingTargets[0]) < parent.character.range) {
                 use_skill("stomp")
             }
         }
-        setTimeout(() => { this.stompLoop() }, getCooldownMS("stomp"));
+        setTimeout(() => { this.stompLoop() }, getCooldownMS("stomp"))
     }
 
     chargeLoop(): void {
         if (isAvailable("charge")) use_skill("charge")
-        setTimeout(() => { this.chargeLoop() }, getCooldownMS("charge"));
+        setTimeout(() => { this.chargeLoop() }, getCooldownMS("charge"))
     }
 
     hardshellLoop(): void {
-        let targets = getAttackingEntities()
+        const targets = getAttackingEntities()
         if (isAvailable("hardshell")
             && targets.length // We have a target
             && distance(targets[0], parent.character) <= targets[0].range // In range of their attacks
             && parent.character.hp < calculateDamageRange(targets[0], parent.character)[1] * 5) { // Not a lot of HP remaining
             use_skill("hardshell")
         }
-        setTimeout(() => { this.hardshellLoop() }, getCooldownMS("hardshell"));
+        setTimeout(() => { this.hardshellLoop() }, getCooldownMS("hardshell"))
     }
 
     async tauntLoop(): Promise<void> {
-        let attackingMonsters = getAttackingEntities()
-        let targets = this.getTargets(1)
-        if (attackingMonsters.length == 0 && targets.length && wantToAttack(this, targets[0], "taunt")) {
+        const attackingMonsters = getAttackingEntities()
+        const targets = this.getTargets(1)
+        if (attackingMonsters.length == 0 && targets.length && this.wantToAttack(targets[0], "taunt")) {
             await use_skill("taunt", targets[0])
         } else if (isAvailable("taunt") && attackingMonsters.length < 2) {
             // Check if any nearby party members have an attacking enemy. If they do, taunt it away.
-            for (let id in parent.entities) {
-                let e = parent.entities[id]
+            for (const id in parent.entities) {
+                const e = parent.entities[id]
                 if (!isMonster(e)) continue
                 if (e.target != parent.character.id && parent.party_list.includes(e.target)) {
                     await use_skill("taunt", e)
@@ -294,9 +294,9 @@ class Warrior extends Character {
                 }
             }
         }
-        setTimeout(() => { this.tauntLoop() }, getCooldownMS("taunt"));
+        setTimeout(() => { this.tauntLoop() }, getCooldownMS("taunt"))
     }
 }
 
-let warrior = new Warrior();
+const warrior = new Warrior()
 export { warrior }

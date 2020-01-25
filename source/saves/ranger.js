@@ -1,24 +1,28 @@
-import('http://localhost:3000/ranger.js')
-    .then((module) => {
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
+/* eslint-disable @typescript-eslint/camelcase */
+/* eslint-disable no-undef */
+import("http://localhost:3000/ranger.js")
+    .then(() => {
         bots.ranger.run()
-    }, (fail) => {
+    }, () => {
         load_code("ranger")
         bots.ranger.run()
     })
 
-let scripts = {
+const scripts = {
     "earthWar": "warrior_start",
     "earthPri": "priest_start",
-	// "earthMag": "mage_start",
-	"earthMer": "merchant_start"
+    // "earthMag": "mage_start",
+    "earthMer": "merchant_start"
 }
-for (let character in scripts) {
+for (const character in scripts) {
     if (!parent.party[character])
         start_character(character, scripts[character])
 }
 
 function on_cm(name, data) {
-    bots.ranger.parse_cm(name, data);
+    bots.ranger.parseCM(name, data)
 }
 
-pause();
+pause()

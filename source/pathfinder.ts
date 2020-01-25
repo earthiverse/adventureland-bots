@@ -1,11 +1,19 @@
-import { IPosition, MonsterType, IPositionReal, MapName } from "./definitions/adventureland"
+import { PositionReal } from "./definitions/adventureland"
 import { AStarSmartMove } from "./astarsmartmove"
 
 export class Pathfinder {
-    public movementTarget: MonsterType;
-    public astar = new AStarSmartMove()
+    private astar = new AStarSmartMove()
 
-    public saferMove(to: IPositionReal) {
+    public stop(): void {
+        stop()
+        this.astar.stop()
+    }
+
+    public isMoving(): boolean {
+        return this.astar.isMoving()
+    }
+
+    public saferMove(to: PositionReal): void {
         if (smart.moving || this.astar.isMoving()) return // Already moving somewhere
         if (distance(parent.character, to) < 10) return // Already nearby
 
@@ -18,6 +26,6 @@ export class Pathfinder {
             return
         }
 
-        this.astar.astar_smart_move(to as IPositionReal)
+        this.astar.smartMove(to as PositionReal)
     }
 }

@@ -1,16 +1,16 @@
-import { Character } from './character'
-import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from './trade';
-import { TargetPriorityList } from './definitions/bots';
-import { MonsterType } from './definitions/adventureland';
-import { getCooldownMS, isAvailable } from './functions';
+import { Character } from "./character"
+import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from "./trade"
+import { TargetPriorityList } from "./definitions/bots"
+import { MonsterType } from "./definitions/adventureland"
+import { getCooldownMS, isAvailable } from "./functions"
 
-let DIFFICULT = 10;
-let MEDIUM = 20;
-let EASY = 30;
-let SPECIAL = 500;
+const DIFFICULT = 10
+const MEDIUM = 20
+const EASY = 30
+const SPECIAL = 500
 
 class Mage extends Character {
-    targets: TargetPriorityList = {
+    targetPriority: TargetPriorityList = {
         "arcticbee": {
             "priority": EASY
         },
@@ -243,20 +243,20 @@ class Mage extends Character {
     mainTarget: MonsterType = "poisio";
 
     run(): void {
-        super.run();
-        this.energizeLoop();
+        super.run()
+        this.energizeLoop()
     }
 
     async mainLoop(): Promise<void> {
         try {
-            transferItemsToMerchant("earthMer", this.itemsToKeep);
-            transferGoldToMerchant("earthMer", 100000);
-            sellUnwantedItems(this.itemsToSell);
+            transferItemsToMerchant("earthMer", this.itemsToKeep)
+            transferGoldToMerchant("earthMer", 100000)
+            sellUnwantedItems(this.itemsToSell)
 
-            super.mainLoop();
+            super.mainLoop()
         } catch (error) {
-            console.error(error);
-            setTimeout(() => { this.mainLoop(); }, 250);
+            console.error(error)
+            setTimeout(() => { this.mainLoop() }, 250)
         }
     }
 
@@ -265,7 +265,7 @@ class Mage extends Character {
             // Check if there are at least two party members nearby
             let count = 0
             for (const member of parent.party_list) {
-                let e = parent.entities[member]
+                const e = parent.entities[member]
                 if (!e) continue
                 if (e.ctype == "merchant") continue
 
@@ -278,7 +278,7 @@ class Mage extends Character {
                 }
             }
         }
-        setTimeout(() => { this.blessingLoop() }, getCooldownMS("darkblessing"));
+        setTimeout(() => { this.blessingLoop() }, getCooldownMS("darkblessing"))
     }
 
     // TODO: cast on the member of the party with the lowest mp
@@ -297,9 +297,9 @@ class Mage extends Character {
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.energizeLoop() }, getCooldownMS("energize"));
+        setTimeout(() => { this.energizeLoop() }, getCooldownMS("energize"))
     }
 }
 
-let mage = new Mage();
+const mage = new Mage()
 export { mage }

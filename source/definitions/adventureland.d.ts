@@ -1,67 +1,68 @@
+/* eslint-disable @typescript-eslint/camelcase */
 declare global {
   interface Window {
-    close_merchant()
-    distance(from: IPosition | IPositionReal, to: IPosition | IPositionReal)
-    exchange(inventoryPosition: number)
-    open_merchant(standInventoryPostion: number)
+    close_merchant();
+    distance(from: IPosition | PositionReal, to: IPosition | PositionReal);
+    exchange(inventoryPosition: number);
+    open_merchant(standInventoryPostion: number);
 
-    character: ICharacter
+    character: CharacterEntity;
     chests: {
-      [id: string]: ChestInfo
-    }
-    entities: { [id: string]: IEntity }
-    next_skill: { [T in SkillName]?: Date }
-    npcs: G_Maps_NPC[]
+      [id: string]: ChestInfo;
+    };
+    entities: { [id: string]: Entity };
+    next_skill: { [T in SkillName]?: Date };
+    npcs: GMapsNPC[];
     party: { [T in string]: IPosition & {
-      level: number
+      level: number;
       /** This number refers to the percent of gold you get when one of the party members loots a chest */
-      share: number
-      type: CharacterType
-    } }
+      share: number;
+      type: CharacterType;
+    } };
     /** Contains the name of every character in your party */
-    party_list: string[]
-    server_identifier: ServerIdentifier
-    server_region: ServerRegion
-    socket: SocketIO.Socket
+    party_list: string[];
+    server_identifier: ServerIdentifier;
+    server_region: ServerRegion;
+    socket: SocketIO.Socket;
     S: { [T in MonsterType]?: IPosition & {
-      map: string
-      live: boolean
-      hp: number
-      max_hp: number
+      map: string;
+      live: boolean;
+      hp: number;
+      max_hp: number;
     } };
   }
 
-  function attack(target: IEntity): Promise<any>
+  function attack(target: Entity): Promise<any>
   function bank_deposit(amount: number)
   function bank_store(inventoryPosition: number, pack?: BankPackType, packPosition?: number)
   function bank_withdraw(amount: number)
   function buy_with_gold(name: ItemName, quantity: number): Promise<any>
   //TODO: Figure out this function and its arguments...
   function can_move(x: any, y?: any)
-  function can_move_to(location: IPositionReal): boolean
+  function can_move_to(location: PositionReal): boolean
   function can_move_to(x: number, y: number): boolean
-  function can_transport(entity: IEntity)
+  function can_transport(entity: Entity)
   //TODO: Figure out this function and its arguments...
   function can_use_door(f: MapName, door: any, current_x: number, current_y: number)
-  function can_walk(entity: IEntity): boolean
+  function can_walk(entity: Entity): boolean
   function change_server(region: ServerRegion, identifier: ServerIdentifier)
-  function change_target(target: IEntity, public: boolean)
+  function change_target(target: Entity, public: boolean)
   /** Clears all user made drawings */
   function clear_drawings()
   function compound(itemInventoryPosition1: number, itemInventoryPosition2: number, itemInventoryPosition3: number, scrollInventoryPosition: number, offeringInventoryPosition?: number): Promise<any>
   /** Feed this function a value like (character.apiercing - target.armor) and it spits out a multiplier so you can adjust your expected damage */
   function damage_multiplier(difference: number): number
-  function distance(from: IPosition | IPositionReal, to: IPosition | IPositionReal): number
+  function distance(from: IPosition | PositionReal, to: IPosition | PositionReal): number
   /** Draws a circle on the map */
   function draw_circle(x: number, y: number, radius: number, size: number, color: number)
   function equip(inventoryPostion: number, slot?: SlotType)
   function exchange(inventoryPosition: number)
   function game_log(message: string, color?: string)
-  function get_targeted_monster(): IEntity
-  function heal(target: IEntity)
+  function get_targeted_monster(): Entity
+  function heal(target: Entity)
   /** Checks whether or not we can attack other players */
   function is_pvp(): boolean
-  function is_transporting(entity: IEntity): boolean
+  function is_transporting(entity: Entity): boolean
   /** 0 = normal, 1 = high, 2 = rare */
   function item_grade(item: ItemInfo): -1 | 0 | 1 | 2
   /** Returns the inventory position of the item, or -1 if it's not found */
@@ -83,10 +84,10 @@ declare global {
   function stop_character(name: string)
   function transport(map: MapName, spawn?: number)
   function upgrade(itemInventoryPosition: number, scrollInventoryPosition: number, offeringInventoryPosition?: number): Promise<any>
-  function use_skill(name: "3shot" | "5shot", targets: IEntity[]): Promise<any>[]
-  function use_skill(name: "throw", target: IEntity, inventoryPostion: number): Promise<any>
-  function use_skill(name: "energize", target: IEntity, mp: number): Promise<any>
-  function use_skill(name: SkillName, target?: IEntity, extraArg?: any): Promise<any>
+  function use_skill(name: "3shot" | "5shot", targets: Entity[]): Promise<any>[]
+  function use_skill(name: "throw", target: Entity, inventoryPostion: number): Promise<any>
+  function use_skill(name: "energize", target: Entity, mp: number): Promise<any>
+  function use_skill(name: SkillName, target?: Entity, extraArg?: any): Promise<any>
   // TODO: Is this the right thing to do? Town just here willy nilly?
   function use_skill(name: "town"): Promise<any>
   /** This function uses move() if it can, otherwise it uses smart_move() */
@@ -95,321 +96,321 @@ declare global {
   /** Contains information about smart_move() */
   let smart: IPosition & {
     /** If searching and false, we are still searching. If  */
-    found: boolean
+    found: boolean;
     /** If .moving == true, we are moving or searching */
-    moving: boolean
-    plot: IPositionSmart[]
+    moving: boolean;
+    plot: PositionSmart[];
     /** If ().moving == false && .searching == true), we are searching for a path. */
-    searching: boolean
-    start_x: number
-    start_y: number
+    searching: boolean;
+    start_x: number;
+    start_y: number;
     /** A settable flag. If true, smart_move will use town teleports to move around */
-    use_town: boolean
+    use_town: boolean;
   }
 
   let G: {
     dismantle: { [T in ItemName]?: {
       /** The cost of dismantling the item */
-      cost: number
+      cost: number;
       /** A list of items you will get if you dismantle. If the number is < 1, it indicates the probability of getting that item. */
-      items: [number, ItemName][]
-    } }
-    items: { [T in ItemName]: G_Item }
+      items: [number, ItemName][];
+    } };
+    items: { [T in ItemName]: GItem };
     geometry: {
       [T in MapName]: {
-        max_x: number
-        max_y: number
-        min_x: number
-        min_y: number
+        max_x: number;
+        max_y: number;
+        min_x: number;
+        min_y: number;
         /* The line is from ([0], [2]) to ([1], [2]) */
-        x_lines: [number, number, number][]
+        x_lines: [number, number, number][];
         /* The line is from ([2], [0]) to ([2], [1]) */
-        y_lines: [number, number, number][]
+        y_lines: [number, number, number][];
       }
-    }
+    };
     maps: { [T in MapName]: {
       /**  */
-      doors: [number, number, number, number, MapName, number?, number?][]
-      instance: boolean
+      doors: [number, number, number, number, MapName, number?, number?][];
+      instance: boolean;
       monsters: {
-        count: number
-        boundary?: [number, number, number, number]
-        boundaries?: [MapName, number, number, number, number][]
-        type: MonsterType
-      }[]
-      npcs: G_Maps_NPC[]
+        count: number;
+        boundary?: [number, number, number, number];
+        boundaries?: [MapName, number, number, number, number][];
+        type: MonsterType;
+      }[];
+      npcs: GMapsNPC[];
       ref: {
         [id: string]: IPosition & {
-          map: MapName
-          in: MapName
-          id: string
-        }
-      }
+          map: MapName;
+          in: MapName;
+          id: string;
+        };
+      };
       /** x, y, ??? */
-      spawns: [number, number, number?][]
-    } }
-    monsters: { [T in MonsterType]: G_Monster }
+      spawns: [number, number, number?][];
+    } };
+    monsters: { [T in MonsterType]: GMonster };
     npcs: { [T in NPCType]: {
-      id: NPCType
+      id: NPCType;
       /** Full name of NPC */
-      name: string
+      name: string;
       /** A list of places you can transport to with this NPC. The number is the spawn */
       places?: {
         [T in MapName]?: number
-      }
-      role: NPCRole
-    } }
+      };
+      role: NPCRole;
+    } };
     // TODO: Get list of quest names
-    quests: { [T in string]: IPositionReal & {
-      id: NPCType
-    } }
+    quests: { [T in string]: PositionReal & {
+      id: NPCType;
+    } };
     skills: { [T in SkillName]: {
-      apiercing?: number
-      cooldown: number
-      damage_multiplier?: number
-      level: number
+      apiercing?: number;
+      cooldown: number;
+      damage_multiplier?: number;
+      level: number;
       /** MP Cost for skill */
-      mp: number
-      name: string
-      range: number
-      range_multiplier?: number
-    } }
+      mp: number;
+      name: string;
+      range: number;
+      range_multiplier?: number;
+    } };
   }
 }
 
 // TODO: Get a better name for this.
 // TODO: Get a better naming convention for G data
-export interface G_Maps_NPC {
-  id: NPCType
-  name?: string
-  position: [number, number]
+export interface GMapsNPC {
+  id: NPCType;
+  name?: string;
+  position: [number, number];
 }
 
-export interface G_Monster {
-  attack: number
-  damage_type: DamageType
-  frequency: number
-  hp: number
-  range: number
-  speed: number
-  xp: number
+export interface GMonster {
+  attack: number;
+  damage_type: DamageType;
+  frequency: number;
+  hp: number;
+  range: number;
+  speed: number;
+  xp: number;
 }
 
-export interface G_Item {
+export interface GItem {
   /** Contains information about what stats the item will gain with each compound level. Set if the item is compoundable. */
   compound?: {
     [T in AttributeType]?: number
-  }
-  damage?: DamageType
+  };
+  damage?: DamageType;
   /** Refers to how many items are needed to exchange (see .quest as well!) */
-  e?: number
+  e?: number;
   /** Cost of the item in gold, if an NPC were to sell this item */
-  g: number
+  g: number;
   /** The first number refers to what level the item begins being "high" grade, the second for "rare" */
-  grades?: [number, number]
+  grades?: [number, number];
   /** The full name of the item */
-  name: string
-  id: ItemName
+  name: string;
+  id: ItemName;
   // TODO: Add a type for quests
   /** Indicates the "quest" that this item is needed to complete */
-  quest: string
+  quest: string;
   /** Indicates whether or not the item is stackable */
-  s: boolean
+  s: boolean;
   /** Contains information about what stats the item will gain with each upgrade level. Set if the item is upgradable. */
   upgrade?: {
     [T in AttributeType]?: number
-  }
-  type: ItemType
+  };
+  type: ItemType;
 }
 
 /**
 * For the current character
 */
-export interface ICharacter extends IEntity {
+export interface CharacterEntity extends Entity {
   bank: {
     [T in BankPackType]: ItemInfo[]
   } & {
-    gold: number
-  }
+    gold: number;
+  };
   /** Channeling actions */
   c: {
     town?: {
-      ms: number
-    }
-  }
-  items: ItemInfo[]
+      ms: number;
+    };
+  };
+  items: ItemInfo[];
   /** Amount of gold the player has in its inventory */
-  gold: number
+  gold: number;
   /** Gold multiplier */
-  goldm: number
+  goldm: number;
   /** Luck multiplier. */
-  luckm: number
-  ping: number
+  luckm: number;
+  ping: number;
   // TODO: Actually figure this out
   q: {
     compound?: {
 
-    }
+    };
     upgrade?: {
-      ms: number
-      len: number
-      num: number
-    }
+      ms: number;
+      len: number;
+      num: number;
+    };
     exchange?: {
 
-    }
-  }
+    };
+  };
   /** A bit of extra range that we can use to attack further monsters. It's variable. If you attack a monster using this extra range, it decreases for the next attack. */
-  xrange: number
+  xrange: number;
 }
 
-export interface IEntity extends IPositionReal {
+export interface Entity extends PositionReal {
   /** If set, attacks only do 1 damage */
-  "1hp": number
+  "1hp": number;
   /** Only set if the entity is a monster */
-  aggro: number
-  apiercing: number
-  armor: number
-  attack: number
+  aggro: number;
+  apiercing: number;
+  armor: number;
+  attack: number;
   base: {
-    "h": number,
-    "v": number,
-    "vn": number
-  }
-  cooperative: boolean
-  ctype: CharacterType | NPCType
-  damage_type?: DamageType
+    "h": number;
+    "v": number;
+    "vn": number;
+  };
+  cooperative: boolean;
+  ctype: CharacterType | NPCType;
+  damage_type?: DamageType;
   /** A percent chance to avoid physical attacks */
-  evasion: number
+  evasion: number;
   /** Related to attack speed, I think it's equal to attacks per second */
-  frequency: number
-  going_x: number
-  going_y: number
-  hp: number
+  frequency: number;
+  going_x: number;
+  going_y: number;
+  hp: number;
   /** This value is also the key for the object in parent.entities */
-  id: string
-  immune: boolean
+  id: string;
+  immune: boolean;
   /** When were the ms values last updated? */
-  last_ms: Date
-  level: number
-  max_hp: number
-  max_mp: number
+  last_ms: Date;
+  level: number;
+  max_hp: number;
+  max_mp: number;
   /** Is the character currently moving? */
-  moving: boolean
-  mp: number
+  moving: boolean;
+  mp: number;
   /** The MP cost for doing an attack */
-  mp_cost: number
+  mp_cost: number;
   /** If the entity is a monster, it is set */
-  mtype?: MonsterType
+  mtype?: MonsterType;
   /** Contains the full name of the monster */
-  name: string
+  name: string;
   /** Is set if the entity is an NPC, undefined otherwise */
-  npc?: string
+  npc?: string;
   /** Attack range */
-  range: number
-  real_x: number
-  real_y: number
-  resistance: number
+  range: number;
+  real_x: number;
+  real_y: number;
+  resistance: number;
   /** Only set if the entity is a character. If true, the player is dead. */
-  rip?: boolean
-  rpiercing: number
-  s: StatusInfo
+  rip?: boolean;
+  rpiercing: number;
+  s: StatusInfo;
   /** Set if the entity is a player */
   slots: {
     [T in SlotType]: ItemInfo
   } & {
     [T in TradeSlotType]?: ItemInfo & {
-      price: number
-      rid: string
+      price: number;
+      rid: string;
     }
-  }
-  speed: number
+  };
+  speed: number;
   // TODO: Add the parameters to this object
   /** If set, the merchant has a stand open */
-  standed?: any
+  standed?: any;
   /** Set if we are under the status effect "stoned" */
-  stoned?: boolean
+  stoned?: boolean;
   /** Set if the player or monster is targeting something */
-  target: string
-  type: "character" | "monster"
-  vx: number
-  vy: number
+  target: string;
+  type: "character" | "monster";
+  vx: number;
+  vy: number;
 }
 
-export type ChestInfo = IPositionReal & {
-  alpha: number
-  skin: "chest3" | string
+export type ChestInfo = PositionReal & {
+  alpha: number;
+  skin: "chest3" | string;
 }
 
 export type ItemInfo = {
   /** If true, the entity is buying this item */
-  b?: boolean
+  b?: boolean;
   /** Set if the item is compoundable or upgradable */
-  level?: number
-  name: ItemName
+  level?: number;
+  name: ItemName;
   /** Set if the item is stackable. */
-  q?: number
+  q?: number;
   /** If set, name == placeholder, and we are upgrading or compounding something */
   p?: {
-    chance: number
-    name: ItemName
-    level: number
-    scroll: ItemName
-    nums: number[]
-  }
+    chance: number;
+    name: ItemName;
+    level: number;
+    scroll: ItemName;
+    nums: number[];
+  };
   /** If set, the item is for sale, or purchase */
-  rid?: string
+  rid?: string;
 }
 
 export type StatusInfo = {
   [T in ConditionName]?: {
     /** How many ms left before this condition expires */
-    ms: number
+    ms: number;
   } } & {
     coop?: {
-      id: string
-      p: number
-    }
+      id: string;
+      p: number;
+    };
     mluck?: {
       /** The ID of the merchant who cast mluck */
-      f: string
-    }
+      f: string;
+    };
     monsterhunt?: {
       /** The server ID where the monster hunt is valid */
-      sn: string
+      sn: string;
       /** Number of monsters remaining to kill */
-      c: number
+      c: number;
       /** What monster we have to kill */
-      id: MonsterType
-    }
+      id: MonsterType;
+    };
     citizen0aura?: {
-      luck: number
-    }
+      luck: number;
+    };
     citizen4aura?: {
-      gold: number
-    }
+      gold: number;
+    };
   }
 
-export interface IPositionReal extends IPosition {
-  map: MapName
-  real_x?: number
-  real_y?: number
+export interface PositionReal extends IPosition {
+  map: MapName;
+  real_x?: number;
+  real_y?: number;
 }
 
-export interface IPositionSmart extends IPosition {
-  map: MapName
-  transport?: boolean
-  i?: number
-  s?: number
+export interface PositionSmart extends IPosition {
+  map: MapName;
+  transport?: boolean;
+  i?: number;
+  s?: number;
 }
 
 export type IPosition = {
   /**
    * Contains the name of the map
    */
-  map?: MapName
-  x: number
-  y: number
+  map?: MapName;
+  x: number;
+  y: number;
 }
 
 // TODO: Get all types (from G?)

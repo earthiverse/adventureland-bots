@@ -1,16 +1,16 @@
-import { Character } from './character'
-import { MonsterType } from './definitions/adventureland';
-import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from './trade';
-import { TargetPriorityList } from './definitions/bots';
-import { getCooldownMS } from './functions';
+import { Character } from "./character"
+import { MonsterType } from "./definitions/adventureland"
+import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from "./trade"
+import { TargetPriorityList } from "./definitions/bots"
+import { getCooldownMS } from "./functions"
 
-let DIFFICULT = 10;
-let MEDIUM = 20;
-let EASY = 30;
-let SPECIAL = 500;
+const DIFFICULT = 10
+const MEDIUM = 20
+const EASY = 30
+const SPECIAL = 500
 
 class Priest extends Character {
-    targets: TargetPriorityList = {
+    targetPriority: TargetPriorityList = {
         "arcticbee": {
             "priority": EASY
         },
@@ -277,14 +277,14 @@ class Priest extends Character {
 
     async mainLoop(): Promise<void> {
         try {
-            transferItemsToMerchant("earthMer", this.itemsToKeep);
-            transferGoldToMerchant("earthMer", 100000);
-            sellUnwantedItems(this.itemsToSell);
+            transferItemsToMerchant("earthMer", this.itemsToKeep)
+            transferGoldToMerchant("earthMer", 100000)
+            sellUnwantedItems(this.itemsToSell)
 
-            super.mainLoop();
+            super.mainLoop()
         } catch (error) {
-            console.error(error);
-            setTimeout(() => { this.mainLoop(); }, 250);
+            console.error(error)
+            setTimeout(() => { this.mainLoop() }, 250)
         }
     }
 
@@ -297,7 +297,7 @@ class Priest extends Character {
             }
 
             // Check if there's any nearby party member that needs healing
-            for (let member of parent.party_list || []) {
+            for (const member of parent.party_list || []) {
                 if (parent.entities[member]) {
                     if (distance(parent.character, parent.entities[member]) < parent.character.range
                         && !parent.entities[member].rip
@@ -310,10 +310,10 @@ class Priest extends Character {
             }
 
             // Heal our target's target. (The player the monster we want to attack is attacking)
-            let target = this.getTargets(1)
+            const target = this.getTargets(1)
             if (target.length && target[0].target) {
                 if (parent.entities[target[0].target]) {
-                    let targetTarget = parent.entities[target[0].target]
+                    const targetTarget = parent.entities[target[0].target]
                     if (targetTarget.hp < targetTarget.max_hp && distance(parent.character, targetTarget) < parent.character.range) {
                         await heal(targetTarget)
                         setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
@@ -327,9 +327,9 @@ class Priest extends Character {
             return
         }
 
-        super.attackLoop();
+        super.attackLoop()
     }
 }
 
-let priest = new Priest();
+const priest = new Priest()
 export { priest }
