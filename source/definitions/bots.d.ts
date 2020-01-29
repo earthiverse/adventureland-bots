@@ -30,7 +30,8 @@ export type EmptyBankSlots = {
     index: number;
 }
 
-export type PriorityEntity = Entity & {
+export type PriorityEntity = {
+    id: string;
     priority: number;
 }
 

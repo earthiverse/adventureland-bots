@@ -22,7 +22,7 @@ export class AStarSmartMove {
     /** If we fail pathfinding, we will randomly try to move a small distance to see if it helps */
     private MOVE_ON_FAIL = true
 
-    private SHOW_MESSAGES = true
+    private SHOW_MESSAGES = false
     private MESSAGE_COLOR = "#F7600E"
 
     /** Date the search was finished */
@@ -219,8 +219,8 @@ export class AStarSmartMove {
     }
 
     private smoothPath2(path: SmartMoveNode[]): SmartMoveNode[] {
-        console.log(`roughPath (${path.length})`)
-        console.log(path)
+        // console.log(`roughPath (${path.length})`)
+        // console.log(path)
 
         let newPath: SmartMoveNode[] = []
         newPath.push(path[0])
@@ -256,8 +256,8 @@ export class AStarSmartMove {
         }
 
         newPath = newPath.reverse()
-        console.log(`smooth path (${newPath.length})`)
-        console.log(newPath)
+        // console.log(`smooth path (${newPath.length})`)
+        // console.log(newPath)
 
         return newPath
     }

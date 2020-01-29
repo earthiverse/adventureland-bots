@@ -11,10 +11,10 @@
   "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "dotenv-webpack": "^1.7.0",
     "express": "^4.17.1",
-    "fastpriorityqueue": "^0.6.3",
-    "nconf": "^0.10.0",
-    "save-dev": "0.0.1-security"
+    "fastpriorityqueue": "^0.6.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.6",

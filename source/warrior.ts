@@ -1,5 +1,5 @@
 import { Character } from "./character"
-import { MonsterType } from "./definitions/adventureland"
+import { MonsterType, Entity } from "./definitions/adventureland"
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from "./trade"
 import { TargetPriorityList } from "./definitions/bots"
 import { getCooldownMS, getAttackingEntities, calculateDamageRange, isAvailable, isMonster } from "./functions"
@@ -46,7 +46,7 @@ class Warrior extends Character {
             farmingPosition: {
                 "map": "winterland",
                 "x": 0,
-                "y": -1850
+                "y": -850
             }
         },
         "crab": {
@@ -127,6 +127,7 @@ class Warrior extends Character {
         "snake": {
             // Farm them on the main map because of the +1000% luck and gold bonus chances
             "priority": EASY,
+            "stopOnSight": true, // TODO: Temporary
             farmingPosition: {
                 "map": "main",
                 "x": -74,
@@ -177,6 +178,7 @@ class Warrior extends Character {
         this.agitateLoop()
         this.chargeLoop()
         this.hardshellLoop()
+        this.cleaveLoop()
         this.stompLoop()
         this.warcryLoop()
         this.tauntLoop()
@@ -196,35 +198,39 @@ class Warrior extends Character {
     }
 
     agitateLoop(): void {
-        if (isAvailable("agitate")) {
-            let inAgitateCount = 0
-            for (const id in parent.entities) {
-                const e = parent.entities[id]
-                if(e.type != "monster") continue
+        try {
+            if (isAvailable("agitate")) {
+                let inAgitateCount = 0
+                for (const id in parent.entities) {
+                    const e = parent.entities[id]
+                    if (e.type != "monster") continue
 
-                const d = distance(parent.character, e)
-                if (e.target == parent.character.id) {
-                    // Something is already targeting us
-                    inAgitateCount = 0
-                    break
-                }
-                if (d <= G.skills["agitate"].range) {
-                    if (!this.wantToAttack(e)) {
-                        // There's something we don't want to attack in agitate range, so don't use it.
+                    const d = distance(parent.character, e)
+                    if (e.target == parent.character.id) {
+                        // Something is already targeting us
                         inAgitateCount = 0
                         break
                     }
-                    if (d <= parent.character.range) {
-                        // There's something in attacking range already, we don't need to agitate to attack stuff
-                        inAgitateCount = 0
-                        break
+                    if (d <= G.skills["agitate"].range) {
+                        if (!this.wantToAttack(e)) {
+                            // There's something we don't want to attack in agitate range, so don't use it.
+                            inAgitateCount = 0
+                            break
+                        }
+                        if (d <= parent.character.range) {
+                            // There's something in attacking range already, we don't need to agitate to attack stuff
+                            inAgitateCount = 0
+                            break
+                        }
+                        inAgitateCount += 1
                     }
-                    inAgitateCount += 1
+                }
+                if (inAgitateCount == 1 || inAgitateCount == 2) {
+                    use_skill("agitate")
                 }
             }
-            if (inAgitateCount == 1 || inAgitateCount == 2) {
-                use_skill("agitate")
-            }
+        } catch (error) {
+            console.error(error)
         }
         setTimeout(() => { this.agitateLoop() }, getCooldownMS("agitate"))
     }
@@ -251,6 +257,11 @@ class Warrior extends Character {
     }
 
     stompLoop(): void {
+        // TODO: Move this to isAvailable
+        if(parent.character.slots.mainhand.name != "basher") {
+            setTimeout(() => { this.stompLoop() }, 1000)
+            return
+        }
         // Stomp monsters with high HP
         const attackingTargets = getAttackingEntities()
         if (isAvailable("stomp") && attackingTargets.length) {
@@ -260,6 +271,28 @@ class Warrior extends Character {
             }
         }
         setTimeout(() => { this.stompLoop() }, getCooldownMS("stomp"))
+    }
+
+    cleaveLoop(): void {
+        // TODO: Move this to isAvailable
+        if(parent.character.slots.mainhand.name != "bataxe") {
+            setTimeout(() => { this.cleaveLoop() }, 1000)
+            return
+        }
+        // Stomp monsters with high HP
+        const nearbyEntities: Entity[] = []
+        for (const id in parent.entities) {
+            const entity = parent.entities[id]
+            if (distance(parent.character, entity) > G.skills["cleave"].range) continue
+            if (parent.character.attack < calculateDamageRange(parent.character, entity)[0]) continue
+            if (!this.targetPriority[entity.mtype]) continue
+
+            nearbyEntities.push(entity)
+        }
+        if (isAvailable("cleave") && nearbyEntities.length > 3) {
+            use_skill("cleave")
+        }
+        setTimeout(() => { this.cleaveLoop() }, getCooldownMS("cleave"))
     }
 
     chargeLoop(): void {
@@ -279,20 +312,24 @@ class Warrior extends Character {
     }
 
     async tauntLoop(): Promise<void> {
-        const attackingMonsters = getAttackingEntities()
-        const targets = this.getTargets(1)
-        if (attackingMonsters.length == 0 && targets.length && this.wantToAttack(targets[0], "taunt")) {
-            await use_skill("taunt", targets[0])
-        } else if (isAvailable("taunt") && attackingMonsters.length < 2) {
-            // Check if any nearby party members have an attacking enemy. If they do, taunt it away.
-            for (const id in parent.entities) {
-                const e = parent.entities[id]
-                if (!isMonster(e)) continue
-                if (e.target != parent.character.id && parent.party_list.includes(e.target)) {
-                    await use_skill("taunt", e)
-                    break
+        try {
+            const attackingMonsters = getAttackingEntities()
+            const targets = this.getTargets(1, G.skills["taunt"].range)
+            if (attackingMonsters.length == 0 && targets.length && this.wantToAttack(targets[0], "taunt")) {
+                await use_skill("taunt", targets[0])
+            } else if (isAvailable("taunt") && attackingMonsters.length < 2) {
+                // Check if any nearby party members have an attacking enemy. If they do, taunt it away.
+                for (const id in parent.entities) {
+                    const e = parent.entities[id]
+                    if (!isMonster(e)) continue
+                    if (e.target != parent.character.id && parent.party_list.includes(e.target)) {
+                        await use_skill("taunt", e)
+                        break
+                    }
                 }
             }
+        } catch (error) {
+            console.error(error)
         }
         setTimeout(() => { this.tauntLoop() }, getCooldownMS("taunt"))
     }

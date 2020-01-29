@@ -4,22 +4,17 @@ import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } fr
 import { TargetPriorityList } from "./definitions/bots"
 import { isPlayer, getCooldownMS, isAvailable, calculateDamageRange, sleep } from "./functions"
 
-const DIFFICULT = 10
-const MEDIUM = 20
-const EASY = 30
-const SPECIAL = 500
-
 class Ranger extends Character {
     targetPriority: TargetPriorityList = {
         "arcticbee": {
-            "priority": EASY
+            "priority": 0
         },
         "armadillo": {
-            "priority": EASY,
+            "priority": 0,
             "stopOnSight": true
         },
         "bat": {
-            "priority": EASY,
+            "priority": 0,
             "stopOnSight": true,
             "farmingPosition": {
                 "map": "cave",
@@ -31,7 +26,7 @@ class Ranger extends Character {
             "coop": ["priest"],
             "holdPositionFarm": true,
             "holdAttackWhileMoving": true,
-            "priority": DIFFICULT,
+            "priority": 0,
             "farmingPosition": {
                 "map": "winter_cave",
                 "x": -50,
@@ -39,7 +34,7 @@ class Ranger extends Character {
             }
         },
         "bee": {
-            "priority": EASY,
+            "priority": 50,
             "holdPositionFarm": true,
             farmingPosition: {
                 "map": "main",
@@ -49,14 +44,14 @@ class Ranger extends Character {
         },
         "bigbird": {
             // The ranger is fast enough to avoid these fairly well
-            "priority": DIFFICULT,
+            "priority": 0,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
             "stopOnSight": true
         },
         "boar": {
             // Don't attack if we're walking by them, they hurt.
-            "priority": DIFFICULT,
+            "priority": 0,
             "holdAttackWhileMoving": true,
             "stopOnSight": true,
         },
@@ -64,17 +59,17 @@ class Ranger extends Character {
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
             "stopOnSight": true,
-            "priority": DIFFICULT
+            "priority": 0
         },
         "crab": {
-            "priority": EASY
+            "priority": 0
         },
         "crabx": {
             // They can hurt, but they move really slow and they're pretty out of the way.
-            "priority": MEDIUM
+            "priority": 100
         },
         "croc": {
-            "priority": EASY
+            "priority": 100
         },
         // "dragold": {
         //     "coop": ["priest", "warrior"],
@@ -85,32 +80,32 @@ class Ranger extends Character {
         "ghost": {
             "holdAttackWhileMoving": true,
             "stopOnSight": true,
-            "priority": DIFFICULT
+            "priority": 0
         },
         "goldenbat": {
-            "priority": SPECIAL,
+            "priority": 1000,
             "stopOnSight": true
         },
         "goo": {
-            "priority": EASY,
+            "priority": -50,
         },
         "greenjr": {
-            "priority": DIFFICULT,
+            "priority": 1000,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
             "stopOnSight": true
         },
         "hen": {
-            "priority": EASY
+            "priority": 0
         },
         "iceroamer": {
             "holdAttackWhileMoving": true,
-            "priority": DIFFICULT,
+            "priority": 0,
             "stopOnSight": true,
         },
         "jr": {
             // jr has a high evasion %, but the ranger can kinda do it still
-            "priority": DIFFICULT,
+            "priority": 1000,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
             "stopOnSight": true
@@ -119,7 +114,7 @@ class Ranger extends Character {
             "coop": ["priest", "ranger"],
             "holdPositionFarm": true,
             "holdAttackWhileMoving": true,
-            "priority": DIFFICULT,
+            "priority": 0,
             "farmingPosition": {
                 "map": "cyberland",
                 "x": 150,
@@ -127,14 +122,14 @@ class Ranger extends Character {
             }
         },
         "minimush": {
-            "priority": EASY,
+            "priority": 100,
             "stopOnSight": true
         },
         "mole": {
             "coop": ["priest", "warrior"],
             "holdPositionFarm": true,
             "holdAttackWhileMoving": true,
-            "priority": DIFFICULT,
+            "priority": 0,
             "farmingPosition": {
                 "map": "tunnel",
                 "x": -50,
@@ -143,7 +138,7 @@ class Ranger extends Character {
         },
         "mummy": {
             "coop": ["ranger", "priest", "warrior"],
-            "priority": DIFFICULT,
+            "priority": 0,
             "holdPositionFarm": true,
             "holdAttackWhileMoving": true,
             "farmingPosition": {
@@ -153,32 +148,32 @@ class Ranger extends Character {
             }
         },
         "mrgreen": {
-            "priority": SPECIAL,
+            "priority": 1000,
             "stopOnSight": true
         },
         "mrpumpkin": {
-            "priority": SPECIAL,
+            "priority": 1000,
             "stopOnSight": true
         },
         "osnake": {
-            "priority": EASY,
+            "priority": 500,
             "stopOnSight": true
         },
         "phoenix": {
-            "priority": SPECIAL
+            "priority": 1000
         },
         "poisio": {
-            "priority": EASY
+            "priority": 250
         },
         "porcupine": {
-            "priority": EASY
+            "priority": 0
         },
         "prat": {
             // Go to a cliff where we can attack them, but they can't attack us.
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
             "holdPositionFarm": true,
-            "priority": DIFFICULT,
+            "priority": 0,
             farmingPosition: {
                 "map": "level1",
                 "x": -300,
@@ -186,17 +181,18 @@ class Ranger extends Character {
             }
         },
         "rat": {
-            "priority": EASY
+            "priority": 0
         },
         "rooster": {
-            "priority": EASY
+            "priority": 0
         },
         "scorpion": {
-            "priority": MEDIUM
+            "priority": 250
         },
         "snake": {
             // Farm them on the main map because of the +1000% luck and gold bonus chances
-            "priority": EASY,
+            "priority": 0,
+            "stopOnSight": true, // TODO: Temporary
             farmingPosition: {
                 "map": "main",
                 "x": -74,
@@ -204,37 +200,37 @@ class Ranger extends Character {
             }
         },
         "snowman": {
-            "priority": SPECIAL,
+            "priority": 1000,
             "stopOnSight": true
         },
         "spider": {
-            "priority": MEDIUM
+            "priority": 100
         },
         "squig": {
-            "priority": EASY,
+            "priority": 100,
         },
         "squigtoad": {
-            "priority": EASY
+            "priority": 250
         },
         "stoneworm": {
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
             "stopOnSight": true,
-            "priority": DIFFICULT
+            "priority": 0
         },
         "tortoise": {
             "stopOnSight": true,
-            "priority": EASY
+            "priority": 0
         },
         "wolfie": {
             // The ranger is fast enough to kill these without dying too much.
-            "priority": DIFFICULT,
+            "priority": 0,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
             "stopOnSight": true
         },
         "xscorpion": {
-            "priority": DIFFICULT,
+            "priority": 0,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
             "holdPositionFarm": true,
@@ -245,8 +241,8 @@ class Ranger extends Character {
             }
         }
     }
-    mainTarget: MonsterType = "scorpion";
-    startTime = Date.now();
+    mainTarget: MonsterType = "scorpion"
+    startTime = Date.now()
 
     run(): void {
         super.run()
@@ -356,61 +352,69 @@ class Ranger extends Character {
     }
 
     async superShotLoop(): Promise<void> {
-        const targets = this.getTargets(1)
-        if (targets.length
-            && this.wantToAttack(targets[0], "supershot")) {
-            await use_skill("supershot", targets[0])
+        try {
+            const targets = this.getTargets(1, parent.character.range * G.skills["supershot"].range_multiplier)
+            if (targets.length
+                && this.wantToAttack(targets[0], "supershot")) {
+                await use_skill("supershot", targets[0])
+            }
+        } catch (error) {
+            console.error(error)
         }
-
         setTimeout(() => { this.superShotLoop() }, getCooldownMS("supershot"))
     }
 
     protected async attackLoop(): Promise<void> {
-        const targets = this.getTargets(5)
-        if (targets.length >= 5
-            && this.wantToAttack(targets[0], "5shot")) {
-            // See if we can fiveshot some enemies
-            const fiveshotTargets: Entity[] = []
-            for (const entity of targets) {
-                if (!entity.target && (entity.hp > calculateDamageRange(parent.character, entity)[0] * 0.5)) continue // Too much HP, or not targeting us
-                if (distance(parent.character, entity) > parent.character.range) continue
+        try {
+            const targets = this.getTargets(5)
+            if (targets.length >= 5
+                && this.wantToAttack(targets[0], "5shot")) {
+                // See if we can fiveshot some enemies
+                const fiveshotTargets: Entity[] = []
+                for (const entity of targets) {
+                    if (!entity.target && (entity.hp > calculateDamageRange(parent.character, entity)[0] * 0.5)) continue // Too much HP, or not targeting us
+                    if (distance(parent.character, entity) > parent.character.range) continue
 
-                fiveshotTargets.push(entity)
-                if (fiveshotTargets.length == 5) break
+                    fiveshotTargets.push(entity)
+                    if (fiveshotTargets.length == 5) break
+                }
+                if (fiveshotTargets.length == 5) {
+                    await use_skill("5shot", fiveshotTargets)
+                    setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+                    return
+                }
             }
-            if (fiveshotTargets.length == 5) {
-                await use_skill("5shot", fiveshotTargets)
+            if (targets.length >= 3
+                && this.wantToAttack(targets[0], "3shot")) {
+                // See if we can three shot some enemies.
+                const threeshotTargets: Entity[] = []
+                for (const entity of targets) {
+                    if (!entity.target && (entity.hp > calculateDamageRange(parent.character, entity)[0] * 0.7)) continue // Too much HP to kill in one shot (don't aggro too many)
+                    if (distance(parent.character, entity) > parent.character.range) continue
+
+                    threeshotTargets.push(entity)
+                    if (threeshotTargets.length == 3) break
+                }
+                if (threeshotTargets.length == 3) {
+                    await use_skill("3shot", threeshotTargets)
+                    setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+                    return
+                }
+            }
+
+            const piercingShotCalcCharacter = { ...parent.character }
+            piercingShotCalcCharacter.apiercing += G.skills["piercingshot"].apiercing
+            piercingShotCalcCharacter.attack *= G.skills["piercingshot"].damage_multiplier
+            if (targets.length
+                && this.wantToAttack(targets[0], "piercingshot")
+                && calculateDamageRange(piercingShotCalcCharacter, targets[0])[0] > calculateDamageRange(parent.character, targets[0])[0]) {
+                await use_skill("piercingshot", targets[0])
                 setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
                 return
             }
-        }
-        if (targets.length >= 3
-            && this.wantToAttack(targets[0], "3shot")) {
-            // See if we can three shot some enemies.
-            const threeshotTargets: Entity[] = []
-            for (const entity of targets) {
-                if (!entity.target && (entity.hp > calculateDamageRange(parent.character, entity)[0] * 0.7)) continue // Too much HP to kill in one shot (don't aggro too many)
-                if (distance(parent.character, entity) > parent.character.range) continue
-
-                threeshotTargets.push(entity)
-                if (threeshotTargets.length == 3) break
-            }
-            if (threeshotTargets.length == 3) {
-                await use_skill("3shot", threeshotTargets)
-                setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
-                return
-            }
-        }
-
-        const piercingShotCalcCharacter = { ...parent.character }
-        piercingShotCalcCharacter.apiercing += G.skills["piercingshot"].apiercing
-        piercingShotCalcCharacter.attack *= G.skills["piercingshot"].damage_multiplier
-        if (targets.length
-            && this.wantToAttack(targets[0], "piercingshot")
-            && calculateDamageRange(piercingShotCalcCharacter, targets[0])[0] > calculateDamageRange(parent.character, targets[0])[0]) {
-            await use_skill("piercingshot", targets[0])
-            setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
-            return
+        } catch (error) {
+            if (!["cooldown", "not_found", "disabled"].includes(error.reason))
+                console.error(error)
         }
 
         // Can't do a special attack, so let's do a normal one

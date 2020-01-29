@@ -17,6 +17,30 @@ export function isPlayer(entity: Entity): boolean {
     return entity.type == "character" && !isNPC(entity)
 }
 
+export async function startKonami(): Promise<MonsterType> {
+    const result = new Promise<MonsterType>((resolve) => {
+        parent.socket.once("game_response", (response: { response: string; monster: MonsterType }) => {
+            resolve(response.monster)
+        })
+        parent.socket.emit("move", { "key": "up" })
+        parent.socket.emit("move", { "key": "up" })
+        parent.socket.emit("move", { "key": "down" })
+        parent.socket.emit("move", { "key": "down" })
+        parent.socket.emit("move", { "key": "left" })
+        parent.socket.emit("move", { "key": "right" })
+        parent.socket.emit("move", { "key": "left" })
+        parent.socket.emit("move", { "key": "right" })
+        parent.socket.emit("interaction", { "key": "B" })
+        parent.socket.emit("interaction", { "key": "A" })
+        parent.socket.emit("interaction", { "key": "enter" })
+    })
+
+    const timeout: Promise<MonsterType> = new Promise(function (resolve, reject) {
+        setTimeout(reject, 5000)
+    })
+
+    return Promise.race([result, timeout])
+}
 
 /** Returns the inventory for the player, with all empty slots removed. */
 export function getInventory(inventory = parent.character.items): MyItemInfo[] {
@@ -153,6 +177,7 @@ export function getEmptyBankSlots(): EmptyBankSlots[] {
     return emptySlots
 }
 
+// TODO: Add wtype check
 export function isAvailable(skill: SkillName): boolean {
     if (G.skills[skill].level && G.skills[skill].level > parent.character.level) return false // Not a high enough level to use this skill
     let mp = 0
