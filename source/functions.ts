@@ -1,4 +1,4 @@
-import { ItemInfo, MonsterType, ItemName, IPosition, MapName, Entity, PositionReal, SkillName, BankPackType } from "./definitions/adventureland"
+import { ItemInfo, MonsterType, ItemName, IPosition, MapName, Entity, PositionReal, SkillName, BankPackType, CharacterType } from "./definitions/adventureland"
 import { MyItemInfo, EmptyBankSlots, MonsterSpawnPosition } from "./definitions/bots"
 
 export function sleep(ms: number): Promise<void> {
@@ -153,7 +153,22 @@ export function getExchangableItems(inventory?: ItemInfo[]): MyItemInfo[] {
     return items
 }
 
-export function getEmptySlots(store: ItemInfo[]): number[] {
+export function isInventoryFull(store: ItemInfo[] = parent.character.items): boolean {
+    for (let i = 0; i < store.length; i++) {
+        if (!store[i]) return false
+    }
+    return true
+}
+
+export function getPartyMemberTypes(): Set<CharacterType> {
+    const types = new Set<CharacterType>()
+    for (const name of parent.party_list) {
+        types.add(parent.party[name].type)
+    }
+    return types
+}
+
+export function getEmptySlots(store: ItemInfo[] = parent.character.items): number[] {
     const slots: number[] = []
     for (let i = 0; i < store.length; i++) {
         if (!store[i]) slots.push(i)
@@ -177,20 +192,52 @@ export function getEmptyBankSlots(): EmptyBankSlots[] {
     return emptySlots
 }
 
-// TODO: Add wtype check
 export function isAvailable(skill: SkillName): boolean {
-    if (G.skills[skill].level && G.skills[skill].level > parent.character.level) return false // Not a high enough level to use this skill
+    // Check if we have the required level to use this skill
+    const skillLevel = G.skills[skill].level
+    if (skillLevel && skillLevel > parent.character.level) return false
+
+    // Check if we have a status effect preventing us from using this skill
+    if (parent.character.stoned) return false
+    if (parent.character.rip) return false
+
+    // Check if we have the required weapon to use this skill
+    const skillWeaponType = G.skills[skill].wtype
+    if (skillWeaponType && skillWeaponType != G.items[parent.character.slots.mainhand.name].wtype) return false
+
+    // Check if we have the required items to use this skill
+    if (G.skills[skill].slot) {
+        for (const requiredItem of G.skills[skill].slot) {
+            if (parent.character.slots[requiredItem[0]].name != requiredItem[1]) return false
+        }
+    }
+
+    // Check if we have the required class to use this skill
+    if (G.skills[skill].class) {
+        let skillClass = false
+        for (const classType of G.skills[skill].class) {
+            if (classType == parent.character.ctype) {
+                skillClass = true
+                break
+            }
+        }
+        if (!skillClass) return false
+    }
+
+    // Check we have enough MP to use this skill
     let mp = 0
     if (G.skills[skill].mp) {
         mp = G.skills[skill].mp
     } else if (["attack", "heal"].includes(skill)) {
         mp = parent.character.mp_cost
     }
-    if (parent.character.mp < mp) return false // Insufficient MP
-    if (!parent.next_skill) return false
-    if (parent.next_skill[skill] === undefined) return true
-    if (["3shot", "5shot"].includes(skill)) return parent.next_skill["attack"] ? (Date.now() >= parent.next_skill["attack"].getTime()) : true
+    if (parent.character.mp < mp) return false
 
+    // Check if the skill is on cooldown
+    // if (!parent.next_skill) return false // TODO: I don't think that this is possible?
+    if (parent.next_skill[skill] === undefined) return true
+    const skillShare = G.skills[skill].share
+    if (skillShare) return parent.next_skill[skillShare] ? (Date.now() >= parent.next_skill[skillShare].getTime()) : true
     return Date.now() >= parent.next_skill[skill].getTime()
 }
 

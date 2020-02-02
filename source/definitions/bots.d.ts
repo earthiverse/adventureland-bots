@@ -19,6 +19,8 @@ export interface TargetPriorityInfo {
     stopOnSight?: boolean;
 
     farmingPosition?: PositionReal;
+    /* A list of ideal items to equip to bettter deal with these monsters */
+    equip?: ItemName[];
 }
 
 export type MonsterSpawnPosition = PositionReal & {

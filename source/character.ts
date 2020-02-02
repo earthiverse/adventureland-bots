@@ -1,9 +1,10 @@
 import FastPriorityQueue from "fastpriorityqueue"
-import { Entity, IPosition, ItemName, ItemInfo, SlotType, MonsterType, PositionReal, NPCName, SkillName, CharacterEntity } from "./definitions/adventureland"
+import { Entity, IPosition, ItemName, ItemInfo, SlotType, MonsterType, PositionReal, NPCName, SkillName, CharacterEntity, CharacterType } from "./definitions/adventureland"
 import { Pathfinder } from "./pathfinder"
-import { sendMassCM, findItems, getInventory, getRandomMonsterSpawn, getAttackingEntities, getCooldownMS, isAvailable, getNearbyMonsterSpawns, calculateDamageRange } from "./functions"
+import { sendMassCM, findItems, getInventory, getRandomMonsterSpawn, getAttackingEntities, getCooldownMS, isAvailable, getNearbyMonsterSpawns, calculateDamageRange, isInventoryFull, getPartyMemberTypes } from "./functions"
 import { TargetPriorityList, OtherInfo, MyItemInfo, ItemLevelInfo, PriorityEntity } from "./definitions/bots"
 import { dismantleItems, buyPots } from "./trade"
+import { AStarSmartMove } from "./astarsmartmove"
 
 export abstract class Character {
     /** A list of monsters, priorities, and locations to farm. */
@@ -11,6 +12,8 @@ export abstract class Character {
 
     /** The default target if there's nothing else to attack */
     protected abstract mainTarget: MonsterType
+
+    protected astar = new AStarSmartMove()
 
     protected itemsToKeep: ItemName[] = [
         // General
@@ -20,7 +23,7 @@ export abstract class Character {
         // Healing
         "hpot1", "mpot1", "hotchocolate",
         // Used to avoid monster hits
-        "jacko"
+        "jacko", "lantern"
     ]
     protected itemsToSell: ItemLevelInfo = {
         // Default clothing
@@ -235,34 +238,42 @@ export abstract class Character {
         setTimeout(() => { this.sendInfoLoop() }, 5000)
     }
 
-    public shouldSwitchServer(): boolean {
-        if (parent.character.ctype == "merchant") return true // Merchant's go with the flow, man.
+    public getMonsterHuntTargets(): MonsterType[] {
+        const types: MonsterType[] = []
+        let leastTimeRemaining = Number.MAX_VALUE
+        for (const memberName of parent.party_list) {
+            const member = parent.entities[memberName] ? parent.entities[memberName] : this.info.party[memberName]
+            if (!member) continue // No information yet
+            if (!member.s.monsterhunt || member.s.monsterhunt.c == 0) continue // Character doesn't have a monster hunt, or it's (almost) finished
+            if (!this.targetPriority[member.s.monsterhunt.id]) continue // Not in our target priority
 
-        // Monster Hunts
-        if (!parent.character.s.monsterhunt) return false // We can potentially get a monster hunt, don't switch
-        if (this.targetPriority[parent.character.s.monsterhunt.id]) return false // We can do our monster hunt
-        for (const id of parent.party_list) {
-            const member = parent.entities[id] ? parent.entities[id] : this.info.party[id]
-            if (!member || !member.s || !member.s.monsterhunt) continue
-            if (!this.targetPriority[member.s.monsterhunt.id]) continue
-
-            let canCoop = true
-            if (this.targetPriority[member.s.monsterhunt.id].coop) {
-                const availableTypes = []
-                for (const member of parent.party_list) {
-                    availableTypes.push(parent.party[member].type)
-                }
-                for (const type of this.targetPriority[member.s.monsterhunt.id].coop) {
-                    if (!availableTypes.includes(type)) {
-                        canCoop = false
-                        break // We're missing a character type
-                    }
-                }
+            // Check if we can co-op
+            const coop = this.targetPriority[member.s.monsterhunt.id].coop
+            if (coop) {
+                const availableTypes = getPartyMemberTypes()
+                const missingTypes = coop.filter(x => !availableTypes.has(x))
+                if (missingTypes.length) continue
             }
-            if (!canCoop) continue
 
-            return false // We can do a party member's monster hunt
+            // TODO: Check if we can do enough damage to complete the monster hunt in the given time
+
+            // Sort by time left.
+            const timeLeft = member.s.monsterhunt.ms - (Date.now() - new Date(member.last_ms).getTime())
+            if (timeLeft < leastTimeRemaining) {
+                leastTimeRemaining = timeLeft
+                types.unshift(member.s.monsterhunt.id)
+            } else {
+                types.push(member.s.monsterhunt.id)
+            }
         }
+
+        return types
+    }
+
+    public shouldSwitchServer(): boolean {
+        if (parent.character.ctype == "merchant") return true // Merchants don't get to decide
+
+        if (this.getMonsterHuntTargets().length) return false // There's a monster hunt we could do
 
         // Doable event monster
         for (const monster in parent.S) {
@@ -288,9 +299,6 @@ export abstract class Character {
         //         }
         //     }
         // }
-
-        // // NOTE: While we're farming poisios and spiders, don't switch servers
-        // return false;
 
         return true
     }
@@ -385,10 +393,74 @@ export abstract class Character {
         setTimeout(() => { this.scareLoop() }, getCooldownMS("scare"))
     }
 
+    protected moveLoop2(): void {
+        if (this.holdPosition || smart.moving) {
+            setTimeout(() => { this.moveLoop2() }, parent.character.ping)
+            return
+        }
+
+        //// Movement targets
+        // Rare Monsters -- Move to monster
+        for (const id in parent.entities) {
+            const entity = parent.entities[id]
+            if (entity.mtype != "goldenbat" && entity.mtype != "phoenix") continue
+            if (!this.targetPriority[entity.mtype]) continue // Not a target
+            this.movementTarget = entity.mtype
+            this.astar.smartMove(entity, parent.character.range)
+            set_message(entity.mtype)
+            setTimeout(() => { this.moveLoop2() }, parent.character.ping)
+            return
+        }
+
+        // Finish Monster Hunt -- Visit the monsterhunter and turn it in
+        if (parent.character.s.monsterhunt && parent.character.s.monsterhunt.c == 0) {
+            this.movementTarget = undefined
+            this.astar.smartMove(G.maps.main.ref.monsterhunter, 400)
+            set_message("Finish MH")
+            setTimeout(() => { this.moveLoop2() }, parent.character.ping)
+            return
+        }
+
+        // Christmas Tree Bonus -- Visit the tree if it's up and we don't have it
+        if (G.maps.main.ref.newyear_tree && !parent.character.s.holidayspirit) {
+            this.movementTarget = null
+            this.astar.smartMove(G.maps.main.ref.newyear_tree, 400)
+            set_message("Xmas Tree")
+            setTimeout(() => { this.moveLoop2() }, parent.character.ping)
+            return
+        }
+
+        // Full Inventory -- Dump on merchant
+        if (isInventoryFull()) {
+            this.movementTarget = null
+            this.astar.smartMove({ map: "main", "x": 60, "y": -325 }, 400)
+            set_message("Xmas Tree")
+            setTimeout(() => { this.moveLoop2() }, parent.character.ping)
+            return
+        }
+
+        // Event Monsters -- Move to monster
+        for (const mtype in parent.S) {
+            if (!parent.S[mtype as MonsterType].live) continue // Not alive
+            if (!this.targetPriority[mtype as MonsterType]) continue // Not a target
+
+            this.movementTarget = mtype as MonsterType
+            this.astar.smartMove(parent.S[mtype as MonsterType], parent.character.range)
+            set_message(mtype)
+            setTimeout(() => { this.moveLoop2() }, parent.character.ping)
+            return
+        }
+
+
+
+
+        // TODO: Avoid aggressive monsters
+    }
+
     protected last: { message: string; target: PositionReal } = { message: "start", target: parent.character };
     protected moveLoop(): void {
         try {
-            if (this.holdPosition || parent.character.c.town) {
+            if (this.holdPosition) {
                 setTimeout(() => { this.moveLoop() }, Math.max(250, parent.character.ping))
                 return
             }
@@ -488,12 +560,10 @@ export abstract class Character {
                     || (useMpPot.name == "mpot1" && (parent.character.mp <= parent.character.max_mp - 500 || parent.character.mp < 50)))) {
                 use_skill("use_mp")
             }
-
-            setTimeout(() => { this.healLoop() }, Math.max(250, getCooldownMS("use_hp")))
         } catch (error) {
             console.error(error)
-            setTimeout(() => { this.healLoop() }, Math.max(250, getCooldownMS("use_hp")))
         }
+        setTimeout(() => { this.healLoop() }, Math.max(250, getCooldownMS("use_hp")))
     }
 
     /** Checks if there are players on top of us, and moves so that they aren't. Players take damage from attacks to any other character close by. */
@@ -694,14 +764,14 @@ export abstract class Character {
     public getNewYearTreeBuff(): void {
         if (!G.maps.main.ref.newyear_tree) return // Event is not live.
         if (parent.character.s.holidayspirit) return // We already have the buff.
-        if (distance(parent.character, G.maps.main.ref.newyear_tree) > 250) return // Too far away
+        if (distance(parent.character, G.maps.main.ref.newyear_tree) > 400) return // Too far away
 
         parent.socket.emit("interaction", { type: "newyear_tree" })
     }
 
     public getMonsterhuntQuest(): void {
         const monsterhunter: IPosition = { map: "main", x: 126, y: -413 }
-        if (distance(parent.character, monsterhunter) > 250) return // Too far away
+        if (distance(parent.character, monsterhunter) > 400) return // Too far away
         if (!parent.character.s.monsterhunt) {
             // No quest, get a new one
             parent.socket.emit("monsterhunt")
@@ -733,23 +803,51 @@ export abstract class Character {
 
     /** Looks for equipment in our inventory, and if it's more applicable to the current situation, equip it */
     public equipBetterItems(): void {
-        const items = getInventory()
+        try {
+            const items = getInventory()
 
-        for (const slot in parent.character.slots) {
-            let slotItem: ItemInfo = parent.character.slots[slot as SlotType]
-            let betterItem: MyItemInfo
-            if (!slotItem) continue // Nothing equipped in that slot
-            for (const item of items) {
-                if (item.name != slotItem.name) continue // Not the same item
-                if (item.level <= slotItem.level) continue // Not better than the currently equipped item
-
-                // We found something better
-                slotItem = item
-                betterItem = item // Overwrite the slot info, and keep looking
+            // Equip the items we want for this monster
+            if (this.targetPriority[this.movementTarget]) {
+                for (const idealItem of this.targetPriority[this.movementTarget].equip || []) {
+                    let hasItem = false
+                    for (const slot in parent.character.slots) {
+                        const slotInfo = parent.character.slots[slot as SlotType]
+                        if (!slotInfo) continue
+                        if (slotInfo.name == idealItem) {
+                            hasItem = true
+                            break
+                        }
+                    }
+                    if (!hasItem) {
+                        for (const item of items) {
+                            if (item.name == idealItem) {
+                                equip(item.index)
+                                break
+                            }
+                        }
+                    }
+                }
             }
 
-            // Equip our better item
-            if (betterItem) equip(betterItem.index, slot as SlotType)
+            // Equip the most ideal items
+            for (const slot in parent.character.slots) {
+                let slotItem: ItemInfo = parent.character.slots[slot as SlotType]
+                let betterItem: MyItemInfo
+                if (!slotItem) continue // Nothing equipped in that slot
+                for (const item of items) {
+                    if (item.name != slotItem.name) continue // Not the same item
+                    if (item.level <= slotItem.level) continue // Not better than the currently equipped item
+
+                    // We found something better
+                    slotItem = item
+                    betterItem = item // Overwrite the slot info, and keep looking
+                }
+
+                // Equip our better item
+                if (betterItem) equip(betterItem.index, slot as SlotType)
+            }
+        } catch (error) {
+            console.error(error)
         }
     }
 
@@ -815,50 +913,7 @@ export abstract class Character {
         // return { message: "Cold Bois", target: getRandomMonsterSpawnPosition("arcticbee") }
 
         // See if there's a nearby monster hunt (avoid moving as much as possible)
-        const monsterHuntTargets: MonsterType[] = []
-        let lastms = Number.MAX_VALUE
-        for (const memberName of parent.party_list) {
-            const member = parent.entities[memberName] ? parent.entities[memberName] : this.info.party[memberName]
-            if (!member) continue // No information yet
-            if (!member.s.monsterhunt || member.s.monsterhunt.c == 0) continue // They don't have a monster hunt, or are turning it in
-            if (!this.targetPriority[member.s.monsterhunt.id]) continue // We can't do it
-
-            // Check if we have the right party members for it.
-            let canCoop = true
-            if (this.targetPriority[member.s.monsterhunt.id].coop) {
-                const availableTypes = []
-                for (const member of parent.party_list) {
-                    availableTypes.push(parent.party[member].type)
-                }
-                for (const type of this.targetPriority[member.s.monsterhunt.id].coop) {
-                    if (!availableTypes.includes(type)) {
-                        canCoop = false
-                        break // We're missing a character type
-                    }
-                }
-            }
-            if (!canCoop) continue
-
-            // Check if it's impossible for us to complete it in the amount of time given
-            let partyDamageRate = 0
-            const damageToDeal = G.monsters[member.s.monsterhunt.id].hp * member.s.monsterhunt.c
-            const timeLeft = member.s.monsterhunt.ms - (Date.now() - new Date(member.last_ms).getTime())
-            for (const id of parent.party_list) {
-                if (!this.info.party[id]) continue
-                partyDamageRate += this.info.party[id].attack * this.info.party[id].frequency * 0.9
-            }
-            if (damageToDeal / partyDamageRate > timeLeft / 1000) continue
-
-            // weakly sort based on time left. we want to do the monster hunt with the least time left
-
-            if (timeLeft < lastms) {
-                lastms = timeLeft
-                monsterHuntTargets.unshift(member.s.monsterhunt.id)
-            } else {
-                monsterHuntTargets.push(member.s.monsterhunt.id)
-            }
-
-        }
+        const monsterHuntTargets: MonsterType[] = this.getMonsterHuntTargets()
 
         // Move to a monster hunt
         if (monsterHuntTargets.length) {
@@ -1014,9 +1069,9 @@ export abstract class Character {
         for (const id in parent.entities) {
             const potentialTarget = parent.entities[id]
 
+            if (potentialTarget.rip) continue // It's dead
             if (parent.party_list.includes(id)) continue // It's a member of our party
-
-            if (!is_pvp() && potentialTarget.type != "monster") continue // Not interested in non-monsters unless we're on a PVP map
+            if (!is_pvp() && potentialTarget.type != "monster") continue // Not interested in non-monsters unless it's PvP
             if (!this.targetPriority[potentialTarget.mtype] && potentialTarget.target != parent.character.name) continue // Not a monster we care about, and it's not attacking us
 
             // Set the priority based on our targetPriority
@@ -1058,9 +1113,8 @@ export abstract class Character {
     }
 
     public wantToAttack(e: Entity, s: SkillName = "attack"): boolean {
-        if (parent.character.stoned) return false // We are stoned, we can't attack
-        if (G.skills[s].level && G.skills[s].level > parent.character.level) return false // Not a high enough level to use this skill
-        if (!isAvailable(s)) return false // On cooldown
+        if (!isAvailable(s)) return false
+
         if (parent.character.c.town) return false // Teleporting to town
 
         let range = G.skills[s].range ? G.skills[s].range : parent.character.range
@@ -1090,7 +1144,7 @@ export abstract class Character {
                     if (!e) continue
                     if (e.rip) continue // Don't add dead players
                     if (e.ctype == "priest" && distance(parent.character, e) > e.range) continue // We're not within range if we want healing
-                    availableTypes.push(e.ctype)
+                    availableTypes.push(e.ctype as CharacterType)
                 }
                 for (const type of this.targetPriority[e.mtype].coop) {
                     if (!availableTypes.includes(type)) return false
