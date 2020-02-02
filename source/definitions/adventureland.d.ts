@@ -42,6 +42,8 @@ declare global {
   function can_move_to(location: PositionReal): boolean
   function can_move_to(x: number, y: number): boolean
   function can_transport(entity: Entity)
+  /** Checks the class and cooldown */
+  function can_use(skill: SkillName): boolean
   //TODO: Figure out this function and its arguments...
   function can_use_door(f: MapName, door: any, current_x: number, current_y: number)
   function can_walk(entity: Entity): boolean
@@ -90,6 +92,8 @@ declare global {
   function use_skill(name: SkillName, target?: Entity, extraArg?: any): Promise<any>
   // TODO: Is this the right thing to do? Town just here willy nilly?
   function use_skill(name: "town"): Promise<any>
+  /** For destination, it's an array of [x, y] */
+  function use_skill(name: "blink", destination: number[])
   /** This function uses move() if it can, otherwise it uses smart_move() */
   function xmove(x: number, y: number)
 
@@ -166,14 +170,21 @@ declare global {
     } };
     skills: { [T in SkillName]: {
       apiercing?: number;
+      class?: CharacterType[];
       cooldown: number;
       damage_multiplier?: number;
-      level: number;
+      level?: number;
       /** MP Cost for skill */
-      mp: number;
+      mp?: number;
       name: string;
-      range: number;
+      range?: number;
       range_multiplier?: number;
+      /** The cooldown this skill shares with another skill */
+      share?: SkillName;
+      /** The item(s) required to use this skill */
+      slot?: [SlotType, ItemName][];
+      /** The weapon type needed to use this skill */
+      wtype?: WeaponType;
     } };
   }
 }
@@ -221,6 +232,7 @@ export interface GItem {
     [T in AttributeType]?: number
   };
   type: ItemType;
+  wtype: WeaponType;
 }
 
 /**
@@ -238,6 +250,7 @@ export interface CharacterEntity extends Entity {
       ms: number;
     };
   };
+  ctype: CharacterType;
   items: ItemInfo[];
   /** Amount of gold the player has in its inventory */
   gold: number;
@@ -442,6 +455,10 @@ export type ItemType =
   | "material"
   | "misc"
   | "quest"
+
+// TODO: Get all types
+export type WeaponType =
+  | "axe"
 
 export type MonsterType =
   | "arcticbee"

@@ -10,6 +10,7 @@ export class AStarSmartMove {
     private TELEPORT_TOLERANCE = 75 - 2
     private MOVE_TOLERANCE = 1
     private TOWN_TOLERANCE = 1
+    /** The distance from the target in which we start checking if we can walk in a straight line to reach it */
     private FINISH_CHECK_DISTANCE = 200
     /** A list of movements to search for. */
     private MOVEMENTS = [
@@ -19,8 +20,11 @@ export class AStarSmartMove {
         [[-25, 0], [-5, 0]] // left
     ]
 
+    /** A flag for whether or not to use blink for mages */
+    private USE_BLINK = true
+
     /** If we fail pathfinding, we will randomly try to move a small distance to see if it helps */
-    private MOVE_ON_FAIL = true
+    private MOVE_ON_FAIL = false
 
     private SHOW_MESSAGES = false
     private MESSAGE_COLOR = "#F7600E"
@@ -62,8 +66,7 @@ export class AStarSmartMove {
             y: (position.real_y !== undefined ? position.real_y : position.y),
             transportS: position.transportS,
             transportMap: position.transportMap,
-            transportType: position.transportType,
-            town: position.town
+            transportType: position.transportType
         }
         return clean
     }
@@ -218,7 +221,7 @@ export class AStarSmartMove {
         return distance(position, finish)
     }
 
-    private smoothPath2(path: SmartMoveNode[]): SmartMoveNode[] {
+    private smoothPath(path: SmartMoveNode[]): SmartMoveNode[] {
         // console.log(`roughPath (${path.length})`)
         // console.log(path)
 
@@ -228,7 +231,7 @@ export class AStarSmartMove {
         for (let i = 0; i < path.length - 1; i++) {
             const iPath = path[i]
 
-            if (iPath.town) {
+            if (iPath.transportType == "town") {
                 // The warp is the first move we do, so we don't need to do anything before this
                 newPath.push(iPath)
                 break
@@ -262,42 +265,6 @@ export class AStarSmartMove {
         return newPath
     }
 
-    // private smoothPath(path: SmartMoveNode[]): SmartMoveNode[] {
-    //     console.log(`roughPath (${path.length})`)
-    //     console.log(path)
-    //     let newPath: SmartMoveNode[] = []
-    //     newPath.push(path[0])
-    //     for (let i = 0; i < path.length - 1; i++) {
-    //         let pathI = path[i]
-
-    //         let canWalkTo = i + 1
-    //         for (let j = i + 1; j < path.length; j++) {
-    //             let pathJ = path[j]
-    //             if (pathJ.map != pathI.map) break // can't smooth across maps
-
-    //             if (can_move({
-    //                 map: pathI.map,
-    //                 x: pathI.x,
-    //                 y: pathI.y,
-    //                 going_x: pathJ.x,
-    //                 going_y: pathJ.y,
-    //                 base: parent.character.base
-    //             })) {
-    //                 canWalkTo = j
-    //             }
-    //         }
-    //         newPath.push(path[canWalkTo])
-    //         i = canWalkTo - 1
-    //     }
-    //     console.log(`smooth path (${newPath.length})`)
-    //     console.log(newPath)
-
-    //     // Remove the first move position if we're going to town
-    //     if (newPath[1].town) newPath.splice(0, 1)
-
-    //     return newPath
-    // }
-
     private reconstructPath(current: SmartMoveNode, finish: SmartMoveNode, cameFrom: FromMap): SmartMoveNode[] {
         const path: SmartMoveNode[] = []
         path.push({
@@ -308,8 +275,8 @@ export class AStarSmartMove {
             y: finish.y,
             // eslint-disable-next-line @typescript-eslint/camelcase
             real_y: finish.y,
-            town: finish.town,
             transportMap: finish.transportMap,
+            transportType: finish.transportType,
             transportS: finish.transportS
         })
         while (current) {
@@ -321,16 +288,16 @@ export class AStarSmartMove {
                 y: current.y,
                 // eslint-disable-next-line @typescript-eslint/camelcase
                 real_y: current.y,
-                town: current.town,
                 transportMap: current.transportMap,
+                transportType: current.transportType,
                 transportS: current.transportS
             })
             current = cameFrom.get(this.positionToString(current))
         }
-        return this.smoothPath2(path)
+        return this.smoothPath(path)
     }
 
-    public async smartMove(destination: PositionReal): Promise<unknown> {
+    public async smartMove(destination: PositionReal, finishDistanceTolerance = 0): Promise<unknown> {
         this.reset()
         this.startDate = new Date()
 
@@ -344,11 +311,17 @@ export class AStarSmartMove {
             const to = doors[i + 1]
             const doorCacheKey = `${this.positionToString(from)}_${this.positionToString(to)}`
 
-            let subMovements
+            let subMovements: SmartMoveNode[]
             if (this.doorCache.has(doorCacheKey)) {
                 subMovements = this.doorCache.get(doorCacheKey)
             } else {
-                subMovements = await this.getMovements(from, to)
+                if (to.transportType == "door") {
+                    subMovements = await this.getMovements(from, to, this.DOOR_TOLERANCE)
+                } else if (to.transportType == "teleport") {
+                    subMovements = await this.getMovements(from, to, this.TELEPORT_TOLERANCE)
+                } else {
+                    subMovements = await this.getMovements(from, to, finishDistanceTolerance)
+                }
 
                 // Cache all the submovements
                 for (let i = 0; i < subMovements.length; i++) {
@@ -361,6 +334,9 @@ export class AStarSmartMove {
             movements = movements.concat(subMovements)
         }
         if (this.SHOW_MESSAGES) game_log(`a* - finish searching (${((Date.now() - start) / 1000).toFixed(1)} s)`, this.MESSAGE_COLOR)
+
+        console.log("movements")
+        console.log(movements)
 
         let i = 0
         const movementComplete = new Promise((resolve, reject) => {
@@ -383,19 +359,31 @@ export class AStarSmartMove {
                 if (parent.character.moving || is_transporting(parent.character) || !can_walk(parent.character)) {
                     // We are moving, we need to be patient.
                     // TODO: Cooldown based on how much time it will take to walk there
-                } else if (nextMove.map == parent.character.map && nextMove.town) {
+                } else if (nextMove.map == parent.character.map && this.USE_BLINK && can_use("blink") && distance(parent.character, nextMove) > this.TOWN_MOVEMENT_COST && parent.character.mp > G.skills.blink.mp) {
+                    // Find the last movement on this map and blink to it
+                    let j = i
+                    for (; j < movements.length; j++) {
+                        if (movements[j].map !== parent.character.map) {
+                            break
+                        }
+                    }
+                    i = j - 1
+                    setTimeout(() => { movementLoop(start) }, 900)
+                    use_skill("blink", [movements[i].x, movements[i].y])
+                    return
+                } else if (nextMove.map == parent.character.map && nextMove.transportType == "town") {
                     if (distance(parent.character, nextMove) < this.TOWN_TOLERANCE) {
                         i += 1 // we're here -- next
                         movementLoop(start)
                         return
                     } else {
+                        setTimeout(() => { movementLoop(start) }, 900)
                         use_skill("town")
+                        return
                     }
-                    setTimeout(() => { movementLoop(start) }, 900) // Town warps take a while
-                    return
                 } else if (parent.character.map == nextMove.map && can_move_to(nextMove.x, nextMove.y)) {
                     if (distance(parent.character, nextMove) < this.MOVE_TOLERANCE) {
-                        if (nextMove.transportMap) {
+                        if (nextMove.transportType == "door" || nextMove.transportType == "teleport") {
                             if (parent.character.map == nextMove.map) {
                                 transport(nextMove.transportMap, nextMove.transportS)
                                 i += 1 // we're here -- next
@@ -432,7 +420,7 @@ export class AStarSmartMove {
         return await movementComplete
     }
 
-    private async getMovements(start: SmartMoveNode, finish: SmartMoveNode, startTime: Date = this.startDate): Promise<SmartMoveNode[]> {
+    private async getMovements(start: SmartMoveNode, finish: SmartMoveNode, finishDistanceTolerance = 0, startTime: Date = this.startDate): Promise<SmartMoveNode[]> {
         const cleanStart = this.cleanPosition(start)
         const cleanStartString = this.positionToString(cleanStart)
         const cleanFinish = this.cleanPosition(finish)
@@ -458,7 +446,7 @@ export class AStarSmartMove {
             map: cleanStart.map,
             x: G.maps[cleanStart.map].spawns[0][0],
             y: G.maps[cleanStart.map].spawns[0][1],
-            town: true
+            transportType: "town"
         })
         const neighborString = this.positionToString(neighbor)
         const tentativeGScore = gScore.get(cleanStartString) + this.TOWN_MOVEMENT_COST
@@ -482,28 +470,58 @@ export class AStarSmartMove {
             openSetNodes.delete(currentString)
 
             // Check if we can finish pathfinding from the current point
-            if (current.map == cleanFinish.map && distance(current, cleanFinish) < this.FINISH_CHECK_DISTANCE) {
-                const closeFinish = { ...cleanFinish }
-                if (cleanFinish.transportMap) {
-                    // We only have to get close if our destination is a door, we don't have to be on the same position
+            const distanceToFinish = distance(current, cleanFinish)
+            if (distanceToFinish < finishDistanceTolerance) {
+                // We're already within tolerance
+                const path = this.reconstructPath(current, {
+                    ...current,
+                    transportType: cleanFinish.transportType,
+                    transportMap: cleanFinish.transportMap,
+                    transportS: cleanFinish.transportS
+                }, cameFrom)
+                return Promise.resolve(path)
+            } else if (distanceToFinish < finishDistanceTolerance + this.FINISH_CHECK_DISTANCE) {
+                if (finishDistanceTolerance == 0) {
+                    // We want to move to the exact position
+                    if (can_move({
+                        map: current.map,
+                        x: current.x,
+                        y: current.y,
+                        // eslint-disable-next-line @typescript-eslint/camelcase
+                        going_x: cleanFinish.x,
+                        // eslint-disable-next-line @typescript-eslint/camelcase
+                        going_y: cleanFinish.y,
+                        base: parent.character.base
+                    })) {
+                        // We can walk in a straight line to the finish
+                        const path = this.reconstructPath(current, cleanFinish, cameFrom)
+                        return Promise.resolve(path)
+                    }
+                } else {
+                    // We want to move within a certain distance of the position
                     const angle = Math.atan2(current.y - cleanFinish.y, current.x - cleanFinish.x)
-                    closeFinish.x = cleanFinish.x + Math.cos(angle) * (cleanFinish.transportType == "teleport" ? this.TELEPORT_TOLERANCE : this.DOOR_TOLERANCE)
-                    closeFinish.y = cleanFinish.y + Math.sin(angle) * (cleanFinish.transportType == "teleport" ? this.TELEPORT_TOLERANCE : this.DOOR_TOLERANCE)
-                }
-
-                if (can_move({
-                    map: current.map,
-                    x: current.x,
-                    y: current.y,
-                    // eslint-disable-next-line @typescript-eslint/camelcase
-                    going_x: closeFinish.x,
-                    // eslint-disable-next-line @typescript-eslint/camelcase
-                    going_y: closeFinish.y,
-                    base: parent.character.base
-                })) {
-                    // We can walk to the finish, we're done!
-                    const path = this.reconstructPath(current, closeFinish, cameFrom)
-                    return Promise.resolve(path)
+                    const closeFinish: SmartMoveNode = {
+                        map: cleanFinish.map,
+                        x: cleanFinish.x + Math.cos(angle) * finishDistanceTolerance,
+                        y: cleanFinish.y + Math.sin(angle) * finishDistanceTolerance,
+                        transportMap: cleanFinish.transportMap,
+                        transportType: cleanFinish.transportType,
+                        transportS: cleanFinish.transportS
+                    }
+                    if (can_move({
+                        map: current.map,
+                        x: current.x,
+                        y: current.y,
+                        // eslint-disable-next-line @typescript-eslint/camelcase
+                        going_x: closeFinish.x,
+                        // eslint-disable-next-line @typescript-eslint/camelcase
+                        going_y: closeFinish.y,
+                        base: parent.character.base
+                    })) {
+                        // We can walk to the finish, we're done!
+                        const path = this.reconstructPath(current, closeFinish, cameFrom)
+                        return Promise.resolve(path)
+                    }
                 }
             }
 
