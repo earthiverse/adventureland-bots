@@ -273,6 +273,8 @@ export abstract class Character {
     public shouldSwitchServer(): boolean {
         if (parent.character.ctype == "merchant") return true // Merchants don't get to decide
 
+        if (!parent.character.s.monsterhunt) return false // We don't have a monster hunt
+        if (parent.character.s.monsterhunt.c == 0) return false // We have a monster hunt to turn in
         if (this.getMonsterHuntTargets().length) return false // There's a monster hunt we could do
 
         // Doable event monster
