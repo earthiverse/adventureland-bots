@@ -387,29 +387,32 @@ class Merchant extends Character {
     private async luckLoop(): Promise<void> {
         try {
             if (parent.character.mp < 10) {
-                // Do nothing
-            } else if (!parent.character.s.mluck || parent.character.s["mluck"].ms < 10000 || parent.character.s["mluck"].f != parent.character.name) {
+                setTimeout(() => { this.luckLoop() }, getCooldownMS("mluck"))
+                return
+            }
+
+            if (!parent.character.s.mluck || parent.character.s["mluck"].ms < 10000 || parent.character.s["mluck"].f != parent.character.name) {
                 // Luck ourself
                 use_skill("mluck", parent.character)
-            } else {
-                // Luck others
-                for (const id in parent.entities) {
-                    const luckTarget = parent.entities[id]
+                await sleep(G.skills["mluck"].cooldown)
+            }
 
-                    if (!isPlayer(luckTarget) // not a player
-                        || distance(parent.character, luckTarget) > 250 // out of range
-                        || !isAvailable("mluck")) // On cooldown
-                        continue
-                    if (this.luckedCharacters[luckTarget.name] && this.luckedCharacters[luckTarget.name] > Date.now() - parent.character.ping * 2) continue // Prevent spamming luck
-                    if (!luckTarget.s || !luckTarget.s["mluck"] || luckTarget.s["mluck"].ms < 3540000 /* 59 minutes */ || luckTarget.s["mluck"].f != parent.character.name) {
-                        this.luckedCharacters[luckTarget.name] = Date.now()
-                        use_skill("mluck", luckTarget)
-                        await sleep(G.skills["mluck"].cooldown)
-                    }
+            // Luck others
+            for (const id in parent.entities) {
+                const luckTarget = parent.entities[id]
+
+                if (!isPlayer(luckTarget) // not a player
+                    || distance(parent.character, luckTarget) > 250 // out of range
+                    || !isAvailable("mluck")) // On cooldown
+                    continue
+                if (this.luckedCharacters[luckTarget.name] && this.luckedCharacters[luckTarget.name] > Date.now() - parent.character.ping * 2) continue // Prevent spamming luck
+                if (!luckTarget.s || !luckTarget.s["mluck"] || luckTarget.s["mluck"].ms < 3540000 /* 59 minutes */ || luckTarget.s["mluck"].f != parent.character.name) {
+                    this.luckedCharacters[luckTarget.name] = Date.now()
+                    use_skill("mluck", luckTarget)
+                    await sleep(G.skills["mluck"].cooldown)
                 }
             }
-        }
-        catch (error) {
+        } catch (error) {
             console.error(error)
             // NOTE: 2019-12-22 There has been a few instances of an entity not having a .type attribute?
             console.error(parent.entities)

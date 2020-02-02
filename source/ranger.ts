@@ -7,11 +7,13 @@ import { isPlayer, getCooldownMS, isAvailable, calculateDamageRange, sleep } fro
 class Ranger extends Character {
     targetPriority: TargetPriorityList = {
         "arcticbee": {
-            "priority": 0
+            "priority": 0,
+            "equip": ["t2bow", "t2quiver"]
         },
         "armadillo": {
             "priority": 0,
-            "stopOnSight": true
+            "stopOnSight": true,
+            "equip": ["t2bow", "t2quiver"]
         },
         "bat": {
             "priority": 0,
@@ -20,7 +22,8 @@ class Ranger extends Character {
                 "map": "cave",
                 "x": -200,
                 "y": -450
-            }
+            },
+            "equip": ["t2bow", "t2quiver"]
         },
         "bbpompom": {
             "coop": ["priest"],
@@ -31,7 +34,8 @@ class Ranger extends Character {
                 "map": "winter_cave",
                 "x": -50,
                 "y": -100
-            }
+            },
+            "equip": ["t2bow", "t2quiver"]
         },
         "bee": {
             "priority": 50,
@@ -40,36 +44,43 @@ class Ranger extends Character {
                 "map": "main",
                 "x": 550,
                 "y": 1100
-            }
+            },
+            "equip": ["t2bow", "t2quiver"]
         },
         "bigbird": {
             // The ranger is fast enough to avoid these fairly well
             "priority": 0,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
-            "stopOnSight": true
+            "stopOnSight": true,
+            "equip": ["firebow", "t2quiver"]
         },
         "boar": {
             // Don't attack if we're walking by them, they hurt.
             "priority": 0,
             "holdAttackWhileMoving": true,
             "stopOnSight": true,
+            "equip": ["firebow", "t2quiver"]
         },
         "cgoo": {
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
             "stopOnSight": true,
-            "priority": 0
+            "priority": 0,
+            "equip": ["t2bow", "t2quiver"]
         },
         "crab": {
-            "priority": 0
+            "priority": 0,
+            "equip": ["t2bow", "t2quiver"]
         },
         "crabx": {
             // They can hurt, but they move really slow and they're pretty out of the way.
-            "priority": 100
+            "priority": 100,
+            "equip": ["t2bow", "t2quiver"]
         },
         "croc": {
-            "priority": 100
+            "priority": 100,
+            "equip": ["t2bow", "t2quiver"]
         },
         // "dragold": {
         //     "coop": ["priest", "warrior"],
@@ -77,38 +88,63 @@ class Ranger extends Character {
         //     "holdAttackWhileMoving": true,
         //     "stopOnSight": true,
         // },
-        "ghost": {
+        "fireroamer": {
+            "coop": ["priest", "warrior"],
+            "priority": 0,
+            "holdPositionFarm": true,
             "holdAttackWhileMoving": true,
-            "stopOnSight": true,
-            "priority": 0
+            "farmingPosition": {
+                "map": "desertland",
+                "x": 150,
+                "y": -650
+            },
+            "equip": ["firebow", "t2quiver"]
+        },
+        "ghost": {
+            "coop": ["priest"],
+            "priority": 0,
+            "holdAttackWhileMoving": true,
+            "holdPositionFarm": true,
+            "farmingPosition": {
+                "map": "halloween",
+                "x": 400,
+                "y": -1200
+            },
+            "equip": ["firebow", "t2quiver"]
         },
         "goldenbat": {
             "priority": 1000,
-            "stopOnSight": true
+            "stopOnSight": true,
+            "equip": ["t2bow", "t2quiver"]
         },
         "goo": {
             "priority": -50,
+            "equip": ["t2bow", "t2quiver"]
         },
         "greenjr": {
             "priority": 1000,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
-            "stopOnSight": true
+            "stopOnSight": true,
+            "equip": ["firebow", "t2quiver"]
         },
         "hen": {
-            "priority": 0
+            "priority": 0,
+            "equip": ["t2bow", "t2quiver"]
         },
         "iceroamer": {
             "holdAttackWhileMoving": true,
             "priority": 0,
             "stopOnSight": true,
+            "equip": ["t2bow", "t2quiver"]
         },
         "jr": {
             // jr has a high evasion %, but the ranger can kinda do it still
             "priority": 1000,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
-            "stopOnSight": true
+            "stopOnSight": true,
+            "equip": ["firebow", "t2quiver"]
         },
         "mechagnome": {
             "coop": ["priest", "ranger"],
@@ -119,11 +155,13 @@ class Ranger extends Character {
                 "map": "cyberland",
                 "x": 150,
                 "y": -150
-            }
+            },
+            "equip": ["firebow", "t2quiver"]
         },
         "minimush": {
             "priority": 100,
-            "stopOnSight": true
+            "stopOnSight": true,
+            "equip": ["t2bow", "t2quiver"]
         },
         "mole": {
             "coop": ["priest", "warrior"],
@@ -134,10 +172,11 @@ class Ranger extends Character {
                 "map": "tunnel",
                 "x": -50,
                 "y": -75
-            }
+            },
+            "equip": ["firebow", "t2quiver"]
         },
         "mummy": {
-            "coop": ["ranger", "priest", "warrior"],
+            "coop": ["priest", "warrior"],
             "priority": 0,
             "holdPositionFarm": true,
             "holdAttackWhileMoving": true,
@@ -145,28 +184,35 @@ class Ranger extends Character {
                 "map": "spookytown",
                 "x": 175,
                 "y": -1060
-            }
+            },
+            "equip": ["firebow", "t2quiver"]
         },
         "mrgreen": {
             "priority": 1000,
-            "stopOnSight": true
+            "stopOnSight": true,
+            "equip": ["firebow", "t2quiver"]
         },
         "mrpumpkin": {
             "priority": 1000,
-            "stopOnSight": true
+            "stopOnSight": true,
+            "equip": ["firebow", "t2quiver"]
         },
         "osnake": {
             "priority": 500,
-            "stopOnSight": true
+            "stopOnSight": true,
+            "equip": ["t2bow", "t2quiver"]
         },
         "phoenix": {
-            "priority": 1000
+            "priority": 1000,
+            "equip": ["firebow", "t2quiver"]
         },
         "poisio": {
-            "priority": 250
+            "priority": 250,
+            "equip": ["t2bow", "t2quiver"]
         },
         "porcupine": {
-            "priority": 0
+            "priority": 0,
+            "equip": ["t2bow", "t2quiver"]
         },
         "prat": {
             // Go to a cliff where we can attack them, but they can't attack us.
@@ -178,16 +224,20 @@ class Ranger extends Character {
                 "map": "level1",
                 "x": -300,
                 "y": 536
-            }
+            },
+            "equip": ["bow", "quiver"]
         },
         "rat": {
-            "priority": 0
+            "priority": 0,
+            "equip": ["t2bow", "t2quiver"]
         },
         "rooster": {
-            "priority": 0
+            "priority": 0,
+            "equip": ["t2bow", "t2quiver"]
         },
         "scorpion": {
-            "priority": 250
+            "priority": 250,
+            "equip": ["t2bow", "t2quiver"]
         },
         "snake": {
             // Farm them on the main map because of the +1000% luck and gold bonus chances
@@ -197,37 +247,57 @@ class Ranger extends Character {
                 "map": "main",
                 "x": -74,
                 "y": 1904
-            }
+            },
+            "equip": ["t2bow", "t2quiver"]
         },
         "snowman": {
             "priority": 1000,
-            "stopOnSight": true
+            "stopOnSight": true,
+            "equip": ["t2bow", "t2quiver"]
         },
         "spider": {
-            "priority": 100
+            "priority": 100,
+            "equip": ["t2bow", "t2quiver"]
         },
         "squig": {
             "priority": 100,
+            "equip": ["t2bow", "t2quiver"]
         },
         "squigtoad": {
-            "priority": 250
+            "priority": 250,
+            "equip": ["t2bow", "t2quiver"]
         },
         "stoneworm": {
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
             "stopOnSight": true,
-            "priority": 0
+            "priority": 0,
+            "equip": ["t2bow", "t2quiver"]
         },
         "tortoise": {
             "stopOnSight": true,
-            "priority": 0
+            "priority": 0,
+            "equip": ["t2bow", "t2quiver"]
+        },
+        "wolf": {
+            "coop": ["priest", "warrior"],
+            "priority": 0,
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "farmingPosition": {
+                "map": "winterland",
+                "x": 375,
+                "y": -2475
+            },
+            "equip": ["firebow", "t2quiver"]
         },
         "wolfie": {
             // The ranger is fast enough to kill these without dying too much.
             "priority": 0,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
-            "stopOnSight": true
+            "stopOnSight": true,
+            "equip": ["firebow", "t2quiver"]
         },
         "xscorpion": {
             "priority": 0,
@@ -238,10 +308,11 @@ class Ranger extends Character {
                 "map": "halloween",
                 "x": -230,
                 "y": 570
-            }
+            },
+            "equip": ["firebow", "t2quiver"]
         }
     }
-    mainTarget: MonsterType = "scorpion"
+    mainTarget: MonsterType = "poisio"
     startTime = Date.now()
 
     run(): void {
@@ -249,6 +320,17 @@ class Ranger extends Character {
         this.superShotLoop()
         this.huntersmarkLoop()
         // this.fourFingersLoop();
+    }
+
+    constructor() {
+        super()
+        // TODO: change this to levels like items to sell
+        this.itemsToKeep.push(
+            // Bows
+            "bow", "firebow", "t2bow",
+            // Quivers
+            /*"quiver",*/ "t2quiver"
+        )
     }
 
     async mainLoop(): Promise<void> {
@@ -260,27 +342,22 @@ class Ranger extends Character {
             this.createParty(["earthMag", "earthWar", "earthMer", "earthPri"])
 
             // Switch between warrior and mage if they are idle
-            const monsterHunts = []
-            for (const member of parent.party_list) {
-                if (this.info.party[member] && this.info.party[member].monsterHuntTarget) {
-                    monsterHunts.push(this.info.party[member].monsterHuntTarget)
-                }
-            }
             if (parent.party_list.includes("earthMag")
                 && this.info.party.earthMag
                 && this.info.party.earthMag.shouldSwitchServer
-                && !monsterHunts.includes(this.info.party.earthMag.s.monsterhunt.id) // Another member is doing this member's monster hunt
                 && Date.now() - this.startTime > 120000) {
                 this.startTime = Date.now()
+                this.info.party.earthWar = undefined
                 stop_character("earthMag")
                 start_character("earthWar")
+
                 await sleep(2500)
             } else if (parent.party_list.includes("earthWar")
                 && this.info.party.earthWar
                 && this.info.party.earthWar.shouldSwitchServer
-                && !monsterHunts.includes(this.info.party.earthWar.s.monsterhunt.id) // Another member is doing this member's monster hunt
                 && Date.now() - this.startTime > 120000) {
                 this.startTime = Date.now()
+                this.info.party.earthMag = undefined
                 stop_character("earthWar")
                 start_character("earthMag")
                 await sleep(2500)

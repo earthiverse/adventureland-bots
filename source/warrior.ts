@@ -2,7 +2,7 @@ import { Character } from "./character"
 import { MonsterType, Entity } from "./definitions/adventureland"
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from "./trade"
 import { TargetPriorityList } from "./definitions/bots"
-import { getCooldownMS, getAttackingEntities, calculateDamageRange, isAvailable, isMonster } from "./functions"
+import { getCooldownMS, getAttackingEntities, calculateDamageRange, isAvailable, isMonster, findItems } from "./functions"
 
 const DIFFICULT = 10
 const MEDIUM = 20
@@ -12,7 +12,8 @@ const SPECIAL = 500
 class Warrior extends Character {
     targetPriority: TargetPriorityList = {
         "arcticbee": {
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["bataxe"]
         },
         "bat": {
             "priority": EASY,
@@ -21,7 +22,8 @@ class Warrior extends Character {
                 "map": "cave",
                 "x": 1250,
                 "y": -800
-            }
+            },
+            "equip": ["bataxe"]
         },
         "bbpompom": {
             "coop": ["priest"],
@@ -32,10 +34,12 @@ class Warrior extends Character {
                 "map": "winter_cave",
                 "x": 0,
                 "y": -100
-            }
+            },
+            "equip": ["basher"]
         },
         "bee": {
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["bataxe"]
         },
         "boar": {
             // The ranger is fast enough to kill these without dying too much.
@@ -47,13 +51,16 @@ class Warrior extends Character {
                 "map": "winterland",
                 "x": 0,
                 "y": -850
-            }
+            },
+            "equip": ["basher"]
         },
         "crab": {
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["bataxe"]
         },
         "croc": {
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["bataxe"]
         },
         // "dragold": {
         //     "coop": ["priest"],
@@ -61,18 +68,44 @@ class Warrior extends Character {
         //     "holdAttackWhileMoving": true,
         //     "stopOnSight": true,
         // },
+        "fireroamer": {
+            "coop": ["priest"],
+            "priority": 0,
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "farmingPosition": {
+                "map": "desertland",
+                "x": 200,
+                "y": -700
+            },
+            "equip": ["basher"]
+        },
+        "ghost": {
+            "coop": ["priest"],
+            "priority": 0,
+            "holdAttackWhileMoving": true,
+            "holdPositionFarm": true,
+            "farmingPosition": {
+                "map": "halloween",
+                "x": 400,
+                "y": -1100
+            }
+        },
         "goldenbat": {
             "priority": SPECIAL,
-            "stopOnSight": true
+            "stopOnSight": true,
+            "equip": ["bataxe"]
         },
         "goo": {
             "priority": EASY,
+            "equip": ["bataxe"]
         },
         "greenjr": {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
-            "stopOnSight": true
+            "stopOnSight": true,
+            "equip": ["basher"]
         },
         "mechagnome": {
             "coop": ["priest", "ranger"],
@@ -83,11 +116,13 @@ class Warrior extends Character {
                 "map": "cyberland",
                 "x": 150,
                 "y": -100
-            }
+            },
+            "equip": ["basher"]
         },
         "minimush": {
             "priority": EASY,
-            "stopOnSight": true
+            "stopOnSight": true,
+            "equip": ["bataxe"]
         },
         "mole": {
             "coop": ["priest", "warrior"],
@@ -98,10 +133,11 @@ class Warrior extends Character {
                 "map": "tunnel",
                 "x": 0,
                 "y": -75
-            }
+            },
+            "equip": ["basher"]
         },
         "mummy": {
-            "coop": ["ranger", "priest", "warrior"],
+            "coop": ["priest"],
             "priority": DIFFICULT,
             "holdPositionFarm": true,
             "holdAttackWhileMoving": true,
@@ -109,20 +145,24 @@ class Warrior extends Character {
                 "map": "spookytown",
                 "x": 255,
                 "y": -1090
-            }
+            },
+            "equip": ["basher"]
         },
         // "osnake": {
         //     "priority": EASY,
         //     "stopOnSight": true
         // },
         "phoenix": {
-            "priority": SPECIAL
+            "priority": SPECIAL,
+            "equip": ["basher"]
         },
         "rat": {
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["bataxe"]
         },
         "scorpion": {
-            "priority": MEDIUM
+            "priority": MEDIUM,
+            "equip": ["bataxe"]
         },
         "snake": {
             // Farm them on the main map because of the +1000% luck and gold bonus chances
@@ -132,24 +172,41 @@ class Warrior extends Character {
                 "map": "main",
                 "x": -74,
                 "y": 1904
-            }
+            },
+            "equip": ["bataxe"]
         },
         "snowman": {
             "priority": SPECIAL,
-            "stopOnSight": true
+            "stopOnSight": true,
+            "equip": ["bataxe"]
         },
         "spider": {
-            "priority": MEDIUM
+            "priority": MEDIUM,
+            "equip": ["bataxe"]
         },
         "squig": {
             "priority": EASY,
+            "equip": ["bataxe"]
         },
         // "squigtoad": {
         //     "priority": EASY
         // },
         "tortoise": {
             "stopOnSight": true,
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["bataxe"]
+        },
+        "wolf": {
+            "coop": ["priest"],
+            "priority": 0,
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "farmingPosition": {
+                "map": "winterland",
+                "x": 450,
+                "y": -2500
+            },
+            "equip": ["basher"]
         },
         "wolfie": {
             // The ranger is fast enough to kill these without dying too much.
@@ -161,10 +218,11 @@ class Warrior extends Character {
                 "map": "winterland",
                 "x": 0,
                 "y": -1825
-            }
+            },
+            "equip": ["basher"]
         },
     }
-    mainTarget: MonsterType = "spider";
+    mainTarget: MonsterType = "crab";
 
     constructor() {
         super()
@@ -196,7 +254,52 @@ class Warrior extends Character {
             setTimeout(() => { this.mainLoop() }, 250)
         }
     }
+    protected scareLoop(): void {
+        try {
+            const targets = getAttackingEntities()
+            let wantToScare = false
+            if (targets.length >= 4) {
+                wantToScare = true
+            } else if (targets.length && !this.targetPriority[targets[0].mtype]) {
+                wantToScare = true
+            } else if (targets.length && parent.character.c.town) {
+                wantToScare = true
+            } else {
+                for (const target of targets) {
+                    if (distance(target, parent.character) > target.range) continue // They're out of range
+                    if (calculateDamageRange(target, parent.character)[1] * 6 * target.frequency <= parent.character.hp) continue // We can tank a few of their shots
+                    // if (this.targets[target.mtype]) continue
 
+                    wantToScare = true
+                    break
+                }
+            }
+            if (!isAvailable("scare") // On cooldown
+                || !wantToScare) { // Can't be easily killed
+                setTimeout(() => { this.scareLoop() }, getCooldownMS("scare"))
+                return
+            }
+
+
+            if (parent.character.slots.orb.name == "jacko") {
+                // We have a jacko equipped
+                use_skill("scare")
+            } else {
+                // Check if we have a jacko in our inventory
+                const items = findItems("jacko")
+                if (items.length) {
+                    const jackoI = items[0].index
+                    equip(jackoI) // Equip the jacko
+                    use_skill("scare") // Scare the monsters away
+                }
+            }
+        } catch (error) {
+            console.error(error)
+        }
+        setTimeout(() => { this.scareLoop() }, getCooldownMS("scare"))
+    }
+
+    // TODO: Improve. 
     agitateLoop(): void {
         try {
             if (isAvailable("agitate")) {
@@ -212,11 +315,11 @@ class Warrior extends Character {
                         break
                     }
                     if (d <= G.skills["agitate"].range) {
-                        if (!this.wantToAttack(e)) {
-                            // There's something we don't want to attack in agitate range, so don't use it.
-                            inAgitateCount = 0
-                            break
-                        }
+                        // if (!this.wantToAttack(e)) {
+                        //     // There's something we don't want to attack in agitate range, so don't use it.
+                        //     inAgitateCount = 0
+                        //     break
+                        // }
                         if (d <= parent.character.range) {
                             // There's something in attacking range already, we don't need to agitate to attack stuff
                             inAgitateCount = 0
@@ -225,7 +328,7 @@ class Warrior extends Character {
                         inAgitateCount += 1
                     }
                 }
-                if (inAgitateCount == 1 || inAgitateCount == 2) {
+                if (inAgitateCount == 1 || inAgitateCount == 2 || inAgitateCount == 3) {
                     use_skill("agitate")
                 }
             }
@@ -258,7 +361,7 @@ class Warrior extends Character {
 
     stompLoop(): void {
         // TODO: Move this to isAvailable
-        if(parent.character.slots.mainhand.name != "basher") {
+        if (parent.character.slots.mainhand.name != "basher") {
             setTimeout(() => { this.stompLoop() }, 1000)
             return
         }
@@ -275,7 +378,7 @@ class Warrior extends Character {
 
     cleaveLoop(): void {
         // TODO: Move this to isAvailable
-        if(parent.character.slots.mainhand.name != "bataxe") {
+        if (parent.character.slots.mainhand.name != "bataxe") {
             setTimeout(() => { this.cleaveLoop() }, 1000)
             return
         }
@@ -311,6 +414,7 @@ class Warrior extends Character {
         setTimeout(() => { this.hardshellLoop() }, getCooldownMS("hardshell"))
     }
 
+    // TODO: Improve.
     async tauntLoop(): Promise<void> {
         try {
             const attackingMonsters = getAttackingEntities()

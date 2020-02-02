@@ -2,7 +2,7 @@ import { Character } from "./character"
 import { MonsterType } from "./definitions/adventureland"
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from "./trade"
 import { TargetPriorityList } from "./definitions/bots"
-import { getCooldownMS } from "./functions"
+import { getCooldownMS, isAvailable } from "./functions"
 
 const DIFFICULT = 10
 const MEDIUM = 20
@@ -103,14 +103,30 @@ class Priest extends Character {
         //     "holdAttackWhileMoving": true,
         //     "stopOnSight": true,
         // },
+        "fireroamer": {
+            "coop": ["warrior"],
+            "priority": 0,
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "farmingPosition": {
+                "map": "desertland",
+                "x": 100,
+                "y": -650
+            }
+        },
         "frog": {
             "priority": EASY
         },
         "ghost": {
-            // Don't attack if we're walking by them, they hurt.
+            "coop": ["priest"],
+            "priority": 0,
             "holdAttackWhileMoving": true,
-            "stopOnSight": true,
-            "priority": DIFFICULT
+            "holdPositionFarm": true,
+            "farmingPosition": {
+                "map": "halloween",
+                "x": 300,
+                "y": -1100
+            }
         },
         "goldenbat": {
             "priority": SPECIAL,
@@ -174,7 +190,7 @@ class Priest extends Character {
             "stopOnSight": true
         },
         "mummy": {
-            "coop": ["ranger", "priest", "warrior"],
+            "coop": ["warrior"],
             "priority": DIFFICULT,
             "holdPositionFarm": true,
             "holdAttackWhileMoving": true,
@@ -249,6 +265,17 @@ class Priest extends Character {
         // "tortoise": {
         //     "priority": EASY
         // },
+        "wolf": {
+            "coop": ["warrior"],
+            "priority": 0,
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "farmingPosition": {
+                "map": "winterland",
+                "x": 525,
+                "y": -2475
+            }
+        },
         "wolfie": {
             // The ranger is fast enough to kill these without dying too much.
             "coop": ["warrior", "priest"],
@@ -273,7 +300,7 @@ class Priest extends Character {
             }
         }
     }
-    mainTarget: MonsterType = "spider";
+    mainTarget: MonsterType = "poisio";
 
     async mainLoop(): Promise<void> {
         try {
@@ -286,6 +313,49 @@ class Priest extends Character {
             console.error(error)
             setTimeout(() => { this.mainLoop() }, 250)
         }
+    }
+
+    run(): void {
+        super.run()
+        this.darkBlessingLoop()
+        this.partyHealLoop()
+    }
+    
+    protected partyHealLoop(): void {
+        if(isAvailable("partyheal")) {
+            for(const member of parent.party_list) {
+                const e = parent.entities[member]
+                if(!e) continue
+                if(e.rip) continue
+                if(e.hp / e.max_hp < 0.5) {
+                    use_skill("partyheal")
+                    break
+                }
+            }
+        }
+        setTimeout(() => { this.partyHealLoop() }, getCooldownMS("partyheal"))
+    }
+
+    protected darkBlessingLoop(): void {
+        if (isAvailable("darkblessing")) {
+            // Check if there are at least two party members nearby
+            let count = 0
+            for (const member of parent.party_list) {
+                const e = parent.entities[member]
+                if (!e) continue
+                if (e.ctype == "merchant") continue
+                if (e.id == parent.character.id) continue
+
+                if (parent.distance(parent.character, e) < G.skills["darkblessing"].range) {
+                    count += 1
+                }
+                if (count == 2) {
+                    use_skill("darkblessing")
+                    break
+                }
+            }
+        }
+        setTimeout(() => { this.darkBlessingLoop() }, getCooldownMS("darkblessing"))
     }
 
     protected async attackLoop(): Promise<void> {

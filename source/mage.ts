@@ -84,14 +84,30 @@ class Mage extends Character {
         "croc": {
             "priority": EASY
         },
+        "fireroamer": {
+            "coop": ["priest", "warrior"],
+            "priority": 0,
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "farmingPosition": {
+                "map": "desertland",
+                "x": 150,
+                "y": -650
+            }
+        },
         "frog": {
             "priority": EASY
         },
         "ghost": {
-            // Don't attack if we're walking by them, they hurt.
+            "coop": ["priest"],
+            "priority": 0,
             "holdAttackWhileMoving": true,
-            "stopOnSight": true,
-            "priority": DIFFICULT
+            "holdPositionFarm": true,
+            "farmingPosition": {
+                "map": "halloween",
+                "x": 300,
+                "y": -1200
+            }
         },
         "goldenbat": {
             "priority": SPECIAL,
@@ -228,6 +244,17 @@ class Mage extends Character {
             "stopOnSight": true,
             "priority": EASY
         },
+        "wolf": {
+            "coop": ["priest", "warrior"],
+            "priority": 0,
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "farmingPosition": {
+                "map": "winterland",
+                "x": 375,
+                "y": -2475
+            }
+        },
         "xscorpion": {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
@@ -258,27 +285,6 @@ class Mage extends Character {
             console.error(error)
             setTimeout(() => { this.mainLoop() }, 250)
         }
-    }
-
-    blessingLoop(): void {
-        if (isAvailable("darkblessing")) {
-            // Check if there are at least two party members nearby
-            let count = 0
-            for (const member of parent.party_list) {
-                const e = parent.entities[member]
-                if (!e) continue
-                if (e.ctype == "merchant") continue
-
-                if (parent.distance(parent.character, e) < G.skills["darkblessing"].range) {
-                    count += 1
-                }
-                if (count == 2) {
-                    use_skill("darkblessing")
-                    break
-                }
-            }
-        }
-        setTimeout(() => { this.blessingLoop() }, getCooldownMS("darkblessing"))
     }
 
     // TODO: cast on the member of the party with the lowest mp
