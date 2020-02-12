@@ -78,6 +78,8 @@ export function upgradeItem(itemname: ItemName, targetLevel: number): void {
     }
 }
 
+// TODO: There's a bug with the sorting, it doesn't work right.
+// We should use a set instead with a string like `${item.name}.${item.level}` as a key, and an array of indexes as a value
 export function compoundIfMany(maxLevel: number): void {
     if (parent.character.map == "bank") return // We can't do things in the bank
     if (parent.character.q.compound) return // Already compounding

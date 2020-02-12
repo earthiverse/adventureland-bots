@@ -3,6 +3,7 @@ import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } fr
 import { TargetPriorityList } from "./definitions/bots"
 import { MonsterType } from "./definitions/adventureland"
 import { getCooldownMS, isAvailable } from "./functions"
+import { use } from "nconf"
 
 const DIFFICULT = 10
 const MEDIUM = 20
@@ -15,8 +16,7 @@ class Mage extends Character {
             "priority": EASY
         },
         "armadillo": {
-            "priority": EASY,
-            "stopOnSight": true
+            "priority": EASY
         },
         "bat": {
             "priority": EASY,
@@ -54,8 +54,7 @@ class Mage extends Character {
         "boar": {
             // Don't attack if we're walking by them, they hurt.
             "priority": DIFFICULT,
-            "holdAttackWhileMoving": true,
-            "stopOnSight": true,
+            "holdAttackWhileMoving": true
         },
         "booboo": {
             "coop": ["priest", "mage"],
@@ -70,7 +69,6 @@ class Mage extends Character {
         },
         "cgoo": {
             "holdAttackWhileMoving": true,
-            "stopOnSight": true,
             "holdAttackInEntityRange": true,
             "priority": DIFFICULT
         },
@@ -110,8 +108,7 @@ class Mage extends Character {
             }
         },
         "goldenbat": {
-            "priority": SPECIAL,
-            "stopOnSight": true
+            "priority": SPECIAL
         },
         "goo": {
             "priority": EASY,
@@ -119,8 +116,7 @@ class Mage extends Character {
         "greenjr": {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
-            "holdAttackWhileMoving": true,
-            "stopOnSight": true
+            "holdAttackWhileMoving": true
         },
         "hen": {
             "priority": EASY
@@ -128,14 +124,12 @@ class Mage extends Character {
         "iceroamer": {
             // Don't attack if we're walking by them, they hurt.
             "holdAttackWhileMoving": true,
-            "priority": DIFFICULT,
-            "stopOnSight": true,
+            "priority": DIFFICULT
         },
         "jr": {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
-            "holdAttackWhileMoving": true,
-            "stopOnSight": true
+            "holdAttackWhileMoving": true
         },
         "mechagnome": {
             "coop": ["priest", "ranger"],
@@ -149,8 +143,7 @@ class Mage extends Character {
             }
         },
         "minimush": {
-            "priority": EASY,
-            "stopOnSight": true
+            "priority": EASY
         },
         // "mole": {
         //     "coop": ["priest", "mage", "ranger"],
@@ -164,24 +157,23 @@ class Mage extends Character {
         //     }
         // },
         "mrgreen": {
-            "priority": SPECIAL,
-            "stopOnSight": true
+            "priority": SPECIAL
         },
         "mrpumpkin": {
-            "priority": SPECIAL,
-            "stopOnSight": true
+            "priority": SPECIAL
         },
         // "osnake": {
-        //     "priority": EASY,
-        //     "stopOnSight": true
+        //     "priority": EASY
         // },
         "phoenix": {
             "priority": SPECIAL
         },
+        "pinkgoo": {
+            "priority": 1000
+        },
         "plantoid": {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
-            "stopOnSight": true,
             "holdAttackWhileMoving": true
         },
         "poisio": {
@@ -221,8 +213,7 @@ class Mage extends Character {
             }
         },
         "snowman": {
-            "priority": SPECIAL,
-            "stopOnSight": true
+            "priority": SPECIAL
         },
         "spider": {
             "priority": MEDIUM
@@ -237,11 +228,9 @@ class Mage extends Character {
             // Don't attack if we're walking by them, they hurt.
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
-            "stopOnSight": true,
             "priority": DIFFICULT
         },
         "tortoise": {
-            "stopOnSight": true,
             "priority": EASY
         },
         "wolf": {
@@ -272,6 +261,7 @@ class Mage extends Character {
     run(): void {
         super.run()
         this.energizeLoop()
+        // this.magiportLoop()
     }
 
     async mainLoop(): Promise<void> {
@@ -285,6 +275,29 @@ class Mage extends Character {
             console.error(error)
             setTimeout(() => { this.mainLoop() }, 250)
         }
+    }
+
+    cburstLoop(): void {
+        try {
+            const targets: [string, number][] = []
+            let manaUse = G.skills.cburst.mp
+            for (const target of this.getTargets(10, parent.character.range)) {
+                if (target.hp > 100) continue
+                if (!this.wantToAttack(target, "cburst")) continue
+
+                const manaCost = target.hp / G.skills.cburst.ratio
+                if (manaUse + manaCost > parent.character.mp) break
+
+                manaUse += manaCost
+                targets.push([target.id, manaCost])
+            }
+            if (isAvailable("cburst") && targets.length) {
+                use_skill("cburst", targets)
+            }
+        } catch (error) {
+            console.error(error)
+        }
+        setTimeout(() => { this.cburstLoop() }, getCooldownMS("cburst"))
     }
 
     // TODO: cast on the member of the party with the lowest mp
@@ -305,6 +318,32 @@ class Mage extends Character {
         }
         setTimeout(() => { this.energizeLoop() }, getCooldownMS("energize"))
     }
+
+    // magiportLoop(): void {
+    //     try {
+    //         // Get a list of all nearby monsters
+    //         const nearbyMonsters = getVisibleMonsterTypes()
+    //         if (isAvailable("magiport")) {
+    //             for (const memberName of parent.party_list) {
+    //                 if (memberName == parent.character.name) continue // Don't magiport ourselves?
+    //                 if (parent.entities[memberName]) continue // Already nearby
+    //                 const member = this.info.party[memberName]
+    //                 if (!member) continue // No info yet
+
+
+    // TODO: Fix the following line now that we deal with a list of monsterHuntTargets
+    //                 if (member.monsterHuntTargets && nearbyMonsters.has(member.monsterHuntTarget)) {
+    //                     // TODO: Offer a magiport
+    //                     use_skill("magiport", memberName)
+    //                     break
+    //                 }
+    //             }
+    //         }
+    //     } catch (error) {
+    //         console.error(error)
+    //     }
+    //     setTimeout(() => { this.magiportLoop() }, getCooldownMS("magiport"))
+    // }
 }
 
 const mage = new Mage()

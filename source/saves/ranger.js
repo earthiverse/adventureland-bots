@@ -25,4 +25,9 @@ function on_cm(name, data) {
     bots.ranger.parseCM(name, data)
 }
 
+function on_magiport(name) {
+    if(name != "earthMag") return
+    accept_magiport(name)
+}
+
 pause()

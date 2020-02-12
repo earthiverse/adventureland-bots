@@ -76,10 +76,16 @@ export function transferItemsToMerchant(merchantName: string, itemsToKeep: ItemN
     if (!merchant) return // No merchant nearby
     if (distance(parent.character, merchant) > 250) return // Merchant is too far away to trade
 
+    const itemsToKeepSet = new Set(itemsToKeep)
+
     for (let i = 0; i < parent.character.items.length; i++) {
         const item = parent.character.items[i]
         if (!item) continue // Empty slot
-        if (itemsToKeep.includes(item.name)) continue // We want to keep this
+        if (itemsToKeepSet.has(item.name)) {
+            // We want to keep this item, but we only need to keep one slot worth of this item, let's keep the first item found
+            itemsToKeepSet.delete(item.name)
+            continue
+        }
 
         if (item.q) {
             send_item(merchantName, i, item.q)

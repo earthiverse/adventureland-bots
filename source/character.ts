@@ -1,8 +1,7 @@
 import FastPriorityQueue from "fastpriorityqueue"
 import { Entity, IPosition, ItemName, ItemInfo, SlotType, MonsterType, PositionReal, NPCName, SkillName, CharacterEntity, CharacterType } from "./definitions/adventureland"
-import { Pathfinder } from "./pathfinder"
-import { sendMassCM, findItems, getInventory, getRandomMonsterSpawn, getAttackingEntities, getCooldownMS, isAvailable, getNearbyMonsterSpawns, calculateDamageRange, isInventoryFull, getPartyMemberTypes } from "./functions"
-import { TargetPriorityList, OtherInfo, MyItemInfo, ItemLevelInfo, PriorityEntity } from "./definitions/bots"
+import { sendMassCM, findItems, getInventory, getRandomMonsterSpawn, getAttackingEntities, getCooldownMS, isAvailable, getNearbyMonsterSpawns, calculateDamageRange, isInventoryFull, getPartyMemberTypes, getVisibleMonsterTypes, sleep } from "./functions"
+import { TargetPriorityList, OtherInfo, MyItemInfo, ItemLevelInfo, PriorityEntity, MovementTarget } from "./definitions/bots"
 import { dismantleItems, buyPots } from "./trade"
 import { AStarSmartMove } from "./astarsmartmove"
 
@@ -21,7 +20,7 @@ export abstract class Character {
         // Boosters
         "goldbooster", "luckbooster", "xpbooster",
         // Healing
-        "hpot1", "mpot1", "hotchocolate",
+        "hpot1", "mpot1", "hotchocolate", "candypop",
         // Used to avoid monster hits
         "jacko", "lantern"
     ]
@@ -55,7 +54,7 @@ export abstract class Character {
     ])
     protected itemsToBuy: Set<ItemName> = new Set([
         // Exchangables
-        ...this.itemsToExchange,
+        ...this.itemsToExchange, "candypop",
         // Belts
         "dexbelt", "intbelt", "strbelt",
         // Rings
@@ -104,14 +103,14 @@ export abstract class Character {
     /** Set to true to stop attacks. We might still attack if the target is attacking us. */
     public holdAttack = false
 
-    public pathfinder: Pathfinder = new Pathfinder()
-    public movementTarget: MonsterType
+    public movementTarget: MovementTarget
 
     /** Information about the state of the game that is useful to us */
     protected info: OtherInfo = {
         party: {},
         npcs: {},
-        players: {}
+        players: {},
+        monsters: {}
     }
 
     protected async mainLoop(): Promise<void> {
@@ -125,6 +124,13 @@ export abstract class Character {
             this.getNewYearTreeBuff()
             dismantleItems()
 
+            if (parent.character.slots.elixir == null) {
+                const items = findItems("candypop")
+                if (items) {
+                    equip(items[0].index)
+                }
+            }
+
             this.loot()
         } catch (error) {
             console.error(error)
@@ -136,7 +142,7 @@ export abstract class Character {
         this.healLoop()
         this.attackLoop()
         this.scareLoop()
-        this.moveLoop()
+        this.moveLoop2()
         this.sendInfoLoop()
         this.mainLoop()
     }
@@ -174,7 +180,7 @@ export abstract class Character {
                 "info": {
                     "lastSeen": new Date(),
                     "shouldSwitchServer": this.shouldSwitchServer(),
-                    "monsterHuntTarget": this.movementTarget,
+                    "monsterHuntTargets": this.getMonsterHuntTargets(),
                     "items": getInventory(),
                     "attack": parent.character.attack,
                     "frequency": parent.character.frequency,
@@ -258,6 +264,7 @@ export abstract class Character {
             // TODO: Check if we can do enough damage to complete the monster hunt in the given time
 
             // Sort by time left.
+            // TODO: Improve prioritization. For example, frogs are easy, so do them first
             const timeLeft = member.s.monsterhunt.ms - (Date.now() - new Date(member.last_ms).getTime())
             if (timeLeft < leastTimeRemaining) {
                 leastTimeRemaining = timeLeft
@@ -395,122 +402,331 @@ export abstract class Character {
         setTimeout(() => { this.scareLoop() }, getCooldownMS("scare"))
     }
 
-    protected moveLoop2(): void {
-        if (this.holdPosition || smart.moving) {
-            setTimeout(() => { this.moveLoop2() }, parent.character.ping)
+    protected getMovementLocation(mtype: MonsterType): PositionReal {
+        if (!this.targetPriority[mtype]) return // Not a target we want to move to
+        if (this.targetPriority[mtype].farmingPosition && this.targetPriority[mtype].holdPositionFarm) return this.targetPriority[mtype].farmingPosition // We have a specific position to farm these monsters
+        if (getVisibleMonsterTypes().has(mtype)) return // There's one nearby, we don't need to move
+        if (this.targetPriority[mtype].farmingPosition) {
+            if (distance(parent.character, this.targetPriority[mtype].farmingPosition) < 300) {
+                return // We're nearby killing other things while we wait for whatever it is to respawn
+            } else {
+                return this.targetPriority[mtype].farmingPosition // We're not nearby, let's go to the farming position
+            }
+        }
+        if (parent.S[mtype]) {
+            if (!parent.S[mtype].live) return // Not live
+            return parent.S[mtype] // Special monster
+        }
+
+        const randomSpawn = getRandomMonsterSpawn(mtype)
+        if (randomSpawn) return randomSpawn
+    }
+
+    protected getMovementTarget(): MovementTarget {
+        if (parent.character.rip) {
+            set_message("RIP")
             return
         }
 
         //// Movement targets
+        // Finish Monster Hunt -- Visit the monsterhunter and turn it in
+        if (parent.character.s.monsterhunt && parent.character.s.monsterhunt.c == 0) {
+            set_message("Finish MH")
+            return { target: "monsterhunter", position: G.maps.main.ref.monsterhunter, range: 300 }
+        }
+
         // Rare Monsters -- Move to monster
         for (const id in parent.entities) {
             const entity = parent.entities[id]
             if (entity.mtype != "goldenbat" && entity.mtype != "phoenix") continue
             if (!this.targetPriority[entity.mtype]) continue // Not a target
-            this.movementTarget = entity.mtype
-            this.astar.smartMove(entity, parent.character.range)
             set_message(entity.mtype)
-            setTimeout(() => { this.moveLoop2() }, parent.character.ping)
-            return
+            return { target: entity.mtype, position: entity, range: parent.character.range }
         }
 
-        // Finish Monster Hunt -- Visit the monsterhunter and turn it in
-        if (parent.character.s.monsterhunt && parent.character.s.monsterhunt.c == 0) {
-            this.movementTarget = undefined
-            this.astar.smartMove(G.maps.main.ref.monsterhunter, 400)
-            set_message("Finish MH")
-            setTimeout(() => { this.moveLoop2() }, parent.character.ping)
-            return
+        // Special Monsters -- Move to monster
+        for (const mtype in this.info.monsters) {
+            if (!this.targetPriority[mtype as MonsterType]) continue // Not a target we can do
+            const info = this.info.monsters[mtype as MonsterType]
+
+            // Update info if we can see it
+            const entityInfo = parent.entities[info.id]
+            if (entityInfo) {
+                info.x = entityInfo.real_x
+                info.y = entityInfo.real_y
+            }
+
+            if (distance(parent.character, info) < 100 && !entityInfo) {
+                delete this.info.monsters[mtype as MonsterType]
+            } else {
+                set_message(`SP ${mtype}`)
+                return { target: mtype as MonsterType, position: info, range: 0 }
+            }
         }
 
         // Christmas Tree Bonus -- Visit the tree if it's up and we don't have it
         if (G.maps.main.ref.newyear_tree && !parent.character.s.holidayspirit) {
-            this.movementTarget = null
-            this.astar.smartMove(G.maps.main.ref.newyear_tree, 400)
             set_message("Xmas Tree")
-            setTimeout(() => { this.moveLoop2() }, parent.character.ping)
-            return
+            return { target: "newyear_tree", position: G.maps.main.ref.newyear_tree, range: 300 }
         }
 
         // Full Inventory -- Dump on merchant
         if (isInventoryFull()) {
-            this.movementTarget = null
-            this.astar.smartMove({ map: "main", "x": 60, "y": -325 }, 400)
-            set_message("Xmas Tree")
-            setTimeout(() => { this.moveLoop2() }, parent.character.ping)
-            return
+            set_message("Full!")
+            return { target: "merchant", position: { map: "main", "x": 60, "y": -325 }, range: 300 }
         }
 
         // Event Monsters -- Move to monster
         for (const mtype in parent.S) {
             if (!parent.S[mtype as MonsterType].live) continue // Not alive
             if (!this.targetPriority[mtype as MonsterType]) continue // Not a target
-
-            this.movementTarget = mtype as MonsterType
-            this.astar.smartMove(parent.S[mtype as MonsterType], parent.character.range)
             set_message(mtype)
-            setTimeout(() => { this.moveLoop2() }, parent.character.ping)
-            return
+            return { target: mtype as MonsterType, position: parent.S[mtype as MonsterType], range: parent.character.range }
         }
 
+        // Monster Hunts -- Move to monster
+        const monsterHuntTargets: MonsterType[] = this.getMonsterHuntTargets()
+        if (monsterHuntTargets.length) {
+            const potentialTarget = monsterHuntTargets[0]
 
+            const coop = this.targetPriority[potentialTarget].coop
+            if (coop) {
+                // Check if other members are fighting it, too
+                const readyMembers = new Set<CharacterType>()
+                for (const memberName of parent.party_list) {
+                    if (!this.info.party[memberName] || !this.info.party[memberName].monsterHuntTargets) continue
+                    if (this.info.party[memberName].monsterHuntTargets[0] != potentialTarget) continue
 
+                    readyMembers.add(parent.party[memberName].type)
+                }
+                const notReady = coop.filter(x => !readyMembers.has(x))
+                if (notReady.length == 0) {
+                    set_message(`MH ${potentialTarget}`)
+                    return { target: potentialTarget, position: this.getMovementLocation(potentialTarget) }
+                }
+            } else {
+                set_message(`MH ${potentialTarget}`)
+                return { target: potentialTarget, position: this.getMovementLocation(potentialTarget) }
+            }
+        }
 
-        // TODO: Avoid aggressive monsters
+        // Monster Hunts -- New monster hunt
+        if (!parent.character.s.monsterhunt) {
+            set_message("New MH")
+            return { target: "monsterhunter", position: G.maps.main.ref.monsterhunter, range: 300 }
+        }
+
+        // TODO: Kane and Angel
+
+        if (this.mainTarget) {
+            set_message(this.mainTarget)
+            return { target: this.mainTarget, position: this.getMovementLocation(this.mainTarget) }
+        }
     }
 
-    protected last: { message: string; target: PositionReal } = { message: "start", target: parent.character };
-    protected moveLoop(): void {
+    protected moveLoop2(): void {
         try {
-            if (this.holdPosition) {
-                setTimeout(() => { this.moveLoop() }, Math.max(250, parent.character.ping))
+            if (this.holdPosition || smart.moving) {
+                setTimeout(() => { this.moveLoop2() }, parent.character.ping)
                 return
             }
 
-            const movementTarget = this.getMovementTarget()
-            if (movementTarget) {
-                // Stop if our target changes
-                if (this.last.message != movementTarget.message) {
-                    set_message(movementTarget.message.slice(0, 11))
-                    this.pathfinder.stop()
+            // Move to our target (this is to get us in the general vicinity, we will do finer movements within that later)
+            const lastMovementTarget = this.movementTarget
+            this.movementTarget = this.getMovementTarget()
+            if (this.movementTarget.position) {
+                if (!lastMovementTarget || this.movementTarget.target != lastMovementTarget.target) {
+                    // New movement target
+                    this.astar.smartMove(this.movementTarget.position, this.movementTarget.range)
+                    stop()
+                    setTimeout(() => { this.moveLoop2() }, parent.character.ping)
+                    return
                 }
 
-                this.last = movementTarget
-
-                if (movementTarget.target) {
-                    // game_log("pathfinder -- smart")
-                    this.pathfinder.saferMove(movementTarget.target)
+                if (!this.astar.isMoving()) {
+                    // Same monster, new movement target
+                    this.astar.smartMove(this.movementTarget.position, this.movementTarget.range)
+                    setTimeout(() => { this.moveLoop2() }, parent.character.ping)
+                    return
                 }
             }
 
+            // Stop on sight
             const targets = this.getTargets(1)
-            if (smart.moving || this.pathfinder.isMoving()) {
-                if (targets.length > 0 /* We have a target in range */
-                    && this.targetPriority[targets[0].mtype] && this.targetPriority[targets[0].mtype].stopOnSight /* We stop on sight of that target */
-                    && this.movementTarget == targets[0].mtype /* We're moving to that target */
-                    && distance(parent.character, targets[0]) < parent.character.range /* We're in range of that target */) {
-                    stop()
-                    this.pathfinder.stop()
-                }
-            } else {
-                // Default movements
-                if (["ranger", "mage", "priest", "rogue"].includes(parent.character.ctype)) {
-                    this.avoidAggroMonsters()
+            if (targets.length
+                && targets[0].mtype == this.movementTarget.target
+                && this.targetPriority[targets[0].mtype] && !this.targetPriority[targets[0].mtype].holdPositionFarm) {
+                stop()
+                this.astar.stop()
+            }
+
+            // Don't do anything if we're moving around
+            if (this.astar.isMoving()) {
+                setTimeout(() => { this.moveLoop2() }, parent.character.ping)
+                return
+            }
+
+            // Don't do anything if we're holding position for this monster
+            if (this.targetPriority[this.movementTarget.target as MonsterType] && this.targetPriority[this.movementTarget.target as MonsterType].holdPositionFarm) {
+                setTimeout(() => { this.moveLoop2() }, parent.character.ping)
+                return
+            }
+
+            // Get all enemies
+            const inEnemyAttackRange: PositionReal[] = []
+            const inAttackRange: PositionReal[] = []
+            const inAttackRangeHighPriority: PositionReal[] = []
+            const inExtendedAttackRange: PositionReal[] = []
+            const inExtendedAttackRangeHighPriority: PositionReal[] = []
+            const visible: PositionReal[] = []
+            const visibleHighPriority: PositionReal[] = []
+            for (const id in parent.entities) {
+                const entity = parent.entities[id]
+                if (!this.targetPriority[entity.mtype]) continue
+                const d = distance(parent.character, entity)
+                const enemyRange = Math.max(entity.range + entity.speed, 50)
+
+                if (enemyRange < parent.character.range // Enemy range is less than our range
+                    && d < enemyRange // We are within the enemy range
+                    && entity.hp > calculateDamageRange(parent.character, entity)[0]) { // We can't kill it in one hit
+                    inEnemyAttackRange.push(entity) // We can run away from it
                 }
 
-                this.avoidStacking()
-
-                this.avoidAttackingMonsters()
-
-                if (["ranger", "mage", "warrior", "priest"].includes(parent.character.ctype)) {
-                    this.moveToMonster()
+                if (d < parent.character.range) {
+                    inAttackRange.push(entity) // We don't have to move to attack these targets
+                    if (this.movementTarget.target == entity.mtype) inAttackRangeHighPriority.push(entity)
                 }
+
+                if (d < parent.character.range * 2) {
+                    inExtendedAttackRange.push(entity) // We can move to these targets while still attacking our current target
+                    if (this.movementTarget.target == entity.mtype) inExtendedAttackRangeHighPriority.push(entity)
+                }
+
+                visible.push(entity) // We can see these targets nearby
+                if (this.movementTarget.target == entity.mtype) visibleHighPriority.push(entity)
+            }
+
+            // Move to monster
+            if (inAttackRangeHighPriority.length == 0 && visibleHighPriority.length > 0) {
+                let closest: PositionReal
+                let d = Number.MAX_VALUE
+                for (const v of visibleHighPriority) {
+                    const vD = distance(parent.character, v)
+                    if (vD < d) {
+                        d = vD
+                        closest = v
+                    }
+                }
+                this.astar.smartMove(closest, parent.character.range)
+                setTimeout(() => { this.moveLoop2() }, parent.character.ping)
+                return
+            }
+
+            // Get out of enemy range
+            if (inEnemyAttackRange.length) {
+                let closest: PositionReal
+                let d = Number.MAX_VALUE
+                for (const v of inEnemyAttackRange) {
+                    const vD = distance(parent.character, v)
+                    if (vD < d) {
+                        d = vD
+                        closest = v
+                    }
+                }
+                const angle: number = Math.atan2(parent.character.real_y - closest.real_y, parent.character.real_x - closest.real_x)
+                const moveDistance: number = parent.character.range - d
+                const calculateEscape = (angle: number, moveDistance: number): IPosition => {
+                    const x = Math.cos(angle) * moveDistance
+                    const y = Math.sin(angle) * moveDistance
+                    return { x: parent.character.real_x + x, y: parent.character.real_y + y }
+                }
+                let escapePosition = calculateEscape(angle, moveDistance)
+                let angleChange = 0
+                while (!can_move_to(escapePosition.x, escapePosition.y) && angleChange < 180) {
+                    if (angleChange <= 0) {
+                        angleChange = (-angleChange) + 1
+                    } else {
+                        angleChange = -angleChange
+                    }
+                    escapePosition = calculateEscape(angle + (angleChange * Math.PI / 180), moveDistance)
+                }
+
+                move(escapePosition.x, escapePosition.y)
+                setTimeout(() => { this.moveLoop2() }, parent.character.ping)
+                return
+            }
+
+            // We aren't near any monsters, let's go to one
+            if (inAttackRange.length == 0 && inExtendedAttackRange.length == 0 && visible.length != 0) {
+                let closest: PositionReal
+                let d = Number.MAX_VALUE
+                for (const v of visible) {
+                    const vD = distance(parent.character, v)
+                    if (vD < d) {
+                        d = vD
+                        closest = v
+                    }
+                }
+                this.astar.smartMove(closest, parent.character.range)
+                setTimeout(() => { this.moveLoop2() }, parent.character.ping)
+                return
+            }
+
+            if (inAttackRange.length == 0 && inExtendedAttackRange.length > 0) {
+                let closest: PositionReal
+                let d = Number.MAX_VALUE
+                for (const v of inExtendedAttackRange) {
+                    const vD = distance(parent.character, v)
+                    if (vD < d) {
+                        d = vD
+                        closest = v
+                    }
+                }
+                this.astar.smartMove(closest, parent.character.range)
+                setTimeout(() => { this.moveLoop2() }, parent.character.ping)
+                return
             }
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.moveLoop() }, Math.max(250, parent.character.ping)) // TODO: queue up next movement based on time it will take to walk there
+        setTimeout(() => { this.moveLoop2() }, parent.character.ping)
     }
+
+    // protected moveLoop(): void {
+    //     try {
+    //         if (this.holdPosition) {
+    //             setTimeout(() => { this.moveLoop() }, Math.max(250, parent.character.ping))
+    //             return
+    //         }
+
+    //         const targets = this.getTargets(1)
+    //         if (smart.moving || this.astar.isMoving()) {
+    //             if (targets.length > 0 /* We have a target in range */
+    //                 && this.targetPriority[targets[0].mtype] && !this.targetPriority[targets[0].mtype].holdPositionFarm /* We stop on sight of that target */
+    //                 && this.movementTarget == targets[0].mtype /* We're moving to that target */
+    //                 && distance(parent.character, targets[0]) < parent.character.range /* We're in range of that target */) {
+    //                 stop()
+    //                 this.astar.stop()
+    //             }
+    //         } else {
+    //             // Default movements
+    //             if (["ranger", "mage", "priest", "rogue"].includes(parent.character.ctype)) {
+    //                 this.avoidAggroMonsters()
+    //             }
+
+    //             this.avoidStacking()
+
+    //             this.avoidAttackingMonsters()
+
+    //             if (["ranger", "mage", "warrior", "priest"].includes(parent.character.ctype)) {
+    //                 this.moveToMonster()
+    //             }
+    //         }
+    //     } catch (error) {
+    //         console.error(error)
+    //     }
+    //     setTimeout(() => { this.moveLoop() }, Math.max(250, parent.character.ping)) // TODO: queue up next movement based on time it will take to walk there
+    // }
 
     protected healLoop(): void {
         try {
@@ -753,14 +969,8 @@ export abstract class Character {
         }
 
         // TODO: better movement, for example, if they're moving away from us, or towards us
-        // const moveDistance = distance(parent.character, movementTarget) - parent.character.range + (movementTarget.speed * 0.5)
-        // const angle: number = Math.atan2(movementTarget.real_y - parent.character.real_y, movementTarget.real_x - parent.character.real_x)
-        // const x = Math.cos(angle) * moveDistance
-        // const y = Math.sin(angle) * moveDistance
 
-        // console.log("moving to monster!")
-        // this.pathfinder.saferMove({ map: parent.character.map, x: parent.character.real_x + x, y: parent.character.real_y + y })
-        this.pathfinder.saferMove({ map: parent.character.map, x: movementTarget.real_x, y: movementTarget.real_y })
+        this.astar.smartMove({ map: parent.character.map, x: movementTarget.real_x, y: movementTarget.real_y }, parent.character.range)
     }
 
     public getNewYearTreeBuff(): void {
@@ -772,8 +982,7 @@ export abstract class Character {
     }
 
     public getMonsterhuntQuest(): void {
-        const monsterhunter: IPosition = { map: "main", x: 126, y: -413 }
-        if (distance(parent.character, monsterhunter) > 400) return // Too far away
+        if (distance(parent.character, G.maps.main.ref.monsterhunter) > 400) return // Too far away
         if (!parent.character.s.monsterhunt) {
             // No quest, get a new one
             parent.socket.emit("monsterhunt")
@@ -784,7 +993,8 @@ export abstract class Character {
     }
 
     public parseCM(characterName: string, data: any): void {
-        if (!parent.party_list.includes(characterName) && parent.character.name != characterName) {
+        if (!parent.party_list.includes(characterName) && parent.character.name != characterName
+            && !(data.message == "monster") /* NOTE: Special code to let Aria send Phoenix position CMs to my characters */) {
             // Ignore messages from players not in our party
             game_log("Blocked CM from " + characterName)
             return
@@ -792,6 +1002,8 @@ export abstract class Character {
 
         if (data.message == "info") {
             this.info.party[characterName] = data.info
+        } else if (data.message == "monster") {
+            this.info.monsters[data.id as MonsterType] = data.info
         } else if (data.message == "npc") {
             this.info.npcs[data.id as NPCName] = data.info
         } else if (data.message == "player") {
@@ -809,8 +1021,8 @@ export abstract class Character {
             const items = getInventory()
 
             // Equip the items we want for this monster
-            if (this.targetPriority[this.movementTarget]) {
-                for (const idealItem of this.targetPriority[this.movementTarget].equip || []) {
+            if (this.targetPriority[this.movementTarget.target as MonsterType]) {
+                for (const idealItem of this.targetPriority[this.movementTarget.target as MonsterType].equip || []) {
                     let hasItem = false
                     for (const slot in parent.character.slots) {
                         const slotInfo = parent.character.slots[slot as SlotType]
@@ -838,7 +1050,7 @@ export abstract class Character {
                 if (!slotItem) continue // Nothing equipped in that slot
                 for (const item of items) {
                     if (item.name != slotItem.name) continue // Not the same item
-                    if (item.level <= slotItem.level) continue // Not better than the currently equipped item
+                    if (!item.level || item.level <= slotItem.level) continue // Not better than the currently equipped item
 
                     // We found something better
                     slotItem = item
@@ -853,206 +1065,139 @@ export abstract class Character {
         }
     }
 
-    public getMovementTarget(): { message: string; target: PositionReal } {
-        // Check for golden bat
-        for (const id in parent.entities) {
-            const entity = parent.entities[id]
-            if (entity.mtype == "goldenbat" || entity.mtype == "phoenix") {
-                this.movementTarget = entity.mtype
-                // NOTE: We automatically pathfind on our own with moveToMonster()
-                return { message: entity.mtype, target: null }
-            }
-        }
+    // public getMovementTarget(): { message: string; target: PositionReal } {
 
-        // Finish monster hunt
-        if (parent.character.s.monsterhunt && parent.character.s.monsterhunt.c == 0) {
-            this.movementTarget = undefined
-            return { message: "Finish MH", target: G.maps.main.ref.monsterhunter }
-        }
+    //     // Move to a monster hunt
+    //     if (monsterHuntTargets.length) {
+    //         let potentialTarget = monsterHuntTargets[0]
 
-        // Check for Christmas Tree
-        if (G.maps.main.ref.newyear_tree && !parent.character.s.holidayspirit) {
-            this.movementTarget = null
-            return { message: "Xmas Tree", target: G.maps.main.ref.newyear_tree }
-        }
+    //         // Frog check, because they're super easy to complete with mages or priests
+    //         if (monsterHuntTargets.includes("frog")
+    //             && G.items[parent.character.slots.mainhand.name].damage == "magical"
+    //             && this.targetPriority["frog"]) {
+    //             potentialTarget = "frog"
+    //         }
 
-        // Check if our inventory is full
-        let full = true
-        for (let i = 0; i < 42; i++) {
-            if (!parent.character.items[i]) {
-                full = false
-                break
-            }
-        }
-        if (full) {
-            // This is where our merchant usually hangs out
-            this.movementTarget = undefined
-            return { message: "Full!", target: { map: "main", "x": 60, "y": -325 } }
-        }
+    //         this.movementTarget = potentialTarget
 
-        // Check for event monsters
-        for (const mtype in parent.S) {
-            if (mtype == "grinch") continue // The grinch is too strong.
-            if (!parent.S[mtype as MonsterType].live) continue
-            if (this.targetPriority[mtype as MonsterType]) {
-                this.movementTarget = mtype as MonsterType
-                for (const id in parent.entities) {
-                    const entity = parent.entities[id]
-                    if (entity.mtype == mtype) {
-                        // There's one nearby
-                        return { message: mtype, target: null }
-                    }
-                }
-                return { message: mtype, target: parent.S[mtype as MonsterType] }
-            }
-        }
+    //         // Check if other party members are doing it
+    //         if (this.targetPriority[potentialTarget].coop) {
+    //             let havePartyMembers = true
+    //             for (const type of this.targetPriority[potentialTarget].coop) {
+    //                 if (type == parent.character.ctype) continue // it's us!
 
-        // // NOTE: Because snowmen spawn way too often, let's just camp out there and try to get some rings while we're at it.
-        // for (let id in parent.entities) {
-        //     let entity = parent.entities[id]
-        //     if (entity.mtype == "arcticbee") return { message: "Cold Bois", target: null }
-        // }
-        // return { message: "Cold Bois", target: getRandomMonsterSpawnPosition("arcticbee") }
+    //                 let found = false
+    //                 for (const member of parent.party_list) {
+    //                     if (type == parent.party[member].type && this.info.party[member].monsterHuntTarget == potentialTarget) {
+    //                         found = true
+    //                         break
+    //                     }
+    //                 }
+    //                 if (!found) {
+    //                     havePartyMembers = false
+    //                     break
+    //                 }
+    //             }
 
-        // See if there's a nearby monster hunt (avoid moving as much as possible)
-        const monsterHuntTargets: MonsterType[] = this.getMonsterHuntTargets()
+    //             if (!havePartyMembers) {
+    //                 if (this.targetPriority[this.mainTarget].farmingPosition) {
+    //                     return { message: this.mainTarget, target: this.targetPriority[this.mainTarget].farmingPosition }
+    //                 } else {
+    //                     return { message: this.mainTarget, target: getRandomMonsterSpawn(this.mainTarget) }
+    //                 }
+    //             }
+    //         }
 
-        // Move to a monster hunt
-        if (monsterHuntTargets.length) {
-            let potentialTarget = monsterHuntTargets[0]
+    //         const enemies: Entity[] = []
+    //         for (const id in parent.entities) {
+    //             const entity = parent.entities[id]
+    //             if (entity.mtype != potentialTarget) continue
+    //             if (distance(parent.character, entity) > parent.character.range) continue
+    //             enemies.push(entity)
+    //         }
 
-            // Frog check, because they're super easy to complete with mages or priests
-            if (monsterHuntTargets.includes("frog")
-                && G.items[parent.character.slots.mainhand.name].damage == "magical"
-                && this.targetPriority["frog"]) {
-                potentialTarget = "frog"
-            }
+    //         if (this.targetPriority[potentialTarget].farmingPosition && this.targetPriority[potentialTarget].holdPositionFarm) {
+    //             // We want to hold position at a certain location
+    //             return { message: "MH " + potentialTarget, target: this.targetPriority[potentialTarget].farmingPosition }
+    //         } else if (enemies.length) {
+    //             // We have an enemy in our sights
+    //             return { message: "MH " + potentialTarget, target: null }
+    //         } else if (this.targetPriority[potentialTarget].farmingPosition) {
+    //             // We don't have an enemy, but we have a farming position we'd like to go to
+    //             return { message: "MH " + potentialTarget, target: this.targetPriority[potentialTarget].farmingPosition }
+    //         } else {
+    //             // We don't have a farming position, go to any random spawn
+    //             return { message: "MH " + potentialTarget, target: getRandomMonsterSpawn(potentialTarget) }
+    //         }
+    //     }
 
-            this.movementTarget = potentialTarget
 
-            // Check if other party members are doing it
-            if (this.targetPriority[potentialTarget].coop) {
-                let havePartyMembers = true
-                for (const type of this.targetPriority[potentialTarget].coop) {
-                    if (type == parent.character.ctype) continue // it's us!
+    //     // TODO: Add a check to see if we are actually near monsters with these functions.
+    //     // Check if we can farm with +1000% luck (and maybe +1000% gold, too!)
+    //     const kane = parent.entities.Kane ? parent.entities.Kane : this.info.npcs.Kane
+    //     const angel = parent.entities.Angel ? parent.entities.Angel : this.info.npcs.Angel
+    //     const targets = this.getTargets(1)
+    //     if (kane && angel) {
+    //         // See if they're both near a single monster spawn
+    //         const kSpawns = getNearbyMonsterSpawns(kane, 250)
+    //         const aSpawns = getNearbyMonsterSpawns(angel, 250)
+    //         if (parent.character.s.citizen0aura && parent.character.s.citizen4aura && targets.length) {
+    //             this.movementTarget = undefined
+    //             return { message: "2x1000%", target: null }
+    //         }
+    //         for (const kSpawn of kSpawns) {
+    //             if (["hen", "rooster"].includes(kSpawn.monster)) continue // Ignore chickens
+    //             if (!this.targetPriority[kSpawn.monster]) continue // Ignore things not in our priority list
+    //             for (const aSpawn of aSpawns) {
+    //                 if (kSpawn.x == aSpawn.x && kSpawn.y == aSpawn.y) {
+    //                     return { message: "2x1000%", target: kane }
+    //                 }
+    //             }
+    //         }
 
-                    let found = false
-                    for (const member of parent.party_list) {
-                        if (type == parent.party[member].type && this.info.party[member].monsterHuntTarget == potentialTarget) {
-                            found = true
-                            break
-                        }
-                    }
-                    if (!found) {
-                        havePartyMembers = false
-                        break
-                    }
-                }
+    //         // See if Kane is near a monster spawn
+    //         if (parent.character.s.citizen0aura && targets.length) {
+    //             this.movementTarget = undefined
+    //             return { message: "1000% luck", target: null }
+    //         }
+    //         if (kSpawns.length
+    //             && !["hen", "rooster"].includes(kSpawns[0].monster) // Ignore chickens
+    //             && this.targetPriority[kSpawns[0].monster]) { // Ignore things not in our priority list
+    //             this.movementTarget = kSpawns[0].monster
+    //             // TODO: Check for citizens aura, if we don't have it, move to the person we don't have
+    //             return { message: "1000% luck", target: kane }
+    //         }
 
-                if (!havePartyMembers) {
-                    if (this.targetPriority[this.mainTarget].farmingPosition) {
-                        return { message: this.mainTarget, target: this.targetPriority[this.mainTarget].farmingPosition }
-                    } else {
-                        return { message: this.mainTarget, target: getRandomMonsterSpawn(this.mainTarget) }
-                    }
-                }
-            }
+    //         // See if Angel is near a monster spawn
+    //         if (parent.character.s.citizen4aura && targets.length) {
+    //             this.movementTarget = undefined
+    //             return { message: "1000% gold", target: null }
+    //         }
+    //         if (aSpawns.length
+    //             && !["hen", "rooster"].includes(aSpawns[0].monster) // Ignore chickens
+    //             && this.targetPriority[aSpawns[0].monster]) { // Ignore things not in our priority list
+    //             this.movementTarget = aSpawns[0].monster
+    //             // TODO: Check for citizens aura, if we don't have it, move to the person we don't have
+    //             return { message: "1000% gold", target: angel }
+    //         }
+    //     }
 
-            const enemies: Entity[] = []
-            for (const id in parent.entities) {
-                const entity = parent.entities[id]
-                if (entity.mtype != potentialTarget) continue
-                if (distance(parent.character, entity) > parent.character.range) continue
-                enemies.push(entity)
-            }
+    //     // Check for our main target
+    //     this.movementTarget = this.mainTarget
+    //     for (const id in parent.entities) {
+    //         const entity = parent.entities[id]
+    //         if (entity.mtype == this.mainTarget) {
+    //             // There's one nearby
+    //             return { message: this.mainTarget, target: null }
+    //         }
+    //     }
+    //     if (this.targetPriority[this.mainTarget].farmingPosition) {
+    //         return { message: this.mainTarget, target: this.targetPriority[this.mainTarget].farmingPosition }
+    //     } else {
+    //         return { message: this.mainTarget, target: getRandomMonsterSpawn(this.mainTarget) }
+    //     }
 
-            if (this.targetPriority[potentialTarget].farmingPosition && this.targetPriority[potentialTarget].holdPositionFarm) {
-                // We want to hold position at a certain location
-                return { message: "MH " + potentialTarget, target: this.targetPriority[potentialTarget].farmingPosition }
-            } else if (enemies.length) {
-                // We have an enemy in our sights
-                return { message: "MH " + potentialTarget, target: null }
-            } else if (this.targetPriority[potentialTarget].farmingPosition) {
-                // We don't have an enemy, but we have a farming position we'd like to go to
-                return { message: "MH " + potentialTarget, target: this.targetPriority[potentialTarget].farmingPosition }
-            } else {
-                // We don't have a farming position, go to any random spawn
-                return { message: "MH " + potentialTarget, target: getRandomMonsterSpawn(potentialTarget) }
-            }
-        }
-
-        // New monster hunt
-        if (!parent.character.s.monsterhunt) {
-            this.movementTarget = undefined
-            return { message: "New MH", target: G.maps.main.ref.monsterhunter }
-        }
-
-        // TODO: Add a check to see if we are actually near monsters with these functions.
-        // Check if we can farm with +1000% luck (and maybe +1000% gold, too!)
-        const kane = parent.entities.Kane ? parent.entities.Kane : this.info.npcs.Kane
-        const angel = parent.entities.Angel ? parent.entities.Angel : this.info.npcs.Angel
-        const targets = this.getTargets(1)
-        if (kane && angel) {
-            // See if they're both near a single monster spawn
-            const kSpawns = getNearbyMonsterSpawns(kane, 250)
-            const aSpawns = getNearbyMonsterSpawns(angel, 250)
-            if (parent.character.s.citizen0aura && parent.character.s.citizen4aura && targets.length) {
-                this.movementTarget = undefined
-                return { message: "2x1000%", target: null }
-            }
-            for (const kSpawn of kSpawns) {
-                if (["hen", "rooster"].includes(kSpawn.monster)) continue // Ignore chickens
-                if (!this.targetPriority[kSpawn.monster]) continue // Ignore things not in our priority list
-                for (const aSpawn of aSpawns) {
-                    if (kSpawn.x == aSpawn.x && kSpawn.y == aSpawn.y) {
-                        return { message: "2x1000%", target: kane }
-                    }
-                }
-            }
-
-            // See if Kane is near a monster spawn
-            if (parent.character.s.citizen0aura && targets.length) {
-                this.movementTarget = undefined
-                return { message: "1000% luck", target: null }
-            }
-            if (kSpawns.length
-                && !["hen", "rooster"].includes(kSpawns[0].monster) // Ignore chickens
-                && this.targetPriority[kSpawns[0].monster]) { // Ignore things not in our priority list
-                this.movementTarget = kSpawns[0].monster
-                // TODO: Check for citizens aura, if we don't have it, move to the person we don't have
-                return { message: "1000% luck", target: kane }
-            }
-
-            // See if Angel is near a monster spawn
-            if (parent.character.s.citizen4aura && targets.length) {
-                this.movementTarget = undefined
-                return { message: "1000% gold", target: null }
-            }
-            if (aSpawns.length
-                && !["hen", "rooster"].includes(aSpawns[0].monster) // Ignore chickens
-                && this.targetPriority[aSpawns[0].monster]) { // Ignore things not in our priority list
-                this.movementTarget = aSpawns[0].monster
-                // TODO: Check for citizens aura, if we don't have it, move to the person we don't have
-                return { message: "1000% gold", target: angel }
-            }
-        }
-
-        // Check for our main target
-        this.movementTarget = this.mainTarget
-        for (const id in parent.entities) {
-            const entity = parent.entities[id]
-            if (entity.mtype == this.mainTarget) {
-                // There's one nearby
-                return { message: this.mainTarget, target: null }
-            }
-        }
-        if (this.targetPriority[this.mainTarget].farmingPosition) {
-            return { message: this.mainTarget, target: this.targetPriority[this.mainTarget].farmingPosition }
-        } else {
-            return { message: this.mainTarget, target: getRandomMonsterSpawn(this.mainTarget) }
-        }
-
-    }
+    // }
 
     public getTargets(numTargets = 1, distanceCheck = parent.character.range): Entity[] {
         const targets: Entity[] = []
@@ -1094,7 +1239,7 @@ export abstract class Character {
             if (potentialTarget.mtype == this.mainTarget) priority += 250
 
             // Increase priority if it's our movement target
-            if (potentialTarget.mtype == this.movementTarget) priority += 1000
+            if (potentialTarget.mtype == this.movementTarget.target) priority += 1000
 
             // Increase priority if the entity is targeting us
             if (potentialTarget.target == parent.character.name) priority += 2000
@@ -1135,7 +1280,7 @@ export abstract class Character {
         if (!e.target) {
             // Hold attack
             if (this.holdAttack) return false // Holding all attacks
-            if ((smart.moving || this.pathfinder.isMoving()) && this.targetPriority[e.mtype].holdAttackWhileMoving) return false // Holding attacks while moving
+            if ((smart.moving || this.astar.isMoving()) && this.targetPriority[e.mtype].holdAttackWhileMoving) return false // Holding attacks while moving
             if (this.targetPriority[e.mtype].holdAttackInEntityRange && distanceToEntity <= e.range) return false // Holding attacks in range
 
             // Don't attack if we have it as a coop target, but we don't have everyone there.

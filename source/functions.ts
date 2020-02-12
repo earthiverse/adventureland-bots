@@ -255,6 +255,16 @@ export function getAttackingEntities(): Entity[] {
     return entitites
 }
 
+export function getVisibleMonsterTypes(): Set<MonsterType> {
+    const monsterTypes = new Set<MonsterType>()
+    for (const id in parent.entities) {
+        const entity = parent.entities[id]
+        if (entity.mtype) monsterTypes.add(entity.mtype)
+    }
+    return monsterTypes
+}
+
+/** Returns monsters in attack range */
 export function getInRangeMonsters(): Entity[] {
     const entities: Entity[] = []
     for (const id in parent.entities) {

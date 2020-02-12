@@ -15,12 +15,10 @@ class Priest extends Character {
             "priority": EASY
         },
         "armadillo": {
-            "priority": EASY,
-            "stopOnSight": true
+            "priority": EASY
         },
         "bat": {
             "priority": EASY,
-            "stopOnSight": true,
             "farmingPosition": {
                 "map": "cave",
                 "x": 300,
@@ -83,7 +81,6 @@ class Priest extends Character {
         },
         "cgoo": {
             "holdAttackWhileMoving": true,
-            "stopOnSight": true,
             "holdAttackInEntityRange": true,
             "priority": DIFFICULT
         },
@@ -100,8 +97,7 @@ class Priest extends Character {
         // "dragold": {
         //     "coop": ["warrior"],
         //     "priority": SPECIAL,
-        //     "holdAttackWhileMoving": true,
-        //     "stopOnSight": true,
+        //     "holdAttackWhileMoving": true
         // },
         "fireroamer": {
             "coop": ["warrior"],
@@ -117,6 +113,17 @@ class Priest extends Character {
         "frog": {
             "priority": EASY
         },
+        "fvampire": {
+            "coop": ["warrior", "ranger"],
+            "priority": 0,
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "farmingPosition": {
+                "map": "halloween",
+                "x": -150,
+                "y": -1500
+            }
+        },
         "ghost": {
             "coop": ["priest"],
             "priority": 0,
@@ -129,8 +136,7 @@ class Priest extends Character {
             }
         },
         "goldenbat": {
-            "priority": SPECIAL,
-            "stopOnSight": true
+            "priority": SPECIAL
         },
         "goo": {
             "priority": EASY,
@@ -138,8 +144,7 @@ class Priest extends Character {
         "greenjr": {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
-            "holdAttackWhileMoving": true,
-            "stopOnSight": true
+            "holdAttackWhileMoving": true
         },
         "hen": {
             "priority": EASY
@@ -147,13 +152,11 @@ class Priest extends Character {
         "iceroamer": {
             "holdAttackWhileMoving": true,
             "priority": DIFFICULT,
-            "stopOnSight": true,
         },
         "jr": {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
-            "holdAttackWhileMoving": true,
-            "stopOnSight": true
+            "holdAttackWhileMoving": true
         },
         "mechagnome": {
             "coop": ["priest", "ranger"],
@@ -167,8 +170,7 @@ class Priest extends Character {
             }
         },
         "minimush": {
-            "priority": EASY,
-            "stopOnSight": true
+            "priority": EASY
         },
         "mole": {
             "coop": ["priest", "warrior"],
@@ -182,12 +184,10 @@ class Priest extends Character {
             }
         },
         "mrgreen": {
-            "priority": SPECIAL,
-            "stopOnSight": true
+            "priority": SPECIAL
         },
         "mrpumpkin": {
-            "priority": SPECIAL,
-            "stopOnSight": true
+            "priority": SPECIAL
         },
         "mummy": {
             "coop": ["warrior"],
@@ -201,16 +201,17 @@ class Priest extends Character {
             }
         },
         // "osnake": {
-        //     "priority": EASY,
-        //     "stopOnSight": true
+        //     "priority": EASY
         // },
         "phoenix": {
             "priority": SPECIAL
         },
+        "pinkgoo": {
+            "priority": 1000
+        },
         "plantoid": {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
-            "stopOnSight": true,
             "holdAttackWhileMoving": true
         },
         "poisio": {
@@ -250,8 +251,7 @@ class Priest extends Character {
             }
         },
         "snowman": {
-            "priority": SPECIAL,
-            "stopOnSight": true
+            "priority": SPECIAL
         },
         "spider": {
             "priority": MEDIUM
@@ -320,14 +320,14 @@ class Priest extends Character {
         this.darkBlessingLoop()
         this.partyHealLoop()
     }
-    
+
     protected partyHealLoop(): void {
-        if(isAvailable("partyheal")) {
-            for(const member of parent.party_list) {
+        if (isAvailable("partyheal")) {
+            for (const member of parent.party_list) {
                 const e = parent.entities[member]
-                if(!e) continue
-                if(e.rip) continue
-                if(e.hp / e.max_hp < 0.5) {
+                if (!e) continue
+                if (e.rip) continue
+                if (e.hp / e.max_hp < 0.5) {
                     use_skill("partyheal")
                     break
                 }
@@ -360,6 +360,11 @@ class Priest extends Character {
 
     protected async attackLoop(): Promise<void> {
         try {
+            if (parent.character.c.town) {
+                setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+                return
+            }
+
             if (parent.character.hp < parent.character.max_hp - parent.character.attack * 0.9) {
                 await heal(parent.character)
                 setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))

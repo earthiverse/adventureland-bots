@@ -17,7 +17,6 @@ class Warrior extends Character {
         },
         "bat": {
             "priority": EASY,
-            "stopOnSight": true,
             "farmingPosition": {
                 "map": "cave",
                 "x": 1250,
@@ -65,8 +64,7 @@ class Warrior extends Character {
         // "dragold": {
         //     "coop": ["priest"],
         //     "priority": SPECIAL,
-        //     "holdAttackWhileMoving": true,
-        //     "stopOnSight": true,
+        //     "holdAttackWhileMoving": true
         // },
         "fireroamer": {
             "coop": ["priest"],
@@ -80,6 +78,18 @@ class Warrior extends Character {
             },
             "equip": ["basher"]
         },
+        "fvampire": {
+            "coop": ["priest", "ranger"],
+            "priority": 0,
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "farmingPosition": {
+                "map": "halloween",
+                "x": -150,
+                "y": -1575
+            },
+            "equip": ["basher"]
+        },
         "ghost": {
             "coop": ["priest"],
             "priority": 0,
@@ -89,11 +99,11 @@ class Warrior extends Character {
                 "map": "halloween",
                 "x": 400,
                 "y": -1100
-            }
+            },
+            "equip": ["basher"]
         },
         "goldenbat": {
             "priority": SPECIAL,
-            "stopOnSight": true,
             "equip": ["bataxe"]
         },
         "goo": {
@@ -104,7 +114,6 @@ class Warrior extends Character {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
-            "stopOnSight": true,
             "equip": ["basher"]
         },
         "mechagnome": {
@@ -121,7 +130,6 @@ class Warrior extends Character {
         },
         "minimush": {
             "priority": EASY,
-            "stopOnSight": true,
             "equip": ["bataxe"]
         },
         "mole": {
@@ -149,12 +157,15 @@ class Warrior extends Character {
             "equip": ["basher"]
         },
         // "osnake": {
-        //     "priority": EASY,
-        //     "stopOnSight": true
+        //     "priority": EASY
         // },
         "phoenix": {
             "priority": SPECIAL,
             "equip": ["basher"]
+        },
+        "pinkgoo": {
+            "priority": 1000,
+            "equip": ["candycanesword"]
         },
         "rat": {
             "priority": EASY,
@@ -166,8 +177,7 @@ class Warrior extends Character {
         },
         "snake": {
             // Farm them on the main map because of the +1000% luck and gold bonus chances
-            "priority": EASY,
-            "stopOnSight": true, // TODO: Temporary
+            "priority": EASY, // TODO: Temporary
             farmingPosition: {
                 "map": "main",
                 "x": -74,
@@ -177,7 +187,6 @@ class Warrior extends Character {
         },
         "snowman": {
             "priority": SPECIAL,
-            "stopOnSight": true,
             "equip": ["bataxe"]
         },
         "spider": {
@@ -192,7 +201,6 @@ class Warrior extends Character {
         //     "priority": EASY
         // },
         "tortoise": {
-            "stopOnSight": true,
             "priority": EASY,
             "equip": ["bataxe"]
         },
@@ -307,6 +315,7 @@ class Warrior extends Character {
                 for (const id in parent.entities) {
                     const e = parent.entities[id]
                     if (e.type != "monster") continue
+                    if (e.rip) continue
 
                     const d = distance(parent.character, e)
                     if (e.target == parent.character.id) {

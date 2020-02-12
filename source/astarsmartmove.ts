@@ -91,77 +91,6 @@ export class AStarSmartMove {
         }
     }
 
-    // public findDoorPath2(position: IPositionReal, destination: IPositionReal, visitedNodes: Set<SmartMoveNode> = new Set<SmartMoveNode>(), visitedDoors: Set<string> = new Set<string>()): [number, SmartMoveNode[]] {
-    //     // Add our current position to the visited nodes
-    //     visitedNodes.add(position)
-
-    //     // Exit case -- when we find the map we're supposed to be on
-    //     if (position.map == destination.map) {
-    //         let d = distance(position, destination)
-    //         let path: IPositionReal[] = []
-    //         for (const door of visitedNodes) {
-    //             path.push(door)
-    //         }
-    //         path.push(destination)
-    //         return [d, path]
-    //     }
-
-    //     // Traverse Doors
-    //     // Physical doors
-    //     let doors = [...G.maps[position.map].doors]
-    //     // Transporter doors
-    //     for (const npc of G.maps[position.map].npcs) {
-    //         if (npc.id !== "transporter") continue // not a teleporter
-
-    //         for (const map in G.npcs.transporter.places) {
-    //             doors.push([npc.position[0], npc.position[1], -1, -1, map as MapName, G.npcs.transporter.places[map as MapName]])
-    //         }
-    //         break
-    //     }
-
-    //     let currentBestDistance: number = Number.MAX_VALUE
-    //     let currentBestPath: IPositionReal[]
-    //     for (const door of doors) {
-    //         let doorExitMap = door[4]
-
-    //         let doorEntrance: SmartMoveNode = { map: position.map, x: door[0], y: door[1], transportS: door[5], transportMap: doorExitMap, transportType: door[3] == -1 ? "teleport" : "door" }
-    //         let doorExit: SmartMoveNode = { map: doorExitMap, x: G.maps[doorExitMap].spawns[door[5]][0], y: G.maps[doorExitMap].spawns[door[5]][1] }
-    //         let doorExitString = this.positionToString(doorExit)
-    //         if (visitedDoors.has(doorExitString)) continue // don't revisit maps we've already visited
-
-    //         let newVisitedMaps = new Set(visitedDoors)
-    //         newVisitedMaps.add(doorExitString)
-
-    //         let newVisitedNodes = new Set(visitedNodes)
-    //         newVisitedNodes.add(doorEntrance)
-
-    //         let doorEntranceString = this.positionToString(doorEntrance)
-    //         const doorCacheKey = `${doorEntranceString}_${doorExitString}`
-
-    //         let d
-    //         if (this.doorCache.has(doorCacheKey)) { // use the actual distance instead of the heuristic
-    //             let path = this.doorCache.get(doorCacheKey)
-    //             let lastMovement = path[0]
-    //             d = 0
-    //             for (let i = 1; i < path.length; i++) {
-    //                 let pathI = path[i]
-    //                 d += distance(lastMovement, pathI)
-    //                 lastMovement = pathI
-    //             }
-    //         } else {
-    //             d = distance(position, doorEntrance)
-    //         }
-    //         if (currentBestDistance < d) continue // We have a better path
-    //         let [d2, path] = this.findDoorPath(doorExit, destination, newVisitedNodes, newVisitedMaps)
-    //         if (currentBestDistance > d2 + d) {
-    //             currentBestDistance = d2 + d
-    //             currentBestPath = path
-    //         }
-    //     }
-
-    //     return [currentBestDistance, currentBestPath]
-    // }
-
     public findDoorPath(position: PositionReal, destination: PositionReal, visitedNodes: Set<SmartMoveNode> = new Set<SmartMoveNode>(), visitedMaps: Set<string> = new Set<string>()): [number, SmartMoveNode[]] {
         // Add our current position to the visited nodes
         visitedNodes.add(position)
@@ -185,6 +114,7 @@ export class AStarSmartMove {
             if (npc.id !== "transporter") continue // not a teleporter
 
             for (const map in G.npcs.transporter.places) {
+                if (map == position.map) continue
                 doors.push([npc.position[0], npc.position[1], -1, -1, map as MapName, G.npcs.transporter.places[map as MapName]])
             }
             break
@@ -323,27 +253,20 @@ export class AStarSmartMove {
                     subMovements = await this.getMovements(from, to, finishDistanceTolerance)
                 }
 
-                // Cache all the submovements
-                for (let i = 0; i < subMovements.length; i++) {
-                    const cachePath2 = [...subMovements].splice(i, subMovements.length - i)
-                    const cacheKey2 = `${this.positionToString(cachePath2[0])}_${this.positionToString(to)}`
-                    this.doorCache.set(cacheKey2, cachePath2)
-                }
+                // Cache the submovements
+                this.doorCache.set(doorCacheKey, subMovements)
             }
 
             movements = movements.concat(subMovements)
         }
         if (this.SHOW_MESSAGES) game_log(`a* - finish searching (${((Date.now() - start) / 1000).toFixed(1)} s)`, this.MESSAGE_COLOR)
 
-        console.log("movements")
-        console.log(movements)
-
         let i = 0
         const movementComplete = new Promise((resolve, reject) => {
             const movementLoop = (start: Date): void => {
                 if (this.wasCancelled(start)) {
-                    reject("a* - cancelled moving")
-                    return
+                    stop()
+                    return reject("a* - cancelled moving")
                 }
 
                 const nextMove = movements[i]
@@ -407,8 +330,7 @@ export class AStarSmartMove {
                         move(parent.character.real_x + randomX, parent.character.real_y + randomY)
                     }
                     this.reset()
-                    reject("failed moving")
-                    return
+                    return reject("failed moving")
                 }
                 setTimeout(() => { movementLoop(start) }, 40)
             }

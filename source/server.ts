@@ -1,13 +1,12 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const Path = require("path")
 const Cors = require("cors")
-const Nconf = require("nconf")
 const Express = require("express")
 import { AddressInfo } from "net"
 
 // Load Configuration
-Nconf.file(Path.join(__dirname, "../config.json"))
-const portConfig: number = Nconf.get("port")
+// Nconf.file(Path.join(__dirname, "../config.json"))
+const portConfig = 3000
 
 // Serve static files
 const app = Express()

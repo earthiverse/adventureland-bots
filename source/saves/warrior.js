@@ -18,3 +18,8 @@ function on_party_invite(name) {
 function on_cm(name, data) {
     bots.warrior.parseCM(name, data)
 }
+
+function on_magiport(name) {
+    if(name != "earthMag") return
+    accept_magiport(name)
+}

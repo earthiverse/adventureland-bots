@@ -87,13 +87,15 @@ declare global {
   function transport(map: MapName, spawn?: number)
   function upgrade(itemInventoryPosition: number, scrollInventoryPosition: number, offeringInventoryPosition?: number): Promise<any>
   function use_skill(name: "3shot" | "5shot", targets: Entity[]): Promise<any>[]
-  function use_skill(name: "throw", target: Entity, inventoryPostion: number): Promise<any>
-  function use_skill(name: "energize", target: Entity, mp: number): Promise<any>
-  function use_skill(name: SkillName, target?: Entity, extraArg?: any): Promise<any>
-  // TODO: Is this the right thing to do? Town just here willy nilly?
-  function use_skill(name: "town"): Promise<any>
   /** For destination, it's an array of [x, y] */
   function use_skill(name: "blink", destination: number[])
+  /** The string is the ID of the target, the number is how much mana to spend on the attack */
+  function use_skill(name: "cburst", targets: [string, number][]): Promise<any>
+  function use_skill(name: "energize", target: Entity, mp: number): Promise<any>
+  function use_skill(name: "magiport", target: string): Promise<any>
+  function use_skill(name: "throw", target: Entity, inventoryPostion: number): Promise<any>
+  function use_skill(name: "town"): Promise<any>
+  function use_skill(name: SkillName, target?: Entity, extraArg?: any): Promise<any>
   /** This function uses move() if it can, otherwise it uses smart_move() */
   function xmove(x: number, y: number)
 
@@ -179,6 +181,8 @@ declare global {
       name: string;
       range?: number;
       range_multiplier?: number;
+      /** For MP use skills on the mage, 1 mp will equal this much damage */
+      ratio?: number;
       /** The cooldown this skill shares with another skill */
       share?: SkillName;
       /** The item(s) required to use this skill */

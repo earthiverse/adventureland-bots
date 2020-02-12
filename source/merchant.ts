@@ -2,10 +2,11 @@ import { Character } from "./character"
 import { MonsterType, ItemName, PositionReal, BankPackType } from "./definitions/adventureland"
 import { upgradeIfMany, compoundIfMany } from "./upgrade"
 import { sellUnwantedItems, exchangeItems, buyFromPonty, openMerchantStand, closeMerchantStand, buyScrolls } from "./trade"
-import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots, sleep, getEmptySlots } from "./functions"
+import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots, sleep, getEmptySlots, isInventoryFull } from "./functions"
+import { MovementTarget, TargetPriorityList } from "./definitions/bots"
 
 class Merchant extends Character {
-    targetPriority = {
+    targetPriority: TargetPriorityList = {
         "bee": {
             "priority": 1,
         },
@@ -38,49 +39,38 @@ class Merchant extends Character {
         )
     }
 
-    public getMovementTarget(): { message: string; target: PositionReal } {
+    protected getMovementTarget(): MovementTarget {
+        if (parent.character.rip) {
+            set_message("RIP")
+            return
+        }
+
         const vendorPlace: PositionReal = { map: "main", "x": 60, "y": -325 }
 
-        // Check for full inventory
-        let full = true
-        for (let i = 0; i < 42; i++) {
-            if (parent.character.items[i]) continue
-            full = false
-            break
+        // Christmas Tree Bonus -- Visit the tree if it's up and we don't have it
+        if (G.maps.main.ref.newyear_tree && !parent.character.s.holidayspirit) {
+            set_message("Xmas Tree")
+            return { target: "newyear_tree", position: G.maps.main.ref.newyear_tree, range: 300 }
         }
-        if (full) {
-            if (parent.character.map == "bank" || parent.character.q && (parent.character.q.compound || parent.character.q.exchange || parent.character.q.upgrade)) {
-                // Dealing with the fullness already
-                return { message: "Full!", target: vendorPlace }
+
+        // Full Inventory -- Deposit in bank
+        if (isInventoryFull()) {
+            set_message("Full!")
+            if (parent.character.map == "bank") {
+                return
             } else {
                 // Move to the bank
-                return { message: "Full!", target: { "map": "bank", "x": 0, "y": -400 } }
+                // TODO: Target the guy who stores our gold
+                return { target: "items4", position: { "map": "bank", "x": 0, "y": -400 }, range: 10 }
             }
         }
 
-        // Check for Christmas Tree
-        if (G.maps.main.ref.newyear_tree && !parent.character.s.holidayspirit) {
-            return { message: "Xmas Tree", target: G.maps.main.ref.newyear_tree }
-        }
-
-        // Check for event monsters
+        // Event Monsters -- Move to monster
         for (const mtype in parent.S) {
-            const monster = parent.S[mtype as MonsterType]
-            if (monster.hp < monster.max_hp * 0.9
-                && monster.live) {
-                this.movementTarget = mtype as MonsterType
-                for (const id in parent.entities) {
-                    const entity = parent.entities[id]
-                    if (entity.mtype == mtype) {
-                        // There's one nearby
-                        if (distance(parent.character, entity) > 100)
-                            return { message: "EV " + mtype, target: entity }
-                        else
-                            return { message: "EV " + mtype, target: null }
-                    }
-                }
-                return { message: "EV " + mtype, target: parent.S[mtype as MonsterType] }
-            }
+            if (!parent.S[mtype as MonsterType].live) continue // Not alive
+            if (!this.targetPriority[mtype as MonsterType]) continue // Not a target
+            set_message(mtype)
+            return { target: mtype as MonsterType, position: parent.S[mtype as MonsterType], range: 50 }
         }
 
         // If someone in our party isn't mlucked by us, go find them and mluck them.
@@ -89,19 +79,21 @@ class Merchant extends Character {
 
             const player = parent.entities[name] ? parent.entities[name] : this.info.party[name]
             if (player && player.s && (!player.s.mluck || player.s.mluck.f != "earthMer")) {
-                return { message: "ML " + name, target: player }
+                set_message(`ML ${name}`)
+                return { position: player, range: G.skills.mluck.range - 20 }
             }
         }
 
         // If there are players who we have seen recently that haven't been mlucked, go find them and mluck them
         for (const name in this.info.players) {
             const player = parent.entities[name] ? parent.entities[name] : this.info.players[name]
-            if (distance(parent.character, player) <= 10 && !player.s.mluck) {
+            if (distance(parent.character, player) <= G.skills.mluck.range && (!player.s.mluck || Date.now() - new Date(this.info.players[name].lastSeen).getDate() > 3000000 || player.s.mluck.ms < 1800000)) {
                 // This player moved.
                 delete this.info.players[name]
                 break
             } else if (!player.s.mluck && !player.rip) {
-                return { message: "ML Other", target: this.info.players[name] }
+                set_message(`ML ${name}`)
+                return { position: player, range: G.skills.mluck.range - 20 }
             }
         }
 
@@ -110,20 +102,24 @@ class Merchant extends Character {
             if (name == parent.character.name) continue // Skip ourself
             const player = this.info.party[name]
             if (player && player.items.length > 20) {
-                return { message: "INV " + name, target: player }
+                set_message(`INV ${name}`)
+                return { position: player, range: 240 }
             }
         }
 
         // If we haven't been to the bank in a while, go
         if (Date.now() - this.didBankStuff > 120000) {
-            return { message: "Bank", target: { "map": "bank", "x": 0, "y": -400 } }
+            set_message("Bank")
+            return { position: { "map": "bank", "x": 0, "y": -400 } }
         }
 
         // If Angel and Kane haven't been seen in a while, go find them to update their position
         if (this.info.npcs.Kane && Date.now() - new Date(this.info.npcs.Kane.lastSeen).getTime() > 300000) {
-            return { message: "Find Kane", target: this.info.npcs.Kane }
+            set_message("Find Kane")
+            return { position: this.info.npcs.Kane }
         } else if (this.info.npcs.Angel && Date.now() - new Date(this.info.npcs.Angel.lastSeen).getTime() > 300000) {
-            return { message: "Find Angel", target: this.info.npcs.Angel }
+            set_message("Find Angel")
+            return { position: this.info.npcs.Angel }
         }
 
         // NOTE: We have a computer now, we don't need to travel anymore
@@ -143,7 +139,8 @@ class Merchant extends Character {
         // } else if (this.info.npcs.Angel) {
         //     return { message: "Vendor", target: this.info.npcs.Angel }
         // } else {
-        return { message: "Vendor", target: vendorPlace }
+        set_message("Vendor")
+        return { position: vendorPlace }
         // }
     }
 
@@ -184,7 +181,7 @@ class Merchant extends Character {
         this.attackLoop()
         this.healLoop()
         this.scareLoop()
-        this.moveLoop()
+        this.moveLoop2()
         this.sendInfoLoop()
         this.mainLoop()
         this.luckLoop()
@@ -218,7 +215,7 @@ class Merchant extends Character {
     private async bankStuff(): Promise<void> {
         if (parent.character.map != "bank") {
             return
-        } else if (Date.now() - this.didBankStuff < 10000) {
+        } else if (Date.now() - this.didBankStuff < 30000) {
             return
         }
 
@@ -402,7 +399,7 @@ class Merchant extends Character {
                 const luckTarget = parent.entities[id]
 
                 if (!isPlayer(luckTarget) // not a player
-                    || distance(parent.character, luckTarget) > 250 // out of range
+                    || distance(parent.character, luckTarget) > G.skills.mluck.range // out of range
                     || !isAvailable("mluck")) // On cooldown
                     continue
                 if (this.luckedCharacters[luckTarget.name] && this.luckedCharacters[luckTarget.name] > Date.now() - parent.character.ping * 2) continue // Prevent spamming luck

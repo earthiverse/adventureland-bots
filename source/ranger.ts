@@ -12,12 +12,10 @@ class Ranger extends Character {
         },
         "armadillo": {
             "priority": 0,
-            "stopOnSight": true,
             "equip": ["t2bow", "t2quiver"]
         },
         "bat": {
             "priority": 0,
-            "stopOnSight": true,
             "farmingPosition": {
                 "map": "cave",
                 "x": -200,
@@ -52,20 +50,17 @@ class Ranger extends Character {
             "priority": 0,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
-            "stopOnSight": true,
             "equip": ["firebow", "t2quiver"]
         },
         "boar": {
             // Don't attack if we're walking by them, they hurt.
             "priority": 0,
             "holdAttackWhileMoving": true,
-            "stopOnSight": true,
             "equip": ["firebow", "t2quiver"]
         },
         "cgoo": {
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
-            "stopOnSight": true,
             "priority": 0,
             "equip": ["t2bow", "t2quiver"]
         },
@@ -85,8 +80,7 @@ class Ranger extends Character {
         // "dragold": {
         //     "coop": ["priest", "warrior"],
         //     "priority": SPECIAL,
-        //     "holdAttackWhileMoving": true,
-        //     "stopOnSight": true,
+        //     "holdAttackWhileMoving": true
         // },
         "fireroamer": {
             "coop": ["priest", "warrior"],
@@ -97,6 +91,18 @@ class Ranger extends Character {
                 "map": "desertland",
                 "x": 150,
                 "y": -650
+            },
+            "equip": ["firebow", "t2quiver"]
+        },
+        "fvampire": {
+            "coop": ["warrior", "priest"],
+            "priority": 0,
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "farmingPosition": {
+                "map": "halloween",
+                "x": -225,
+                "y": -1500
             },
             "equip": ["firebow", "t2quiver"]
         },
@@ -114,7 +120,6 @@ class Ranger extends Character {
         },
         "goldenbat": {
             "priority": 1000,
-            "stopOnSight": true,
             "equip": ["t2bow", "t2quiver"]
         },
         "goo": {
@@ -125,7 +130,6 @@ class Ranger extends Character {
             "priority": 1000,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
-            "stopOnSight": true,
             "equip": ["firebow", "t2quiver"]
         },
         "hen": {
@@ -135,7 +139,6 @@ class Ranger extends Character {
         "iceroamer": {
             "holdAttackWhileMoving": true,
             "priority": 0,
-            "stopOnSight": true,
             "equip": ["t2bow", "t2quiver"]
         },
         "jr": {
@@ -143,7 +146,6 @@ class Ranger extends Character {
             "priority": 1000,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
-            "stopOnSight": true,
             "equip": ["firebow", "t2quiver"]
         },
         "mechagnome": {
@@ -160,7 +162,6 @@ class Ranger extends Character {
         },
         "minimush": {
             "priority": 100,
-            "stopOnSight": true,
             "equip": ["t2bow", "t2quiver"]
         },
         "mole": {
@@ -189,22 +190,23 @@ class Ranger extends Character {
         },
         "mrgreen": {
             "priority": 1000,
-            "stopOnSight": true,
             "equip": ["firebow", "t2quiver"]
         },
         "mrpumpkin": {
             "priority": 1000,
-            "stopOnSight": true,
             "equip": ["firebow", "t2quiver"]
         },
         "osnake": {
             "priority": 500,
-            "stopOnSight": true,
             "equip": ["t2bow", "t2quiver"]
         },
         "phoenix": {
             "priority": 1000,
             "equip": ["firebow", "t2quiver"]
+        },
+        "pinkgoo": {
+            "priority": 1000,
+            "equip": ["bow", "t2quiver"]
         },
         "poisio": {
             "priority": 250,
@@ -241,8 +243,7 @@ class Ranger extends Character {
         },
         "snake": {
             // Farm them on the main map because of the +1000% luck and gold bonus chances
-            "priority": 0,
-            "stopOnSight": true, // TODO: Temporary
+            "priority": 0, // TODO: Temporary
             farmingPosition: {
                 "map": "main",
                 "x": -74,
@@ -252,7 +253,6 @@ class Ranger extends Character {
         },
         "snowman": {
             "priority": 1000,
-            "stopOnSight": true,
             "equip": ["t2bow", "t2quiver"]
         },
         "spider": {
@@ -270,12 +270,10 @@ class Ranger extends Character {
         "stoneworm": {
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
-            "stopOnSight": true,
             "priority": 0,
             "equip": ["t2bow", "t2quiver"]
         },
         "tortoise": {
-            "stopOnSight": true,
             "priority": 0,
             "equip": ["t2bow", "t2quiver"]
         },
@@ -296,7 +294,6 @@ class Ranger extends Character {
             "priority": 0,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
-            "stopOnSight": true,
             "equip": ["firebow", "t2quiver"]
         },
         "xscorpion": {
@@ -327,7 +324,7 @@ class Ranger extends Character {
         // TODO: change this to levels like items to sell
         this.itemsToKeep.push(
             // Bows
-            "bow", "firebow", "t2bow",
+            "bow", "cupid", "firebow", "t2bow",
             // Quivers
             /*"quiver",*/ "t2quiver"
         )
@@ -363,29 +360,29 @@ class Ranger extends Character {
                 await sleep(2500)
             }
 
-            // Switch servers if everyone in the party wants to
-            if (Date.now() - this.startTime > 60000) {
-                let shouldSwitchServer = 0
-                for (const id of parent.party_list) {
-                    const member = this.info.party[id]
-                    if (member.shouldSwitchServer) { shouldSwitchServer += 1 }
-                }
-                if (shouldSwitchServer == parent.party_list.length) {
-                    if (parent.server_region == "ASIA")
-                        change_server("US", "I")
-                    else if (parent.server_region == "US" && parent.server_identifier == "I")
-                        change_server("US", "II")
-                    else if (parent.server_region == "US" && parent.server_identifier == "II")
-                        change_server("EU", "I")
-                    else if (parent.server_region == "EU" && parent.server_identifier == "I")
-                        change_server("EU", "II")
-                    else if (parent.server_region == "EU" && parent.server_identifier == "II")
-                        change_server("ASIA", "I")
+            // // Switch servers if everyone in the party wants to
+            // if (Date.now() - this.startTime > 60000) {
+            //     let shouldSwitchServer = 0
+            //     for (const id of parent.party_list) {
+            //         const member = this.info.party[id]
+            //         if (member.shouldSwitchServer) { shouldSwitchServer += 1 }
+            //     }
+            //     if (shouldSwitchServer == parent.party_list.length) {
+            //         if (parent.server_region == "ASIA")
+            //             change_server("US", "I")
+            //         else if (parent.server_region == "US" && parent.server_identifier == "I")
+            //             change_server("US", "II")
+            //         else if (parent.server_region == "US" && parent.server_identifier == "II")
+            //             change_server("EU", "I")
+            //         else if (parent.server_region == "EU" && parent.server_identifier == "I")
+            //             change_server("EU", "II")
+            //         else if (parent.server_region == "EU" && parent.server_identifier == "II")
+            //             change_server("ASIA", "I")
 
-                    setTimeout(() => { this.mainLoop() }, 10000)
-                    return
-                }
-            }
+            //         setTimeout(() => { this.mainLoop() }, 10000)
+            //         return
+            //     }
+            // }
 
             super.mainLoop()
         } catch (error) {
@@ -443,14 +440,14 @@ class Ranger extends Character {
 
     protected async attackLoop(): Promise<void> {
         try {
-            const targets = this.getTargets(5)
-            if (targets.length >= 5
-                && this.wantToAttack(targets[0], "5shot")) {
+            const targets = this.getTargets(6)
+            const firstTarget = targets.shift()
+            if (targets.length >= 4
+                && this.wantToAttack(firstTarget, "5shot")) {
                 // See if we can fiveshot some enemies
-                const fiveshotTargets: Entity[] = []
+                const fiveshotTargets: Entity[] = [firstTarget]
                 for (const entity of targets) {
                     if (!entity.target && (entity.hp > calculateDamageRange(parent.character, entity)[0] * 0.5)) continue // Too much HP, or not targeting us
-                    if (distance(parent.character, entity) > parent.character.range) continue
 
                     fiveshotTargets.push(entity)
                     if (fiveshotTargets.length == 5) break
@@ -461,13 +458,12 @@ class Ranger extends Character {
                     return
                 }
             }
-            if (targets.length >= 3
-                && this.wantToAttack(targets[0], "3shot")) {
+            if (targets.length >= 2
+                && this.wantToAttack(firstTarget, "3shot")) {
                 // See if we can three shot some enemies.
-                const threeshotTargets: Entity[] = []
+                const threeshotTargets: Entity[] = [firstTarget]
                 for (const entity of targets) {
                     if (!entity.target && (entity.hp > calculateDamageRange(parent.character, entity)[0] * 0.7)) continue // Too much HP to kill in one shot (don't aggro too many)
-                    if (distance(parent.character, entity) > parent.character.range) continue
 
                     threeshotTargets.push(entity)
                     if (threeshotTargets.length == 3) break
@@ -482,10 +478,10 @@ class Ranger extends Character {
             const piercingShotCalcCharacter = { ...parent.character }
             piercingShotCalcCharacter.apiercing += G.skills["piercingshot"].apiercing
             piercingShotCalcCharacter.attack *= G.skills["piercingshot"].damage_multiplier
-            if (targets.length
-                && this.wantToAttack(targets[0], "piercingshot")
-                && calculateDamageRange(piercingShotCalcCharacter, targets[0])[0] > calculateDamageRange(parent.character, targets[0])[0]) {
-                await use_skill("piercingshot", targets[0])
+            if (firstTarget
+                && this.wantToAttack(firstTarget, "piercingshot")
+                && calculateDamageRange(piercingShotCalcCharacter, firstTarget)[0] > calculateDamageRange(parent.character, firstTarget)[0]) {
+                await use_skill("piercingshot", firstTarget)
                 setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
                 return
             }

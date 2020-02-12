@@ -1,4 +1,4 @@
-import { ItemInfo, MonsterType, PositionReal, Entity, NPCName, StatusInfo, BankPackType, ItemName, CharacterType } from "./adventureland"
+import { ItemInfo, MonsterType, PositionReal, Entity, NPCName, StatusInfo, BankPackType, ItemName, CharacterType, NPCType, IPosition } from "./adventureland"
 
 export type TargetPriorityList = {
     [T in MonsterType]?: TargetPriorityInfo;
@@ -15,12 +15,16 @@ export interface TargetPriorityInfo {
     holdAttackInEntityRange?: boolean;
     /** If true, we won't move to attack the monsters. Use this with map, x, and y to go to a safe (unreachable) spot. */
     holdPositionFarm?: boolean;
-    /** When smart moving to this monster, if true, we will stop when we see one within attacking range. */
-    stopOnSight?: boolean;
 
     farmingPosition?: PositionReal;
     /* A list of ideal items to equip to bettter deal with these monsters */
     equip?: ItemName[];
+}
+
+export type MovementTarget = {
+    target?: MonsterType | NPCType | CharacterType;
+    position?: PositionReal;
+    range?: number;
 }
 
 export type MonsterSpawnPosition = PositionReal & {
@@ -40,9 +44,9 @@ export type PriorityEntity = {
 export type OtherInfo = {
     party: {
         [T in string]?: PositionReal & {
-            lastSeen: Date;
+            lastSeen: string;
             shouldSwitchServer: boolean;
-            monsterHuntTarget: MonsterType;
+            monsterHuntTargets: MonsterType[];
             items: MyItemInfo[];
             goldm: number;
             last_ms: Date;
@@ -54,11 +58,18 @@ export type OtherInfo = {
     };
     npcs: {
         [T in NPCName]?: PositionReal & {
-            lastSeen: Date;
+            lastSeen: string;
         }
     };
     players: {
-        [T in string]?: Entity
+        [T in string]?: Entity & {
+            lastSeen: string;
+        }
+    };
+    monsters: {
+        [T in MonsterType]?: PositionReal & {
+            id: string;
+        }
     };
 }
 
