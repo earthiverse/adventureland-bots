@@ -195,13 +195,13 @@ declare global {
 
 // TODO: Get a better name for this.
 // TODO: Get a better naming convention for G data
-export interface GMapsNPC {
+export type GMapsNPC = {
   id: NPCType;
   name?: string;
   position: [number, number];
 }
 
-export interface GMonster {
+export type GMonster = {
   attack: number;
   damage_type: DamageType;
   frequency: number;
@@ -211,7 +211,7 @@ export interface GMonster {
   xp: number;
 }
 
-export interface GItem {
+export type GItem = {
   /** Contains information about what stats the item will gain with each compound level. Set if the item is compoundable. */
   compound?: {
     [T in AttributeType]?: number
@@ -242,7 +242,7 @@ export interface GItem {
 /**
 * For the current character
 */
-export interface CharacterEntity extends Entity {
+export type CharacterEntity = Entity & {
   bank: {
     [T in BankPackType]: ItemInfo[]
   } & {
@@ -281,7 +281,7 @@ export interface CharacterEntity extends Entity {
   xrange: number;
 }
 
-export interface Entity extends PositionReal {
+export type Entity = PositionReal & {
   /** If set, attacks only do 1 damage */
   "1hp": number;
   /** Only set if the entity is a monster */
@@ -337,6 +337,10 @@ export interface Entity extends PositionReal {
     [T in SlotType]: ItemInfo
   } & {
     [T in TradeSlotType]?: ItemInfo & {
+      /** Number of minutes remaining for giveaway items */
+      giveaway?: number;
+      /** List of character IDs that are in the giveaway */
+      list: string[];
       price: number;
       rid: string;
     }
@@ -408,13 +412,13 @@ export type StatusInfo = {
     };
   }
 
-export interface PositionReal extends IPosition {
+export type PositionReal = IPosition & {
   map: MapName;
   real_x?: number;
   real_y?: number;
 }
 
-export interface PositionSmart extends IPosition {
+export type PositionSmart = IPosition & {
   map: MapName;
   transport?: boolean;
   i?: number;
@@ -555,6 +559,7 @@ export type MonsterType =
   | "xscorpion"
 
 export type BankPackType =
+  | "gold"
   | "items0"
   | "items1"
   | "items2"

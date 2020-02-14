@@ -1,6 +1,6 @@
 import FastPriorityQueue from "fastpriorityqueue"
-import { Entity, IPosition, ItemName, ItemInfo, SlotType, MonsterType, PositionReal, NPCName, SkillName, CharacterEntity, CharacterType } from "./definitions/adventureland"
-import { sendMassCM, findItems, getInventory, getRandomMonsterSpawn, getAttackingEntities, getCooldownMS, isAvailable, getNearbyMonsterSpawns, calculateDamageRange, isInventoryFull, getPartyMemberTypes, getVisibleMonsterTypes, sleep } from "./functions"
+import { Entity, IPosition, ItemName, ItemInfo, SlotType, MonsterType, PositionReal, NPCName, SkillName, CharacterEntity, CharacterType, TradeSlotType } from "./definitions/adventureland"
+import { sendMassCM, findItems, getInventory, getRandomMonsterSpawn, getAttackingEntities, getCooldownMS, isAvailable, calculateDamageRange, isInventoryFull, getPartyMemberTypes, getVisibleMonsterTypes, sleep } from "./functions"
 import { TargetPriorityList, OtherInfo, MyItemInfo, ItemLevelInfo, PriorityEntity, MovementTarget } from "./definitions/bots"
 import { dismantleItems, buyPots } from "./trade"
 import { AStarSmartMove } from "./astarsmartmove"
@@ -124,10 +124,25 @@ export abstract class Character {
             this.getNewYearTreeBuff()
             dismantleItems()
 
+            // Elixir check
             if (parent.character.slots.elixir == null) {
                 const items = findItems("candypop")
                 if (items) {
                     equip(items[0].index)
+                }
+            }
+
+            // Merchant giveaway check
+            for (const id in parent.entities) {
+                const entity = parent.entities[id]
+                if (distance(parent.character, entity) > 400) continue
+                if (entity.ctype != "merchant") continue
+                for (const slot in entity.slots) {
+                    const info = entity.slots[slot as TradeSlotType]
+                    if (!info) continue
+                    if (!info.giveaway) continue
+                    if (info.list.includes(parent.character.id)) continue
+                    parent.socket.emit("join_giveaway", { slot: slot, id: id, rid: info.rid })
                 }
             }
 
@@ -365,7 +380,10 @@ export abstract class Character {
                 wantToScare = true
             } else if (targets.length && !this.targetPriority[targets[0].mtype]) {
                 wantToScare = true
-            } else if (targets.length && parent.character.c.town) {
+            } else if (parent.character.c.town // We're teleporting to town (attacks will disrupt it)
+                && (targets.length > 1 // We have things attacking us
+                    || (targets.length == 1
+                        && distance(targets[0], parent.character) - targets[0].range - (targets[0].speed * 2) /* The enemy can move to attack us before we can teleport away */))) {
                 wantToScare = true
             } else {
                 for (const target of targets) {
@@ -574,6 +592,7 @@ export abstract class Character {
 
             // Get all enemies
             const inEnemyAttackRange: PositionReal[] = []
+            const inAggroRange: PositionReal[] = []
             const inAttackRange: PositionReal[] = []
             const inAttackRangeHighPriority: PositionReal[] = []
             const inExtendedAttackRange: PositionReal[] = []
@@ -582,6 +601,7 @@ export abstract class Character {
             const visibleHighPriority: PositionReal[] = []
             for (const id in parent.entities) {
                 const entity = parent.entities[id]
+                if (entity.rip) continue
                 if (!this.targetPriority[entity.mtype]) continue
                 const d = distance(parent.character, entity)
                 const enemyRange = Math.max(entity.range + entity.speed, 50)
@@ -590,6 +610,10 @@ export abstract class Character {
                     && d < enemyRange // We are within the enemy range
                     && entity.hp > calculateDamageRange(parent.character, entity)[0]) { // We can't kill it in one hit
                     inEnemyAttackRange.push(entity) // We can run away from it
+                }
+
+                if (!entity.target && d < 50) {
+                    inAggroRange.push(entity)
                 }
 
                 if (d < parent.character.range) {
