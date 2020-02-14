@@ -326,7 +326,7 @@ class Ranger extends Character {
             // Bows
             "bow", "cupid", "firebow", "t2bow",
             // Quivers
-            /*"quiver",*/ "t2quiver"
+            "quiver", "t2quiver"
         )
     }
 
@@ -427,10 +427,11 @@ class Ranger extends Character {
 
     async superShotLoop(): Promise<void> {
         try {
-            const targets = this.getTargets(1, parent.character.range * G.skills["supershot"].range_multiplier)
-            if (targets.length
-                && this.wantToAttack(targets[0], "supershot")) {
-                await use_skill("supershot", targets[0])
+            for (const target of this.getTargets(10, parent.character.range * G.skills["supershot"].range_multiplier)) {
+                if (this.wantToAttack(target, "supershot")) {
+                    await use_skill("supershot", target)
+                    break
+                }
             }
         } catch (error) {
             console.error(error)
