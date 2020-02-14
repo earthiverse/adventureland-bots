@@ -185,7 +185,7 @@ export function getEmptyBankSlots(): EmptyBankSlots[] {
         if (store == "gold") continue
         for (let i = 0; i < 42; i++) {
             const item = parent.character.bank[store as BankPackType][i]
-            if (!item) emptySlots.push({ pack: store as BankPackType, "index": i })
+            if (!item) emptySlots.push({ pack: store as Exclude<BankPackType, "gold">, "index": i })
         }
     }
 
