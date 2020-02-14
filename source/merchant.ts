@@ -68,7 +68,6 @@ class Merchant extends Character {
         // Event Monsters -- Move to monster
         for (const mtype in parent.S) {
             if (!parent.S[mtype as MonsterType].live) continue // Not alive
-            if (!this.targetPriority[mtype as MonsterType]) continue // Not a target
             set_message(mtype)
             return { target: mtype as MonsterType, position: parent.S[mtype as MonsterType], range: 50 }
         }
@@ -87,11 +86,11 @@ class Merchant extends Character {
         // If there are players who we have seen recently that haven't been mlucked, go find them and mluck them
         for (const name in this.info.players) {
             const player = parent.entities[name] ? parent.entities[name] : this.info.players[name]
-            if (distance(parent.character, player) <= G.skills.mluck.range && (!player.s.mluck || Date.now() - new Date(this.info.players[name].lastSeen).getDate() > 3000000 || player.s.mluck.ms < 1800000)) {
+            if (distance(parent.character, player) <= G.skills.mluck.range && (!player.s.mluck || Date.now() - new Date(this.info.players[name].lastSeen).getTime() > 3000000 || player.s.mluck.ms < 1800000)) {
                 // This player moved.
                 delete this.info.players[name]
                 break
-            } else if (!player.s.mluck && !player.rip) {
+            } else if ((!player.s.mluck || Date.now() - new Date(this.info.players[name].lastSeen).getTime() > 3000000 || player.s.mluck.ms < 1800000) && !player.rip) {
                 set_message(`ML ${name}`)
                 return { position: player, range: G.skills.mluck.range - 20 }
             }
