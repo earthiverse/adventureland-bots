@@ -69,7 +69,6 @@ class Priest extends Character {
             }
         },
         "booboo": {
-            "coop": ["priest", "mage"],
             "priority": DIFFICULT,
             "holdAttackWhileMoving": true,
             "holdPositionFarm": true,
@@ -199,6 +198,10 @@ class Priest extends Character {
                 "x": 210,
                 "y": -1030
             }
+        },
+        "mvampire": {
+            priority: 0,
+            "coop": ["ranger"]
         },
         // "osnake": {
         //     "priority": EASY

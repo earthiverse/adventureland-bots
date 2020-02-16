@@ -57,7 +57,7 @@ class Mage extends Character {
             "holdAttackWhileMoving": true
         },
         "booboo": {
-            "coop": ["priest", "mage"],
+            "coop": ["priest"],
             "priority": DIFFICULT,
             "holdAttackWhileMoving": true,
             "holdPositionFarm": true,
@@ -165,6 +165,10 @@ class Mage extends Character {
         // "osnake": {
         //     "priority": EASY
         // },
+        "mvampire": {
+            priority: 0,
+            "coop": ["priest"]
+        },
         "phoenix": {
             "priority": SPECIAL
         },

@@ -58,6 +58,17 @@ class Ranger extends Character {
             "holdAttackWhileMoving": true,
             "equip": ["firebow", "t2quiver"]
         },
+        "booboo": {
+            "coop": ["priest"],
+            "priority": 0,
+            "holdAttackWhileMoving": true,
+            "holdPositionFarm": true,
+            farmingPosition: {
+                "map": "spookytown",
+                "x": 190,
+                "y": -650
+            }
+        },
         "cgoo": {
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
@@ -194,6 +205,11 @@ class Ranger extends Character {
         },
         "mrpumpkin": {
             "priority": 1000,
+            "equip": ["firebow", "t2quiver"]
+        },
+        "mvampire": {
+            priority: 0,
+            "coop": ["priest"],
             "equip": ["firebow", "t2quiver"]
         },
         "osnake": {
