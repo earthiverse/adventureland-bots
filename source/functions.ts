@@ -249,6 +249,8 @@ export function getAttackingEntities(): Entity[] {
         const entity = parent.entities[id]
         if (entity.target != parent.character.id) continue // Not being targeted by this entity
         if (isPlayer(entity) && !isPVP) continue // Not PVP, ignore players
+        if (id == "Wizard") continue // Hi Wizard
+        if (isPVP && parent.party_list.includes(id)) continue // Friendly
 
         entitites.push(entity)
     }

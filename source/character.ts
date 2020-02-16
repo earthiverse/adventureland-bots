@@ -1243,6 +1243,7 @@ export abstract class Character {
             if (potentialTarget.rip) continue // It's dead
             if (parent.party_list.includes(id)) continue // It's a member of our party
             if (!is_pvp() && potentialTarget.type != "monster") continue // Not interested in non-monsters unless it's PvP
+            if (is_pvp() && parent.party_list.includes(id)) continue
             if (!this.targetPriority[potentialTarget.mtype] && potentialTarget.target != parent.character.name) continue // Not a monster we care about, and it's not attacking us
 
             // Set the priority based on our targetPriority
@@ -1299,7 +1300,7 @@ export abstract class Character {
         if (s != "attack" && e.immune) return false // We can't damage it with non-attacks
         if (s != "attack" && e["1hp"]) return false // We only do one damage, don't use special attacks
 
-        if (!this.targetPriority[e.mtype]) return false // Holding attacks against things not in our priority list
+        if (!is_pvp() && e.type == "monster" && !this.targetPriority[e.mtype]) return false // Holding attacks against things not in our priority list
 
         if (!e.target) {
             // Hold attack
