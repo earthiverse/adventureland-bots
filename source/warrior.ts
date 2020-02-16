@@ -316,6 +316,7 @@ class Warrior extends Character {
                     const e = parent.entities[id]
                     if (e.type != "monster") continue
                     if (e.rip) continue
+                    if (!this.targetPriority[e.mtype]) continue
 
                     const d = distance(parent.character, e)
                     if (e.target == parent.character.id) {
@@ -337,7 +338,7 @@ class Warrior extends Character {
                         inAgitateCount += 1
                     }
                 }
-                if (inAgitateCount == 1 || inAgitateCount == 2 || inAgitateCount == 3) {
+                if (inAgitateCount > 0) {
                     use_skill("agitate")
                 }
             }
