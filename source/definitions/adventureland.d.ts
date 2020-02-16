@@ -29,7 +29,9 @@ declare global {
       live: boolean;
       hp: number;
       max_hp: number;
-    } };
+    } } & {
+      valentines?: boolean;
+    };
   }
 
   function attack(target: Entity): Promise<any>

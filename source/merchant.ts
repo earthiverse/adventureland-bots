@@ -67,9 +67,11 @@ class Merchant extends Character {
 
         // Event Monsters -- Move to monster
         for (const mtype in parent.S) {
-            if (!parent.S[mtype as MonsterType].live) continue // Not alive
+            const info = parent.S[mtype as MonsterType]
+            if (!info.live) continue // Not alive
+            if (info.hp > info.max_hp / 2) continue // Not low health
             set_message(mtype)
-            return { target: mtype as MonsterType, position: parent.S[mtype as MonsterType], range: 50 }
+            return { target: mtype as MonsterType, position: info, range: 50 }
         }
 
         // If someone in our party isn't mlucked by us, go find them and mluck them.
