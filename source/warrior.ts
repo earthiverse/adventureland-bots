@@ -116,6 +116,10 @@ class Warrior extends Character {
             "holdAttackWhileMoving": true,
             "equip": ["basher"]
         },
+        "iceroamer": {
+            "priority": DIFFICULT,
+            "equip": ["bataxe"]
+        },
         "mechagnome": {
             "coop": ["priest", "ranger"],
             "holdPositionFarm": true,
@@ -166,6 +170,10 @@ class Warrior extends Character {
         "pinkgoo": {
             "priority": 1000,
             "equip": ["candycanesword"]
+        },
+        "poisio": {
+            priority: DIFFICULT,
+            "equip": ["bataxe"]
         },
         "rat": {
             "priority": EASY,
@@ -316,29 +324,28 @@ class Warrior extends Character {
                     const e = parent.entities[id]
                     if (e.type != "monster") continue
                     if (e.rip) continue
-                    if (!this.targetPriority[e.mtype]) continue
 
-                    const d = distance(parent.character, e)
-                    if (e.target == parent.character.id) {
-                        // Something is already targeting us
+                    if (!this.targetPriority[e.mtype]) {
+                        // Something we don't want is here
                         inAgitateCount = 0
                         break
                     }
+
+                    const d = distance(parent.character, e)
+                    if (e.target == parent.character.id) {
+                        // It's targeting us
+                        inAgitateCount++
+                        continue
+                    } else if (e.target) {
+                        // It's targeting someone else
+                        continue
+                    }
+
                     if (d <= G.skills["agitate"].range) {
-                        // if (!this.wantToAttack(e)) {
-                        //     // There's something we don't want to attack in agitate range, so don't use it.
-                        //     inAgitateCount = 0
-                        //     break
-                        // }
-                        if (d <= parent.character.range) {
-                            // There's something in attacking range already, we don't need to agitate to attack stuff
-                            inAgitateCount = 0
-                            break
-                        }
                         inAgitateCount += 1
                     }
                 }
-                if (inAgitateCount > 0) {
+                if (inAgitateCount > 0 && inAgitateCount <= 3) {
                     use_skill("agitate")
                 }
             }
@@ -428,18 +435,13 @@ class Warrior extends Character {
     async tauntLoop(): Promise<void> {
         try {
             const attackingMonsters = getAttackingEntities()
-            const targets = this.getTargets(1, G.skills["taunt"].range)
-            if (attackingMonsters.length == 0 && targets.length && this.wantToAttack(targets[0], "taunt")) {
-                await use_skill("taunt", targets[0])
-            } else if (isAvailable("taunt") && attackingMonsters.length < 2) {
+            const targets = this.getTargets(5, G.skills["taunt"].range)
+            if (targets && this.wantToAttack(targets[0], "taunt") && attackingMonsters.length < 3) {
                 // Check if any nearby party members have an attacking enemy. If they do, taunt it away.
-                for (const id in parent.entities) {
-                    const e = parent.entities[id]
-                    if (!isMonster(e)) continue
-                    if (e.target != parent.character.id && parent.party_list.includes(e.target)) {
-                        await use_skill("taunt", e)
-                        break
-                    }
+                for (const e of targets) {
+                    if (e.target) continue
+                    await use_skill("taunt", e)
+                    break
                 }
             }
         } catch (error) {
