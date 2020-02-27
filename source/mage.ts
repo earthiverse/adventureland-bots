@@ -247,6 +247,12 @@ class Mage extends Character {
                 "y": -2475
             }
         },
+        "wolfie": {
+            // The ranger is fast enough to kill these without dying too much.
+            "priority": 0,
+            "holdAttackInEntityRange": true,
+            "holdAttackWhileMoving": true
+        },
         "xscorpion": {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
