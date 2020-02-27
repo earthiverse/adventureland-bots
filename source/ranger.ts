@@ -357,7 +357,7 @@ class Ranger extends Character {
 
             const shouldSwitch = this.shouldSwitchServer()
             if (shouldSwitch) {
-                if (this.switchServerCheck > 60000) {
+                if (Date.now() - this.switchServerCheck > 60000) {
                     // We've wanted to switch for a minute, let's switch
                     if (parent.server_region == "ASIA")
                         change_server("US", "I")
