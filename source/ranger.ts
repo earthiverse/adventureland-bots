@@ -327,6 +327,7 @@ class Ranger extends Character {
     }
     mainTarget: MonsterType = "poisio"
     startTime = Date.now()
+    switchServerCheck = Date.now()
 
     run(): void {
         super.run()
@@ -352,53 +353,29 @@ class Ranger extends Character {
             transferGoldToMerchant(process.env.MERCHANT, 100000)
             sellUnwantedItems(this.itemsToSell)
 
-            this.createParty(["earthMer", "earthMag", "earthMag2", "earthWar", "earthPri"])
+            this.createParty(["earthMer", "earthMag", "earthMag2", "earthWar", "earthWar2", "earthPri", "earthPri2"])
 
-            // Switch between warrior and mage if they are idle
-            // if (parent.party_list.includes("earthMag")
-            //     && this.info.party.earthMag
-            //     && this.info.party.earthMag.shouldSwitchServer
-            //     && Date.now() - this.startTime > 120000) {
-            //     this.startTime = Date.now()
-            //     this.info.party.earthWar = undefined
-            //     stop_character("earthMag")
-            //     start_character("earthWar")
+            const shouldSwitch = this.shouldSwitchServer()
+            if (shouldSwitch) {
+                if (this.switchServerCheck > 60000) {
+                    // We've wanted to switch for a minute, let's switch
+                    if (parent.server_region == "ASIA")
+                        change_server("US", "I")
+                    else if (parent.server_region == "US" && parent.server_identifier == "I")
+                        change_server("US", "II")
+                    else if (parent.server_region == "US" && parent.server_identifier == "II")
+                        change_server("EU", "I")
+                    else if (parent.server_region == "EU" && parent.server_identifier == "I")
+                        change_server("EU", "II")
+                    else if (parent.server_region == "EU" && parent.server_identifier == "II")
+                        change_server("ASIA", "I")
 
-            //     await sleep(2500)
-            // } else if (parent.party_list.includes("earthWar")
-            //     && this.info.party.earthWar
-            //     && this.info.party.earthWar.shouldSwitchServer
-            //     && Date.now() - this.startTime > 120000) {
-            //     this.startTime = Date.now()
-            //     this.info.party.earthMag = undefined
-            //     stop_character("earthWar")
-            //     start_character("earthMag")
-            //     await sleep(2500)
-            // }
-
-            // // Switch servers if everyone in the party wants to
-            // if (Date.now() - this.startTime > 60000) {
-            //     let shouldSwitchServer = 0
-            //     for (const id of parent.party_list) {
-            //         const member = this.info.party[id]
-            //         if (member.shouldSwitchServer) { shouldSwitchServer += 1 }
-            //     }
-            //     if (shouldSwitchServer == parent.party_list.length) {
-            //         if (parent.server_region == "ASIA")
-            //             change_server("US", "I")
-            //         else if (parent.server_region == "US" && parent.server_identifier == "I")
-            //             change_server("US", "II")
-            //         else if (parent.server_region == "US" && parent.server_identifier == "II")
-            //             change_server("EU", "I")
-            //         else if (parent.server_region == "EU" && parent.server_identifier == "I")
-            //             change_server("EU", "II")
-            //         else if (parent.server_region == "EU" && parent.server_identifier == "II")
-            //             change_server("ASIA", "I")
-
-            //         setTimeout(() => { this.mainLoop() }, 10000)
-            //         return
-            //     }
-            // }
+                    setTimeout(() => { this.mainLoop() }, 30000)
+                    return
+                }
+            } else {
+                this.switchServerCheck = Date.now()
+            }
 
             super.mainLoop()
         } catch (error) {
