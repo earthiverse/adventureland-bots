@@ -1,8 +1,11 @@
 /*global module */
-
+const Dotenv = require('dotenv-webpack')
 const Path = require("path")
 
 module.exports = {
+    plugins: [
+        new Dotenv()
+    ],
     entry: {
         ranger: "./source/ranger.ts",
         merchant: "./source/merchant.ts",

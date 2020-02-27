@@ -50,6 +50,7 @@ export class AStarSmartMove {
     /** Stop pathfinding */
     public stop(): void {
         this.reset()
+        stop()
     }
 
     /** Resets the variables for a fresh run */
@@ -59,14 +60,17 @@ export class AStarSmartMove {
     }
 
     /** Removes unnecessary variables, and snaps to the nearest pixel */
-    private cleanPosition(position: SmartMoveNode): SmartMoveNode {
+    private cleanPosition(position: SmartMoveNode | PositionReal): SmartMoveNode {
+        const x = (position.real_x !== undefined ? position.real_x : position.x)
+        const y = (position.real_y !== undefined ? position.real_y : position.y)
         const clean = {
             map: position.map,
-            x: (position.real_x !== undefined ? position.real_x : position.x),
-            y: (position.real_y !== undefined ? position.real_y : position.y),
-            transportS: position.transportS,
-            transportMap: position.transportMap,
-            transportType: position.transportType
+            x: x,
+            y: y,
+            key: `${position.map}.${x}.${y}`,
+            transportS: (position as SmartMoveNode).transportS,
+            transportMap: (position as SmartMoveNode).transportMap,
+            transportType: (position as SmartMoveNode).transportType
         }
         return clean
     }
@@ -91,14 +95,14 @@ export class AStarSmartMove {
         }
     }
 
-    public findDoorPath(position: PositionReal, destination: PositionReal, visitedNodes: Set<SmartMoveNode> = new Set<SmartMoveNode>(), visitedMaps: Set<string> = new Set<string>()): [number, SmartMoveNode[]] {
+    public findDoorPath(position: SmartMoveNode, destination: SmartMoveNode, visitedNodes: Set<SmartMoveNode> = new Set<SmartMoveNode>(), visitedMaps: Set<string> = new Set<string>()): [number, SmartMoveNode[]] {
         // Add our current position to the visited nodes
         visitedNodes.add(position)
 
         // Exit case -- when we find the map we're supposed to be on
         if (position.map == destination.map) {
             const d = distance(position, destination)
-            const path: PositionReal[] = []
+            const path: SmartMoveNode[] = []
             for (const door of visitedNodes) {
                 path.push(door)
             }
@@ -121,13 +125,13 @@ export class AStarSmartMove {
         }
 
         let currentBestDistance: number = Number.MAX_VALUE
-        let currentBestPath: PositionReal[]
+        let currentBestPath: SmartMoveNode[]
         for (const door of doors) {
             const doorExitMap = door[4]
             if (visitedMaps.has(doorExitMap)) continue // don't revisit maps we've already visited
 
-            const doorEntrance: SmartMoveNode = { map: position.map, x: door[0], y: door[1], transportS: door[5], transportMap: doorExitMap, transportType: door[3] == -1 ? "teleport" : "door" }
-            const doorExit: SmartMoveNode = { map: doorExitMap, x: G.maps[doorExitMap].spawns[door[5]][0], y: G.maps[doorExitMap].spawns[door[5]][1] }
+            const doorEntrance: SmartMoveNode = { map: position.map, x: door[0], y: door[1], key: `${position.map}.${door[0]}.${door[1]}`, transportS: door[5], transportMap: doorExitMap, transportType: door[3] == -1 ? "teleport" : "door" }
+            const doorExit: SmartMoveNode = { map: doorExitMap, x: G.maps[doorExitMap].spawns[door[5]][0], y: G.maps[doorExitMap].spawns[door[5]][1], key: `${doorExitMap}.${G.maps[doorExitMap].spawns[door[5]][0]}.${G.maps[doorExitMap].spawns[door[5]][1]}` }
 
             const newVisitedMaps = new Set(visitedMaps)
             newVisitedMaps.add(doorExitMap)
@@ -135,7 +139,7 @@ export class AStarSmartMove {
             const newVisitedDoors = new Set(visitedNodes)
             newVisitedDoors.add(doorEntrance)
 
-            const d = distance(position, doorEntrance)
+            const d = distance(position, doorEntrance) + 50 // + 50 as a cost for using the door to help minimize the amount of doors we travel through
             if (currentBestDistance < d) continue // We have a better path
             const [d2, path] = this.findDoorPath(doorExit, destination, newVisitedDoors, newVisitedMaps)
             if (currentBestDistance > d2 + d) {
@@ -205,6 +209,7 @@ export class AStarSmartMove {
             y: finish.y,
             // eslint-disable-next-line @typescript-eslint/camelcase
             real_y: finish.y,
+            key: `${finish.map}.${finish.x}.${finish.y}`,
             transportMap: finish.transportMap,
             transportType: finish.transportType,
             transportS: finish.transportS
@@ -218,11 +223,12 @@ export class AStarSmartMove {
                 y: current.y,
                 // eslint-disable-next-line @typescript-eslint/camelcase
                 real_y: current.y,
+                key: `${current.map}.${current.x}.${current.y}`,
                 transportMap: current.transportMap,
                 transportType: current.transportType,
                 transportS: current.transportS
             })
-            current = cameFrom.get(this.positionToString(current))
+            current = cameFrom.get(current.key)
         }
         return this.smoothPath(path)
     }
@@ -239,7 +245,7 @@ export class AStarSmartMove {
         for (let i = 0; i < doors.length; i += 2) {
             const from = doors[i]
             const to = doors[i + 1]
-            const doorCacheKey = `${this.positionToString(from)}_${this.positionToString(to)}`
+            const doorCacheKey = `${from.key}_${to.key}`
 
             let subMovements: SmartMoveNode[]
             if (this.doorCache.has(doorCacheKey)) {
@@ -344,21 +350,20 @@ export class AStarSmartMove {
 
     private async getMovements(start: SmartMoveNode, finish: SmartMoveNode, finishDistanceTolerance = 0, startTime: Date = this.startDate): Promise<SmartMoveNode[]> {
         const cleanStart = this.cleanPosition(start)
-        const cleanStartString = this.positionToString(cleanStart)
         const cleanFinish = this.cleanPosition(finish)
 
         const cameFrom: FromMap = new Map<string, SmartMoveNode>()
 
         /** Cost to get to the current node */
         const gScore: ScoreMap = new Map<string, number>()
-        gScore.set(cleanStartString, 0)
+        gScore.set(cleanStart.key, 0)
 
         const fScore: ScoreMap = new Map<string, number>()
-        fScore.set(cleanStartString, this.heuristic(cleanStart, cleanFinish))
+        fScore.set(cleanStart.key, this.heuristic(cleanStart, cleanFinish))
 
         /** Unvisited nodes */
         const openSet = new FastPriorityQueue<SmartMoveNode>((a: SmartMoveNode, b: SmartMoveNode) => {
-            return fScore.get(this.positionToString(a)) < fScore.get(this.positionToString(b))
+            return fScore.get(a.key) < fScore.get(b.key)
         })
         openSet.add({ ...cleanStart })
         const openSetNodes: VisitedMap = new Set<string>()
@@ -370,16 +375,15 @@ export class AStarSmartMove {
             y: G.maps[cleanStart.map].spawns[0][1],
             transportType: "town"
         })
-        const neighborString = this.positionToString(neighbor)
-        const tentativeGScore = gScore.get(cleanStartString) + this.TOWN_MOVEMENT_COST
-        if (neighborString !== cleanStartString) {
-            if (!gScore.get(neighborString) /* No score yet */
-                || tentativeGScore < gScore.get(neighborString) /* This path is more efficient */) {
-                cameFrom.set(neighborString, cleanStart)
-                gScore.set(neighborString, tentativeGScore)
-                fScore.set(neighborString, tentativeGScore + this.heuristic(neighbor, cleanFinish))
-                if (!openSetNodes.has(neighborString)) {
-                    openSetNodes.add(neighborString)
+        const tentativeGScore = gScore.get(cleanStart.key) + this.TOWN_MOVEMENT_COST
+        if (neighbor.key !== cleanStart.key) {
+            if (!gScore.get(neighbor.key) /* No score yet */
+                || tentativeGScore < gScore.get(neighbor.key) /* This path is more efficient */) {
+                cameFrom.set(neighbor.key, cleanStart)
+                gScore.set(neighbor.key, tentativeGScore)
+                fScore.set(neighbor.key, tentativeGScore + this.heuristic(neighbor, cleanFinish))
+                if (!openSetNodes.has(neighbor.key)) {
+                    openSetNodes.add(neighbor.key)
                     openSet.add(neighbor)
                 }
             }
@@ -388,8 +392,7 @@ export class AStarSmartMove {
         let timer = Date.now()
         while (openSet.size) {
             const current = openSet.poll()
-            const currentString = this.positionToString(current)
-            openSetNodes.delete(currentString)
+            openSetNodes.delete(current.key)
 
             // Check if we can finish pathfinding from the current point
             const distanceToFinish = distance(current, cleanFinish)
@@ -422,10 +425,13 @@ export class AStarSmartMove {
                 } else {
                     // We want to move within a certain distance of the position
                     const angle = Math.atan2(current.y - cleanFinish.y, current.x - cleanFinish.x)
+                    const x = cleanFinish.x + Math.cos(angle) * finishDistanceTolerance
+                    const y = cleanFinish.y + Math.sin(angle) * finishDistanceTolerance
                     const closeFinish: SmartMoveNode = {
                         map: cleanFinish.map,
-                        x: cleanFinish.x + Math.cos(angle) * finishDistanceTolerance,
-                        y: cleanFinish.y + Math.sin(angle) * finishDistanceTolerance,
+                        x: x,
+                        y: y,
+                        key: this.positionToString({ x: x, y: y, map: cleanFinish.map }),
                         transportMap: cleanFinish.transportMap,
                         transportType: cleanFinish.transportType,
                         transportS: cleanFinish.transportS
@@ -456,7 +462,6 @@ export class AStarSmartMove {
                         x: Math.trunc(current.x + subMovement[0]),
                         y: Math.trunc(current.y + subMovement[1])
                     })
-                    const neighborString = this.positionToString(neighbor)
 
                     if (can_move({
                         map: current.map,
@@ -468,14 +473,14 @@ export class AStarSmartMove {
                         going_y: neighbor.y,
                         base: parent.character.base
                     })) {
-                        const tentativeGScore = gScore.get(currentString) + Math.abs(subMovement[0]) + Math.abs(subMovement[1])
-                        if (!gScore.has(neighborString) /* No score yet */
-                            || tentativeGScore < gScore.get(neighborString) /* This path is more efficient */) {
-                            cameFrom.set(neighborString, current)
-                            gScore.set(neighborString, tentativeGScore)
-                            fScore.set(neighborString, tentativeGScore + this.heuristic(neighbor, cleanFinish))
-                            if (!openSetNodes.has(neighborString)) {
-                                openSetNodes.add(neighborString)
+                        const tentativeGScore = gScore.get(current.key) + Math.abs(subMovement[0]) + Math.abs(subMovement[1])
+                        if (!gScore.has(neighbor.key) /* No score yet */
+                            || tentativeGScore < gScore.get(neighbor.key) /* This path is more efficient */) {
+                            cameFrom.set(neighbor.key, current)
+                            gScore.set(neighbor.key, tentativeGScore)
+                            fScore.set(neighbor.key, tentativeGScore + this.heuristic(neighbor, cleanFinish))
+                            if (!openSetNodes.has(neighbor.key)) {
+                                openSetNodes.add(neighbor.key)
                                 openSet.add(neighbor)
                             }
                         }
@@ -485,7 +490,7 @@ export class AStarSmartMove {
 
 
             // Don't lock up the game
-            if (Date.now() - timer > 40) {
+            if (Date.now() - timer > 1000) {
                 await sleep(1)
                 timer = Date.now()
                 if (this.wasCancelled(startTime)) return Promise.reject("cancelled")
@@ -505,7 +510,7 @@ export class AStarSmartMove {
                     finalPointString = pointString
                 }
             }
-            const finalPoint = this.stringToPosition(finalPointString)
+            const finalPoint: SmartMoveNode = this.stringToPosition(finalPointString) as SmartMoveNode
             const path = this.reconstructPath(finalPoint, cleanFinish, cameFrom)
             return Promise.resolve(path)
         } catch (error) {

@@ -249,8 +249,9 @@ export async function buyScrolls(): Promise<void> {
     for (const itemName in itemsToBuy) {
         const numberToBuy = itemsToBuy[itemName as ItemName]
         const numItems = findItems(itemName as ItemName).reduce((a, b) => a + b.q, 0)
-        if (numItems < numberToBuy) {
-            await buy_with_gold(itemName as ItemName, Math.min(numberToBuy - numItems, parent.character.gold / G.items[itemName as ItemName].g))
+        const numCanBuy = Math.min(numberToBuy - numItems, Math.floor(parent.character.gold / G.items[itemName as ItemName].g))
+        if (numItems < numberToBuy && numCanBuy > 0) {
+            await buy_with_gold(itemName as ItemName, numCanBuy)
         }
     }
 }

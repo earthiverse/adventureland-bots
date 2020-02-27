@@ -348,8 +348,8 @@ class Ranger extends Character {
 
     async mainLoop(): Promise<void> {
         try {
-            transferItemsToMerchant("earthMer", this.itemsToKeep)
-            transferGoldToMerchant("earthMer", 100000)
+            transferItemsToMerchant(process.env.MERCHANT, this.itemsToKeep)
+            transferGoldToMerchant(process.env.MERCHANT, 100000)
             sellUnwantedItems(this.itemsToSell)
 
             this.createParty(["earthMag", "earthWar", "earthMer", "earthPri"])

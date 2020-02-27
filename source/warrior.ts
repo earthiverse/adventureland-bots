@@ -2,7 +2,7 @@ import { Character } from "./character"
 import { MonsterType, Entity } from "./definitions/adventureland"
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from "./trade"
 import { TargetPriorityList } from "./definitions/bots"
-import { getCooldownMS, getAttackingEntities, calculateDamageRange, isAvailable, isMonster, findItems } from "./functions"
+import { getCooldownMS, calculateDamageRange, isAvailable, findItems, getEntities } from "./functions"
 
 const DIFFICULT = 10
 const MEDIUM = 20
@@ -13,7 +13,7 @@ class Warrior extends Character {
     targetPriority: TargetPriorityList = {
         "arcticbee": {
             "priority": EASY,
-            "equip": ["bataxe"]
+            "equip": ["basher"]
         },
         "bat": {
             "priority": EASY,
@@ -22,7 +22,7 @@ class Warrior extends Character {
                 "x": 1250,
                 "y": -800
             },
-            "equip": ["bataxe"]
+            "equip": ["basher"]
         },
         "bbpompom": {
             "coop": ["priest"],
@@ -59,7 +59,7 @@ class Warrior extends Character {
         },
         "croc": {
             "priority": EASY,
-            "equip": ["bataxe"]
+            "equip": ["basher"]
         },
         // "dragold": {
         //     "coop": ["priest"],
@@ -104,7 +104,7 @@ class Warrior extends Character {
         },
         "goldenbat": {
             "priority": SPECIAL,
-            "equip": ["bataxe"]
+            "equip": ["basher"]
         },
         "goo": {
             "priority": EASY,
@@ -118,7 +118,7 @@ class Warrior extends Character {
         },
         "iceroamer": {
             "priority": DIFFICULT,
-            "equip": ["bataxe"]
+            "equip": ["basher"]
         },
         "mechagnome": {
             "coop": ["priest", "ranger"],
@@ -160,9 +160,9 @@ class Warrior extends Character {
             },
             "equip": ["basher"]
         },
-        // "osnake": {
-        //     "priority": EASY
-        // },
+        "osnake": {
+            "priority": EASY
+        },
         "phoenix": {
             "priority": SPECIAL,
             "equip": ["basher"]
@@ -173,15 +173,15 @@ class Warrior extends Character {
         },
         "poisio": {
             priority: DIFFICULT,
-            "equip": ["bataxe"]
+            "equip": ["basher"]
         },
         "rat": {
             "priority": EASY,
-            "equip": ["bataxe"]
+            "equip": ["basher"]
         },
         "scorpion": {
             "priority": MEDIUM,
-            "equip": ["bataxe"]
+            "equip": ["basher"]
         },
         "snake": {
             // Farm them on the main map because of the +1000% luck and gold bonus chances
@@ -195,22 +195,22 @@ class Warrior extends Character {
         },
         "snowman": {
             "priority": SPECIAL,
-            "equip": ["bataxe"]
+            "equip": ["basher"]
         },
         "spider": {
             "priority": MEDIUM,
-            "equip": ["bataxe"]
+            "equip": ["basher"]
         },
         "squig": {
             "priority": EASY,
             "equip": ["bataxe"]
         },
-        // "squigtoad": {
-        //     "priority": EASY
-        // },
+        "squigtoad": {
+            "priority": EASY
+        },
         "tortoise": {
             "priority": EASY,
-            "equip": ["bataxe"]
+            "equip": ["basher"]
         },
         "wolf": {
             "coop": ["priest"],
@@ -260,8 +260,8 @@ class Warrior extends Character {
 
     async mainLoop(): Promise<void> {
         try {
-            transferItemsToMerchant("earthMer", this.itemsToKeep)
-            transferGoldToMerchant("earthMer", 100000)
+            transferItemsToMerchant(process.env.MERCHANT, this.itemsToKeep)
+            transferGoldToMerchant(process.env.MERCHANT, 100000)
             sellUnwantedItems(this.itemsToSell)
 
             super.mainLoop()
@@ -272,7 +272,7 @@ class Warrior extends Character {
     }
     protected scareLoop(): void {
         try {
-            const targets = getAttackingEntities()
+            const targets = getEntities({ isAttackingUs: true, isRIP: false, isMonster: true })
             let wantToScare = false
             if (targets.length >= 4) {
                 wantToScare = true
@@ -320,6 +320,7 @@ class Warrior extends Character {
         try {
             if (isAvailable("agitate")) {
                 let inAgitateCount = 0
+                let damage = 0
                 for (const id in parent.entities) {
                     const e = parent.entities[id]
                     if (e.type != "monster") continue
@@ -335,6 +336,7 @@ class Warrior extends Character {
                     if (e.target == parent.character.id) {
                         // It's targeting us
                         inAgitateCount++
+                        damage += calculateDamageRange(e, parent.character)[1]
                         continue
                     } else if (e.target) {
                         // It's targeting someone else
@@ -342,10 +344,11 @@ class Warrior extends Character {
                     }
 
                     if (d <= G.skills["agitate"].range) {
+                        damage += calculateDamageRange(e, parent.character)[1]
                         inAgitateCount += 1
                     }
                 }
-                if (inAgitateCount > 0 && inAgitateCount <= 3) {
+                if (inAgitateCount > 0 && inAgitateCount <= 3 && damage < 1000) {
                     use_skill("agitate")
                 }
             }
@@ -364,7 +367,7 @@ class Warrior extends Character {
                 if (!e) continue
                 if (e.ctype == "merchant") continue
 
-                if (parent.distance(parent.character, e) < G.skills["warcry"].range) {
+                if (distance(parent.character, e) < G.skills["warcry"].range) {
                     count += 1
                 }
                 if (count == 2) {
@@ -377,13 +380,8 @@ class Warrior extends Character {
     }
 
     stompLoop(): void {
-        // TODO: Move this to isAvailable
-        if (parent.character.slots.mainhand.name != "basher") {
-            setTimeout(() => { this.stompLoop() }, 1000)
-            return
-        }
         // Stomp monsters with high HP
-        const attackingTargets = getAttackingEntities()
+        const attackingTargets = getEntities({ isAttackingUs: true, isRIP: false })
         if (isAvailable("stomp") && attackingTargets.length) {
 
             if (attackingTargets[0].hp > 25000 && distance(parent.character, attackingTargets[0]) < parent.character.range) {
@@ -394,22 +392,28 @@ class Warrior extends Character {
     }
 
     cleaveLoop(): void {
-        // TODO: Move this to isAvailable
-        if (parent.character.slots.mainhand.name != "bataxe") {
-            setTimeout(() => { this.cleaveLoop() }, 1000)
-            return
+        const wanted: Entity[] = []
+        const unwanted: Entity[] = []
+        for (const e of getEntities({ isMonster: true, isRIP: false, isWithinDistance: G.skills.cleave.range })) {
+            if (parent.character.attack < calculateDamageRange(parent.character, e)[0]) {
+                unwanted.push(e)
+                continue
+            }
+            if (!this.targetPriority[e.mtype]) {
+                unwanted.push(e)
+                continue
+            }
+            if (this.wantToAttack(e, "cleave")) {
+                wanted.push(e)
+            }
         }
-        // Stomp monsters with high HP
-        const nearbyEntities: Entity[] = []
-        for (const id in parent.entities) {
-            const entity = parent.entities[id]
-            if (distance(parent.character, entity) > G.skills["cleave"].range) continue
-            if (parent.character.attack < calculateDamageRange(parent.character, entity)[0]) continue
-            if (!this.targetPriority[entity.mtype]) continue
 
-            nearbyEntities.push(entity)
+        let unwantedDamage = 0
+        for (const e of unwanted) {
+            unwantedDamage += calculateDamageRange(e, parent.character)[1]
         }
-        if (isAvailable("cleave") && nearbyEntities.length > 3) {
+
+        if (isAvailable("cleave") && wanted.length > 3 && unwantedDamage < 1000) {
             use_skill("cleave")
         }
         setTimeout(() => { this.cleaveLoop() }, getCooldownMS("cleave"))
@@ -421,7 +425,7 @@ class Warrior extends Character {
     }
 
     hardshellLoop(): void {
-        const targets = getAttackingEntities()
+        const targets = getEntities({ isAttackingUs: true, isRIP: false })
         if (isAvailable("hardshell")
             && targets.length // We have a target
             && distance(targets[0], parent.character) <= targets[0].range // In range of their attacks
@@ -431,17 +435,41 @@ class Warrior extends Character {
         setTimeout(() => { this.hardshellLoop() }, getCooldownMS("hardshell"))
     }
 
-    // TODO: Improve.
     async tauntLoop(): Promise<void> {
         try {
-            const attackingMonsters = getAttackingEntities()
-            const targets = this.getTargets(5, G.skills["taunt"].range)
-            if (targets && this.wantToAttack(targets[0], "taunt") && attackingMonsters.length < 3) {
-                // Check if any nearby party members have an attacking enemy. If they do, taunt it away.
-                for (const e of targets) {
-                    if (e.target) continue
+            let incomingDamage = 0
+            const attackingUs = getEntities({ isAttackingUs: true, isRIP: false, isMonster: true })
+            for (const e of attackingUs) {
+                // Entity is attacking us directly
+                incomingDamage += calculateDamageRange(e, parent.character)[1]
+            }
+            if (incomingDamage < 1000 && attackingUs.length < 3) {
+                const attackingParty = getEntities({ isAttackingParty: true, isAttackingUs: false, isMonster: true, isRIP: false, isWithinDistance: G.skills.taunt.range })
+                for (const e of attackingParty) {
+                    // Entity is attacking a party member
+                    if (!this.wantToAttack(e, "taunt")) continue
+                    const damage = calculateDamageRange(e, parent.character)[1]
+                    if (incomingDamage + damage > 1000) continue
+
                     await use_skill("taunt", e)
-                    break
+                    setTimeout(() => { this.tauntLoop() }, getCooldownMS("taunt"))
+                    return
+                }
+
+                const notAttacking = getEntities({ isAttackingParty: false, isMonster: true, isRIP: false, isWithinDistance: G.skills.taunt.range })
+                for (const e of notAttacking) {
+                    // Entity isn't attacking anyone in our party
+                    if (!this.wantToAttack(e, "taunt")) continue
+                    const damage = calculateDamageRange(e, parent.character)[1]
+                    if (incomingDamage + damage > 1000) continue
+
+                    const d = distance(parent.character, e)
+                    if (d > parent.character.range && e.range > parent.character.range * 4) continue // Monsters won't come close enough to let us attack them
+                    // NOTE: The "4" is a magic number. I noticed monsters come to about 1/5 their range when you aggro them
+
+                    await use_skill("taunt", e)
+                    setTimeout(() => { this.tauntLoop() }, getCooldownMS("taunt"))
+                    return
                 }
             }
         } catch (error) {

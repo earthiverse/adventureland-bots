@@ -1,6 +1,6 @@
 import FastPriorityQueue from "fastpriorityqueue"
 import { Entity, IPosition, ItemName, ItemInfo, SlotType, MonsterType, PositionReal, NPCName, SkillName, CharacterEntity, CharacterType, TradeSlotType } from "./definitions/adventureland"
-import { sendMassCM, findItems, getInventory, getRandomMonsterSpawn, getAttackingEntities, getCooldownMS, isAvailable, calculateDamageRange, isInventoryFull, getPartyMemberTypes, getVisibleMonsterTypes, sleep } from "./functions"
+import { sendMassCM, findItems, getInventory, getRandomMonsterSpawn, getCooldownMS, isAvailable, calculateDamageRange, isInventoryFull, getPartyMemberTypes, getVisibleMonsterTypes, sleep, getEntities } from "./functions"
 import { TargetPriorityList, OtherInfo, MyItemInfo, ItemLevelInfo, PriorityEntity, MovementTarget } from "./definitions/bots"
 import { dismantleItems, buyPots } from "./trade"
 import { AStarSmartMove } from "./astarsmartmove"
@@ -54,19 +54,19 @@ export abstract class Character {
     ])
     protected itemsToBuy: Set<ItemName> = new Set([
         // Exchangables
-        ...this.itemsToExchange, "candypop",
+        ...this.itemsToExchange,
         // Belts
-        "dexbelt", "intbelt", "strbelt",
+        /*"dexbelt", "intbelt", "strbelt",*/
         // Rings
         "ctristone", "dexring", "intring", "ringofluck", "strring", "suckerpunch", "tristone",
         // Earrings
-        "dexearring", "intearring", "lostearring", "strearring",
+        /*"dexearring", "intearring",*/ "lostearring", /*"strearring",*/
         // Amulets
-        "dexamulet", "intamulet", /*"stramulet",*/ "t2dexamulet", "t2intamulet", "t2stramulet",
+        /*"dexamulet", "intamulet",*/ /*"stramulet",*/ "t2dexamulet", "t2intamulet", "t2stramulet",
         // Orbs
         "jacko", "talkingskull",
         // Shields
-        "t2quiver", "lantern", "mshield", "quiver" /* I'd like a +10 quiver if possible */, "xshield",
+        "t2quiver", "lantern", "mshield", /*"quiver", I'd like a +10 quiver if possible*/ "xshield",
         // Capes
         "angelwings", "bcape", "cape", "ecape", "stealthcape",
         // Shoes
@@ -80,7 +80,7 @@ export abstract class Character {
         // Gloves
         "goldenpowerglove", "handofmidas", "mrngloves", "mwgloves", "poker", "powerglove", "xgloves",
         // Good weapons
-        "basher", "bowofthedead", "candycanesword", "cupid", "dartgun", "firebow", "gbow", "harbringer", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow",
+        "basher", "bowofthedead", "candycanesword", /*"cupid",*/ "dartgun", "firebow", "gbow", "harbringer", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow",
         // Things we can exchange / craft with
         "ascale", "bfur", "cscale", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", "networkcard", "platinumingot", "platinumnugget", "pleather", "snakefang",
         // Things to make xbox
@@ -127,22 +127,19 @@ export abstract class Character {
             // Elixir check
             if (parent.character.slots.elixir == null) {
                 const items = findItems("candypop")
-                if (items) {
+                if (items.length) {
                     equip(items[0].index)
                 }
             }
 
             // Merchant giveaway check
-            for (const id in parent.entities) {
-                const entity = parent.entities[id]
-                if (distance(parent.character, entity) > 400) continue
-                if (entity.ctype != "merchant") continue
+            for (const entity of getEntities({ isCtype: "merchant", isWithinDistance: 400 })) {
                 for (const slot in entity.slots) {
                     const info = entity.slots[slot as TradeSlotType]
                     if (!info) continue
                     if (!info.giveaway) continue
                     if (info.list.includes(parent.character.id)) continue
-                    parent.socket.emit("join_giveaway", { slot: slot, id: id, rid: info.rid })
+                    parent.socket.emit("join_giveaway", { slot: slot, id: entity.id, rid: info.rid })
                 }
             }
 
@@ -212,14 +209,10 @@ export abstract class Character {
             this.parseCM(parent.character.name, message)
 
             // Other players
-            for (const id in parent.entities) {
-                if (parent.entities[id].type != "character") continue
-                if (parent.entities[id].npc) continue
-
-                const player = parent.entities[id] as CharacterEntity
+            for (const player of getEntities({ isPlayer: true }) as CharacterEntity[]) {
                 message = {
                     "message": "player",
-                    "id": id,
+                    "id": player.id,
                     "info": {
                         "lastSeen": new Date(),
                         "rip": player.rip,
@@ -263,7 +256,9 @@ export abstract class Character {
         const types: MonsterType[] = []
         let leastTimeRemaining = Number.MAX_VALUE
         for (const memberName of parent.party_list) {
-            const member = parent.entities[memberName] ? parent.entities[memberName] : this.info.party[memberName]
+            // NOTE: TODO: Gonna check if not checking parent.entities improves the lagginess when we are between monster hunts.
+            // const member = parent.entities[memberName] ? parent.entities[memberName] : this.info.party[memberName]
+            const member = this.info.party[memberName]
             if (!member) continue // No information yet
             if (!member.s.monsterhunt || member.s.monsterhunt.c == 0) continue // Character doesn't have a monster hunt, or it's (almost) finished
             if (!this.targetPriority[member.s.monsterhunt.id]) continue // Not in our target priority
@@ -374,7 +369,7 @@ export abstract class Character {
 
     protected scareLoop(): void {
         try {
-            const targets = getAttackingEntities()
+            const targets = getEntities({ isAttackingUs: true, isMonster: true, isRIP: false })
             let wantToScare = false
             if (targets.length >= 3) {
                 wantToScare = true
@@ -454,8 +449,7 @@ export abstract class Character {
         }
 
         // Rare Monsters -- Move to monster
-        for (const id in parent.entities) {
-            const entity = parent.entities[id]
+        for (const entity of getEntities({ isMonster: true, isRIP: false })) {
             if (entity.mtype != "goldenbat" && entity.mtype != "phoenix") continue
             if (!this.targetPriority[entity.mtype]) continue // Not a target
             set_message(entity.mtype)
@@ -552,11 +546,13 @@ export abstract class Character {
             // Move to our target (this is to get us in the general vicinity, we will do finer movements within that later)
             const lastMovementTarget = this.movementTarget
             this.movementTarget = this.getMovementTarget()
-            if (this.movementTarget.position) {
-                if (!lastMovementTarget || this.movementTarget.target != lastMovementTarget.target) {
+            if (this.movementTarget && this.movementTarget.position) {
+                if (!lastMovementTarget
+                    || this.movementTarget.target != lastMovementTarget.target
+                    || (lastMovementTarget.position && this.movementTarget.position.map != lastMovementTarget.position.map) /* Will this always be the case? Right now there are only snakes that spawn on more than one map, and we have them covered by setting a hunt position */) {
                     // New movement target
+                    this.astar.stop()
                     this.astar.smartMove(this.movementTarget.position, this.movementTarget.range)
-                    stop()
                     setTimeout(() => { this.moveLoop2() }, parent.character.ping)
                     return
                 }
@@ -574,7 +570,6 @@ export abstract class Character {
             if (targets.length
                 && targets[0].mtype == this.movementTarget.target
                 && this.targetPriority[targets[0].mtype] && !this.targetPriority[targets[0].mtype].holdPositionFarm) {
-                stop()
                 this.astar.stop()
             }
 
@@ -591,9 +586,9 @@ export abstract class Character {
             }
 
             // Get all enemies
-            const inEnemyAttackRange: PositionReal[] = []
-            const inAggroRange: PositionReal[] = []
-            const inAttackRange: PositionReal[] = []
+            const inEnemyAttackRange: Entity[] = []
+            const inAggroRange: Entity[] = []
+            const inAttackRange: Entity[] = []
             const inAttackRangeHighPriority: PositionReal[] = []
             const inExtendedAttackRange: PositionReal[] = []
             const inExtendedAttackRangeHighPriority: PositionReal[] = []
@@ -608,8 +603,10 @@ export abstract class Character {
 
                 if (enemyRange < parent.character.range // Enemy range is less than our range
                     && d < enemyRange // We are within the enemy range
-                    && entity.hp > calculateDamageRange(parent.character, entity)[0]) { // We can't kill it in one hit
-                    inEnemyAttackRange.push(entity) // We can run away from it
+                ) {
+                    if (entity.hp > calculateDamageRange(parent.character, entity)[0] || entity.target == parent.character.name) {
+                        inEnemyAttackRange.push(entity) // We can run away from it
+                    }
                 }
 
                 if (!entity.target && d < 50) {
@@ -648,17 +645,24 @@ export abstract class Character {
 
             // Get out of enemy range
             if (inEnemyAttackRange.length) {
-                let closest: PositionReal
-                let d = Number.MAX_VALUE
+                const average: IPosition = {
+                    x: 0,
+                    y: 0
+                }
+                let maxRange = 0
                 for (const v of inEnemyAttackRange) {
-                    const vD = distance(parent.character, v)
-                    if (vD < d) {
-                        d = vD
-                        closest = v
+                    average.x += v.real_x
+                    average.y += v.real_y
+                    if (v.range + v.speed > maxRange) {
+                        maxRange = v.range + v.speed
                     }
                 }
-                const angle: number = Math.atan2(parent.character.real_y - closest.real_y, parent.character.real_x - closest.real_x)
-                const moveDistance: number = parent.character.range - d
+                average.x /= inEnemyAttackRange.length
+                average.y /= inEnemyAttackRange.length
+
+                const d = distance(parent.character, average)
+                const angle: number = Math.atan2(parent.character.real_y - average.y, parent.character.real_x - average.x)
+                const moveDistance: number = Math.min(parent.character.range, maxRange * 1.5)
                 const calculateEscape = (angle: number, moveDistance: number): IPosition => {
                     const x = Math.cos(angle) * moveDistance
                     const y = Math.sin(angle) * moveDistance
@@ -716,42 +720,6 @@ export abstract class Character {
         setTimeout(() => { this.moveLoop2() }, parent.character.ping)
     }
 
-    // protected moveLoop(): void {
-    //     try {
-    //         if (this.holdPosition) {
-    //             setTimeout(() => { this.moveLoop() }, Math.max(250, parent.character.ping))
-    //             return
-    //         }
-
-    //         const targets = this.getTargets(1)
-    //         if (smart.moving || this.astar.isMoving()) {
-    //             if (targets.length > 0 /* We have a target in range */
-    //                 && this.targetPriority[targets[0].mtype] && !this.targetPriority[targets[0].mtype].holdPositionFarm /* We stop on sight of that target */
-    //                 && this.movementTarget == targets[0].mtype /* We're moving to that target */
-    //                 && distance(parent.character, targets[0]) < parent.character.range /* We're in range of that target */) {
-    //                 stop()
-    //                 this.astar.stop()
-    //             }
-    //         } else {
-    //             // Default movements
-    //             if (["ranger", "mage", "priest", "rogue"].includes(parent.character.ctype)) {
-    //                 this.avoidAggroMonsters()
-    //             }
-
-    //             this.avoidStacking()
-
-    //             this.avoidAttackingMonsters()
-
-    //             if (["ranger", "mage", "warrior", "priest"].includes(parent.character.ctype)) {
-    //                 this.moveToMonster()
-    //             }
-    //         }
-    //     } catch (error) {
-    //         console.error(error)
-    //     }
-    //     setTimeout(() => { this.moveLoop() }, Math.max(250, parent.character.ping)) // TODO: queue up next movement based on time it will take to walk there
-    // }
-
     protected healLoop(): void {
         try {
             if (parent.character.rip) {
@@ -808,194 +776,6 @@ export abstract class Character {
         setTimeout(() => { this.healLoop() }, Math.max(250, getCooldownMS("use_hp")))
     }
 
-    /** Checks if there are players on top of us, and moves so that they aren't. Players take damage from attacks to any other character close by. */
-    // TODO: Think about combining this function with avoidAggroMonsters for performance reasons
-    protected avoidStacking(): void {
-        let d = 0
-
-        let closeMonster = false
-        for (const id in parent.entities) {
-            const entity = parent.entities[id]
-            if (entity.type != "monster") continue // Not a monster
-            if (!entity.target) continue // No target on the entity
-
-            d = 25 + entity.range - distance(parent.character, entity)
-            if (d > 0) {
-                closeMonster = true
-                break
-            }
-        }
-        if (!closeMonster) return // No monsters are nearby to attack us
-
-        let closeEntity
-        for (const id in parent.entities) {
-            const entity = parent.entities[id]
-            if (entity.type != "character") continue // Not a character
-
-            d = 25 - distance(parent.character, entity)
-            if (d > 0) {
-                // There's someone close!
-                closeEntity = entity
-                break
-            }
-        }
-        if (!closeEntity) return
-
-        const angle = Math.atan2(parent.character.real_y - closeEntity.real_y, parent.character.real_x - closeEntity.real_x)
-        const x = Math.cos(angle) * d
-        const y = Math.sin(angle) * d
-        const escapePosition: IPosition = { x: parent.character.real_x + x, y: parent.character.real_y + y }
-
-        if (can_move_to(escapePosition.x, escapePosition.y)) {
-            // game_log("moving -- avoidStacking")
-            move(escapePosition.x, escapePosition.y)
-        }
-    }
-
-    protected avoidAggroMonsters(): void {
-        let closeEntity: Entity = null
-        let moveDistance = 0
-        for (const id in parent.entities) {
-            const entity = parent.entities[id]
-            if (entity.type != "monster") continue // Not a monster
-            if (entity.aggro == 0) continue // Not an aggressive monster
-            if (entity.target && entity.target != parent.character.name) continue // Targeting someone else
-            if (calculateDamageRange(entity, parent.character)[1] * 3 * entity.frequency < 400) continue // We can outheal the damage from this monster, don't bother moving
-            if (this.targetPriority[entity.mtype] && this.targetPriority[entity.mtype].holdPositionFarm) continue // Don't move if we're farming them
-
-            const d = Math.max(60, entity.speed * 1.5) - distance(parent.character, entity)
-            if (d < 0) continue // Far away
-
-            if (d > moveDistance) {
-                closeEntity = entity
-                moveDistance = d
-                break
-            }
-        }
-
-        if (!closeEntity) return // No close monsters
-
-        const angle = Math.atan2(parent.character.real_y - closeEntity.real_y, parent.character.real_x - closeEntity.real_x)
-        const x = Math.cos(angle) * moveDistance
-        const y = Math.sin(angle) * moveDistance
-        const escapePosition: IPosition = { x: parent.character.real_x + x, y: parent.character.real_y + y }
-
-        if (can_move_to(escapePosition.x, escapePosition.y)) {
-            // game_log("moving -- avoidaggro")
-            move(escapePosition.x, escapePosition.y)
-        }
-    }
-
-    // TODO: If we are being attacked by 2 different monsters, one with long range, one with short range,
-    // if the short range monster is closer, we might not move back enough from the long range monster
-    protected avoidAttackingMonsters(): void {
-        // Find all monsters attacking us
-        const attackingEntities: Entity[] = getAttackingEntities()
-        const currentTarget = get_targeted_monster()
-        if (currentTarget) {
-            attackingEntities.push(currentTarget)
-        }
-
-        if (!attackingEntities) return // There aren't any monsters attacking us
-
-        // Find the closest monster of those attacking us
-        let minDistance = 9999
-        let target: Entity = null
-        for (const entity of attackingEntities) {
-            if (calculateDamageRange(entity, parent.character)[1] * 3 * entity.frequency < 400) continue // We can outheal the damage 
-            const d = distance(parent.character, entity)
-            if (entity.speed > parent.character.speed) continue // We can't outrun it, don't try
-            if (entity.range > parent.character.range) continue // We can't outrange it, don't try
-            if (minDistance < d) continue // There's another target that's closer
-            if (this.targetPriority[entity.mtype] && this.targetPriority[entity.mtype].holdPositionFarm) continue // Don't move if we're farming them
-            if (d > (entity.range + (entity.speed + parent.character.speed) * Math.max(parent.character.ping * 0.001, 0.5))) continue // We're still far enough away to not get attacked
-
-            minDistance = d
-            target = entity
-            break
-        }
-        if (!target) return // We're far enough away not to get attacked, or it's impossible to do so
-
-        // Move away from the closest monster
-        const angle: number = Math.atan2(parent.character.real_y - target.real_y, parent.character.real_x - target.real_x)
-        const moveDistance: number = target.range + target.speed - (minDistance / 2)
-        function calculateEscape(angle: number, moveDistance: number): IPosition {
-            const x = Math.cos(angle) * moveDistance
-            const y = Math.sin(angle) * moveDistance
-            return { x: parent.character.real_x + x, y: parent.character.real_y + y }
-        }
-        let escapePosition = calculateEscape(angle, moveDistance)
-        let angleChange = 0
-        while (!can_move_to(escapePosition.x, escapePosition.y) && angleChange < 180) {
-            if (angleChange <= 0) {
-                angleChange = (-angleChange) + 1
-            } else {
-                angleChange = -angleChange
-            }
-            escapePosition = calculateEscape(angle + (angleChange * Math.PI / 180), moveDistance)
-        }
-
-        // game_log("moving -- avoid attacking")
-        move(escapePosition.x, escapePosition.y)
-    }
-
-    public moveToMonster(): void {
-        const targets = this.getTargets(1)
-        let movementTarget: Entity
-        let movementDistance = Number.MAX_VALUE
-        if (this.movementTarget) {
-            // We have a movement target
-            if (targets.length && targets[0].mtype == this.movementTarget) {
-                // console.log("have movement target & target")
-                return // We're already nearby our movement target
-            } else {
-                // See if there's any nearby
-                for (const id in parent.entities) {
-                    const entity = parent.entities[id]
-                    if (!entity.mtype || entity.mtype != this.movementTarget) continue
-                    const d = distance(parent.character, entity)
-                    if (d < movementDistance) {
-                        // Found a closer one
-                        movementTarget = entity
-                        movementDistance = d
-                    }
-                }
-            }
-        } else {
-            // We don't have a movement target
-            if (targets.length) {
-                // console.log("have nearby monster")
-                return // We're already near a monster
-            } else {
-                // See if there's any nearby monsters
-                for (const id in parent.entities) {
-                    const entity = parent.entities[id]
-                    if (!entity.mtype || !this.targetPriority[entity.mtype]) continue
-                    const d = distance(parent.character, entity)
-                    if (d < movementDistance) {
-                        // Found a closer one
-                        movementTarget = entity
-                        movementDistance = d
-                    }
-                }
-            }
-        }
-
-        if (!movementTarget) {
-            // No nearby target to move to
-            // console.log(`no monsters to move to (target: ${this.movementTarget})`)
-            return
-        }
-        if (this.targetPriority[movementTarget.mtype] && this.targetPriority[movementTarget.mtype].holdPositionFarm) {
-            // We hold position to farm this monster
-            // console.log("hold position for this monster")
-            return
-        }
-
-        // TODO: better movement, for example, if they're moving away from us, or towards us
-
-        this.astar.smartMove({ map: parent.character.map, x: movementTarget.real_x, y: movementTarget.real_y }, parent.character.range)
-    }
 
     public getNewYearTreeBuff(): void {
         if (!G.maps.main.ref.newyear_tree) return // Event is not live.
@@ -1045,7 +825,7 @@ export abstract class Character {
             const items = getInventory()
 
             // Equip the items we want for this monster
-            if (this.targetPriority[this.movementTarget.target as MonsterType]) {
+            if (this.movementTarget.target && this.targetPriority[this.movementTarget.target as MonsterType]) {
                 for (const idealItem of this.targetPriority[this.movementTarget.target as MonsterType].equip || []) {
                     let hasItem = false
                     for (const slot in parent.character.slots) {
@@ -1264,7 +1044,7 @@ export abstract class Character {
             if (potentialTarget.mtype == this.mainTarget) priority += 250
 
             // Increase priority if it's our movement target
-            if (potentialTarget.mtype == this.movementTarget.target) priority += 1000
+            if (this.movementTarget && potentialTarget.mtype == this.movementTarget.target) priority += 1000
 
             // Increase priority if the entity is targeting us
             if (potentialTarget.target == parent.character.name) priority += 2000

@@ -1,8 +1,9 @@
 import { Character } from "./character"
 import { MonsterType } from "./definitions/adventureland"
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from "./trade"
-import { TargetPriorityList } from "./definitions/bots"
+import { TargetPriorityList, PriorityEntity } from "./definitions/bots"
 import { getCooldownMS, isAvailable } from "./functions"
+import FastPriorityQueue from "fastpriorityqueue"
 
 const DIFFICULT = 10
 const MEDIUM = 20
@@ -203,9 +204,9 @@ class Priest extends Character {
             priority: 0,
             "coop": ["ranger"]
         },
-        // "osnake": {
-        //     "priority": EASY
-        // },
+        "osnake": {
+            "priority": EASY
+        },
         "phoenix": {
             "priority": SPECIAL
         },
@@ -262,12 +263,12 @@ class Priest extends Character {
         "squig": {
             "priority": EASY,
         },
-        // "squigtoad": {
-        //     "priority": EASY
-        // },
-        // "tortoise": {
-        //     "priority": EASY
-        // },
+        "squigtoad": {
+            "priority": EASY
+        },
+        "tortoise": {
+            "priority": EASY
+        },
         "wolf": {
             "coop": ["warrior"],
             "priority": 0,
@@ -307,8 +308,8 @@ class Priest extends Character {
 
     async mainLoop(): Promise<void> {
         try {
-            transferItemsToMerchant("earthMer", this.itemsToKeep)
-            transferGoldToMerchant("earthMer", 100000)
+            transferItemsToMerchant(process.env.MERCHANT, this.itemsToKeep)
+            transferGoldToMerchant(process.env.MERCHANT, 100000)
             sellUnwantedItems(this.itemsToSell)
 
             super.mainLoop()
@@ -339,6 +340,10 @@ class Priest extends Character {
         setTimeout(() => { this.partyHealLoop() }, getCooldownMS("partyheal"))
     }
 
+    // protected absorbLoop(): void {
+
+    // }
+
     protected darkBlessingLoop(): void {
         if (isAvailable("darkblessing")) {
             // Check if there are at least two party members nearby
@@ -349,7 +354,7 @@ class Priest extends Character {
                 if (e.ctype == "merchant") continue
                 if (e.id == parent.character.id) continue
 
-                if (parent.distance(parent.character, e) < G.skills["darkblessing"].range) {
+                if (distance(parent.character, e) < G.skills["darkblessing"].range) {
                     count += 1
                 }
                 if (count == 2) {
@@ -374,30 +379,21 @@ class Priest extends Character {
                 return
             }
 
-            // Check if there's any nearby party member that needs healing
+            // Heal the party member with the lowest % of hp
+            const healTargets = new FastPriorityQueue<PriorityEntity>((x, y) => x.priority > y.priority)
             for (const member of parent.party_list || []) {
-                if (parent.entities[member]) {
-                    if (distance(parent.character, parent.entities[member]) < parent.character.range
-                        && !parent.entities[member].rip
-                        && parent.entities[member].hp < parent.entities[member].max_hp) {
-                        await heal(parent.entities[member])
-                        setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
-                        return
-                    }
+                const entity = parent.entities[member]
+                if (entity
+                    && distance(parent.character, parent.entities[member]) < parent.character.range
+                    && !parent.entities[member].rip
+                    && parent.entities[member].hp / parent.entities[member].max_hp < 0.9) {
+                    healTargets.add({ id: member, priority: parent.character.max_hp / parent.character.hp }) // The bigger the discrepancy -- the higher the priority
                 }
             }
-
-            // Heal our target's target. (The player the monster we want to attack is attacking)
-            const target = this.getTargets(1)
-            if (target.length && target[0].target) {
-                if (parent.entities[target[0].target]) {
-                    const targetTarget = parent.entities[target[0].target]
-                    if (targetTarget.hp < targetTarget.max_hp && distance(parent.character, targetTarget) < parent.character.range) {
-                        await heal(targetTarget)
-                        setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
-                        return
-                    }
-                }
+            if (healTargets.size) {
+                await heal(parent.entities[healTargets.poll().id])
+                setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+                return
             }
         } catch (error) {
             console.error(error)

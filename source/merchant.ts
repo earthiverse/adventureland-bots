@@ -79,7 +79,7 @@ class Merchant extends Character {
             if (name == parent.character.name) continue // Don't move to ourself
 
             const player = parent.entities[name] ? parent.entities[name] : this.info.party[name]
-            if (player && player.s && (!player.s.mluck || player.s.mluck.f != "earthMer")) {
+            if (player && player.s && (!player.s.mluck || player.s.mluck.f != parent.character.id)) {
                 set_message(`ML ${name}`)
                 return { position: player, range: G.skills.mluck.range - 20 }
             }
@@ -364,7 +364,7 @@ class Merchant extends Character {
 
         // Find sellable items
         for (let i = 0; i < items.length; i++) {
-            if (!this.itemsToSell[items[i][0]]) continue
+            if (!this.itemsToSell[items[i][0]] || items[i][1] > this.itemsToSell[items[i][0]]) continue
             const bankBox = items[i][2]
             const boxSlot = items[i][3]
 

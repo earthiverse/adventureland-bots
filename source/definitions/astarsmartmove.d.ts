@@ -6,6 +6,7 @@ export type VisitedMap = Set<string>
 
 export type SmartMoveNode = PositionReal & {
     // Transporter information
+    key: string;
     transportMap?: MapName;
     transportType?: "blink" | "door" | "teleport" | "town";
     transportS?: number;

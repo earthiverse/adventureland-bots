@@ -2,8 +2,7 @@ import { Character } from "./character"
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from "./trade"
 import { TargetPriorityList } from "./definitions/bots"
 import { MonsterType } from "./definitions/adventureland"
-import { getCooldownMS, isAvailable } from "./functions"
-import { use } from "nconf"
+import { getCooldownMS, isAvailable, getEntities } from "./functions"
 
 const DIFFICULT = 10
 const MEDIUM = 20
@@ -162,9 +161,9 @@ class Mage extends Character {
         "mrpumpkin": {
             "priority": SPECIAL
         },
-        // "osnake": {
-        //     "priority": EASY
-        // },
+        "osnake": {
+            "priority": EASY
+        },
         "mvampire": {
             priority: 0,
             "coop": ["priest"]
@@ -225,9 +224,9 @@ class Mage extends Character {
         "squig": {
             "priority": EASY,
         },
-        // "squigtoad": {
-        //     "priority": EASY
-        // },
+        "squigtoad": {
+            "priority": EASY
+        },
         "stoneworm": {
             // Don't attack if we're walking by them, they hurt.
             "holdAttackInEntityRange": true,
@@ -265,13 +264,14 @@ class Mage extends Character {
     run(): void {
         super.run()
         this.energizeLoop()
+        this.cburstLoop()
         // this.magiportLoop()
     }
 
     async mainLoop(): Promise<void> {
         try {
-            transferItemsToMerchant("earthMer", this.itemsToKeep)
-            transferGoldToMerchant("earthMer", 100000)
+            transferItemsToMerchant(process.env.MERCHANT, this.itemsToKeep)
+            transferGoldToMerchant(process.env.MERCHANT, 100000)
             sellUnwantedItems(this.itemsToSell)
 
             super.mainLoop()
@@ -308,15 +308,12 @@ class Mage extends Character {
     energizeLoop(): void {
         try {
             // Get nearby party members
-            if (isAvailable("energize"))
-                for (const id in parent.entities) {
-                    if (id == parent.character.name) continue // Don't cast on ourself.
-                    if (distance(parent.character, parent.entities[id]) > G.skills["energize"].range) continue // Out of range
-                    if (!parent.party_list.includes(id)) continue // Not in our party
-
-                    use_skill("energize", parent.entities[id])
+            if (isAvailable("energize")) {
+                for (const entity of getEntities({ isPartyMember: true, isWithinDistance: G.skills["energize"].range, isRIP: false })) {
+                    use_skill("energize", entity)
                     break
                 }
+            }
         } catch (error) {
             console.error(error)
         }

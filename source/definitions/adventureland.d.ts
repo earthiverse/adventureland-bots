@@ -2,7 +2,7 @@
 declare global {
   interface Window {
     close_merchant();
-    distance(from: IPosition | PositionReal, to: IPosition | PositionReal);
+    distance(from: IPosition | PositionReal, to: IPosition | PositionReal): number;
     exchange(inventoryPosition: number);
     open_merchant(standInventoryPostion: number);
 
@@ -82,6 +82,7 @@ declare global {
   function send_party_invite(name: string, isRequest?: boolean)
   function send_party_request(name: string)
   function set_message(text: string, color?: string)
+  function simple_distance(from: IPosition | PositionReal, to: IPosition | PositionReal): number
   function smart_move(destination: IPosition | MapName | MonsterType, callback?: () => void)
   function start_character(name: string, codeName?: string)
   function stop(action?: string)
