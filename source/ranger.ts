@@ -352,29 +352,29 @@ class Ranger extends Character {
             transferGoldToMerchant(process.env.MERCHANT, 100000)
             sellUnwantedItems(this.itemsToSell)
 
-            this.createParty(["earthMag", "earthWar", "earthMer", "earthPri"])
+            this.createParty(["earthMag", "earthMag2", "earthWar", "earthMer", "earthPri"])
 
             // Switch between warrior and mage if they are idle
-            if (parent.party_list.includes("earthMag")
-                && this.info.party.earthMag
-                && this.info.party.earthMag.shouldSwitchServer
-                && Date.now() - this.startTime > 120000) {
-                this.startTime = Date.now()
-                this.info.party.earthWar = undefined
-                stop_character("earthMag")
-                start_character("earthWar")
+            // if (parent.party_list.includes("earthMag")
+            //     && this.info.party.earthMag
+            //     && this.info.party.earthMag.shouldSwitchServer
+            //     && Date.now() - this.startTime > 120000) {
+            //     this.startTime = Date.now()
+            //     this.info.party.earthWar = undefined
+            //     stop_character("earthMag")
+            //     start_character("earthWar")
 
-                await sleep(2500)
-            } else if (parent.party_list.includes("earthWar")
-                && this.info.party.earthWar
-                && this.info.party.earthWar.shouldSwitchServer
-                && Date.now() - this.startTime > 120000) {
-                this.startTime = Date.now()
-                this.info.party.earthMag = undefined
-                stop_character("earthWar")
-                start_character("earthMag")
-                await sleep(2500)
-            }
+            //     await sleep(2500)
+            // } else if (parent.party_list.includes("earthWar")
+            //     && this.info.party.earthWar
+            //     && this.info.party.earthWar.shouldSwitchServer
+            //     && Date.now() - this.startTime > 120000) {
+            //     this.startTime = Date.now()
+            //     this.info.party.earthMag = undefined
+            //     stop_character("earthWar")
+            //     start_character("earthMag")
+            //     await sleep(2500)
+            // }
 
             // // Switch servers if everyone in the party wants to
             // if (Date.now() - this.startTime > 60000) {

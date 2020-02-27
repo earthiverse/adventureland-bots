@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/camelcase */
 /* eslint-disable no-undef */
-import("http://localhost:3000/priest.js")
+import("https://earthiverse.github.io/adventureland-bots/build/priest.js")
     .then(() => {
         bots.priest.run()
     }, () => {

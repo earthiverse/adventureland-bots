@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/camelcase */
 /* eslint-disable no-undef */
-import("http://localhost:3000/mage.js")
+import("https://earthiverse.github.io/adventureland-bots/build/mage.js")
     .then(() => {
         bots.mage.run()
     }, () => {

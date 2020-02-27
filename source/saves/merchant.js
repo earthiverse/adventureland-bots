@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/camelcase */
 /* eslint-disable no-undef */
-import("http://localhost:3000/merchant.js")
+import("https://earthiverse.github.io/adventureland-bots/build/merchant.js")
     .then(() => {
         bots.merchant.run()
 
