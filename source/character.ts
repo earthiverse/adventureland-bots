@@ -31,8 +31,6 @@ export abstract class Character {
         "cclaw": 2, "hpamulet": 1, "hpbelt": 1, "maceofthedead": 2, "ringsj": 1, "slimestaff": 2, "spear": 2, "throwingstars": 2, "vitearring": 1, "vitring": 1,
     }
     protected itemsToDismantle: ItemLevelInfo = {
-        // Fire stuff
-        "fireblade": 0, "firestaff": 0
     }
     protected itemsToExchange: Set<ItemName> = new Set([
         // General exchangables
@@ -122,7 +120,7 @@ export abstract class Character {
             }
 
             this.getNewYearTreeBuff()
-            dismantleItems()
+            dismantleItems(this.itemsToDismantle)
 
             // Elixir check
             if (parent.character.slots.elixir == null) {

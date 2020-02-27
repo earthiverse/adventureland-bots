@@ -1,5 +1,5 @@
 import { ItemName, NPCType } from "./definitions/adventureland"
-import { findItems, findItem, getInventory, findItemsWithLevel } from "./functions"
+import { findItems, findItem, getInventory, findItemsWithLevel, sleep } from "./functions"
 import { MyItemInfo, ItemLevelInfo } from "./definitions/bots"
 
 export function sellUnwantedItems(itemsToSell: ItemLevelInfo): void {
@@ -105,7 +105,7 @@ export function transferGoldToMerchant(merchantName: string, minimumGold = 0): v
 }
 
 // TODO: Add an agrument for a list of items to dismantle
-export function dismantleItems(): void {
+export async function dismantleItems(itemsToDismantle: ItemLevelInfo): Promise<void> {
     if (parent.character.map == "bank") return // We can't do things in the bank
     if (!findItems("computer").length) {
         let foundGuy = false
@@ -121,17 +121,15 @@ export function dismantleItems(): void {
         if (!foundGuy) return // We're not near the dismantle guy
     }
 
-    const fireBlades = findItemsWithLevel("fireblade", 0)
-    if (parent.character.gold >= G.dismantle["fireblade"].cost) {
-        for (const blade of fireBlades) {
-            parent.socket.emit("dismantle", { num: blade.index })
-        }
-    }
-
-    const fireStaffs = findItemsWithLevel("firestaff", 0)
-    if (parent.character.gold >= G.dismantle["firestaff"].cost) {
-        for (const staff of fireStaffs) {
-            parent.socket.emit("dismantle", { num: staff.index })
+    for (const itemName in itemsToDismantle) {
+        if (parent.character.gold < G.dismantle[itemName as ItemName].cost) continue // Not enough money to dismantle this item
+        for (let itemLevel = itemsToDismantle[itemName as ItemName]; itemLevel > 0; itemLevel--) {
+            const items = findItemsWithLevel(itemName as ItemName, itemLevel)
+            for (const item of items) {
+                parent.socket.emit("dismantle", { num: item.index })
+                // TODO: Improve this 
+                await sleep(parent.character.ping)
+            }
         }
     }
 }
