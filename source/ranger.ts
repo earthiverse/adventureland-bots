@@ -352,7 +352,7 @@ class Ranger extends Character {
             transferGoldToMerchant(process.env.MERCHANT, 100000)
             sellUnwantedItems(this.itemsToSell)
 
-            this.createParty(["earthMag", "earthMag2", "earthWar", "earthMer", "earthPri"])
+            this.createParty(["earthMer", "earthMag", "earthMag2", "earthWar", "earthPri"])
 
             // Switch between warrior and mage if they are idle
             // if (parent.party_list.includes("earthMag")
