@@ -72,6 +72,7 @@ declare global {
   /** Returns the inventory position of the item, or -1 if it's not found */
   function locate_item(item: ItemName): number
   function move(x: number, y: number)
+  function reduce_cooldown(skill: SkillName, ms: number): void
   function respawn()
   /** Quantity defaults to 1 if not set */
   function sell(inventoryPostion: number, quantity?: number)

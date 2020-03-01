@@ -356,8 +356,11 @@ export abstract class Character {
     protected async attackLoop(): Promise<void> {
         try {
             const targets = this.getTargets(1)
-            if (targets.length && this.wantToAttack(targets[0]))
+            if (targets.length && this.wantToAttack(targets[0])) {
+                const then = Date.now()
                 await attack(targets[0])
+                reduce_cooldown("attack", (Date.now() - then) * 0.4)
+            }
         } catch (error) {
             if (!["cooldown", "not_found", "disabled"].includes(error.reason))
                 console.error(error)

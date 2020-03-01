@@ -374,7 +374,9 @@ class Priest extends Character {
             }
 
             if (parent.character.hp < parent.character.max_hp - parent.character.attack * 0.9) {
+                const then = Date.now()
                 await heal(parent.character)
+                reduce_cooldown("attack", (Date.now() - then) * 0.4)
                 setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
                 return
             }
@@ -391,7 +393,9 @@ class Priest extends Character {
                 }
             }
             if (healTargets.size) {
+                const then = Date.now()
                 await heal(parent.entities[healTargets.poll().id])
+                reduce_cooldown("attack", (Date.now() - then) * 0.4)
                 setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
                 return
             }
