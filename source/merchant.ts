@@ -35,7 +35,10 @@ class Merchant extends Character {
             "scroll0", "scroll1", "scroll2",
             "stand0",
             "dexscroll", "intscroll", "strscroll",
-            "monstertoken"
+            "monstertoken",
+
+            // Temporary
+            "platinumnugget"
         )
     }
 
