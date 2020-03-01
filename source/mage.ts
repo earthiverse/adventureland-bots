@@ -265,7 +265,7 @@ class Mage extends Character {
             }
         }
     }
-    mainTarget: MonsterType = "poisio";
+    mainTarget: MonsterType = "prat";
 
     run(): void {
         super.run()
