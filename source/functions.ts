@@ -242,8 +242,9 @@ export function isAvailable(skill: SkillName): boolean {
 }
 
 export function getEntities(
-    { canAttackUsWithoutMoving, isAttacking, isAttackingParty, isAttackingUs, isCtype, isMonster, isMonsterType, isMoving, isNPC, isPartyMember, isPlayer, isRIP, isWithinDistance }: {
+    { canAttackUsWithoutMoving, canMoveTo, isAttacking, isAttackingParty, isAttackingUs, isCtype, isMonster, isMonsterType, isMoving, isNPC, isPartyMember, isPlayer, isRIP, isWithinDistance }: {
         canAttackUsWithoutMoving?: boolean;
+        canMoveTo?: boolean;
         isAttacking?: boolean;
         isAttackingParty?: boolean;
         isAttackingUs?: boolean;
@@ -267,6 +268,10 @@ export function getEntities(
 
         // Can attack us without moving
         if (canAttackUsWithoutMoving === true && entity.range > d) continue // The distance between us and it is greater than their attack range
+
+        // Can move to
+        if (canMoveTo === true && !can_move_to(entity.real_x, entity.real_y)) continue
+        if (canMoveTo === false && can_move_to(entity.real_x, entity.real_y)) continue
 
         // Attacking
         if (isAttacking === true && entity.type == "monster" && !entity.target) continue // No target == not attacking anything
