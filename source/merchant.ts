@@ -78,7 +78,7 @@ class Merchant extends Character {
         }
 
         // If someone in our party isn't mlucked by us, go find them and mluck them.
-        for (const name of parent.party_list) {
+        for (const name in this.info.party) {
             if (name == parent.character.name) continue // Don't move to ourself
 
             const player = parent.entities[name] ? parent.entities[name] : this.info.party[name]
@@ -89,7 +89,8 @@ class Merchant extends Character {
         }
 
         // If there are players who we have seen recently that haven't been mlucked, go find them and mluck them
-        for (const name in this.info.players) {
+        for (const name in this.info.party) {
+            if (name == parent.character.name) continue // Skip ourself
             const player = parent.entities[name] ? parent.entities[name] : this.info.players[name]
             if (distance(parent.character, player) <= G.skills.mluck.range && (!player.s.mluck || Date.now() - new Date(this.info.players[name].lastSeen).getTime() > 3000000 || player.s.mluck.ms < 1800000)) {
                 // This player moved.
@@ -102,7 +103,7 @@ class Merchant extends Character {
         }
 
         // If our players have lots of items, go offload
-        for (const name of parent.party_list) {
+        for (const name in this.info.party) {
             if (name == parent.character.name) continue // Skip ourself
             const player = this.info.party[name]
             if (player && player.items.length > 20) {
