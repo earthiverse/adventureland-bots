@@ -803,6 +803,7 @@ export abstract class Character {
 
     public parseCM(characterName: string, data: any): void {
         if (!parent.party_list.includes(characterName) && parent.character.name != characterName
+            && !["earthiverse", "earthMag", "earthMag2"].includes(characterName) /* Hardcode party members */
             && !(data.message == "monster") /* NOTE: Special code to let Aria send Phoenix position CMs to my characters */) {
             // Ignore messages from players not in our party
             game_log("Blocked CM from " + characterName)
