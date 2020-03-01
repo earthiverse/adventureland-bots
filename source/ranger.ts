@@ -240,8 +240,8 @@ class Ranger extends Character {
             "priority": 0,
             farmingPosition: {
                 "map": "level1",
-                "x": -300,
-                "y": 536
+                "x": -296.5,
+                "y": 557.5
             },
             "equip": ["bow", "quiver"]
         },
