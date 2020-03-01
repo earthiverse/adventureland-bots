@@ -89,7 +89,7 @@ class Merchant extends Character {
         }
 
         // If there are players who we have seen recently that haven't been mlucked, go find them and mluck them
-        for (const name in this.info.party) {
+        for (const name in this.info.players) {
             if (name == parent.character.name) continue // Skip ourself
             const player = parent.entities[name] ? parent.entities[name] : this.info.players[name]
             if (distance(parent.character, player) <= G.skills.mluck.range && (!player.s.mluck || Date.now() - new Date(this.info.players[name].lastSeen).getTime() > 3000000 || player.s.mluck.ms < 1800000)) {
