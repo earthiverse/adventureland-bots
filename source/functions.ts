@@ -242,13 +242,14 @@ export function isAvailable(skill: SkillName): boolean {
 }
 
 export function getEntities(
-    { canAttackUsWithoutMoving, isAttacking, isAttackingParty, isAttackingUs, isCtype, isMonster, isMoving, isNPC, isPartyMember, isPlayer, isRIP, isWithinDistance }: {
+    { canAttackUsWithoutMoving, isAttacking, isAttackingParty, isAttackingUs, isCtype, isMonster, isMonsterType, isMoving, isNPC, isPartyMember, isPlayer, isRIP, isWithinDistance }: {
         canAttackUsWithoutMoving?: boolean;
         isAttacking?: boolean;
         isAttackingParty?: boolean;
         isAttackingUs?: boolean;
         isCtype?: CharacterType;
         isMonster?: boolean;
+        isMonsterType?: MonsterType;
         isMoving?: boolean;
         isNPC?: boolean;
         isPartyMember?: boolean;
@@ -277,6 +278,7 @@ export function getEntities(
         if (isAttackingParty === false && entity.type == "monster" && parent.party_list.includes(entity.target)) continue // Attacking a party member
         if (isAttackingParty === true && entity.type == "character" && !isPVP) continue // Not PVP == can't attack us
         if (isAttackingParty === true && entity.type == "character" && parent.party_list.includes(id)) continue // Can't (shouldn't?) attack us, they're in our party
+        if (isAttackingParty === true && parent.character.name == "Wizard") continue // Assume Wizard won't attack us
         // TODO: See if there's a way we can tell if a player is attacking in PVP. Until then, assume they are.
 
         // Attacking us
@@ -289,11 +291,16 @@ export function getEntities(
         // TODO: See if there's a way we can tell if a player is attacking in PVP. Until then, assume they are.
 
         // Is of character type
+        if (isCtype !== undefined && !entity.ctype) continue
         if (isCtype !== undefined && entity.ctype != isCtype) continue
 
         // Is Monster
         if (isMonster === true && entity.type != "monster") continue
         if (isMonster === false && entity.type == "monster") continue
+
+        // Is Monster Type
+        if (isMonsterType !== undefined && !entity.mtype) continue
+        if (isMonsterType !== undefined && entity.mtype != isMonsterType) continue
 
         // Is Moving
         if (isMoving === true && !entity.moving) continue
