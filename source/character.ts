@@ -767,6 +767,10 @@ export abstract class Character {
                     || (useMpPot.name == "mpot0" && (parent.character.mp <= parent.character.max_mp - 300 || parent.character.mp < 50))
                     || (useMpPot.name == "mpot1" && (parent.character.mp <= parent.character.max_mp - 500 || parent.character.mp < 50)))) {
                 use_skill("use_mp")
+            } else if (hpRatio < mpRatio) {
+                parent.socket.emit("use", { item: "hp" })
+            } else if (mpRatio < hpRatio) {
+                parent.socket.emit("use", { item: "mp" })
             }
         } catch (error) {
             console.error(error)
