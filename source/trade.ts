@@ -74,7 +74,7 @@ export function buyFromPonty(itemNames: Set<ItemName>): void {
 export function transferItemsToMerchant(merchantName: string, itemsToKeep: ItemName[]): void {
     const merchant = parent.entities[merchantName]
     if (!merchant) return // No merchant nearby
-    if (distance(parent.character, merchant) > 250) return // Merchant is too far away to trade
+    if (distance(parent.character, merchant) > 400) return // Merchant is too far away to trade
 
     const itemsToKeepSet = new Set(itemsToKeep)
 
@@ -99,7 +99,7 @@ export function transferGoldToMerchant(merchantName: string, minimumGold = 0): v
     if (parent.character.gold <= minimumGold) return // Not enough gold
     const merchant = parent.entities[merchantName]
     if (!merchant) return // No merchant nearby
-    if (distance(parent.character, merchant) > 250) return // Merchant is too far away to trade
+    if (distance(parent.character, merchant) > 400) return // Merchant is too far away to trade
 
     send_gold(merchantName, parent.character.gold - minimumGold)
 }
