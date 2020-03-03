@@ -87,8 +87,6 @@ export abstract class Character {
         "egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8",
         // Essences
         "essenceofether", "essenceoffire", "essenceoffrost", "essenceoflife", "essenceofnature",
-        // Boosters
-        "goldbooster", "luckbooster", "xpbooster",
         // Potions & consumables
         "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate",
         // Misc. Things
