@@ -62,7 +62,7 @@ export abstract class Character {
         // Amulets
         /*"dexamulet", "intamulet",*/ /*"stramulet",*/ "t2dexamulet", "t2intamulet", "t2stramulet",
         // Orbs
-        "jacko", "talkingskull",
+        "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull",
         // Shields
         "t2quiver", "lantern", "mshield", /*"quiver", I'd like a +10 quiver if possible*/ "xshield",
         // Capes
