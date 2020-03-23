@@ -60,7 +60,7 @@ export abstract class Character {
         // Earrings
         /*"dexearring", "intearring",*/ "lostearring", /*"strearring",*/
         // Amulets
-        /*"dexamulet", "intamulet",*/ /*"stramulet",*/ "t2dexamulet", "t2intamulet", "t2stramulet",
+        "dexamulet", /*"intamulet",*/ /*"stramulet",*/ "t2dexamulet", "t2intamulet", "t2stramulet",
         // Orbs
         "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull",
         // Shields
