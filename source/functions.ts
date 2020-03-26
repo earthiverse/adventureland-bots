@@ -346,7 +346,7 @@ export function getVisibleMonsterTypes(): Set<MonsterType> {
 
 export function sendMassCM(names: string[], data: any): void {
     for (const name of names) {
-        send_local_cm(name, data)
+        send_cm(name, data)
     }
 }
 

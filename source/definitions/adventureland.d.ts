@@ -76,6 +76,7 @@ declare global {
   function respawn()
   /** Quantity defaults to 1 if not set */
   function sell(inventoryPostion: number, quantity?: number)
+  function send_cm(to: string, data: any)
   function send_gold(to: string, amount: number)
   function send_item(to: string, inventoryPostion: number, quantity?: number)
   function send_local_cm(to: string, data: any)
