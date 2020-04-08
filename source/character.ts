@@ -54,7 +54,7 @@ export abstract class Character {
         // Exchangables
         ...this.itemsToExchange,
         // Belts
-        /*"dexbelt", "intbelt", "strbelt",*/
+        "dexbelt", "intbelt", "strbelt",
         // Rings
         "ctristone", "dexring", "intring", "ringofluck", "strring", "suckerpunch", "tristone",
         // Earrings
