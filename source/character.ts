@@ -88,7 +88,7 @@ export abstract class Character {
         // Essences
         "essenceofether", "essenceoffire", "essenceoffrost", "essenceoflife", "essenceofnature",
         // Potions & consumables
-        "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate",
+        "bunnyelixir", "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate",
         // Misc. Things
         "bottleofxp", "bugbountybox", "monstertoken", "poison"
     ])
