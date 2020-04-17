@@ -68,7 +68,7 @@ export abstract class Character {
         // Capes
         "angelwings", "bcape", "cape", "ecape", "stealthcape",
         // Shoes
-        "eslippers", "mrnboots", "mwboots", "xboots",
+        /*"eslippers",*/ "mrnboots", "mwboots", "xboots",
         // Pants
         "mrnpants", "mwpants", "starkillers", "xpants",
         // Armor
