@@ -78,7 +78,7 @@ export abstract class Character {
         // Gloves
         "goldenpowerglove", "handofmidas", "mrngloves", "mwgloves", "poker", "powerglove", "xgloves",
         // Good weapons
-        "basher", "bowofthedead", "candycanesword", /*"cupid",*/ "dartgun", "firebow", "gbow", "harbringer", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow",
+        "basher", "bowofthedead", "candycanesword", /*"cupid",*/ "dartgun", "firebow", "gbow", "harbringer", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow", "t3bow",
         // Things we can exchange / craft with
         "ascale", "bfur", "cscale", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", "networkcard", "platinumingot", "platinumnugget", "pleather", "snakefang",
         // Things to make xbox

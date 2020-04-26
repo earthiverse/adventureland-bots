@@ -35,6 +35,8 @@ declare global {
   }
 
   function attack(target: Entity): Promise<any>
+  // TODO: Figure out what this function returns
+  function auto_craft(name: ItemName): any
   function bank_deposit(amount: number)
   function bank_store(inventoryPosition: number, pack?: BankPackType, packPosition?: number)
   function bank_withdraw(amount: number)
@@ -1071,6 +1073,7 @@ export type ItemName =
   | "t2intamulet"
   | "t2quiver"
   | "t2stramulet"
+  | "t3bow"
   | "talkingskull"
   | "test"
   | "test2"

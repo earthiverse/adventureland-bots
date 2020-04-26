@@ -38,6 +38,7 @@ class Merchant extends Character {
             "monstertoken",
 
             // Temporary
+            "basketofeggs",
             "platinumnugget"
         )
     }
