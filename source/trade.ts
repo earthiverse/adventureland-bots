@@ -160,8 +160,12 @@ export function exchangeItems(itemsToExchange: Set<ItemName>): void {
         if (!amountNeeded || amountNeeded > item.q) continue // Not exchangable, or not enough
 
         let npc: NPCType
-        if (gInfo.quest) {
-            npc = G.quests[gInfo.quest].id
+        if (gInfo.type == "quest") {
+            if (gInfo.quest) {
+                npc = G.quests[gInfo.quest].id
+            } else {
+                npc = "exchange"
+            }
         } else if (gInfo.type == "box" || gInfo.type == "gem" || gInfo.type == "misc") {
             npc = "exchange"
         } else if (item.name == "lostearring" && item.level == 2) {
