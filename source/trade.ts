@@ -21,6 +21,9 @@ export function sellUnwantedItems(itemsToSell: ItemLevelInfo): void {
 
     const itemsToSell2 = Object.keys(itemsToSell)
     for (const item of getInventory()) {
+        // Don't sell shiny items
+        if (item.p == "shiny") continue
+
         if (itemsToSell2.includes(item.name)) {
             if (item.level && item.level > itemsToSell[item.name]) continue // Too high of level
 

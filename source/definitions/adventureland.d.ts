@@ -385,7 +385,7 @@ export type ItemInfo = {
     level: number;
     scroll: ItemName;
     nums: number[];
-  };
+  } | "shiny";
   /** If set, the item is for sale, or purchase */
   rid?: string;
 }
