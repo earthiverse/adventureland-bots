@@ -11,9 +11,10 @@ import("https://earthiverse.github.io/adventureland-bots/build/ranger.js")
     })
 
 const scripts = {
-    "earthWar": "warrior_start",
-    "earthPri": "priest_start",
-    // "earthMag": "mage_start",
+    //"earthWar": "warrior_start",
+    //"earthPri": "priest_start",
+    "earthMag": "mage_start",
+    "earthMag2": "mage_start",
     "earthMer": "merchant_start"
 }
 for (const character in scripts) {
@@ -26,7 +27,7 @@ function on_cm(name, data) {
 }
 
 function on_magiport(name) {
-    if(name != "earthMag") return
+    if(name != "earthMag" && name != "earthMag2") return
     accept_magiport(name)
 }
 

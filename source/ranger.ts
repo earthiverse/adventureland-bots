@@ -2,7 +2,7 @@ import { Character } from "./character"
 import { MonsterType, Entity } from "./definitions/adventureland"
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from "./trade"
 import { TargetPriorityList } from "./definitions/bots"
-import { isPlayer, getCooldownMS, isAvailable, calculateDamageRange, sleep } from "./functions"
+import { isPlayer, getCooldownMS, isAvailable, calculateDamageRange } from "./functions"
 
 class Ranger extends Character {
     targetPriority: TargetPriorityList = {
