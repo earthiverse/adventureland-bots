@@ -121,10 +121,13 @@ export function canSeePlayer(name: string): boolean {
 }
 
 /** Returns the amount of ms we have to wait to use this skill */
-export function getCooldownMS(skill: SkillName): number {
+export function getCooldownMS(skill: SkillName, setMinimumToPing = false): number {
     if (parent.next_skill && parent.next_skill[skill]) {
         const ms = parent.next_skill[skill].getTime() - Date.now()
-        return ms < parent.character.ping ? parent.character.ping : ms
+        if (setMinimumToPing)
+            return ms < parent.character.ping ? parent.character.ping : ms
+        else
+            return ms < 0 ? 0 : ms
     } else {
         return parent.character.ping
     }
