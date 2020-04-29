@@ -78,8 +78,6 @@ export function upgradeItem(itemname: ItemName, targetLevel: number): void {
     }
 }
 
-// TODO: There's a bug with the sorting, it doesn't work right.
-// We should use a set instead with a string like `${item.name}.${item.level}` as a key, and an array of indexes as a value
 export function compoundIfMany(maxLevel: number): void {
     if (parent.character.map == "bank") return // We can't do things in the bank
     if (parent.character.q.compound) return // Already compounding
@@ -104,9 +102,10 @@ export function compoundIfMany(maxLevel: number): void {
         items.push(item)
     }
     items.sort((a, b) => {
-        if (a.name > b.name) return 1
-        if (a.level > b.level) return 1
-        return -1
+        if (a.name != b.name) {
+          return a.name.localeCompare(b.name);
+        }
+        return a.level - b.level;
     })
 
     for (let i = 0; i < items.length - 2; i++) {
@@ -158,10 +157,8 @@ export function upgradeIfMany(maxLevel: number): void {
 
         // Sort the items so we have the lowest level first
         items.sort((a, b) => {
-            if (a.name > b.name) return 1
-            if (a.level > b.level) return 1
-            return -1
-        })
+            return a.level - b.level;
+        });
 
         const item = items[0]
         if (item.level >= maxLevel) continue // Don't upgrade high level items
