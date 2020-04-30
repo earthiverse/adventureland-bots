@@ -239,7 +239,6 @@ class Merchant extends Character {
         for (const item of getInventory()) {
             if (this.itemsToKeep.includes(item.name)) continue // Don't add items we want to keep
 
-
             if (G.items[item.name].s) {
                 // If the item is stackable, deposit it.
                 await sleep(parent.character.ping)

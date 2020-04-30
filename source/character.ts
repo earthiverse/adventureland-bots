@@ -51,46 +51,46 @@ export abstract class Character {
         "armorbox", "weaponbox", "xbox"
     ])
     protected itemsToBuy: Set<ItemName> = new Set([
-        // Exchangables
-        ...this.itemsToExchange,
-        // Belts
-        "dexbelt", "intbelt", "strbelt",
-        // Rings
-        "ctristone", "dexring", "intring", "ringofluck", "strring", "suckerpunch", "tristone",
-        // Earrings
-        /*"dexearring", "intearring",*/ "lostearring", /*"strearring",*/
-        // Amulets
-        "dexamulet", /*"intamulet",*/ /*"stramulet",*/ "t2dexamulet", "t2intamulet", "t2stramulet",
-        // Orbs
-        "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull",
-        // Shields
-        "t2quiver", "lantern", "mshield", /*"quiver", I'd like a +10 quiver if possible*/ "xshield",
-        // Capes
-        "angelwings", "bcape", "cape", "ecape", "stealthcape",
-        // Shoes
-        /*"eslippers",*/ "mrnboots", "mwboots", "xboots",
-        // Pants
-        "mrnpants", "mwpants", "starkillers", "xpants",
-        // Armor
-        "cdragon", "mrnarmor", "mwarmor", "xarmor",
-        // Helmets
-        "eears", "fury", "mrnhat", "mwhelmet", "partyhat", "rednose", "xhelmet",
-        // Gloves
-        "goldenpowerglove", "handofmidas", "mrngloves", "mwgloves", "poker", "powerglove", "xgloves",
-        // Good weapons
-        "basher", "bowofthedead", "candycanesword", /*"cupid",*/ "dartgun", "firebow", "gbow", "harbringer", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow", "t3bow",
-        // Things we can exchange / craft with
-        "ascale", "bfur", "cscale", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", "networkcard", "platinumingot", "platinumnugget", "pleather", "snakefang",
-        // Things to make xbox
-        "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8",
-        // Things to make easter basket
-        "egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8",
-        // Essences
-        "essenceofether", "essenceoffire", "essenceoffrost", "essenceoflife", "essenceofnature",
-        // Potions & consumables
-        "bunnyelixir", "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate",
-        // Misc. Things
-        "bottleofxp", "bugbountybox", "monstertoken", "poison"
+        // // Exchangables
+        // ...this.itemsToExchange,
+        // // Belts
+        // "dexbelt", "intbelt", "strbelt",
+        // // Rings
+        // "ctristone", "dexring", "intring", "ringofluck", "strring", "suckerpunch", "tristone",
+        // // Earrings
+        // /*"dexearring", "intearring",*/ "lostearring", /*"strearring",*/
+        // // Amulets
+        // "dexamulet", /*"intamulet",*/ /*"stramulet",*/ "t2dexamulet", "t2intamulet", "t2stramulet",
+        // // Orbs
+        // "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull",
+        // // Shields
+        // "t2quiver", "lantern", "mshield", /*"quiver", I'd like a +10 quiver if possible*/ "xshield",
+        // // Capes
+        // "angelwings", "bcape", "cape", "ecape", "stealthcape",
+        // // Shoes
+        // /*"eslippers",*/ "mrnboots", "mwboots", "xboots",
+        // // Pants
+        // "mrnpants", "mwpants", "starkillers", "xpants",
+        // // Armor
+        // "cdragon", "mrnarmor", "mwarmor", "xarmor",
+        // // Helmets
+        // "eears", "fury", "mrnhat", "mwhelmet", "partyhat", "rednose", "xhelmet",
+        // // Gloves
+        // "goldenpowerglove", "handofmidas", "mrngloves", "mwgloves", "poker", "powerglove", "xgloves",
+        // // Good weapons
+        // "basher", "bowofthedead", "candycanesword", /*"cupid",*/ "dartgun", "firebow", "gbow", "harbringer", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow", "t3bow",
+        // // Things we can exchange / craft with
+        // "ascale", "bfur", "cscale", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", "networkcard", "platinumingot", "platinumnugget", "pleather", "snakefang",
+        // // Things to make xbox
+        // "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8",
+        // // Things to make easter basket
+        // "egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8",
+        // // Essences
+        // "essenceofether", "essenceoffire", "essenceoffrost", "essenceoflife", "essenceofnature",
+        // // Potions & consumables
+        // "bunnyelixir", "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate",
+        // // Misc. Things
+        // "bottleofxp", "bugbountybox", "monstertoken", "poison"
     ])
 
     /** Set to true to stop movement */
