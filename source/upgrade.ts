@@ -1,6 +1,6 @@
 import { findItems, findItemsWithLevel, getInventory, findItem } from "./functions"
 import { ItemName } from "./definitions/adventureland"
-import { MyItemInfo } from "./definitions/bots"
+import { InventoryItemInfo } from "./definitions/bots"
 
 export function compoundItem(itemname: ItemName, targetLevel: number): void {
     if (parent.character.map == "bank") return // We can't do things in the bank
@@ -20,7 +20,7 @@ export function compoundItem(itemname: ItemName, targetLevel: number): void {
 
     if (parent.character.q && parent.character.q["compound"]) return // Already compounding
 
-    let items: MyItemInfo[]
+    let items: InventoryItemInfo[]
     for (let itemLevel = 0; itemLevel < targetLevel; itemLevel++) {
         items = findItemsWithLevel(itemname, itemLevel)
         if (items.length >= 3)
@@ -33,7 +33,7 @@ export function compoundItem(itemname: ItemName, targetLevel: number): void {
         return
 
     const grade = item_grade(items[0])
-    let scroll: MyItemInfo
+    let scroll: InventoryItemInfo
     if (grade == 0) {
         scroll = findItem("cscroll0")
     } else if (grade == 1) {
@@ -65,7 +65,7 @@ export function upgradeItem(itemname: ItemName, targetLevel: number): void {
     const item = findItem(itemname)
     if (item && item.level < targetLevel) {
         const grade = item_grade(item)
-        let scroll: MyItemInfo
+        let scroll: InventoryItemInfo
         if (grade == 0) {
             scroll = findItem("scroll0")
         } else if (grade == 1) {
@@ -95,7 +95,7 @@ export function compoundIfMany(maxLevel: number): void {
         if (!foundUpgrade) return // Can't upgrade, nobody is near.
     }
 
-    const items: MyItemInfo[] = []
+    const items: InventoryItemInfo[] = []
     for (const item of getInventory()) {
         if (!G.items[item.name].compound) continue // We can't compound this item
         if (item.level >= maxLevel) continue // The item level's higher than we want to upgrade
@@ -103,9 +103,9 @@ export function compoundIfMany(maxLevel: number): void {
     }
     items.sort((a, b) => {
         if (a.name != b.name) {
-          return a.name.localeCompare(b.name);
+            return a.name.localeCompare(b.name)
         }
-        return a.level - b.level;
+        return a.level - b.level
     })
 
     for (let i = 0; i < items.length - 2; i++) {
@@ -157,14 +157,14 @@ export function upgradeIfMany(maxLevel: number): void {
 
         // Sort the items so we have the lowest level first
         items.sort((a, b) => {
-            return a.level - b.level;
-        });
+            return a.level - b.level
+        })
 
         const item = items[0]
         if (item.level >= maxLevel) continue // Don't upgrade high level items
 
         const grade = item_grade(item)
-        let scrolls: MyItemInfo
+        let scrolls: InventoryItemInfo
         if (grade == 0) {
             scrolls = findItem("scroll0")
         } else if (grade == 1) {

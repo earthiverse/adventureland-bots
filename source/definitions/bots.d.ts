@@ -47,7 +47,7 @@ export type OtherInfo = {
             lastSeen: string;
             shouldSwitchServer: boolean;
             monsterHuntTargets: MonsterType[];
-            items: MyItemInfo[];
+            items: InventoryItemInfo[];
             goldm: number;
             last_ms: Date;
             luckm: number;
@@ -78,7 +78,13 @@ export type ItemLevelInfo = {
     [T in ItemName]?: number
 }
 
-export type MyItemInfo = ItemInfo & {
+export type InventoryItemInfo = ItemInfo & {
     /** Specifies the index of the item in the inventory */
     index: number;
+}
+
+export type BankItemInfo = {
+    [T in BankPackType]?: InventoryItemInfo[]
+} & {
+    "items"?: InventoryItemInfo[];
 }

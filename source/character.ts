@@ -1,7 +1,7 @@
 import FastPriorityQueue from "fastpriorityqueue"
 import { Entity, IPosition, ItemName, ItemInfo, SlotType, MonsterType, PositionReal, NPCName, SkillName, CharacterEntity, CharacterType, TradeSlotType } from "./definitions/adventureland"
 import { sendMassCM, findItems, getInventory, getRandomMonsterSpawn, getCooldownMS, isAvailable, calculateDamageRange, isInventoryFull, getPartyMemberTypes, getVisibleMonsterTypes, sleep, getEntities } from "./functions"
-import { TargetPriorityList, OtherInfo, MyItemInfo, ItemLevelInfo, PriorityEntity, MovementTarget } from "./definitions/bots"
+import { TargetPriorityList, OtherInfo, InventoryItemInfo, ItemLevelInfo, PriorityEntity, MovementTarget } from "./definitions/bots"
 import { dismantleItems, buyPots } from "./trade"
 import { AStarSmartMove } from "./astarsmartmove"
 
@@ -362,8 +362,10 @@ export abstract class Character {
         } catch (error) {
             if (!["cooldown", "not_found", "disabled"].includes(error.reason))
                 console.error(error)
+            setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+            return
         }
-        setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+        setTimeout(() => { this.attackLoop() }, getCooldownMS("attack", true))
     }
 
     protected scareLoop(): void {
@@ -854,7 +856,7 @@ export abstract class Character {
             // Equip the most ideal items
             for (const slot in parent.character.slots) {
                 let slotItem: ItemInfo = parent.character.slots[slot as SlotType]
-                let betterItem: MyItemInfo
+                let betterItem: InventoryItemInfo
                 if (!slotItem) continue // Nothing equipped in that slot
                 for (const item of items) {
                     if (item.name != slotItem.name) continue // Not the same item

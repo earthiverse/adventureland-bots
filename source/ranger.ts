@@ -447,8 +447,10 @@ class Ranger extends Character {
                     if (fiveshotTargets.length == 5) break
                 }
                 if (fiveshotTargets.length == 5) {
+                    const then = Date.now()
                     await use_skill("5shot", fiveshotTargets)
-                    setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+                    reduce_cooldown("attack", (Date.now() - then))
+                    setTimeout(() => { this.attackLoop() }, getCooldownMS("attack", true))
                     return
                 }
             }
@@ -463,8 +465,10 @@ class Ranger extends Character {
                     if (threeshotTargets.length == 3) break
                 }
                 if (threeshotTargets.length == 3) {
+                    const then = Date.now()
                     await use_skill("3shot", threeshotTargets)
-                    setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+                    reduce_cooldown("attack", (Date.now() - then))
+                    setTimeout(() => { this.attackLoop() }, getCooldownMS("attack", true))
                     return
                 }
             }
@@ -475,13 +479,17 @@ class Ranger extends Character {
             if (firstTarget
                 && this.wantToAttack(firstTarget, "piercingshot")
                 && calculateDamageRange(piercingShotCalcCharacter, firstTarget)[0] > calculateDamageRange(parent.character, firstTarget)[0]) {
+                const then = Date.now()
                 await use_skill("piercingshot", firstTarget)
-                setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+                reduce_cooldown("attack", (Date.now() - then))
+                setTimeout(() => { this.attackLoop() }, getCooldownMS("attack", true))
                 return
             }
         } catch (error) {
             if (!["cooldown", "not_found", "disabled"].includes(error.reason))
                 console.error(error)
+            setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+            return
         }
 
         // Can't do a special attack, so let's do a normal one

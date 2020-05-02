@@ -3,7 +3,7 @@ import { MonsterType, ItemName, PositionReal, BankPackType } from "./definitions
 import { upgradeIfMany, compoundIfMany } from "./upgrade"
 import { sellUnwantedItems, exchangeItems, buyFromPonty, openMerchantStand, closeMerchantStand, buyScrolls } from "./trade"
 import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots, sleep, getEmptySlots, isInventoryFull } from "./functions"
-import { MovementTarget, TargetPriorityList } from "./definitions/bots"
+import { MovementTarget, TargetPriorityList, BankItemInfo } from "./definitions/bots"
 
 class Merchant extends Character {
     targetPriority: TargetPriorityList = {
@@ -217,6 +217,44 @@ class Merchant extends Character {
         setTimeout(() => { this.pontyLoop() }, 15000)
     }
 
+    private async newBankStuff(): Promise<void> {
+        if (parent.character.map != "bank") {
+            return
+        }
+
+        // Store extra gold
+        if (parent.character.gold > 100000000) {
+            bank_deposit(parent.character.gold - 100000000)
+        } else if (parent.character.gold < 100000000) {
+            bank_withdraw(100000000 - parent.character.gold)
+        }
+
+        // Get a list of all of our items in our inventory and bank
+        const allItems: BankItemInfo = {}
+        allItems["items"] = []
+        for (const item of getInventory()) {
+            allItems["items"].push(item)
+        }
+        for (const pack in parent.character.bank) {
+            allItems[pack as BankPackType] = []
+            for (const item of getInventory(parent.character.bank[pack as BankPackType])) {
+                allItems[pack as BankPackType].push(item)
+            }
+        }
+
+        // TODO: Find things we should have in our inventory at all times
+        for(const pack in allItems) {
+            for(const item in allItems[pack as BankPackType | "items"]) {
+                console.log(item)
+            }
+        }
+        for(const itemName of this.itemsToKeep) {
+            console.log(itemName)
+        }
+
+
+    }
+
     private didBankStuff = 0;
     private async bankStuff(): Promise<void> {
         if (parent.character.map != "bank") {
@@ -282,10 +320,10 @@ class Merchant extends Character {
         empty.pop()
         items.sort((a, b) => {
             if (a[0] != b[0]) {
-                return a[0].localeCompare(b[0]);
+                return a[0].localeCompare(b[0])
             }
-            return a[1] - b[1];
-        })      
+            return a[1] - b[1]
+        })
 
         // Find compounds
         for (let i = 0; i < items.length; i++) {

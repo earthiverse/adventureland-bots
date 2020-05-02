@@ -376,7 +376,7 @@ export type ItemInfo = {
   /** Set if the item is compoundable or upgradable */
   level?: number;
   name: ItemName;
-  /** Set if the item is stackable. */
+  /** How many of this item we have. Set if the item is stackable. */
   q?: number;
   /** If set, name == placeholder, and we are upgrading or compounding something */
   p?: {

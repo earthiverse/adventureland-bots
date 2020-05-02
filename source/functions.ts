@@ -1,5 +1,5 @@
 import { ItemInfo, MonsterType, ItemName, IPosition, MapName, Entity, PositionReal, SkillName, BankPackType, CharacterType } from "./definitions/adventureland"
-import { MyItemInfo, EmptyBankSlots, MonsterSpawnPosition } from "./definitions/bots"
+import { InventoryItemInfo, EmptyBankSlots, MonsterSpawnPosition } from "./definitions/bots"
 
 export function sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms))
@@ -43,8 +43,8 @@ export async function startKonami(): Promise<MonsterType> {
 }
 
 /** Returns the inventory for the player, with all empty slots removed. */
-export function getInventory(inventory = parent.character.items): MyItemInfo[] {
-    const items: MyItemInfo[] = []
+export function getInventory(inventory = parent.character.items): InventoryItemInfo[] {
+    const items: InventoryItemInfo[] = []
     for (let i = 0; i < 42; i++) {
         if (!inventory[i]) continue // No item in this slot
         items.push({ ...inventory[i], index: i })
@@ -52,7 +52,7 @@ export function getInventory(inventory = parent.character.items): MyItemInfo[] {
     return items
 }
 
-export function findItem(name: ItemName): MyItemInfo {
+export function findItem(name: ItemName): InventoryItemInfo {
     for (let i = 0; i < 42; i++) {
         if (!parent.character.items[i]) continue // No item in this slot
         if (parent.character.items[i].name != name) continue // Item doesn't match.
@@ -61,8 +61,8 @@ export function findItem(name: ItemName): MyItemInfo {
     }
 }
 
-export function findItems(name: ItemName): MyItemInfo[] {
-    const items: MyItemInfo[] = []
+export function findItems(name: ItemName): InventoryItemInfo[] {
+    const items: InventoryItemInfo[] = []
     for (let i = 0; i < 42; i++) {
         if (!parent.character.items[i]) continue // No item in this slot
         if (parent.character.items[i].name != name) continue // Item doesn't match.
@@ -72,8 +72,8 @@ export function findItems(name: ItemName): MyItemInfo[] {
     return items
 }
 
-export function findItemsWithLevel(name: ItemName, level: number): MyItemInfo[] {
-    const items: MyItemInfo[] = []
+export function findItemsWithLevel(name: ItemName, level: number): InventoryItemInfo[] {
+    const items: InventoryItemInfo[] = []
     for (let i = 0; i < 42; i++) {
         if (!parent.character.items[i]) continue // No item in this slot
         if (parent.character.items[i].name != name) continue // Item doesn't match.
@@ -121,10 +121,14 @@ export function canSeePlayer(name: string): boolean {
 }
 
 /** Returns the amount of ms we have to wait to use this skill */
-export function getCooldownMS(skill: SkillName): number {
+export function getCooldownMS(skill: SkillName, ignorePing = false): number {
     if (parent.next_skill && parent.next_skill[skill]) {
         const ms = parent.next_skill[skill].getTime() - Date.now()
-        return ms < parent.character.ping ? parent.character.ping : ms
+        if (ignorePing) {
+            return ms
+        } else {
+            return ms < parent.character.ping ? parent.character.ping : ms
+        }
     } else {
         return parent.character.ping
     }
@@ -143,8 +147,8 @@ export function estimatedTimeToKill(attacker: Entity, defender: Entity): number 
     return numberOfAttacks / attacksPerSecond
 }
 
-export function getExchangableItems(inventory?: ItemInfo[]): MyItemInfo[] {
-    const items: MyItemInfo[] = []
+export function getExchangableItems(inventory?: ItemInfo[]): InventoryItemInfo[] {
+    const items: InventoryItemInfo[] = []
 
     for (const item of getInventory(inventory)) {
         if (G.items[item.name].e) items.push(item)

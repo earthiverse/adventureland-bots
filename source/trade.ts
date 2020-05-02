@@ -1,6 +1,6 @@
 import { ItemName, NPCType } from "./definitions/adventureland"
 import { findItems, findItem, getInventory, findItemsWithLevel, sleep } from "./functions"
-import { MyItemInfo, ItemLevelInfo } from "./definitions/bots"
+import { InventoryItemInfo, ItemLevelInfo } from "./definitions/bots"
 
 export function sellUnwantedItems(itemsToSell: ItemLevelInfo): void {
     if (parent.character.map == "bank") return // We can't do things in the bank
@@ -156,7 +156,7 @@ export function exchangeItems(itemsToExchange: Set<ItemName>): void {
     }
     if (!nearbyNPCs.length && !haveComputer) return
 
-    const exchangableItems: { [T in NPCType]?: MyItemInfo[] } = {}
+    const exchangableItems: { [T in NPCType]?: InventoryItemInfo[] } = {}
     for (const item of getInventory()) {
         const gInfo = G.items[item.name]
         const amountNeeded = gInfo.e
