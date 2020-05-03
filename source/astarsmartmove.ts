@@ -10,6 +10,10 @@ export class AStarSmartMove {
     private TELEPORT_TOLERANCE = 75 - 2
     private MOVE_TOLERANCE = 1
     private TOWN_TOLERANCE = 1
+    /** If we are looking for a path, it will lock up the game, as the search is intensive. We will sleep every this amount of time to prevent locking up the game for too long. */
+    private SLEEP_AFTER_MS = 500
+    /** We will sleep for this long after taking a break from pathfinding */
+    private SLEEP_FOR_MS = 50
     /** The distance from the target in which we start checking if we can walk in a straight line to reach it */
     private FINISH_CHECK_DISTANCE = 200
     /** A list of movements to search for. */
@@ -490,8 +494,8 @@ export class AStarSmartMove {
 
 
             // Don't lock up the game
-            if (Date.now() - timer > 1000) {
-                await sleep(1)
+            if (Date.now() - timer > this.SLEEP_AFTER_MS) {
+                await sleep(this.SLEEP_FOR_MS)
                 timer = Date.now()
                 if (this.wasCancelled(startTime)) return Promise.reject("cancelled")
             }
