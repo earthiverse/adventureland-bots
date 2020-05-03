@@ -341,7 +341,7 @@ class Ranger extends Character {
         // TODO: change this to levels like items to sell
         this.itemsToKeep.push(
             // Bows
-            "bow", "cupid", "firebow", "t2bow",
+            "bow", "crossbow", "cupid", "firebow", "t2bow",
             // Quivers
             "quiver", "t2quiver"
         )
@@ -449,7 +449,7 @@ class Ranger extends Character {
                 if (fiveshotTargets.length == 5) {
                     const then = Date.now()
                     await use_skill("5shot", fiveshotTargets)
-                    reduce_cooldown("attack", (Date.now() - then))
+                    reduce_cooldown("attack", (Date.now() - then) - 1)
                     setTimeout(() => { this.attackLoop() }, getCooldownMS("attack", true))
                     return
                 }
@@ -467,7 +467,7 @@ class Ranger extends Character {
                 if (threeshotTargets.length == 3) {
                     const then = Date.now()
                     await use_skill("3shot", threeshotTargets)
-                    reduce_cooldown("attack", (Date.now() - then))
+                    reduce_cooldown("attack", (Date.now() - then) - 1)
                     setTimeout(() => { this.attackLoop() }, getCooldownMS("attack", true))
                     return
                 }
@@ -481,7 +481,7 @@ class Ranger extends Character {
                 && calculateDamageRange(piercingShotCalcCharacter, firstTarget)[0] > calculateDamageRange(parent.character, firstTarget)[0]) {
                 const then = Date.now()
                 await use_skill("piercingshot", firstTarget)
-                reduce_cooldown("attack", (Date.now() - then))
+                reduce_cooldown("attack", (Date.now() - then) - 1)
                 setTimeout(() => { this.attackLoop() }, getCooldownMS("attack", true))
                 return
             }

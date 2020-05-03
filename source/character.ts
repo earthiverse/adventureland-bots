@@ -357,7 +357,7 @@ export abstract class Character {
             if (targets.length && this.wantToAttack(targets[0])) {
                 const then = Date.now()
                 await attack(targets[0])
-                reduce_cooldown("attack", (Date.now() - then))
+                reduce_cooldown("attack", (Date.now() - then) - 1)
             }
         } catch (error) {
             if (!["cooldown", "not_found", "disabled"].includes(error.reason))

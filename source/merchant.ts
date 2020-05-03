@@ -243,8 +243,10 @@ class Merchant extends Character {
         }
 
         // TODO: Find things we should have in our inventory at all times
+        // TODO: Move them to our inventory
         for(const pack in allItems) {
             for(const item in allItems[pack as BankPackType | "items"]) {
+                    
                 console.log(item)
             }
         }
