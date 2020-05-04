@@ -450,7 +450,8 @@ class Ranger extends Character {
                     const then = Date.now()
                     await use_skill("5shot", fiveshotTargets)
                     reduce_cooldown("attack", (Date.now() - then) - 1)
-                    setTimeout(() => { this.attackLoop() }, getCooldownMS("attack", true))
+                    // TODO: When promises resolve on use_skill, change getCoolDownMS to not use ping
+                    setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
                     return
                 }
             }
@@ -468,7 +469,8 @@ class Ranger extends Character {
                     const then = Date.now()
                     await use_skill("3shot", threeshotTargets)
                     reduce_cooldown("attack", (Date.now() - then) - 1)
-                    setTimeout(() => { this.attackLoop() }, getCooldownMS("attack", true))
+                    // TODO: When promises resolve on use_skill, change getCoolDownMS to not use ping
+                    setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
                     return
                 }
             }
@@ -482,7 +484,8 @@ class Ranger extends Character {
                 const then = Date.now()
                 await use_skill("piercingshot", firstTarget)
                 reduce_cooldown("attack", (Date.now() - then) - 1)
-                setTimeout(() => { this.attackLoop() }, getCooldownMS("attack", true))
+                // TODO: When promises resolve on use_skill, change getCoolDownMS to not use ping
+                setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
                 return
             }
         } catch (error) {
