@@ -352,16 +352,20 @@ export abstract class Character {
     }
 
     protected async attackLoop(): Promise<void> {
+        const then = Date.now()
         try {
             const targets = this.getTargets(1)
             if (targets.length && this.wantToAttack(targets[0])) {
-                const then = Date.now()
                 await attack(targets[0])
                 reduce_cooldown("attack", (Date.now() - then) - 1)
             }
         } catch (error) {
-            if (!["cooldown", "not_found", "disabled"].includes(error.reason))
+            if (error.reason == "cooldown") {
+                setTimeout(() => { this.attackLoop() }, Date.now() - then - error.remaining)
+                return
+            } else if (!["not_found", "disabled"].includes(error.reason)) {
                 console.error(error)
+            }
             setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
             return
         }

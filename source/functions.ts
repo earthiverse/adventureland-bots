@@ -125,9 +125,9 @@ export function getCooldownMS(skill: SkillName, ignorePing = false): number {
     if (parent.next_skill && parent.next_skill[skill]) {
         const ms = parent.next_skill[skill].getTime() - Date.now()
         if (ignorePing) {
-            return ms
+            return ms + 1
         } else {
-            return ms < parent.character.ping ? parent.character.ping : ms
+            return ms < parent.character.ping ? parent.character.ping : ms + 1
         }
     } else {
         return parent.character.ping
