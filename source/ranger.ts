@@ -341,7 +341,7 @@ class Ranger extends Character {
         // TODO: change this to levels like items to sell
         this.itemsToKeep.push(
             // Bows
-            "bow", "crossbow", "cupid", "firebow", "t2bow",
+            "bow", "bowofthedead", "crossbow", "cupid", "firebow", "hbow", "merry", "t2bow", "t3bow",
             // Quivers
             "quiver", "t2quiver"
         )
