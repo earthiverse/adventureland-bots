@@ -54,6 +54,7 @@ export class AStarSmartMove {
     /** Stop pathfinding */
     public stop(): void {
         this.reset()
+        stop("town")
         stop()
     }
 

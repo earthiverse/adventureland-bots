@@ -243,7 +243,7 @@ class Ranger extends Character {
                 "x": -296.5,
                 "y": 557.5
             },
-            "equip": ["bow", "quiver"]
+            "equip": ["hbow", "quiver"]
         },
         "rat": {
             "priority": 0,
