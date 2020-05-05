@@ -315,7 +315,10 @@ class Mage extends Character {
         try {
             // Get nearby party members
             if (isAvailable("energize")) {
-                for (const entity of getEntities({ isPartyMember: true, isWithinDistance: G.skills["energize"].range, isRIP: false })) {
+                const partyMembers = getEntities({ isPartyMember: true, isWithinDistance: G.skills["energize"].range, isRIP: false }).sort((a, b) => {
+                    return (a.mp / a.max_mp) < (b.mp / b.max_mp) ? -1 : 1
+                })
+                for (const entity of partyMembers) {
                     use_skill("energize", entity)
                     break
                 }
