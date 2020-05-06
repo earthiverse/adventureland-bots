@@ -195,7 +195,7 @@ class Warrior extends Character {
         },
         "snowman": {
             "priority": SPECIAL,
-            "equip": ["basher"]
+            "equip": ["candycanesword"]
         },
         "spider": {
             "priority": MEDIUM,
@@ -243,7 +243,10 @@ class Warrior extends Character {
     constructor() {
         super()
         this.itemsToKeep.push(
-            "basher", "bataxe", "candycanesword"
+            // Weapons
+            "basher", "bataxe", "candycanesword",
+
+            // Shields
         )
     }
 

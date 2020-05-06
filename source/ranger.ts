@@ -2,7 +2,7 @@ import { Character } from "./character"
 import { MonsterType, Entity } from "./definitions/adventureland"
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from "./trade"
 import { TargetPriorityList } from "./definitions/bots"
-import { isPlayer, getCooldownMS, isAvailable, calculateDamageRange } from "./functions"
+import { isPlayer, getCooldownMS, isAvailable, calculateDamageRange, getEntities } from "./functions"
 
 class Ranger extends Character {
     targetPriority: TargetPriorityList = {
@@ -334,7 +334,8 @@ class Ranger extends Character {
         super.run()
         this.superShotLoop()
         this.huntersmarkLoop()
-        // this.fourFingersLoop();
+        // this.trackLoop()
+        this.fourFingersLoop()
     }
 
     constructor() {
@@ -399,15 +400,28 @@ class Ranger extends Character {
         setTimeout(() => { this.huntersmarkLoop() }, getCooldownMS("huntersmark"))
     }
 
-    fourFingersLoop(): void {
+    async trackLoop(): Promise<void> {
         try {
-            const targets = this.getTargets(1)
-            if (parent.character.mp > 260 // We have MP
+            if (isAvailable("track") // We can use it
+                && is_pvp() // Only track if we can be attacked by other players
+            ) {
+                use_skill("track")
+            }
+        } catch (error) {
+            console.error(error)
+        }
+        setTimeout(() => { this.trackLoop() }, getCooldownMS("track"))
+    }
+
+    async fourFingersLoop(): Promise<void> {
+        try {
+            const targets = getEntities({ "isPlayer": true, "isAttackingParty": true, "isWithinDistance": G.skills["4fingers"].range })
+            
+            if (isAvailable("4fingers") // We can use it
                 && targets.length > 0 // We have a target
                 && !parent.character.stoned // Can use skills
                 && distance(parent.character, targets[0]) <= 120 // The target is in range
                 && isPlayer(targets[0])
-                && isAvailable("4fingers")
                 && targets[0].target == parent.character.name // The target is targetting us
                 && parent.character.hp < targets[0].attack * 10 // We don't have much HP
             ) {

@@ -181,10 +181,14 @@ declare global {
       apiercing?: number;
       class?: CharacterType[];
       cooldown: number;
+      cooldown_multiplier?: number;
       damage_multiplier?: number;
       level?: number;
+      /** Can we use this skill on monsters? */
+      monster?: boolean;
       /** MP Cost for skill */
       mp?: number;
+      /** The name of the skill */
       name: string;
       range?: number;
       range_multiplier?: number;
@@ -194,6 +198,10 @@ declare global {
       share?: SkillName;
       /** The item(s) required to use this skill */
       slot?: [SlotType, ItemName][];
+      /** Does this skill require a single target? (Don't use an array) */
+      target?: boolean;
+      /** Does this skill require multiple targets? (Use an array) */
+      targets?: boolean;
       /** The weapon type needed to use this skill */
       wtype?: WeaponType;
     } };
