@@ -79,6 +79,7 @@ class Merchant extends Character {
             const info = parent.S[mtype as MonsterType]
             if (!info.live) continue // Not alive
             if (info.hp > info.max_hp / 2) continue // Not low health
+            if (!info.target) continue // Not targeting anyone, nobody is probably attacking it
             set_message(mtype)
             return { target: mtype as MonsterType, position: info, range: 50 }
         }
