@@ -326,9 +326,9 @@ class Ranger extends Character {
             "equip": ["firebow", "t2quiver"]
         }
     }
-    mainTarget: MonsterType = "prat"
+    mainTarget: MonsterType = "porcupine"
     startTime = Date.now()
-    switchServerCheck = Date.now()
+    // switchServerCheck = Date.now()
 
     run(): void {
         super.run()
@@ -357,27 +357,27 @@ class Ranger extends Character {
 
             this.createParty(["earthMer", "earthMag", "earthMag2", "earthWar", "earthWar2", "earthPri", "earthPri2"])
 
-            const shouldSwitch = this.shouldSwitchServer()
-            if (shouldSwitch) {
-                if (Date.now() - this.switchServerCheck > 60000) {
-                    // We've wanted to switch for a minute, let's switch
-                    if (parent.server_region == "ASIA")
-                        change_server("US", "I")
-                    else if (parent.server_region == "US" && parent.server_identifier == "I")
-                        change_server("US", "II")
-                    else if (parent.server_region == "US" && parent.server_identifier == "II")
-                        change_server("EU", "I")
-                    else if (parent.server_region == "EU" && parent.server_identifier == "I")
-                        change_server("EU", "II")
-                    else if (parent.server_region == "EU" && parent.server_identifier == "II")
-                        change_server("ASIA", "I")
+            // const shouldSwitch = this.shouldSwitchServer()
+            // if (shouldSwitch) {
+            //     if (Date.now() - this.switchServerCheck > 60000) {
+            //         // We've wanted to switch for a minute, let's switch
+            //         if (parent.server_region == "ASIA")
+            //             change_server("US", "I")
+            //         else if (parent.server_region == "US" && parent.server_identifier == "I")
+            //             change_server("US", "II")
+            //         else if (parent.server_region == "US" && parent.server_identifier == "II")
+            //             change_server("EU", "I")
+            //         else if (parent.server_region == "EU" && parent.server_identifier == "I")
+            //             change_server("EU", "II")
+            //         else if (parent.server_region == "EU" && parent.server_identifier == "II")
+            //             change_server("ASIA", "I")
 
-                    setTimeout(() => { this.mainLoop() }, 30000)
-                    return
-                }
-            } else {
-                this.switchServerCheck = Date.now()
-            }
+            //         setTimeout(() => { this.mainLoop() }, 30000)
+            //         return
+            //     }
+            // } else {
+            //     this.switchServerCheck = Date.now()
+            // }
 
             super.mainLoop()
         } catch (error) {

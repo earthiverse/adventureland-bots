@@ -304,7 +304,7 @@ class Priest extends Character {
             }
         }
     }
-    mainTarget: MonsterType = "poisio";
+    mainTarget: MonsterType = "porcupine";
 
     async mainLoop(): Promise<void> {
         try {
