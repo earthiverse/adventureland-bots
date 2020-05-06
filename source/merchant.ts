@@ -49,7 +49,12 @@ class Merchant extends Character {
             return
         }
 
-        const vendorPlace: PositionReal = { map: "main", "x": 60, "y": -325 }
+        let vendorPlace: PositionReal
+        if (is_pvp()) {
+            vendorPlace = { map: "woffice", "x": 0, "y": 0 }
+        } else {
+            vendorPlace = { map: "main", "x": 60, "y": -325 }
+        }
 
         // Christmas Tree Bonus -- Visit the tree if it's up and we don't have it
         if (G.maps.main.ref.newyear_tree && !parent.character.s.holidayspirit) {
@@ -244,13 +249,13 @@ class Merchant extends Character {
 
         // TODO: Find things we should have in our inventory at all times
         // TODO: Move them to our inventory
-        for(const pack in allItems) {
-            for(const item in allItems[pack as BankPackType | "items"]) {
-                    
+        for (const pack in allItems) {
+            for (const item in allItems[pack as BankPackType | "items"]) {
+
                 console.log(item)
             }
         }
-        for(const itemName of this.itemsToKeep) {
+        for (const itemName of this.itemsToKeep) {
             console.log(itemName)
         }
 
@@ -266,20 +271,20 @@ class Merchant extends Character {
         }
 
         // Store extra gold
-        if(is_pvp()) {
+        if (is_pvp()) {
             if (parent.character.gold > 1000000) {
                 bank_deposit(parent.character.gold - 1000000)
             } else if (parent.character.gold < 1000000) {
                 bank_withdraw(1000000 - parent.character.gold)
             }
-    
+
         } else {
             if (parent.character.gold > 100000000) {
                 bank_deposit(parent.character.gold - 100000000)
             } else if (parent.character.gold < 100000000) {
                 bank_withdraw(100000000 - parent.character.gold)
             }
-    
+
         }
         // name, level, inventory, slot #
         const items: [ItemName, number, string, number][] = []
