@@ -5,7 +5,7 @@ import { sleep } from "./functions"
 
 export class AStarSmartMove {
     /** The cost of teleporting to town (so we don't teleport if it's faster to walk) */
-    private TOWN_MOVEMENT_COST = 200
+    private TOWN_MOVEMENT_COST = 250
     private DOOR_TOLERANCE = 40 - 2
     private TELEPORT_TOLERANCE = 75 - 2
     private MOVE_TOLERANCE = 1

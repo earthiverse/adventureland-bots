@@ -725,7 +725,7 @@ export abstract class Character {
         setTimeout(() => { this.moveLoop2() }, parent.character.ping)
     }
 
-    protected healLoop(): void {
+    protected async healLoop(): Promise<void> {
         try {
             if (parent.character.rip) {
                 // Respawn if we're dead
@@ -782,7 +782,7 @@ export abstract class Character {
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.healLoop() }, Math.max(250, getCooldownMS("use_hp")))
+        setTimeout(() => { this.healLoop() }, getCooldownMS("use_hp"))
     }
 
 

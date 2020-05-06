@@ -57,6 +57,10 @@ class Warrior extends Character {
             "priority": EASY,
             "equip": ["bataxe"]
         },
+        "crabx": {
+            "priority": MEDIUM,
+            "equip": ["basher"]
+        },
         "croc": {
             "priority": EASY,
             "equip": ["basher"]
@@ -172,7 +176,7 @@ class Warrior extends Character {
             "equip": ["candycanesword"]
         },
         "poisio": {
-            priority: DIFFICULT,
+            priority: MEDIUM,
             "equip": ["basher"]
         },
         "rat": {
