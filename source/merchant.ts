@@ -266,12 +266,21 @@ class Merchant extends Character {
         }
 
         // Store extra gold
-        if (parent.character.gold > 100000000) {
-            bank_deposit(parent.character.gold - 100000000)
-        } else if (parent.character.gold < 100000000) {
-            bank_withdraw(100000000 - parent.character.gold)
+        if(is_pvp()) {
+            if (parent.character.gold > 1000000) {
+                bank_deposit(parent.character.gold - 1000000)
+            } else if (parent.character.gold < 1000000) {
+                bank_withdraw(1000000 - parent.character.gold)
+            }
+    
+        } else {
+            if (parent.character.gold > 100000000) {
+                bank_deposit(parent.character.gold - 100000000)
+            } else if (parent.character.gold < 100000000) {
+                bank_withdraw(100000000 - parent.character.gold)
+            }
+    
         }
-
         // name, level, inventory, slot #
         const items: [ItemName, number, string, number][] = []
 

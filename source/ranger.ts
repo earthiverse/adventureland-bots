@@ -67,7 +67,8 @@ class Ranger extends Character {
                 "map": "spookytown",
                 "x": 190,
                 "y": -650
-            }
+            },
+            "equip": ["hbow", "quiver"]
         },
         "cgoo": {
             "holdAttackInEntityRange": true,

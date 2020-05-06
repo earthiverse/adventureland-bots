@@ -310,7 +310,6 @@ class Mage extends Character {
         setTimeout(() => { this.cburstLoop() }, getCooldownMS("cburst"))
     }
 
-    // TODO: cast on the member of the party with the lowest mp
     energizeLoop(): void {
         try {
             // Get nearby party members
