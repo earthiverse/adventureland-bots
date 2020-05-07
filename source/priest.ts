@@ -306,6 +306,17 @@ class Priest extends Character {
     }
     mainTarget: MonsterType = "porcupine";
 
+    constructor() {
+        super()
+        this.itemsToKeep.push(
+            // Weapons
+            "pmace",
+
+            // Shields
+            "mshield", "shield", "sshield", "xshield"
+        )
+    }
+
     async mainLoop(): Promise<void> {
         try {
             transferItemsToMerchant(process.env.MERCHANT, this.itemsToKeep)

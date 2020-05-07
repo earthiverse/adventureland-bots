@@ -4,13 +4,25 @@ import { TargetPriorityList } from "./definitions/bots"
 
 class Rogue extends Character {
     targetPriority: TargetPriorityList = {
+        "bee": {
+            "priority": 100,
+            "equip": ["daggerofthedead"]
+        },
         "goo": {
-            "priority": -50,
-            "equip": ["t2bow", "t2quiver"]
+            "priority": 100,
+            "equip": ["daggerofthedead"]
         }
     }
     mainTarget: MonsterType = "goo"
-    startTime = Date.now()
+
+    constructor() {
+        super()
+        // TODO: change this to levels like items to sell
+        this.itemsToKeep.push(
+            // Daggers
+            "daggerofthedead"
+        )
+    }
 }
 
 const rogue = new Rogue()

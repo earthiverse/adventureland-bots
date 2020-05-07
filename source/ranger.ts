@@ -327,7 +327,6 @@ class Ranger extends Character {
         }
     }
     mainTarget: MonsterType = "porcupine"
-    startTime = Date.now()
     // switchServerCheck = Date.now()
 
     run(): void {

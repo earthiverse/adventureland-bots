@@ -7,11 +7,12 @@ module.exports = {
         new Dotenv()
     ],
     entry: {
-        ranger: "./source/ranger.ts",
-        merchant: "./source/merchant.ts",
-        warrior: "./source/warrior.ts",
         mage: "./source/mage.ts",
-        priest: "./source/priest.ts"
+        merchant: "./source/merchant.ts",
+        priest: "./source/priest.ts",
+        ranger: "./source/ranger.ts",
+        rogue: "./source/rogue.ts",
+        warrior: "./source/warrior.ts"
     },
     module: {
         rules: [{
