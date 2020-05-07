@@ -6,12 +6,25 @@ import { transferItemsToMerchant, transferGoldToMerchant, sellUnwantedItems } fr
 class Rogue extends Character {
     targetPriority: TargetPriorityList = {
         "bee": {
-            "priority": 100,
-            "equip": ["daggerofthedead"]
+            "priority": 100
+        },
+        "crab": {
+            "priority": 100
         },
         "goo": {
-            "priority": 100,
-            "equip": ["daggerofthedead"]
+            "priority": 100
+        },
+        "osnake": {
+            "priority": 100
+        },
+        "snake": {
+            "priority": 100
+        },
+        "squig": {
+            "priority": 100
+        },
+        "squigtoad": {
+            "priority": 100
         }
     }
     mainTarget: MonsterType = "goo"
