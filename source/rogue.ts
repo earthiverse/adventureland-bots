@@ -1,6 +1,7 @@
 import { Character } from "./character"
 import { MonsterType } from "./definitions/adventureland"
 import { TargetPriorityList } from "./definitions/bots"
+import { transferItemsToMerchant, transferGoldToMerchant, sellUnwantedItems } from "./trade"
 
 class Rogue extends Character {
     targetPriority: TargetPriorityList = {
@@ -22,6 +23,19 @@ class Rogue extends Character {
             // Daggers
             "daggerofthedead"
         )
+    }
+
+    async mainLoop(): Promise<void> {
+        try {
+            transferItemsToMerchant(process.env.MERCHANT, this.itemsToKeep)
+            transferGoldToMerchant(process.env.MERCHANT, 100000)
+            sellUnwantedItems(this.itemsToSell)
+
+            super.mainLoop()
+        } catch (error) {
+            console.error(error)
+            setTimeout(() => { this.mainLoop() }, 250)
+        }
     }
 }
 

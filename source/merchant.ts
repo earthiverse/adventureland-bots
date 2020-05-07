@@ -193,7 +193,7 @@ class Merchant extends Character {
         this.attackLoop()
         this.healLoop()
         this.scareLoop()
-        this.moveLoop2()
+        this.moveLoop()
         this.sendInfoLoop()
         this.mainLoop()
         this.luckLoop()
