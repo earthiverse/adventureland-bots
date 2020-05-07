@@ -2,6 +2,7 @@ import { Character } from "./character"
 import { MonsterType } from "./definitions/adventureland"
 import { TargetPriorityList } from "./definitions/bots"
 import { transferItemsToMerchant, transferGoldToMerchant, sellUnwantedItems } from "./trade"
+import { getEntities, isAvailable, calculateDamageRange, getCooldownMS } from "./functions"
 
 class Rogue extends Character {
     targetPriority: TargetPriorityList = {
@@ -38,6 +39,11 @@ class Rogue extends Character {
         )
     }
 
+    run(): void {
+        super.run()
+        this.quickStabLoop()
+    }
+
     async mainLoop(): Promise<void> {
         try {
             transferItemsToMerchant(process.env.MERCHANT, this.itemsToKeep)
@@ -49,6 +55,18 @@ class Rogue extends Character {
             console.error(error)
             setTimeout(() => { this.mainLoop() }, 250)
         }
+    }
+
+    async quickStabLoop(): Promise<void> {
+        const targets = getEntities({ isRIP: false, isMonster: true, isWithinDistance: parent.character.range * G.skills["quickstab"].range_multiplier })
+        if (isAvailable("quickstab") && targets.length) {
+            if (targets[0].hp <= calculateDamageRange(parent.character, targets[0])[0] * G.skills["quickstab"].damage_multiplier) {
+                // We can kill it with one stab, do it.
+                use_skill("quickstab", targets[0])
+            }
+        }
+
+        setTimeout(() => { this.quickStabLoop() }, getCooldownMS("quickstab"))
     }
 }
 
