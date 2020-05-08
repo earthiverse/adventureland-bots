@@ -357,11 +357,11 @@ export abstract class Character {
             const targets = this.getTargets(1)
             if (targets.length && this.wantToAttack(targets[0])) {
                 await attack(targets[0])
-                reduce_cooldown("attack", (Date.now() - then) - 1)
+                reduce_cooldown("attack", (Date.now() - then) * 0.75 - 1)
             }
         } catch (error) {
             if (error.reason == "cooldown") {
-                setTimeout(() => { this.attackLoop() }, Date.now() - then - error.remaining)
+                setTimeout(() => { this.attackLoop() }, (Date.now() - then) * 0.75 - error.remaining)
                 return
             } else if (!["not_found", "disabled"].includes(error.reason)) {
                 console.error(error)

@@ -463,7 +463,7 @@ class Ranger extends Character {
                 if (fiveshotTargets.length == 5) {
                     const then = Date.now()
                     await use_skill("5shot", fiveshotTargets)
-                    reduce_cooldown("attack", (Date.now() - then) - 1)
+                    reduce_cooldown("attack", (Date.now() - then) * 0.75 - 1)
                     // TODO: When promises resolve on use_skill, change getCoolDownMS to not use ping
                     setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
                     return
@@ -482,7 +482,7 @@ class Ranger extends Character {
                 if (threeshotTargets.length == 3) {
                     const then = Date.now()
                     await use_skill("3shot", threeshotTargets)
-                    reduce_cooldown("attack", (Date.now() - then) - 1)
+                    reduce_cooldown("attack", (Date.now() - then) * 0.75 - 1)
                     // TODO: When promises resolve on use_skill, change getCoolDownMS to not use ping
                     setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
                     return
@@ -497,7 +497,7 @@ class Ranger extends Character {
                 && calculateDamageRange(piercingShotCalcCharacter, firstTarget)[0] > calculateDamageRange(parent.character, firstTarget)[0]) {
                 const then = Date.now()
                 await use_skill("piercingshot", firstTarget)
-                reduce_cooldown("attack", (Date.now() - then) - 1)
+                reduce_cooldown("attack", (Date.now() - then) * 0.75 - 1)
                 // TODO: When promises resolve on use_skill, change getCoolDownMS to not use ping
                 setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
                 return
