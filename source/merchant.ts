@@ -1,8 +1,8 @@
 import { Character } from "./character"
 import { MonsterType, ItemName, PositionReal, BankPackType } from "./definitions/adventureland"
-import { upgradeIfMany, compoundIfMany } from "./upgrade"
+import { upgradeIfMany, compoundIfMany, upgradeItem } from "./upgrade"
 import { sellUnwantedItems, exchangeItems, buyFromPonty, openMerchantStand, closeMerchantStand, buyScrolls } from "./trade"
-import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots, sleep, getEmptySlots, isInventoryFull } from "./functions"
+import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots, sleep, getEmptySlots, isInventoryFull, buyIfNone } from "./functions"
 import { MovementTarget, TargetPriorityList, BankItemInfo } from "./definitions/bots"
 
 class Merchant extends Character {
@@ -177,8 +177,9 @@ class Merchant extends Character {
             upgradeIfMany(8)
             compoundIfMany(4)
 
-            // buyIfNone("blade", 9, 2)
-            // upgradeItem("blade", 9)
+            // I want a +10 bow eventually
+            buyIfNone("bow", 9, 2)
+            upgradeItem("bow", 9)
 
             await buyScrolls()
 
@@ -200,7 +201,7 @@ class Merchant extends Character {
         this.pontyLoop()
     }
 
-    private pontyLoop(): void {
+    private pontyLoop(): void { 
         let foundPonty = false
         for (const npc of parent.npcs) {
             if (npc.id == "secondhands" && distance(parent.character, {

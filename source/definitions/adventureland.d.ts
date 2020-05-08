@@ -93,6 +93,8 @@ declare global {
   function start_character(name: string, codeName?: string)
   function stop(action?: string)
   function stop_character(name: string)
+  /** For buying things off players' merchants */
+  function trade_buy(target: Entity, trade_slot: number)
   function transport(map: MapName, spawn?: number)
   function upgrade(itemInventoryPosition: number, scrollInventoryPosition: number, offeringInventoryPosition?: number): Promise<any>
   function use_skill(name: "3shot" | "5shot", targets: Entity[]): Promise<any>[]

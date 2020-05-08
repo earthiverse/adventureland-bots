@@ -132,10 +132,30 @@ export abstract class Character {
             for (const entity of getEntities({ isCtype: "merchant", isWithinDistance: 400 })) {
                 for (const slot in entity.slots) {
                     const info = entity.slots[slot as TradeSlotType]
-                    if (!info) continue
-                    if (!info.giveaway) continue
-                    if (info.list.includes(parent.character.id)) continue
+                    if (!info) continue // Empty slot
+                    if (!info.giveaway) continue // Not a giveaway
+                    if (info.list.includes(parent.character.id)) continue // We haven't joined the giveaway yet
                     parent.socket.emit("join_giveaway", { slot: slot, id: entity.id, rid: info.rid })
+                }
+            }
+
+            // Things for sale check
+            for (const entity of getEntities({ isCtype: "merchant", isWithinDistance: 400 })) {
+                for (const slot in entity.slots) {
+                    const info = entity.slots[slot as TradeSlotType]
+                    if (!info) continue // Empty slot
+                    if (info.b) continue // Item isn't for sale, they're buying it
+                    if (!this.itemsToBuy.has(info.name)) continue // We don't want to buy it
+                    if (info.price > G.items[info.name].g * 2) continue // We don't want to automatically buy things that are really expensive
+                    if (parent.character.gold < info.price) continue // We don't have enough money
+                    if (info.q) {
+                        // They're stackable, buy as many as we can
+                        const quantityToBuy = Math.min(info.q, Math.floor(parent.character.gold / info.price))
+                        parent.socket.emit("trade_buy", { slot: slot, id: entity.id, rid: info.rid, q: quantityToBuy })
+                    } else {
+                        // They're not stackable, buy the one
+                        parent.socket.emit("trade_buy", { slot: slot, id: entity.id, rid: info.rid, q: 1 })
+                    }
                 }
             }
 
