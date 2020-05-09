@@ -213,6 +213,18 @@ class Ranger extends Character {
             "coop": ["priest"],
             "equip": ["firebow", "t2quiver"]
         },
+        "oneeye": {
+            "coop": ["priest", "warrior"],
+            "priority": 0,
+            "holdAttackWhileMoving": true,
+            "holdPositionFarm": true,
+            "farmingPosition": {
+                "map": "level2w",
+                "x": -100,
+                "y": 0
+            },
+            "equip": ["firebow", "t2quiver"]
+        },
         "osnake": {
             "priority": 500,
             "equip": ["t2bow", "t2quiver"]

@@ -204,6 +204,17 @@ class Priest extends Character {
             priority: 0,
             "coop": ["ranger"]
         },
+        "oneeye": {
+            "coop": ["ranger", "warrior"],
+            "priority": 0,
+            "holdAttackWhileMoving": true,
+            "holdPositionFarm": true,
+            "farmingPosition": {
+                "map": "level2w",
+                "x": -135,
+                "y": -50
+            }
+        },
         "osnake": {
             "priority": EASY
         },

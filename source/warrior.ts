@@ -164,6 +164,18 @@ class Warrior extends Character {
             },
             "equip": ["basher"]
         },
+        "oneeye": {
+            "coop": ["ranger", "priest"],
+            "priority": 0,
+            "holdAttackWhileMoving": true,
+            "holdPositionFarm": true,
+            "farmingPosition": {
+                "map": "level2w",
+                "x": -150,
+                "y": 0
+            },
+            "equip": ["basher"]
+        },
         "osnake": {
             "priority": EASY
         },
