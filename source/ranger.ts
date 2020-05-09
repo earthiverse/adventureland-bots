@@ -21,7 +21,7 @@ class Ranger extends Character {
                 "x": -200,
                 "y": -450
             },
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["bowofthedead", "t2quiver"]
         },
         "bbpompom": {
             "coop": ["priest"],
@@ -268,7 +268,7 @@ class Ranger extends Character {
         },
         "scorpion": {
             "priority": 250,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["bowofthedead", "t2quiver"]
         },
         "snake": {
             // Farm them on the main map because of the +1000% luck and gold bonus chances
@@ -286,7 +286,7 @@ class Ranger extends Character {
         },
         "spider": {
             "priority": 100,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["bowofthedead", "t2quiver"]
         },
         "squig": {
             "priority": 100,
@@ -300,7 +300,7 @@ class Ranger extends Character {
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
             "priority": 0,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["bowofthedead", "t2quiver"]
         },
         "tortoise": {
             "priority": 0,
