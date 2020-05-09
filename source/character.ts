@@ -145,6 +145,7 @@ export abstract class Character {
                     const info = entity.slots[slot as TradeSlotType]
                     if (!info) continue // Empty slot
                     if (info.b) continue // Item isn't for sale, they're buying it
+                    if (!info.rid) continue // Item isn't for sale
                     if (!this.itemsToBuy.has(info.name)) continue // We don't want to buy it
                     if (info.price > G.items[info.name].g * 2) continue // We don't want to automatically buy things that are really expensive
                     if (parent.character.gold < info.price) continue // We don't have enough money
