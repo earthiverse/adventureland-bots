@@ -303,6 +303,7 @@ class Mage extends Character {
             }
             if (isAvailable("cburst") && targets.length) {
                 use_skill("cburst", targets)
+                reduce_cooldown("cburst", Math.min(...parent.pings))
             }
         } catch (error) {
             console.error(error)
@@ -319,6 +320,7 @@ class Mage extends Character {
                 })
                 for (const entity of partyMembers) {
                     use_skill("energize", entity)
+                    reduce_cooldown("energize", Math.min(...parent.pings))
                     break
                 }
             }

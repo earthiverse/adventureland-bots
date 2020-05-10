@@ -403,8 +403,10 @@ class Ranger extends Character {
             if (targets.length // We have a target
                 && !targets[0].s.marked // The target isn't marked
                 && targets[0].hp > calculateDamageRange(parent.character, targets[0])[0] * 5 // The target has a lot of HP
-                && this.wantToAttack(targets[0], "huntersmark")) // We want to attack it
+                && this.wantToAttack(targets[0], "huntersmark")) { // We want to attack it 
                 use_skill("huntersmark", targets[0])
+                reduce_cooldown("huntersmark", Math.min(...parent.pings))
+            }
         } catch (error) {
             console.error(error)
         }
@@ -417,6 +419,7 @@ class Ranger extends Character {
                 && is_pvp() // Only track if we can be attacked by other players
             ) {
                 use_skill("track")
+                reduce_cooldown("track", Math.min(...parent.pings))
             }
         } catch (error) {
             console.error(error)
@@ -427,7 +430,7 @@ class Ranger extends Character {
     async fourFingersLoop(): Promise<void> {
         try {
             const targets = getEntities({ "isPlayer": true, "isAttackingParty": true, "isWithinDistance": G.skills["4fingers"].range })
-            
+
             if (isAvailable("4fingers") // We can use it
                 && targets.length > 0 // We have a target
                 && !parent.character.stoned // Can use skills
@@ -437,6 +440,7 @@ class Ranger extends Character {
                 && parent.character.hp < targets[0].attack * 10 // We don't have much HP
             ) {
                 use_skill("4fingers", targets[0])
+                reduce_cooldown("4fingers", Math.min(...parent.pings))
             }
         } catch (error) {
             console.error(error)
@@ -449,6 +453,7 @@ class Ranger extends Character {
             for (const target of this.getTargets(10, parent.character.range * G.skills["supershot"].range_multiplier)) {
                 if (this.wantToAttack(target, "supershot")) {
                     await use_skill("supershot", target)
+                    reduce_cooldown("supershot", Math.min(...parent.pings))
                     break
                 }
             }
@@ -473,9 +478,8 @@ class Ranger extends Character {
                     if (fiveshotTargets.length == 5) break
                 }
                 if (fiveshotTargets.length == 5) {
-                    const then = Date.now()
                     await use_skill("5shot", fiveshotTargets)
-                    reduce_cooldown("attack", (Date.now() - then) * 0.75 - 1)
+                    reduce_cooldown("attack", Math.min(...parent.pings))
                     // TODO: When promises resolve on use_skill, change getCoolDownMS to not use ping
                     setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
                     return
@@ -492,9 +496,8 @@ class Ranger extends Character {
                     if (threeshotTargets.length == 3) break
                 }
                 if (threeshotTargets.length == 3) {
-                    const then = Date.now()
                     await use_skill("3shot", threeshotTargets)
-                    reduce_cooldown("attack", (Date.now() - then) * 0.75 - 1)
+                    reduce_cooldown("attack", Math.min(...parent.pings))
                     // TODO: When promises resolve on use_skill, change getCoolDownMS to not use ping
                     setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
                     return
@@ -507,9 +510,8 @@ class Ranger extends Character {
             if (firstTarget
                 && this.wantToAttack(firstTarget, "piercingshot")
                 && calculateDamageRange(piercingShotCalcCharacter, firstTarget)[0] > calculateDamageRange(parent.character, firstTarget)[0]) {
-                const then = Date.now()
                 await use_skill("piercingshot", firstTarget)
-                reduce_cooldown("attack", (Date.now() - then) * 0.75 - 1)
+                reduce_cooldown("attack", Math.min(...parent.pings))
                 // TODO: When promises resolve on use_skill, change getCoolDownMS to not use ping
                 setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
                 return

@@ -373,16 +373,15 @@ export abstract class Character {
     }
 
     protected async attackLoop(): Promise<void> {
-        const then = Date.now()
         try {
             const targets = this.getTargets(1)
             if (targets.length && this.wantToAttack(targets[0])) {
                 await attack(targets[0])
-                reduce_cooldown("attack", (Date.now() - then) * 0.75 - 1)
+                reduce_cooldown("attack", Math.min(...parent.pings))
             }
         } catch (error) {
             if (error.reason == "cooldown") {
-                setTimeout(() => { this.attackLoop() }, (Date.now() - then) * 0.75 - error.remaining)
+                setTimeout(() => { this.attackLoop() }, Math.min(...parent.pings) - error.remaining)
                 return
             } else if (!["not_found", "disabled"].includes(error.reason)) {
                 console.error(error)
@@ -426,6 +425,7 @@ export abstract class Character {
             if (parent.character.slots.orb.name == "jacko") {
                 // We have a jacko equipped
                 use_skill("scare")
+                reduce_cooldown("scare", Math.min(...parent.pings))
             } else {
                 // Check if we have a jacko in our inventory
                 const items = findItems("jacko")
@@ -433,6 +433,7 @@ export abstract class Character {
                     const jackoI = items[0].index
                     equip(jackoI) // Equip the jacko
                     use_skill("scare") // Scare the monsters away
+                    reduce_cooldown("scare", Math.min(...parent.pings))
                 }
             }
         } catch (error) {
@@ -790,15 +791,19 @@ export abstract class Character {
                     || (useHpPot.name == "hpot0" && (parent.character.hp <= parent.character.max_hp - 200 || parent.character.hp < 50))
                     || (useHpPot.name == "hpot1" && (parent.character.hp <= parent.character.max_hp - 400 || parent.character.hp < 50)))) {
                 use_skill("use_hp")
+                reduce_cooldown("use_hp", Math.min(...parent.pings))
             } else if (mpRatio != 1
                 && (!useMpPot
                     || (useMpPot.name == "mpot0" && (parent.character.mp <= parent.character.max_mp - 300 || parent.character.mp < 50))
                     || (useMpPot.name == "mpot1" && (parent.character.mp <= parent.character.max_mp - 500 || parent.character.mp < 50)))) {
                 use_skill("use_mp")
+                reduce_cooldown("use_hp", Math.min(...parent.pings))
             } else if (hpRatio < mpRatio) {
                 parent.socket.emit("use", { item: "hp" })
+                reduce_cooldown("use_hp", Math.min(...parent.pings))
             } else if (mpRatio < hpRatio) {
                 parent.socket.emit("use", { item: "mp" })
+                reduce_cooldown("use_hp", Math.min(...parent.pings))
             }
         } catch (error) {
             console.error(error)

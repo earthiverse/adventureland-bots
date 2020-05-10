@@ -21,6 +21,8 @@ declare global {
     } };
     /** Contains the name of every character in your party */
     party_list: string[];
+    /** Contains a list of the last 40 ping response times */
+    pings: number[];
     server_identifier: ServerIdentifier;
     server_region: ServerRegion;
     socket: SocketIO.Socket;

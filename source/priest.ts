@@ -355,6 +355,7 @@ class Priest extends Character {
                 if (e.rip) continue
                 if (e.hp / e.max_hp < 0.5) {
                     use_skill("partyheal")
+                    reduce_cooldown("partyheal", Math.min(...parent.pings))
                     break
                 }
             }
@@ -381,6 +382,7 @@ class Priest extends Character {
                 }
                 if (count == 2) {
                     use_skill("darkblessing")
+                    reduce_cooldown("darkblessing", Math.min(...parent.pings))
                     break
                 }
             }
@@ -396,9 +398,8 @@ class Priest extends Character {
             }
 
             if (parent.character.hp < parent.character.max_hp - parent.character.attack * 0.9) {
-                const then = Date.now()
                 await heal(parent.character)
-                reduce_cooldown("attack", (Date.now() - then) * 0.75 - 1)
+                reduce_cooldown("attack", Math.min(...parent.pings))
                 setTimeout(() => { this.attackLoop() }, getCooldownMS("attack", true))
                 return
             }
@@ -415,9 +416,8 @@ class Priest extends Character {
                 }
             }
             if (healTargets.size) {
-                const then = Date.now()
                 await heal(parent.entities[healTargets.poll().id])
-                reduce_cooldown("attack", (Date.now() - then) * 0.75 - 1)
+                reduce_cooldown("attack", Math.min(...parent.pings))
                 setTimeout(() => { this.attackLoop() }, getCooldownMS("attack", true))
                 return
             }

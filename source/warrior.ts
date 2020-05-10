@@ -185,7 +185,7 @@ class Warrior extends Character {
         },
         "pinkgoo": {
             "priority": 1000,
-            "equip": ["candycanesword"]
+            "equip": ["candycanesword", "woodensword"]
         },
         "poisio": {
             priority: MEDIUM,
@@ -211,7 +211,7 @@ class Warrior extends Character {
         },
         "snowman": {
             "priority": SPECIAL,
-            "equip": ["candycanesword"]
+            "equip": ["candycanesword", "woodensword"]
         },
         "spider": {
             "priority": MEDIUM,
@@ -320,6 +320,7 @@ class Warrior extends Character {
             if (parent.character.slots.orb.name == "jacko") {
                 // We have a jacko equipped
                 use_skill("scare")
+                reduce_cooldown("scare", Math.min(...parent.pings))
             } else {
                 // Check if we have a jacko in our inventory
                 const items = findItems("jacko")
@@ -327,6 +328,7 @@ class Warrior extends Character {
                     const jackoI = items[0].index
                     equip(jackoI) // Equip the jacko
                     use_skill("scare") // Scare the monsters away
+                    reduce_cooldown("scare", Math.min(...parent.pings))
                 }
             }
         } catch (error) {
@@ -370,6 +372,7 @@ class Warrior extends Character {
                 }
                 if (inAgitateCount > 0 && inAgitateCount <= 3 && damage < 1000) {
                     use_skill("agitate")
+                    reduce_cooldown("agitate", Math.min(...parent.pings))
                 }
             }
         } catch (error) {
@@ -392,6 +395,7 @@ class Warrior extends Character {
                 }
                 if (count == 2) {
                     use_skill("warcry")
+                    reduce_cooldown("warcry", Math.min(...parent.pings))
                     break
                 }
             }
@@ -406,6 +410,7 @@ class Warrior extends Character {
 
             if (attackingTargets[0].hp > 25000 && distance(parent.character, attackingTargets[0]) < parent.character.range) {
                 use_skill("stomp")
+                reduce_cooldown("stomp", Math.min(...parent.pings))
             }
         }
         setTimeout(() => { this.stompLoop() }, getCooldownMS("stomp"))
@@ -435,6 +440,7 @@ class Warrior extends Character {
 
         if (isAvailable("cleave") && wanted.length > 3 && unwantedDamage < 1000) {
             use_skill("cleave")
+            reduce_cooldown("cleave", Math.min(...parent.pings))
         }
         setTimeout(() => { this.cleaveLoop() }, getCooldownMS("cleave"))
     }
@@ -451,6 +457,7 @@ class Warrior extends Character {
             && distance(targets[0], parent.character) <= targets[0].range // In range of their attacks
             && parent.character.hp < calculateDamageRange(targets[0], parent.character)[1] * 5) { // Not a lot of HP remaining
             use_skill("hardshell")
+            reduce_cooldown("hardshell", Math.min(...parent.pings))
         }
         setTimeout(() => { this.hardshellLoop() }, getCooldownMS("hardshell"))
     }
@@ -472,6 +479,7 @@ class Warrior extends Character {
                     if (incomingDamage + damage > 1000) continue
 
                     await use_skill("taunt", e)
+                    reduce_cooldown("taunt", Math.min(...parent.pings))
                     setTimeout(() => { this.tauntLoop() }, getCooldownMS("taunt"))
                     return
                 }
@@ -488,6 +496,7 @@ class Warrior extends Character {
                     // NOTE: The "4" is a magic number. I noticed monsters come to about 1/5 their range when you aggro them
 
                     await use_skill("taunt", e)
+                    reduce_cooldown("taunt", Math.min(...parent.pings))
                     setTimeout(() => { this.tauntLoop() }, getCooldownMS("taunt"))
                     return
                 }
