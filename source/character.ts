@@ -792,18 +792,22 @@ export abstract class Character {
                     || (useHpPot.name == "hpot1" && (parent.character.hp <= parent.character.max_hp - 400 || parent.character.hp < 50)))) {
                 use_skill("use_hp")
                 reduce_cooldown("use_hp", Math.min(...parent.pings))
+                reduce_cooldown("use_mp", Math.min(...parent.pings))
             } else if (mpRatio != 1
                 && (!useMpPot
                     || (useMpPot.name == "mpot0" && (parent.character.mp <= parent.character.max_mp - 300 || parent.character.mp < 50))
                     || (useMpPot.name == "mpot1" && (parent.character.mp <= parent.character.max_mp - 500 || parent.character.mp < 50)))) {
                 use_skill("use_mp")
                 reduce_cooldown("use_hp", Math.min(...parent.pings))
+                reduce_cooldown("use_mp", Math.min(...parent.pings))
             } else if (hpRatio < mpRatio) {
                 parent.socket.emit("use", { item: "hp" })
                 reduce_cooldown("use_hp", Math.min(...parent.pings))
+                reduce_cooldown("use_mp", Math.min(...parent.pings))
             } else if (mpRatio < hpRatio) {
                 parent.socket.emit("use", { item: "mp" })
                 reduce_cooldown("use_hp", Math.min(...parent.pings))
+                reduce_cooldown("use_mp", Math.min(...parent.pings))
             }
         } catch (error) {
             console.error(error)
