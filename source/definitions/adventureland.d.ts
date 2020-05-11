@@ -98,6 +98,7 @@ declare global {
   /** For buying things off players' merchants */
   function trade_buy(target: Entity, trade_slot: number)
   function transport(map: MapName, spawn?: number)
+  function unequip(slot: SlotType)
   function upgrade(itemInventoryPosition: number, scrollInventoryPosition: number, offeringInventoryPosition?: number): Promise<any>
   function use_skill(name: "3shot" | "5shot", targets: Entity[]): Promise<any>[]
   /** For destination, it's an array of [x, y] */
@@ -128,6 +129,23 @@ declare global {
   }
 
   let G: {
+    classes: { [T in CharacterType]: {
+      /** A list of items that the character can equip using both hands */
+      doublehand: { [T in WeaponType]?: {
+        /** Modifier on the given stat for equipping this type of item */
+        [T in StatType]?: number
+      } };
+      /** A list of items that the character can equip in its mainhand */
+      mainhand: { [T in WeaponType]?: {
+        /** Modifier on the given stat for equipping this type of item */
+        [T in StatType]?: number
+      } };
+      /** A list of items that the character can equip in its offhand */
+      offhand: { [T in WeaponType]?: {
+        /** Modifier on the given stat for equipping this type of item */
+        [T in StatType]?: number
+      } };
+    } };
     dismantle: { [T in ItemName]?: {
       /** The cost of dismantling the item */
       cost: number;
@@ -466,6 +484,7 @@ export type AttributeType =
 export type CharacterType =
   | "mage"
   | "merchant"
+  | "paladin"
   | "priest"
   | "ranger"
   | "rogue"
@@ -485,9 +504,33 @@ export type ItemType =
   | "misc"
   | "quest"
 
-// TODO: Get all types
+// TODO: Get all stat types
+export type StatType =
+  | "dex"
+  | "for"
+  | "int"
+  | "speed"
+  | "str"
+  | "vit"
+
 export type WeaponType =
   | "axe"
+  | "basher"
+  | "bow"
+  | "crossbow"
+  | "dagger"
+  | "dartgun"
+  | "fist"
+  | "mace"
+  | "pmace"
+  | "rapier"
+  | "short_sword"
+  | "spear"
+  | "staff"
+  | "stars"
+  | "sword"
+  | "wand"
+  | "wblade"
 
 export type MonsterType =
   | "arcticbee"

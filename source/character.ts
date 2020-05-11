@@ -875,6 +875,9 @@ export abstract class Character {
                     if (!hasItem) {
                         for (const item of items) {
                             if (item.name == idealItem) {
+                                // If we're going to equip a 2 hand weapon, make sure nothing is in our offhand
+                                if (G.classes[parent.character.ctype].doublehand[G.items[idealItem].wtype]) unequip("offhand")
+
                                 equip(item.index)
                                 break
                             }
