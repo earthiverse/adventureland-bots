@@ -290,11 +290,11 @@ class Ranger extends Character {
         },
         "squig": {
             "priority": 100,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "quiver"]
         },
         "squigtoad": {
             "priority": 250,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "quiver"]
         },
         "stoneworm": {
             "holdAttackInEntityRange": true,
