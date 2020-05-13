@@ -178,9 +178,9 @@ class Merchant extends Character {
             upgradeIfMany(8)
             compoundIfMany(4)
 
-            // I want a +10 bow eventually
-            buyIfNone("bow", 9, 2)
-            upgradeItem("bow", 9)
+            // // I want a +10 bow eventually
+            // buyIfNone("bow", 9, 2)
+            // upgradeItem("bow", 9)
 
             await buyScrolls()
 

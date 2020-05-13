@@ -129,6 +129,10 @@ declare global {
   }
 
   let G: {
+    base_gold: { [T in MonsterType]?: {
+      /** The base amount of gold this monster drops if you kill it in the given map */
+      [T in MapName]?: number
+    } };
     classes: { [T in CharacterType]: {
       /** A list of items that the character can equip using both hands */
       doublehand: { [T in WeaponType]?: {
@@ -146,6 +150,15 @@ declare global {
         [T in StatType]?: number
       } };
     } };
+    conditions: { [T in ConditionName]: {
+      /** Indicates whether the condition is a penalty or not */
+      bad: boolean;
+      buff: boolean;
+      /** The length the condition lasts in ms */
+      duration: number;
+    } & {
+        [T in StatType]?: number
+      } };
     dismantle: { [T in ItemName]?: {
       /** The cost of dismantling the item */
       cost: number;
@@ -508,7 +521,12 @@ export type ItemType =
 export type StatType =
   | "dex"
   | "for"
+  | "frequency"
+  | "gold"
   | "int"
+  | "lifesteal"
+  | "luck"
+  | "mp_cost"
   | "speed"
   | "str"
   | "vit"
