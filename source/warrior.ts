@@ -177,7 +177,8 @@ class Warrior extends Character {
             "equip": ["basher"]
         },
         "osnake": {
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["bataxe"]
         },
         "phoenix": {
             "priority": SPECIAL,
