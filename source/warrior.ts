@@ -261,7 +261,7 @@ class Warrior extends Character {
             "equip": ["basher"]
         },
     }
-    mainTarget: MonsterType = "pinkgoblin"
+    mainTarget: MonsterType = "scorpion"
 
     constructor() {
         super()

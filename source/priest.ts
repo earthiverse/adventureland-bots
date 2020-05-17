@@ -320,7 +320,7 @@ class Priest extends Character {
             }
         }
     }
-    mainTarget: MonsterType = "pinkgoblin"
+    mainTarget: MonsterType = "scorpion"
 
     constructor() {
         super()

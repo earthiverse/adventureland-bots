@@ -344,7 +344,7 @@ class Ranger extends Character {
             "equip": ["firebow", "t2quiver"]
         }
     }
-    mainTarget: MonsterType = "pinkgoblin"
+    mainTarget: MonsterType = "scorpion"
     // switchServerCheck = Date.now()
 
     run(): void {
