@@ -124,6 +124,7 @@ export class AStarSmartMove {
 
             for (const map in G.npcs.transporter.places) {
                 if (map == position.map) continue
+
                 doors.push([npc.position[0], npc.position[1], -1, -1, map as MapName, G.npcs.transporter.places[map as MapName]])
             }
             break
@@ -134,6 +135,9 @@ export class AStarSmartMove {
         for (const door of doors) {
             const doorExitMap = door[4]
             if (visitedMaps.has(doorExitMap)) continue // don't revisit maps we've already visited
+
+            // TODO: If we have a key to this door, use it to improve pathfinding
+            if(door[7] && door[7] == "locked") continue // the door is locked
 
             const doorEntrance: SmartMoveNode = { map: position.map, x: door[0], y: door[1], key: `${position.map}.${door[0]}.${door[1]}`, transportS: door[5], transportMap: doorExitMap, transportType: door[3] == -1 ? "teleport" : "door" }
             const doorExit: SmartMoveNode = { map: doorExitMap, x: G.maps[doorExitMap].spawns[door[5]][0], y: G.maps[doorExitMap].spawns[door[5]][1], key: `${doorExitMap}.${G.maps[doorExitMap].spawns[door[5]][0]}.${G.maps[doorExitMap].spawns[door[5]][1]}` }

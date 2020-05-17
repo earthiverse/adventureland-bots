@@ -180,7 +180,9 @@ declare global {
     };
     maps: { [T in MapName]: {
       /**  */
-      doors: [number, number, number, number, MapName, number?, number?][];
+      doors: [number, number, number, number, MapName, number?, number?, string?][];
+      /** The name of the map, if this changes, the map layout probably changed. */
+      key: string;
       instance: boolean;
       monsters: {
         count: number;
