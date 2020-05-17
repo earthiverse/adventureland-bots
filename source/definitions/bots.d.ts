@@ -83,8 +83,6 @@ export type InventoryItemInfo = ItemInfo & {
     index: number;
 }
 
-export type BankItemInfo = {
-    [T in BankPackType]?: InventoryItemInfo[]
-} & {
-    "items"?: InventoryItemInfo[];
+export type BankItemInfo = InventoryItemInfo & {
+    pack: BankPackType | "items";
 }

@@ -355,26 +355,19 @@ class Warrior extends Character {
                     if (e.type != "monster") continue
                     if (e.rip) continue
 
+                    const d = distance(parent.character, e)
+                    if (d > G.skills["agitate"].range) continue // Out of range
+
                     if (!this.targetPriority[e.mtype]) {
                         // Something we don't want is here
                         inAgitateCount = 0
                         break
                     }
 
-                    const d = distance(parent.character, e)
-                    if (e.target == parent.character.id) {
-                        // It's targeting us
+                    if (e.target == parent.character.id || parent.party_list.includes(e.target)) {
+                        // It's targeting us, or someone in our party
                         inAgitateCount++
                         damage += calculateDamageRange(e, parent.character)[1]
-                        continue
-                    } else if (e.target) {
-                        // It's targeting someone else
-                        continue
-                    }
-
-                    if (d <= G.skills["agitate"].range) {
-                        damage += calculateDamageRange(e, parent.character)[1]
-                        inAgitateCount += 1
                     }
                 }
                 if (inAgitateCount > 0 && inAgitateCount <= 3 && damage < 1000) {

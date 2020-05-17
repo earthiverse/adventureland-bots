@@ -202,7 +202,7 @@ class Merchant extends Character {
         this.pontyLoop()
     }
 
-    private pontyLoop(): void { 
+    private pontyLoop(): void {
         let foundPonty = false
         for (const npc of parent.npcs) {
             if (npc.id == "secondhands" && distance(parent.character, {
@@ -238,26 +238,28 @@ class Merchant extends Character {
         }
 
         // Get a list of all of our items in our inventory and bank
-        const allItems: BankItemInfo = {}
-        allItems["items"] = []
+        const allItems: BankItemInfo[] = []
         for (const item of getInventory()) {
-            allItems["items"].push(item)
+            allItems.push({ ...item, pack: "items" })
         }
         for (const pack in parent.character.bank) {
-            allItems[pack as BankPackType] = []
             for (const item of getInventory(parent.character.bank[pack as BankPackType])) {
-                allItems[pack as BankPackType].push(item)
+                allItems.push({ ...item, pack: pack as BankPackType })
             }
         }
+
+        allItems.sort((a, b) => {
+            if (a.name < b.name) return -1 // 1. Sort by item name
+            if (a.level < b.level) return -1 // 2. Sort by item level
+            if (a.p == "shiny" && !b.p) return -1 // 3. Sort shiny items
+            if (a.q && b.q && a.q < b.q) return -1 // 4. If stackable, sort by # of items in stack
+        })
 
         // TODO: Find things we should have in our inventory at all times
         // TODO: Move them to our inventory
-        for (const pack in allItems) {
-            for (const item in allItems[pack as BankPackType | "items"]) {
+        // for (const item in allItems) {
 
-                console.log(item)
-            }
-        }
+        // }
         for (const itemName of this.itemsToKeep) {
             console.log(itemName)
         }

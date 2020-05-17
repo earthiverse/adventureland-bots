@@ -78,7 +78,7 @@ export abstract class Character {
         // Gloves
         "goldenpowerglove", "handofmidas", "mrngloves", "mwgloves", "poker", "powerglove", "xgloves",
         // Good weapons
-        "basher", "bowofthedead", "candycanesword", "dartgun", "firebow", "gbow", "harbringer", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow", "t3bow",
+        "basher", "bowofthedead", "candycanesword", "carrotsword", "dartgun", "firebow", "gbow", "harbringer", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow", "t3bow",
         // Things we can exchange / craft with
         "ascale", "bfur", "cscale", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", "networkcard", "platinumingot", "platinumnugget", "pleather", "snakefang",
         // Things to make xbox
@@ -687,7 +687,6 @@ export abstract class Character {
                 average.x /= inEnemyAttackRange.length
                 average.y /= inEnemyAttackRange.length
 
-                const d = distance(parent.character, average)
                 const angle: number = Math.atan2(parent.character.real_y - average.y, parent.character.real_x - average.x)
                 const moveDistance: number = Math.min(parent.character.range, maxRange * 1.5)
                 const calculateEscape = (angle: number, moveDistance: number): IPosition => {
