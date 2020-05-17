@@ -604,6 +604,7 @@ export type MonsterType =
   | "oneeye"
   | "osnake"
   | "phoenix"
+  | "pinkgoblin"
   | "pinkgoo"
   | "plantoid"
   | "poisio"

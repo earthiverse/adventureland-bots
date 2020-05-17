@@ -184,6 +184,12 @@ class Warrior extends Character {
             "priority": SPECIAL,
             "equip": ["basher"]
         },
+        "pinkgoblin": {
+            "priority": 100,
+            "holdAttackWhileMoving": true,
+            "coop": ["priest", "ranger"],
+            "equip": ["basher"]
+        },
         "pinkgoo": {
             "priority": 1000,
             "equip": ["candycanesword", "woodensword"]
@@ -255,7 +261,7 @@ class Warrior extends Character {
             "equip": ["basher"]
         },
     }
-    mainTarget: MonsterType = "crab";
+    mainTarget: MonsterType = "pinkgoblin"
 
     constructor() {
         super()

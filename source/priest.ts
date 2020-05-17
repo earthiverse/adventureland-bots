@@ -221,6 +221,11 @@ class Priest extends Character {
         "phoenix": {
             "priority": SPECIAL
         },
+        "pinkgoblin": {
+            "priority": 100,
+            "holdAttackWhileMoving": true,
+            "coop": ["warrior", "ranger"]
+        },
         "pinkgoo": {
             "priority": 1000
         },
@@ -315,7 +320,7 @@ class Priest extends Character {
             }
         }
     }
-    mainTarget: MonsterType = "porcupine";
+    mainTarget: MonsterType = "pinkgoblin"
 
     constructor() {
         super()

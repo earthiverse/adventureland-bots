@@ -523,37 +523,37 @@ export abstract class Character {
             return { target: mtype as MonsterType, position: parent.S[mtype as MonsterType], range: parent.character.range }
         }
 
-        // Monster Hunts -- Move to monster
-        const monsterHuntTargets: MonsterType[] = this.getMonsterHuntTargets()
-        if (monsterHuntTargets.length) {
-            const potentialTarget = monsterHuntTargets[0]
+        // // Monster Hunts -- Move to monster
+        // const monsterHuntTargets: MonsterType[] = this.getMonsterHuntTargets()
+        // if (monsterHuntTargets.length) {
+        //     const potentialTarget = monsterHuntTargets[0]
 
-            const coop = this.targetPriority[potentialTarget].coop
-            if (coop) {
-                // Check if other members are fighting it, too
-                const readyMembers = new Set<CharacterType>()
-                for (const memberName of parent.party_list) {
-                    if (!this.info.party[memberName] || !this.info.party[memberName].monsterHuntTargets) continue
-                    if (this.info.party[memberName].monsterHuntTargets[0] != potentialTarget) continue
+        //     const coop = this.targetPriority[potentialTarget].coop
+        //     if (coop) {
+        //         // Check if other members are fighting it, too
+        //         const readyMembers = new Set<CharacterType>()
+        //         for (const memberName of parent.party_list) {
+        //             if (!this.info.party[memberName] || !this.info.party[memberName].monsterHuntTargets) continue
+        //             if (this.info.party[memberName].monsterHuntTargets[0] != potentialTarget) continue
 
-                    readyMembers.add(parent.party[memberName].type)
-                }
-                const notReady = coop.filter(x => !readyMembers.has(x))
-                if (notReady.length == 0) {
-                    set_message(`MH ${potentialTarget}`)
-                    return { target: potentialTarget, position: this.getMovementLocation(potentialTarget) }
-                }
-            } else {
-                set_message(`MH ${potentialTarget}`)
-                return { target: potentialTarget, position: this.getMovementLocation(potentialTarget) }
-            }
-        }
+        //             readyMembers.add(parent.party[memberName].type)
+        //         }
+        //         const notReady = coop.filter(x => !readyMembers.has(x))
+        //         if (notReady.length == 0) {
+        //             set_message(`MH ${potentialTarget}`)
+        //             return { target: potentialTarget, position: this.getMovementLocation(potentialTarget) }
+        //         }
+        //     } else {
+        //         set_message(`MH ${potentialTarget}`)
+        //         return { target: potentialTarget, position: this.getMovementLocation(potentialTarget) }
+        //     }
+        // }
 
-        // Monster Hunts -- New monster hunt
-        if (!parent.character.s.monsterhunt) {
-            set_message("New MH")
-            return { target: "monsterhunter", position: G.maps.main.ref.monsterhunter, range: 300 }
-        }
+        // // Monster Hunts -- New monster hunt
+        // if (!parent.character.s.monsterhunt) {
+        //     set_message("New MH")
+        //     return { target: "monsterhunter", position: G.maps.main.ref.monsterhunter, range: 300 }
+        // }
 
         // TODO: Kane and Angel
 

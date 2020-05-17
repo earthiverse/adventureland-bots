@@ -233,6 +233,12 @@ class Ranger extends Character {
             "priority": 1000,
             "equip": ["firebow", "t2quiver"]
         },
+        "pinkgoblin": {
+            "priority": 100,
+            "holdAttackWhileMoving": true,
+            "coop": ["warrior", "priest"],
+            "equip": ["firebow", "t2quiver"]
+        },
         "pinkgoo": {
             "priority": 1000,
             "equip": ["bow", "t2quiver"]
@@ -338,7 +344,7 @@ class Ranger extends Character {
             "equip": ["firebow", "t2quiver"]
         }
     }
-    mainTarget: MonsterType = "porcupine"
+    mainTarget: MonsterType = "pinkgoblin"
     // switchServerCheck = Date.now()
 
     run(): void {
