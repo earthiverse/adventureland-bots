@@ -137,7 +137,7 @@ export class AStarSmartMove {
             if (visitedMaps.has(doorExitMap)) continue // don't revisit maps we've already visited
 
             // TODO: If we have a key to this door, use it to improve pathfinding
-            if(G.maps[doorExitMap].mount || door[8] && door[8] == "complicated") continue
+            if (door[7] || door[8]) continue
 
             const doorEntrance: SmartMoveNode = { map: position.map, x: door[0], y: door[1], key: `${position.map}.${door[0]}.${door[1]}`, transportS: door[5], transportMap: doorExitMap, transportType: door[3] == -1 ? "teleport" : "door" }
             const doorExit: SmartMoveNode = { map: doorExitMap, x: G.maps[doorExitMap].spawns[door[5]][0], y: G.maps[doorExitMap].spawns[door[5]][1], key: `${doorExitMap}.${G.maps[doorExitMap].spawns[door[5]][0]}.${G.maps[doorExitMap].spawns[door[5]][1]}` }
