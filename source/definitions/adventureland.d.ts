@@ -179,8 +179,8 @@ declare global {
       }
     };
     maps: { [T in MapName]: {
-      /**  */
-      doors: [number, number, number, number, MapName, number?, number?, string?][];
+      /** The 7th position can be "locked" or "ulocked"? The 8th can be "complicated"? */
+      doors: [number, number, number, number, MapName, number?, number?, string?, string?][];
       /** The name of the map, if this changes, the map layout probably changed. */
       key: string;
       instance: boolean;
@@ -190,6 +190,8 @@ declare global {
         boundaries?: [MapName, number, number, number, number][];
         type: MonsterType;
       }[];
+      /** Not sure what this means. Might mean that only one character of the players can be here at a time. */
+      mount: boolean;
       npcs: GMapsNPC[];
       ref: {
         [id: string]: IPosition & {
