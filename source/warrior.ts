@@ -355,20 +355,21 @@ class Warrior extends Character {
                     if (e.type != "monster") continue
                     if (e.rip) continue
 
+                    // You can't agitate monsters that are attacking other players, so don't count them
+                    if (e.target && !parent.party_list.includes(e.target)) continue
+
                     const d = distance(parent.character, e)
                     if (d > G.skills["agitate"].range) continue // Out of range
 
                     if (!this.targetPriority[e.mtype]) {
                         // Something we don't want is here
-                        inAgitateCount = 0
+                        inAgitateCount = 10
+                        damage = 9999
                         break
                     }
 
-                    if (e.target == parent.character.id || parent.party_list.includes(e.target)) {
-                        // It's targeting us, or someone in our party
-                        inAgitateCount++
-                        damage += calculateDamageRange(e, parent.character)[1]
-                    }
+                    inAgitateCount++
+                    damage += calculateDamageRange(e, parent.character)[1]
                 }
                 if (inAgitateCount > 0 && inAgitateCount <= 3 && damage < 1000) {
                     use_skill("agitate")
