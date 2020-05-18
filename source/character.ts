@@ -48,7 +48,7 @@ export abstract class Character {
         // Easter
         "basketofeggs",
         // Boxes
-        "armorbox", "weaponbox", "xbox"
+        "armorbox", "bugbountybox", "gift0", "gift1", "mysterybox", "weaponbox", "xbox"
     ])
     protected itemsToBuy: Set<ItemName> = new Set([
         // Exchangables
@@ -58,13 +58,13 @@ export abstract class Character {
         // Rings
         "ctristone", "dexring", "intring", "ringofluck", "strring", "suckerpunch", "tristone",
         // Earrings
-        /*"dexearring", "intearring", "lostearring", "strearring",*/
+        "dexearring", "intearring", "lostearring", "strearring",
         // Amulets
-        /*"dexamulet", "intamulet", "stramulet",*/ "t2dexamulet", "t2intamulet", "t2stramulet",
+        "dexamulet", "intamulet", "stramulet", "t2dexamulet", "t2intamulet", "t2stramulet",
         // Orbs
         "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull",
         // Shields
-        "t2quiver", "lantern", "mshield", /*"quiver", I'd like a +10 quiver if possible*/ "xshield",
+        "t2quiver", "lantern", "mshield", "quiver", "xshield",
         // Capes
         "angelwings", "bcape", "cape", "ecape", "stealthcape",
         // Shoes
