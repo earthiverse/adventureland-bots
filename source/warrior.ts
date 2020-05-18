@@ -160,7 +160,7 @@ class Warrior extends Character {
             "farmingPosition": {
                 "map": "spookytown",
                 "x": 255,
-                "y": -1090
+                "y": -1125
             },
             "equip": ["basher"]
         },
