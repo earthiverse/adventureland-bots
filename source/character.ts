@@ -566,7 +566,7 @@ export abstract class Character {
     protected moveLoop(): void {
         try {
             if (this.holdPosition || smart.moving) {
-                setTimeout(() => { this.moveLoop() }, parent.character.ping)
+                setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }
 
@@ -580,14 +580,14 @@ export abstract class Character {
                     // New movement target
                     this.astar.stop()
                     this.astar.smartMove(this.movementTarget.position, this.movementTarget.range)
-                    setTimeout(() => { this.moveLoop() }, parent.character.ping)
+                    setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                     return
                 }
 
                 if (!this.astar.isMoving()) {
                     // Same monster, new movement target
                     this.astar.smartMove(this.movementTarget.position, this.movementTarget.range)
-                    setTimeout(() => { this.moveLoop() }, parent.character.ping)
+                    setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                     return
                 }
             }
@@ -603,13 +603,13 @@ export abstract class Character {
 
             // Don't do anything if we're moving around
             if (this.astar.isMoving()) {
-                setTimeout(() => { this.moveLoop() }, parent.character.ping)
+                setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }
 
             // Don't do anything if we're holding position for this monster
             if (this.targetPriority[this.movementTarget.target as MonsterType] && this.targetPriority[this.movementTarget.target as MonsterType].holdPositionFarm) {
-                setTimeout(() => { this.moveLoop() }, parent.character.ping)
+                setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }
 
@@ -675,7 +675,7 @@ export abstract class Character {
                     }
                 }
                 this.astar.smartMove(closest, parent.character.range)
-                setTimeout(() => { this.moveLoop() }, parent.character.ping)
+                setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }
 
@@ -715,7 +715,7 @@ export abstract class Character {
                 }
 
                 move(escapePosition.x, escapePosition.y)
-                setTimeout(() => { this.moveLoop() }, parent.character.ping)
+                setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }
 
@@ -731,7 +731,7 @@ export abstract class Character {
                     }
                 }
                 this.astar.smartMove(closest, parent.character.range)
-                setTimeout(() => { this.moveLoop() }, parent.character.ping)
+                setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }
 
@@ -746,13 +746,13 @@ export abstract class Character {
                     }
                 }
                 this.astar.smartMove(closest, parent.character.range)
-                setTimeout(() => { this.moveLoop() }, parent.character.ping)
+                setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.moveLoop() }, parent.character.ping)
+        setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
     }
 
     protected async healLoop(): Promise<void> {
