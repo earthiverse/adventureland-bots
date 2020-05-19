@@ -593,7 +593,6 @@ export abstract class Character {
             }
 
             // Stop on sight
-            // TODO: This prevents us from optimizing movements towards the next target currently.
             const targets = this.getTargets(1)
             if (targets.length
                 && targets[0].mtype == this.movementTarget.target
@@ -634,8 +633,8 @@ export abstract class Character {
             const visibleHighPriority: PositionReal[] = []
             for (const id in parent.entities) {
                 const entity = parent.entities[id]
-                if (entity.rip) continue
-                if (!this.targetPriority[entity.mtype]) continue
+                if (entity.rip) continue // It's dead
+                if (!this.targetPriority[entity.mtype]) continue // It's not on our target list
                 const d = distance(parent.character, entity)
                 const enemyRange = Math.max(entity.range + entity.speed, 50)
 
@@ -661,22 +660,6 @@ export abstract class Character {
 
                 visible.push(entity) // We can see these targets nearby
                 if (this.movementTarget.target == entity.mtype) visibleHighPriority.push(entity)
-            }
-
-            // Move to monster
-            if (inAttackRangeHighPriority.length == 0 && visibleHighPriority.length > 0) {
-                let closest: PositionReal
-                let d = Number.MAX_VALUE
-                for (const v of visibleHighPriority) {
-                    const vD = distance(parent.character, v)
-                    if (vD < d) {
-                        d = vD
-                        closest = v
-                    }
-                }
-                this.astar.smartMove(closest, parent.character.range)
-                setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
-                return
             }
 
             // Get out of enemy range
@@ -719,11 +702,21 @@ export abstract class Character {
                 return
             }
 
-            // We aren't near any monsters, let's go to one
-            if (inExtendedAttackRange.length) {
+            // TODO: 2. move out of the way of enemies in aggro range ()
+
+            // 3. Don't move if there's a monster we can attack from our current position
+            if (inAttackRangeHighPriority.length) {
+                setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
+                return
+            }
+
+            // TODO: 4. Optimize movement. Start moving towards a 2nd monster while we are killing the 1st monster.
+
+            // 5. Move to our target monster
+            if (visibleHighPriority.length) {
                 let closest: PositionReal
                 let d = Number.MAX_VALUE
-                for (const v of inExtendedAttackRange) {
+                for (const v of visibleHighPriority) {
                     const vD = distance(parent.character, v)
                     if (vD < d) {
                         d = vD
@@ -735,6 +728,7 @@ export abstract class Character {
                 return
             }
 
+            // 6. Move to any monster
             if (visible.length) {
                 let closest: PositionReal
                 let d = Number.MAX_VALUE
