@@ -19,6 +19,7 @@
         "source/server.ts"
     ],
     "exclude": [
+        "build",
         "node_modules"
     ]
 }

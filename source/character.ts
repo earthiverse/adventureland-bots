@@ -593,6 +593,7 @@ export abstract class Character {
             }
 
             // Stop on sight
+            // TODO: This prevents us from optimizing movements towards the next target currently.
             const targets = this.getTargets(1)
             if (targets.length
                 && targets[0].mtype == this.movementTarget.target
@@ -600,17 +601,27 @@ export abstract class Character {
                 this.astar.stop()
             }
 
-            // Don't do anything if we're moving around
-            if (this.astar.isMoving()) {
-                setTimeout(() => { this.moveLoop() }, parent.character.ping)
-                return
-            }
+            // // Don't do anything if we're moving around
+            // if (this.astar.isMoving()) {
+            //     setTimeout(() => { this.moveLoop() }, parent.character.ping)
+            //     return
+            // }
 
             // Don't do anything if we're holding position for this monster
             if (this.targetPriority[this.movementTarget.target as MonsterType] && this.targetPriority[this.movementTarget.target as MonsterType].holdPositionFarm) {
                 setTimeout(() => { this.moveLoop() }, parent.character.ping)
                 return
             }
+
+            // const monsterTypes = Object.keys(this.targetPriority) as MonsterType[]
+            // const inEnemyAttackRange2 = getEntities({ isRIP: false, canAttackUsWithoutMoving: true, isMonsterType: monsterTypes })
+            // const inAggroRange2 = getEntities({ isRIP: false, isWithinDistance: 50, isMonsterType: monsterTypes })
+            // const inAttackRange2 = getEntities({ isRIP: false, isWithinDistance: parent.character.range, isMonsterType: monsterTypes })
+            // const inAttackRangeHighPriority2 = getEntities({ isRIP: false, isWithinDistance: parent.character.range, isMonsterType: [this.movementTarget.target as MonsterType] })
+            // const inExtendedAttackRange2 = getEntities({ isRIP: false, isWithinDistance: parent.character.range * 2, isMonsterType: monsterTypes })
+            // const inExtendedAttackRangeHighPriority2 = getEntities({ isRIP: false, isWithinDistance: parent.character.range * 2, isMonsterType: [this.movementTarget.target as MonsterType] })
+            // const visible2 = getEntities({ isRIP: false, isMonsterType: monsterTypes })
+            // const visibleHighPriority2 = getEntities({ isRIP: false, isMonsterType: [this.movementTarget.target as MonsterType] })
 
             // Get all enemies
             const inEnemyAttackRange: Entity[] = []
@@ -643,9 +654,7 @@ export abstract class Character {
                 if (d < parent.character.range) {
                     inAttackRange.push(entity) // We don't have to move to attack these targets
                     if (this.movementTarget.target == entity.mtype) inAttackRangeHighPriority.push(entity)
-                }
-
-                if (d < parent.character.range * 2) {
+                } else if (d < parent.character.range * 2) {
                     inExtendedAttackRange.push(entity) // We can move to these targets while still attacking our current target
                     if (this.movementTarget.target == entity.mtype) inExtendedAttackRangeHighPriority.push(entity)
                 }
@@ -711,10 +720,10 @@ export abstract class Character {
             }
 
             // We aren't near any monsters, let's go to one
-            if (inAttackRange.length == 0 && inExtendedAttackRange.length == 0 && visible.length != 0) {
+            if (inExtendedAttackRange.length) {
                 let closest: PositionReal
                 let d = Number.MAX_VALUE
-                for (const v of visible) {
+                for (const v of inExtendedAttackRange) {
                     const vD = distance(parent.character, v)
                     if (vD < d) {
                         d = vD
@@ -726,10 +735,10 @@ export abstract class Character {
                 return
             }
 
-            if (inAttackRange.length == 0 && inExtendedAttackRange.length > 0) {
+            if (visible.length) {
                 let closest: PositionReal
                 let d = Number.MAX_VALUE
-                for (const v of inExtendedAttackRange) {
+                for (const v of visible) {
                     const vD = distance(parent.character, v)
                     if (vD < d) {
                         d = vD

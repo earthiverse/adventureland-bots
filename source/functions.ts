@@ -84,6 +84,7 @@ export function findItemsWithLevel(name: ItemName, level: number): InventoryItem
     return items
 }
 
+/** The first element is the minimum damage we could do. The second element is the maximum damage we could do. */
 export function calculateDamageRange(attacker: Entity, defender: Entity): [number, number] {
     let baseDamage: number = attacker.attack
     // TODO: Are these guaranteed to be on IEntity? If they are we don't need to check and set them to zero.
@@ -246,15 +247,17 @@ export function isAvailable(skill: SkillName): boolean {
 }
 
 export function getEntities(
-    { canAttackUsWithoutMoving, canMoveTo, isAttacking, isAttackingParty, isAttackingUs, isCtype, isMonster, isMonsterType, isMoving, isNPC, isPartyMember, isPlayer, isRIP, isWithinDistance }: {
+    { canAttackUsWithoutMoving, canKillInOneHit, canMoveTo, isAttacking, isAttackingParty, isAttackingUs, isCtype, isMonster, isMonsterType, isMoving, isNPC, isPartyMember, isPlayer, isRIP, isWithinDistance }: {
         canAttackUsWithoutMoving?: boolean;
+        canKillInOneHit?: boolean;
         canMoveTo?: boolean;
         isAttacking?: boolean;
         isAttackingParty?: boolean;
         isAttackingUs?: boolean;
         isCtype?: CharacterType;
         isMonster?: boolean;
-        isMonsterType?: MonsterType;
+        /** If provided a list of MonsterTypes, it will return entities only matching those types */
+        isMonsterType?: MonsterType[];
         isMoving?: boolean;
         isNPC?: boolean;
         isPartyMember?: boolean;
@@ -272,6 +275,11 @@ export function getEntities(
 
         // Can attack us without moving
         if (canAttackUsWithoutMoving === true && entity.range > d) continue // The distance between us and it is greater than their attack range
+        if (canAttackUsWithoutMoving === false && entity.range <= d) continue // They can't attack us
+
+        // Can we kill it in one hit
+        if (canKillInOneHit === true && calculateDamageRange(parent.character, entity)[0] > entity.hp) continue
+        if (canKillInOneHit === false && calculateDamageRange(parent.character, entity)[0] <= entity.hp) continue
 
         // Can move to
         if (canMoveTo === true && !can_move_to(entity.real_x, entity.real_y)) continue
@@ -309,7 +317,7 @@ export function getEntities(
 
         // Is Monster Type
         if (isMonsterType !== undefined && !entity.mtype) continue
-        if (isMonsterType !== undefined && entity.mtype != isMonsterType) continue
+        if (isMonsterType !== undefined && !isMonsterType.includes(entity.mtype)) continue
 
         // Is Moving
         if (isMoving === true && !entity.moving) continue
