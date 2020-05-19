@@ -601,11 +601,11 @@ export abstract class Character {
                 this.astar.stop()
             }
 
-            // // Don't do anything if we're moving around
-            // if (this.astar.isMoving()) {
-            //     setTimeout(() => { this.moveLoop() }, parent.character.ping)
-            //     return
-            // }
+            // Don't do anything if we're moving around
+            if (this.astar.isMoving()) {
+                setTimeout(() => { this.moveLoop() }, parent.character.ping)
+                return
+            }
 
             // Don't do anything if we're holding position for this monster
             if (this.targetPriority[this.movementTarget.target as MonsterType] && this.targetPriority[this.movementTarget.target as MonsterType].holdPositionFarm) {
