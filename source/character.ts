@@ -1136,7 +1136,7 @@ export abstract class Character {
         if (!e.target) {
             // Hold attack
             if (this.holdAttack) return false // Holding all attacks
-            if ((smart.moving || this.astar.isMoving()) && this.targetPriority[e.mtype].holdAttackWhileMoving) return false // Holding attacks while moving
+            if ((smart.moving || this.astar.isMoving()) && (this.movementTarget && this.movementTarget.target && this.movementTarget.target != e.mtype) && this.targetPriority[e.mtype].holdAttackWhileMoving) return false // Holding attacks while moving
             if (this.targetPriority[e.mtype].holdAttackInEntityRange && distanceToEntity <= e.range) return false // Holding attacks in range
 
             // Don't attack if we have it as a coop target, but we don't have everyone there.
