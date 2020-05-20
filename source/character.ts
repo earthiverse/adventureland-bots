@@ -805,11 +805,11 @@ export abstract class Character {
                 reduce_cooldown("use_hp", Math.min(...parent.pings))
                 reduce_cooldown("use_mp", Math.min(...parent.pings))
             } else if (hpRatio < mpRatio) {
-                parent.socket.emit("use", { item: "hp" })
+                use_skill("regen_hp")
                 reduce_cooldown("use_hp", Math.min(...parent.pings))
                 reduce_cooldown("use_mp", Math.min(...parent.pings))
             } else if (mpRatio < hpRatio) {
-                parent.socket.emit("use", { item: "mp" })
+                use_skill("regen_mp")
                 reduce_cooldown("use_hp", Math.min(...parent.pings))
                 reduce_cooldown("use_mp", Math.min(...parent.pings))
             }

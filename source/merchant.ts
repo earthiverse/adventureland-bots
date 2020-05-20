@@ -236,7 +236,7 @@ class Merchant extends Character {
             bank_withdraw(100000000 - parent.character.gold)
         }
 
-        // Get a list of all of our items in our inventory and bank
+        // Get a list of all of our items in our inventory and bank, then sort them so we can compare them
         const allItems: BankItemInfo[] = []
         for (const item of getInventory()) {
             allItems.push({ ...item, pack: "items" })
@@ -246,15 +246,35 @@ class Merchant extends Character {
                 allItems.push({ ...item, pack: pack as BankPackType })
             }
         }
-
         allItems.sort((a, b) => {
             if (a.name < b.name) return -1 // 1. Sort by item name
-            if (a.level < b.level) return -1 // 2. Sort by item level
             if (a.p == "shiny" && !b.p) return -1 // 3. Sort shiny items
+            if (a.level < b.level) return -1 // 2. Sort by item level
             if (a.q && b.q && a.q < b.q) return -1 // 4. If stackable, sort by # of items in stack
         })
 
-        // TODO: Find things we should have in our inventory at all times
+        // Functions to help decide what to do
+        function isSameItem(a: BankItemInfo, b: BankItemInfo): boolean {
+            if (a.name != b.name) return false // Different name
+            if (a.p != b.p) return false // Different modifier (shiny, glitched, etc.)
+            return true
+        }
+        function wantToSell(a: BankItemInfo): boolean {
+            if (!this.itemsToSell[a.name]) return false // Not an item we want to sell
+            if (a.level && this.itemsToSell[a.name] >= a.level) return false // Higher level than we want to sell
+            if (a.p) return false // Item has a special modifier
+            return true
+        }
+
+        for (let i = 1; i < allItems.length; i++) {
+            const itemA = allItems[i - 1]
+            const itemB = allItems[i]
+            if (isSameItem(itemA, itemB)) {
+                // Do stuff
+            }
+        }
+
+        // TODO: Find things we should have in our inventory at all times (do we actually want to do this?)
         // TODO: Move them to our inventory
         // for (const item in allItems) {
 
@@ -263,6 +283,20 @@ class Merchant extends Character {
             console.log(itemName)
         }
 
+        // Find things we should sell
+        await sleep(Math.max(...parent.pings))
+        const emptySlots = getEmptySlots(parent.character.items)
+        for (const item of allItems) {
+            if (emptySlots.length <= 1) break // Leave at least one empty slot
+            if (wantToSell(item)) {
+                parent.socket.emit("bank", {
+                    operation: "swap",
+                    inv: emptySlots.shift(),
+                    str: item.index,
+                    pack: item.pack
+                })
+            }
+        }
 
     }
 

@@ -1,10 +1,10 @@
-import { ItemName, NPCType } from "./definitions/adventureland"
+import { ItemName, NPCType, ItemInfo } from "./definitions/adventureland"
 import { findItems, findItem, getInventory, findItemsWithLevel, sleep } from "./functions"
 import { InventoryItemInfo, ItemLevelInfo } from "./definitions/bots"
 
 export function sellUnwantedItems(itemsToSell: ItemLevelInfo): void {
     if (parent.character.map == "bank") return // We can't do things in the bank
-    if (!findItems("computer").length) {
+    if (!findItem("computer")) {
         let foundNPCBuyer = false
         if (!G.maps[parent.character.map].npcs) return // No NPCs on this map
         for (const npc of G.maps[parent.character.map].npcs.filter(npc => G.npcs[npc.id].role == "merchant")) {
@@ -19,13 +19,12 @@ export function sellUnwantedItems(itemsToSell: ItemLevelInfo): void {
         if (!foundNPCBuyer) return // Can't sell things, nobody is near.
     }
 
-    const itemsToSell2 = Object.keys(itemsToSell)
     for (const item of getInventory()) {
-        // Don't sell shiny items
-        if (item.p == "shiny") continue
+        // Don't sell unique items
+        if (item.p) continue
 
-        if (itemsToSell2.includes(item.name)) {
-            if (item.level && item.level > itemsToSell[item.name]) continue // Too high of level
+        if (itemsToSell[item.name]) {
+            if (item.level && item.level > itemsToSell[item.name]) continue // Higher level than that which we want to sell automatically
 
             item.q ? sell(item.index, item.q) : sell(item.index, 1)
         }
@@ -45,7 +44,7 @@ export function closeMerchantStand(): void {
         parent.close_merchant()
 }
 
-export function buyFromPonty(itemNames: Set<ItemName>): void {
+export function buyFromPonty(itemsToBuy: Set<ItemName>): void {
     let foundPonty = false
     for (const npc of parent.npcs) {
         if (npc.id == "secondhands" && distance(parent.character, {
@@ -60,12 +59,17 @@ export function buyFromPonty(itemNames: Set<ItemName>): void {
 
     // Set up the handler
     let itemsBought = 0
-    parent.socket.once("secondhands", (data: any) => {
+    parent.socket.once("secondhands", (data: ItemInfo[]) => {
         for (let i = 0; i < data.length; i++) {
-            if (itemNames.has(data[i].name)) {
+            if (itemsToBuy.has(data[i].name)) {
+                // We want this item based on our list
                 parent.socket.emit("sbuy", { "rid": data[i].rid })
-                itemsBought++
-                if (itemsBought >= 5) break // Only buy a few items at a time to prevent maxing out server calls.
+                if (++itemsBought >= 5) break // Only buy a few items at a time to prevent maxing out server calls.
+            }
+            if (data[i].p) {
+                // Buy all shiny and glitched items
+                parent.socket.emit("sbuy", { "rid": data[i].rid })
+                if (++itemsBought >= 5) break // Only buy a few items at a time to prevent maxing out server calls.
             }
         }
     })
@@ -110,7 +114,7 @@ export function transferGoldToMerchant(merchantName: string, minimumGold = 0): v
 // TODO: Add an agrument for a list of items to dismantle
 export async function dismantleItems(itemsToDismantle: ItemLevelInfo): Promise<void> {
     if (parent.character.map == "bank") return // We can't do things in the bank
-    if (!findItems("computer").length) {
+    if (!findItem("computer")) {
         let foundGuy = false
         for (const npc of parent.npcs) {
             if (npc.id == "craftsman" && distance(parent.character, {
@@ -142,19 +146,20 @@ export function exchangeItems(itemsToExchange: Set<ItemName>): void {
     if (parent.character.q.exchange) return // Already exchanging something
     if (parent.character.map == "bank") return // We can't do things in the bank
 
-    const haveComputer = findItems("computer").length
-
+    const haveComputer = findItem("computer")
     const nearbyNPCs: NPCType[] = []
-    for (const npc of parent.npcs) {
-        if (!npc.position) continue // NPC doesn't have a position
+    if (!haveComputer) {
+        for (const npc of parent.npcs) {
+            if (!npc.position) continue // NPC doesn't have a position
 
-        if (distance(parent.character, {
-            x: npc.position[0],
-            y: npc.position[1]
-        }) < 250)
-            nearbyNPCs.push(npc.id)
+            if (distance(parent.character, {
+                x: npc.position[0],
+                y: npc.position[1]
+            }) < 250)
+                nearbyNPCs.push(npc.id)
+        }
+        if (!nearbyNPCs.length) return
     }
-    if (!nearbyNPCs.length && !haveComputer) return
 
     const exchangableItems: { [T in NPCType]?: InventoryItemInfo[] } = {}
     for (const item of getInventory()) {
@@ -194,7 +199,7 @@ export function exchangeItems(itemsToExchange: Set<ItemName>): void {
 
 export async function buyPots(): Promise<void> {
     if (parent.character.map == "bank") return // We can't do things in the bank
-    if (!findItems("computer").length) {
+    if (!findItem("computer")) {
         let foundNPC = false
         if (!G.maps[parent.character.map].npcs) return
         for (const npc of G.maps[parent.character.map].npcs.filter(npc => npc.id == "fancypots")) {
@@ -226,7 +231,7 @@ export async function buyPots(): Promise<void> {
 
 export async function buyScrolls(): Promise<void> {
     if (parent.character.map == "bank") return // We can't do things in the bank
-    if (!findItems("computer").length) {
+    if (!findItem("computer")) {
         let foundNPC = false
         if (!G.maps[parent.character.map].npcs) return
         for (const npc of G.maps[parent.character.map].npcs.filter(npc => npc.id == "scrolls")) {
