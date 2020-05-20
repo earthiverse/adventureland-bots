@@ -60,7 +60,7 @@ export abstract class Character {
         // Earrings
         "dexearring", "intearring", "lostearring", "strearring",
         // Amulets
-        "dexamulet", "intamulet", "stramulet", "t2dexamulet", "t2intamulet", "t2stramulet",
+        "amuletofm", "dexamulet", "intamulet", "snring", "stramulet", "t2dexamulet", "t2intamulet", "t2stramulet",
         // Orbs
         "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull",
         // Shields
@@ -68,19 +68,19 @@ export abstract class Character {
         // Capes
         "angelwings", "bcape", "cape", "ecape", "stealthcape",
         // Shoes
-        /*"eslippers",*/ "mrnboots", "mwboots", "xboots",
+        /*"eslippers",*/ "hboots", "mrnboots", "mwboots", "shoes1", "wingedboots", "xboots",
         // Pants
-        "mrnpants", "mwpants", "starkillers", "xpants",
+        "hpants", "mrnpants", "mwpants", "pants1", "starkillers", "xpants",
         // Armor
-        "cdragon", "mrnarmor", "mwarmor", "xarmor",
+        "cdragon", "coat1", "harmor", "mcape", "mrnarmor", "mwarmor", "tshirt0", "tshirt1", "tshirt2", "tshirt3", "tshirt4", "tshirt6", "tshirt7", "tshirt8", "tshirt88", "tshirt9", "warpvest", "xarmor",
         // Helmets
-        "eears", "fury", "mrnhat", "mwhelmet", "partyhat", "rednose", "xhelmet",
+        "eears", "fury", "helmet1", "hhelmet", "mrnhat", "mwhelmet", "partyhat", "rednose", "xhelmet",
         // Gloves
-        "goldenpowerglove", "handofmidas", "mrngloves", "mwgloves", "poker", "powerglove", "xgloves",
+        "gloves1", "goldenpowerglove", "handofmidas", "hgloves", "mrngloves", "mwgloves", "poker", "powerglove", "xgloves",
         // Good weapons
-        "basher", "bowofthedead", "candycanesword", "carrotsword", "dartgun", "firebow", "gbow", "harbringer", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow", "t3bow",
+        "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "firebow", "frostbow", "froststaff", "gbow", "harbringer", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow", "t3bow", "wblade",
         // Things we can exchange / craft with
-        "ascale", "bfur", "cscale", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", "networkcard", "platinumingot", "platinumnugget", "pleather", "snakefang",
+        "ascale", "bfur", "cscale", "electronics", "feather0", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", "networkcard", "platinumingot", "platinumnugget", "pleather", "snakefang",
         // Things to make xbox
         "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8",
         // Things to make easter basket
@@ -89,8 +89,10 @@ export abstract class Character {
         "essenceofether", "essenceoffire", "essenceoffrost", "essenceoflife", "essenceofnature",
         // Potions & consumables
         "bunnyelixir", "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate",
+        // High level scrolls
+        "cscroll3", "scroll3", "scroll4",
         // Misc. Things
-        "bottleofxp", "bugbountybox", "monstertoken", "poison"
+        "bottleofxp", "bugbountybox", "monstertoken", "poison", "snakeoil"
     ])
 
     /** Set to true to stop movement */
