@@ -30,6 +30,11 @@ class Merchant extends Character {
 
     constructor() {
         super()
+
+        // Remove weapons and armor, we don't switch as a merchant
+        this.itemsToKeep.splice(this.itemsToKeep.indexOf("lantern"), 1)
+        this.itemsToKeep.splice(this.itemsToKeep.indexOf("jacko"), 1)
+
         this.itemsToKeep.push(
             "cscroll0", "cscroll1", "cscroll2",
             "scroll0", "scroll1", "scroll2",
