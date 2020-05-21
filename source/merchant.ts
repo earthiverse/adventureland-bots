@@ -348,7 +348,7 @@ class Merchant extends Character {
                 }
 
                 allItems = allItems.splice(i - 1, 2)
-                i -= 2
+                i -= 1
             }
         }
 
@@ -387,7 +387,7 @@ class Merchant extends Character {
                     })
                 }
                 allItems = allItems.splice(i - 2, 3)
-                i -= 3
+                i -= 2
             }
         }
 
@@ -419,7 +419,7 @@ class Merchant extends Character {
                     })
                 }
                 allItems = allItems.splice(i - 1, 2)
-                i -= 2
+                i -= 1
             }
         }
 
