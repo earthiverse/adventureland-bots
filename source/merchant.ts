@@ -166,7 +166,6 @@ class Merchant extends Character {
             if (numItems < 25)
                 exchangeItems(this.itemsToExchange)
 
-            game_log("doing bank stuff!")
             await this.newBankStuff()
 
             if (!parent.character.moving) {
@@ -229,9 +228,11 @@ class Merchant extends Character {
     private async newBankStuff(): Promise<void> {
         if (parent.character.map != "bank") {
             return
-        } else if (Date.now() - this.didBankStuff < 30000) {
+        } else if (Date.now() - this.didBankStuff < 120000) {
             return
         }
+
+        this.didBankStuff = Date.now()
 
         // Store extra gold
         if (parent.character.gold > 100000000) {
@@ -467,8 +468,6 @@ class Merchant extends Character {
             allItems.splice(i, 1)
             i -= 1
         }
-
-        this.didBankStuff = Date.now()
     }
 
     private luckedCharacters: { [T in string]: number } = {}
