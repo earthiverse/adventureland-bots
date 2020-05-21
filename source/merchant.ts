@@ -244,7 +244,6 @@ class Merchant extends Character {
         for (const item of getInventory()) {
             if (emptyBankSlots.length == 0) break
             if (this.itemsToKeep.includes(item.name)) continue
-            if (item.q) continue // We'll deal with stackable items later
 
             emptyBankSlots.shift()
             bank_store(item.index)
