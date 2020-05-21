@@ -290,6 +290,7 @@ class Merchant extends Character {
         function canUpgrade(a: BankItemInfo, b: BankItemInfo): boolean {
             if (a.name != b.name) return false // Different item
             if (a.p != b.p) return false // Different modifier (shiny, glitched, etc.)
+            if (!G.items[a.name].upgrade) return false // Not upgradable
             if (b.level >= Number.parseInt(process.env.UPGRADE_TO_LEVEL)) return false // Too high of a level
             return true
         }
