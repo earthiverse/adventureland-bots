@@ -301,7 +301,7 @@ class Merchant extends Character {
             if (!a.q) return false
             return true
         }
-        function wantToSell(a: BankItemInfo): boolean {
+        const wantToSell = (a: BankItemInfo): boolean => {
             if (!this.itemsToSell[a.name]) return false // Not an item we want to sell
             if (a.level && this.itemsToSell[a.name] >= a.level) return false // Higher level than we want to sell
             if (a.p) return false // Item has a special modifier

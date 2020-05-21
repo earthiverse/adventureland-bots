@@ -20,7 +20,7 @@ export abstract class Character {
         // Boosters
         "goldbooster", "luckbooster", "xpbooster",
         // Healing
-        "hpot1", "mpot1", "hotchocolate", "candypop",
+        "hpot1", "mpot1", /* "hotchocolate", "candypop", */
         // Used to avoid monster hits
         "jacko", "lantern"
     ]
