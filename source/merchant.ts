@@ -252,7 +252,7 @@ class Merchant extends Character {
 
         // Get a list of all of our items in our inventory and bank, then sort them so we can compare them
         await sleep(Math.max(...parent.pings))
-        let allItems: BankItemInfo[] = []
+        const allItems: BankItemInfo[] = []
         for (const item of getInventory()) {
             if (this.itemsToKeep.includes(item.name)) continue // We want to keep this item on us
             allItems.push({ ...item, pack: "items" })
@@ -347,7 +347,7 @@ class Merchant extends Character {
                     }
                 }
 
-                allItems = allItems.splice(i - 1, 2)
+                allItems.splice(i - 1, 2)
                 i -= 1
             }
         }
@@ -386,7 +386,7 @@ class Merchant extends Character {
                         pack: itemC.pack
                     })
                 }
-                allItems = allItems.splice(i - 2, 3)
+                allItems.splice(i - 2, 3)
                 i -= 2
             }
         }
@@ -418,7 +418,7 @@ class Merchant extends Character {
                         pack: itemB.pack
                     })
                 }
-                allItems = allItems.splice(i - 1, 2)
+                allItems.splice(i - 1, 2)
                 i -= 1
             }
         }
@@ -438,7 +438,7 @@ class Merchant extends Character {
                         pack: item.pack
                     })
                 }
-                allItems = allItems.splice(i, 1)
+                allItems.splice(i, 1)
                 i -= 1
             }
         }
@@ -451,7 +451,7 @@ class Merchant extends Character {
             if (emptySlots.length < 2) break // Leave at least one empty slot
             if (item.pack == "items") {
                 // This item is already in our inventory
-                allItems = allItems.splice(i, 1)
+                allItems.splice(i, 1)
                 i -= 1
                 continue
             }
@@ -463,7 +463,7 @@ class Merchant extends Character {
                 str: item.index,
                 pack: item.pack
             })
-            allItems = allItems.splice(i, 1)
+            allItems.splice(i, 1)
             i -= 1
         }
 
