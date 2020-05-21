@@ -601,6 +601,11 @@ export abstract class Character {
                 && this.targetPriority[targets[0].mtype] && !this.targetPriority[targets[0].mtype].holdPositionFarm) {
                 this.astar.stop()
             }
+            const targeted = get_targeted_monster()
+            if (targeted.rip) {
+                change_target(null, true)
+                this.astar.stop()
+            }
 
             // Don't do anything if we're moving around
             if (this.astar.isMoving()) {
