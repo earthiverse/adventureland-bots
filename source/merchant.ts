@@ -322,7 +322,7 @@ class Merchant extends Character {
         game_log("[bank] depositing stackable things")
         let emptySlots = getEmptySlots(parent.character.items)
         for (let i = 1; i < allItems.length; i++) {
-            if (emptySlots.length < 2) break
+            if (emptySlots.length < 3) break
             const itemA = allItems[i - 1]
             const itemB = allItems[i]
             if (isSameStackable(itemA, itemB)) {
@@ -377,7 +377,7 @@ class Merchant extends Character {
         game_log("[bank] finding things to combine")
         emptySlots = getEmptySlots(parent.character.items)
         for (let i = 3; i < allItems.length; i++) {
-            if (emptySlots.length < 4) break // Leave at least one empty slot
+            if (emptySlots.length < 5) break // Leave at least one empty slot
             const itemA = allItems[i - 3]
             const itemB = allItems[i - 2]
             const itemC = allItems[i - 1]
