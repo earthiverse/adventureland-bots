@@ -602,7 +602,7 @@ export abstract class Character {
                 this.astar.stop()
             }
             const targeted = get_targeted_monster()
-            if (targeted.rip) {
+            if (targeted && targeted.rip) {
                 change_target(null, true)
                 this.astar.stop()
             }
