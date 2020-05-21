@@ -273,11 +273,19 @@ class Merchant extends Character {
         }
         allItems.sort((a, b) => {
             if (a.name < b.name) return -1 // 1. Sort by item name (alphabetical)
+            if (a.name > b.name) return 1
             if (a.p && !b.p) return -1 // 2. Sort by modifier (alphabetical)
-            if (a.p && b.p && a.p != b.p) return a.p < b.p ? -1 : 1
+            if (a.p && b.p) {
+                if (a.p < b.p) return -1
+                if (a.p > b.p) return 1
+            }
             if (a.level > b.level) return -1 // 3. Sort by item level (higher first)
-            if (a.q && b.q && a.q > b.q) return -1 // 4. If stackable, sort by # of items in stack (higher first)
-            return 1
+            if (a.level < b.level) return 1
+            if (a.q && b.q) {
+                if (a.q > b.q) return -1 // 4. If stackable, sort by # of items in stack (higher first)
+                if (a.q < b.q) return 1
+            }
+            return 0
         })
         console.log(allItems)
 
