@@ -279,6 +279,7 @@ class Merchant extends Character {
             if (a.q && b.q && a.q > b.q) return -1 // 4. If stackable, sort by # of items in stack (higher first)
             return 1
         })
+        console.log(allItems)
 
         // Functions to help decide what to do
         function canCombine(a: BankItemInfo, b: BankItemInfo, c: BankItemInfo, d: BankItemInfo): boolean {
@@ -338,7 +339,7 @@ class Merchant extends Character {
                         const empty1 = emptySlots.shift()
                         parent.socket.emit("bank", {
                             operation: "swap",
-                            inv: empty1,
+                            inv: -1,
                             str: itemA.index,
                             pack: itemA.pack
                         })
