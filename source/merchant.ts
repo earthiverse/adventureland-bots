@@ -245,8 +245,8 @@ class Merchant extends Character {
             if (emptyBankSlots.length == 0) break
             if (this.itemsToKeep.includes(item.name)) continue
 
-            emptyBankSlots.shift()
-            bank_store(item.index)
+            const slot = emptyBankSlots.shift()
+            bank_store(item.index, slot.pack, slot.index)
         }
 
         // Get a list of all of our items in our inventory and bank, then sort them so we can compare them
