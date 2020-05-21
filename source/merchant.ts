@@ -281,12 +281,12 @@ class Merchant extends Character {
         })
 
         // Functions to help decide what to do
-        function canCombine(a: BankItemInfo, b: BankItemInfo, c: BankItemInfo): boolean {
-            if (a.name != b.name || a.name != c.name) return false // Different item
-            if (a.p != b.p || a.p != c.p) return false // Different modifier (shiny, glitched, etc.)
-            if (a.level != b.level || a.level != c.level) return false // Different level
+        function canCombine(a: BankItemInfo, b: BankItemInfo, c: BankItemInfo, d: BankItemInfo): boolean {
+            if (a.name != b.name || a.name != c.name || a.name != d.name) return false // Different item
+            if (a.p != b.p || a.p != c.p || a.p != d.p) return false // Different modifier (shiny, glitched, etc.)
+            if (b.level != c.level || b.level != d.level) return false // Different level
             if (!G.items[a.name].compound) return false // Not compoundable
-            if (a.level >= Number.parseInt(process.env.COMBINE_TO_LEVEL)) return false
+            if (b.level >= Number.parseInt(process.env.COMBINE_TO_LEVEL)) return false
             return true
         }
         function canUpgrade(a: BankItemInfo, b: BankItemInfo): boolean {
@@ -367,12 +367,13 @@ class Merchant extends Character {
         await sleep(Math.max(...parent.pings))
         game_log("[bank] finding things to combine")
         emptySlots = getEmptySlots(parent.character.items)
-        for (let i = 2; i < allItems.length; i++) {
+        for (let i = 3; i < allItems.length; i++) {
             if (emptySlots.length < 4) break // Leave at least one empty slot
-            const itemA = allItems[i - 2]
-            const itemB = allItems[i - 1]
-            const itemC = allItems[i]
-            if (canCombine(itemA, itemB, itemC)) {
+            const itemA = allItems[i - 3]
+            const itemB = allItems[i - 2]
+            const itemC = allItems[i - 1]
+            const itemD = allItems[i]
+            if (canCombine(itemA, itemB, itemC, itemD)) {
                 // Move the three items to our inventory
                 if (itemA.pack != "items") {
                     parent.socket.emit("bank", {
@@ -382,7 +383,7 @@ class Merchant extends Character {
                         pack: itemA.pack
                     })
                 }
-                if (itemB.pack != "items") {
+                if (itemA.pack != "items") {
                     parent.socket.emit("bank", {
                         operation: "swap",
                         inv: emptySlots.shift(),
@@ -390,12 +391,20 @@ class Merchant extends Character {
                         pack: itemB.pack
                     })
                 }
-                if (itemC.pack != "items") {
+                if (itemB.pack != "items") {
                     parent.socket.emit("bank", {
                         operation: "swap",
                         inv: emptySlots.shift(),
                         str: itemC.index,
                         pack: itemC.pack
+                    })
+                }
+                if (itemC.pack != "items") {
+                    parent.socket.emit("bank", {
+                        operation: "swap",
+                        inv: emptySlots.shift(),
+                        str: itemD.index,
+                        pack: itemD.pack
                     })
                 }
                 allItems.splice(i - 2, 3)
@@ -471,6 +480,7 @@ class Merchant extends Character {
                 continue
             }
             if (!this.itemsToExchange.has(item.name)) continue // We don't want to exchange this item
+            if (item.q < G.items[item.name].e) continue // Not enough to exchange
 
             parent.socket.emit("bank", {
                 operation: "swap",
