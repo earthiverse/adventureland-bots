@@ -386,7 +386,7 @@ class Merchant extends Character {
                     })
                 }
                 allItems.splice(i - 2, 3)
-                i -= 2
+                i -= 1
             }
         }
 
