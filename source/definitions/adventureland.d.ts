@@ -268,9 +268,10 @@ export type GMonster = {
 }
 
 export type GItem = {
+  buy?: boolean;
   /** Contains information about what stats the item will gain with each compound level. Set if the item is compoundable. */
   compound?: {
-    [T in AttributeType]?: number
+    [T in StatType]?: number
   };
   damage?: DamageType;
   /** Refers to how many items are needed to exchange (see .quest as well!) */
@@ -285,15 +286,15 @@ export type GItem = {
   // TODO: Add a type for quests
   /** Indicates the "quest" that this item is needed to complete */
   quest: string;
-  /** Indicates whether or not the item is stackable */
-  s: boolean;
+  /** Indicates how many of this items you can stack. Set if the item is stackable. */
+  s: number;
   /** Contains information about what stats the item will gain with each upgrade level. Set if the item is upgradable. */
   upgrade?: {
-    [T in AttributeType]?: number
+    [T in StatType]?: number
   };
   type: ItemType;
   wtype: WeaponType;
-}
+} & { [T in StatType]?: number }
 
 /**
 * For the current character
@@ -491,13 +492,6 @@ export type IPosition = {
 }
 
 // TODO: Get all types (from G?)
-export type AttributeType =
-  | "armor"
-  | "attack"
-  | "hp"
-  | "range"
-  | "resistance"
-
 export type CharacterType =
   | "mage"
   | "merchant"
@@ -523,14 +517,19 @@ export type ItemType =
 
 // TODO: Get all stat types
 export type StatType =
+  | "armor"
+  | "attack"
   | "dex"
   | "for"
   | "frequency"
   | "gold"
+  | "hp"
   | "int"
   | "lifesteal"
   | "luck"
   | "mp_cost"
+  | "range"
+  | "resistance"
   | "speed"
   | "str"
   | "vit"

@@ -166,7 +166,7 @@ class Merchant extends Character {
             if (numItems < 25)
                 exchangeItems(this.itemsToExchange)
 
-            await this.bankStuff()
+            await this.newBankStuff()
 
             if (!parent.character.moving) {
                 openMerchantStand()
@@ -224,8 +224,11 @@ class Merchant extends Character {
         setTimeout(() => { this.pontyLoop() }, 15000)
     }
 
+    private didBankStuff = 0;
     private async newBankStuff(): Promise<void> {
         if (parent.character.map != "bank") {
+            return
+        } else if (Date.now() - this.didBankStuff < 30000) {
             return
         }
 
@@ -236,9 +239,22 @@ class Merchant extends Character {
             bank_withdraw(100000000 - parent.character.gold)
         }
 
-        // Get a list of all of our items in our inventory and bank, then sort them so we can compare them
-        const allItems: BankItemInfo[] = []
+        // Deposit as many items as we can in to our bank
+        const emptyBankSlots = getEmptyBankSlots()
         for (const item of getInventory()) {
+            if (emptyBankSlots.length == 0) break
+            if (this.itemsToKeep.includes(item.name)) continue
+            if (item.q) continue // We'll deal with stackable items later
+
+            emptyBankSlots.shift()
+            bank_store(item.index)
+        }
+
+        // Get a list of all of our items in our inventory and bank, then sort them so we can compare them
+        await sleep(Math.max(...parent.pings))
+        let allItems: BankItemInfo[] = []
+        for (const item of getInventory()) {
+            if (this.itemsToKeep.includes(item.name)) continue // We want to keep this item on us
             allItems.push({ ...item, pack: "items" })
         }
         for (const pack in parent.character.bank) {
@@ -247,16 +263,32 @@ class Merchant extends Character {
             }
         }
         allItems.sort((a, b) => {
-            if (a.name < b.name) return -1 // 1. Sort by item name
-            if (a.p == "shiny" && !b.p) return -1 // 3. Sort shiny items
-            if (a.level < b.level) return -1 // 2. Sort by item level
-            if (a.q && b.q && a.q < b.q) return -1 // 4. If stackable, sort by # of items in stack
+            if (a.name < b.name) return -1 // 1. Sort by item name (alphabetical)
+            if (a.p && !b.p) return -1 // 2. Sort by modifier (alphabetical)
+            if (a.p && b.p && a.p != b.p) return a.p < b.p ? -1 : 1
+            if (a.level > b.level) return -1 // 3. Sort by item level (higher first)
+            if (a.q && b.q && a.q > b.q) return -1 // 4. If stackable, sort by # of items in stack (higher first)
+            return 1
         })
 
         // Functions to help decide what to do
-        function isSameItem(a: BankItemInfo, b: BankItemInfo): boolean {
-            if (a.name != b.name) return false // Different name
+        function canCombine(a: BankItemInfo, b: BankItemInfo, c: BankItemInfo): boolean {
+            if (a.name != b.name || a.name != c.name) return false // Different item
+            if (a.p != b.p || a.p != c.p) return false // Different modifier (shiny, glitched, etc.)
+            if (a.level != b.level || a.level != c.level) return false // Different level
+            if (!G.items[a.name].compound) return false // Not compoundable
+            if (a.level >= Number.parseInt(process.env.COMBINE_TO_LEVEL)) return false
+            return true
+        }
+        function canUpgrade(a: BankItemInfo, b: BankItemInfo): boolean {
+            if (a.name != b.name) return false // Different item
             if (a.p != b.p) return false // Different modifier (shiny, glitched, etc.)
+            if (b.level >= Number.parseInt(process.env.UPGRADE_TO_LEVEL)) return false // Too high of a level
+            return true
+        }
+        function isSameStackable(a: BankItemInfo, b: BankItemInfo): boolean {
+            if (a.name != b.name) return false
+            if (!a.q) return false
             return true
         }
         function wantToSell(a: BankItemInfo): boolean {
@@ -266,217 +298,173 @@ class Merchant extends Character {
             return true
         }
 
+        // Deposit stackable items from our inventory to our bank storage
+        await sleep(Math.max(...parent.pings))
+        let emptySlots = getEmptySlots(parent.character.items)
         for (let i = 1; i < allItems.length; i++) {
+            if (emptySlots.length < 2) break
             const itemA = allItems[i - 1]
             const itemB = allItems[i]
-            if (isSameItem(itemA, itemB)) {
-                // Do stuff
+            if (isSameStackable(itemA, itemB)) {
+                const stackLimit = G.items[itemA.name].s
+                if (itemA.q + itemB.q < stackLimit) {
+                    if (itemA.pack != "items" && itemB.pack == "items") {
+                        // ItemB is in our inventory, we can just swap it on to itemA
+                        parent.socket.emit("bank", {
+                            operation: "swap",
+                            inv: itemB.index,
+                            str: -1,
+                            pack: itemA.pack
+                        })
+                    } else if (itemA.pack == "items" && itemB.pack == "items") {
+                        // ItemA and ItemB are both in our inventory
+                        parent.socket.emit("imove", {
+                            a: itemA.index,
+                            b: itemB.index
+                        })
+                    } else {
+                        // Both items are in the bank, kind of out of scope, but let's combine them while we're here...
+                        const empty1 = emptySlots.shift()
+                        parent.socket.emit("bank", {
+                            operation: "swap",
+                            inv: empty1,
+                            str: itemA.index,
+                            pack: itemA.pack
+                        })
+                        parent.socket.emit("bank", {
+                            operation: "swap",
+                            inv: -1,
+                            str: itemB.index,
+                            pack: itemB.pack
+                        })
+                        await sleep(Math.max(...parent.pings))
+                        parent.socket.emit("bank", {
+                            operation: "swap",
+                            inv: empty1,
+                            str: itemA.index,
+                            pack: itemA.pack
+                        })
+                    }
+                }
+
+                allItems = allItems.splice(i - 1, 2)
+                i -= 2
             }
         }
 
-        // TODO: Find things we should have in our inventory at all times (do we actually want to do this?)
-        // TODO: Move them to our inventory
-        // for (const item in allItems) {
+        // Find things we can combine, and move them to our inventory
+        await sleep(Math.max(...parent.pings))
+        emptySlots = getEmptySlots(parent.character.items)
+        for (let i = 2; i < allItems.length; i++) {
+            if (emptySlots.length < 4) break // Leave at least one empty slot
+            const itemA = allItems[i - 2]
+            const itemB = allItems[i - 1]
+            const itemC = allItems[i]
+            if (canCombine(itemA, itemB, itemC)) {
+                // Move the three items to our inventory
+                if (itemA.pack != "items") {
+                    parent.socket.emit("bank", {
+                        operation: "swap",
+                        inv: emptySlots.shift(),
+                        str: itemA.index,
+                        pack: itemA.pack
+                    })
+                }
+                if (itemB.pack != "items") {
+                    parent.socket.emit("bank", {
+                        operation: "swap",
+                        inv: emptySlots.shift(),
+                        str: itemB.index,
+                        pack: itemB.pack
+                    })
+                }
+                if (itemC.pack != "items") {
+                    parent.socket.emit("bank", {
+                        operation: "swap",
+                        inv: emptySlots.shift(),
+                        str: itemC.index,
+                        pack: itemC.pack
+                    })
+                }
+                allItems = allItems.splice(i - 2, 3)
+                i -= 3
+            }
+        }
 
-        // }
-        for (const itemName of this.itemsToKeep) {
-            console.log(itemName)
+        // Find things we should upgrade, and move them to our inventory
+        // TODO: Improve this so we can pull out 3 items if we have 3 of the same items...
+        // NOTE: It will still probably upgrade everything eventually... Might just take a few bank visits
+        await sleep(Math.max(...parent.pings))
+        emptySlots = getEmptySlots(parent.character.items)
+        for (let i = 1; i < allItems.length; i++) {
+            if (emptySlots.length < 3) break // Leave at least one empty slot
+            const itemA = allItems[i - 1]
+            const itemB = allItems[i]
+            if (canUpgrade(itemA, itemB)) {
+                // Move the two items to our inventory
+                if (itemA.pack != "items") {
+                    parent.socket.emit("bank", {
+                        operation: "swap",
+                        inv: emptySlots.shift(),
+                        str: itemA.index,
+                        pack: itemA.pack
+                    })
+                }
+                if (itemB.pack != "items") {
+                    parent.socket.emit("bank", {
+                        operation: "swap",
+                        inv: emptySlots.shift(),
+                        str: itemB.index,
+                        pack: itemB.pack
+                    })
+                }
+                allItems = allItems.splice(i - 1, 2)
+                i -= 2
+            }
         }
 
         // Find things we should sell
         await sleep(Math.max(...parent.pings))
-        const emptySlots = getEmptySlots(parent.character.items)
-        for (const item of allItems) {
-            if (emptySlots.length <= 1) break // Leave at least one empty slot
+        emptySlots = getEmptySlots(parent.character.items)
+        for (let i = 0; i < allItems.length; i++) {
+            const item = allItems[i]
+            if (emptySlots.length < 2) break // Leave at least one empty slot
             if (wantToSell(item)) {
-                parent.socket.emit("bank", {
-                    operation: "swap",
-                    inv: emptySlots.shift(),
-                    str: item.index,
-                    pack: item.pack
-                })
+                if (item.pack != "items") {
+                    parent.socket.emit("bank", {
+                        operation: "swap",
+                        inv: emptySlots.shift(),
+                        str: item.index,
+                        pack: item.pack
+                    })
+                }
+                allItems = allItems.splice(i, 1)
+                i -= 1
             }
         }
 
-    }
-
-    private didBankStuff = 0;
-    private async bankStuff(): Promise<void> {
-        if (parent.character.map != "bank") {
-            return
-        } else if (Date.now() - this.didBankStuff < 30000) {
-            return
-        }
-
-        // Store extra gold
-        if (is_pvp()) {
-            if (parent.character.gold > 1000000) {
-                bank_deposit(parent.character.gold - 1000000)
-            } else if (parent.character.gold < 1000000) {
-                bank_withdraw(1000000 - parent.character.gold)
-            }
-
-        } else {
-            if (parent.character.gold > 100000000) {
-                bank_deposit(parent.character.gold - 100000000)
-            } else if (parent.character.gold < 100000000) {
-                bank_withdraw(100000000 - parent.character.gold)
-            }
-
-        }
-        // name, level, inventory, slot #
-        const items: [ItemName, number, string, number][] = []
-
-        // Add items from inventory
-        for (const item of getInventory()) {
-            if (this.itemsToKeep.includes(item.name)) continue // Don't add items we want to keep
-
-            if (G.items[item.name].s) {
-                // If the item is stackable, deposit it.
-                await sleep(parent.character.ping)
-                bank_store(item.index)
+        // Find things we should exchange
+        await sleep(Math.max(...parent.pings))
+        emptySlots = getEmptySlots(parent.character.items)
+        for (let i = 0; i < allItems.length; i++) {
+            const item = allItems[i]
+            if (emptySlots.length < 2) break // Leave at least one empty slot
+            if (item.pack == "items") {
+                // This item is already in our inventory
+                allItems = allItems.splice(i, 1)
+                i -= 1
                 continue
             }
+            if (!this.itemsToExchange.has(item.name)) continue // We don't want to exchange this item
 
-            // Add it to our list of items
-            // items.push([item.name, item.level, "items", item.index])
-
-            // Store all items for now
-            let i = 0
-            const emptySlots = getEmptyBankSlots() || []
-            if (i < emptySlots.length) {
-                await sleep(parent.character.ping)
-                bank_store(item.index, emptySlots[i].pack, emptySlots[i].index)
-                i++
-            }
-        }
-
-        // Add items from bank
-        for (const pack in parent.character.bank) {
-            if (pack == "gold") continue // skip gold
-            for (const item of getInventory(parent.character.bank[pack as BankPackType])) {
-                // Keep some items
-                // TODO: Move this to a variable?
-                if (["goldenegg", "luckbooster", "goldbooster", "xpbooster"].includes(item.name)) continue
-                if (G.items[item.name].e && item.q >= G.items[item.name].e) {
-                    items.push([item.name, -1, pack, item.index])
-                    continue
-                }
-                if (G.items[item.name].s) continue // Don't add stackable items
-                if (G.items[item.name].upgrade && item.level >= 8) continue // Don't withdraw high level items
-                if (G.items[item.name].compound && item.level >= 4) continue // Don't withdraw high level items
-
-                items.push([item.name, item.level, pack, item.index])
-            }
-        }
-
-        const empty = getEmptySlots(parent.character.items)
-        empty.pop()
-        items.sort((a, b) => {
-            if (a[0] != b[0]) {
-                return a[0].localeCompare(b[0])
-            }
-            return a[1] - b[1]
-        })
-
-        // Find compounds
-        for (let i = 0; i < items.length; i++) {
-            const itemI = items[i]
-
-            const indexes: number[] = [i]
-            for (let j = i + 1; j < items.length; j++) {
-                const itemJ = items[j]
-                if (itemJ[0] != itemI[0] || itemJ[1] != itemI[1]) {
-                    // The name or level is different
-                    i = j - 1
-                    break
-                }
-
-                // We found another item of the same level
-                indexes.push(j)
-            }
-
-            if (G.items[itemI[0]].compound && indexes.length >= 4) {
-                for (let l = 0; l < 3; l++) {
-                    const k = indexes[l]
-                    const bankBox = items[k][2]
-                    const boxSlot = items[k][3]
-                    await sleep(parent.character.ping)
-                    if (empty.length)
-                        parent.socket.emit("bank", {
-                            operation: "swap",
-                            inv: empty.shift(),
-                            str: boxSlot,
-                            pack: bankBox
-                        })
-                }
-            }
-        }
-
-        // Find upgrades
-        for (let i = 0; i < items.length; i++) {
-            const itemI = items[i]
-
-            const indexes: number[] = [i]
-            for (let j = i + 1; j < items.length; j++) {
-                const itemJ = items[j]
-                if (itemJ[0] != itemI[0]) {
-                    // The name is different
-                    i = j - 1
-                    break
-                }
-
-                // We found another item of the same level
-                indexes.push(j)
-            }
-
-            if (G.items[itemI[0]].upgrade && indexes.length >= 2) {
-                // We found two of the same weapons, move them to our inventory.
-                for (const k of indexes) {
-                    const bankBox = items[k][2]
-                    const boxSlot = items[k][3]
-                    await sleep(parent.character.ping)
-                    if (empty.length)
-                        parent.socket.emit("bank", {
-                            operation: "swap",
-                            inv: empty.shift(),
-                            str: boxSlot,
-                            pack: bankBox
-                        })
-                }
-            }
-        }
-
-        // Find exchanges
-        for (let i = 0; i < items.length; i++) {
-            if (!G.items[items[i][0]].e) continue
-            const bankBox = items[i][2]
-            const boxSlot = items[i][3]
-
-            await sleep(parent.character.ping)
-            if (empty.length)
-                parent.socket.emit("bank", {
-                    operation: "swap",
-                    inv: empty.shift(),
-                    str: boxSlot,
-                    pack: bankBox
-                })
-        }
-
-        // Find sellable items
-        for (let i = 0; i < items.length; i++) {
-            if (!this.itemsToSell[items[i][0]] || items[i][1] > this.itemsToSell[items[i][0]]) continue
-            const bankBox = items[i][2]
-            const boxSlot = items[i][3]
-
-            await sleep(parent.character.ping)
-            if (empty.length)
-                parent.socket.emit("bank", {
-                    operation: "swap",
-                    inv: empty.shift(),
-                    str: boxSlot,
-                    pack: bankBox
-                })
+            parent.socket.emit("bank", {
+                operation: "swap",
+                inv: emptySlots.shift(),
+                str: item.index,
+                pack: item.pack
+            })
+            allItems = allItems.splice(i, 1)
+            i -= 1
         }
 
         this.didBankStuff = Date.now()
