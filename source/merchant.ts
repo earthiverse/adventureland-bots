@@ -166,6 +166,7 @@ class Merchant extends Character {
             if (numItems < 25)
                 exchangeItems(this.itemsToExchange)
 
+            game_log("doing bank stuff!")
             await this.newBankStuff()
 
             if (!parent.character.moving) {
@@ -257,6 +258,7 @@ class Merchant extends Character {
             allItems.push({ ...item, pack: "items" })
         }
         for (const pack in parent.character.bank) {
+            if (pack == "gold") continue
             for (const item of getInventory(parent.character.bank[pack as BankPackType])) {
                 allItems.push({ ...item, pack: pack as BankPackType })
             }
