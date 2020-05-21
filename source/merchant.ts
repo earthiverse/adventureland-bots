@@ -120,7 +120,7 @@ class Merchant extends Character {
         }
 
         // If we haven't been to the bank in a while, go
-        if (Date.now() - this.didBankStuff > 120000) {
+        if (Date.now() - this.didBankStuff > 120000 || Date.now() - this.didBankStuff < 5000) {
             set_message("Bank")
             return { position: { "map": "bank", "x": 0, "y": -400 } }
         }
