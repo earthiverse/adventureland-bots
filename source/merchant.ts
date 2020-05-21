@@ -125,16 +125,16 @@ class Merchant extends Character {
         }
 
         // If we haven't been to the bank in a while, go
-        if (Date.now() - this.didBankStuff > 120000 || Date.now() - this.didBankStuff < 5000) {
+        if (Date.now() - this.didBankStuff > 240000 || Date.now() - this.didBankStuff < 5000 + Math.max(...parent.pings) * 5) {
             set_message("Bank")
             return { position: { "map": "bank", "x": 0, "y": -400 } }
         }
 
         // If Angel and Kane haven't been seen in a while, go find them to update their position
-        if (this.info.npcs.Kane && Date.now() - new Date(this.info.npcs.Kane.lastSeen).getTime() > 300000) {
+        if (this.info.npcs.Kane && Date.now() - new Date(this.info.npcs.Kane.lastSeen).getTime() > 240000) {
             set_message("Find Kane")
             return { position: this.info.npcs.Kane }
-        } else if (this.info.npcs.Angel && Date.now() - new Date(this.info.npcs.Angel.lastSeen).getTime() > 300000) {
+        } else if (this.info.npcs.Angel && Date.now() - new Date(this.info.npcs.Angel.lastSeen).getTime() > 240000) {
             set_message("Find Angel")
             return { position: this.info.npcs.Angel }
         }
