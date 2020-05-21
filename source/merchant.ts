@@ -247,8 +247,7 @@ class Merchant extends Character {
         }
 
         // Deposit as many items as we can in to our bank
-        game_log("[bank] depositing things")
-        const emptyBankSlots = getEmptyBankSlots()
+        let emptyBankSlots = getEmptyBankSlots()
         for (const item of getInventory()) {
             if (emptyBankSlots.length == 0) break
             if (this.itemsToKeep.includes(item.name)) continue
@@ -259,7 +258,6 @@ class Merchant extends Character {
 
         // Get a list of all of our items in our inventory and bank, then sort them so we can compare them
         await sleep(Math.max(...parent.pings))
-        game_log("[bank] sorting all items")
         const allItems: BankItemInfo[] = []
         for (const item of getInventory()) {
             if (this.itemsToKeep.includes(item.name)) continue // We want to keep this item on us
@@ -287,7 +285,6 @@ class Merchant extends Character {
             }
             return 0
         })
-        console.log(allItems)
 
         // Functions to help decide what to do
         function canCombine(a: BankItemInfo, b: BankItemInfo, c: BankItemInfo, d: BankItemInfo): boolean {
@@ -319,7 +316,6 @@ class Merchant extends Character {
 
         // Deposit stackable items from our inventory to our bank storage
         await sleep(Math.max(...parent.pings))
-        game_log("[bank] depositing stackable things")
         let emptySlots = getEmptySlots(parent.character.items)
         for (let i = 1; i < allItems.length; i++) {
             if (emptySlots.length < 3) break
@@ -374,7 +370,6 @@ class Merchant extends Character {
 
         // Find things we can combine, and move them to our inventory
         await sleep(Math.max(...parent.pings))
-        game_log("[bank] finding things to combine")
         emptySlots = getEmptySlots(parent.character.items)
         for (let i = 3; i < allItems.length; i++) {
             if (emptySlots.length < 5) break // Leave at least one empty slot
@@ -424,9 +419,6 @@ class Merchant extends Character {
         // Find things we should upgrade, and move them to our inventory
         // TODO: Improve this so we can pull out 3 items if we have 3 of the same items...
         // NOTE: It will still probably upgrade everything eventually... Might just take a few bank visits
-        await sleep(Math.max(...parent.pings))
-        game_log("[bank] finding things to upgrade")
-        emptySlots = getEmptySlots(parent.character.items)
         for (let i = 1; i < allItems.length; i++) {
             if (emptySlots.length < 3) break // Leave at least one empty slot
             const itemA = allItems[i - 1]
@@ -455,9 +447,6 @@ class Merchant extends Character {
         }
 
         // Find things we should sell
-        await sleep(Math.max(...parent.pings))
-        game_log("[bank] finding things to sell")
-        emptySlots = getEmptySlots(parent.character.items)
         for (let i = 0; i < allItems.length; i++) {
             const item = allItems[i]
             if (emptySlots.length < 2) break // Leave at least one empty slot
@@ -476,9 +465,6 @@ class Merchant extends Character {
         }
 
         // Find things we should exchange
-        await sleep(Math.max(...parent.pings))
-        game_log("[bank] finding things to exchange")
-        emptySlots = getEmptySlots(parent.character.items)
         for (let i = 0; i < allItems.length; i++) {
             const item = allItems[i]
             if (emptySlots.length < 2) break // Leave at least one empty slot
@@ -499,6 +485,17 @@ class Merchant extends Character {
             })
             allItems.splice(i, 1)
             i -= 1
+        }
+
+        // NOTE: TEMPORARY
+        // Deposit all level 9 (or higher?) bows
+        await sleep(Math.max(...parent.pings))
+        emptyBankSlots = getEmptyBankSlots()
+        for (const item of getInventory()) {
+            if (item.name != "bow") continue
+            if (item.level < 9) continue
+            const slot = emptyBankSlots.shift()
+            bank_store(item.index, slot.pack, slot.index)
         }
     }
 
