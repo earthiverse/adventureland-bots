@@ -648,7 +648,7 @@ export abstract class Character {
                 if (enemyRange < parent.character.range // Enemy range is less than our range
                     && d < enemyRange // We are within the enemy range
                 ) {
-                    if (entity.hp > calculateDamageRange(parent.character, entity)[0] || entity.target == parent.character.name) {
+                    if (entity.hp > calculateDamageRange(parent.character, entity)[0] || this.targetPriority[entity.mtype].holdAttackInEntityRange || entity.target == parent.character.name) {
                         inEnemyAttackRange.push(entity) // We can run away from it
                     }
                 }
