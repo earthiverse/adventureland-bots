@@ -183,7 +183,7 @@ class Merchant extends Character {
             compoundIfMany(4)
 
             // I want a +10 bow eventually
-            buyIfNone("bow", 9, 2)
+            buyIfNone("bow", 9, 4)
             upgradeItem("bow", 9)
 
             await buyScrolls()
@@ -488,12 +488,17 @@ class Merchant extends Character {
         }
 
         // NOTE: TEMPORARY
-        // Deposit all level 9 (or higher?) bows
+        // Deposit all level 9 (or higher?) bows, and move other bows to the back of the inventory
         await sleep(Math.max(...parent.pings))
         emptyBankSlots = getEmptyBankSlots()
         for (const item of getInventory()) {
             if (item.name != "bow") continue
-            if (item.level < 9) continue
+            if (item.level < 9) {
+                if (emptySlots.length) {
+                    swap(item.index, emptySlots.pop())
+                }
+                continue
+            }
             const slot = emptyBankSlots.shift()
             bank_store(item.index, slot.pack, slot.index)
         }

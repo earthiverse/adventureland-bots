@@ -430,20 +430,23 @@ export function getNearbyMonsterSpawns(position: IPosition, radius = 1000): Mons
     return locations
 }
 
+/** Only works for items sold by the merchant */
 export async function buyIfNone(itemName: ItemName, targetLevel = 9, targetQuantity = 1): Promise<void> {
-    let foundNPCBuyer = false
-    if (!G.maps[parent.character.map].npcs) return
-    for (const npc of G.maps[parent.character.map].npcs) {
-        if (G.npcs[npc.id].role != "merchant") continue
-        if (distance(parent.character, {
-            x: npc.position[0],
-            y: npc.position[1]
-        }) < 350) {
-            foundNPCBuyer = true
-            break
+    if (!findItem("computer")) {
+        let foundNPCBuyer = false
+        if (!G.maps[parent.character.map].npcs) return
+        for (const npc of G.maps[parent.character.map].npcs) {
+            if (G.npcs[npc.id].role != "merchant") continue
+            if (distance(parent.character, {
+                x: npc.position[0],
+                y: npc.position[1]
+            }) < 350) {
+                foundNPCBuyer = true
+                break
+            }
         }
+        if (!foundNPCBuyer) return // Can't buy things, nobody is near.
     }
-    if (!foundNPCBuyer) return // Can't buy things, nobody is near.
 
     let items = findItemsWithLevel(itemName, targetLevel)
     if (items.length >= targetQuantity) return // We have enough

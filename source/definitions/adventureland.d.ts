@@ -95,6 +95,8 @@ declare global {
   function start_character(name: string, codeName?: string)
   function stop(action?: string)
   function stop_character(name: string)
+  /** Swap the position of two items in the player's inventory */
+  function swap(index1: number, index2: number)
   /** For buying things off players' merchants */
   function trade_buy(target: Entity, trade_slot: number)
   function transport(map: MapName, spawn?: number)
