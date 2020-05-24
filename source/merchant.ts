@@ -495,7 +495,8 @@ class Merchant extends Character {
             if (item.name != "bow") continue
             if (item.level < 9) {
                 if (emptySlots.length) {
-                    swap(item.index, emptySlots.pop())
+                    const slot = emptySlots.pop()
+                    if (item.index < slot) swap(item.index, slot)
                 }
                 continue
             }

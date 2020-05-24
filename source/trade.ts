@@ -65,9 +65,16 @@ export function buyFromPonty(itemsToBuy: Set<ItemName>): void {
                 // We want this item based on our list
                 parent.socket.emit("sbuy", { "rid": data[i].rid })
                 if (++itemsBought >= 5) break // Only buy a few items at a time to prevent maxing out server calls.
-            }
-            if (data[i].p) {
+            } else if (data[i].p) {
                 // Buy all shiny and glitched items
+                parent.socket.emit("sbuy", { "rid": data[i].rid })
+                if (++itemsBought >= 5) break // Only buy a few items at a time to prevent maxing out server calls.
+            } else if (G.items[data[i].name].upgrade && data[i].level >= 8) {
+                // Buy all high level upgradable items
+                parent.socket.emit("sbuy", { "rid": data[i].rid })
+                if (++itemsBought >= 5) break // Only buy a few items at a time to prevent maxing out server calls.
+            } else if (G.items[data[i].name].compound && data[i].level >= 4) {
+                // Buy all high level upgradable items
                 parent.socket.emit("sbuy", { "rid": data[i].rid })
                 if (++itemsBought >= 5) break // Only buy a few items at a time to prevent maxing out server calls.
             }

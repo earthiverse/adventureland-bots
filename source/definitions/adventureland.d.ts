@@ -174,9 +174,9 @@ declare global {
         max_y: number;
         min_x: number;
         min_y: number;
-        /* The line is from ([0], [2]) to ([1], [2]) */
+        /* The line is from ([0], [1]) to ([0], [2]) */
         x_lines: [number, number, number][];
-        /* The line is from ([2], [0]) to ([2], [1]) */
+        /* The line is from ([1], [0]) to ([2], [0]) */
         y_lines: [number, number, number][];
       }
     };
