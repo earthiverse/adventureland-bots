@@ -215,11 +215,11 @@ class Priest extends Character {
         "phoenix": {
             "priority": SPECIAL
         },
-        "pinkgoblin": {
-            "priority": 100,
-            "holdAttackWhileMoving": true,
-            "coop": ["warrior", "ranger"]
-        },
+        // "pinkgoblin": {
+        //     "priority": 100,
+        //     "holdAttackWhileMoving": true,
+        //     "coop": ["warrior", "ranger"]
+        // },
         "pinkgoo": {
             "priority": 1000
         },

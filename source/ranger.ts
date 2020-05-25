@@ -227,12 +227,12 @@ class Ranger extends Character {
             "priority": 1000,
             "equip": ["firebow", "t2quiver"]
         },
-        "pinkgoblin": {
-            "priority": 100,
-            "holdAttackWhileMoving": true,
-            "coop": ["warrior", "priest"],
-            "equip": ["firebow", "t2quiver"]
-        },
+        // "pinkgoblin": {
+        //     "priority": 100,
+        //     "holdAttackWhileMoving": true,
+        //     "coop": ["warrior", "priest"],
+        //     "equip": ["firebow", "t2quiver"]
+        // },
         "pinkgoo": {
             "priority": 1000,
             "equip": ["bow", "t2quiver"]

@@ -183,12 +183,12 @@ class Warrior extends Character {
             "priority": SPECIAL,
             "equip": ["basher"]
         },
-        "pinkgoblin": {
-            "priority": 100,
-            "holdAttackWhileMoving": true,
-            "coop": ["priest", "ranger"],
-            "equip": ["basher"]
-        },
+        // "pinkgoblin": {
+        //     "priority": 100,
+        //     "holdAttackWhileMoving": true,
+        //     "coop": ["priest", "ranger"],
+        //     "equip": ["basher"]
+        // },
         "pinkgoo": {
             "priority": 1000,
             "equip": ["candycanesword", "woodensword"]
