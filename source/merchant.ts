@@ -137,11 +137,23 @@ class Merchant extends Character {
         // TODO: If we're near them and can't see them, delete them from the info.
         const npcs: NPCInfo = JSON.parse(sessionStorage.getItem("npcs"), reviver) || {}
         if (npcs.Kane && Date.now() - npcs.Kane.lastSeen.getTime() > 240000) {
-            set_message("Find Kane")
-            return { position: npcs.Kane }
+            if (distance(parent.character, npcs.Kane) < 100 && !parent.entities.Kane) {
+                // We can't find Kane, our information is too old...
+                delete npcs.Kane
+                sessionStorage.setItem("npcs", JSON.stringify(npcs))
+            } else {
+                set_message("Find Kane")
+                return { position: npcs.Kane }
+            }
         } else if (npcs.Angel && Date.now() - npcs.Angel.lastSeen.getTime() > 240000) {
-            set_message("Find Angel")
-            return { position: npcs.Angel }
+            if (distance(parent.character, npcs.Angel) < 100 && !parent.entities.Angel) {
+                // We can't find Angel, our information is too old...
+                delete npcs.Angel
+                sessionStorage.setItem("npcs", JSON.stringify(npcs))
+            } else {
+                set_message("Find Angel")
+                return { position: npcs.Angel }
+            }
         }
 
         // NOTE: We have a computer now, we don't need to travel anymore

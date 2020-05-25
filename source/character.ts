@@ -474,11 +474,12 @@ export abstract class Character {
             }
 
             if (distance(parent.character, info) < 100 && !entityInfo) {
+                // We got close to it, but we can't see it...
                 delete monsters[mtype as MonsterType]
                 sessionStorage.setItem("monsters", JSON.stringify(monsters))
             } else {
                 set_message(`SP ${mtype}`)
-                return { target: mtype as MonsterType, position: info, range: 0 }
+                return { target: mtype as MonsterType, position: info, range: parent.character.range }
             }
         }
 
