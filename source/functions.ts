@@ -6,9 +6,8 @@ export function sleep(ms: number): Promise<void> {
 }
 
 // This function helps parse Date objects
-// From https://mariusschulz.com/blog/deserializing-json-strings-as-javascript-date-objects
 export function reviver(key: string, value: unknown): unknown {
-    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(value)) {
+    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)) {
         return new Date(value)
     }
     return value
