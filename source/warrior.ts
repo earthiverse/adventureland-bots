@@ -164,6 +164,11 @@ class Warrior extends Character {
             },
             "equip": ["basher"]
         },
+        "mvampire": {
+            priority: DIFFICULT,
+            "coop": ["priest"],
+            "equip": ["basher"]
+        },
         "oneeye": {
             "coop": ["ranger", "priest"],
             "priority": 0,
