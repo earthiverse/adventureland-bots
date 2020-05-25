@@ -6,7 +6,7 @@ This project requires [Node.js](https://nodejs.org/en/) to install, and run the 
 
 1. Install Node.js
 2. run `npm install`
-3. run `node run build`
+3. run `npm run build`
 
 ## Run
 The code in /source/saves is what you save to the character.
