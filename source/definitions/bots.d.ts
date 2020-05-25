@@ -43,7 +43,6 @@ export type PriorityEntity = {
 
 // TODO: Deprecate this, we're storing it in sessionStorage as 4 separate variables now
 export type OtherInfo = {
-    npcs: NPCInfo;
     party: PartyInfo;
     players: PlayersInfo;
 }

@@ -2,8 +2,8 @@ import { Character } from "./character"
 import { MonsterType, ItemName, PositionReal, BankPackType } from "./definitions/adventureland"
 import { upgradeIfMany, compoundIfMany, upgradeItem } from "./upgrade"
 import { sellUnwantedItems, exchangeItems, buyFromPonty, openMerchantStand, closeMerchantStand, buyScrolls } from "./trade"
-import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots, sleep, getEmptySlots, isInventoryFull, buyIfNone } from "./functions"
-import { MovementTarget, TargetPriorityList, BankItemInfo } from "./definitions/bots"
+import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots, sleep, getEmptySlots, isInventoryFull, buyIfNone, reviver } from "./functions"
+import { MovementTarget, TargetPriorityList, BankItemInfo, NPCInfo } from "./definitions/bots"
 
 class Merchant extends Character {
     targetPriority: TargetPriorityList = {
@@ -131,12 +131,13 @@ class Merchant extends Character {
         }
 
         // If Angel and Kane haven't been seen in a while, go find them to update their position
-        if (this.info.npcs.Kane && Date.now() - new Date(this.info.npcs.Kane.lastSeen).getTime() > 240000) {
+        const npcs: NPCInfo = JSON.parse(sessionStorage.getItem("npcs"), reviver)
+        if (npcs.Kane && Date.now() - npcs.Kane.lastSeen.getTime() > 240000) {
             set_message("Find Kane")
-            return { position: this.info.npcs.Kane }
-        } else if (this.info.npcs.Angel && Date.now() - new Date(this.info.npcs.Angel.lastSeen).getTime() > 240000) {
+            return { position: npcs.Kane }
+        } else if (npcs.Angel && Date.now() - npcs.Angel.lastSeen.getTime() > 240000) {
             set_message("Find Angel")
-            return { position: this.info.npcs.Angel }
+            return { position: npcs.Angel }
         }
 
         // NOTE: We have a computer now, we don't need to travel anymore

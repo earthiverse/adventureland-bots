@@ -1,7 +1,7 @@
 import FastPriorityQueue from "fastpriorityqueue"
 import { Entity, IPosition, ItemName, ItemInfo, SlotType, MonsterType, PositionReal, NPCName, SkillName, CharacterEntity, CharacterType, TradeSlotType } from "./definitions/adventureland"
 import { sendMassCM, findItems, getInventory, getRandomMonsterSpawn, getCooldownMS, isAvailable, calculateDamageRange, isInventoryFull, getPartyMemberTypes, getVisibleMonsterTypes, sleep, getEntities, reviver } from "./functions"
-import { TargetPriorityList, OtherInfo, InventoryItemInfo, ItemLevelInfo, PriorityEntity, MovementTarget, PartyInfo, PlayersInfo, NPCInfo as NPCsInfo, MonstersInfo } from "./definitions/bots"
+import { TargetPriorityList, OtherInfo, InventoryItemInfo, ItemLevelInfo, PriorityEntity, MovementTarget, PartyInfo, PlayersInfo, NPCInfo, MonstersInfo } from "./definitions/bots"
 import { dismantleItems, buyPots } from "./trade"
 import { AStarSmartMove } from "./astarsmartmove"
 
@@ -106,7 +106,6 @@ export abstract class Character {
     /** Information about the state of the game that is useful to us */
     protected info: OtherInfo = {
         party: {},
-        npcs: {},
         players: {}
     }
 
@@ -217,7 +216,7 @@ export abstract class Character {
         sessionStorage.setItem("players", JSON.stringify(players))
 
         // Add info about NPCs
-        const npcs: NPCsInfo = JSON.parse(sessionStorage.getItem("npcs"), reviver)
+        const npcs: NPCInfo = JSON.parse(sessionStorage.getItem("npcs"), reviver)
         for (const npc of ["Angel", "Kane"] as NPCName[]) {
             if (!parent.entities[npc]) continue
             npcs[npc] = {
@@ -944,7 +943,9 @@ export abstract class Character {
             monsters[data.id as MonsterType] = data.info
             sessionStorage.setItem("monsters", JSON.stringify(monsters))
         } else if (data.message == "npc") {
-            this.info.npcs[data.id as NPCName] = data.info
+            const npcs: NPCInfo = JSON.parse(sessionStorage.getItem("npcs"), reviver)
+            npcs[data.id as NPCName] = data.info
+            sessionStorage.setItem("npcs", JSON.stringify(npcs))
         } else if (data.message == "player") {
             this.info.players[data.id] = data.info
         } else if (data.message == "chests") {
