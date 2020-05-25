@@ -202,7 +202,7 @@ declare global {
           id: string;
         };
       };
-      /** x, y, ??? */
+      /** x, y, direction to face character */
       spawns: [number, number, number?][];
     } };
     monsters: { [T in MonsterType]: GMonster };

@@ -41,36 +41,45 @@ export type PriorityEntity = {
     priority: number;
 }
 
+// TODO: Deprecate this, we're storing it in sessionStorage as 4 separate variables now
 export type OtherInfo = {
-    party: {
-        [T in string]?: PositionReal & {
-            lastSeen: string;
-            shouldSwitchServer: boolean;
-            monsterHuntTargets: MonsterType[];
-            items: InventoryItemInfo[];
-            goldm: number;
-            last_ms: Date;
-            luckm: number;
-            attack: number;
-            frequency: number;
-            s: StatusInfo;
-        }
-    };
-    npcs: {
-        [T in NPCName]?: PositionReal & {
-            lastSeen: string;
-        }
-    };
-    players: {
-        [T in string]?: Entity & {
-            lastSeen: string;
-        }
-    };
-    monsters: {
-        [T in MonsterType]?: PositionReal & {
-            id: string;
-        }
-    };
+    npcs: NPCInfo;
+    party: PartyInfo;
+    players: PlayersInfo;
+}
+
+export type MonstersInfo = {
+    [T in MonsterType]?: PositionReal & {
+        id: string;
+        lastSeen: Date;
+    }
+}
+
+export type NPCInfo = {
+    [T in NPCName]?: PositionReal & {
+        lastSeen: Date;
+    }
+}
+
+export type PartyInfo = {
+    [T in string]?: PositionReal & {
+        lastSeen: Date;
+        shouldSwitchServer: boolean;
+        monsterHuntTargets: MonsterType[];
+        items: InventoryItemInfo[];
+        goldm: number;
+        last_ms: Date;
+        luckm: number;
+        attack: number;
+        frequency: number;
+        s: StatusInfo;
+    }
+}
+
+export type PlayersInfo = {
+    [T in string]?: Partial<Entity> & PositionReal & {
+        lastSeen: Date;
+    }
 }
 
 export type ItemLevelInfo = {
