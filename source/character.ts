@@ -229,7 +229,7 @@ export abstract class Character {
         const monsters: MonstersInfo = JSON.parse(sessionStorage.getItem("monsters"), reviver) || {}
         changed = false
         for (const entity of getEntities({ isMonster: true })) {
-            if (!["fvampire", "goldenbat", "mvampire", "phoenix", "pinkgoo", "snowman", "wabbit"].includes(entity.mtype)) continue
+            if (!(["fvampire", "goldenbat", "greenjr", "jr", "mvampire", "phoenix", "pinkgoo", "snowman", "wabbit"]).includes(entity.mtype)) continue
             monsters[entity.mtype] = {
                 "lastSeen": new Date(),
                 "id": entity.id,

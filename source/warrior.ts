@@ -85,13 +85,7 @@ class Warrior extends Character {
         "fvampire": {
             "coop": ["priest", "ranger"],
             "priority": 0,
-            "holdPositionFarm": true,
             "holdAttackWhileMoving": true,
-            "farmingPosition": {
-                "map": "halloween",
-                "x": -150,
-                "y": -1575
-            },
             "equip": ["basher"]
         },
         "ghost": {

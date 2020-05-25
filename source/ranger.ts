@@ -109,13 +109,7 @@ class Ranger extends Character {
         "fvampire": {
             "coop": ["warrior", "priest"],
             "priority": 0,
-            "holdPositionFarm": true,
             "holdAttackWhileMoving": true,
-            "farmingPosition": {
-                "map": "halloween",
-                "x": -225,
-                "y": -1500
-            },
             "equip": ["firebow", "t2quiver"]
         },
         "ghost": {
