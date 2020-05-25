@@ -90,7 +90,7 @@ class Merchant extends Character {
         }
 
         // If someone in our party isn't mlucked by us, go find them and mluck them.
-        const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver)
+        const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver) || {}
         for (const name in party) {
             if (name == parent.character.name) continue // Don't move to ourself
 
@@ -102,7 +102,7 @@ class Merchant extends Character {
         }
 
         // If there are players who we have seen recently that haven't been mlucked, go find them and mluck them
-        const players: PlayersInfo = JSON.parse(sessionStorage.getItem("players"), reviver)
+        const players: PlayersInfo = JSON.parse(sessionStorage.getItem("players"), reviver) || {}
         for (const name in players) {
             if (name == parent.character.name) continue // Skip ourself
             const player = parent.entities[name] ? parent.entities[name] : players[name]
@@ -135,7 +135,7 @@ class Merchant extends Character {
 
         // If Angel and Kane haven't been seen in a while, go find them to update their position
         // TODO: If we're near them and can't see them, delete them from the info.
-        const npcs: NPCInfo = JSON.parse(sessionStorage.getItem("npcs"), reviver)
+        const npcs: NPCInfo = JSON.parse(sessionStorage.getItem("npcs"), reviver) || {}
         if (npcs.Kane && Date.now() - npcs.Kane.lastSeen.getTime() > 240000) {
             set_message("Find Kane")
             return { position: npcs.Kane }

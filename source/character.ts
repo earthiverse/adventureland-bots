@@ -175,7 +175,7 @@ export abstract class Character {
      */
     protected infoLoop(): void {
         // Add info about ourselves
-        const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver)
+        const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver) || {}
         party[parent.character.name] = {
             "lastSeen": new Date(),
             "shouldSwitchServer": this.shouldSwitchServer(),
@@ -194,7 +194,7 @@ export abstract class Character {
         sessionStorage.setItem("party", JSON.stringify(party))
 
         // Add info about other players we see
-        const players: PlayersInfo = JSON.parse(sessionStorage.getItem("players"), reviver)
+        const players: PlayersInfo = JSON.parse(sessionStorage.getItem("players"), reviver) || {}
         for (const player of getEntities({ isPlayer: true }) as CharacterEntity[]) {
             players[player.id] = {
                 "lastSeen": new Date(),
@@ -209,7 +209,7 @@ export abstract class Character {
         sessionStorage.setItem("players", JSON.stringify(players))
 
         // Add info about NPCs
-        const npcs: NPCInfo = JSON.parse(sessionStorage.getItem("npcs"), reviver)
+        const npcs: NPCInfo = JSON.parse(sessionStorage.getItem("npcs"), reviver) || {}
         for (const npc of ["Angel", "Kane"] as NPCName[]) {
             if (!parent.entities[npc]) continue
             npcs[npc] = {
@@ -222,7 +222,7 @@ export abstract class Character {
         sessionStorage.setItem("npcs", JSON.stringify(npcs))
 
         // Add info about Monsters
-        const monsters: MonstersInfo = JSON.parse(sessionStorage.getItem("monsters"), reviver)
+        const monsters: MonstersInfo = JSON.parse(sessionStorage.getItem("monsters"), reviver) || {}
         for (const entity of getEntities({ isMonster: true })) {
             if (!["goldenbat", "phoenix", "snowman"].includes(entity.mtype)) continue
             monsters[entity.mtype] = {
@@ -241,7 +241,7 @@ export abstract class Character {
     public getMonsterHuntTargets(): MonsterType[] {
         const types: MonsterType[] = []
         let leastTimeRemaining = Number.MAX_VALUE
-        const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver)
+        const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver) || {}
         for (const memberName of parent.party_list) {
             // NOTE: TODO: Gonna check if not checking parent.entities improves the lagginess when we are between monster hunts.
             // const member = parent.entities[memberName] ? parent.entities[memberName] : this.info.party[memberName]
@@ -311,7 +311,7 @@ export abstract class Character {
 
     protected loot(): void {
         let i = 0
-        const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver)
+        const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver) || {}
         for (const chestID in parent.chests) {
             const chest = parent.chests[chestID]
             if (distance(parent.character, chest) > 800) continue // Chests over a 800 radius have a penalty as per @Wizard in #feedback (Discord) on 11/26/2019
@@ -455,7 +455,7 @@ export abstract class Character {
         }
 
         // Special Monsters -- Move to monster
-        const monsters: MonstersInfo = JSON.parse(sessionStorage.getItem("monsters"), reviver)
+        const monsters: MonstersInfo = JSON.parse(sessionStorage.getItem("monsters"), reviver) || {}
         for (const mtype in monsters) {
             if (!this.targetPriority[mtype as MonsterType]) continue // Not a target we can do
             const info = monsters[mtype as MonsterType]
@@ -497,7 +497,7 @@ export abstract class Character {
         }
 
         // Monster Hunts -- Move to monster
-        const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver)
+        const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver) || {}
         const monsterHuntTargets: MonsterType[] = this.getMonsterHuntTargets()
         if (monsterHuntTargets.length) {
             const potentialTarget = monsterHuntTargets[0]
@@ -826,7 +826,7 @@ export abstract class Character {
         }
 
         if (data.message == "info") {
-            const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver)
+            const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver) || {}
             party[characterName] = data.info
             sessionStorage.setItem("party", JSON.stringify(party))
         } else if (data.message == "monster") {
@@ -844,15 +844,15 @@ export abstract class Character {
                 }
             })
              */
-            const monsters: MonstersInfo = JSON.parse(sessionStorage.getItem("monsters"), reviver)
+            const monsters: MonstersInfo = JSON.parse(sessionStorage.getItem("monsters"), reviver) || {}
             monsters[data.id as MonsterType] = data.info
             sessionStorage.setItem("monsters", JSON.stringify(monsters))
         } else if (data.message == "npc") {
-            const npcs: NPCInfo = JSON.parse(sessionStorage.getItem("npcs"), reviver)
+            const npcs: NPCInfo = JSON.parse(sessionStorage.getItem("npcs"), reviver) || {}
             npcs[data.id as NPCName] = data.info
             sessionStorage.setItem("npcs", JSON.stringify(npcs))
         } else if (data.message == "player") {
-            const players: PlayersInfo = JSON.parse(sessionStorage.getItem("players"), reviver)
+            const players: PlayersInfo = JSON.parse(sessionStorage.getItem("players"), reviver) || {}
             players[data.id] = data.info
             sessionStorage.setItem("players", JSON.stringify(players))
         } else if (data.message == "chests") {
