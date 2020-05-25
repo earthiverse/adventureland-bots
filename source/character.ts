@@ -158,7 +158,7 @@ export abstract class Character {
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.mainLoop() }, Math.max(250, parent.character.ping))
+        setTimeout(async () => { this.mainLoop() }, Math.max(250, parent.character.ping))
     }
 
     public run(): void {

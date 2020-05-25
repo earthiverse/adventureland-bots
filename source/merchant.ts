@@ -188,6 +188,7 @@ class Merchant extends Character {
             if (numItems < 25)
                 exchangeItems(this.itemsToExchange)
 
+            game_log("banking!?")
             await this.newBankStuff()
 
             if (!parent.character.moving) {
@@ -200,7 +201,7 @@ class Merchant extends Character {
             compoundIfMany(4)
 
             // I want a +10 bow eventually
-            buyIfNone("bow", 9, 4)
+            await buyIfNone("bow", 9, 4)
             upgradeItem("bow", 9)
 
             await buyScrolls()
@@ -208,7 +209,7 @@ class Merchant extends Character {
             super.mainLoop()
         } catch (error) {
             console.error(error)
-            setTimeout(() => { this.mainLoop() }, 1000)
+            setTimeout(async () => { this.mainLoop() }, 1000)
         }
     }
 
@@ -253,8 +254,6 @@ class Merchant extends Character {
         } else if (Date.now() - this.didBankStuff < 120000) {
             return
         }
-
-        this.didBankStuff = Date.now()
 
         // Store extra gold
         if (parent.character.gold > 100000000) {
@@ -520,6 +519,8 @@ class Merchant extends Character {
             const slot = emptyBankSlots.shift()
             bank_store(item.index, slot.pack, slot.index)
         }
+
+        this.didBankStuff = Date.now()
     }
 
     private luckedCharacters: { [T in string]: number } = {}
