@@ -3,7 +3,7 @@ import { MonsterType, ItemName, PositionReal, BankPackType } from "./definitions
 import { upgradeIfMany, compoundIfMany, upgradeItem } from "./upgrade"
 import { sellUnwantedItems, exchangeItems, buyFromPonty, openMerchantStand, closeMerchantStand, buyScrolls } from "./trade"
 import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots, sleep, getEmptySlots, isInventoryFull, buyIfNone, reviver } from "./functions"
-import { MovementTarget, TargetPriorityList, BankItemInfo, NPCInfo, PartyInfo } from "./definitions/bots"
+import { MovementTarget, TargetPriorityList, BankItemInfo, NPCInfo, PartyInfo, PlayersInfo } from "./definitions/bots"
 
 class Merchant extends Character {
     targetPriority: TargetPriorityList = {
@@ -102,14 +102,16 @@ class Merchant extends Character {
         }
 
         // If there are players who we have seen recently that haven't been mlucked, go find them and mluck them
-        for (const name in this.info.players) {
+        const players: PlayersInfo = JSON.parse(sessionStorage.getItem("players"), reviver)
+        for (const name in players) {
             if (name == parent.character.name) continue // Skip ourself
-            const player = parent.entities[name] ? parent.entities[name] : this.info.players[name]
-            if (distance(parent.character, player) <= G.skills.mluck.range && (!player.s.mluck || Date.now() - new Date(this.info.players[name].lastSeen).getTime() > 3000000 || player.s.mluck.ms < 1800000)) {
+            const player = parent.entities[name] ? parent.entities[name] : players[name]
+            if (distance(parent.character, player) <= G.skills.mluck.range && (!player.s.mluck || Date.now() - players[name].lastSeen.getTime() > 3000000 || player.s.mluck.ms < 1800000)) {
                 // This player moved.
-                delete this.info.players[name]
+                delete players[name]
+                sessionStorage.setItem("players", JSON.stringify(players))
                 break
-            } else if ((!player.s.mluck || Date.now() - new Date(this.info.players[name].lastSeen).getTime() > 3000000 || player.s.mluck.ms < 1800000) && !player.rip) {
+            } else if ((!player.s.mluck || Date.now() - players[name].lastSeen.getTime() > 3000000 || player.s.mluck.ms < 1800000) && !player.rip) {
                 set_message(`ML ${name}`)
                 return { position: player, range: G.skills.mluck.range - 20 }
             }
@@ -203,7 +205,7 @@ class Merchant extends Character {
         this.healLoop()
         this.scareLoop()
         this.moveLoop()
-        this.sendInfoLoop()
+        this.infoLoop()
         this.mainLoop()
         this.luckLoop()
         this.pontyLoop()

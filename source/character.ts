@@ -1,7 +1,7 @@
 import FastPriorityQueue from "fastpriorityqueue"
 import { Entity, IPosition, ItemName, ItemInfo, SlotType, MonsterType, PositionReal, NPCName, SkillName, CharacterEntity, CharacterType, TradeSlotType } from "./definitions/adventureland"
 import { sendMassCM, findItems, getInventory, getRandomMonsterSpawn, getCooldownMS, isAvailable, calculateDamageRange, isInventoryFull, getPartyMemberTypes, getVisibleMonsterTypes, sleep, getEntities, reviver } from "./functions"
-import { TargetPriorityList, OtherInfo, InventoryItemInfo, ItemLevelInfo, PriorityEntity, MovementTarget, PartyInfo, PlayersInfo, NPCInfo, MonstersInfo } from "./definitions/bots"
+import { TargetPriorityList, InventoryItemInfo, ItemLevelInfo, PriorityEntity, MovementTarget, PartyInfo, PlayersInfo, NPCInfo, MonstersInfo } from "./definitions/bots"
 import { dismantleItems, buyPots } from "./trade"
 import { AStarSmartMove } from "./astarsmartmove"
 
@@ -103,11 +103,6 @@ export abstract class Character {
 
     public movementTarget: MovementTarget
 
-    /** Information about the state of the game that is useful to us */
-    protected info: OtherInfo = {
-        players: {}
-    }
-
     protected async mainLoop(): Promise<void> {
         try {
             if (parent.character.ctype != "merchant") {
@@ -172,7 +167,6 @@ export abstract class Character {
         this.scareLoop()
         this.moveLoop()
         this.infoLoop()
-        this.sendInfoLoop()
         this.mainLoop()
     }
 
@@ -242,99 +236,6 @@ export abstract class Character {
         sessionStorage.setItem("monsters", JSON.stringify(monsters))
 
         setTimeout(() => { this.infoLoop() }, 5000)
-    }
-
-    /**
-     * Sends a bunch of CMs to players in our party list telling them information like what quest we have, what items we have, etc.
-     *
-     * @protected
-     * @memberof Character
-     */
-    protected sendInfoLoop(): void {
-        try {
-            let message: any
-
-            // Chests
-            // let chests: { [T in string]: ChestInfo } = {}
-            // for (const chestID in parent.chests) {
-            //     chests[chestID] = {
-            //         alpha: parent.chests[chestID].alpha,
-            //         x: parent.chests[chestID].x,
-            //         y: parent.chests[chestID].y,
-            //         map: parent.chests[chestID].map
-            //     }
-            // }
-            // message= {
-            //     "message": "chests",
-            //     "chests": chests
-            // }
-            // sendMassCM(parent.party_list, message)
-            // this.parse_cm(parent.character.name, message)
-
-            // Information about us
-            message = {
-                "message": "info",
-                "info": {
-                    "lastSeen": new Date(),
-                    "shouldSwitchServer": this.shouldSwitchServer(),
-                    "monsterHuntTargets": this.getMonsterHuntTargets(),
-                    "items": getInventory(),
-                    "attack": parent.character.attack,
-                    "frequency": parent.character.frequency,
-                    "goldm": parent.character.goldm,
-                    "last_ms": parent.character.last_ms,
-                    "luckm": parent.character.luckm,
-                    "map": parent.character.map,
-                    "x": parent.character.real_x,
-                    "y": parent.character.real_y,
-                    "s": parent.character.s
-                }
-            }
-            sendMassCM(parent.party_list, message)
-            this.parseCM(parent.character.name, message)
-
-            // Other players
-            for (const player of getEntities({ isPlayer: true }) as CharacterEntity[]) {
-                message = {
-                    "message": "player",
-                    "id": player.id,
-                    "info": {
-                        "lastSeen": new Date(),
-                        "rip": player.rip,
-                        "map": player.map,
-                        "x": player.real_x,
-                        "y": player.real_y,
-                        "s": player.s,
-                        "ctype": player.ctype
-                    }
-                }
-
-                sendMassCM(parent.party_list, message)
-                this.parseCM(parent.character.name, message)
-            }
-
-            // Important NPCs
-            for (const npc of ["Angel", "Kane"]) {
-                if (!parent.entities[npc]) continue
-                message = {
-                    "message": "npc",
-                    "id": npc,
-                    "info": {
-                        "lastSeen": new Date(),
-                        "map": parent.entities[npc].map,
-                        "x": parent.entities[npc].real_x,
-                        "y": parent.entities[npc].real_y
-                    }
-                }
-                if (parent.entities[npc]) {
-                    sendMassCM(parent.party_list, message)
-                    this.parseCM(parent.character.name, message)
-                }
-            }
-        } catch (error) {
-            console.error(error)
-        }
-        setTimeout(() => { this.sendInfoLoop() }, 5000)
     }
 
     public getMonsterHuntTargets(): MonsterType[] {
@@ -951,7 +852,9 @@ export abstract class Character {
             npcs[data.id as NPCName] = data.info
             sessionStorage.setItem("npcs", JSON.stringify(npcs))
         } else if (data.message == "player") {
-            this.info.players[data.id] = data.info
+            const players: PlayersInfo = JSON.parse(sessionStorage.getItem("players"), reviver)
+            players[data.id] = data.info
+            sessionStorage.setItem("players", JSON.stringify(players))
         } else if (data.message == "chests") {
             for (const chestID in data.chests) {
                 if (!parent.chests[chestID]) parent.chests[chestID] = data.chests[chestID]

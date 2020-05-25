@@ -41,11 +41,6 @@ export type PriorityEntity = {
     priority: number;
 }
 
-// TODO: Deprecate this, we're storing it in sessionStorage as 4 separate variables now
-export type OtherInfo = {
-    players: PlayersInfo;
-}
-
 export type MonstersInfo = {
     [T in MonsterType]?: PositionReal & {
         id: string;
