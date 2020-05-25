@@ -3,7 +3,7 @@ import { MonsterType, ItemName, PositionReal, BankPackType } from "./definitions
 import { upgradeIfMany, compoundIfMany, upgradeItem } from "./upgrade"
 import { sellUnwantedItems, exchangeItems, buyFromPonty, openMerchantStand, closeMerchantStand, buyScrolls } from "./trade"
 import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots, sleep, getEmptySlots, isInventoryFull, buyIfNone, reviver } from "./functions"
-import { MovementTarget, TargetPriorityList, BankItemInfo, NPCInfo } from "./definitions/bots"
+import { MovementTarget, TargetPriorityList, BankItemInfo, NPCInfo, PartyInfo } from "./definitions/bots"
 
 class Merchant extends Character {
     targetPriority: TargetPriorityList = {
@@ -90,10 +90,11 @@ class Merchant extends Character {
         }
 
         // If someone in our party isn't mlucked by us, go find them and mluck them.
-        for (const name in this.info.party) {
+        const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver)
+        for (const name in party) {
             if (name == parent.character.name) continue // Don't move to ourself
 
-            const player = parent.entities[name] ? parent.entities[name] : this.info.party[name]
+            const player = parent.entities[name] ? parent.entities[name] : party[name]
             if (player && player.s && (!player.s.mluck || player.s.mluck.f != parent.character.id)) {
                 set_message(`ML ${name}`)
                 return { position: player, range: G.skills.mluck.range - 20 }
@@ -115,9 +116,9 @@ class Merchant extends Character {
         }
 
         // If our players have lots of items, go offload
-        for (const name in this.info.party) {
+        for (const name in party) {
             if (name == parent.character.name) continue // Skip ourself
-            const player = this.info.party[name]
+            const player = party[name]
             if (player && player.items.length > 20) {
                 set_message(`INV ${name}`)
                 return { position: player, range: 240 }
@@ -131,6 +132,7 @@ class Merchant extends Character {
         }
 
         // If Angel and Kane haven't been seen in a while, go find them to update their position
+        // TODO: If we're near them and can't see them, delete them from the info.
         const npcs: NPCInfo = JSON.parse(sessionStorage.getItem("npcs"), reviver)
         if (npcs.Kane && Date.now() - npcs.Kane.lastSeen.getTime() > 240000) {
             set_message("Find Kane")

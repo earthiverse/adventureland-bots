@@ -105,7 +105,6 @@ export abstract class Character {
 
     /** Information about the state of the game that is useful to us */
     protected info: OtherInfo = {
-        party: {},
         players: {}
     }
 
@@ -341,10 +340,11 @@ export abstract class Character {
     public getMonsterHuntTargets(): MonsterType[] {
         const types: MonsterType[] = []
         let leastTimeRemaining = Number.MAX_VALUE
+        const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver)
         for (const memberName of parent.party_list) {
             // NOTE: TODO: Gonna check if not checking parent.entities improves the lagginess when we are between monster hunts.
             // const member = parent.entities[memberName] ? parent.entities[memberName] : this.info.party[memberName]
-            const member = this.info.party[memberName]
+            const member = party[memberName]
             if (!member) continue // No information yet
             if (!member.s.monsterhunt || member.s.monsterhunt.c == 0) continue // Character doesn't have a monster hunt, or it's (almost) finished
             if (!this.targetPriority[member.s.monsterhunt.id]) continue // Not in our target priority
@@ -410,6 +410,7 @@ export abstract class Character {
 
     protected loot(): void {
         let i = 0
+        const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver)
         for (const chestID in parent.chests) {
             const chest = parent.chests[chestID]
             if (distance(parent.character, chest) > 800) continue // Chests over a 800 radius have a penalty as per @Wizard in #feedback (Discord) on 11/26/2019
@@ -421,13 +422,13 @@ export abstract class Character {
                 const partyMember = parent.entities[id]
                 if (!partyMember) continue
                 if (distance(partyMember, chest) > 800) continue
-                if (!this.info.party[id]) continue
+                if (!party[id]) continue
 
                 if (["chest3", "chest4"].includes(chest.skin)) {
-                    if (parent.character.goldm >= this.info.party[id].goldm) continue
+                    if (parent.character.goldm >= party[id].goldm) continue
                 }
                 else {
-                    if (parent.character.luckm >= this.info.party[id].luckm) continue
+                    if (parent.character.luckm >= party[id].luckm) continue
                 }
 
                 shouldLoot = false
@@ -595,6 +596,7 @@ export abstract class Character {
         }
 
         // Monster Hunts -- Move to monster
+        const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver)
         const monsterHuntTargets: MonsterType[] = this.getMonsterHuntTargets()
         if (monsterHuntTargets.length) {
             const potentialTarget = monsterHuntTargets[0]
@@ -604,8 +606,8 @@ export abstract class Character {
                 // Check if other members are fighting it, too
                 const readyMembers = new Set<CharacterType>()
                 for (const memberName of parent.party_list) {
-                    if (!this.info.party[memberName] || !this.info.party[memberName].monsterHuntTargets) continue
-                    if (this.info.party[memberName].monsterHuntTargets[0] != potentialTarget) continue
+                    if (!party[memberName] || !party[memberName].monsterHuntTargets) continue
+                    if (party[memberName].monsterHuntTargets[0] != potentialTarget) continue
 
                     readyMembers.add(parent.party[memberName].type)
                 }
@@ -923,7 +925,9 @@ export abstract class Character {
         }
 
         if (data.message == "info") {
-            this.info.party[characterName] = data.info
+            const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver)
+            party[characterName] = data.info
+            sessionStorage.setItem("party", JSON.stringify(party))
         } else if (data.message == "monster") {
             /**
             let monster = get_targeted_monster()
