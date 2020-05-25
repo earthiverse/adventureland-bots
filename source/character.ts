@@ -1,6 +1,6 @@
 import FastPriorityQueue from "fastpriorityqueue"
 import { Entity, IPosition, ItemName, ItemInfo, SlotType, MonsterType, PositionReal, NPCName, SkillName, CharacterEntity, CharacterType, TradeSlotType } from "./definitions/adventureland"
-import { sendMassCM, findItems, getInventory, getRandomMonsterSpawn, getCooldownMS, isAvailable, calculateDamageRange, isInventoryFull, getPartyMemberTypes, getVisibleMonsterTypes, sleep, getEntities, reviver } from "./functions"
+import { findItems, getInventory, getRandomMonsterSpawn, getCooldownMS, isAvailable, calculateDamageRange, isInventoryFull, getPartyMemberTypes, getVisibleMonsterTypes, getEntities, reviver } from "./functions"
 import { TargetPriorityList, InventoryItemInfo, ItemLevelInfo, PriorityEntity, MovementTarget, PartyInfo, PlayersInfo, NPCInfo, MonstersInfo } from "./definitions/bots"
 import { dismantleItems, buyPots } from "./trade"
 import { AStarSmartMove } from "./astarsmartmove"
@@ -195,7 +195,8 @@ export abstract class Character {
 
         // Add info about other players we see
         const players: PlayersInfo = JSON.parse(sessionStorage.getItem("players"), reviver) || {}
-        for (const player of getEntities({ isPlayer: true }) as CharacterEntity[]) {
+        let changed = false
+        for (const player of getEntities({ isPlayer: true, isPartyMember: false }) as CharacterEntity[]) {
             players[player.id] = {
                 "lastSeen": new Date(),
                 "rip": player.rip,
@@ -205,11 +206,13 @@ export abstract class Character {
                 "s": player.s,
                 "ctype": player.ctype
             }
+            changed = true
         }
-        sessionStorage.setItem("players", JSON.stringify(players))
+        if (changed) sessionStorage.setItem("players", JSON.stringify(players))
 
         // Add info about NPCs
         const npcs: NPCInfo = JSON.parse(sessionStorage.getItem("npcs"), reviver) || {}
+        changed = false
         for (const npc of ["Angel", "Kane"] as NPCName[]) {
             if (!parent.entities[npc]) continue
             npcs[npc] = {
@@ -218,11 +221,13 @@ export abstract class Character {
                 "x": parent.entities[npc].real_x,
                 "y": parent.entities[npc].real_y
             }
+            changed = true
         }
-        sessionStorage.setItem("npcs", JSON.stringify(npcs))
+        if (changed) sessionStorage.setItem("npcs", JSON.stringify(npcs))
 
         // Add info about Monsters
         const monsters: MonstersInfo = JSON.parse(sessionStorage.getItem("monsters"), reviver) || {}
+        changed = false
         for (const entity of getEntities({ isMonster: true })) {
             if (!["goldenbat", "phoenix", "snowman"].includes(entity.mtype)) continue
             monsters[entity.mtype] = {
@@ -232,10 +237,11 @@ export abstract class Character {
                 "y": entity.real_y,
                 "map": entity.map
             }
+            changed = true
         }
-        sessionStorage.setItem("monsters", JSON.stringify(monsters))
+        if (changed) sessionStorage.setItem("monsters", JSON.stringify(monsters))
 
-        setTimeout(() => { this.infoLoop() }, 5000)
+        setTimeout(() => { this.infoLoop() }, 2000)
     }
 
     public getMonsterHuntTargets(): MonsterType[] {
