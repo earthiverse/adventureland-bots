@@ -276,6 +276,12 @@ class Priest extends Character {
         "squigtoad": {
             "priority": EASY
         },
+        "stoneworm": {
+            // Don't attack if we're walking by them, they hurt.
+            "holdAttackInEntityRange": true,
+            "holdAttackWhileMoving": true,
+            "priority": DIFFICULT
+        },
         "tortoise": {
             "priority": EASY
         },
