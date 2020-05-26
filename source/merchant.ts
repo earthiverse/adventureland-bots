@@ -206,7 +206,7 @@ class Merchant extends Character {
 
             await buyScrolls()
 
-            super.mainLoop()
+            await super.mainLoop()
         } catch (error) {
             console.error(error)
             setTimeout(async () => { this.mainLoop() }, 1000)

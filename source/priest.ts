@@ -339,10 +339,10 @@ class Priest extends Character {
             transferGoldToMerchant(process.env.MERCHANT, 100000)
             sellUnwantedItems(this.itemsToSell)
 
-            super.mainLoop()
+            await super.mainLoop()
         } catch (error) {
             console.error(error)
-            setTimeout(() => { this.mainLoop() }, 250)
+            setTimeout(async () => { this.mainLoop() }, 250)
         }
     }
 
@@ -398,14 +398,14 @@ class Priest extends Character {
     protected async attackLoop(): Promise<void> {
         try {
             if (parent.character.c.town) {
-                setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+                setTimeout(async () => { this.attackLoop() }, getCooldownMS("attack"))
                 return
             }
 
             if (parent.character.hp < parent.character.max_hp - parent.character.attack * 0.9) {
                 await heal(parent.character)
                 reduce_cooldown("attack", Math.min(...parent.pings))
-                setTimeout(() => { this.attackLoop() }, getCooldownMS("attack", true))
+                setTimeout(async () => { this.attackLoop() }, getCooldownMS("attack", true))
                 return
             }
 
@@ -423,16 +423,16 @@ class Priest extends Character {
             if (healTargets.size) {
                 await heal(parent.entities[healTargets.poll().id])
                 reduce_cooldown("attack", Math.min(...parent.pings))
-                setTimeout(() => { this.attackLoop() }, getCooldownMS("attack", true))
+                setTimeout(async () => { this.attackLoop() }, getCooldownMS("attack", true))
                 return
             }
         } catch (error) {
             console.error(error)
-            setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+            setTimeout(async () => { this.attackLoop() }, getCooldownMS("attack"))
             return
         }
 
-        super.attackLoop()
+        await super.attackLoop()
     }
 }
 

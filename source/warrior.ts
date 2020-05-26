@@ -290,10 +290,10 @@ class Warrior extends Character {
             transferGoldToMerchant(process.env.MERCHANT, 100000)
             sellUnwantedItems(this.itemsToSell)
 
-            super.mainLoop()
+            await super.mainLoop()
         } catch (error) {
             console.error(error)
-            setTimeout(() => { this.mainLoop() }, 250)
+            setTimeout(async () => { this.mainLoop() }, 250)
         }
     }
     protected scareLoop(): void {

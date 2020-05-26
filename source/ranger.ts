@@ -390,10 +390,10 @@ class Ranger extends Character {
             //     this.switchServerCheck = Date.now()
             // }
 
-            super.mainLoop()
+            await super.mainLoop()
         } catch (error) {
             console.error(error)
-            setTimeout(() => { this.mainLoop() }, 250)
+            setTimeout(async () => { this.mainLoop() }, 250)
         }
     }
 
@@ -481,7 +481,7 @@ class Ranger extends Character {
                     await use_skill("5shot", fiveshotTargets)
                     reduce_cooldown("attack", Math.min(...parent.pings))
                     // TODO: When promises resolve on use_skill, change getCoolDownMS to not use ping
-                    setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+                    setTimeout(async () => { this.attackLoop() }, getCooldownMS("attack"))
                     return
                 }
             }
@@ -499,7 +499,7 @@ class Ranger extends Character {
                     await use_skill("3shot", threeshotTargets)
                     reduce_cooldown("attack", Math.min(...parent.pings))
                     // TODO: When promises resolve on use_skill, change getCoolDownMS to not use ping
-                    setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+                    setTimeout(async () => { this.attackLoop() }, getCooldownMS("attack"))
                     return
                 }
             }
@@ -513,18 +513,18 @@ class Ranger extends Character {
                 await use_skill("piercingshot", firstTarget)
                 reduce_cooldown("attack", Math.min(...parent.pings))
                 // TODO: When promises resolve on use_skill, change getCoolDownMS to not use ping
-                setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+                setTimeout(async () => { this.attackLoop() }, getCooldownMS("attack"))
                 return
             }
         } catch (error) {
             if (!["cooldown", "not_found", "disabled"].includes(error.reason))
                 console.error(error)
-            setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+            setTimeout(async () => { this.attackLoop() }, getCooldownMS("attack"))
             return
         }
 
         // Can't do a special attack, so let's do a normal one
-        super.attackLoop()
+        await super.attackLoop()
     }
 
     createParty(members: string[]): void {

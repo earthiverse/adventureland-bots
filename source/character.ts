@@ -358,15 +358,15 @@ export abstract class Character {
             }
         } catch (error) {
             if (error.reason == "cooldown") {
-                setTimeout(() => { this.attackLoop() }, Math.min(...parent.pings) - error.remaining)
+                setTimeout(async () => { this.attackLoop() }, Math.min(...parent.pings) - error.remaining)
                 return
             } else if (!["not_found", "disabled"].includes(error.reason)) {
                 console.error(error)
             }
-            setTimeout(() => { this.attackLoop() }, getCooldownMS("attack"))
+            setTimeout(async () => { this.attackLoop() }, getCooldownMS("attack"))
             return
         }
-        setTimeout(() => { this.attackLoop() }, getCooldownMS("attack", true))
+        setTimeout(async () => { this.attackLoop() }, getCooldownMS("attack", true))
     }
 
     protected scareLoop(): void {
