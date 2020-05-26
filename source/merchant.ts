@@ -188,7 +188,6 @@ class Merchant extends Character {
             if (numItems < 25)
                 exchangeItems(this.itemsToExchange)
 
-            game_log("banking!?")
             await this.newBankStuff()
 
             if (!parent.character.moving) {
