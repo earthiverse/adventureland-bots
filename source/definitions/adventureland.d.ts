@@ -26,7 +26,7 @@ declare global {
     server_identifier: ServerIdentifier;
     server_region: ServerRegion;
     socket: SocketIO.Socket;
-    S: { [T in MonsterType]?: IPosition & {
+    S: { [T in MonsterName]?: IPosition & {
       map: string;
       live: boolean;
       hp: number;
@@ -38,28 +38,191 @@ declare global {
     };
   }
 
+  /**
+   * Accept a magiport request from a mage
+   * @param name The name of the mage offering a magiport
+   */
+  function accept_magiport(name: string): void
+  /**
+   * Accept the party invititation of another character (i.e. join their party)
+   * @param name The name of the character offering a party invite
+   */
+  function accept_party_invite(name: string): void
+  /**
+   * Accept the request of another character to join your party (i.e. let them join your party)
+   * @param name The name of the character to allow in to your party
+   */
+  function accept_party_request(name: string): void
+  /**
+   * Activate an item (likely a booster)
+   * @param inventoryPosition The position of the item in your inventory
+   */
+  function activate(inventoryPosition: number): void
+  /**
+   * Attack another monster or a player with your normal attack
+   * @param target The target entity to attack (`parent.entities`)
+   * @returns A promise containing information about the attack, such as the projectile, or a promise cointaining the error why the attack didn't work
+   */
+  // TODO: Change the "any" to the promise that this function returns
   function attack(target: Entity): Promise<any>
-  // TODO: Figure out what this function returns
-  function auto_craft(name: ItemName): any
-  function bank_deposit(amount: number)
-  function bank_store(inventoryPosition: number, pack?: BankPackType, packPosition?: number)
-  function bank_withdraw(amount: number)
-  function buy_with_gold(name: ItemName, quantity: number): Promise<any>
-  //TODO: Figure out this function and its arguments...
-  function can_move(x: any, y?: any)
-  function can_move_to(location: PositionReal): boolean
+  /**
+   * Crafts the given item if you can craft that item, you have the required items, and you have enough gold.
+   * @param name The name of the item to craft (`G.craft`)
+   * @returns A string containing the basic reason it failed, or nothing upon success
+   */
+  function auto_craft(name: ItemName): string | void
+  /**
+   * Deposits the given amount of gold in the bank. You must be in the bank to actually deposit gold.
+   * @param amount The amount of gold to deposit
+   */
+  function bank_deposit(amount: number): void
+  /**
+   * Deposits the given item in to the given bank. If no `pack` and `packPosition` is given, the game will try to deposit in to the first available slot. You must be in the bank to actually deposit items.
+   * @param inventoryPosition The position of the item in your inventory
+   * @param pack The bank pack that you want to deposit the item in to
+   * @param packPosition The position of the item in the bank pack you want to deposit the item in to
+   */
+  function bank_store(inventoryPosition: number, pack?: BankPackType, packPosition?: number): void
+  /**
+   * Withdraws the given amount of gold from the bank. You must be in the bank to actually withdraw gold.
+   * @param amount The amount of gold to withdraw
+   */
+  function bank_withdraw(amount: number): void
+  /**
+   * Buy an item from an NPC. This function can buy things with gold or shells.
+   * @param item The name of the item you wish to purchase (`G.items`)
+   * @param quantity How many items to buy. The default is to buy one item
+   */
+  // TODO: Change the "any" to the promise that this function returns
+  function buy(item: ItemName, quantity?: number): Promise<any>
+  /**
+   * Buy an item from an NPC using only gold. If you want to buy things with shells, use `buy_with_shells`.
+   * @param item The name of the item you wish to purchase (`G.items`)
+   * @param quantity How many items to buy. The default is to buy one item
+   */
+  // TODO: Change the "any" to the promise that this function returns
+  function buy_with_gold(item: ItemName, quantity?: number): Promise<any>
+  /**
+   * Buy an item from an NPC using only shells. If you want to buy things with gold, use `buy_with_gold`
+   * @param item The name of the item you wish to purchase (`G.items`)
+   * @param quantity How many items to buy. The default is to buy one item
+   */
+  // TODO: Change the "any" to the promise that this function returns
+  function buy_with_shells(item: ItemName, quantity?: number): Promise<any>
+  /**
+   * Check if you can attack the given target. This function also checks status conditions by calling `parent.is_disabled(character)` which checks statuses such as `rip` and `stunned`.
+   * NOTE: If you just want to check the cooldown, consider using `is_on_cooldown("attack")`
+   * @param target The target entity to check if you can attack (`parent.entities`)
+   * @returns TRUE if the target is attackable, FALSE otherwise.
+   */
+  function can_attack(target: Entity): boolean
+  /**
+   * Check if you can heal the given target.
+   * @param target The target entity to check if you can heal (`parent.entities`)
+   */
+  function can_heal(target: Entity): boolean
+  /**
+   * Checks if the you can move from `[position.x, position.y] to [position.going_x, position.going_y]
+   * @param entity The position you want to check is movable
+   * @returns TRUE if you can move there, FALSE otherwise
+   */
+  function can_move(position: PositionMovable & { base: any }): boolean
+  /**
+   * Checks if you can move your character to the given destination on your current map
+   * @param destination A position object containing the destination coordinates
+   * @returns TRUE if you can move there, FALSE otherwise
+   */
+  function can_move_to(destination: { real_x: number, real_y: number }): boolean
+  /**
+   * Checks if you can move your character to the given destination on your current map
+   * @param x The x-coordinate that you want to move to
+   * @param y The y-coordinate that you want to move to
+   * @returns TRUE if you can move there, FALSE otherwise
+   */
   function can_move_to(x: number, y: number): boolean
-  function can_transport(entity: Entity)
-  /** Checks the class and cooldown */
+  /**
+   * Checks if the given entity can transport. If given your own character, it will also check if you are already transporting
+   * @param entity The entity to check
+   * @returns TRUE if you are not currently transporting, and can transport, FALSE otherwise
+   */
+  function can_transport(entity: Entity): boolean
+  /**
+   * Checks if the given skill is on cooldown. As it is right now [2020-05-26], this is a duplicate of `is_on_cooldown()`.
+   * @param skill The skill to check
+   * @param returns TRUE if not on cooldown, FALSE otherwise.
+   */
   function can_use(skill: SkillName): boolean
-  //TODO: Figure out this function and its arguments...
-  function can_use_door(f: MapName, door: any, current_x: number, current_y: number)
+  /**
+   * Checks if you can use the given door from the given position
+   * @param map A given map (from `G.maps`)
+   * @param door The given door (from `G.maps[map].doors`)
+   * @param x The x position on the map
+   * @param y The y position on the map
+   * @returns TRUE if the door can be used from the given position, FALSE otherwise
+   */
+  function can_use_door(map: MapName, door: DoorInfo, x: number, y: number): boolean
+  /**
+   * Checks if the given entity can walk (i.e. move). If given your own character, it will also check if you are already transporting.
+   * @param entity The entity to check
+   * @returns TRUE if you are not currently transporting, and can walk, FALSE otherwise
+   */
   function can_walk(entity: Entity): boolean
-  function change_server(region: ServerRegion, identifier: ServerIdentifier)
-  function change_target(target: Entity, public: boolean)
-  /** Clears all user made drawings */
-  function clear_drawings()
-  function compound(itemInventoryPosition1: number, itemInventoryPosition2: number, itemInventoryPosition3: number, scrollInventoryPosition: number, offeringInventoryPosition?: number): Promise<any>
+  /**
+   * Changes servers. This will reload the page (the URL will change to match the server given), which means your code will also reload.
+   * @param region The region to change to (e.g. ASIA)
+   * @param identifier The server identifier to change to (e.g. PVP)
+   */
+  function change_server(region: ServerRegion, identifier: ServerIdentifier): void
+  /**
+   * Changes the target of the player. Use in association with `get_targeted_monster()`.
+   * @param target A given target (from `parent.entities`)
+   * @param public If true, it will send the new target to the server.
+   */
+  function change_target(target: Entity, public: boolean): void
+  /**
+   * Clears all drawings from the window. Use this function to clean up `draw_circle` and `draw_line`.
+   */
+  function clear_drawings(): void
+  /**
+   * Runs the given code snippet for the given character.
+   * @param character The name of the character
+   * @param code The code snippet to run
+   */
+  // TODO: I think the code snippet is the actual code, not the name of a saved piece of code, but I need to confirm.
+  function command_character(character: string, code: string): void
+  /**
+   * Compounds the three items for a chance at obtaining 1 higher level item of the same kind.
+   * @param item1 The inventory position of the first item
+   * @param item2 The inventory position of the second item
+   * @param item3 The inventory position of the third item
+   * @param scroll The inventory position of the scroll to use to combine the three items
+   * @param offering The inventory position of the offering (e.g. Primordial Essence) to use
+   */
+  // TODO: Change the "any" to the promise that this function returns
+  function compound(item1: number, item2: number, item3: number, scroll: number, offering?: number): Promise<any>
+  /**
+   * Consumes the given item (e.g. Candy Pop)
+   * @param item The inventory position of the item
+   */
+  function consume(item: number): void
+  /**
+   * Crafts the given items. Note: Some recipes might require gold to craft, too.
+   * @param item0 The inventory position of the item to be put in the top left crafting slot
+   * @param item1 The inventory position of the item to be put in the top middle crafting slot
+   * @param item2 The inventory position of the item to be put in the top right crafting slot
+   * @param item3 The inventory position of the item to be put in the center left crafting slot
+   * @param item4 The inventory position of the item to be put in the center middle crafting slot
+   * @param item5 The inventory position of the item to be put in the center right crafting slot
+   * @param item6 The inventory position of the item to be put in the bottom left crafting slot
+   * @param item7 The inventory position of the item to be put in the bottom middle crafting slot
+   * @param item8 The inventory position of the item to be put in the bottom right crafting slot
+   */
+  function craft(item0: number, item1?: number, item2?: number, item3?: number, item4?: number, item5?: number, item6?: number, item7?: number, item8?: number): void
+  /**
+   * Overrides the character to walk at `Math.min(parent.character.speed, cruise_speed)` speed.
+   * @param speed The speed at which to walk at
+   */
+  function cruise(speed: number): void
   /** Feed this function a value like (character.apiercing - target.armor) and it spits out a multiplier so you can adjust your expected damage */
   function damage_multiplier(difference: number): number
   function distance(from: IPosition | PositionReal, to: IPosition | PositionReal): number
@@ -91,7 +254,7 @@ declare global {
   function send_party_request(name: string)
   function set_message(text: string, color?: string)
   function simple_distance(from: IPosition | PositionReal, to: IPosition | PositionReal): number
-  function smart_move(destination: IPosition | MapName | MonsterType, callback?: () => void)
+  function smart_move(destination: IPosition | MapName | MonsterName, callback?: () => void)
   function start_character(name: string, codeName?: string)
   function stop(action?: string)
   function stop_character(name: string)
@@ -131,7 +294,7 @@ declare global {
   }
 
   let G: {
-    base_gold: { [T in MonsterType]?: {
+    base_gold: { [T in MonsterName]?: {
       /** The base amount of gold this monster drops if you kill it in the given map */
       [T in MapName]?: number
     } };
@@ -181,8 +344,7 @@ declare global {
       }
     };
     maps: { [T in MapName]: {
-      /** The 7th position can be "locked" or "ulocked"? The 8th can be "complicated"? */
-      doors: [number, number, number, number, MapName, number?, number?, string?, string?][];
+      doors: DoorInfo[];
       /** The name of the map, if this changes, the map layout probably changed. */
       key: string;
       instance: boolean;
@@ -190,7 +352,7 @@ declare global {
         count: number;
         boundary?: [number, number, number, number];
         boundaries?: [MapName, number, number, number, number][];
-        type: MonsterType;
+        type: MonsterName;
       }[];
       /** Not sure what this means. Might mean that only one character of the players can be here at a time. */
       mount: boolean;
@@ -205,7 +367,7 @@ declare global {
       /** x, y, direction to face character */
       spawns: [number, number, number?][];
     } };
-    monsters: { [T in MonsterType]: GMonster };
+    monsters: { [T in MonsterName]: GMonster };
     npcs: { [T in NPCType]: {
       id: NPCType;
       /** Full name of NPC */
@@ -340,7 +502,7 @@ export type CharacterEntity = Entity & {
   xrange: number;
 }
 
-export type Entity = PositionReal & {
+export type Entity = PositionMovable & {
   /** If set, attacks only do 1 damage */
   "1hp": number;
   /** Only set if the entity is a monster */
@@ -360,8 +522,6 @@ export type Entity = PositionReal & {
   evasion: number;
   /** Related to attack speed, I think it's equal to attacks per second */
   frequency: number;
-  going_x: number;
-  going_y: number;
   hp: number;
   /** This value is also the key for the object in parent.entities */
   id: string;
@@ -377,7 +537,7 @@ export type Entity = PositionReal & {
   /** The MP cost for doing an attack */
   mp_cost: number;
   /** If the entity is a monster, it is set */
-  mtype?: MonsterType;
+  mtype?: MonsterName;
   /** Contains the full name of the monster */
   name: string;
   /** Is set if the entity is an NPC, undefined otherwise */
@@ -442,6 +602,12 @@ export type ItemInfo = {
   rid?: string;
 }
 
+/**
+  * The 7th position can be "locked" or "ulocked"? The 8th can be "complicated"?
+ */
+// TODO: Decode the elements of this
+export type DoorInfo = [number, number, number, number, MapName, number?, number?, string?, string?]
+
 export type StatusInfo = {
   [T in ConditionName]?: {
     /** How many ms left before this condition expires */
@@ -461,7 +627,7 @@ export type StatusInfo = {
       /** Number of monsters remaining to kill */
       c: number;
       /** What monster we have to kill */
-      id: MonsterType;
+      id: MonsterName;
     };
     citizen0aura?: {
       luck: number;
@@ -475,6 +641,13 @@ export type PositionReal = IPosition & {
   map: MapName;
   real_x?: number;
   real_y?: number;
+}
+
+export type PositionMovable = PositionReal & {
+  from_x?: number;
+  from_y?: number;
+  going_x: number;
+  going_y: number;
 }
 
 export type PositionSmart = IPosition & {
@@ -555,7 +728,7 @@ export type WeaponType =
   | "wand"
   | "wblade"
 
-export type MonsterType =
+export type MonsterName =
   | "arcticbee"
   | "armadillo"
   | "bat"

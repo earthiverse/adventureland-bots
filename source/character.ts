@@ -1,5 +1,5 @@
 import FastPriorityQueue from "fastpriorityqueue"
-import { Entity, IPosition, ItemName, ItemInfo, SlotType, MonsterType, PositionReal, NPCName, SkillName, CharacterEntity, CharacterType, TradeSlotType } from "./definitions/adventureland"
+import { Entity, IPosition, ItemName, ItemInfo, SlotType, MonsterName, PositionReal, NPCName, SkillName, CharacterEntity, CharacterType, TradeSlotType } from "./definitions/adventureland"
 import { findItems, getInventory, getRandomMonsterSpawn, getCooldownMS, isAvailable, calculateDamageRange, isInventoryFull, getPartyMemberTypes, getVisibleMonsterTypes, getEntities, reviver } from "./functions"
 import { TargetPriorityList, InventoryItemInfo, ItemLevelInfo, PriorityEntity, MovementTarget, PartyInfo, PlayersInfo, NPCInfo, MonstersInfo } from "./definitions/bots"
 import { dismantleItems, buyPots } from "./trade"
@@ -10,7 +10,7 @@ export abstract class Character {
     public abstract targetPriority: TargetPriorityList
 
     /** The default target if there's nothing else to attack */
-    protected abstract mainTarget: MonsterType
+    protected abstract mainTarget: MonsterName
 
     protected astar = new AStarSmartMove()
 
@@ -64,7 +64,7 @@ export abstract class Character {
         // Orbs
         "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull",
         // Shields
-        "t2quiver", "lantern", "mshield", "quiver", "xshield",
+        "t2quiver", "lantern", "mshield", "quiver", "sshield", "xshield",
         // Capes
         "angelwings", "bcape", "cape", "ecape", "stealthcape",
         // Shoes
@@ -244,8 +244,8 @@ export abstract class Character {
         setTimeout(() => { this.infoLoop() }, 2000)
     }
 
-    public getMonsterHuntTargets(): MonsterType[] {
-        const types: MonsterType[] = []
+    public getMonsterHuntTargets(): MonsterName[] {
+        const types: MonsterName[] = []
         let leastTimeRemaining = Number.MAX_VALUE
         const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver) || {}
         for (const memberName of parent.party_list) {
@@ -268,7 +268,7 @@ export abstract class Character {
 
             // Sort by time left.
             // TODO: Improve prioritization. For example, frogs are easy, so do them first
-            const timeLeft = member.s.monsterhunt.ms - (Date.now() - new Date(member.last_ms).getTime())
+            const timeLeft = member.s.monsterhunt.ms - (Date.now() - member.last_ms.getTime())
             if (timeLeft < leastTimeRemaining) {
                 leastTimeRemaining = timeLeft
                 types.unshift(member.s.monsterhunt.id)
@@ -290,9 +290,9 @@ export abstract class Character {
         // Doable event monster
         for (const monster in parent.S) {
             if (monster == "grinch") continue // The grinch is too strong.
-            if (parent.S[monster as MonsterType].hp / parent.S[monster as MonsterType].max_hp > 0.9) continue // Still at a high HP
-            if (!parent.S[monster as MonsterType].live) continue
-            if (this.targetPriority[monster as MonsterType]) return false // We can do an event monster!
+            if (parent.S[monster as MonsterName].hp / parent.S[monster as MonsterName].max_hp > 0.9) continue // Still at a high HP
+            if (!parent.S[monster as MonsterName].live) continue
+            if (this.targetPriority[monster as MonsterName]) return false // We can do an event monster!
         }
 
         // // +1000% luck and gold
@@ -419,7 +419,7 @@ export abstract class Character {
         setTimeout(() => { this.scareLoop() }, getCooldownMS("scare"))
     }
 
-    protected getMovementLocation(mtype: MonsterType): PositionReal {
+    protected getMovementLocation(mtype: MonsterName): PositionReal {
         if (!this.targetPriority[mtype]) return // Not a target we want to move to
         if (this.targetPriority[mtype].farmingPosition && this.targetPriority[mtype].holdPositionFarm) return this.targetPriority[mtype].farmingPosition // We have a specific position to farm these monsters
         if (getVisibleMonsterTypes().has(mtype)) return // There's one nearby, we don't need to move
@@ -463,8 +463,8 @@ export abstract class Character {
         // Special Monsters -- Move to monster
         const monsters: MonstersInfo = JSON.parse(sessionStorage.getItem("monsters"), reviver) || {}
         for (const mtype in monsters) {
-            if (!this.targetPriority[mtype as MonsterType]) continue // Not a target we can do
-            const info = monsters[mtype as MonsterType]
+            if (!this.targetPriority[mtype as MonsterName]) continue // Not a target we can do
+            const info = monsters[mtype as MonsterName]
 
             // Update info if we can see it
             const entityInfo = parent.entities[info.id]
@@ -475,11 +475,11 @@ export abstract class Character {
 
             if (distance(parent.character, info) < 100 && !entityInfo) {
                 // We got close to it, but we can't see it...
-                delete monsters[mtype as MonsterType]
+                delete monsters[mtype as MonsterName]
                 sessionStorage.setItem("monsters", JSON.stringify(monsters))
             } else {
                 set_message(`SP ${mtype}`)
-                return { target: mtype as MonsterType, position: info, range: parent.character.range }
+                return { target: mtype as MonsterName, position: info, range: parent.character.range }
             }
         }
 
@@ -497,15 +497,15 @@ export abstract class Character {
 
         // Event Monsters -- Move to monster
         for (const mtype in parent.S) {
-            if (!parent.S[mtype as MonsterType].live) continue // Not alive
-            if (!this.targetPriority[mtype as MonsterType]) continue // Not a target
+            if (!parent.S[mtype as MonsterName].live) continue // Not alive
+            if (!this.targetPriority[mtype as MonsterName]) continue // Not a target
             set_message(mtype)
-            return { target: mtype as MonsterType, position: parent.S[mtype as MonsterType], range: parent.character.range }
+            return { target: mtype as MonsterName, position: parent.S[mtype as MonsterName], range: parent.character.range }
         }
 
         // Monster Hunts -- Move to monster
         const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver) || {}
-        const monsterHuntTargets: MonsterType[] = this.getMonsterHuntTargets()
+        const monsterHuntTargets: MonsterName[] = this.getMonsterHuntTargets()
         if (monsterHuntTargets.length) {
             const potentialTarget = monsterHuntTargets[0]
 
@@ -593,7 +593,7 @@ export abstract class Character {
             }
 
             // Don't do anything if we're holding position for this monster
-            if (this.targetPriority[this.movementTarget.target as MonsterType] && this.targetPriority[this.movementTarget.target as MonsterType].holdPositionFarm) {
+            if (this.targetPriority[this.movementTarget.target as MonsterName] && this.targetPriority[this.movementTarget.target as MonsterName].holdPositionFarm) {
                 setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }
@@ -852,7 +852,7 @@ export abstract class Character {
             })
              */
             const monsters: MonstersInfo = JSON.parse(sessionStorage.getItem("monsters"), reviver) || {}
-            monsters[data.id as MonsterType] = data.info
+            monsters[data.id as MonsterName] = data.info
             sessionStorage.setItem("monsters", JSON.stringify(monsters))
         } else if (data.message == "npc") {
             const npcs: NPCInfo = JSON.parse(sessionStorage.getItem("npcs"), reviver) || {}
@@ -875,8 +875,8 @@ export abstract class Character {
             const items = getInventory()
 
             // Equip the items we want for this monster
-            if (this.movementTarget.target && this.targetPriority[this.movementTarget.target as MonsterType]) {
-                for (const idealItem of this.targetPriority[this.movementTarget.target as MonsterType].equip || []) {
+            if (this.movementTarget.target && this.targetPriority[this.movementTarget.target as MonsterName]) {
+                for (const idealItem of this.targetPriority[this.movementTarget.target as MonsterName].equip || []) {
                     let hasItem = false
                     for (const slot in parent.character.slots) {
                         const slotInfo = parent.character.slots[slot as SlotType]

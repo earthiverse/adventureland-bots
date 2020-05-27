@@ -1,4 +1,4 @@
-import { ItemInfo, MonsterType, ItemName, IPosition, MapName, Entity, PositionReal, SkillName, BankPackType, CharacterType } from "./definitions/adventureland"
+import { ItemInfo, MonsterName, ItemName, IPosition, MapName, Entity, PositionReal, SkillName, BankPackType, CharacterType } from "./definitions/adventureland"
 import { InventoryItemInfo, EmptyBankSlots, MonsterSpawnPosition } from "./definitions/bots"
 
 export function sleep(ms: number): Promise<void> {
@@ -25,9 +25,9 @@ export function isPlayer(entity: Entity): boolean {
     return entity.type == "character" && !isNPC(entity)
 }
 
-export async function startKonami(): Promise<MonsterType> {
-    const result = new Promise<MonsterType>((resolve) => {
-        parent.socket.once("game_response", (response: { response: string; monster: MonsterType }) => {
+export async function startKonami(): Promise<MonsterName> {
+    const result = new Promise<MonsterName>((resolve) => {
+        parent.socket.once("game_response", (response: { response: string; monster: MonsterName }) => {
             resolve(response.monster)
         })
         parent.socket.emit("move", { "key": "up" })
@@ -43,7 +43,7 @@ export async function startKonami(): Promise<MonsterType> {
         parent.socket.emit("interaction", { "key": "enter" })
     })
 
-    const timeout: Promise<MonsterType> = new Promise(function (resolve, reject) {
+    const timeout: Promise<MonsterName> = new Promise(function (resolve, reject) {
         setTimeout(reject, 5000)
     })
 
@@ -265,7 +265,7 @@ export function getEntities(
         isCtype?: CharacterType;
         isMonster?: boolean;
         /** If provided a list of MonsterTypes, it will return entities only matching those types */
-        isMonsterType?: MonsterType[];
+        isMonsterType?: MonsterName[];
         isMoving?: boolean;
         isNPC?: boolean;
         isPartyMember?: boolean;
@@ -355,8 +355,8 @@ export function getEntities(
     return entities
 }
 
-export function getVisibleMonsterTypes(): Set<MonsterType> {
-    const monsterTypes = new Set<MonsterType>()
+export function getVisibleMonsterTypes(): Set<MonsterName> {
+    const monsterTypes = new Set<MonsterName>()
     for (const id in parent.entities) {
         const entity = parent.entities[id]
         if (entity.mtype) monsterTypes.add(entity.mtype)
@@ -370,7 +370,7 @@ export function sendMassCM(names: string[], data: any): void {
     }
 }
 
-export function getMonsterSpawns(type: MonsterType): PositionReal[] {
+export function getMonsterSpawns(type: MonsterName): PositionReal[] {
     const spawnLocations: PositionReal[] = []
     for (const id in G.maps) {
         const map = G.maps[id as MapName]
@@ -390,12 +390,12 @@ export function getMonsterSpawns(type: MonsterType): PositionReal[] {
     return spawnLocations
 }
 
-export function getRandomMonsterSpawn(type: MonsterType): PositionReal {
+export function getRandomMonsterSpawn(type: MonsterName): PositionReal {
     const monsterSpawns = getMonsterSpawns(type)
     return monsterSpawns[Math.floor(Math.random() * monsterSpawns.length)]
 }
 
-export function getClosestMonsterSpawn(type: MonsterType): PositionReal {
+export function getClosestMonsterSpawn(type: MonsterName): PositionReal {
     const monsterSpawns = getMonsterSpawns(type)
     let closestSpawnDistance = Number.MAX_VALUE
     let closestSpawn

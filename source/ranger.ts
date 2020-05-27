@@ -1,5 +1,5 @@
 import { Character } from "./character"
-import { MonsterType, Entity } from "./definitions/adventureland"
+import { MonsterName, Entity } from "./definitions/adventureland"
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from "./trade"
 import { TargetPriorityList } from "./definitions/bots"
 import { isPlayer, getCooldownMS, isAvailable, calculateDamageRange, getEntities } from "./functions"
@@ -338,7 +338,7 @@ class Ranger extends Character {
             "equip": ["firebow", "t2quiver"]
         }
     }
-    mainTarget: MonsterType = "scorpion"
+    mainTarget: MonsterName = "scorpion"
     // switchServerCheck = Date.now()
 
     run(): void {

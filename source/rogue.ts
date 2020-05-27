@@ -1,5 +1,5 @@
 import { Character } from "./character"
-import { MonsterType } from "./definitions/adventureland"
+import { MonsterName } from "./definitions/adventureland"
 import { TargetPriorityList } from "./definitions/bots"
 import { transferItemsToMerchant, transferGoldToMerchant, sellUnwantedItems } from "./trade"
 import { getEntities, isAvailable, calculateDamageRange, getCooldownMS } from "./functions"
@@ -28,7 +28,7 @@ class Rogue extends Character {
             "priority": 100
         }
     }
-    mainTarget: MonsterType = "goo"
+    mainTarget: MonsterName = "goo"
 
     constructor() {
         super()

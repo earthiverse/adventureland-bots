@@ -1,5 +1,5 @@
 import { Character } from "./character"
-import { MonsterType, Entity } from "./definitions/adventureland"
+import { MonsterName, Entity } from "./definitions/adventureland"
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from "./trade"
 import { TargetPriorityList } from "./definitions/bots"
 import { getCooldownMS, calculateDamageRange, isAvailable, findItems, getEntities } from "./functions"
@@ -260,7 +260,7 @@ class Warrior extends Character {
             "equip": ["basher"]
         },
     }
-    mainTarget: MonsterType = "scorpion"
+    mainTarget: MonsterName = "scorpion"
 
     constructor() {
         super()

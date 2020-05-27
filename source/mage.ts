@@ -1,7 +1,7 @@
 import { Character } from "./character"
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from "./trade"
 import { TargetPriorityList } from "./definitions/bots"
-import { MonsterType } from "./definitions/adventureland"
+import { MonsterName } from "./definitions/adventureland"
 import { getCooldownMS, isAvailable, getEntities } from "./functions"
 
 const DIFFICULT = 10
@@ -265,7 +265,7 @@ class Mage extends Character {
             }
         }
     }
-    mainTarget: MonsterType = "prat";
+    mainTarget: MonsterName = "prat";
 
     run(): void {
         super.run()

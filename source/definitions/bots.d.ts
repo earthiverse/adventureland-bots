@@ -1,7 +1,7 @@
-import { ItemInfo, MonsterType, PositionReal, Entity, NPCName, StatusInfo, BankPackType, ItemName, CharacterType, NPCType, IPosition } from "./adventureland"
+import { ItemInfo, MonsterName, PositionReal, Entity, NPCName, StatusInfo, BankPackType, ItemName, CharacterType, NPCType, IPosition } from "./adventureland"
 
 export type TargetPriorityList = {
-    [T in MonsterType]?: TargetPriorityInfo;
+    [T in MonsterName]?: TargetPriorityInfo;
 };
 
 export interface TargetPriorityInfo {
@@ -22,13 +22,13 @@ export interface TargetPriorityInfo {
 }
 
 export type MovementTarget = {
-    target?: MonsterType | NPCType | CharacterType;
+    target?: MonsterName | NPCType | CharacterType;
     position?: PositionReal;
     range?: number;
 }
 
 export type MonsterSpawnPosition = PositionReal & {
-    monster: MonsterType;
+    monster: MonsterName;
 }
 
 export type EmptyBankSlots = {
@@ -42,7 +42,7 @@ export type PriorityEntity = {
 }
 
 export type MonstersInfo = {
-    [T in MonsterType]?: PositionReal & {
+    [T in MonsterName]?: PositionReal & {
         id: string;
         lastSeen: Date;
     }
@@ -58,7 +58,7 @@ export type PartyInfo = {
     [T in string]?: PositionReal & {
         lastSeen: Date;
         shouldSwitchServer: boolean;
-        monsterHuntTargets: MonsterType[];
+        monsterHuntTargets: MonsterName[];
         items: InventoryItemInfo[];
         goldm: number;
         last_ms: Date;

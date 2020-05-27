@@ -1,5 +1,5 @@
 import { Character } from "./character"
-import { MonsterType, ItemName, PositionReal, BankPackType } from "./definitions/adventureland"
+import { MonsterName, ItemName, PositionReal, BankPackType } from "./definitions/adventureland"
 import { upgradeIfMany, compoundIfMany, upgradeItem } from "./upgrade"
 import { sellUnwantedItems, exchangeItems, buyFromPonty, openMerchantStand, closeMerchantStand, buyScrolls } from "./trade"
 import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots, sleep, getEmptySlots, isInventoryFull, buyIfNone, reviver } from "./functions"
@@ -26,7 +26,7 @@ class Merchant extends Character {
             "priority": 1
         }
     }
-    mainTarget: MonsterType = null;
+    mainTarget: MonsterName = null;
 
     constructor() {
         super()
@@ -81,12 +81,12 @@ class Merchant extends Character {
 
         // Event Monsters -- Move to monster
         for (const mtype in parent.S) {
-            const info = parent.S[mtype as MonsterType]
+            const info = parent.S[mtype as MonsterName]
             if (!info.live) continue // Not alive
             if (info.hp > info.max_hp / 2) continue // Not low health
             if (!info.target) continue // Not targeting anyone, nobody is probably attacking it
             set_message(mtype)
-            return { target: mtype as MonsterType, position: info, range: 50 }
+            return { target: mtype as MonsterName, position: info, range: 50 }
         }
 
         // If someone in our party isn't mlucked by us, go find them and mluck them.

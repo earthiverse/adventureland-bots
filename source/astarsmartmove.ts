@@ -92,10 +92,8 @@ export class AStarSmartMove {
         return {
             map: map,
             x: x,
-            // eslint-disable-next-line @typescript-eslint/camelcase
             real_x: x,
             y: y,
-            // eslint-disable-next-line @typescript-eslint/camelcase
             real_y: y
         }
     }
@@ -188,9 +186,7 @@ export class AStarSmartMove {
                     map: iPath.map,
                     x: jPath.x,
                     y: jPath.y,
-                    // eslint-disable-next-line @typescript-eslint/camelcase
                     going_x: iPath.x,
-                    // eslint-disable-next-line @typescript-eslint/camelcase
                     going_y: iPath.y,
                     base: parent.character.base
                 })) {
@@ -213,10 +209,8 @@ export class AStarSmartMove {
         path.push({
             map: finish.map,
             x: finish.x,
-            // eslint-disable-next-line @typescript-eslint/camelcase
             real_x: finish.x,
             y: finish.y,
-            // eslint-disable-next-line @typescript-eslint/camelcase
             real_y: finish.y,
             key: `${finish.map}.${finish.x}.${finish.y}`,
             transportMap: finish.transportMap,
@@ -227,10 +221,8 @@ export class AStarSmartMove {
             path.push({
                 map: current.map,
                 x: current.x,
-                // eslint-disable-next-line @typescript-eslint/camelcase
                 real_x: current.x,
                 y: current.y,
-                // eslint-disable-next-line @typescript-eslint/camelcase
                 real_y: current.y,
                 key: `${current.map}.${current.x}.${current.y}`,
                 transportMap: current.transportMap,
@@ -421,9 +413,7 @@ export class AStarSmartMove {
                         map: current.map,
                         x: current.x,
                         y: current.y,
-                        // eslint-disable-next-line @typescript-eslint/camelcase
                         going_x: cleanFinish.x,
-                        // eslint-disable-next-line @typescript-eslint/camelcase
                         going_y: cleanFinish.y,
                         base: parent.character.base
                     })) {
@@ -449,9 +439,7 @@ export class AStarSmartMove {
                         map: current.map,
                         x: current.x,
                         y: current.y,
-                        // eslint-disable-next-line @typescript-eslint/camelcase
                         going_x: closeFinish.x,
-                        // eslint-disable-next-line @typescript-eslint/camelcase
                         going_y: closeFinish.y,
                         base: parent.character.base
                     })) {

@@ -1,5 +1,5 @@
 import { Character } from "./character"
-import { MonsterType } from "./definitions/adventureland"
+import { MonsterName } from "./definitions/adventureland"
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from "./trade"
 import { TargetPriorityList, PriorityEntity } from "./definitions/bots"
 import { getCooldownMS, isAvailable } from "./functions"
@@ -320,7 +320,7 @@ class Priest extends Character {
             }
         }
     }
-    mainTarget: MonsterType = "scorpion"
+    mainTarget: MonsterName = "scorpion"
 
     constructor() {
         super()
