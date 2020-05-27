@@ -106,7 +106,7 @@ class Merchant extends Character {
         for (const name in players) {
             if (name == parent.character.name) continue // Skip ourself
             const player = parent.entities[name] ? parent.entities[name] : players[name]
-            if (distance(parent.character, player) <= G.skills.mluck.range && (!player.s.mluck || Date.now() - players[name].lastSeen.getTime() > 3000000 || player.s.mluck.ms < 1800000)) {
+            if (distance(parent.character, player) <= G.skills.mluck.range * 2 && (!player.s.mluck || Date.now() - players[name].lastSeen.getTime() > 3000000 || player.s.mluck.ms < 1800000)) {
                 // This player moved.
                 delete players[name]
                 sessionStorage.setItem("players", JSON.stringify(players))
@@ -137,7 +137,7 @@ class Merchant extends Character {
         // TODO: If we're near them and can't see them, delete them from the info.
         const npcs: NPCInfo = JSON.parse(sessionStorage.getItem("npcs"), reviver) || {}
         if (npcs.Kane && Date.now() - npcs.Kane.lastSeen.getTime() > 240000) {
-            if (distance(parent.character, npcs.Kane) < 100 && !parent.entities.Kane) {
+            if (distance(parent.character, npcs.Kane) < parent.character.range * 2 && !parent.entities.Kane) {
                 // We can't find Kane, our information is too old...
                 delete npcs.Kane
                 sessionStorage.setItem("npcs", JSON.stringify(npcs))
@@ -146,7 +146,7 @@ class Merchant extends Character {
                 return { position: npcs.Kane }
             }
         } else if (npcs.Angel && Date.now() - npcs.Angel.lastSeen.getTime() > 240000) {
-            if (distance(parent.character, npcs.Angel) < 100 && !parent.entities.Angel) {
+            if (distance(parent.character, npcs.Angel) < parent.character.range * 2 && !parent.entities.Angel) {
                 // We can't find Angel, our information is too old...
                 delete npcs.Angel
                 sessionStorage.setItem("npcs", JSON.stringify(npcs))

@@ -473,7 +473,7 @@ export abstract class Character {
                 info.y = entityInfo.real_y
             }
 
-            if (distance(parent.character, info) < 100 && !entityInfo) {
+            if (distance(parent.character, info) < parent.character.range * 2 && !entityInfo) {
                 // We got close to it, but we can't see it...
                 delete monsters[mtype as MonsterName]
                 sessionStorage.setItem("monsters", JSON.stringify(monsters))
