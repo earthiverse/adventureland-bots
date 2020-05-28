@@ -90,6 +90,8 @@ export function transferItemsToMerchant(merchantName: string, itemsToKeep: ItemN
     if (!merchant) return // No merchant nearby
     if (distance(parent.character, merchant) > 400) return // Merchant is too far away to trade
 
+    const itemsToKeepSet = new Set<ItemName>(itemsToKeep)
+
     const items = getInventory()
     items.sort((a, b) => {
         if (a.name < b.name) return -1 // 1. Sort by item name (alphabetical)
@@ -99,9 +101,9 @@ export function transferItemsToMerchant(merchantName: string, itemsToKeep: ItemN
 
     for (let i = 0; i < items.length; i++) {
         const item = items[i]
-        if (itemsToKeep.includes(item.name)) {
+        if (itemsToKeepSet.has(item.name)) {
             // We want to keep this item, but we only need to keep one slot worth of this item, let's keep the highest level one around
-            itemsToKeep.splice(itemsToKeep.indexOf(item.name), 1)
+            itemsToKeepSet.delete(item.name)
             continue
         }
 
