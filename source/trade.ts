@@ -99,8 +99,7 @@ export function transferItemsToMerchant(merchantName: string, itemsToKeep: ItemN
         if (a.level > b.level) return -1 // 2. Sort by item level (higher first)
     })
 
-    for (let i = 0; i < items.length; i++) {
-        const item = items[i]
+    for (const item of items) {
         if (itemsToKeepSet.has(item.name)) {
             // We want to keep this item, but we only need to keep one slot worth of this item, let's keep the highest level one around
             itemsToKeepSet.delete(item.name)
@@ -108,9 +107,9 @@ export function transferItemsToMerchant(merchantName: string, itemsToKeep: ItemN
         }
 
         if (item.q) {
-            send_item(merchantName, i, item.q)
+            send_item(merchantName, item.index, item.q)
         } else {
-            send_item(merchantName, i, 1)
+            send_item(merchantName, item.index, 1)
         }
     }
 }
