@@ -106,7 +106,7 @@ class Merchant extends Character {
         for (const name in players) {
             if (name == parent.character.name) continue // Skip ourself
             const player = parent.entities[name] ? parent.entities[name] : players[name]
-            if (distance(parent.character, player) <= G.skills.mluck.range * 2 && (!player.s.mluck || Date.now() - players[name].lastSeen.getTime() > 3000000 || player.s.mluck.ms < 1800000)) {
+            if (distance(parent.character, player) <= G.skills.mluck.range && (!player.s.mluck || Date.now() - players[name].lastSeen.getTime() > 3000000 || player.s.mluck.ms < 1800000)) {
                 // This player moved.
                 delete players[name]
                 sessionStorage.setItem("players", JSON.stringify(players))

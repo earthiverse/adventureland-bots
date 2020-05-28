@@ -248,7 +248,7 @@ class Ranger extends Character {
         },
         "porcupine": {
             "priority": 0,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["crossbow", "t2quiver"]
         },
         "prat": {
             // Go to a cliff where we can attack them, but they can't attack us.
