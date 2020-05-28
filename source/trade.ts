@@ -74,7 +74,7 @@ export function buyFromPonty(itemsToBuy: Set<ItemName>): void {
                 parent.socket.emit("sbuy", { "rid": data[i].rid })
                 if (++itemsBought >= 5) break // Only buy a few items at a time to prevent maxing out server calls.
             } else if (G.items[data[i].name].compound && data[i].level >= 4) {
-                // Buy all high level upgradable items
+                // Buy all high level compoundable items
                 parent.socket.emit("sbuy", { "rid": data[i].rid })
                 if (++itemsBought >= 5) break // Only buy a few items at a time to prevent maxing out server calls.
             }
@@ -90,14 +90,18 @@ export function transferItemsToMerchant(merchantName: string, itemsToKeep: ItemN
     if (!merchant) return // No merchant nearby
     if (distance(parent.character, merchant) > 400) return // Merchant is too far away to trade
 
-    const itemsToKeepSet = new Set(itemsToKeep)
+    const items = getInventory()
+    items.sort((a, b) => {
+        if (a.name < b.name) return -1 // 1. Sort by item name (alphabetical)
+        if (a.name > b.name) return 1
+        if (a.level > b.level) return -1 // 2. Sort by item level (higher first)
+    })
 
-    for (let i = 0; i < parent.character.items.length; i++) {
-        const item = parent.character.items[i]
-        if (!item) continue // Empty slot
-        if (itemsToKeepSet.has(item.name)) {
-            // We want to keep this item, but we only need to keep one slot worth of this item, let's keep the first item found
-            itemsToKeepSet.delete(item.name)
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        if (itemsToKeep.includes(item.name)) {
+            // We want to keep this item, but we only need to keep one slot worth of this item, let's keep the highest level one around
+            itemsToKeep.splice(itemsToKeep.indexOf(item.name), 1)
             continue
         }
 

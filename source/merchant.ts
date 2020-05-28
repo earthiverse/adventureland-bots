@@ -1,5 +1,5 @@
 import { Character } from "./character"
-import { MonsterName, ItemName, PositionReal, BankPackType } from "./definitions/adventureland"
+import { MonsterName, PositionReal, BankPackType } from "./definitions/adventureland"
 import { upgradeIfMany, compoundIfMany, upgradeItem } from "./upgrade"
 import { sellUnwantedItems, exchangeItems, buyFromPonty, openMerchantStand, closeMerchantStand, buyScrolls } from "./trade"
 import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots, sleep, getEmptySlots, isInventoryFull, buyIfNone, reviver } from "./functions"

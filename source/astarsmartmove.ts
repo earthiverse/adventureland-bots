@@ -464,9 +464,7 @@ export class AStarSmartMove {
                         map: current.map,
                         x: current.x,
                         y: current.y,
-                        // eslint-disable-next-line @typescript-eslint/camelcase
                         going_x: neighbor.x,
-                        // eslint-disable-next-line @typescript-eslint/camelcase
                         going_y: neighbor.y,
                         base: parent.character.base
                     })) {

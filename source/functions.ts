@@ -99,7 +99,6 @@ export function calculateDamageRange(attacker: Entity, defender: Entity): [numbe
     if (!attacker.apiercing) attacker.apiercing = 0
     if (!attacker.rpiercing) attacker.rpiercing = 0
     if (!defender.armor) defender.armor = 0
-    // eslint-disable-next-line @typescript-eslint/camelcase
     if (!attacker.damage_type && attacker.slots.mainhand) attacker.damage_type = G.items[attacker.slots.mainhand.name].damage
 
     if (defender["1hp"]) {
