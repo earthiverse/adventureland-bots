@@ -130,7 +130,12 @@ class Priest extends Character {
             }
         },
         "goldenbat": {
-            "priority": SPECIAL
+            "priority": SPECIAL,
+            "farmingPosition": {
+                "map": "cave",
+                "x": 300,
+                "y": -1100
+            }
         },
         "goo": {
             "priority": EASY,

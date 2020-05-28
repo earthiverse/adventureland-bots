@@ -126,6 +126,11 @@ class Ranger extends Character {
         },
         "goldenbat": {
             "priority": 1000,
+            "farmingPosition": {
+                "map": "cave",
+                "x": -200,
+                "y": -450
+            },
             "equip": ["t2bow", "t2quiver"]
         },
         "goo": {

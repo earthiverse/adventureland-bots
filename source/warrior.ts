@@ -102,6 +102,11 @@ class Warrior extends Character {
         },
         "goldenbat": {
             "priority": SPECIAL,
+            "farmingPosition": {
+                "map": "cave",
+                "x": 1250,
+                "y": -800
+            },
             "equip": ["basher"]
         },
         "goo": {

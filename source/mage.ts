@@ -107,7 +107,12 @@ class Mage extends Character {
             }
         },
         "goldenbat": {
-            "priority": SPECIAL
+            "priority": SPECIAL,
+            "farmingPosition": {
+                "map": "cave",
+                "x": 1250,
+                "y": -800
+            }
         },
         "goo": {
             "priority": EASY,
