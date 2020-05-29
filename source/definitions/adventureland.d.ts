@@ -364,7 +364,11 @@ declare global {
           id: string;
         };
       };
-      /** x, y, direction to face character */
+      /**
+       * [0]: x position where you spawn
+       * [1]: y position where you spawn
+       * [2]: Direction to face the character when you spawn
+       */
       spawns: [number, number, number?][];
     } };
     monsters: { [T in MonsterName]: GMonster };
@@ -603,9 +607,17 @@ export type ItemInfo = {
 }
 
 /**
-  * The 7th position can be "locked" or "ulocked"? The 8th can be "complicated"?
+ * Contains elements that describe a door
+ * [0]: The x-position of the door
+ * [1]: The y-position of the door
+ * [2]: The width of the door
+ * [3]: The height of the door
+ * [4]: The map that this door leads to (use in combination with [5] (spawn))
+ * [5]: The spawn that this door leads to (use in combination with [4] (map))
+ * [6]: The spawn that this door is close to on the current map
+ * [7]: ??? Maybe "locked" or "ulocked"?
+ * [8]: ??? There's reference to "complicated" in smart_move?
  */
-// TODO: Decode the elements of this
 export type DoorInfo = [number, number, number, number, MapName, number?, number?, string?, string?]
 
 export type StatusInfo = {

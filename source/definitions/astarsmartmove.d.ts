@@ -8,6 +8,6 @@ export type SmartMoveNode = PositionReal & {
     // Transporter information
     key: string;
     transportMap?: MapName;
-    transportType?: "blink" | "door" | "teleport" | "town";
+    transportType?: "door" | "teleport" | "town";
     transportS?: number;
 }
