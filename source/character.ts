@@ -1,9 +1,10 @@
 import FastPriorityQueue from "fastpriorityqueue"
 import { Entity, IPosition, ItemName, ItemInfo, SlotType, MonsterName, PositionReal, NPCName, SkillName, CharacterEntity, CharacterType, TradeSlotType } from "./definitions/adventureland"
-import { findItems, getInventory, getRandomMonsterSpawn, getCooldownMS, isAvailable, calculateDamageRange, isInventoryFull, getPartyMemberTypes, getVisibleMonsterTypes, getEntities, reviver } from "./functions"
+import { findItems, getInventory, getRandomMonsterSpawn, getCooldownMS, isAvailable, calculateDamageRange, isInventoryFull, getPartyMemberTypes, getVisibleMonsterTypes, getEntities } from "./functions"
 import { TargetPriorityList, InventoryItemInfo, ItemLevelInfo, PriorityEntity, MovementTarget, PartyInfo, PlayersInfo, NPCInfo, MonstersInfo } from "./definitions/bots"
 import { dismantleItems, buyPots } from "./trade"
 import { AStarSmartMove } from "./astarsmartmove"
+import { getPartyInfo, setPartyInfo, getPlayersInfo, setPlayersInfo, getNPCInfo, setNPCInfo, getMonstersInfo, setMonstersInfo } from "./info"
 
 export abstract class Character {
     /** A list of monsters, priorities, and locations to farm. */
@@ -175,7 +176,7 @@ export abstract class Character {
      */
     protected infoLoop(): void {
         // Add info about ourselves
-        const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver) || {}
+        const party: PartyInfo = getPartyInfo()
         party[parent.character.name] = {
             "lastSeen": new Date(),
             "shouldSwitchServer": this.shouldSwitchServer(),
@@ -191,10 +192,10 @@ export abstract class Character {
             "y": parent.character.real_y,
             "s": parent.character.s
         }
-        sessionStorage.setItem("party", JSON.stringify(party))
+        setPartyInfo(party)
 
         // Add info about other players we see
-        const players: PlayersInfo = JSON.parse(sessionStorage.getItem("players"), reviver) || {}
+        const players: PlayersInfo = getPlayersInfo()
         let changed = false
         for (const player of getEntities({ isPlayer: true, isPartyMember: false }) as CharacterEntity[]) {
             players[player.id] = {
@@ -208,10 +209,10 @@ export abstract class Character {
             }
             changed = true
         }
-        if (changed) sessionStorage.setItem("players", JSON.stringify(players))
+        if (changed) setPlayersInfo(players)
 
         // Add info about NPCs
-        const npcs: NPCInfo = JSON.parse(sessionStorage.getItem("npcs"), reviver) || {}
+        const npcs: NPCInfo = getNPCInfo()
         changed = false
         for (const npc of ["Angel", "Kane"] as NPCName[]) {
             if (!parent.entities[npc]) continue
@@ -223,10 +224,10 @@ export abstract class Character {
             }
             changed = true
         }
-        if (changed) sessionStorage.setItem("npcs", JSON.stringify(npcs))
+        if (changed) setNPCInfo(npcs)
 
         // Add info about Monsters
-        const monsters: MonstersInfo = JSON.parse(sessionStorage.getItem("monsters"), reviver) || {}
+        const monsters: MonstersInfo = getMonstersInfo()
         changed = false
         for (const entity of getEntities({ isMonster: true })) {
             if (!(["fvampire", "goldenbat", "greenjr", "jr", "mvampire", "phoenix", "pinkgoo", "snowman", "wabbit"]).includes(entity.mtype)) continue
@@ -239,7 +240,7 @@ export abstract class Character {
             }
             changed = true
         }
-        if (changed) sessionStorage.setItem("monsters", JSON.stringify(monsters))
+        if (changed) setMonstersInfo(monsters)
 
         setTimeout(() => { this.infoLoop() }, 2000)
     }
@@ -247,7 +248,7 @@ export abstract class Character {
     public getMonsterHuntTargets(): MonsterName[] {
         const types: MonsterName[] = []
         let leastTimeRemaining = Number.MAX_VALUE
-        const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver) || {}
+        const party: PartyInfo = getPartyInfo()
         for (const memberName of parent.party_list) {
             // NOTE: TODO: Gonna check if not checking parent.entities improves the lagginess when we are between monster hunts.
             // const member = parent.entities[memberName] ? parent.entities[memberName] : this.info.party[memberName]
@@ -317,7 +318,7 @@ export abstract class Character {
 
     protected loot(): void {
         let i = 0
-        const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver) || {}
+        const party: PartyInfo = getPartyInfo()
         for (const chestID in parent.chests) {
             const chest = parent.chests[chestID]
             if (distance(parent.character, chest) > 800) continue // Chests over a 800 radius have a penalty as per @Wizard in #feedback (Discord) on 11/26/2019
@@ -461,7 +462,7 @@ export abstract class Character {
         }
 
         // Special Monsters -- Move to monster
-        const monsters: MonstersInfo = JSON.parse(sessionStorage.getItem("monsters"), reviver) || {}
+        const monsters: MonstersInfo = getMonstersInfo()
         for (const mtype in monsters) {
             if (!this.targetPriority[mtype as MonsterName]) continue // Not a target we can do
             const info = monsters[mtype as MonsterName]
@@ -476,7 +477,7 @@ export abstract class Character {
             if (distance(parent.character, info) < parent.character.range * 2 && !entityInfo) {
                 // We got close to it, but we can't see it...
                 delete monsters[mtype as MonsterName]
-                sessionStorage.setItem("monsters", JSON.stringify(monsters))
+                setMonstersInfo(monsters)
             } else {
                 set_message(`SP ${mtype}`)
                 return { target: mtype as MonsterName, position: info, range: parent.character.range }
@@ -504,7 +505,7 @@ export abstract class Character {
         }
 
         // Monster Hunts -- Move to monster
-        const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver) || {}
+        const party: PartyInfo = getPartyInfo()
         const monsterHuntTargets: MonsterName[] = this.getMonsterHuntTargets()
         if (monsterHuntTargets.length) {
             const potentialTarget = monsterHuntTargets[0]
@@ -823,7 +824,7 @@ export abstract class Character {
         }
     }
 
-    public parseCM(characterName: string, data: any): void {
+    public parseCM(characterName: string, data: any) {
         if (!parent.party_list.includes(characterName) && parent.character.name != characterName
             && !["earthiverse", "earthMag", "earthMag2"].includes(characterName) /* Hardcode party members */
             && !(data.message == "monster") /* NOTE: Special code to let Aria send Phoenix position CMs to my characters */) {
@@ -833,9 +834,9 @@ export abstract class Character {
         }
 
         if (data.message == "info") {
-            const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver) || {}
+            const party: PartyInfo = getPartyInfo()
             party[characterName] = data.info
-            sessionStorage.setItem("party", JSON.stringify(party))
+            setPartyInfo(party)
         } else if (data.message == "monster") {
             /**
             let monster = get_targeted_monster()
@@ -851,17 +852,17 @@ export abstract class Character {
                 }
             })
              */
-            const monsters: MonstersInfo = JSON.parse(sessionStorage.getItem("monsters"), reviver) || {}
+            const monsters: MonstersInfo = getMonstersInfo()
             monsters[data.id as MonsterName] = data.info
-            sessionStorage.setItem("monsters", JSON.stringify(monsters))
+            setMonstersInfo(monsters)
         } else if (data.message == "npc") {
-            const npcs: NPCInfo = JSON.parse(sessionStorage.getItem("npcs"), reviver) || {}
+            const npcs: NPCInfo = getNPCInfo()
             npcs[data.id as NPCName] = data.info
-            sessionStorage.setItem("npcs", JSON.stringify(npcs))
+            setNPCInfo(npcs)
         } else if (data.message == "player") {
-            const players: PlayersInfo = JSON.parse(sessionStorage.getItem("players"), reviver) || {}
+            const players: PlayersInfo = getPlayersInfo()
             players[data.id] = data.info
-            sessionStorage.setItem("players", JSON.stringify(players))
+            setPlayersInfo(players)
         } else if (data.message == "chests") {
             for (const chestID in data.chests) {
                 if (!parent.chests[chestID]) parent.chests[chestID] = data.chests[chestID]

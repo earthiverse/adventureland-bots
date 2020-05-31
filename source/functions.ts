@@ -5,14 +5,6 @@ export function sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-// This function helps parse Date objects
-export function reviver(key: string, value: unknown): unknown {
-    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)) {
-        return new Date(value)
-    }
-    return value
-}
-
 export function isNPC(entity: Entity): boolean {
     return entity.npc ? true : false
 }

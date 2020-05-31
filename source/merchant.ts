@@ -2,8 +2,9 @@ import { Character } from "./character"
 import { MonsterName, PositionReal, BankPackType } from "./definitions/adventureland"
 import { upgradeIfMany, compoundIfMany, upgradeItem } from "./upgrade"
 import { sellUnwantedItems, exchangeItems, buyFromPonty, openMerchantStand, closeMerchantStand, buyScrolls } from "./trade"
-import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots, sleep, getEmptySlots, isInventoryFull, buyIfNone, reviver } from "./functions"
+import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots, sleep, getEmptySlots, isInventoryFull, buyIfNone } from "./functions"
 import { MovementTarget, TargetPriorityList, BankItemInfo, NPCInfo, PartyInfo, PlayersInfo } from "./definitions/bots"
+import { getPartyInfo, getPlayersInfo, setPlayersInfo, getNPCInfo, setNPCInfo } from "./info"
 
 class Merchant extends Character {
     targetPriority: TargetPriorityList = {
@@ -90,7 +91,7 @@ class Merchant extends Character {
         }
 
         // If someone in our party isn't mlucked by us, go find them and mluck them.
-        const party: PartyInfo = JSON.parse(sessionStorage.getItem("party"), reviver) || {}
+        const party: PartyInfo = getPartyInfo()
         for (const name in party) {
             if (name == parent.character.name) continue // Don't move to ourself
 
@@ -102,14 +103,14 @@ class Merchant extends Character {
         }
 
         // If there are players who we have seen recently that haven't been mlucked, go find them and mluck them
-        const players: PlayersInfo = JSON.parse(sessionStorage.getItem("players"), reviver) || {}
+        const players: PlayersInfo = getPlayersInfo()
         for (const name in players) {
             if (name == parent.character.name) continue // Skip ourself
             const player = parent.entities[name] ? parent.entities[name] : players[name]
             if (distance(parent.character, player) <= G.skills.mluck.range && (!player.s.mluck || Date.now() - players[name].lastSeen.getTime() > 3000000 || player.s.mluck.ms < 1800000)) {
                 // This player moved.
                 delete players[name]
-                sessionStorage.setItem("players", JSON.stringify(players))
+                setPlayersInfo(players)
                 break
             } else if ((!player.s.mluck || Date.now() - players[name].lastSeen.getTime() > 3000000 || player.s.mluck.ms < 1800000) && !player.rip) {
                 set_message(`ML ${name}`)
@@ -135,12 +136,12 @@ class Merchant extends Character {
 
         // If Angel and Kane haven't been seen in a while, go find them to update their position
         // TODO: If we're near them and can't see them, delete them from the info.
-        const npcs: NPCInfo = JSON.parse(sessionStorage.getItem("npcs"), reviver) || {}
+        const npcs: NPCInfo = getNPCInfo()
         if (npcs.Kane && Date.now() - npcs.Kane.lastSeen.getTime() > 240000) {
             if (distance(parent.character, npcs.Kane) < parent.character.range * 2 && !parent.entities.Kane) {
                 // We can't find Kane, our information is too old...
                 delete npcs.Kane
-                sessionStorage.setItem("npcs", JSON.stringify(npcs))
+                setNPCInfo(npcs)
             } else {
                 set_message("Find Kane")
                 return { position: npcs.Kane }
@@ -149,7 +150,7 @@ class Merchant extends Character {
             if (distance(parent.character, npcs.Angel) < parent.character.range * 2 && !parent.entities.Angel) {
                 // We can't find Angel, our information is too old...
                 delete npcs.Angel
-                sessionStorage.setItem("npcs", JSON.stringify(npcs))
+                setNPCInfo(npcs)
             } else {
                 set_message("Find Angel")
                 return { position: npcs.Angel }

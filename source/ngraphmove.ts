@@ -7,7 +7,7 @@ const UNKNOWN = 1
 const UNWALKABLE = 2
 const WALKABLE = 3
 
-export class ngraphMove {
+export class NGraphMove {
 
     private grids: Grids = {}
     private graph = createGraph()
