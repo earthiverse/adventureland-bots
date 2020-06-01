@@ -2580,10 +2580,12 @@ class ngraphmove_NGraphMove {
         }
         else if (!to) {
             console.warn("WHAT ARE YOU DOING WITH THE TO!?");
+            console.warn(`From was ${from.map}.${from.x}.${from.y}`);
             return false;
         }
         else if (!from) {
             console.warn("WHAT ARE YOU DOING WITH THE FROM!?");
+            console.warn(`To was ${to.map}.${to.x}.${to.y}`);
             return false;
         }
         if (from.map != to.map) {
@@ -2680,7 +2682,7 @@ class ngraphmove_NGraphMove {
         }
         this.grids[map] = grid;
         function createNodeId(map, x, y) {
-            return `${map}:${x},${y}`;
+            return `${map}:${Math.floor(x)},${Math.floor(y)}`;
         }
         function createNodeData(map, x, y) {
             return {

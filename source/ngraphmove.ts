@@ -29,9 +29,11 @@ export class NGraphMove {
             return false
         } else if (!to) {
             console.warn("WHAT ARE YOU DOING WITH THE TO!?")
+            console.warn(`From was ${from.map}.${from.x}.${from.y}`)
             return false
         } else if (!from) {
             console.warn("WHAT ARE YOU DOING WITH THE FROM!?")
+            console.warn(`To was ${to.map}.${to.x}.${to.y}`)
             return false
         }
         if (from.map != to.map) {
@@ -140,7 +142,7 @@ export class NGraphMove {
 
         // Some useful functions for later
         function createNodeId(map: MapName, x: number, y: number): NodeId {
-            return `${map}:${x},${y}`
+            return `${map}:${Math.floor(x)},${Math.floor(y)}`
         }
         function createNodeData(map: MapName, x: number, y: number): NodeData {
             return {
