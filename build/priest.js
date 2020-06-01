@@ -2800,9 +2800,9 @@ class ngraphmove_NGraphMove {
             }
         }
         for (const door of G.maps[map].doors) {
-            const nodeID = createNodeId(map, door[0], door[1]);
+            const spawn = G.maps[map].spawns[door[6]];
+            const nodeID = createNodeId(map, spawn[0], spawn[1]);
             if (!this.graph.hasNode(nodeID)) {
-                const spawn = G.maps[map].spawns[door[6]];
                 const nodeData = createNodeData(map, spawn[0], spawn[1]);
                 newNodes.push(this.graph.addNode(nodeID, nodeData));
             }
