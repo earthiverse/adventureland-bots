@@ -24,18 +24,6 @@ export class NGraphMove {
      * @param to Position to move to
      */
     public canMove(from: NodeData, to: NodeData): boolean {
-        if (!from && !to) {
-            console.warn("WHAT ARE YOU DOING WITH THE FROM AND TO!?")
-            return false
-        } else if (!to) {
-            console.warn("WHAT ARE YOU DOING WITH THE TO!?")
-            console.warn(`From was ${from.map}.${from.x}.${from.y}`)
-            return false
-        } else if (!from) {
-            console.warn("WHAT ARE YOU DOING WITH THE FROM!?")
-            console.warn(`To was ${to.map}.${to.x}.${to.y}`)
-            return false
-        }
         if (from.map != to.map) {
             console.error(`Don't use this function across maps. You tried to check canMove from ${from.map} to ${to.map}.`)
             return false
@@ -145,15 +133,6 @@ export class NGraphMove {
             return `${map}:${Math.floor(x)},${Math.floor(y)}`
         }
         function createNodeData(map: MapName, x: number, y: number): NodeData {
-            if (map === undefined) {
-                console.warn("No map!?")
-            }
-            if (x === undefined) {
-                console.warn("No x!?")
-            }
-            if (y === undefined) {
-                console.warn("No y!?")
-            }
             return {
                 map: map,
                 x: Math.floor(x),
@@ -187,9 +166,7 @@ export class NGraphMove {
 
                 const nodeID = createNodeId(map, x, y)
                 if (this.graph.hasNode(nodeID)) {
-                    console.info(`Adding ${map}.${x}.${y} via getNode -- corners`)
                     newNodes.push(this.graph.getNode(nodeID))
-                    console.info(newNodes[newNodes.length - 1].data)
                     continue
                 }
                 const nodeData = createNodeData(map, x + G.geometry[map].min_x, y + G.geometry[map].min_y)
@@ -255,9 +232,7 @@ export class NGraphMove {
                 const nodeData = createNodeData(map, closest.x, closest.y)
                 newNodes.push(this.graph.addNode(nodeID, nodeData))
             } else {
-                console.info(`Adding ${map}.${closest.x}.${closest.y} via getNode -- npcs`)
                 newNodes.push(this.graph.getNode(nodeID))
-                console.info(newNodes[newNodes.length - 1].data)
             }
 
             // Create links to destinations
@@ -288,9 +263,7 @@ export class NGraphMove {
                 const nodeData = createNodeData(map, spawn[0], spawn[1])
                 newNodes.push(this.graph.addNode(nodeID, nodeData))
             } else {
-                console.info(`Adding ${map}.${spawn[0]}.${spawn[1]} via getNode -- door`)
                 newNodes.push(this.graph.getNode(nodeID))
-                console.info(newNodes[newNodes.length - 1].data)
             }
 
             // Create link to destination
@@ -341,10 +314,16 @@ export class NGraphMove {
 
         // Prepare all of the maps
         for (const map of maps) {
-            console.info(`Preparing ${map}...`)
             await this.addToGraph(map)
             await new Promise(resolve => setTimeout(resolve, SLEEP_FOR_MS)) // Don't lock the game
         }
+    }
+
+    public getGraphInfo(): void {
+        console.info("Graph information ----------")
+        console.info(`# Nodes: ${this.graph.getNodeCount()}`)
+        console.info(`# Links: ${this.graph.getLinkCount()}`)
+        console.info("----------------------------")
     }
 
     private getPath(start: PositionReal, goal: PositionReal) {

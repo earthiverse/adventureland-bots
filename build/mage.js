@@ -2574,20 +2574,6 @@ class ngraphmove_NGraphMove {
         this.pathfinder = ngraph_path_default.a.aStar(this.graph);
     }
     canMove(from, to) {
-        if (!from && !to) {
-            console.warn("WHAT ARE YOU DOING WITH THE FROM AND TO!?");
-            return false;
-        }
-        else if (!to) {
-            console.warn("WHAT ARE YOU DOING WITH THE TO!?");
-            console.warn(`From was ${from.map}.${from.x}.${from.y}`);
-            return false;
-        }
-        else if (!from) {
-            console.warn("WHAT ARE YOU DOING WITH THE FROM!?");
-            console.warn(`To was ${to.map}.${to.x}.${to.y}`);
-            return false;
-        }
         if (from.map != to.map) {
             console.error(`Don't use this function across maps. You tried to check canMove from ${from.map} to ${to.map}.`);
             return false;
@@ -2685,15 +2671,6 @@ class ngraphmove_NGraphMove {
             return `${map}:${Math.floor(x)},${Math.floor(y)}`;
         }
         function createNodeData(map, x, y) {
-            if (map === undefined) {
-                console.warn("No map!?");
-            }
-            if (x === undefined) {
-                console.warn("No x!?");
-            }
-            if (y === undefined) {
-                console.warn("No y!?");
-            }
             return {
                 map: map,
                 x: Math.floor(x),
@@ -2725,9 +2702,7 @@ class ngraphmove_NGraphMove {
                     continue;
                 const nodeID = createNodeId(map, x, y);
                 if (this.graph.hasNode(nodeID)) {
-                    console.info(`Adding ${map}.${x}.${y} via getNode -- corners`);
                     newNodes.push(this.graph.getNode(nodeID));
-                    console.info(newNodes[newNodes.length - 1].data);
                     continue;
                 }
                 const nodeData = createNodeData(map, x + G.geometry[map].min_x, y + G.geometry[map].min_y);
@@ -2791,9 +2766,7 @@ class ngraphmove_NGraphMove {
                 newNodes.push(this.graph.addNode(nodeID, nodeData));
             }
             else {
-                console.info(`Adding ${map}.${closest.x}.${closest.y} via getNode -- npcs`);
                 newNodes.push(this.graph.getNode(nodeID));
-                console.info(newNodes[newNodes.length - 1].data);
             }
             for (const map in G.npcs.transporter.places) {
                 const spawnID = G.npcs.transporter.places[map];
@@ -2820,9 +2793,7 @@ class ngraphmove_NGraphMove {
                 newNodes.push(this.graph.addNode(nodeID, nodeData));
             }
             else {
-                console.info(`Adding ${map}.${spawn[0]}.${spawn[1]} via getNode -- door`);
                 newNodes.push(this.graph.getNode(nodeID));
-                console.info(newNodes[newNodes.length - 1].data);
             }
             const spawn2 = G.maps[door[4]].spawns[door[5]];
             const nodeID2 = createNodeId(door[4], spawn2[0], spawn2[1]);
@@ -2865,10 +2836,15 @@ class ngraphmove_NGraphMove {
                 maps.push(map);
         }
         for (const map of maps) {
-            console.info(`Preparing ${map}...`);
             await this.addToGraph(map);
             await new Promise(resolve => setTimeout(resolve, SLEEP_FOR_MS));
         }
+    }
+    getGraphInfo() {
+        console.info("Graph information ----------");
+        console.info(`# Nodes: ${this.graph.getNodeCount()}`);
+        console.info(`# Links: ${this.graph.getLinkCount()}`);
+        console.info("----------------------------");
     }
     getPath(start, goal) {
         console.info(`Getting path from ${start.map}.${start.x},${start.y} to ${goal.map}.${goal.x}.${goal.y}`);
@@ -3023,6 +2999,7 @@ class character_Character {
             const before = Date.now();
             await this.nGraphMove.prepare();
             game_log(`Took ${Date.now() - before}ms to prepare pathfinding.`);
+            this.nGraphMove.getGraphInfo();
         }
         catch (e) {
             console.error(e);

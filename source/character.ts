@@ -171,6 +171,7 @@ export abstract class Character {
             const before = Date.now()
             await this.nGraphMove.prepare()
             game_log(`Took ${Date.now() - before}ms to prepare pathfinding.`)
+            this.nGraphMove.getGraphInfo()
         } catch (e) {
             console.error(e)
         }
