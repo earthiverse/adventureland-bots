@@ -1,4 +1,4 @@
-import createGraph, { NodeId } from "ngraph.graph"
+import createGraph, { NodeId, Node, Link } from "ngraph.graph"
 import path from "ngraph.path"
 import { PositionReal, MapName } from "./definitions/adventureland"
 import { Grids, Grid, NodeData, LinkData } from "./definitions/ngraphmap"
@@ -159,7 +159,7 @@ export class NGraphMove {
         }
 
         // 3A: Create nodes based on corners
-        const newNodes = []
+        const newNodes: Node<any>[] = []
         for (let y = 1; y < mapHeight - 1; y++) {
             for (let x = 1; x < mapWidth - 1; x++) {
                 if (grid[y][x] != WALKABLE) continue
@@ -293,6 +293,19 @@ export class NGraphMove {
                 }
             }
         }
+
+        // 3E: Create "town" links
+        const townNodeID = createNodeId(map, G.maps[map].spawns[0][0], G.maps[map].spawns[0][1])
+        const townNodeLinkData: LinkData = {
+            type: "town"
+        }
+        if (!this.graph.hasNode(townNodeID)) {
+            const townNodeData = createNodeData(map, G.maps[map].spawns[0][0], G.maps[map].spawns[0][1])
+            this.graph.addNode(townNodeID, townNodeData)
+        }
+        for (const node of newNodes) {
+            this.graph.addLink(node.id, townNodeID, townNodeLinkData)
+        }
     }
 
     public async prepare(start: MapName = FIRST_MAP): Promise<void> {
@@ -357,7 +370,11 @@ export class NGraphMove {
     }
 
     public async move(destination: PositionReal, finishDistanceTolerance = 0): Promise<unknown> {
+        this.getPath(parent.character, destination)
 
+        this.graph.forEachLink((link) => {
+            link.fromId
+        })
         return
     }
 }

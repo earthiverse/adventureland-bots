@@ -201,7 +201,7 @@ class Merchant extends Character {
             compoundIfMany(4)
 
             // I want a +10 bow eventually
-            await buyIfNone("bow", 9, 4)
+            //await buyIfNone("bow", 9, 4)
             upgradeItem("bow", 9)
 
             await buyScrolls()
@@ -221,6 +221,16 @@ class Merchant extends Character {
             await this.nGraphMove.prepare()
             game_log(`Took ${Date.now() - before}ms to prepare pathfinding.`)
             this.nGraphMove.getGraphInfo()
+        } catch (e) {
+            console.error(e)
+        }
+
+
+        try {
+            game_log("Testing pathfinding to main.0.0...")
+            const before = Date.now()
+            await this.nGraphMove.move({ map: "main", x: 0, y: 0 })
+            game_log(`Took ${Date.now() - before}ms to pathfind to main,0,0.`)
         } catch (e) {
             console.error(e)
         }

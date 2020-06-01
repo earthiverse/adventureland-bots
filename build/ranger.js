@@ -90,34 +90,34 @@ window["bots"] =
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "q", function() { return sleep; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "p", function() { return sleep; });
 /* unused harmony export isNPC */
 /* unused harmony export isMonster */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "p", function() { return isPlayer; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "o", function() { return isPlayer; });
 /* unused harmony export startKonami */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "j", function() { return getInventory; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return findItem; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return findItems; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return findItemsWithLevel; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return calculateDamageRange; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "i", function() { return getInventory; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return findItem; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return findItems; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return findItemsWithLevel; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return calculateDamageRange; });
 /* unused harmony export areWalkingTowards */
 /* unused harmony export canSeePlayer */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "f", function() { return getCooldownMS; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return getCooldownMS; });
 /* unused harmony export estimatedTimeToKill */
 /* unused harmony export getExchangableItems */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "o", function() { return isInventoryFull; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "k", function() { return getPartyMemberTypes; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "h", function() { return getEmptySlots; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "g", function() { return getEmptyBankSlots; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "n", function() { return isAvailable; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "i", function() { return getEntities; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "m", function() { return getVisibleMonsterTypes; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "n", function() { return isInventoryFull; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "j", function() { return getPartyMemberTypes; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "g", function() { return getEmptySlots; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "f", function() { return getEmptyBankSlots; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "m", function() { return isAvailable; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "h", function() { return getEntities; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "l", function() { return getVisibleMonsterTypes; });
 /* unused harmony export sendMassCM */
 /* unused harmony export getMonsterSpawns */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "l", function() { return getRandomMonsterSpawn; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "k", function() { return getRandomMonsterSpawn; });
 /* unused harmony export getClosestMonsterSpawn */
 /* unused harmony export getNearbyMonsterSpawns */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return buyIfNone; });
+/* unused harmony export buyIfNone */
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -597,7 +597,7 @@ function setPlayersInfo(info) {
 function sellUnwantedItems(itemsToSell) {
     if (parent.character.map == "bank")
         return;
-    if (!Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* findItem */ "c"])("computer")) {
+    if (!Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* findItem */ "b"])("computer")) {
         let foundNPCBuyer = false;
         if (!G.maps[parent.character.map].npcs)
             return;
@@ -613,7 +613,7 @@ function sellUnwantedItems(itemsToSell) {
         if (!foundNPCBuyer)
             return;
     }
-    for (const item of Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* getInventory */ "j"])()) {
+    for (const item of Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* getInventory */ "i"])()) {
         if (item.p)
             continue;
         if (itemsToSell[item.name]) {
@@ -624,7 +624,7 @@ function sellUnwantedItems(itemsToSell) {
     }
 }
 function openMerchantStand() {
-    const stand = Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* findItem */ "c"])("stand0");
+    const stand = Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* findItem */ "b"])("stand0");
     if (!stand)
         return;
     if (parent.character.standed === undefined)
@@ -681,7 +681,7 @@ function transferItemsToMerchant(merchantName, itemsToKeep) {
     if (distance(parent.character, merchant) > 400)
         return;
     const itemsToKeepSet = new Set(itemsToKeep);
-    const items = Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* getInventory */ "j"])();
+    const items = Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* getInventory */ "i"])();
     items.sort((a, b) => {
         if (a.name < b.name)
             return -1;
@@ -716,7 +716,7 @@ function transferGoldToMerchant(merchantName, minimumGold = 0) {
 async function dismantleItems(itemsToDismantle) {
     if (parent.character.map == "bank")
         return;
-    if (!Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* findItem */ "c"])("computer")) {
+    if (!Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* findItem */ "b"])("computer")) {
         let foundGuy = false;
         for (const npc of parent.npcs) {
             if (npc.id == "craftsman" && distance(parent.character, {
@@ -734,10 +734,10 @@ async function dismantleItems(itemsToDismantle) {
         if (parent.character.gold < G.dismantle[itemName].cost)
             continue;
         for (let itemLevel = itemsToDismantle[itemName]; itemLevel > 0; itemLevel--) {
-            const items = Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* findItemsWithLevel */ "e"])(itemName, itemLevel);
+            const items = Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* findItemsWithLevel */ "d"])(itemName, itemLevel);
             for (const item of items) {
                 parent.socket.emit("dismantle", { num: item.index });
-                await Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* sleep */ "q"])(parent.character.ping);
+                await Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* sleep */ "p"])(parent.character.ping);
             }
         }
     }
@@ -747,7 +747,7 @@ function exchangeItems(itemsToExchange) {
         return;
     if (parent.character.map == "bank")
         return;
-    const haveComputer = Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* findItem */ "c"])("computer");
+    const haveComputer = Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* findItem */ "b"])("computer");
     const nearbyNPCs = [];
     if (!haveComputer) {
         for (const npc of parent.npcs) {
@@ -763,7 +763,7 @@ function exchangeItems(itemsToExchange) {
             return;
     }
     const exchangableItems = {};
-    for (const item of Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* getInventory */ "j"])()) {
+    for (const item of Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* getInventory */ "i"])()) {
         const gInfo = G.items[item.name];
         const amountNeeded = gInfo.e;
         if (!amountNeeded || amountNeeded > item.q)
@@ -801,7 +801,7 @@ function exchangeItems(itemsToExchange) {
 async function buyPots() {
     if (parent.character.map == "bank")
         return;
-    if (!Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* findItem */ "c"])("computer")) {
+    if (!Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* findItem */ "b"])("computer")) {
         let foundNPC = false;
         if (!G.maps[parent.character.map].npcs)
             return;
@@ -825,7 +825,7 @@ async function buyPots() {
     };
     for (const itemName in itemsToBuy) {
         const numberToBuy = itemsToBuy[itemName];
-        const numItems = Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* findItems */ "d"])(itemName).reduce((a, b) => a + b.q, 0);
+        const numItems = Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* findItems */ "c"])(itemName).reduce((a, b) => a + b.q, 0);
         if (numItems < numberToBuy) {
             await buy_with_gold(itemName, Math.min(numberToBuy - numItems, parent.character.gold / G.items[itemName].g));
         }
@@ -834,7 +834,7 @@ async function buyPots() {
 async function buyScrolls() {
     if (parent.character.map == "bank")
         return;
-    if (!Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* findItem */ "c"])("computer")) {
+    if (!Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* findItem */ "b"])("computer")) {
         let foundNPC = false;
         if (!G.maps[parent.character.map].npcs)
             return;
@@ -862,7 +862,7 @@ async function buyScrolls() {
     };
     for (const itemName in itemsToBuy) {
         const numberToBuy = itemsToBuy[itemName];
-        const numItems = Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* findItems */ "d"])(itemName).reduce((a, b) => a + b.q, 0);
+        const numItems = Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* findItems */ "c"])(itemName).reduce((a, b) => a + b.q, 0);
         const numCanBuy = Math.min(numberToBuy - numItems, Math.floor(parent.character.gold / G.items[itemName].g));
         if (numItems < numberToBuy && numCanBuy > 0) {
             await buy_with_gold(itemName, numCanBuy);
@@ -2520,7 +2520,7 @@ class astarsmartmove_AStarSmartMove {
                 }
             }
             if (Date.now() - timer > this.SLEEP_AFTER_MS) {
-                await Object(functions["q" /* sleep */])(this.SLEEP_FOR_MS);
+                await Object(functions["p" /* sleep */])(this.SLEEP_FOR_MS);
                 timer = Date.now();
                 if (this.wasCancelled(startTime))
                     return Promise.reject("cancelled");
@@ -2819,6 +2819,17 @@ class ngraphmove_NGraphMove {
                 }
             }
         }
+        const townNodeID = createNodeId(map, G.maps[map].spawns[0][0], G.maps[map].spawns[0][1]);
+        const townNodeLinkData = {
+            type: "town"
+        };
+        if (!this.graph.hasNode(townNodeID)) {
+            const townNodeData = createNodeData(map, G.maps[map].spawns[0][0], G.maps[map].spawns[0][1]);
+            this.graph.addNode(townNodeID, townNodeData);
+        }
+        for (const node of newNodes) {
+            this.graph.addLink(node.id, townNodeID, townNodeLinkData);
+        }
     }
     async prepare(start = FIRST_MAP) {
         const maps = [start];
@@ -2873,6 +2884,10 @@ class ngraphmove_NGraphMove {
         console.log(path);
     }
     async move(destination, finishDistanceTolerance = 0) {
+        this.getPath(parent.character, destination);
+        this.graph.forEachLink((link) => {
+            link.fromId;
+        });
         return;
     }
 }
@@ -2945,12 +2960,12 @@ class character_Character {
             this.getNewYearTreeBuff();
             Object(trade["e" /* dismantleItems */])(this.itemsToDismantle);
             if (parent.character.slots.elixir == null) {
-                const items = Object(functions["d" /* findItems */])("candypop");
+                const items = Object(functions["c" /* findItems */])("candypop");
                 if (items.length) {
                     equip(items[0].index);
                 }
             }
-            for (const entity of Object(functions["i" /* getEntities */])({ isCtype: "merchant", isWithinDistance: 400 })) {
+            for (const entity of Object(functions["h" /* getEntities */])({ isCtype: "merchant", isWithinDistance: 400 })) {
                 for (const slot in entity.slots) {
                     const info = entity.slots[slot];
                     if (!info)
@@ -2962,7 +2977,7 @@ class character_Character {
                     parent.socket.emit("join_giveaway", { slot: slot, id: entity.id, rid: info.rid });
                 }
             }
-            for (const entity of Object(functions["i" /* getEntities */])({ isCtype: "merchant", isWithinDistance: 400 })) {
+            for (const entity of Object(functions["h" /* getEntities */])({ isCtype: "merchant", isWithinDistance: 400 })) {
                 for (const slot in entity.slots) {
                     const info = entity.slots[slot];
                     if (!info)
@@ -3004,6 +3019,15 @@ class character_Character {
         catch (e) {
             console.error(e);
         }
+        try {
+            game_log("Testing pathfinding to main.0.0...");
+            const before = Date.now();
+            await this.nGraphMove.move({ map: "main", x: 0, y: 0 });
+            game_log(`Took ${Date.now() - before}ms to pathfind to main,0,0.`);
+        }
+        catch (e) {
+            console.error(e);
+        }
         this.healLoop();
         this.attackLoop();
         this.scareLoop();
@@ -3017,7 +3041,7 @@ class character_Character {
             "lastSeen": new Date(),
             "shouldSwitchServer": this.shouldSwitchServer(),
             "monsterHuntTargets": this.getMonsterHuntTargets(),
-            "items": Object(functions["j" /* getInventory */])(),
+            "items": Object(functions["i" /* getInventory */])(),
             "attack": parent.character.attack,
             "frequency": parent.character.frequency,
             "goldm": parent.character.goldm,
@@ -3031,7 +3055,7 @@ class character_Character {
         Object(source_info["g" /* setPartyInfo */])(party);
         const players = Object(source_info["d" /* getPlayersInfo */])();
         let changed = false;
-        for (const player of Object(functions["i" /* getEntities */])({ isPlayer: true, isPartyMember: false })) {
+        for (const player of Object(functions["h" /* getEntities */])({ isPlayer: true, isPartyMember: false })) {
             players[player.id] = {
                 "lastSeen": new Date(),
                 "rip": player.rip,
@@ -3062,7 +3086,7 @@ class character_Character {
             Object(source_info["f" /* setNPCInfo */])(npcs);
         const monsters = Object(source_info["a" /* getMonstersInfo */])();
         changed = false;
-        for (const entity of Object(functions["i" /* getEntities */])({ isMonster: true, isRIP: false })) {
+        for (const entity of Object(functions["h" /* getEntities */])({ isMonster: true, isRIP: false })) {
             if (!(["fvampire", "goldenbat", "greenjr", "jr", "mvampire", "phoenix", "pinkgoo", "snowman", "wabbit"]).includes(entity.mtype))
                 continue;
             monsters[entity.mtype] = {
@@ -3092,7 +3116,7 @@ class character_Character {
                 continue;
             const coop = this.targetPriority[member.s.monsterhunt.id].coop;
             if (coop) {
-                const availableTypes = Object(functions["k" /* getPartyMemberTypes */])();
+                const availableTypes = Object(functions["j" /* getPartyMemberTypes */])();
                 const missingTypes = coop.filter(x => !availableTypes.has(x));
                 if (missingTypes.length)
                     continue;
@@ -3181,14 +3205,14 @@ class character_Character {
             else if (!["not_found", "disabled"].includes(error.reason)) {
                 console.error(error);
             }
-            setTimeout(async () => { this.attackLoop(); }, Object(functions["f" /* getCooldownMS */])("attack"));
+            setTimeout(async () => { this.attackLoop(); }, Object(functions["e" /* getCooldownMS */])("attack"));
             return;
         }
-        setTimeout(async () => { this.attackLoop(); }, Object(functions["f" /* getCooldownMS */])("attack", true));
+        setTimeout(async () => { this.attackLoop(); }, Object(functions["e" /* getCooldownMS */])("attack", true));
     }
     scareLoop() {
         try {
-            const targets = Object(functions["i" /* getEntities */])({ isAttackingUs: true, isMonster: true, isRIP: false });
+            const targets = Object(functions["h" /* getEntities */])({ isAttackingUs: true, isMonster: true, isRIP: false });
             let wantToScare = false;
             if (targets.length >= 3) {
                 wantToScare = true;
@@ -3206,15 +3230,15 @@ class character_Character {
                 for (const target of targets) {
                     if (distance(target, parent.character) > target.range)
                         continue;
-                    if (Object(functions["b" /* calculateDamageRange */])(target, parent.character)[1] * 6 * target.frequency <= parent.character.hp)
+                    if (Object(functions["a" /* calculateDamageRange */])(target, parent.character)[1] * 6 * target.frequency <= parent.character.hp)
                         continue;
                     wantToScare = true;
                     break;
                 }
             }
-            if (!Object(functions["n" /* isAvailable */])("scare")
+            if (!Object(functions["m" /* isAvailable */])("scare")
                 || !wantToScare) {
-                setTimeout(() => { this.scareLoop(); }, Object(functions["f" /* getCooldownMS */])("scare"));
+                setTimeout(() => { this.scareLoop(); }, Object(functions["e" /* getCooldownMS */])("scare"));
                 return;
             }
             if (parent.character.slots.orb.name == "jacko") {
@@ -3222,7 +3246,7 @@ class character_Character {
                 reduce_cooldown("scare", Math.min(...parent.pings));
             }
             else {
-                const items = Object(functions["d" /* findItems */])("jacko");
+                const items = Object(functions["c" /* findItems */])("jacko");
                 if (items.length) {
                     const jackoI = items[0].index;
                     equip(jackoI);
@@ -3234,14 +3258,14 @@ class character_Character {
         catch (error) {
             console.error(error);
         }
-        setTimeout(() => { this.scareLoop(); }, Object(functions["f" /* getCooldownMS */])("scare"));
+        setTimeout(() => { this.scareLoop(); }, Object(functions["e" /* getCooldownMS */])("scare"));
     }
     getMovementLocation(mtype) {
         if (!this.targetPriority[mtype])
             return;
         if (this.targetPriority[mtype].farmingPosition && this.targetPriority[mtype].holdPositionFarm)
             return this.targetPriority[mtype].farmingPosition;
-        if (Object(functions["m" /* getVisibleMonsterTypes */])().has(mtype))
+        if (Object(functions["l" /* getVisibleMonsterTypes */])().has(mtype))
             return;
         if (this.targetPriority[mtype].farmingPosition) {
             if (distance(parent.character, this.targetPriority[mtype].farmingPosition) < 300) {
@@ -3256,7 +3280,7 @@ class character_Character {
                 return;
             return parent.S[mtype];
         }
-        const randomSpawn = Object(functions["l" /* getRandomMonsterSpawn */])(mtype);
+        const randomSpawn = Object(functions["k" /* getRandomMonsterSpawn */])(mtype);
         if (randomSpawn)
             return randomSpawn;
     }
@@ -3269,7 +3293,7 @@ class character_Character {
             set_message("Finish MH");
             return { target: "monsterhunter", position: G.maps.main.ref.monsterhunter, range: 300 };
         }
-        for (const entity of Object(functions["i" /* getEntities */])({ isMonster: true, isRIP: false })) {
+        for (const entity of Object(functions["h" /* getEntities */])({ isMonster: true, isRIP: false })) {
             if (entity.mtype != "goldenbat" && entity.mtype != "phoenix")
                 continue;
             if (!this.targetPriority[entity.mtype])
@@ -3300,7 +3324,7 @@ class character_Character {
             set_message("Xmas Tree");
             return { target: "newyear_tree", position: G.maps.main.ref.newyear_tree, range: 300 };
         }
-        if (Object(functions["o" /* isInventoryFull */])()) {
+        if (Object(functions["n" /* isInventoryFull */])()) {
             set_message("Full!");
             return { target: "merchant", position: { map: "main", "x": 60, "y": -325 }, range: 300 };
         }
@@ -3406,7 +3430,7 @@ class character_Character {
                 const enemyRange = Math.max(entity.range + entity.speed, 50);
                 if (enemyRange < parent.character.range
                     && d < enemyRange) {
-                    if (entity.hp > Object(functions["b" /* calculateDamageRange */])(parent.character, entity)[0] || this.targetPriority[entity.mtype].holdAttackInEntityRange || entity.target == parent.character.name) {
+                    if (entity.hp > Object(functions["a" /* calculateDamageRange */])(parent.character, entity)[0] || this.targetPriority[entity.mtype].holdAttackInEntityRange || entity.target == parent.character.name) {
                         inEnemyAttackRange.push(entity);
                     }
                 }
@@ -3506,11 +3530,11 @@ class character_Character {
         try {
             if (parent.character.rip) {
                 respawn();
-                setTimeout(() => { this.healLoop(); }, Object(functions["f" /* getCooldownMS */])("use_town"));
+                setTimeout(() => { this.healLoop(); }, Object(functions["e" /* getCooldownMS */])("use_town"));
                 return;
             }
-            else if (!Object(functions["n" /* isAvailable */])("use_hp")) {
-                setTimeout(() => { this.healLoop(); }, Object(functions["f" /* getCooldownMS */])("use_hp"));
+            else if (!Object(functions["m" /* isAvailable */])("use_hp")) {
+                setTimeout(() => { this.healLoop(); }, Object(functions["e" /* getCooldownMS */])("use_hp"));
                 return;
             }
             const hpPots = ["hpot0", "hpot1"];
@@ -3564,7 +3588,7 @@ class character_Character {
         catch (error) {
             console.error(error);
         }
-        setTimeout(() => { this.healLoop(); }, Object(functions["f" /* getCooldownMS */])("use_hp"));
+        setTimeout(() => { this.healLoop(); }, Object(functions["e" /* getCooldownMS */])("use_hp"));
     }
     getNewYearTreeBuff() {
         if (!G.maps.main.ref.newyear_tree)
@@ -3621,7 +3645,7 @@ class character_Character {
     }
     equipBetterItems() {
         try {
-            const items = Object(functions["j" /* getInventory */])();
+            const items = Object(functions["i" /* getInventory */])();
             if (this.movementTarget.target && this.targetPriority[this.movementTarget.target]) {
                 for (const idealItem of this.targetPriority[this.movementTarget.target].equip || []) {
                     let hasItem = false;
@@ -3699,7 +3723,7 @@ class character_Character {
             if (claimedTargets.has(id)) {
                 if (this.targetPriority[potentialTarget.mtype] && this.targetPriority[potentialTarget.mtype].coop)
                     priority += parent.character.range;
-                if (potentialTarget.hp <= Object(functions["b" /* calculateDamageRange */])(parent.character, potentialTarget)[0])
+                if (potentialTarget.hp <= Object(functions["a" /* calculateDamageRange */])(parent.character, potentialTarget)[0])
                     priority -= parent.character.range;
             }
             if (potentialTarget.mtype == this.mainTarget)
@@ -3723,7 +3747,7 @@ class character_Character {
         return targets;
     }
     wantToAttack(e, s = "attack") {
-        if (!Object(functions["n" /* isAvailable */])(s))
+        if (!Object(functions["m" /* isAvailable */])(s))
             return false;
         if (parent.character.c.town)
             return false;
@@ -3766,7 +3790,7 @@ class character_Character {
                         return false;
                 }
             }
-            if (Object(functions["b" /* calculateDamageRange */])(e, parent.character)[1] * 5 * e.frequency > parent.character.hp && distanceToEntity <= e.range)
+            if (Object(functions["a" /* calculateDamageRange */])(e, parent.character)[1] * 5 * e.frequency > parent.character.hp && distanceToEntity <= e.range)
                 return false;
         }
         return true;
@@ -5034,7 +5058,7 @@ class Ranger extends _character__WEBPACK_IMPORTED_MODULE_0__[/* Character */ "a"
             const targets = this.getTargets(1);
             if (targets.length
                 && !targets[0].s.marked
-                && targets[0].hp > Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* calculateDamageRange */ "b"])(parent.character, targets[0])[0] * 5
+                && targets[0].hp > Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* calculateDamageRange */ "a"])(parent.character, targets[0])[0] * 5
                 && this.wantToAttack(targets[0], "huntersmark")) {
                 use_skill("huntersmark", targets[0]);
                 reduce_cooldown("huntersmark", Math.min(...parent.pings));
@@ -5043,11 +5067,11 @@ class Ranger extends _character__WEBPACK_IMPORTED_MODULE_0__[/* Character */ "a"
         catch (error) {
             console.error(error);
         }
-        setTimeout(() => { this.huntersmarkLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* getCooldownMS */ "f"])("huntersmark"));
+        setTimeout(() => { this.huntersmarkLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* getCooldownMS */ "e"])("huntersmark"));
     }
     async trackLoop() {
         try {
-            if (Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* isAvailable */ "n"])("track")
+            if (Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* isAvailable */ "m"])("track")
                 && is_pvp()) {
                 use_skill("track");
                 reduce_cooldown("track", Math.min(...parent.pings));
@@ -5056,16 +5080,16 @@ class Ranger extends _character__WEBPACK_IMPORTED_MODULE_0__[/* Character */ "a"
         catch (error) {
             console.error(error);
         }
-        setTimeout(() => { this.trackLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* getCooldownMS */ "f"])("track"));
+        setTimeout(() => { this.trackLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* getCooldownMS */ "e"])("track"));
     }
     async fourFingersLoop() {
         try {
-            const targets = Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* getEntities */ "i"])({ "isPlayer": true, "isAttackingParty": true, "isWithinDistance": G.skills["4fingers"].range });
-            if (Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* isAvailable */ "n"])("4fingers")
+            const targets = Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* getEntities */ "h"])({ "isPlayer": true, "isAttackingParty": true, "isWithinDistance": G.skills["4fingers"].range });
+            if (Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* isAvailable */ "m"])("4fingers")
                 && targets.length > 0
                 && !parent.character.stoned
                 && distance(parent.character, targets[0]) <= 120
-                && Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* isPlayer */ "p"])(targets[0])
+                && Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* isPlayer */ "o"])(targets[0])
                 && targets[0].target == parent.character.name
                 && parent.character.hp < targets[0].attack * 10) {
                 use_skill("4fingers", targets[0]);
@@ -5075,7 +5099,7 @@ class Ranger extends _character__WEBPACK_IMPORTED_MODULE_0__[/* Character */ "a"
         catch (error) {
             console.error(error);
         }
-        setTimeout(() => { this.fourFingersLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* getCooldownMS */ "f"])("4fingers"));
+        setTimeout(() => { this.fourFingersLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* getCooldownMS */ "e"])("4fingers"));
     }
     async superShotLoop() {
         try {
@@ -5090,7 +5114,7 @@ class Ranger extends _character__WEBPACK_IMPORTED_MODULE_0__[/* Character */ "a"
         catch (error) {
             console.error(error);
         }
-        setTimeout(() => { this.superShotLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* getCooldownMS */ "f"])("supershot"));
+        setTimeout(() => { this.superShotLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* getCooldownMS */ "e"])("supershot"));
     }
     async attackLoop() {
         try {
@@ -5100,7 +5124,7 @@ class Ranger extends _character__WEBPACK_IMPORTED_MODULE_0__[/* Character */ "a"
                 && this.wantToAttack(firstTarget, "5shot")) {
                 const fiveshotTargets = [firstTarget];
                 for (const entity of targets) {
-                    if (!entity.target && (entity.hp > Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* calculateDamageRange */ "b"])(parent.character, entity)[0] * 0.5))
+                    if (!entity.target && (entity.hp > Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* calculateDamageRange */ "a"])(parent.character, entity)[0] * 0.5))
                         continue;
                     fiveshotTargets.push(entity);
                     if (fiveshotTargets.length == 5)
@@ -5109,7 +5133,7 @@ class Ranger extends _character__WEBPACK_IMPORTED_MODULE_0__[/* Character */ "a"
                 if (fiveshotTargets.length == 5) {
                     await use_skill("5shot", fiveshotTargets);
                     reduce_cooldown("attack", Math.min(...parent.pings));
-                    setTimeout(async () => { this.attackLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* getCooldownMS */ "f"])("attack"));
+                    setTimeout(async () => { this.attackLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* getCooldownMS */ "e"])("attack"));
                     return;
                 }
             }
@@ -5117,7 +5141,7 @@ class Ranger extends _character__WEBPACK_IMPORTED_MODULE_0__[/* Character */ "a"
                 && this.wantToAttack(firstTarget, "3shot")) {
                 const threeshotTargets = [firstTarget];
                 for (const entity of targets) {
-                    if (!entity.target && (entity.hp > Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* calculateDamageRange */ "b"])(parent.character, entity)[0] * 0.7))
+                    if (!entity.target && (entity.hp > Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* calculateDamageRange */ "a"])(parent.character, entity)[0] * 0.7))
                         continue;
                     threeshotTargets.push(entity);
                     if (threeshotTargets.length == 3)
@@ -5126,7 +5150,7 @@ class Ranger extends _character__WEBPACK_IMPORTED_MODULE_0__[/* Character */ "a"
                 if (threeshotTargets.length == 3) {
                     await use_skill("3shot", threeshotTargets);
                     reduce_cooldown("attack", Math.min(...parent.pings));
-                    setTimeout(async () => { this.attackLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* getCooldownMS */ "f"])("attack"));
+                    setTimeout(async () => { this.attackLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* getCooldownMS */ "e"])("attack"));
                     return;
                 }
             }
@@ -5135,17 +5159,17 @@ class Ranger extends _character__WEBPACK_IMPORTED_MODULE_0__[/* Character */ "a"
             piercingShotCalcCharacter.attack *= G.skills["piercingshot"].damage_multiplier;
             if (firstTarget
                 && this.wantToAttack(firstTarget, "piercingshot")
-                && Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* calculateDamageRange */ "b"])(piercingShotCalcCharacter, firstTarget)[0] > Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* calculateDamageRange */ "b"])(parent.character, firstTarget)[0]) {
+                && Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* calculateDamageRange */ "a"])(piercingShotCalcCharacter, firstTarget)[0] > Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* calculateDamageRange */ "a"])(parent.character, firstTarget)[0]) {
                 await use_skill("piercingshot", firstTarget);
                 reduce_cooldown("attack", Math.min(...parent.pings));
-                setTimeout(async () => { this.attackLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* getCooldownMS */ "f"])("attack"));
+                setTimeout(async () => { this.attackLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* getCooldownMS */ "e"])("attack"));
                 return;
             }
         }
         catch (error) {
             if (!["cooldown", "not_found", "disabled"].includes(error.reason))
                 console.error(error);
-            setTimeout(async () => { this.attackLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* getCooldownMS */ "f"])("attack"));
+            setTimeout(async () => { this.attackLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_2__[/* getCooldownMS */ "e"])("attack"));
             return;
         }
         await super.attackLoop();

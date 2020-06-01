@@ -12,4 +12,6 @@ export type NodeData = {
 export type LinkData = {
     type: "transport"
     spawn: number
+} | {
+    type: "town"
 }
