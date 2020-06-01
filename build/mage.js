@@ -2626,8 +2626,8 @@ class ngraphmove_NGraphMove {
             }
         }
         for (const spawn of G.maps[map].spawns) {
-            let x = spawn[0] - G.geometry[map].min_x;
-            let y = spawn[1] - G.geometry[map].min_y;
+            let x = Math.floor(spawn[0]) - G.geometry[map].min_x;
+            let y = Math.floor(spawn[1]) - G.geometry[map].min_y;
             if (grid[y][x] == WALKABLE)
                 continue;
             const stack = [[y, x]];

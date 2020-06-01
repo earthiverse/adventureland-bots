@@ -83,8 +83,8 @@ export class NGraphMove {
         }
         // 2C: Fill in the grid with walkable pixels
         for (const spawn of G.maps[map].spawns) {
-            let x = spawn[0] - G.geometry[map].min_x
-            let y = spawn[1] - G.geometry[map].min_y
+            let x = Math.floor(spawn[0]) - G.geometry[map].min_x
+            let y = Math.floor(spawn[1]) - G.geometry[map].min_y
             if (grid[y][x] == WALKABLE) continue // We've already flood filled this
             const stack = [[y, x]]
             while (stack.length) {
