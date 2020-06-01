@@ -2899,7 +2899,7 @@ class ngraphmove_NGraphMove {
         console.log(path);
     }
     async move(destination, finishDistanceTolerance = 0) {
-        this.getPath(parent.character, destination);
+        this.getPath({ map: parent.character.map, x: parent.character.real_x, y: parent.character.real_y }, destination);
         this.graph.forEachLink((link) => {
             link.fromId;
         });
@@ -2966,15 +2966,6 @@ class character_Character {
         this.holdAttack = false;
     }
     async mainLoop() {
-        try {
-            game_log("Testing pathfinding to main.0.0...");
-            const before = Date.now();
-            await this.nGraphMove.move({ map: "main", x: 0, y: 0 });
-            game_log(`Took ${Date.now() - before}ms to pathfind to main,0,0.`);
-        }
-        catch (e) {
-            console.error(e);
-        }
         try {
             if (parent.character.ctype != "merchant") {
                 this.equipBetterItems();

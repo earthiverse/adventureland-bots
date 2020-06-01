@@ -108,15 +108,6 @@ export abstract class Character {
 
     protected async mainLoop(): Promise<void> {
         try {
-            game_log("Testing pathfinding to main.0.0...")
-            const before = Date.now()
-            await this.nGraphMove.move({ map: "main", x: 0, y: 0 })
-            game_log(`Took ${Date.now() - before}ms to pathfind to main,0,0.`)
-        } catch (e) {
-            console.error(e)
-        }
-
-        try {
             if (parent.character.ctype != "merchant") {
                 this.equipBetterItems()
                 this.getMonsterhuntQuest()

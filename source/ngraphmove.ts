@@ -389,7 +389,7 @@ export class NGraphMove {
     }
 
     public async move(destination: PositionReal, finishDistanceTolerance = 0): Promise<unknown> {
-        this.getPath(parent.character, destination)
+        this.getPath({ map: parent.character.map, x: parent.character.real_x, y: parent.character.real_y }, destination)
 
         this.graph.forEachLink((link) => {
             link.fromId
