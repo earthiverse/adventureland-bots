@@ -26,7 +26,7 @@ export class NGraphMove {
     public canMove(from: NodeData, to: NodeData): boolean {
         if (from.map != to.map) throw new Error("Don't use this function across maps.")
         const grid = this.grids[from.map]
-        const dx = to.x - from.x - G.geometry[from.map].min_x, dy = to.y - from.y - G.geometry[from.map].min_y
+        const dx = to.x - from.x, dy = to.y - from.y
         const nx = Math.abs(dx), ny = Math.abs(dy)
         const sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1
 
@@ -305,6 +305,7 @@ export class NGraphMove {
 
         // Prepare all of the maps
         for (const map of maps) {
+            game_log(`Preparing ${map}...`)
             await this.addToGraph(map)
             await new Promise(resolve => setTimeout(resolve, SLEEP_FOR_MS)) // Don't lock the game
         }
