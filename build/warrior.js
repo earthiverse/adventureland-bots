@@ -2725,7 +2725,9 @@ class ngraphmove_NGraphMove {
                     continue;
                 const nodeID = createNodeId(map, x, y);
                 if (this.graph.hasNode(nodeID)) {
+                    console.info(`Adding ${map}.${x}.${y} via getNode`);
                     newNodes.push(this.graph.getNode(nodeID));
+                    console.info(newNodes[newNodes.length - 1].data);
                     continue;
                 }
                 const nodeData = createNodeData(map, x + G.geometry[map].min_x, y + G.geometry[map].min_y);
@@ -2789,7 +2791,9 @@ class ngraphmove_NGraphMove {
                 newNodes.push(this.graph.addNode(nodeID, nodeData));
             }
             else {
+                console.info(`Adding ${map}.${closest.x}.${closest.y} via getNode`);
                 newNodes.push(this.graph.getNode(nodeID));
+                console.info(newNodes[newNodes.length - 1].data);
             }
             for (const map in G.npcs.transporter.places) {
                 const spawnID = G.npcs.transporter.places[map];
@@ -2816,7 +2820,9 @@ class ngraphmove_NGraphMove {
                 newNodes.push(this.graph.addNode(nodeID, nodeData));
             }
             else {
+                console.info(`Adding ${map}.${spawn[0]}.${spawn[1]} via getNode`);
                 newNodes.push(this.graph.getNode(nodeID));
+                console.info(newNodes[newNodes.length - 1].data);
             }
             const spawn2 = G.maps[door[4]].spawns[door[5]];
             const nodeID2 = createNodeId(door[4], spawn2[0], spawn2[1]);

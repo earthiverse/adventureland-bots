@@ -187,7 +187,9 @@ export class NGraphMove {
 
                 const nodeID = createNodeId(map, x, y)
                 if (this.graph.hasNode(nodeID)) {
+                    console.info(`Adding ${map}.${x}.${y} via getNode`)
                     newNodes.push(this.graph.getNode(nodeID))
+                    console.info(newNodes[newNodes.length - 1].data)
                     continue
                 }
                 const nodeData = createNodeData(map, x + G.geometry[map].min_x, y + G.geometry[map].min_y)
@@ -253,7 +255,9 @@ export class NGraphMove {
                 const nodeData = createNodeData(map, closest.x, closest.y)
                 newNodes.push(this.graph.addNode(nodeID, nodeData))
             } else {
+                console.info(`Adding ${map}.${closest.x}.${closest.y} via getNode`)
                 newNodes.push(this.graph.getNode(nodeID))
+                console.info(newNodes[newNodes.length - 1].data)
             }
 
             // Create links to destinations
@@ -284,7 +288,9 @@ export class NGraphMove {
                 const nodeData = createNodeData(map, spawn[0], spawn[1])
                 newNodes.push(this.graph.addNode(nodeID, nodeData))
             } else {
+                console.info(`Adding ${map}.${spawn[0]}.${spawn[1]} via getNode`)
                 newNodes.push(this.graph.getNode(nodeID))
+                console.info(newNodes[newNodes.length - 1].data)
             }
 
             // Create link to destination
