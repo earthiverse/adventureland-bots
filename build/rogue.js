@@ -2980,10 +2980,15 @@ class character_Character {
         setTimeout(async () => { this.mainLoop(); }, Math.max(250, parent.character.ping));
     }
     async run() {
-        game_log("Preparing pathfinding...");
-        const before = Date.now();
-        await this.nGraphMove.prepare();
-        game_log(`Took ${Date.now() - before}ms to prepare pathfinding.`);
+        try {
+            game_log("Preparing pathfinding...");
+            const before = Date.now();
+            await this.nGraphMove.prepare();
+            game_log(`Took ${Date.now() - before}ms to prepare pathfinding.`);
+        }
+        catch (e) {
+            console.error(e);
+        }
         this.healLoop();
         this.attackLoop();
         this.scareLoop();

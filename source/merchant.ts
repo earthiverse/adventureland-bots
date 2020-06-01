@@ -215,7 +215,14 @@ class Merchant extends Character {
 
     public async run() {
         // Prepare the pathfinder
-        await this.nGraphMove.prepare()
+        try {
+            game_log("Preparing pathfinding...")
+            const before = Date.now()
+            await this.nGraphMove.prepare()
+            game_log(`Took ${Date.now() - before}ms to prepare pathfinding.`)
+        } catch (e) {
+            console.error(e)
+        }
 
         this.attackLoop()
         this.healLoop()

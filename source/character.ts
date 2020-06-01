@@ -166,10 +166,14 @@ export abstract class Character {
 
     public async run(): Promise<void> {
         // Prepare the pathfinder
-        game_log("Preparing pathfinding...")
-        const before = Date.now()
-        await this.nGraphMove.prepare()
-        game_log(`Took ${Date.now() - before}ms to prepare pathfinding.`)
+        try {
+            game_log("Preparing pathfinding...")
+            const before = Date.now()
+            await this.nGraphMove.prepare()
+            game_log(`Took ${Date.now() - before}ms to prepare pathfinding.`)
+        } catch (e) {
+            console.error(e)
+        }
 
         this.healLoop()
         this.attackLoop()
