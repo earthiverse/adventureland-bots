@@ -2725,7 +2725,7 @@ class ngraphmove_NGraphMove {
                     continue;
                 const nodeID = createNodeId(map, x, y);
                 if (this.graph.hasNode(nodeID)) {
-                    console.info(`Adding ${map}.${x}.${y} via getNode`);
+                    console.info(`Adding ${map}.${x}.${y} via getNode -- corners`);
                     newNodes.push(this.graph.getNode(nodeID));
                     console.info(newNodes[newNodes.length - 1].data);
                     continue;
@@ -2791,7 +2791,7 @@ class ngraphmove_NGraphMove {
                 newNodes.push(this.graph.addNode(nodeID, nodeData));
             }
             else {
-                console.info(`Adding ${map}.${closest.x}.${closest.y} via getNode`);
+                console.info(`Adding ${map}.${closest.x}.${closest.y} via getNode -- npcs`);
                 newNodes.push(this.graph.getNode(nodeID));
                 console.info(newNodes[newNodes.length - 1].data);
             }
@@ -2820,7 +2820,7 @@ class ngraphmove_NGraphMove {
                 newNodes.push(this.graph.addNode(nodeID, nodeData));
             }
             else {
-                console.info(`Adding ${map}.${spawn[0]}.${spawn[1]} via getNode`);
+                console.info(`Adding ${map}.${spawn[0]}.${spawn[1]} via getNode -- door`);
                 newNodes.push(this.graph.getNode(nodeID));
                 console.info(newNodes[newNodes.length - 1].data);
             }
