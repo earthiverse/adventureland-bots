@@ -2574,6 +2574,18 @@ class ngraphmove_NGraphMove {
         this.pathfinder = ngraph_path_default.a.aStar(this.graph);
     }
     canMove(from, to) {
+        if (!from && !to) {
+            console.warn("WHAT ARE YOU DOING WITH THE FROM AND TO!?");
+            return false;
+        }
+        else if (!to) {
+            console.warn("WHAT ARE YOU DOING WITH THE TO!?");
+            return false;
+        }
+        else if (!from) {
+            console.warn("WHAT ARE YOU DOING WITH THE FROM!?");
+            return false;
+        }
         if (from.map != to.map) {
             console.error(`Don't use this function across maps. You tried to check canMove from ${from.map} to ${to.map}.`);
             return false;
@@ -2842,6 +2854,7 @@ class ngraphmove_NGraphMove {
         }
     }
     getPath(start, goal) {
+        console.info(`Getting path from ${start.map}.${start.x},${start.y} to ${goal.map}.${goal.x}.${goal.y}`);
         let distToStart = Number.MAX_VALUE;
         let startNode;
         let distToFinish = Number.MAX_VALUE;

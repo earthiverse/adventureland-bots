@@ -24,6 +24,16 @@ export class NGraphMove {
      * @param to Position to move to
      */
     public canMove(from: NodeData, to: NodeData): boolean {
+        if (!from && !to) {
+            console.warn("WHAT ARE YOU DOING WITH THE FROM AND TO!?")
+            return false
+        } else if (!to) {
+            console.warn("WHAT ARE YOU DOING WITH THE TO!?")
+            return false
+        } else if (!from) {
+            console.warn("WHAT ARE YOU DOING WITH THE FROM!?")
+            return false
+        }
         if (from.map != to.map) {
             console.error(`Don't use this function across maps. You tried to check canMove from ${from.map} to ${to.map}.`)
             return false
@@ -321,6 +331,7 @@ export class NGraphMove {
     }
 
     private getPath(start: PositionReal, goal: PositionReal) {
+        console.info(`Getting path from ${start.map}.${start.x},${start.y} to ${goal.map}.${goal.x}.${goal.y}`)
         // Get the closest node to the start and finish
         let distToStart = Number.MAX_VALUE
         let startNode: NodeId
