@@ -2799,7 +2799,7 @@ class ngraphmove_NGraphMove {
                 const spawnID = G.npcs.transporter.places[map];
                 const spawn = G.maps[map].spawns[spawnID];
                 const nodeID2 = createNodeId(map, spawn[0], spawn[1]);
-                if (!this.graph.hasNode(nodeID)) {
+                if (!this.graph.hasNode(nodeID2)) {
                     const nodeData2 = createNodeData(map, spawn[0], spawn[1]);
                     this.graph.addNode(nodeID2, nodeData2);
                 }

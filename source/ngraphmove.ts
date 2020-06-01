@@ -266,7 +266,7 @@ export class NGraphMove {
                 const spawn = G.maps[map as MapName].spawns[spawnID]
 
                 const nodeID2 = createNodeId(map as MapName, spawn[0], spawn[1])
-                if (!this.graph.hasNode(nodeID)) {
+                if (!this.graph.hasNode(nodeID2)) {
                     const nodeData2 = createNodeData(map as MapName, spawn[0], spawn[1])
                     this.graph.addNode(nodeID2, nodeData2)
                 }
