@@ -181,6 +181,15 @@ class Merchant extends Character {
 
     protected async mainLoop(): Promise<void> {
         try {
+            game_log("Testing pathfinding to main.0.0...")
+            const before = Date.now()
+            await this.nGraphMove.move({ map: "main", x: 0, y: 0 })
+            game_log(`Took ${Date.now() - before}ms to pathfind to main,0,0.`)
+        } catch (e) {
+            console.error(e)
+        }
+
+        try {
             sellUnwantedItems(this.itemsToSell)
 
             let numItems = 0
@@ -221,16 +230,6 @@ class Merchant extends Character {
             await this.nGraphMove.prepare()
             game_log(`Took ${Date.now() - before}ms to prepare pathfinding.`)
             this.nGraphMove.getGraphInfo()
-        } catch (e) {
-            console.error(e)
-        }
-
-
-        try {
-            game_log("Testing pathfinding to main.0.0...")
-            const before = Date.now()
-            await this.nGraphMove.move({ map: "main", x: 0, y: 0 })
-            game_log(`Took ${Date.now() - before}ms to pathfind to main,0,0.`)
         } catch (e) {
             console.error(e)
         }

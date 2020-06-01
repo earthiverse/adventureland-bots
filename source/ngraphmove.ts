@@ -12,10 +12,29 @@ const WALKABLE = 3
 const FIRST_MAP: MapName = "main"
 const SLEEP_FOR_MS = 50
 
+// Cost variables
+const TRANSPORT_COST = 25
+const TOWN_COST = 100
+
 export class NGraphMove {
     private grids: Grids = {}
     private graph = createGraph()
-    private pathfinder = path.aStar(this.graph)
+    private pathfinder = path.aStar(this.graph, {
+        distance(fromNode, toNode, link) {
+            if (link.data.type == "transport") {
+                // We are using the transporter
+                return TRANSPORT_COST
+            } else if (link.data.type == "town") {
+                // We are warping to town
+                return TOWN_COST
+            }
+            // We are walking
+            if (fromNode.data.map == toNode.data.map) {
+                return Math.sqrt((fromNode.data.x - toNode.data.x) ** 2 + (fromNode.data.y - toNode.data.y) ** 2)
+            }
+        },
+        oriented: true
+    })
 
     /**
      * Checks if you can move from the `from` position to the `to` position.

@@ -2567,11 +2567,26 @@ const UNWALKABLE = 2;
 const WALKABLE = 3;
 const FIRST_MAP = "main";
 const SLEEP_FOR_MS = 50;
+const TRANSPORT_COST = 25;
+const TOWN_COST = 100;
 class ngraphmove_NGraphMove {
     constructor() {
         this.grids = {};
         this.graph = ngraph_graph_default()();
-        this.pathfinder = ngraph_path_default.a.aStar(this.graph);
+        this.pathfinder = ngraph_path_default.a.aStar(this.graph, {
+            distance(fromNode, toNode, link) {
+                if (link.data.type == "transport") {
+                    return TRANSPORT_COST;
+                }
+                else if (link.data.type == "town") {
+                    return TOWN_COST;
+                }
+                if (fromNode.data.map == toNode.data.map) {
+                    return Math.sqrt((fromNode.data.x - toNode.data.x) ** 2 + (fromNode.data.y - toNode.data.y) ** 2);
+                }
+            },
+            oriented: true
+        });
     }
     canMove(from, to) {
         if (from.map != to.map) {
@@ -2952,6 +2967,15 @@ class character_Character {
     }
     async mainLoop() {
         try {
+            game_log("Testing pathfinding to main.0.0...");
+            const before = Date.now();
+            await this.nGraphMove.move({ map: "main", x: 0, y: 0 });
+            game_log(`Took ${Date.now() - before}ms to pathfind to main,0,0.`);
+        }
+        catch (e) {
+            console.error(e);
+        }
+        try {
             if (parent.character.ctype != "merchant") {
                 this.equipBetterItems();
                 this.getMonsterhuntQuest();
@@ -3015,15 +3039,6 @@ class character_Character {
             await this.nGraphMove.prepare();
             game_log(`Took ${Date.now() - before}ms to prepare pathfinding.`);
             this.nGraphMove.getGraphInfo();
-        }
-        catch (e) {
-            console.error(e);
-        }
-        try {
-            game_log("Testing pathfinding to main.0.0...");
-            const before = Date.now();
-            await this.nGraphMove.move({ map: "main", x: 0, y: 0 });
-            game_log(`Took ${Date.now() - before}ms to pathfind to main,0,0.`);
         }
         catch (e) {
             console.error(e);
@@ -5038,6 +5053,15 @@ class merchant_Merchant extends character["a" /* Character */] {
     }
     async mainLoop() {
         try {
+            game_log("Testing pathfinding to main.0.0...");
+            const before = Date.now();
+            await this.nGraphMove.move({ map: "main", x: 0, y: 0 });
+            game_log(`Took ${Date.now() - before}ms to pathfind to main,0,0.`);
+        }
+        catch (e) {
+            console.error(e);
+        }
+        try {
             Object(trade["h" /* sellUnwantedItems */])(this.itemsToSell);
             let numItems = 0;
             for (let i = 0; i < 42; i++)
@@ -5070,15 +5094,6 @@ class merchant_Merchant extends character["a" /* Character */] {
             await this.nGraphMove.prepare();
             game_log(`Took ${Date.now() - before}ms to prepare pathfinding.`);
             this.nGraphMove.getGraphInfo();
-        }
-        catch (e) {
-            console.error(e);
-        }
-        try {
-            game_log("Testing pathfinding to main.0.0...");
-            const before = Date.now();
-            await this.nGraphMove.move({ map: "main", x: 0, y: 0 });
-            game_log(`Took ${Date.now() - before}ms to pathfind to main,0,0.`);
         }
         catch (e) {
             console.error(e);
