@@ -2666,8 +2666,8 @@ class ngraphmove_NGraphMove {
         function createNodeData(map, x, y) {
             return {
                 map: map,
-                x: x,
-                y: y
+                x: Math.floor(x),
+                y: Math.floor(y)
             };
         }
         function findClosestSpawn(x, y) {

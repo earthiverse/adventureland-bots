@@ -126,8 +126,8 @@ export class NGraphMove {
         function createNodeData(map: MapName, x: number, y: number): NodeData {
             return {
                 map: map,
-                x: x,
-                y: y
+                x: Math.floor(x),
+                y: Math.floor(y)
             }
         }
         function findClosestSpawn(x: number, y: number): { x: number, y: number, distance: number } {
