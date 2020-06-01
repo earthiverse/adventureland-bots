@@ -24,7 +24,10 @@ export class NGraphMove {
      * @param to Position to move to
      */
     public canMove(from: NodeData, to: NodeData): boolean {
-        if (from.map != to.map) throw new Error("Don't use this function across maps.")
+        if (from.map != to.map) {
+            console.error(`Don't use this function across maps. You tried to check canMove from ${from.map} to ${to.map}.`)
+            return false
+        }
         const grid = this.grids[from.map]
         const dx = to.x - from.x, dy = to.y - from.y
         const nx = Math.abs(dx), ny = Math.abs(dy)
@@ -53,7 +56,13 @@ export class NGraphMove {
     }
 
     private async addToGraph(map: MapName): Promise<unknown> {
-        if (this.grids[map]) return // We already have information about this map
+        if (this.grids[map]) {
+            console.info(`We have already prepared ${map}.`)
+            return // We already have information about this map
+        }
+        if (!G.maps[map]) {
+            console.error(`${map} is not a valid map.`) // Not a map
+        }
 
         const mapWidth = G.geometry[map].max_x - G.geometry[map].min_x
         const mapHeight = G.geometry[map].max_y - G.geometry[map].min_y
@@ -305,7 +314,7 @@ export class NGraphMove {
 
         // Prepare all of the maps
         for (const map of maps) {
-            game_log(`Preparing ${map}...`)
+            console.info(`Preparing ${map}...`)
             await this.addToGraph(map)
             await new Promise(resolve => setTimeout(resolve, SLEEP_FOR_MS)) // Don't lock the game
         }

@@ -2574,8 +2574,10 @@ class ngraphmove_NGraphMove {
         this.pathfinder = ngraph_path_default.a.aStar(this.graph);
     }
     canMove(from, to) {
-        if (from.map != to.map)
-            throw new Error("Don't use this function across maps.");
+        if (from.map != to.map) {
+            console.error(`Don't use this function across maps. You tried to check canMove from ${from.map} to ${to.map}.`);
+            return false;
+        }
         const grid = this.grids[from.map];
         const dx = to.x - from.x, dy = to.y - from.y;
         const nx = Math.abs(dx), ny = Math.abs(dy);
@@ -2603,8 +2605,13 @@ class ngraphmove_NGraphMove {
         return true;
     }
     async addToGraph(map) {
-        if (this.grids[map])
+        if (this.grids[map]) {
+            console.info(`We have already prepared ${map}.`);
             return;
+        }
+        if (!G.maps[map]) {
+            console.error(`${map} is not a valid map.`);
+        }
         const mapWidth = G.geometry[map].max_x - G.geometry[map].min_x;
         const mapHeight = G.geometry[map].max_y - G.geometry[map].min_y;
         const grid = Array(mapHeight);
@@ -2829,7 +2836,7 @@ class ngraphmove_NGraphMove {
                 maps.push(map);
         }
         for (const map of maps) {
-            game_log(`Preparing ${map}...`);
+            console.info(`Preparing ${map}...`);
             await this.addToGraph(map);
             await new Promise(resolve => setTimeout(resolve, SLEEP_FOR_MS));
         }
