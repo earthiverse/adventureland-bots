@@ -21,10 +21,10 @@ export class NGraphMove {
     private graph = createGraph()
     private pathfinder = path.aStar(this.graph, {
         distance(fromNode, toNode, link) {
-            if (link.data.type == "transport") {
+            if (link.data && link.data.type == "transport") {
                 // We are using the transporter
                 return TRANSPORT_COST
-            } else if (link.data.type == "town") {
+            } else if (link.data && link.data.type == "town") {
                 // We are warping to town
                 return TOWN_COST
             }

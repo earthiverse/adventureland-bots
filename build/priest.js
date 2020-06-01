@@ -2575,10 +2575,10 @@ class ngraphmove_NGraphMove {
         this.graph = ngraph_graph_default()();
         this.pathfinder = ngraph_path_default.a.aStar(this.graph, {
             distance(fromNode, toNode, link) {
-                if (link.data.type == "transport") {
+                if (link.data && link.data.type == "transport") {
                     return TRANSPORT_COST;
                 }
-                else if (link.data.type == "town") {
+                else if (link.data && link.data.type == "town") {
                     return TOWN_COST;
                 }
                 if (fromNode.data.map == toNode.data.map) {
