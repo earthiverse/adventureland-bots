@@ -2661,13 +2661,13 @@ class ngraphmove_NGraphMove {
         }
         this.grids[map] = grid;
         function createNodeId(map, x, y) {
-            return `${map}:${x - G.geometry[map].min_x},${y - G.geometry[map].min_y}`;
+            return `${map}:${x},${y}`;
         }
         function createNodeData(map, x, y) {
             return {
                 map: map,
-                x: x - G.geometry[map].min_x,
-                y: y - G.geometry[map].min_y
+                x: x,
+                y: y
             };
         }
         function findClosestSpawn(x, y) {
@@ -2698,7 +2698,7 @@ class ngraphmove_NGraphMove {
                     newNodes.push(this.graph.getNode(nodeID));
                     continue;
                 }
-                const nodeData = createNodeData(map, x, y);
+                const nodeData = createNodeData(map, x + G.geometry[map].min_x, y + G.geometry[map].min_y);
                 if (grid[y - 1][x - 1] == UNWALKABLE
                     && grid[y - 1][x] == UNWALKABLE
                     && grid[y - 1][x + 1] == UNWALKABLE

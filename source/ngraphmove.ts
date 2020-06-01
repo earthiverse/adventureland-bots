@@ -121,13 +121,13 @@ export class NGraphMove {
 
         // Some useful functions for later
         function createNodeId(map: MapName, x: number, y: number): NodeId {
-            return `${map}:${x - G.geometry[map].min_x},${y - G.geometry[map].min_y}`
+            return `${map}:${x},${y}`
         }
         function createNodeData(map: MapName, x: number, y: number): NodeData {
             return {
                 map: map,
-                x: x - G.geometry[map].min_x,
-                y: y - G.geometry[map].min_y
+                x: x,
+                y: y
             }
         }
         function findClosestSpawn(x: number, y: number): { x: number, y: number, distance: number } {
@@ -160,7 +160,7 @@ export class NGraphMove {
                     newNodes.push(this.graph.getNode(nodeID))
                     continue
                 }
-                const nodeData = createNodeData(map, x, y)
+                const nodeData = createNodeData(map, x + G.geometry[map].min_x, y + G.geometry[map].min_y)
 
                 if (grid[y - 1][x - 1] == UNWALKABLE
                     && grid[y - 1][x] == UNWALKABLE
