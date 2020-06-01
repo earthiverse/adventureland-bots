@@ -2685,13 +2685,13 @@ class ngraphmove_NGraphMove {
             return `${map}:${Math.floor(x)},${Math.floor(y)}`;
         }
         function createNodeData(map, x, y) {
-            if (!map) {
+            if (map === undefined) {
                 console.warn("No map!?");
             }
-            if (!x) {
+            if (x === undefined) {
                 console.warn("No x!?");
             }
-            if (!y) {
+            if (y === undefined) {
                 console.warn("No y!?");
             }
             return {
