@@ -21,6 +21,9 @@ module.exports = {
             exclude: /node_modules/,
         }, ],
     },
+    optimization: {
+        minimize: false
+    },
     resolve: {
         extensions: [".tsx", ".ts", ".js"],
     },

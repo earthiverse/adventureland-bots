@@ -272,8 +272,8 @@ class Mage extends Character {
     }
     mainTarget: MonsterName = "prat";
 
-    run(): void {
-        super.run()
+    async run() {
+        await super.run()
         this.energizeLoop()
         this.cburstLoop()
         // this.magiportLoop()

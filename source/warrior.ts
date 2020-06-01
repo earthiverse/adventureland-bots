@@ -278,8 +278,8 @@ class Warrior extends Character {
         )
     }
 
-    run(): void {
-        super.run()
+    async run() {
+        await super.run()
         this.agitateLoop()
         this.chargeLoop()
         this.hardshellLoop()

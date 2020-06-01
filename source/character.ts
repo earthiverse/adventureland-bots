@@ -5,6 +5,7 @@ import { TargetPriorityList, InventoryItemInfo, ItemLevelInfo, PriorityEntity, M
 import { dismantleItems, buyPots } from "./trade"
 import { AStarSmartMove } from "./astarsmartmove"
 import { getPartyInfo, setPartyInfo, getPlayersInfo, setPlayersInfo, getNPCInfo, setNPCInfo, getMonstersInfo, setMonstersInfo } from "./info"
+import { NGraphMove } from "./ngraphmove"
 
 export abstract class Character {
     /** A list of monsters, priorities, and locations to farm. */
@@ -14,6 +15,7 @@ export abstract class Character {
     protected abstract mainTarget: MonsterName
 
     protected astar = new AStarSmartMove()
+    protected nGraphMove = new NGraphMove()
 
     protected itemsToKeep: ItemName[] = [
         // General
@@ -162,7 +164,13 @@ export abstract class Character {
         setTimeout(async () => { this.mainLoop() }, Math.max(250, parent.character.ping))
     }
 
-    public run(): void {
+    public async run(): Promise<void> {
+        // Prepare the pathfinder
+        game_log("Preparing pathfinding...")
+        const before = Date.now()
+        await this.nGraphMove.prepare()
+        game_log(`Took ${Date.now() - before}ms to prepare pathfinding.`)
+
         this.healLoop()
         this.attackLoop()
         this.scareLoop()
@@ -229,7 +237,7 @@ export abstract class Character {
         // Add info about Monsters
         const monsters: MonstersInfo = getMonstersInfo()
         changed = false
-        for (const entity of getEntities({ isMonster: true })) {
+        for (const entity of getEntities({ isMonster: true, isRIP: false })) {
             if (!(["fvampire", "goldenbat", "greenjr", "jr", "mvampire", "phoenix", "pinkgoo", "snowman", "wabbit"]).includes(entity.mtype)) continue
             monsters[entity.mtype] = {
                 "lastSeen": new Date(),

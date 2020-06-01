@@ -1,15 +1,15 @@
-import { MapName, IPosition } from "./adventureland"
+import { MapName } from "./adventureland"
 
 export type Grid = number[][]
 export type Grids = { [T in MapName]?: Grid }
 
-export type NodeData = IPosition & {
-    map: MapName
+export type NodeData = {
+    map: MapName,
+    x: number,
+    y: number
 }
 
 export type LinkData = {
-    type: "walk"
-} | {
     type: "transport"
     spawn: number
 }

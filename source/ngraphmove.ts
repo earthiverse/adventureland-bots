@@ -1,18 +1,58 @@
-import createGraph from "ngraph.graph"
+import createGraph, { NodeId } from "ngraph.graph"
+import path from "ngraph.path"
 import { PositionReal, MapName } from "./definitions/adventureland"
 import { Grids, Grid, NodeData, LinkData } from "./definitions/ngraphmap"
 
-// variables for the map
+// Variables for the grid
 const UNKNOWN = 1
 const UNWALKABLE = 2
 const WALKABLE = 3
 
-export class NGraphMove {
+// Other variables
+const FIRST_MAP: MapName = "main"
+const SLEEP_FOR_MS = 50
 
+export class NGraphMove {
     private grids: Grids = {}
     private graph = createGraph()
+    private pathfinder = path.aStar(this.graph)
 
-    private async addMapToGraph(map: MapName): Promise<unknown> {
+    /**
+     * Checks if you can move from the `from` position to the `to` position.
+     * This function doesn't support movement across maps!
+     * @param from Position to start moving from
+     * @param to Position to move to
+     */
+    public canMove(from: NodeData, to: NodeData): boolean {
+        if (from.map != to.map) throw new Error("Don't use this function across maps.")
+        const grid = this.grids[from.map]
+        const dx = to.x - from.x, dy = to.y - from.y
+        const nx = Math.abs(dx), ny = Math.abs(dy)
+        const sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1
+
+        let x = from.x, y = from.y
+        for (let ix = 0, iy = 0; ix < nx || iy < ny;) {
+            if ((0.5 + ix) / nx == (0.5 + iy) / ny) {
+                x += sign_x
+                y += sign_y
+                ix++
+                iy++
+            } else if ((0.5 + ix) / nx < (0.5 + iy) / ny) {
+                x += sign_x
+                ix++
+            } else {
+                y += sign_y
+                iy++
+            }
+
+            if (grid[y][x] !== WALKABLE) {
+                return false
+            }
+        }
+        return true
+    }
+
+    private async addToGraph(map: MapName): Promise<unknown> {
         if (this.grids[map]) return // We already have information about this map
 
         const mapWidth = G.geometry[map].max_x - G.geometry[map].min_x
@@ -74,10 +114,13 @@ export class NGraphMove {
             }
         }
 
+        // Add the grid
+        this.grids[map] = grid
+
         // 3: Create nodes
 
         // Some useful functions for later
-        function createNodeID(map: MapName, x: number, y: number) {
+        function createNodeId(map: MapName, x: number, y: number): NodeId {
             return `${map}:${x - G.geometry[map].min_x},${y - G.geometry[map].min_y}`
         }
         function createNodeData(map: MapName, x: number, y: number): NodeData {
@@ -112,7 +155,7 @@ export class NGraphMove {
             for (let x = 1; x < mapWidth - 1; x++) {
                 if (grid[y][x] != WALKABLE) continue
 
-                const nodeID = createNodeID(map, x, y)
+                const nodeID = createNodeId(map, x, y)
                 if (this.graph.hasNode(nodeID)) {
                     newNodes.push(this.graph.getNode(nodeID))
                     continue
@@ -175,7 +218,7 @@ export class NGraphMove {
             if (npc.id != "transporter") continue
             const closest = findClosestSpawn(npc.position[0], npc.position[1])
 
-            const nodeID = createNodeID(map, closest.x, closest.y)
+            const nodeID = createNodeId(map, closest.x, closest.y)
             if (!this.graph.hasNode(nodeID)) {
                 const nodeData = createNodeData(map, closest.x, closest.y)
                 newNodes.push(this.graph.addNode(nodeID, nodeData))
@@ -185,10 +228,10 @@ export class NGraphMove {
 
             // Create links to destinations
             for (const map in G.npcs.transporter.places) {
-                const spawnID = G.npcs.transporter.places[map]
+                const spawnID = G.npcs.transporter.places[map as MapName]
                 const spawn = G.maps[map as MapName].spawns[spawnID]
 
-                const nodeID2 = createNodeID(map as MapName, spawn[0], spawn[1])
+                const nodeID2 = createNodeId(map as MapName, spawn[0], spawn[1])
                 if (!this.graph.hasNode(nodeID)) {
                     const nodeData2 = createNodeData(map as MapName, spawn[0], spawn[1])
                     this.graph.addNode(nodeID2, nodeData2)
@@ -205,7 +248,7 @@ export class NGraphMove {
         }
         // 3C: Create nodes and links for doors
         for (const door of G.maps[map].doors) {
-            const nodeID = createNodeID(map, door[0], door[1])
+            const nodeID = createNodeId(map, door[0], door[1])
             if (!this.graph.hasNode(nodeID)) {
                 const spawn = G.maps[map].spawns[door[6]]
                 const nodeData = createNodeData(map, spawn[0], spawn[1])
@@ -214,10 +257,9 @@ export class NGraphMove {
                 newNodes.push(this.graph.getNode(nodeID))
             }
 
-
             // Create link to destination
             const spawn2 = G.maps[door[4]].spawns[door[5]]
-            const nodeID2 = createNodeID(door[4], spawn2[0], spawn2[1])
+            const nodeID2 = createNodeId(door[4], spawn2[0], spawn2[1])
             if (!this.graph.hasNode(nodeID2)) {
                 const nodeData2 = createNodeData(door[4], spawn2[0], spawn2[1])
                 this.graph.addNode(nodeID2, nodeData2)
@@ -232,44 +274,69 @@ export class NGraphMove {
         }
 
         // 3D: Create links between nodes which are walkable
-        function isLineWalkable(p0: NodeData, p1: NodeData) {
-            const dx = p1.x - p0.x, dy = p1.y - p0.y
-            const nx = Math.abs(dx), ny = Math.abs(dy)
-            const sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1
-
-            let x = p0.x, y = p0.y
-            for (let ix = 0, iy = 0; ix < nx || iy < ny;) {
-                if ((0.5 + ix) / nx == (0.5 + iy) / ny) {
-                    x += sign_x
-                    y += sign_y
-                    ix++
-                    iy++
-                } else if ((0.5 + ix) / nx < (0.5 + iy) / ny) {
-                    x += sign_x
-                    ix++
-                } else {
-                    y += sign_y
-                    iy++
-                }
-
-                if (grid[y][x] !== WALKABLE) {
-                    return false
-                }
-            }
-            return true
-        }
-
-        // Create links
         for (let i = 0; i < newNodes.length; i++) {
             for (let j = i + 1; j < newNodes.length; j++) {
                 const nodeI = newNodes[i]
                 const nodeJ = newNodes[j]
-                if (isLineWalkable(nodeI.data, nodeJ.data)) {
+                if (this.canMove(nodeI.data, nodeJ.data)) {
                     this.graph.addLink(nodeI.id, nodeJ.id)
                     this.graph.addLink(nodeJ.id, nodeI.id)
                 }
             }
         }
+    }
+
+    public async prepare(start: MapName = FIRST_MAP): Promise<void> {
+        // Create a list of all reachable maps from the start point
+        const maps: MapName[] = [start]
+        for (let i = 0; i < maps.length; i++) {
+            const map = maps[i]
+            // Add maps reachable through doors
+            for (const door of G.maps[map].doors) {
+                const connectedMap = door[4]
+                if (!maps.includes(connectedMap)) maps.push(door[4])
+            }
+        }
+        // Add maps reachable through teleporters
+        for (const destination in G.npcs.transporter.places) {
+            const map = destination as MapName
+            if (!maps.includes(map)) maps.push(map)
+        }
+
+        // Prepare all of the maps
+        for (const map of maps) {
+            await this.addToGraph(map)
+            await new Promise(resolve => setTimeout(resolve, SLEEP_FOR_MS)) // Don't lock the game
+        }
+    }
+
+    private getPath(start: PositionReal, goal: PositionReal) {
+        // Get the closest node to the start and finish
+        let distToStart = Number.MAX_VALUE
+        let startNode: NodeId
+        let distToFinish = Number.MAX_VALUE
+        let finishNode: NodeId
+        this.graph.forEachNode((node: { data: NodeData, id: NodeId }) => {
+            if (node.data.map == start.map) {
+                const distance = Math.sqrt((node.data.x - start.x) ** 2 + (node.data.y - start.y) ** 2)
+                if (distance < distToStart) {
+                    distToStart = distance
+                    startNode = node.id
+                }
+            }
+            if (node.data.map == goal.map) {
+                const distance = Math.sqrt((node.data.x - goal.x) ** 2 + (node.data.y - goal.y) ** 2)
+                if (distance < distToFinish) {
+                    distToFinish = distance
+                    finishNode = node.id
+                }
+            }
+        })
+
+        // Get path from start to goal
+        const path = this.pathfinder.find(startNode, finishNode)
+        console.log("This is the path we found:")
+        console.log(path)
     }
 
     public async move(destination: PositionReal, finishDistanceTolerance = 0): Promise<unknown> {

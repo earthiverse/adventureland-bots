@@ -351,8 +351,8 @@ class Priest extends Character {
         }
     }
 
-    run(): void {
-        super.run()
+    async run() {
+        await super.run()
         this.darkBlessingLoop()
         this.partyHealLoop()
     }

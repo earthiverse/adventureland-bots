@@ -213,7 +213,10 @@ class Merchant extends Character {
         }
     }
 
-    public run(): void {
+    public async run() {
+        // Prepare the pathfinder
+        await this.nGraphMove.prepare()
+
         this.attackLoop()
         this.healLoop()
         this.scareLoop()

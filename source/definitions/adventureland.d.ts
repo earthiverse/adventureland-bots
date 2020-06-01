@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 declare global {
   interface Window {
     close_merchant();
@@ -347,7 +346,9 @@ declare global {
       doors: DoorInfo[];
       /** The name of the map, if this changes, the map layout probably changed. */
       key: string;
-      instance: boolean;
+      ignore?: boolean;
+      instance?: boolean;
+      irregular?: boolean;
       monsters: {
         count: number;
         boundary?: [number, number, number, number];
@@ -356,7 +357,9 @@ declare global {
       }[];
       /** Not sure what this means. Might mean that only one character of the players can be here at a time. */
       mount: boolean;
+      no_bounds?: boolean;
       npcs: GMapsNPC[];
+      on_death: number;
       ref: {
         [id: string]: IPosition & {
           map: MapName;

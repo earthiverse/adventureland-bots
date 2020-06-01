@@ -16,7 +16,7 @@ import("https://earthiverse.github.io/adventureland-bots/build/merchant.js")
         }
 
         function showQuests() {
-            const party = JSON.parse(localStorage.getItem("party"), reviver) || {}
+            const party = JSON.parse(localStorage.getItem(`${parent.server_region}.${parent.server_identifier}_party`), reviver) || {}
             for (const id in party) {
                 if (!parent.party_list.includes(id)) continue
                 const member = party[id]

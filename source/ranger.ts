@@ -346,8 +346,8 @@ class Ranger extends Character {
     mainTarget: MonsterName = "scorpion"
     // switchServerCheck = Date.now()
 
-    run(): void {
-        super.run()
+    async run() {
+        await super.run()
         this.superShotLoop()
         this.huntersmarkLoop()
         // this.trackLoop()

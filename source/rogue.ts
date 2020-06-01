@@ -39,8 +39,8 @@ class Rogue extends Character {
         )
     }
 
-    run(): void {
-        super.run()
+    async run() {
+        await super.run()
         this.quickStabLoop()
     }
 
