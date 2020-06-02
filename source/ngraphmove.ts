@@ -276,6 +276,9 @@ export class NGraphMove {
         }
         // 3C: Create nodes and links for doors
         for (const door of G.maps[map].doors) {
+            // TODO: Figure out how to know if we have access to a locked door
+            if (door[7] || door[8]) continue
+
             const spawn = G.maps[map].spawns[door[6]]
             const nodeID = createNodeId(map, spawn[0], spawn[1])
             if (!this.graph.hasNode(nodeID)) {
@@ -389,11 +392,13 @@ export class NGraphMove {
     }
 
     public async move(destination: PositionReal, finishDistanceTolerance = 0): Promise<unknown> {
-        this.getPath({ map: parent.character.map, x: parent.character.real_x, y: parent.character.real_y }, destination)
+        let path
+        if (destination.real_x && destination.real_y) {
+            path = this.getPath({ map: parent.character.map, x: parent.character.real_x, y: parent.character.real_y }, { map: destination.map, x: destination.real_x, y: destination.real_y })
+        } else {
+            path = this.getPath({ map: parent.character.map, x: parent.character.real_x, y: parent.character.real_y }, { map: destination.map, x: destination.x, y: destination.y })
+        }
 
-        this.graph.forEachLink((link) => {
-            link.fromId
-        })
         return
     }
 }

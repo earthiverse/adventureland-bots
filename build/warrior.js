@@ -2801,6 +2801,8 @@ class ngraphmove_NGraphMove {
             }
         }
         for (const door of G.maps[map].doors) {
+            if (door[7] || door[8])
+                continue;
             const spawn = G.maps[map].spawns[door[6]];
             const nodeID = createNodeId(map, spawn[0], spawn[1]);
             if (!this.graph.hasNode(nodeID)) {
@@ -2899,10 +2901,13 @@ class ngraphmove_NGraphMove {
         console.log(path);
     }
     async move(destination, finishDistanceTolerance = 0) {
-        this.getPath({ map: parent.character.map, x: parent.character.real_x, y: parent.character.real_y }, destination);
-        this.graph.forEachLink((link) => {
-            link.fromId;
-        });
+        let path;
+        if (destination.real_x && destination.real_y) {
+            path = this.getPath({ map: parent.character.map, x: parent.character.real_x, y: parent.character.real_y }, { map: destination.map, x: destination.real_x, y: destination.real_y });
+        }
+        else {
+            path = this.getPath({ map: parent.character.map, x: parent.character.real_x, y: parent.character.real_y }, { map: destination.map, x: destination.x, y: destination.y });
+        }
         return;
     }
 }
