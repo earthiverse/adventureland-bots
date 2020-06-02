@@ -575,6 +575,7 @@ export abstract class Character {
                     // New movement target
                     this.astar.stop()
                     this.astar.smartMove(this.movementTarget.position, this.movementTarget.range)
+                    this.nGraphMove.move(this.movementTarget.position, this.movementTarget.range)
                     setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                     return
                 }
@@ -582,6 +583,7 @@ export abstract class Character {
                 if (!this.astar.isMoving()) {
                     // Same monster, new movement target
                     this.astar.smartMove(this.movementTarget.position, this.movementTarget.range)
+                    this.nGraphMove.move(this.movementTarget.position, this.movementTarget.range)
                     setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                     return
                 }
@@ -724,6 +726,7 @@ export abstract class Character {
                     }
                 }
                 this.astar.smartMove(closest, parent.character.range)
+                this.nGraphMove.move(closest, parent.character.range)
                 setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }
@@ -740,6 +743,7 @@ export abstract class Character {
                     }
                 }
                 this.astar.smartMove(closest, parent.character.range)
+                this.nGraphMove.move(closest, parent.character.range)
                 setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }

@@ -3390,11 +3390,13 @@ class character_Character {
                     || (lastMovementTarget.position && this.movementTarget.position.map != lastMovementTarget.position.map)) {
                     this.astar.stop();
                     this.astar.smartMove(this.movementTarget.position, this.movementTarget.range);
+                    this.nGraphMove.move(this.movementTarget.position, this.movementTarget.range);
                     setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
                     return;
                 }
                 if (!this.astar.isMoving()) {
                     this.astar.smartMove(this.movementTarget.position, this.movementTarget.range);
+                    this.nGraphMove.move(this.movementTarget.position, this.movementTarget.range);
                     setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
                     return;
                 }
@@ -3509,6 +3511,7 @@ class character_Character {
                     }
                 }
                 this.astar.smartMove(closest, parent.character.range);
+                this.nGraphMove.move(closest, parent.character.range);
                 setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
                 return;
             }
@@ -3523,6 +3526,7 @@ class character_Character {
                     }
                 }
                 this.astar.smartMove(closest, parent.character.range);
+                this.nGraphMove.move(closest, parent.character.range);
                 setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
                 return;
             }
