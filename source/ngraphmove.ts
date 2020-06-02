@@ -365,7 +365,7 @@ export class NGraphMove {
         console.info("----------------------------")
     }
 
-    private getPath(start: PositionReal, goal: PositionReal) {
+    private getPath(start: PositionReal, goal: PositionReal): Node<unknown>[] {
         console.info(`Getting path from ${start.map}.${start.x},${start.y} to ${goal.map}.${goal.x}.${goal.y}`)
         // Get the closest node to the start and finish
         let distToStart = Number.MAX_VALUE
@@ -390,17 +390,30 @@ export class NGraphMove {
         })
 
         // Get path from start to goal
-        const path = this.pathfinder.find(startNode, finishNode)
-        console.log("This is the path we found:")
-        console.log(path)
+        return this.pathfinder.find(startNode, finishNode)
     }
 
     public async move(destination: PositionReal, finishDistanceTolerance = 0): Promise<unknown> {
-        let path
+        // Get the path
+        let path: Node<unknown>[]
         if (destination.real_x && destination.real_y) {
             path = this.getPath({ map: parent.character.map, x: parent.character.real_x, y: parent.character.real_y }, { map: destination.map, x: destination.real_x, y: destination.real_y })
         } else {
             path = this.getPath({ map: parent.character.map, x: parent.character.real_x, y: parent.character.real_y }, { map: destination.map, x: destination.x, y: destination.y })
+        }
+
+        // NOTE: DEBUG
+        console.log("This is the path we found:")
+        console.log(path)
+
+        // Traverse the path
+        for (let i = path.length - 1; i > 0; i--) {
+            const node = path[i]
+            const nextNode = path[i - 1]
+            const link = this.graph.getLink(node.id, nextNode.id)
+
+            // NOTE: DEBUG
+            console.log(node.id, nextNode.id, link.data)
         }
 
         return

@@ -2899,9 +2899,7 @@ class ngraphmove_NGraphMove {
                 }
             }
         });
-        const path = this.pathfinder.find(startNode, finishNode);
-        console.log("This is the path we found:");
-        console.log(path);
+        return this.pathfinder.find(startNode, finishNode);
     }
     async move(destination, finishDistanceTolerance = 0) {
         let path;
@@ -2910,6 +2908,14 @@ class ngraphmove_NGraphMove {
         }
         else {
             path = this.getPath({ map: parent.character.map, x: parent.character.real_x, y: parent.character.real_y }, { map: destination.map, x: destination.x, y: destination.y });
+        }
+        console.log("This is the path we found:");
+        console.log(path);
+        for (let i = path.length - 1; i > 0; i--) {
+            const node = path[i];
+            const nextNode = path[i - 1];
+            const link = this.graph.getLink(node.id, nextNode.id);
+            console.log(node.id, nextNode.id, link.data);
         }
         return;
     }
