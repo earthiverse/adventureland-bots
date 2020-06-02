@@ -18,7 +18,7 @@ const TOWN_COST = 100
 
 export class NGraphMove {
     private grids: Grids = {}
-    private graph = createGraph()
+    private graph = createGraph({ multigraph: true })
     private pathfinder = path.aStar(this.graph, {
         distance(fromNode, toNode, link) {
             if (link.data && link.data.type == "transport") {
@@ -154,8 +154,8 @@ export class NGraphMove {
         function createNodeData(map: MapName, x: number, y: number): NodeData {
             return {
                 map: map,
-                x: Math.floor(x),
-                y: Math.floor(y)
+                x: Math.trunc(x),
+                y: Math.trunc(y)
             }
         }
         function findClosestSpawn(x: number, y: number): { x: number, y: number, distance: number } {
@@ -303,8 +303,16 @@ export class NGraphMove {
                 this.graph.addLink(nodeID, nodeID2, linkData)
             }
         }
+        // 3D: Create nodes for spawns
+        for (const spawn of G.maps[map].spawns) {
+            const spawnNodeId = createNodeId(map, spawn[0], spawn[1])
+            if (!this.graph.hasNode(spawnNodeId)) {
+                const spawnData = createNodeData(map, spawn[0], spawn[1])
+                newNodes.push(this.graph.addNode(spawnNodeId, spawnData))
+            }
+        }
 
-        // 3D: Create links between nodes which are walkable
+        // 3E: Create links between nodes which are walkable
         for (let i = 0; i < newNodes.length; i++) {
             for (let j = i + 1; j < newNodes.length; j++) {
                 const nodeI = newNodes[i]
@@ -316,14 +324,10 @@ export class NGraphMove {
             }
         }
 
-        // 3E: Create "town" links
+        // 3F: Create "town" links
         const townNodeID = createNodeId(map, G.maps[map].spawns[0][0], G.maps[map].spawns[0][1])
         const townNodeLinkData: LinkData = {
             type: "town"
-        }
-        if (!this.graph.hasNode(townNodeID)) {
-            const townNodeData = createNodeData(map, G.maps[map].spawns[0][0], G.maps[map].spawns[0][1])
-            this.graph.addNode(townNodeID, townNodeData)
         }
         for (const node of newNodes) {
             this.graph.addLink(node.id, townNodeID, townNodeLinkData)

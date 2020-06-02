@@ -2572,7 +2572,7 @@ const TOWN_COST = 100;
 class ngraphmove_NGraphMove {
     constructor() {
         this.grids = {};
-        this.graph = ngraph_graph_default()();
+        this.graph = ngraph_graph_default()({ multigraph: true });
         this.pathfinder = ngraph_path_default.a.aStar(this.graph, {
             distance(fromNode, toNode, link) {
                 if (link.data && link.data.type == "transport") {
@@ -2688,8 +2688,8 @@ class ngraphmove_NGraphMove {
         function createNodeData(map, x, y) {
             return {
                 map: map,
-                x: Math.floor(x),
-                y: Math.floor(y)
+                x: Math.trunc(x),
+                y: Math.trunc(y)
             };
         }
         function findClosestSpawn(x, y) {
@@ -2826,6 +2826,13 @@ class ngraphmove_NGraphMove {
                 this.graph.addLink(nodeID, nodeID2, linkData);
             }
         }
+        for (const spawn of G.maps[map].spawns) {
+            const spawnNodeId = createNodeId(map, spawn[0], spawn[1]);
+            if (!this.graph.hasNode(spawnNodeId)) {
+                const spawnData = createNodeData(map, spawn[0], spawn[1]);
+                newNodes.push(this.graph.addNode(spawnNodeId, spawnData));
+            }
+        }
         for (let i = 0; i < newNodes.length; i++) {
             for (let j = i + 1; j < newNodes.length; j++) {
                 const nodeI = newNodes[i];
@@ -2840,10 +2847,6 @@ class ngraphmove_NGraphMove {
         const townNodeLinkData = {
             type: "town"
         };
-        if (!this.graph.hasNode(townNodeID)) {
-            const townNodeData = createNodeData(map, G.maps[map].spawns[0][0], G.maps[map].spawns[0][1]);
-            this.graph.addNode(townNodeID, townNodeData);
-        }
         for (const node of newNodes) {
             this.graph.addLink(node.id, townNodeID, townNodeLinkData);
         }
