@@ -183,7 +183,7 @@ export class NGraphMove {
             for (let x = 1; x < mapWidth - 1; x++) {
                 if (grid[y][x] != WALKABLE) continue
 
-                const nodeID = createNodeId(map, x, y)
+                const nodeID = createNodeId(map, x + G.geometry[map].min_x, y + G.geometry[map].min_y)
                 if (this.graph.hasNode(nodeID)) {
                     newNodes.push(this.graph.getNode(nodeID))
                     continue
