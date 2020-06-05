@@ -1828,6 +1828,7 @@ class NGraphMove {
         const path = this.getPath(from, to);
         this.searchFinishTime = Date.now();
         console.log(`We found a path from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] in ${this.searchFinishTime - this.searchStartTime}ms`);
+        console.log(path);
         function getCloseTo(from) {
             if (finishDistanceTolerance == 0)
                 return to;
@@ -1880,12 +1881,13 @@ class NGraphMove {
                 return this.move(goal, finishDistanceTolerance);
             }
             else {
+                console.log(`STEP: [${fromData.map},${fromData.x},${fromData.y}] to [${toData.map},${toData.x},${toData.y}]`);
                 await performNextMovement(fromData, toData, linkData);
             }
         }
         this.moveFinishTime = Date.now();
         console.log(`We moved from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] in ${this.moveFinishTime - this.moveStartTime}ms`);
-        return Promise.resolve();
+        return;
     }
 }
 

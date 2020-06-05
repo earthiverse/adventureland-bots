@@ -480,6 +480,7 @@ export class NGraphMove {
 
         // DEBUG
         console.log(`We found a path from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] in ${this.searchFinishTime - this.searchStartTime}ms`)
+        console.log(path)
 
         function getCloseTo(from: NodeData): PositionReal {
             if (finishDistanceTolerance == 0) return to // We want to go to this exact position
@@ -537,6 +538,8 @@ export class NGraphMove {
                 console.warn("NGraphMove movement failed. We're trying again.")
                 return this.move(goal, finishDistanceTolerance)
             } else {
+                // DEBUG
+                console.log(`STEP: [${fromData.map},${fromData.x},${fromData.y}] to [${toData.map},${toData.x},${toData.y}]`)
                 // Perform movement
                 await performNextMovement(fromData, toData, linkData)
             }
@@ -546,6 +549,6 @@ export class NGraphMove {
         // DEBUG
         console.log(`We moved from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] in ${this.moveFinishTime - this.moveStartTime}ms`)
 
-        return Promise.resolve()
+        return
     }
 }
