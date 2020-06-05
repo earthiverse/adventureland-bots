@@ -544,7 +544,7 @@ export class NGraphMove {
                 continue
             }
 
-            if (!linkData && !this.canMove(fromData, toData)) {
+            if (!linkData && !can_move_to(toData.x, toData.y)) {
                 // We got lost somewhere, retry
                 console.warn("NGraphMove movement failed. We're trying again.")
                 return this.move(goal, finishDistanceTolerance)
