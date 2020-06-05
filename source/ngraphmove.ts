@@ -147,16 +147,16 @@ export class NGraphMove {
         // 2: Prepare the grid. The grid is a 2d array which says which "pixels" are walkable, and which ones aren't.
         // 2A: Make the y_lines unwalkable
         for (const yLine of G.geometry[map].y_lines) {
-            for (let y = yLine[0] - G.geometry[map].min_y - parent.character.base.v; y < yLine[0] - G.geometry[map].min_y + parent.character.base.vn && y < mapHeight; y++) {
-                for (let x = yLine[1] - G.geometry[map].min_x - parent.character.base.h; x < yLine[2] - G.geometry[map].min_x + parent.character.base.h && x < mapWidth; x++) {
+            for (let y = yLine[0] - G.geometry[map].min_y - parent.character.base.v - 1; y < yLine[0] - G.geometry[map].min_y + parent.character.base.vn + 1 && y < mapHeight; y++) {
+                for (let x = yLine[1] - G.geometry[map].min_x - parent.character.base.h - 1; x < yLine[2] - G.geometry[map].min_x + parent.character.base.h + 1 && x < mapWidth; x++) {
                     grid[y][x] = UNWALKABLE
                 }
             }
         }
         // 2B: Make the x_lines unwalkable
         for (const xLine of G.geometry[map].x_lines) {
-            for (let x = xLine[0] - G.geometry[map].min_x - parent.character.base.h; x < xLine[0] - G.geometry[map].min_x + parent.character.base.h && x < mapWidth; x++) {
-                for (let y = xLine[1] - G.geometry[map].min_y - parent.character.base.v; y < xLine[2] - G.geometry[map].min_y + parent.character.base.vn && y < mapHeight; y++) {
+            for (let x = xLine[0] - G.geometry[map].min_x - parent.character.base.h - 1; x < xLine[0] - G.geometry[map].min_x + parent.character.base.h + 1 && x < mapWidth; x++) {
+                for (let y = xLine[1] - G.geometry[map].min_y - parent.character.base.v - 1; y < xLine[2] - G.geometry[map].min_y + parent.character.base.vn + 1 && y < mapHeight; y++) {
                     grid[y][x] = UNWALKABLE
                 }
             }
