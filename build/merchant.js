@@ -1853,11 +1853,8 @@ class NGraphMove {
                 }
             }
             else {
-                let walkTo = b;
-                if (a.map == to.map && finishDistanceTolerance > 0) {
-                    walkTo = getCloseTo(b);
-                }
-                await Promise.race([move(walkTo.x, walkTo.y), new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings)))]);
+                move(b.x, b.y);
+                await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings)));
             }
         }
         this.moveStartTime = Date.now();
@@ -1872,19 +1869,20 @@ class NGraphMove {
             }
             const linkData = path[i][2];
             const distance = Math.sqrt((toData.x - parent.character.x) ** 2 + (toData.y - parent.character.y) ** 2);
-            if (distance < 0.01) {
-                i++;
-                continue;
-            }
             if (this.wasCancelled(searchStart)) {
                 console.log(`Search from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] was cancelled`);
                 return Promise.reject("cancelled");
             }
-            else if (parent.character.c.town || parent.character.moving) {
+            if (distance < 0.01) {
+                i++;
                 await new Promise(resolve => setTimeout(resolve, SLEEP_FOR_MS));
                 continue;
             }
-            else if (!linkData && !this.canMove(fromData, toData)) {
+            if (parent.character.c.town || parent.character.moving) {
+                await new Promise(resolve => setTimeout(resolve, SLEEP_FOR_MS));
+                continue;
+            }
+            if (!linkData && !this.canMove(fromData, toData)) {
                 console.warn("NGraphMove movement failed. We're trying again.");
                 return this.move(goal, finishDistanceTolerance);
             }

@@ -239,7 +239,12 @@ declare global {
   function item_grade(item: ItemInfo): -1 | 0 | 1 | 2
   /** Returns the inventory position of the item, or -1 if it's not found */
   function locate_item(item: ItemName): number
-  function move(x: number, y: number)
+  /**
+   * The promise returned is not upon arrival at the destination, it's upon the server confirming it recieved your request.
+   * @param x 
+   * @param y 
+   */
+  function move(x: number, y: number): Promise<void>
   function reduce_cooldown(skill: SkillName, ms: number): void
   function respawn()
   /** Quantity defaults to 1 if not set */
