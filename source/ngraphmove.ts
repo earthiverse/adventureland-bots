@@ -513,17 +513,27 @@ export class NGraphMove {
                     walkTo = getCloseTo(b)
                 }
                 // Walk to the next node
-                const distance = Math.sqrt((walkTo.x - a.x) ** 2 + (walkTo.y - a.y) ** 2)
-                const timeout = new Promise((resolve, reject) => setTimeout(reject, 1100 * distance / parent.character.speed))
-                await Promise.race([move(walkTo.x, walkTo.y), timeout])
+                await Promise.race([move(walkTo.x, walkTo.y), new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings)))])
             }
         }
 
         this.moveStartTime = Date.now()
-        for (let i = 0; i < path.length; i++) {
+        for (let i = 0; i < path.length;) {
             const fromData = path[i][0]
-            const toData = path[i][1]
+            let toData
+            if (i == path.length) {
+                toData = getCloseTo(path[i][1])
+            } else {
+                toData = path[i][1]
+            }
             const linkData = path[i][2]
+            const distance = Math.sqrt((toData.x - parent.character.x) ** 2 + (toData.y - parent.character.y) ** 2)
+
+            if (distance < 0.01) {
+                // We're at the next node, continue
+                i++
+                continue
+            }
 
             if (this.wasCancelled(searchStart)) {
                 console.log(`Search from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] was cancelled`)
@@ -531,18 +541,17 @@ export class NGraphMove {
             } else if (parent.character.c.town || parent.character.moving) {
                 // If we're moving, wait.
                 await new Promise(resolve => setTimeout(resolve, SLEEP_FOR_MS))
-                i--
                 continue
             } else if (!linkData && !this.canMove(fromData, toData)) {
                 // We got lost somewhere, retry
                 console.warn("NGraphMove movement failed. We're trying again.")
                 return this.move(goal, finishDistanceTolerance)
-            } else {
-                // DEBUG
-                console.log(`STEP: [${fromData.map},${fromData.x},${fromData.y}] to [${toData.map},${toData.x},${toData.y}]`)
-                // Perform movement
-                await performNextMovement(fromData, toData, linkData)
             }
+
+            // DEBUG
+            console.log(`STEP: [${fromData.map},${fromData.x},${fromData.y}] to [${toData.map},${toData.x},${toData.y}]`)
+            // Perform movement
+            await performNextMovement(fromData, toData, linkData)
         }
         this.moveFinishTime = Date.now()
 
