@@ -575,7 +575,7 @@ export abstract class Character {
                     // this.astar.stop()
                     this.nGraphMove.stop()
                     // this.astar.smartMove(this.movementTarget.position, this.movementTarget.range)
-                    this.nGraphMove.move(this.movementTarget.position, this.movementTarget.range)
+                    this.nGraphMove.move(NGraphMove.cleanPosition(this.movementTarget.position), this.movementTarget.range)
                     setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                     return
                 }
@@ -584,7 +584,7 @@ export abstract class Character {
                 if (!this.nGraphMove.isMoving()) {
                     // Same monster, new movement target
                     // this.astar.smartMove(this.movementTarget.position, this.movementTarget.range)
-                    this.nGraphMove.move(this.movementTarget.position, this.movementTarget.range)
+                    this.nGraphMove.move(NGraphMove.cleanPosition(this.movementTarget.position), this.movementTarget.range)
                     setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                     return
                 }
@@ -730,7 +730,7 @@ export abstract class Character {
                     }
                 }
                 // this.astar.smartMove(closest, parent.character.range)
-                this.nGraphMove.move(closest, parent.character.range)
+                this.nGraphMove.move(NGraphMove.cleanPosition(closest), parent.character.range)
                 setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }
@@ -747,7 +747,7 @@ export abstract class Character {
                     }
                 }
                 // this.astar.smartMove(closest, parent.character.range)
-                this.nGraphMove.move(closest, parent.character.range)
+                this.nGraphMove.move(NGraphMove.cleanPosition(closest), parent.character.range)
                 setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }

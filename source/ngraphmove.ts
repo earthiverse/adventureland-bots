@@ -59,6 +59,14 @@ export class NGraphMove {
         return this.instance
     }
 
+    static cleanPosition(position: PositionReal): NodeData {
+        return {
+            map: position.map,
+            x: position.real_x !== undefined ? position.real_x : position.x,
+            y: position.real_y !== undefined ? position.real_y : position.y
+        }
+    }
+
     private reset() {
         this.searchStartTime = undefined
         this.searchFinishTime = undefined
@@ -463,16 +471,8 @@ export class NGraphMove {
         const searchStart = Date.now()
         this.searchStartTime = searchStart
 
-        const from: NodeData = {
-            map: parent.character.map,
-            x: parent.character.real_x,
-            y: parent.character.real_y
-        }
-        const to: NodeData = {
-            map: goal.map,
-            x: goal.real_x !== undefined ? goal.real_x : goal.x,
-            y: goal.real_y !== undefined ? goal.real_y : goal.y
-        }
+        const from: NodeData = NGraphMove.cleanPosition(parent.character)
+        const to: NodeData = NGraphMove.cleanPosition(goal)
 
         // Get the path
         const path = this.getPath(from, to)
