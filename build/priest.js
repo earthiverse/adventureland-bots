@@ -1868,7 +1868,7 @@ class NGraphMove {
                 toData = path[i][1];
             }
             const linkData = path[i][2];
-            const distance = Math.sqrt((toData.x - parent.character.x) ** 2 + (toData.y - parent.character.y) ** 2);
+            const distance = Math.sqrt((toData.x - parent.character.real_x) ** 2 + (toData.y - parent.character.real_y) ** 2);
             if (this.wasCancelled(searchStart)) {
                 console.log(`Search from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] was cancelled`);
                 return Promise.reject("cancelled");
