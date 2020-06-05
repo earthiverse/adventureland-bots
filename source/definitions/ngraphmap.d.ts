@@ -15,3 +15,5 @@ export type LinkData = {
 } | {
     type: "town"
 }
+
+export type PathData = [NodeData, NodeData, LinkData][]

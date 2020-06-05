@@ -82,7 +82,7 @@ window["bots"] =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 21);
+/******/ 	return __webpack_require__(__webpack_require__.s = 22);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -456,7 +456,7 @@ function getMonsterSpawns(type) {
 }
 function getRandomMonsterSpawn(type) {
     const monsterSpawns = getMonsterSpawns(type);
-    return monsterSpawns[Math.floor(Math.random() * monsterSpawns.length)];
+    return monsterSpawns[Math.trunc(Math.random() * monsterSpawns.length)];
 }
 function getClosestMonsterSpawn(type) {
     const monsterSpawns = getMonsterSpawns(type);
@@ -863,7 +863,7 @@ async function buyScrolls() {
     for (const itemName in itemsToBuy) {
         const numberToBuy = itemsToBuy[itemName];
         const numItems = Object(_functions__WEBPACK_IMPORTED_MODULE_0__[/* findItems */ "c"])(itemName).reduce((a, b) => a + b.q, 0);
-        const numCanBuy = Math.min(numberToBuy - numItems, Math.floor(parent.character.gold / G.items[itemName].g));
+        const numCanBuy = Math.min(numberToBuy - numItems, Math.trunc(parent.character.gold / G.items[itemName].g));
         if (numItems < numberToBuy && numCanBuy > 0) {
             await buy_with_gold(itemName, numCanBuy);
         }
@@ -873,6 +873,229 @@ async function buyScrolls() {
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports) {
+
+/**
+ * Based on https://github.com/mourner/tinyqueue
+ * Copyright (c) 2017, Vladimir Agafonkin https://github.com/mourner/tinyqueue/blob/master/LICENSE
+ * 
+ * Adapted for PathFinding needs by @anvaka
+ * Copyright (c) 2017, Andrei Kashcha
+ */
+module.exports = NodeHeap;
+
+function NodeHeap(data, options) {
+  if (!(this instanceof NodeHeap)) return new NodeHeap(data, options);
+
+  if (!Array.isArray(data)) {
+    // assume first argument is our config object;
+    options = data;
+    data = [];
+  }
+
+  options = options || {};
+
+  this.data = data || [];
+  this.length = this.data.length;
+  this.compare = options.compare || defaultCompare;
+  this.setNodeId = options.setNodeId || noop;
+
+  if (this.length > 0) {
+    for (var i = (this.length >> 1); i >= 0; i--) this._down(i);
+  }
+
+  if (options.setNodeId) {
+    for (var i = 0; i < this.length; ++i) {
+      this.setNodeId(this.data[i], i);
+    }
+  }
+}
+
+function noop() {}
+
+function defaultCompare(a, b) {
+  return a - b;
+}
+
+NodeHeap.prototype = {
+
+  push: function (item) {
+    this.data.push(item);
+    this.setNodeId(item, this.length);
+    this.length++;
+    this._up(this.length - 1);
+  },
+
+  pop: function () {
+    if (this.length === 0) return undefined;
+
+    var top = this.data[0];
+    this.length--;
+
+    if (this.length > 0) {
+      this.data[0] = this.data[this.length];
+      this.setNodeId(this.data[0], 0);
+      this._down(0);
+    }
+    this.data.pop();
+
+    return top;
+  },
+
+  peek: function () {
+    return this.data[0];
+  },
+
+  updateItem: function (pos) {
+    this._down(pos);
+    this._up(pos);
+  },
+
+  _up: function (pos) {
+    var data = this.data;
+    var compare = this.compare;
+    var setNodeId = this.setNodeId;
+    var item = data[pos];
+
+    while (pos > 0) {
+      var parent = (pos - 1) >> 1;
+      var current = data[parent];
+      if (compare(item, current) >= 0) break;
+        data[pos] = current;
+
+       setNodeId(current, pos);
+       pos = parent;
+    }
+
+    data[pos] = item;
+    setNodeId(item, pos);
+  },
+
+  _down: function (pos) {
+    var data = this.data;
+    var compare = this.compare;
+    var halfLength = this.length >> 1;
+    var item = data[pos];
+    var setNodeId = this.setNodeId;
+
+    while (pos < halfLength) {
+      var left = (pos << 1) + 1;
+      var right = left + 1;
+      var best = data[left];
+
+      if (right < this.length && compare(data[right], best) < 0) {
+        left = right;
+        best = data[right];
+      }
+      if (compare(best, item) >= 0) break;
+
+      data[pos] = best;
+      setNodeId(best, pos);
+      pos = left;
+    }
+
+    data[pos] = item;
+    setNodeId(item, pos);
+  }
+};
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports) {
+
+module.exports = {
+  l2: l2,
+  l1: l1
+};
+
+/**
+ * Euclid distance (l2 norm);
+ * 
+ * @param {*} a 
+ * @param {*} b 
+ */
+function l2(a, b) {
+  var dx = a.x - b.x;
+  var dy = a.y - b.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+/**
+ * Manhattan distance (l1 norm);
+ * @param {*} a 
+ * @param {*} b 
+ */
+function l1(a, b) {
+  var dx = a.x - b.x;
+  var dy = a.y - b.y;
+  return Math.abs(dx) + Math.abs(dy);
+}
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports) {
+
+// We reuse instance of array, but we trie to freeze it as well,
+// so that consumers don't modify it. Maybe it's a bad idea.
+var NO_PATH = [];
+if (typeof Object.freeze === 'function') Object.freeze(NO_PATH);
+
+module.exports = {
+  // Path search settings
+  heuristic: blindHeuristic,
+  distance: constantDistance,
+  compareFScore: compareFScore,
+  NO_PATH: NO_PATH,
+
+  // heap settings
+  setHeapIndex: setHeapIndex,
+
+  // nba:
+  setH1: setH1,
+  setH2: setH2,
+  compareF1Score: compareF1Score,
+  compareF2Score: compareF2Score,
+}
+
+function blindHeuristic(/* a, b */) {
+  // blind heuristic makes this search equal to plain Dijkstra path search.
+  return 0;
+}
+
+function constantDistance(/* a, b */) {
+  return 1;
+}
+
+function compareFScore(a, b) {
+  var result = a.fScore - b.fScore;
+  // TODO: Can I improve speed with smarter ties-breaking?
+  // I tried distanceToSource, but it didn't seem to have much effect
+  return result;
+}
+
+function setHeapIndex(nodeSearchState, heapIndex) {
+  nodeSearchState.heapIndex = heapIndex;
+}
+
+function compareF1Score(a, b) {
+  return a.f1 - b.f1;
+}
+
+function compareF2Score(a, b) {
+  return a.f2 - b.f2;
+}
+
+function setH1(node, heapIndex) {
+  node.h1 = heapIndex;
+}
+
+function setH2(node, heapIndex) {
+  node.h2 = heapIndex;
+}
+
+/***/ }),
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1195,233 +1418,480 @@ if (__webpack_require__.c[__webpack_require__.s] === module) {
 
 module.exports = FastPriorityQueue;
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(11)(module)))
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports) {
-
-/**
- * Based on https://github.com/mourner/tinyqueue
- * Copyright (c) 2017, Vladimir Agafonkin https://github.com/mourner/tinyqueue/blob/master/LICENSE
- * 
- * Adapted for PathFinding needs by @anvaka
- * Copyright (c) 2017, Andrei Kashcha
- */
-module.exports = NodeHeap;
-
-function NodeHeap(data, options) {
-  if (!(this instanceof NodeHeap)) return new NodeHeap(data, options);
-
-  if (!Array.isArray(data)) {
-    // assume first argument is our config object;
-    options = data;
-    data = [];
-  }
-
-  options = options || {};
-
-  this.data = data || [];
-  this.length = this.data.length;
-  this.compare = options.compare || defaultCompare;
-  this.setNodeId = options.setNodeId || noop;
-
-  if (this.length > 0) {
-    for (var i = (this.length >> 1); i >= 0; i--) this._down(i);
-  }
-
-  if (options.setNodeId) {
-    for (var i = 0; i < this.length; ++i) {
-      this.setNodeId(this.data[i], i);
-    }
-  }
-}
-
-function noop() {}
-
-function defaultCompare(a, b) {
-  return a - b;
-}
-
-NodeHeap.prototype = {
-
-  push: function (item) {
-    this.data.push(item);
-    this.setNodeId(item, this.length);
-    this.length++;
-    this._up(this.length - 1);
-  },
-
-  pop: function () {
-    if (this.length === 0) return undefined;
-
-    var top = this.data[0];
-    this.length--;
-
-    if (this.length > 0) {
-      this.data[0] = this.data[this.length];
-      this.setNodeId(this.data[0], 0);
-      this._down(0);
-    }
-    this.data.pop();
-
-    return top;
-  },
-
-  peek: function () {
-    return this.data[0];
-  },
-
-  updateItem: function (pos) {
-    this._down(pos);
-    this._up(pos);
-  },
-
-  _up: function (pos) {
-    var data = this.data;
-    var compare = this.compare;
-    var setNodeId = this.setNodeId;
-    var item = data[pos];
-
-    while (pos > 0) {
-      var parent = (pos - 1) >> 1;
-      var current = data[parent];
-      if (compare(item, current) >= 0) break;
-        data[pos] = current;
-
-       setNodeId(current, pos);
-       pos = parent;
-    }
-
-    data[pos] = item;
-    setNodeId(item, pos);
-  },
-
-  _down: function (pos) {
-    var data = this.data;
-    var compare = this.compare;
-    var halfLength = this.length >> 1;
-    var item = data[pos];
-    var setNodeId = this.setNodeId;
-
-    while (pos < halfLength) {
-      var left = (pos << 1) + 1;
-      var right = left + 1;
-      var best = data[left];
-
-      if (right < this.length && compare(data[right], best) < 0) {
-        left = right;
-        best = data[right];
-      }
-      if (compare(best, item) >= 0) break;
-
-      data[pos] = best;
-      setNodeId(best, pos);
-      pos = left;
-    }
-
-    data[pos] = item;
-    setNodeId(item, pos);
-  }
-};
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports) {
-
-module.exports = {
-  l2: l2,
-  l1: l1
-};
-
-/**
- * Euclid distance (l2 norm);
- * 
- * @param {*} a 
- * @param {*} b 
- */
-function l2(a, b) {
-  var dx = a.x - b.x;
-  var dy = a.y - b.y;
-  return Math.sqrt(dx * dx + dy * dy);
-}
-
-/**
- * Manhattan distance (l1 norm);
- * @param {*} a 
- * @param {*} b 
- */
-function l1(a, b) {
-  var dx = a.x - b.x;
-  var dy = a.y - b.y;
-  return Math.abs(dx) + Math.abs(dy);
-}
-
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports) {
-
-// We reuse instance of array, but we trie to freeze it as well,
-// so that consumers don't modify it. Maybe it's a bad idea.
-var NO_PATH = [];
-if (typeof Object.freeze === 'function') Object.freeze(NO_PATH);
-
-module.exports = {
-  // Path search settings
-  heuristic: blindHeuristic,
-  distance: constantDistance,
-  compareFScore: compareFScore,
-  NO_PATH: NO_PATH,
-
-  // heap settings
-  setHeapIndex: setHeapIndex,
-
-  // nba:
-  setH1: setH1,
-  setH2: setH2,
-  compareF1Score: compareF1Score,
-  compareF2Score: compareF2Score,
-}
-
-function blindHeuristic(/* a, b */) {
-  // blind heuristic makes this search equal to plain Dijkstra path search.
-  return 0;
-}
-
-function constantDistance(/* a, b */) {
-  return 1;
-}
-
-function compareFScore(a, b) {
-  var result = a.fScore - b.fScore;
-  // TODO: Can I improve speed with smarter ties-breaking?
-  // I tried distanceToSource, but it didn't seem to have much effect
-  return result;
-}
-
-function setHeapIndex(nodeSearchState, heapIndex) {
-  nodeSearchState.heapIndex = heapIndex;
-}
-
-function compareF1Score(a, b) {
-  return a.f1 - b.f1;
-}
-
-function compareF2Score(a, b) {
-  return a.f2 - b.f2;
-}
-
-function setH1(node, heapIndex) {
-  node.h1 = heapIndex;
-}
-
-function setH2(node, heapIndex) {
-  node.h2 = heapIndex;
-}
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(12)(module)))
 
 /***/ }),
 /* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return NGraphMove; });
+/* harmony import */ var ngraph_graph__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(10);
+/* harmony import */ var ngraph_graph__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(ngraph_graph__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var ngraph_path__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(11);
+/* harmony import */ var ngraph_path__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(ngraph_path__WEBPACK_IMPORTED_MODULE_1__);
+
+
+const UNKNOWN = 1;
+const UNWALKABLE = 2;
+const WALKABLE = 3;
+const FIRST_MAP = "main";
+const SLEEP_FOR_MS = 50;
+const TRANSPORT_COST = 25;
+const TOWN_COST = 100;
+class NGraphMove {
+    constructor() {
+        this.grids = {};
+        this.graph = ngraph_graph__WEBPACK_IMPORTED_MODULE_0___default()({ multigraph: true });
+        this.pathfinder = ngraph_path__WEBPACK_IMPORTED_MODULE_1___default.a.aStar(this.graph, {
+            distance(fromNode, toNode, link) {
+                if (link.data && link.data.type == "transport") {
+                    return TRANSPORT_COST;
+                }
+                else if (link.data && link.data.type == "town") {
+                    return TOWN_COST;
+                }
+                if (fromNode.data.map == toNode.data.map) {
+                    return Math.sqrt((fromNode.data.x - toNode.data.x) ** 2 + (fromNode.data.y - toNode.data.y) ** 2);
+                }
+            },
+            oriented: true
+        });
+    }
+    static async getInstance() {
+        if (!this.instance) {
+            this.instance = new NGraphMove();
+            await this.instance.prepare();
+        }
+        return this.instance;
+    }
+    reset() {
+        this.searchStartTime = undefined;
+        this.searchFinishTime = undefined;
+        this.moveStartTime = undefined;
+        this.moveFinishTime = undefined;
+    }
+    stop() {
+        this.reset();
+        if (parent.character.moving)
+            stop();
+        if (parent.character.c.town)
+            stop("town");
+    }
+    isMoving() {
+        return this.moveFinishTime == undefined && this.searchStartTime != undefined;
+    }
+    wasCancelled(start) {
+        return !this.searchStartTime || start < this.searchStartTime;
+    }
+    canMove(from, to) {
+        if (from.map != to.map) {
+            console.error(`Don't use this function across maps. You tried to check canMove from ${from.map} to ${to.map}.`);
+            return false;
+        }
+        const grid = this.grids[from.map];
+        const dx = to.x - from.x, dy = to.y - from.y;
+        const nx = Math.abs(dx), ny = Math.abs(dy);
+        const sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1;
+        let x = from.x - G.geometry[from.map].min_x, y = from.y - G.geometry[from.map].min_y;
+        for (let ix = 0, iy = 0; ix < nx || iy < ny;) {
+            if ((0.5 + ix) / nx == (0.5 + iy) / ny) {
+                x += sign_x;
+                y += sign_y;
+                ix++;
+                iy++;
+            }
+            else if ((0.5 + ix) / nx < (0.5 + iy) / ny) {
+                x += sign_x;
+                ix++;
+            }
+            else {
+                y += sign_y;
+                iy++;
+            }
+            if (grid[y][x] !== WALKABLE) {
+                return false;
+            }
+        }
+        return true;
+    }
+    async addToGraph(map) {
+        if (this.grids[map]) {
+            console.info(`We have already prepared ${map}.`);
+            return;
+        }
+        if (!G.maps[map]) {
+            console.error(`${map} is not a valid map.`);
+        }
+        const mapWidth = G.geometry[map].max_x - G.geometry[map].min_x;
+        const mapHeight = G.geometry[map].max_y - G.geometry[map].min_y;
+        const grid = Array(mapHeight);
+        for (let y = 0; y < mapHeight; y++) {
+            grid[y] = Array(mapWidth).fill(UNKNOWN);
+        }
+        for (const yLine of G.geometry[map].y_lines) {
+            for (let y = yLine[0] - G.geometry[map].min_y - parent.character.base.v; y < yLine[0] - G.geometry[map].min_y + parent.character.base.vn && y < mapHeight; y++) {
+                for (let x = yLine[1] - G.geometry[map].min_x - parent.character.base.h; x < yLine[2] - G.geometry[map].min_x + parent.character.base.h && x < mapWidth; x++) {
+                    grid[y][x] = UNWALKABLE;
+                }
+            }
+        }
+        for (const xLine of G.geometry[map].x_lines) {
+            for (let x = xLine[0] - G.geometry[map].min_x - parent.character.base.h; x < xLine[0] - G.geometry[map].min_x + parent.character.base.h && x < mapWidth; x++) {
+                for (let y = xLine[1] - G.geometry[map].min_y - parent.character.base.v; y < xLine[2] - G.geometry[map].min_y + parent.character.base.vn && y < mapHeight; y++) {
+                    grid[y][x] = UNWALKABLE;
+                }
+            }
+        }
+        for (const spawn of G.maps[map].spawns) {
+            let x = Math.trunc(spawn[0]) - G.geometry[map].min_x;
+            let y = Math.trunc(spawn[1]) - G.geometry[map].min_y;
+            if (grid[y][x] == WALKABLE)
+                continue;
+            const stack = [[y, x]];
+            while (stack.length) {
+                [y, x] = stack.pop();
+                let x1 = x;
+                while (x1 >= 0 && grid[y][x1] == UNKNOWN)
+                    x1--;
+                x1++;
+                let spanAbove = 0;
+                let spanBelow = 0;
+                while (x1 < mapWidth && grid[y][x1] == UNKNOWN) {
+                    grid[y][x1] = WALKABLE;
+                    if (!spanAbove && y > 0 && grid[y - 1][x1] == UNKNOWN) {
+                        stack.push([y - 1, x1]);
+                        spanAbove = 1;
+                    }
+                    else if (spanAbove && y > 0 && grid[y - 1][x1] != UNKNOWN) {
+                        spanAbove = 0;
+                    }
+                    if (!spanBelow && y < mapHeight - 1 && grid[y + 1][x1] == UNKNOWN) {
+                        stack.push([y + 1, x1]);
+                        spanBelow = 1;
+                    }
+                    else if (spanBelow && y < mapHeight - 1 && grid[y + 1][x1] != UNKNOWN) {
+                        spanBelow = 0;
+                    }
+                    x1++;
+                }
+            }
+        }
+        this.grids[map] = grid;
+        function createNodeId(map, x, y) {
+            return `${map}:${Math.trunc(x)},${Math.trunc(y)}`;
+        }
+        function createNodeData(map, x, y) {
+            return {
+                map: map,
+                x: Math.trunc(x),
+                y: Math.trunc(y)
+            };
+        }
+        function findClosestSpawn(x, y) {
+            let closest = {
+                x: -99999,
+                y: -99999,
+                distance: 99999
+            };
+            for (const spawn of G.maps[map].spawns) {
+                const distance = Math.sqrt((spawn[0] - x) ** 2 + (spawn[1] - y) ** 2);
+                if (distance < closest.distance) {
+                    closest = {
+                        x: spawn[0],
+                        y: spawn[1],
+                        distance: distance
+                    };
+                }
+            }
+            return closest;
+        }
+        const newNodes = [];
+        for (let y = 1; y < mapHeight - 1; y++) {
+            for (let x = 1; x < mapWidth - 1; x++) {
+                if (grid[y][x] != WALKABLE)
+                    continue;
+                const nodeID = createNodeId(map, x + G.geometry[map].min_x, y + G.geometry[map].min_y);
+                if (this.graph.hasNode(nodeID)) {
+                    newNodes.push(this.graph.getNode(nodeID));
+                    continue;
+                }
+                const nodeData = createNodeData(map, x + G.geometry[map].min_x, y + G.geometry[map].min_y);
+                if (grid[y - 1][x - 1] == UNWALKABLE
+                    && grid[y - 1][x] == UNWALKABLE
+                    && grid[y - 1][x + 1] == UNWALKABLE
+                    && grid[y][x - 1] == UNWALKABLE
+                    && grid[y + 1][x - 1] == UNWALKABLE) {
+                    newNodes.push(this.graph.addNode(nodeID, nodeData));
+                }
+                else if (grid[y - 1][x - 1] == UNWALKABLE
+                    && grid[y - 1][x] == UNWALKABLE
+                    && grid[y - 1][x + 1] == UNWALKABLE
+                    && grid[y][x + 1] == UNWALKABLE
+                    && grid[y + 1][x + 1] == UNWALKABLE) {
+                    newNodes.push(this.graph.addNode(nodeID, nodeData));
+                }
+                else if (grid[y - 1][x + 1] == UNWALKABLE
+                    && grid[y][x + 1] == UNWALKABLE
+                    && grid[y + 1][x - 1] == UNWALKABLE
+                    && grid[y + 1][x] == UNWALKABLE
+                    && grid[y + 1][x + 1] == UNWALKABLE) {
+                    newNodes.push(this.graph.addNode(nodeID, nodeData));
+                }
+                else if (grid[y - 1][x - 1] == UNWALKABLE
+                    && grid[y][x - 1] == UNWALKABLE
+                    && grid[y + 1][x - 1] == UNWALKABLE
+                    && grid[y + 1][x] == UNWALKABLE
+                    && grid[y + 1][x + 1] == UNWALKABLE) {
+                    newNodes.push(this.graph.addNode(nodeID, nodeData));
+                }
+                else if (grid[y - 1][x - 1] == UNWALKABLE
+                    && grid[y - 1][x] == WALKABLE
+                    && grid[y][x - 1] == WALKABLE) {
+                    newNodes.push(this.graph.addNode(nodeID, nodeData));
+                }
+                else if (grid[y - 1][x] == WALKABLE
+                    && grid[y - 1][x + 1] == UNWALKABLE
+                    && grid[y][x + 1] == WALKABLE) {
+                    newNodes.push(this.graph.addNode(nodeID, nodeData));
+                }
+                else if (grid[y][x + 1] == WALKABLE
+                    && grid[y + 1][x] == WALKABLE
+                    && grid[y + 1][x + 1] == UNWALKABLE) {
+                    newNodes.push(this.graph.addNode(nodeID, nodeData));
+                }
+                else if (grid[y][x - 1] == WALKABLE
+                    && grid[y + 1][x - 1] == UNWALKABLE
+                    && grid[y + 1][x] == WALKABLE) {
+                    newNodes.push(this.graph.addNode(nodeID, nodeData));
+                }
+            }
+        }
+        for (const npc of G.maps[map].npcs) {
+            if (npc.id != "transporter")
+                continue;
+            const closest = findClosestSpawn(npc.position[0], npc.position[1]);
+            const nodeID = createNodeId(map, closest.x, closest.y);
+            if (!this.graph.hasNode(nodeID)) {
+                const nodeData = createNodeData(map, closest.x, closest.y);
+                newNodes.push(this.graph.addNode(nodeID, nodeData));
+            }
+            else {
+                newNodes.push(this.graph.getNode(nodeID));
+            }
+            for (const map in G.npcs.transporter.places) {
+                const spawnID = G.npcs.transporter.places[map];
+                const spawn = G.maps[map].spawns[spawnID];
+                const nodeID2 = createNodeId(map, spawn[0], spawn[1]);
+                if (!this.graph.hasNode(nodeID2)) {
+                    const nodeData2 = createNodeData(map, spawn[0], spawn[1]);
+                    this.graph.addNode(nodeID2, nodeData2);
+                }
+                if (!this.graph.hasLink(nodeID, nodeID2)) {
+                    const linkData = {
+                        type: "transport",
+                        spawn: spawnID
+                    };
+                    this.graph.addLink(nodeID, nodeID2, linkData);
+                }
+            }
+        }
+        for (const door of G.maps[map].doors) {
+            if (door[7] || door[8])
+                continue;
+            const spawn = G.maps[map].spawns[door[6]];
+            const nodeID = createNodeId(map, spawn[0], spawn[1]);
+            if (!this.graph.hasNode(nodeID)) {
+                const nodeData = createNodeData(map, spawn[0], spawn[1]);
+                newNodes.push(this.graph.addNode(nodeID, nodeData));
+            }
+            else {
+                newNodes.push(this.graph.getNode(nodeID));
+            }
+            const spawn2 = G.maps[door[4]].spawns[door[5]];
+            const nodeID2 = createNodeId(door[4], spawn2[0], spawn2[1]);
+            if (!this.graph.hasNode(nodeID2)) {
+                const nodeData2 = createNodeData(door[4], spawn2[0], spawn2[1]);
+                this.graph.addNode(nodeID2, nodeData2);
+            }
+            if (!this.graph.hasLink(nodeID, nodeID2)) {
+                const linkData = {
+                    type: "transport",
+                    spawn: door[5]
+                };
+                this.graph.addLink(nodeID, nodeID2, linkData);
+            }
+        }
+        for (const spawn of G.maps[map].spawns) {
+            const spawnNodeId = createNodeId(map, spawn[0], spawn[1]);
+            if (!this.graph.hasNode(spawnNodeId)) {
+                const spawnData = createNodeData(map, spawn[0], spawn[1]);
+                newNodes.push(this.graph.addNode(spawnNodeId, spawnData));
+            }
+        }
+        for (let i = 0; i < newNodes.length; i++) {
+            for (let j = i + 1; j < newNodes.length; j++) {
+                const nodeI = newNodes[i];
+                const nodeJ = newNodes[j];
+                if (this.canMove(nodeI.data, nodeJ.data)) {
+                    this.graph.addLink(nodeI.id, nodeJ.id);
+                    this.graph.addLink(nodeJ.id, nodeI.id);
+                }
+            }
+        }
+        const townNodeID = createNodeId(map, G.maps[map].spawns[0][0], G.maps[map].spawns[0][1]);
+        const townNodeLinkData = {
+            type: "town"
+        };
+        for (const node of newNodes) {
+            this.graph.addLink(node.id, townNodeID, townNodeLinkData);
+        }
+    }
+    async prepare(start = FIRST_MAP) {
+        const maps = [start];
+        for (let i = 0; i < maps.length; i++) {
+            const map = maps[i];
+            for (const door of G.maps[map].doors) {
+                const connectedMap = door[4];
+                if (!maps.includes(connectedMap))
+                    maps.push(door[4]);
+            }
+        }
+        for (const destination in G.npcs.transporter.places) {
+            const map = destination;
+            if (!maps.includes(map))
+                maps.push(map);
+        }
+        for (const map of maps) {
+            await this.addToGraph(map);
+            await new Promise(resolve => setTimeout(resolve, SLEEP_FOR_MS));
+        }
+    }
+    getGraphInfo() {
+        console.info("Graph information ----------");
+        console.info(`# Nodes: ${this.graph.getNodeCount()}`);
+        console.info(`# Links: ${this.graph.getLinkCount()}`);
+        console.info("----------------------------");
+    }
+    getPath(start, goal) {
+        console.info(`Getting path from ${start.map}.${start.x},${start.y} to ${goal.map}.${goal.x}.${goal.y}`);
+        let distToStart = Number.MAX_VALUE;
+        let startNode;
+        let distToFinish = Number.MAX_VALUE;
+        let finishNode;
+        this.graph.forEachNode((node) => {
+            if (node.data.map == start.map) {
+                const distance = Math.sqrt((node.data.x - start.x) ** 2 + (node.data.y - start.y) ** 2);
+                if (distance < distToStart) {
+                    distToStart = distance;
+                    startNode = node.id;
+                }
+            }
+            if (node.data.map == goal.map) {
+                const distance = Math.sqrt((node.data.x - goal.x) ** 2 + (node.data.y - goal.y) ** 2);
+                if (distance < distToFinish) {
+                    distToFinish = distance;
+                    finishNode = node.id;
+                }
+            }
+        });
+        const rawPath = this.pathfinder.find(startNode, finishNode);
+        const optimizedPath = [];
+        if (rawPath[rawPath.length - 1].data.x != start.x || rawPath[rawPath.length - 1].data.y != start.y) {
+            optimizedPath.push([start, rawPath[rawPath.length - 1].data, undefined]);
+        }
+        for (let i = rawPath.length - 1; i > 0; i--) {
+            const node = rawPath[i];
+            const nextNode = rawPath[i - 1];
+            const link = this.graph.getLink(node.id, nextNode.id);
+            optimizedPath.push([node.data, nextNode.data, link.data]);
+        }
+        if (rawPath[0].data.x != goal.x || rawPath[0].data.y != goal.y) {
+            optimizedPath.push([rawPath[0].data, goal, undefined]);
+        }
+        return optimizedPath;
+    }
+    async move(goal, finishDistanceTolerance = 0) {
+        this.reset();
+        const searchStart = Date.now();
+        this.searchStartTime = searchStart;
+        const from = {
+            map: parent.character.map,
+            x: parent.character.real_x,
+            y: parent.character.real_y
+        };
+        const to = {
+            map: goal.map,
+            x: goal.real_x !== undefined ? goal.real_x : goal.x,
+            y: goal.real_y !== undefined ? goal.real_y : goal.y
+        };
+        const path = this.getPath(from, to);
+        this.searchFinishTime = Date.now();
+        console.log(`We found a path from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] in ${this.searchFinishTime - this.searchStartTime}ms`);
+        function getCloseTo(from) {
+            if (finishDistanceTolerance == 0)
+                return to;
+            const angle = Math.atan2(from.y - to.y, from.x - to.x);
+            return {
+                map: to.map,
+                x: to.x + Math.cos(angle) * finishDistanceTolerance,
+                y: to.y + Math.sin(angle) * finishDistanceTolerance
+            };
+        }
+        async function performNextMovement(a, b, c) {
+            if (c) {
+                if (c.type == "town") {
+                    use_skill("town");
+                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + 5000));
+                    return;
+                }
+                else if (c.type == "transport") {
+                    transport(b.map, c.spawn);
+                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings)));
+                    return;
+                }
+            }
+            else {
+                let walkTo = b;
+                if (a.map == to.map && finishDistanceTolerance > 0) {
+                    walkTo = getCloseTo(b);
+                }
+                const distance = Math.sqrt((walkTo.x - a.x) ** 2 + (walkTo.y - a.y) ** 2);
+                const timeout = new Promise((resolve, reject) => setTimeout(reject, 1100 * distance / parent.character.speed));
+                await Promise.race([move(walkTo.x, walkTo.y), timeout]);
+            }
+        }
+        this.moveStartTime = Date.now();
+        for (let i = 0; i < path.length; i++) {
+            const fromData = path[i][0];
+            const toData = path[i][1];
+            const linkData = path[i][2];
+            if (this.wasCancelled(searchStart)) {
+                console.log(`Search from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] was cancelled`);
+                return Promise.reject("cancelled");
+            }
+            else if (parent.character.c.town || parent.character.moving) {
+                await new Promise(resolve => setTimeout(resolve, SLEEP_FOR_MS));
+                i--;
+                continue;
+            }
+            else if (!linkData && !this.canMove(fromData, toData)) {
+                console.warn("NGraphMove movement failed. We're trying again.");
+                return this.move(goal, finishDistanceTolerance);
+            }
+            else {
+                await performNextMovement(fromData, toData, linkData);
+            }
+        }
+        this.moveFinishTime = Date.now();
+        console.log(`We moved from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] in ${this.moveFinishTime - this.moveStartTime}ms`);
+        return Promise.resolve();
+    }
+}
+
+
+/***/ }),
+/* 8 */
 /***/ (function(module, exports) {
 
 /**
@@ -1490,7 +1960,911 @@ function makeSearchStatePool() {
 module.exports = makeSearchStatePool;
 
 /***/ }),
-/* 8 */
+/* 9 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Character; });
+/* harmony import */ var fastpriorityqueue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6);
+/* harmony import */ var fastpriorityqueue__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(fastpriorityqueue__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _functions__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(0);
+/* harmony import */ var _trade__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(2);
+/* harmony import */ var _info__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(1);
+/* harmony import */ var _ngraphmove__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(7);
+
+
+
+
+
+class Character {
+    constructor() {
+        this.itemsToKeep = [
+            "computer", "tracker",
+            "goldbooster", "luckbooster", "xpbooster",
+            "hpot1", "mpot1",
+            "jacko", "lantern"
+        ];
+        this.itemsToSell = {
+            "shoes": 2, "pants": 2, "coat": 2, "helmet": 2, "gloves": 2,
+            "cclaw": 2, "hpamulet": 1, "hpbelt": 1, "maceofthedead": 2, "ringsj": 1, "slimestaff": 2, "spear": 2, "throwingstars": 2, "vitearring": 1, "vitring": 1,
+        };
+        this.itemsToDismantle = {};
+        this.itemsToExchange = new Set([
+            "5bucks", "gem0", "gem1",
+            "seashell",
+            "leather",
+            "candycane", "mistletoe", "ornament",
+            "candy0", "candy1",
+            "redenvelopev3",
+            "basketofeggs",
+            "armorbox", "bugbountybox", "gift0", "gift1", "mysterybox", "weaponbox", "xbox"
+        ]);
+        this.itemsToBuy = new Set([
+            ...this.itemsToExchange,
+            "dexbelt", "intbelt", "strbelt",
+            "ctristone", "dexring", "intring", "ringofluck", "strring", "suckerpunch", "tristone",
+            "dexearring", "intearring", "lostearring", "strearring",
+            "amuletofm", "dexamulet", "intamulet", "snring", "stramulet", "t2dexamulet", "t2intamulet", "t2stramulet",
+            "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull",
+            "t2quiver", "lantern", "mshield", "quiver", "sshield", "xshield",
+            "angelwings", "bcape", "cape", "ecape", "stealthcape",
+            "hboots", "mrnboots", "mwboots", "shoes1", "wingedboots", "xboots",
+            "hpants", "mrnpants", "mwpants", "pants1", "starkillers", "xpants",
+            "cdragon", "coat1", "harmor", "mcape", "mrnarmor", "mwarmor", "tshirt0", "tshirt1", "tshirt2", "tshirt3", "tshirt4", "tshirt6", "tshirt7", "tshirt8", "tshirt88", "tshirt9", "warpvest", "xarmor",
+            "eears", "fury", "helmet1", "hhelmet", "mrnhat", "mwhelmet", "partyhat", "rednose", "xhelmet",
+            "gloves1", "goldenpowerglove", "handofmidas", "hgloves", "mrngloves", "mwgloves", "poker", "powerglove", "xgloves",
+            "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "firebow", "frostbow", "froststaff", "gbow", "harbringer", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow", "t3bow", "wblade",
+            "ascale", "bfur", "cscale", "electronics", "feather0", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", "networkcard", "platinumingot", "platinumnugget", "pleather", "snakefang",
+            "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8",
+            "egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8",
+            "essenceofether", "essenceoffire", "essenceoffrost", "essenceoflife", "essenceofnature",
+            "bunnyelixir", "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate",
+            "cscroll3", "scroll3", "scroll4",
+            "bottleofxp", "bugbountybox", "monstertoken", "poison", "snakeoil"
+        ]);
+        this.holdPosition = false;
+        this.holdAttack = false;
+    }
+    async mainLoop() {
+        try {
+            if (parent.character.ctype != "merchant") {
+                this.equipBetterItems();
+                this.getMonsterhuntQuest();
+                await Object(_trade__WEBPACK_IMPORTED_MODULE_2__[/* buyPots */ "b"])();
+            }
+            this.getNewYearTreeBuff();
+            Object(_trade__WEBPACK_IMPORTED_MODULE_2__[/* dismantleItems */ "e"])(this.itemsToDismantle);
+            if (parent.character.slots.elixir == null) {
+                const items = Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* findItems */ "c"])("candypop");
+                if (items.length) {
+                    equip(items[0].index);
+                }
+            }
+            for (const entity of Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* getEntities */ "h"])({ isCtype: "merchant", isWithinDistance: 400 })) {
+                for (const slot in entity.slots) {
+                    const info = entity.slots[slot];
+                    if (!info)
+                        continue;
+                    if (!info.giveaway)
+                        continue;
+                    if (info.list.includes(parent.character.id))
+                        continue;
+                    parent.socket.emit("join_giveaway", { slot: slot, id: entity.id, rid: info.rid });
+                }
+            }
+            for (const entity of Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* getEntities */ "h"])({ isCtype: "merchant", isWithinDistance: 400 })) {
+                for (const slot in entity.slots) {
+                    const info = entity.slots[slot];
+                    if (!info)
+                        continue;
+                    if (info.b)
+                        continue;
+                    if (!info.rid)
+                        continue;
+                    if (!this.itemsToBuy.has(info.name))
+                        continue;
+                    if (info.price > G.items[info.name].g * 2)
+                        continue;
+                    if (parent.character.gold < info.price)
+                        continue;
+                    if (info.q) {
+                        const quantityToBuy = Math.min(info.q, Math.trunc(parent.character.gold / info.price));
+                        parent.socket.emit("trade_buy", { slot: slot, id: entity.id, rid: info.rid, q: quantityToBuy });
+                    }
+                    else {
+                        parent.socket.emit("trade_buy", { slot: slot, id: entity.id, rid: info.rid, q: 1 });
+                    }
+                }
+            }
+            this.loot();
+        }
+        catch (error) {
+            console.error(error);
+        }
+        setTimeout(async () => { this.mainLoop(); }, Math.max(250, parent.character.ping));
+    }
+    async run() {
+        try {
+            const before = Date.now();
+            this.nGraphMove = await _ngraphmove__WEBPACK_IMPORTED_MODULE_4__[/* NGraphMove */ "a"].getInstance();
+            game_log(`Took ${Date.now() - before}ms to prepare pathfinding.`);
+            this.nGraphMove.getGraphInfo();
+        }
+        catch (e) {
+            console.error(e);
+        }
+        this.healLoop();
+        this.attackLoop();
+        this.scareLoop();
+        this.moveLoop();
+        this.infoLoop();
+        this.mainLoop();
+    }
+    infoLoop() {
+        const party = Object(_info__WEBPACK_IMPORTED_MODULE_3__[/* getPartyInfo */ "c"])();
+        party[parent.character.name] = {
+            "lastSeen": new Date(),
+            "shouldSwitchServer": this.shouldSwitchServer(),
+            "monsterHuntTargets": this.getMonsterHuntTargets(),
+            "items": Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* getInventory */ "i"])(),
+            "attack": parent.character.attack,
+            "frequency": parent.character.frequency,
+            "goldm": parent.character.goldm,
+            "last_ms": parent.character.last_ms,
+            "luckm": parent.character.luckm,
+            "map": parent.character.map,
+            "x": parent.character.real_x,
+            "y": parent.character.real_y,
+            "s": parent.character.s
+        };
+        Object(_info__WEBPACK_IMPORTED_MODULE_3__[/* setPartyInfo */ "g"])(party);
+        const players = Object(_info__WEBPACK_IMPORTED_MODULE_3__[/* getPlayersInfo */ "d"])();
+        let changed = false;
+        for (const player of Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* getEntities */ "h"])({ isPlayer: true, isPartyMember: false })) {
+            players[player.id] = {
+                "lastSeen": new Date(),
+                "rip": player.rip,
+                "map": player.map,
+                "x": player.real_x,
+                "y": player.real_y,
+                "s": player.s,
+                "ctype": player.ctype
+            };
+            changed = true;
+        }
+        if (changed)
+            Object(_info__WEBPACK_IMPORTED_MODULE_3__[/* setPlayersInfo */ "h"])(players);
+        const npcs = Object(_info__WEBPACK_IMPORTED_MODULE_3__[/* getNPCInfo */ "b"])();
+        changed = false;
+        for (const npc of ["Angel", "Kane"]) {
+            if (!parent.entities[npc])
+                continue;
+            npcs[npc] = {
+                "lastSeen": new Date(),
+                "map": parent.entities[npc].map,
+                "x": parent.entities[npc].real_x,
+                "y": parent.entities[npc].real_y
+            };
+            changed = true;
+        }
+        if (changed)
+            Object(_info__WEBPACK_IMPORTED_MODULE_3__[/* setNPCInfo */ "f"])(npcs);
+        const monsters = Object(_info__WEBPACK_IMPORTED_MODULE_3__[/* getMonstersInfo */ "a"])();
+        changed = false;
+        for (const entity of Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* getEntities */ "h"])({ isMonster: true, isRIP: false })) {
+            if (!(["fvampire", "goldenbat", "greenjr", "jr", "mvampire", "phoenix", "pinkgoo", "snowman", "wabbit"]).includes(entity.mtype))
+                continue;
+            monsters[entity.mtype] = {
+                "lastSeen": new Date(),
+                "id": entity.id,
+                "x": entity.real_x,
+                "y": entity.real_y,
+                "map": entity.map
+            };
+            changed = true;
+        }
+        if (changed)
+            Object(_info__WEBPACK_IMPORTED_MODULE_3__[/* setMonstersInfo */ "e"])(monsters);
+        setTimeout(() => { this.infoLoop(); }, 2000);
+    }
+    getMonsterHuntTargets() {
+        const types = [];
+        let leastTimeRemaining = Number.MAX_VALUE;
+        const party = Object(_info__WEBPACK_IMPORTED_MODULE_3__[/* getPartyInfo */ "c"])();
+        for (const memberName of parent.party_list) {
+            const member = party[memberName];
+            if (!member)
+                continue;
+            if (!member.s.monsterhunt || member.s.monsterhunt.c == 0)
+                continue;
+            if (!this.targetPriority[member.s.monsterhunt.id])
+                continue;
+            const coop = this.targetPriority[member.s.monsterhunt.id].coop;
+            if (coop) {
+                const availableTypes = Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* getPartyMemberTypes */ "j"])();
+                const missingTypes = coop.filter(x => !availableTypes.has(x));
+                if (missingTypes.length)
+                    continue;
+            }
+            const timeLeft = member.s.monsterhunt.ms - (Date.now() - member.last_ms.getTime());
+            if (timeLeft < leastTimeRemaining) {
+                leastTimeRemaining = timeLeft;
+                types.unshift(member.s.monsterhunt.id);
+            }
+            else {
+                types.push(member.s.monsterhunt.id);
+            }
+        }
+        return types;
+    }
+    shouldSwitchServer() {
+        if (parent.character.ctype == "merchant")
+            return true;
+        if (!parent.character.s.monsterhunt)
+            return false;
+        if (parent.character.s.monsterhunt.c == 0)
+            return false;
+        if (this.getMonsterHuntTargets().length)
+            return false;
+        for (const monster in parent.S) {
+            if (monster == "grinch")
+                continue;
+            if (parent.S[monster].hp / parent.S[monster].max_hp > 0.9)
+                continue;
+            if (!parent.S[monster].live)
+                continue;
+            if (this.targetPriority[monster])
+                return false;
+        }
+        return true;
+    }
+    loot() {
+        let i = 0;
+        const party = Object(_info__WEBPACK_IMPORTED_MODULE_3__[/* getPartyInfo */ "c"])();
+        for (const chestID in parent.chests) {
+            const chest = parent.chests[chestID];
+            if (distance(parent.character, chest) > 800)
+                continue;
+            let shouldLoot = true;
+            for (const id of parent.party_list) {
+                if (id == parent.character.id)
+                    continue;
+                const partyMember = parent.entities[id];
+                if (!partyMember)
+                    continue;
+                if (distance(partyMember, chest) > 800)
+                    continue;
+                if (!party[id])
+                    continue;
+                if (["chest3", "chest4"].includes(chest.skin)) {
+                    if (parent.character.goldm >= party[id].goldm)
+                        continue;
+                }
+                else {
+                    if (parent.character.luckm >= party[id].luckm)
+                        continue;
+                }
+                shouldLoot = false;
+                break;
+            }
+            if (shouldLoot) {
+                parent.socket.emit("open_chest", { id: chestID });
+                if (++i > 10)
+                    break;
+            }
+        }
+    }
+    async attackLoop() {
+        try {
+            const targets = this.getTargets(1);
+            if (targets.length && this.wantToAttack(targets[0])) {
+                await attack(targets[0]);
+                reduce_cooldown("attack", Math.min(...parent.pings));
+            }
+        }
+        catch (error) {
+            if (error.reason == "cooldown") {
+                setTimeout(async () => { this.attackLoop(); }, Math.min(...parent.pings) - error.remaining);
+                return;
+            }
+            else if (!["not_found", "disabled"].includes(error.reason)) {
+                console.error(error);
+            }
+            setTimeout(async () => { this.attackLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* getCooldownMS */ "e"])("attack"));
+            return;
+        }
+        setTimeout(async () => { this.attackLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* getCooldownMS */ "e"])("attack", true));
+    }
+    scareLoop() {
+        try {
+            const targets = Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* getEntities */ "h"])({ isAttackingUs: true, isMonster: true, isRIP: false });
+            let wantToScare = false;
+            if (targets.length >= 3) {
+                wantToScare = true;
+            }
+            else if (targets.length && !this.targetPriority[targets[0].mtype]) {
+                wantToScare = true;
+            }
+            else if (parent.character.c.town
+                && (targets.length > 1
+                    || (targets.length == 1
+                        && distance(targets[0], parent.character) - targets[0].range - (targets[0].speed * 2)))) {
+                wantToScare = true;
+            }
+            else {
+                for (const target of targets) {
+                    if (distance(target, parent.character) > target.range)
+                        continue;
+                    if (Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* calculateDamageRange */ "a"])(target, parent.character)[1] * 6 * target.frequency <= parent.character.hp)
+                        continue;
+                    wantToScare = true;
+                    break;
+                }
+            }
+            if (!Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* isAvailable */ "m"])("scare")
+                || !wantToScare) {
+                setTimeout(() => { this.scareLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* getCooldownMS */ "e"])("scare"));
+                return;
+            }
+            if (parent.character.slots.orb.name == "jacko") {
+                use_skill("scare");
+                reduce_cooldown("scare", Math.min(...parent.pings));
+            }
+            else {
+                const items = Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* findItems */ "c"])("jacko");
+                if (items.length) {
+                    const jackoI = items[0].index;
+                    equip(jackoI);
+                    use_skill("scare");
+                    reduce_cooldown("scare", Math.min(...parent.pings));
+                }
+            }
+        }
+        catch (error) {
+            console.error(error);
+        }
+        setTimeout(() => { this.scareLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* getCooldownMS */ "e"])("scare"));
+    }
+    getMovementLocation(mtype) {
+        if (!this.targetPriority[mtype])
+            return;
+        if (this.targetPriority[mtype].farmingPosition && this.targetPriority[mtype].holdPositionFarm)
+            return this.targetPriority[mtype].farmingPosition;
+        if (Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* getVisibleMonsterTypes */ "l"])().has(mtype))
+            return;
+        if (this.targetPriority[mtype].farmingPosition) {
+            if (distance(parent.character, this.targetPriority[mtype].farmingPosition) < 300) {
+                return;
+            }
+            else {
+                return this.targetPriority[mtype].farmingPosition;
+            }
+        }
+        if (parent.S[mtype]) {
+            if (!parent.S[mtype].live)
+                return;
+            return parent.S[mtype];
+        }
+        const randomSpawn = Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* getRandomMonsterSpawn */ "k"])(mtype);
+        if (randomSpawn)
+            return randomSpawn;
+    }
+    getMovementTarget() {
+        if (parent.character.rip) {
+            set_message("RIP");
+            return;
+        }
+        if (parent.character.s.monsterhunt && parent.character.s.monsterhunt.c == 0) {
+            set_message("Finish MH");
+            return { target: "monsterhunter", position: G.maps.main.ref.monsterhunter, range: 300 };
+        }
+        for (const entity of Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* getEntities */ "h"])({ isMonster: true, isRIP: false })) {
+            if (entity.mtype != "goldenbat" && entity.mtype != "phoenix")
+                continue;
+            if (!this.targetPriority[entity.mtype])
+                continue;
+            set_message(entity.mtype);
+            return { target: entity.mtype, position: entity, range: parent.character.range };
+        }
+        const monsters = Object(_info__WEBPACK_IMPORTED_MODULE_3__[/* getMonstersInfo */ "a"])();
+        for (const mtype in monsters) {
+            if (!this.targetPriority[mtype])
+                continue;
+            const info = monsters[mtype];
+            const entityInfo = parent.entities[info.id];
+            if (entityInfo) {
+                info.x = entityInfo.real_x;
+                info.y = entityInfo.real_y;
+            }
+            if (distance(parent.character, info) < parent.character.range * 2 && !entityInfo) {
+                delete monsters[mtype];
+                Object(_info__WEBPACK_IMPORTED_MODULE_3__[/* setMonstersInfo */ "e"])(monsters);
+            }
+            else {
+                set_message(`SP ${mtype}`);
+                return { target: mtype, position: info, range: parent.character.range };
+            }
+        }
+        if (G.maps.main.ref.newyear_tree && !parent.character.s.holidayspirit) {
+            set_message("Xmas Tree");
+            return { target: "newyear_tree", position: G.maps.main.ref.newyear_tree, range: 300 };
+        }
+        if (Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* isInventoryFull */ "n"])()) {
+            set_message("Full!");
+            return { target: "merchant", position: { map: "main", "x": 60, "y": -325 }, range: 300 };
+        }
+        for (const mtype in parent.S) {
+            if (!parent.S[mtype].live)
+                continue;
+            if (!this.targetPriority[mtype])
+                continue;
+            set_message(mtype);
+            return { target: mtype, position: parent.S[mtype], range: parent.character.range };
+        }
+        const party = Object(_info__WEBPACK_IMPORTED_MODULE_3__[/* getPartyInfo */ "c"])();
+        const monsterHuntTargets = this.getMonsterHuntTargets();
+        if (monsterHuntTargets.length) {
+            const potentialTarget = monsterHuntTargets[0];
+            const coop = this.targetPriority[potentialTarget].coop;
+            if (coop) {
+                const readyMembers = new Set();
+                for (const memberName of parent.party_list) {
+                    if (!party[memberName] || !party[memberName].monsterHuntTargets)
+                        continue;
+                    if (party[memberName].monsterHuntTargets[0] != potentialTarget)
+                        continue;
+                    readyMembers.add(parent.party[memberName].type);
+                }
+                const notReady = coop.filter(x => !readyMembers.has(x));
+                if (notReady.length == 0) {
+                    set_message(`MH ${potentialTarget}`);
+                    return { target: potentialTarget, position: this.getMovementLocation(potentialTarget) };
+                }
+            }
+            else {
+                set_message(`MH ${potentialTarget}`);
+                return { target: potentialTarget, position: this.getMovementLocation(potentialTarget) };
+            }
+        }
+        if (!parent.character.s.monsterhunt) {
+            set_message("New MH");
+            return { target: "monsterhunter", position: G.maps.main.ref.monsterhunter, range: 300 };
+        }
+        if (this.mainTarget) {
+            set_message(this.mainTarget);
+            return { target: this.mainTarget, position: this.getMovementLocation(this.mainTarget) };
+        }
+    }
+    moveLoop() {
+        try {
+            if (this.holdPosition || smart.moving) {
+                setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
+                return;
+            }
+            const lastMovementTarget = this.movementTarget;
+            this.movementTarget = this.getMovementTarget();
+            if (this.movementTarget && this.movementTarget.position) {
+                if (!lastMovementTarget
+                    || this.movementTarget.target != lastMovementTarget.target
+                    || (lastMovementTarget.position && this.movementTarget.position.map != lastMovementTarget.position.map)) {
+                    this.nGraphMove.stop();
+                    this.nGraphMove.move(this.movementTarget.position, this.movementTarget.range);
+                    setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
+                    return;
+                }
+                if (!this.nGraphMove.isMoving()) {
+                    this.nGraphMove.move(this.movementTarget.position, this.movementTarget.range);
+                    setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
+                    return;
+                }
+            }
+            const targets = this.getTargets(1);
+            if (targets.length
+                && targets[0].mtype == this.movementTarget.target
+                && this.targetPriority[targets[0].mtype] && !this.targetPriority[targets[0].mtype].holdPositionFarm) {
+                this.nGraphMove.stop();
+            }
+            const targeted = get_targeted_monster();
+            if (targeted && targeted.rip) {
+                change_target(null, true);
+                this.nGraphMove.stop();
+            }
+            if (this.nGraphMove.isMoving()) {
+                setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
+                return;
+            }
+            if (this.targetPriority[this.movementTarget.target] && this.targetPriority[this.movementTarget.target].holdPositionFarm) {
+                setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
+                return;
+            }
+            const inEnemyAttackRange = [];
+            const inAggroRange = [];
+            const inAttackRange = [];
+            const inAttackRangeHighPriority = [];
+            const inExtendedAttackRange = [];
+            const inExtendedAttackRangeHighPriority = [];
+            const visible = [];
+            const visibleHighPriority = [];
+            for (const id in parent.entities) {
+                const entity = parent.entities[id];
+                if (entity.rip)
+                    continue;
+                if (!this.targetPriority[entity.mtype])
+                    continue;
+                const d = distance(parent.character, entity);
+                const enemyRange = Math.max(entity.range + entity.speed, 50);
+                if (enemyRange < parent.character.range
+                    && d < enemyRange) {
+                    if (entity.hp > Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* calculateDamageRange */ "a"])(parent.character, entity)[0] || this.targetPriority[entity.mtype].holdAttackInEntityRange || entity.target == parent.character.name) {
+                        inEnemyAttackRange.push(entity);
+                    }
+                }
+                if (!entity.target && d < 50) {
+                    inAggroRange.push(entity);
+                }
+                if (d < parent.character.range) {
+                    inAttackRange.push(entity);
+                    if (this.movementTarget.target == entity.mtype)
+                        inAttackRangeHighPriority.push(entity);
+                }
+                else if (d < parent.character.range * 2) {
+                    inExtendedAttackRange.push(entity);
+                    if (this.movementTarget.target == entity.mtype)
+                        inExtendedAttackRangeHighPriority.push(entity);
+                }
+                visible.push(entity);
+                if (this.movementTarget.target == entity.mtype)
+                    visibleHighPriority.push(entity);
+            }
+            if (inEnemyAttackRange.length) {
+                const average = {
+                    x: 0,
+                    y: 0
+                };
+                let maxRange = 0;
+                for (const v of inEnemyAttackRange) {
+                    average.x += v.real_x;
+                    average.y += v.real_y;
+                    if (v.range + v.speed > maxRange) {
+                        maxRange = v.range + v.speed;
+                    }
+                }
+                average.x /= inEnemyAttackRange.length;
+                average.y /= inEnemyAttackRange.length;
+                const angle = Math.atan2(parent.character.real_y - average.y, parent.character.real_x - average.x);
+                const moveDistance = Math.min(parent.character.range, maxRange * 1.5);
+                const calculateEscape = (angle, moveDistance) => {
+                    const x = Math.cos(angle) * moveDistance;
+                    const y = Math.sin(angle) * moveDistance;
+                    return { x: parent.character.real_x + x, y: parent.character.real_y + y };
+                };
+                let escapePosition = calculateEscape(angle, moveDistance);
+                let angleChange = 0;
+                while (!this.nGraphMove.canMove({ map: parent.character.map, x: parent.character.real_x, y: parent.character.real_y }, { map: parent.character.map, x: escapePosition.x, y: escapePosition.y }) && angleChange < 180) {
+                    if (angleChange <= 0) {
+                        angleChange = (-angleChange) + 1;
+                    }
+                    else {
+                        angleChange = -angleChange;
+                    }
+                    escapePosition = calculateEscape(angle + (angleChange * Math.PI / 180), moveDistance);
+                }
+                move(escapePosition.x, escapePosition.y);
+                setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
+                return;
+            }
+            if (inAttackRangeHighPriority.length) {
+                setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
+                return;
+            }
+            if (visibleHighPriority.length) {
+                let closest;
+                let d = Number.MAX_VALUE;
+                for (const v of visibleHighPriority) {
+                    const vD = distance(parent.character, v);
+                    if (vD < d) {
+                        d = vD;
+                        closest = v;
+                    }
+                }
+                this.nGraphMove.move(closest, parent.character.range);
+                setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
+                return;
+            }
+            if (visible.length) {
+                let closest;
+                let d = Number.MAX_VALUE;
+                for (const v of visible) {
+                    const vD = distance(parent.character, v);
+                    if (vD < d) {
+                        d = vD;
+                        closest = v;
+                    }
+                }
+                this.nGraphMove.move(closest, parent.character.range);
+                setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
+                return;
+            }
+        }
+        catch (error) {
+            console.error(error);
+        }
+        setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
+    }
+    async healLoop() {
+        try {
+            if (parent.character.rip) {
+                respawn();
+                setTimeout(() => { this.healLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* getCooldownMS */ "e"])("use_town"));
+                return;
+            }
+            else if (!Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* isAvailable */ "m"])("use_hp")) {
+                setTimeout(() => { this.healLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* getCooldownMS */ "e"])("use_hp"));
+                return;
+            }
+            const hpPots = ["hpot0", "hpot1"];
+            const mpPots = ["mpot0", "mpot1"];
+            let useMpPot = null;
+            let useHpPot = null;
+            for (let i = parent.character.items.length - 1; i >= 0; i--) {
+                const item = parent.character.items[i];
+                if (!item)
+                    continue;
+                if (!useHpPot && hpPots.includes(item.name)) {
+                    useHpPot = item;
+                }
+                else if (!useMpPot && mpPots.includes(item.name)) {
+                    useMpPot = item;
+                }
+                if (useHpPot && useMpPot) {
+                    break;
+                }
+            }
+            const hpRatio = parent.character.hp / parent.character.max_hp;
+            const mpRatio = parent.character.mp / parent.character.max_mp;
+            if (hpRatio <= mpRatio
+                && hpRatio != 1
+                && (!useHpPot
+                    || (useHpPot.name == "hpot0" && (parent.character.hp <= parent.character.max_hp - 200 || parent.character.hp < 50))
+                    || (useHpPot.name == "hpot1" && (parent.character.hp <= parent.character.max_hp - 400 || parent.character.hp < 50)))) {
+                use_skill("use_hp");
+                reduce_cooldown("use_hp", Math.min(...parent.pings));
+                reduce_cooldown("use_mp", Math.min(...parent.pings));
+            }
+            else if (mpRatio != 1
+                && (!useMpPot
+                    || (useMpPot.name == "mpot0" && (parent.character.mp <= parent.character.max_mp - 300 || parent.character.mp < 50))
+                    || (useMpPot.name == "mpot1" && (parent.character.mp <= parent.character.max_mp - 500 || parent.character.mp < 50)))) {
+                use_skill("use_mp");
+                reduce_cooldown("use_hp", Math.min(...parent.pings));
+                reduce_cooldown("use_mp", Math.min(...parent.pings));
+            }
+            else if (hpRatio < mpRatio) {
+                use_skill("regen_hp");
+                reduce_cooldown("use_hp", Math.min(...parent.pings));
+                reduce_cooldown("use_mp", Math.min(...parent.pings));
+            }
+            else if (mpRatio < hpRatio) {
+                use_skill("regen_mp");
+                reduce_cooldown("use_hp", Math.min(...parent.pings));
+                reduce_cooldown("use_mp", Math.min(...parent.pings));
+            }
+        }
+        catch (error) {
+            console.error(error);
+        }
+        setTimeout(() => { this.healLoop(); }, Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* getCooldownMS */ "e"])("use_hp"));
+    }
+    getNewYearTreeBuff() {
+        if (!G.maps.main.ref.newyear_tree)
+            return;
+        if (parent.character.s.holidayspirit)
+            return;
+        if (distance(parent.character, G.maps.main.ref.newyear_tree) > 400)
+            return;
+        parent.socket.emit("interaction", { type: "newyear_tree" });
+    }
+    getMonsterhuntQuest() {
+        if (distance(parent.character, G.maps.main.ref.monsterhunter) > 400)
+            return;
+        if (!parent.character.s.monsterhunt) {
+            parent.socket.emit("monsterhunt");
+        }
+        else if (parent.character.s.monsterhunt.c == 0) {
+            parent.socket.emit("monsterhunt");
+        }
+    }
+    parseCM(characterName, data) {
+        if (!parent.party_list.includes(characterName) && parent.character.name != characterName
+            && !["earthiverse", "earthMag", "earthMag2"].includes(characterName)
+            && !(data.message == "monster")) {
+            game_log("Blocked CM from " + characterName);
+            return;
+        }
+        if (data.message == "info") {
+            const party = Object(_info__WEBPACK_IMPORTED_MODULE_3__[/* getPartyInfo */ "c"])();
+            party[characterName] = data.info;
+            Object(_info__WEBPACK_IMPORTED_MODULE_3__[/* setPartyInfo */ "g"])(party);
+        }
+        else if (data.message == "monster") {
+            const monsters = Object(_info__WEBPACK_IMPORTED_MODULE_3__[/* getMonstersInfo */ "a"])();
+            monsters[data.id] = data.info;
+            Object(_info__WEBPACK_IMPORTED_MODULE_3__[/* setMonstersInfo */ "e"])(monsters);
+        }
+        else if (data.message == "npc") {
+            const npcs = Object(_info__WEBPACK_IMPORTED_MODULE_3__[/* getNPCInfo */ "b"])();
+            npcs[data.id] = data.info;
+            Object(_info__WEBPACK_IMPORTED_MODULE_3__[/* setNPCInfo */ "f"])(npcs);
+        }
+        else if (data.message == "player") {
+            const players = Object(_info__WEBPACK_IMPORTED_MODULE_3__[/* getPlayersInfo */ "d"])();
+            players[data.id] = data.info;
+            Object(_info__WEBPACK_IMPORTED_MODULE_3__[/* setPlayersInfo */ "h"])(players);
+        }
+        else if (data.message == "chests") {
+            for (const chestID in data.chests) {
+                if (!parent.chests[chestID])
+                    parent.chests[chestID] = data.chests[chestID];
+            }
+        }
+    }
+    equipBetterItems() {
+        try {
+            const items = Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* getInventory */ "i"])();
+            if (this.movementTarget.target && this.targetPriority[this.movementTarget.target]) {
+                for (const idealItem of this.targetPriority[this.movementTarget.target].equip || []) {
+                    let hasItem = false;
+                    for (const slot in parent.character.slots) {
+                        const slotInfo = parent.character.slots[slot];
+                        if (!slotInfo)
+                            continue;
+                        if (slotInfo.name == idealItem) {
+                            hasItem = true;
+                            break;
+                        }
+                    }
+                    if (!hasItem) {
+                        for (const item of items) {
+                            if (item.name == idealItem) {
+                                if (G.classes[parent.character.ctype].doublehand[G.items[idealItem].wtype])
+                                    unequip("offhand");
+                                equip(item.index);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            for (const slot in parent.character.slots) {
+                let slotItem = parent.character.slots[slot];
+                let betterItem;
+                if (!slotItem)
+                    continue;
+                for (const item of items) {
+                    if (item.name != slotItem.name)
+                        continue;
+                    if (!item.level || item.level <= slotItem.level)
+                        continue;
+                    slotItem = item;
+                    betterItem = item;
+                }
+                if (betterItem)
+                    equip(betterItem.index, slot);
+            }
+        }
+        catch (error) {
+            console.error(error);
+        }
+    }
+    getTargets(numTargets = 1, distanceCheck = parent.character.range) {
+        const targets = [];
+        const members = parent.party_list;
+        const claimedTargets = new Set();
+        for (const id in parent.entities) {
+            if (members.includes(id)) {
+                const target = parent.entities[id].target;
+                if (target)
+                    claimedTargets.add(target);
+            }
+        }
+        const potentialTargets = new fastpriorityqueue__WEBPACK_IMPORTED_MODULE_0___default.a((x, y) => x.priority > y.priority);
+        for (const id in parent.entities) {
+            const potentialTarget = parent.entities[id];
+            if (potentialTarget.rip)
+                continue;
+            if (parent.party_list.includes(id))
+                continue;
+            if (!is_pvp() && potentialTarget.type != "monster")
+                continue;
+            if (is_pvp() && parent.party_list.includes(id))
+                continue;
+            if (!this.targetPriority[potentialTarget.mtype] && potentialTarget.target != parent.character.name)
+                continue;
+            let priority = this.targetPriority[potentialTarget.mtype] ? this.targetPriority[potentialTarget.mtype].priority : 0;
+            const d = distance(parent.character, potentialTarget);
+            if (d > distanceCheck)
+                continue;
+            priority -= d;
+            if (claimedTargets.has(id)) {
+                if (this.targetPriority[potentialTarget.mtype] && this.targetPriority[potentialTarget.mtype].coop)
+                    priority += parent.character.range;
+                if (potentialTarget.hp <= Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* calculateDamageRange */ "a"])(parent.character, potentialTarget)[0])
+                    priority -= parent.character.range;
+            }
+            if (potentialTarget.mtype == this.mainTarget)
+                priority += 250;
+            if (this.movementTarget && potentialTarget.mtype == this.movementTarget.target)
+                priority += 1000;
+            if (potentialTarget.target == parent.character.name)
+                priority += 2000;
+            if (potentialTarget.cooperative)
+                priority += 1000 * (potentialTarget.max_hp - potentialTarget.hp) / potentialTarget.max_hp;
+            const priorityEntity = { id: potentialTarget.id, priority: priority };
+            potentialTargets.add(priorityEntity);
+        }
+        while (targets.length < numTargets && potentialTargets.size > 0) {
+            const entity = parent.entities[potentialTargets.poll().id];
+            if (entity)
+                targets.push(entity);
+        }
+        if (targets.length > 0)
+            change_target(targets[0], true);
+        return targets;
+    }
+    wantToAttack(e, s = "attack") {
+        if (!Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* isAvailable */ "m"])(s))
+            return false;
+        if (parent.character.c.town)
+            return false;
+        let range = G.skills[s].range ? G.skills[s].range : parent.character.range;
+        const distanceToEntity = distance(parent.character, e);
+        if (G.skills[s].range_multiplier)
+            range *= G.skills[s].range_multiplier;
+        if (distanceToEntity > range)
+            return false;
+        const mp = G.skills[s].mp ? G.skills[s].mp : parent.character.mp_cost;
+        if (parent.character.mp < mp)
+            return false;
+        if (s != "attack" && e.immune)
+            return false;
+        if (s != "attack" && e["1hp"])
+            return false;
+        if (!is_pvp() && e.type == "monster" && !this.targetPriority[e.mtype])
+            return false;
+        if (!e.target) {
+            if (this.holdAttack)
+                return false;
+            if ((smart.moving || this.nGraphMove.isMoving()) && (this.movementTarget && this.movementTarget.target && this.movementTarget.target != e.mtype) && this.targetPriority[e.mtype].holdAttackWhileMoving)
+                return false;
+            if (this.targetPriority[e.mtype].holdAttackInEntityRange && distanceToEntity <= e.range)
+                return false;
+            if (this.targetPriority[e.mtype].coop) {
+                const availableTypes = [parent.character.ctype];
+                for (const member of parent.party_list) {
+                    const e = parent.entities[member];
+                    if (!e)
+                        continue;
+                    if (e.rip)
+                        continue;
+                    if (e.ctype == "priest" && distance(parent.character, e) > e.range)
+                        continue;
+                    availableTypes.push(e.ctype);
+                }
+                for (const type of this.targetPriority[e.mtype].coop) {
+                    if (!availableTypes.includes(type))
+                        return false;
+                }
+            }
+            if (Object(_functions__WEBPACK_IMPORTED_MODULE_1__[/* calculateDamageRange */ "a"])(e, parent.character)[1] * 5 * e.frequency > parent.character.hp && distanceToEntity <= e.range)
+                return false;
+        }
+        return true;
+    }
+}
+
+
+/***/ }),
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -1510,7 +2884,7 @@ module.exports = makeSearchStatePool;
  */
 module.exports = createGraph;
 
-var eventify = __webpack_require__(12);
+var eventify = __webpack_require__(13);
 
 /**
  * Creates a new graph
@@ -2083,1747 +3457,18 @@ function makeLinkId(fromId, toId) {
 
 
 /***/ }),
-/* 9 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = {
-  aStar: __webpack_require__(13),
-  aGreedy: __webpack_require__(14),
-  nba: __webpack_require__(15),
+  aStar: __webpack_require__(14),
+  aGreedy: __webpack_require__(15),
+  nba: __webpack_require__(16),
 }
 
 
 /***/ }),
-/* 10 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-
-// EXPORTS
-__webpack_require__.d(__webpack_exports__, "a", function() { return /* binding */ character_Character; });
-
-// EXTERNAL MODULE: ./node_modules/fastpriorityqueue/FastPriorityQueue.js
-var FastPriorityQueue = __webpack_require__(3);
-var FastPriorityQueue_default = /*#__PURE__*/__webpack_require__.n(FastPriorityQueue);
-
-// EXTERNAL MODULE: ./source/functions.ts
-var functions = __webpack_require__(0);
-
-// EXTERNAL MODULE: ./source/trade.ts
-var trade = __webpack_require__(2);
-
-// CONCATENATED MODULE: ./source/astarsmartmove.ts
-
-
-class astarsmartmove_AStarSmartMove {
-    constructor() {
-        this.TOWN_MOVEMENT_COST = 250;
-        this.DOOR_TOLERANCE = 40 - 2;
-        this.TELEPORT_TOLERANCE = 75 - 2;
-        this.MOVE_TOLERANCE = 1;
-        this.TOWN_TOLERANCE = 1;
-        this.SLEEP_AFTER_MS = 500;
-        this.SLEEP_FOR_MS = 50;
-        this.FINISH_CHECK_DISTANCE = 200;
-        this.MOVEMENTS = [
-            [[0, 25], [0, 5]],
-            [[25, 0], [5, 0]],
-            [[0, -25], [0, -5]],
-            [[-25, 0], [-5, 0]]
-        ];
-        this.USE_BLINK = true;
-        this.MOVE_ON_FAIL = false;
-        this.SHOW_MESSAGES = false;
-        this.MESSAGE_COLOR = "#F7600E";
-        this.doorCache = new Map();
-    }
-    isMoving() {
-        return this.finishedDate == undefined && this.startDate != undefined;
-    }
-    wasCancelled(start) {
-        return (!this.startDate || start < this.startDate);
-    }
-    stop() {
-        this.reset();
-        if (parent.character.c.town)
-            stop("town");
-        stop();
-    }
-    reset() {
-        this.finishedDate = undefined;
-        this.startDate = undefined;
-    }
-    cleanPosition(position) {
-        const x = (position.real_x !== undefined ? position.real_x : position.x);
-        const y = (position.real_y !== undefined ? position.real_y : position.y);
-        const clean = {
-            map: position.map,
-            x: x,
-            y: y,
-            key: `${position.map}.${x}.${y}`,
-            transportS: position.transportS,
-            transportMap: position.transportMap,
-            transportType: position.transportType
-        };
-        return clean;
-    }
-    positionToString(position) {
-        return `${position.map}.${position.x}.${position.y}`;
-    }
-    stringToPosition(positionString) {
-        const s = positionString.split(".");
-        const map = s[0];
-        const x = Number.parseFloat(s[1]);
-        const y = Number.parseFloat(s[2]);
-        return {
-            map: map,
-            x: x,
-            real_x: x,
-            y: y,
-            real_y: y
-        };
-    }
-    findDoorPath(position, destination, visitedNodes = new Set(), visitedMaps = new Set()) {
-        visitedNodes.add(position);
-        if (position.map == destination.map) {
-            const d = distance(position, destination);
-            const path = [];
-            for (const door of visitedNodes) {
-                path.push(door);
-            }
-            path.push(destination);
-            return [d, path];
-        }
-        const doors = [...G.maps[position.map].doors];
-        for (const npc of G.maps[position.map].npcs) {
-            if (npc.id !== "transporter")
-                continue;
-            for (const map in G.npcs.transporter.places) {
-                if (map == position.map)
-                    continue;
-                doors.push([npc.position[0], npc.position[1], -1, -1, map, G.npcs.transporter.places[map]]);
-            }
-            break;
-        }
-        let currentBestDistance = Number.MAX_VALUE;
-        let currentBestPath;
-        for (const door of doors) {
-            const doorExitMap = door[4];
-            if (visitedMaps.has(doorExitMap))
-                continue;
-            if (door[7] || door[8])
-                continue;
-            const doorEntrance = { map: position.map, x: door[0], y: door[1], key: `${position.map}.${door[0]}.${door[1]}`, transportS: door[5], transportMap: doorExitMap, transportType: door[3] == -1 ? "teleport" : "door" };
-            const doorExit = { map: doorExitMap, x: G.maps[doorExitMap].spawns[door[5]][0], y: G.maps[doorExitMap].spawns[door[5]][1], key: `${doorExitMap}.${G.maps[doorExitMap].spawns[door[5]][0]}.${G.maps[doorExitMap].spawns[door[5]][1]}` };
-            const newVisitedMaps = new Set(visitedMaps);
-            newVisitedMaps.add(doorExitMap);
-            const newVisitedDoors = new Set(visitedNodes);
-            newVisitedDoors.add(doorEntrance);
-            const d = distance(position, doorEntrance) + 50;
-            if (currentBestDistance < d)
-                continue;
-            const [d2, path] = this.findDoorPath(doorExit, destination, newVisitedDoors, newVisitedMaps);
-            if (currentBestDistance > d2 + d) {
-                currentBestDistance = d2 + d;
-                currentBestPath = path;
-            }
-        }
-        return [currentBestDistance, currentBestPath];
-    }
-    heuristic(position, finish) {
-        return distance(position, finish);
-    }
-    smoothPath(path) {
-        let newPath = [];
-        newPath.push(path[0]);
-        for (let i = 0; i < path.length - 1; i++) {
-            const iPath = path[i];
-            if (iPath.transportType == "town") {
-                newPath.push(iPath);
-                break;
-            }
-            let canWalkTo = i + 1;
-            for (let j = i + 1; j < path.length; j++) {
-                const jPath = path[j];
-                if (can_move({
-                    map: iPath.map,
-                    x: jPath.x,
-                    y: jPath.y,
-                    going_x: iPath.x,
-                    going_y: iPath.y,
-                    base: parent.character.base
-                })) {
-                    canWalkTo = j;
-                    i = j - 1;
-                }
-            }
-            if (canWalkTo > 0)
-                newPath.push(path[canWalkTo]);
-        }
-        newPath = newPath.reverse();
-        return newPath;
-    }
-    reconstructPath(current, finish, cameFrom) {
-        const path = [];
-        path.push({
-            map: finish.map,
-            x: finish.x,
-            real_x: finish.x,
-            y: finish.y,
-            real_y: finish.y,
-            key: `${finish.map}.${finish.x}.${finish.y}`,
-            transportMap: finish.transportMap,
-            transportType: finish.transportType,
-            transportS: finish.transportS
-        });
-        while (current) {
-            path.push({
-                map: current.map,
-                x: current.x,
-                real_x: current.x,
-                y: current.y,
-                real_y: current.y,
-                key: `${current.map}.${current.x}.${current.y}`,
-                transportMap: current.transportMap,
-                transportType: current.transportType,
-                transportS: current.transportS
-            });
-            current = cameFrom.get(current.key);
-        }
-        return this.smoothPath(path);
-    }
-    async smartMove(destination, finishDistanceTolerance = 0) {
-        this.reset();
-        this.startDate = new Date();
-        let movements = [];
-        const start = Date.now();
-        if (this.SHOW_MESSAGES)
-            game_log("a* - start searching", this.MESSAGE_COLOR);
-        const doors = this.findDoorPath(this.cleanPosition(parent.character), this.cleanPosition(destination))[1];
-        for (let i = 0; i < doors.length; i += 2) {
-            const from = doors[i];
-            const to = doors[i + 1];
-            const doorCacheKey = `${from.key}_${to.key}`;
-            let subMovements;
-            if (this.doorCache.has(doorCacheKey)) {
-                subMovements = this.doorCache.get(doorCacheKey);
-            }
-            else {
-                if (to.transportType == "door") {
-                    subMovements = await this.getMovements(from, to, this.DOOR_TOLERANCE);
-                }
-                else if (to.transportType == "teleport") {
-                    subMovements = await this.getMovements(from, to, this.TELEPORT_TOLERANCE);
-                }
-                else {
-                    subMovements = await this.getMovements(from, to, finishDistanceTolerance);
-                }
-                this.doorCache.set(doorCacheKey, subMovements);
-            }
-            movements = movements.concat(subMovements);
-        }
-        if (this.SHOW_MESSAGES)
-            game_log(`a* - finish searching (${((Date.now() - start) / 1000).toFixed(1)} s)`, this.MESSAGE_COLOR);
-        let i = 0;
-        const movementComplete = new Promise((resolve, reject) => {
-            const movementLoop = (start) => {
-                if (this.wasCancelled(start)) {
-                    stop();
-                    return reject("a* - cancelled moving");
-                }
-                const nextMove = movements[i];
-                if (distance(parent.character, movements[movements.length - 1]) < this.MOVE_TOLERANCE) {
-                    if (this.SHOW_MESSAGES)
-                        game_log("a* - done moving", this.MESSAGE_COLOR);
-                    this.finishedDate = new Date();
-                    resolve();
-                    return;
-                }
-                if (parent.character.moving || is_transporting(parent.character) || !can_walk(parent.character)) {
-                }
-                else if (nextMove.map == parent.character.map && this.USE_BLINK && can_use("blink") && distance(parent.character, nextMove) > this.TOWN_MOVEMENT_COST && parent.character.mp > G.skills.blink.mp) {
-                    let j = i;
-                    for (; j < movements.length; j++) {
-                        if (movements[j].map !== parent.character.map) {
-                            break;
-                        }
-                    }
-                    i = j - 1;
-                    setTimeout(() => { movementLoop(start); }, 900);
-                    use_skill("blink", [movements[i].x, movements[i].y]);
-                    return;
-                }
-                else if (nextMove.map == parent.character.map && nextMove.transportType == "town") {
-                    if (distance(parent.character, nextMove) < this.TOWN_TOLERANCE) {
-                        i += 1;
-                        movementLoop(start);
-                        return;
-                    }
-                    else {
-                        setTimeout(() => { movementLoop(start); }, 900);
-                        use_skill("town");
-                        return;
-                    }
-                }
-                else if (parent.character.map == nextMove.map && can_move_to(nextMove.x, nextMove.y)) {
-                    if (distance(parent.character, nextMove) < this.MOVE_TOLERANCE) {
-                        if (nextMove.transportType == "door" || nextMove.transportType == "teleport") {
-                            if (parent.character.map == nextMove.map) {
-                                transport(nextMove.transportMap, nextMove.transportS);
-                                i += 1;
-                                setTimeout(() => { movementLoop(start); }, 100);
-                                return;
-                            }
-                        }
-                        else {
-                            i += 1;
-                            movementLoop(start);
-                            return;
-                        }
-                    }
-                    else {
-                        move(nextMove.x, nextMove.y);
-                    }
-                }
-                else {
-                    if (this.SHOW_MESSAGES)
-                        game_log("a* - failed moving", this.MESSAGE_COLOR);
-                    if (this.MOVE_ON_FAIL) {
-                        const randomX = Math.random() * (1 - -1) + -1;
-                        const randomY = Math.random() * (1 - -1) + -1;
-                        move(parent.character.real_x + randomX, parent.character.real_y + randomY);
-                    }
-                    this.reset();
-                    return reject("failed moving");
-                }
-                setTimeout(() => { movementLoop(start); }, 40);
-            };
-            if (this.SHOW_MESSAGES)
-                game_log("a* - start moving", this.MESSAGE_COLOR);
-            movementLoop(this.startDate);
-        });
-        return await movementComplete;
-    }
-    async getMovements(start, finish, finishDistanceTolerance = 0, startTime = this.startDate) {
-        const cleanStart = this.cleanPosition(start);
-        const cleanFinish = this.cleanPosition(finish);
-        const cameFrom = new Map();
-        const gScore = new Map();
-        gScore.set(cleanStart.key, 0);
-        const fScore = new Map();
-        fScore.set(cleanStart.key, this.heuristic(cleanStart, cleanFinish));
-        const openSet = new FastPriorityQueue_default.a((a, b) => {
-            return fScore.get(a.key) < fScore.get(b.key);
-        });
-        openSet.add({ ...cleanStart });
-        const openSetNodes = new Set();
-        const neighbor = this.cleanPosition({
-            map: cleanStart.map,
-            x: G.maps[cleanStart.map].spawns[0][0],
-            y: G.maps[cleanStart.map].spawns[0][1],
-            transportType: "town"
-        });
-        const tentativeGScore = gScore.get(cleanStart.key) + this.TOWN_MOVEMENT_COST;
-        if (neighbor.key !== cleanStart.key) {
-            if (!gScore.get(neighbor.key)
-                || tentativeGScore < gScore.get(neighbor.key)) {
-                cameFrom.set(neighbor.key, cleanStart);
-                gScore.set(neighbor.key, tentativeGScore);
-                fScore.set(neighbor.key, tentativeGScore + this.heuristic(neighbor, cleanFinish));
-                if (!openSetNodes.has(neighbor.key)) {
-                    openSetNodes.add(neighbor.key);
-                    openSet.add(neighbor);
-                }
-            }
-        }
-        let timer = Date.now();
-        while (openSet.size) {
-            const current = openSet.poll();
-            openSetNodes.delete(current.key);
-            const distanceToFinish = distance(current, cleanFinish);
-            if (distanceToFinish < finishDistanceTolerance) {
-                const path = this.reconstructPath(current, {
-                    ...current,
-                    transportType: cleanFinish.transportType,
-                    transportMap: cleanFinish.transportMap,
-                    transportS: cleanFinish.transportS
-                }, cameFrom);
-                return Promise.resolve(path);
-            }
-            else if (distanceToFinish < finishDistanceTolerance + this.FINISH_CHECK_DISTANCE) {
-                if (finishDistanceTolerance == 0) {
-                    if (can_move({
-                        map: current.map,
-                        x: current.x,
-                        y: current.y,
-                        going_x: cleanFinish.x,
-                        going_y: cleanFinish.y,
-                        base: parent.character.base
-                    })) {
-                        const path = this.reconstructPath(current, cleanFinish, cameFrom);
-                        return Promise.resolve(path);
-                    }
-                }
-                else {
-                    const angle = Math.atan2(current.y - cleanFinish.y, current.x - cleanFinish.x);
-                    const x = cleanFinish.x + Math.cos(angle) * finishDistanceTolerance;
-                    const y = cleanFinish.y + Math.sin(angle) * finishDistanceTolerance;
-                    const closeFinish = {
-                        map: cleanFinish.map,
-                        x: x,
-                        y: y,
-                        key: this.positionToString({ x: x, y: y, map: cleanFinish.map }),
-                        transportMap: cleanFinish.transportMap,
-                        transportType: cleanFinish.transportType,
-                        transportS: cleanFinish.transportS
-                    };
-                    if (can_move({
-                        map: current.map,
-                        x: current.x,
-                        y: current.y,
-                        going_x: closeFinish.x,
-                        going_y: closeFinish.y,
-                        base: parent.character.base
-                    })) {
-                        const path = this.reconstructPath(current, closeFinish, cameFrom);
-                        return Promise.resolve(path);
-                    }
-                }
-            }
-            for (const subMovements of this.MOVEMENTS) {
-                for (const subMovement of subMovements) {
-                    const neighbor = this.cleanPosition({
-                        map: current.map,
-                        x: Math.trunc(current.x + subMovement[0]),
-                        y: Math.trunc(current.y + subMovement[1])
-                    });
-                    if (can_move({
-                        map: current.map,
-                        x: current.x,
-                        y: current.y,
-                        going_x: neighbor.x,
-                        going_y: neighbor.y,
-                        base: parent.character.base
-                    })) {
-                        const tentativeGScore = gScore.get(current.key) + Math.abs(subMovement[0]) + Math.abs(subMovement[1]);
-                        if (!gScore.has(neighbor.key)
-                            || tentativeGScore < gScore.get(neighbor.key)) {
-                            cameFrom.set(neighbor.key, current);
-                            gScore.set(neighbor.key, tentativeGScore);
-                            fScore.set(neighbor.key, tentativeGScore + this.heuristic(neighbor, cleanFinish));
-                            if (!openSetNodes.has(neighbor.key)) {
-                                openSetNodes.add(neighbor.key);
-                                openSet.add(neighbor);
-                            }
-                        }
-                    }
-                }
-            }
-            if (Date.now() - timer > this.SLEEP_AFTER_MS) {
-                await Object(functions["p" /* sleep */])(this.SLEEP_FOR_MS);
-                timer = Date.now();
-                if (this.wasCancelled(startTime))
-                    return Promise.reject("cancelled");
-            }
-        }
-        if (this.SHOW_MESSAGES)
-            game_log("a* - failed searching", this.MESSAGE_COLOR);
-        try {
-            let finalPointString;
-            let minScore = Number.MAX_VALUE;
-            for (const [pointString, f] of fScore) {
-                const g = gScore.get(pointString);
-                if (f - g < minScore) {
-                    minScore = f - g;
-                    finalPointString = pointString;
-                }
-            }
-            const finalPoint = this.stringToPosition(finalPointString);
-            const path = this.reconstructPath(finalPoint, cleanFinish, cameFrom);
-            return Promise.resolve(path);
-        }
-        catch (error) {
-            return Promise.reject("Failed to find a path...");
-        }
-    }
-}
-
-// EXTERNAL MODULE: ./source/info.ts
-var source_info = __webpack_require__(1);
-
-// EXTERNAL MODULE: ./node_modules/ngraph.graph/index.js
-var ngraph_graph = __webpack_require__(8);
-var ngraph_graph_default = /*#__PURE__*/__webpack_require__.n(ngraph_graph);
-
-// EXTERNAL MODULE: ./node_modules/ngraph.path/index.js
-var ngraph_path = __webpack_require__(9);
-var ngraph_path_default = /*#__PURE__*/__webpack_require__.n(ngraph_path);
-
-// CONCATENATED MODULE: ./source/ngraphmove.ts
-
-
-const UNKNOWN = 1;
-const UNWALKABLE = 2;
-const WALKABLE = 3;
-const FIRST_MAP = "main";
-const SLEEP_FOR_MS = 50;
-const TRANSPORT_COST = 25;
-const TOWN_COST = 100;
-class ngraphmove_NGraphMove {
-    constructor() {
-        this.grids = {};
-        this.graph = ngraph_graph_default()({ multigraph: true });
-        this.pathfinder = ngraph_path_default.a.aStar(this.graph, {
-            distance(fromNode, toNode, link) {
-                if (link.data && link.data.type == "transport") {
-                    return TRANSPORT_COST;
-                }
-                else if (link.data && link.data.type == "town") {
-                    return TOWN_COST;
-                }
-                if (fromNode.data.map == toNode.data.map) {
-                    return Math.sqrt((fromNode.data.x - toNode.data.x) ** 2 + (fromNode.data.y - toNode.data.y) ** 2);
-                }
-            },
-            oriented: true
-        });
-    }
-    canMove(from, to) {
-        if (from.map != to.map) {
-            console.error(`Don't use this function across maps. You tried to check canMove from ${from.map} to ${to.map}.`);
-            return false;
-        }
-        const grid = this.grids[from.map];
-        const dx = to.x - from.x, dy = to.y - from.y;
-        const nx = Math.abs(dx), ny = Math.abs(dy);
-        const sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1;
-        let x = from.x - G.geometry[from.map].min_x, y = from.y - G.geometry[from.map].min_y;
-        for (let ix = 0, iy = 0; ix < nx || iy < ny;) {
-            if ((0.5 + ix) / nx == (0.5 + iy) / ny) {
-                x += sign_x;
-                y += sign_y;
-                ix++;
-                iy++;
-            }
-            else if ((0.5 + ix) / nx < (0.5 + iy) / ny) {
-                x += sign_x;
-                ix++;
-            }
-            else {
-                y += sign_y;
-                iy++;
-            }
-            if (grid[y][x] !== WALKABLE) {
-                return false;
-            }
-        }
-        return true;
-    }
-    async addToGraph(map) {
-        if (this.grids[map]) {
-            console.info(`We have already prepared ${map}.`);
-            return;
-        }
-        if (!G.maps[map]) {
-            console.error(`${map} is not a valid map.`);
-        }
-        const mapWidth = G.geometry[map].max_x - G.geometry[map].min_x;
-        const mapHeight = G.geometry[map].max_y - G.geometry[map].min_y;
-        const grid = Array(mapHeight);
-        for (let y = 0; y < mapHeight; y++) {
-            grid[y] = Array(mapWidth).fill(UNKNOWN);
-        }
-        for (const yLine of G.geometry[map].y_lines) {
-            for (let y = yLine[0] - G.geometry[map].min_y - parent.character.base.v; y < yLine[0] - G.geometry[map].min_y + parent.character.base.vn && y < mapHeight; y++) {
-                for (let x = yLine[1] - G.geometry[map].min_x - parent.character.base.h; x < yLine[2] - G.geometry[map].min_x + parent.character.base.h && x < mapWidth; x++) {
-                    grid[y][x] = UNWALKABLE;
-                }
-            }
-        }
-        for (const xLine of G.geometry[map].x_lines) {
-            for (let x = xLine[0] - G.geometry[map].min_x - parent.character.base.h; x < xLine[0] - G.geometry[map].min_x + parent.character.base.h && x < mapWidth; x++) {
-                for (let y = xLine[1] - G.geometry[map].min_y - parent.character.base.v; y < xLine[2] - G.geometry[map].min_y + parent.character.base.vn && y < mapHeight; y++) {
-                    grid[y][x] = UNWALKABLE;
-                }
-            }
-        }
-        for (const spawn of G.maps[map].spawns) {
-            let x = Math.floor(spawn[0]) - G.geometry[map].min_x;
-            let y = Math.floor(spawn[1]) - G.geometry[map].min_y;
-            if (grid[y][x] == WALKABLE)
-                continue;
-            const stack = [[y, x]];
-            while (stack.length) {
-                [y, x] = stack.pop();
-                let x1 = x;
-                while (x1 >= 0 && grid[y][x1] == UNKNOWN)
-                    x1--;
-                x1++;
-                let spanAbove = 0;
-                let spanBelow = 0;
-                while (x1 < mapWidth && grid[y][x1] == UNKNOWN) {
-                    grid[y][x1] = WALKABLE;
-                    if (!spanAbove && y > 0 && grid[y - 1][x1] == UNKNOWN) {
-                        stack.push([y - 1, x1]);
-                        spanAbove = 1;
-                    }
-                    else if (spanAbove && y > 0 && grid[y - 1][x1] != UNKNOWN) {
-                        spanAbove = 0;
-                    }
-                    if (!spanBelow && y < mapHeight - 1 && grid[y + 1][x1] == UNKNOWN) {
-                        stack.push([y + 1, x1]);
-                        spanBelow = 1;
-                    }
-                    else if (spanBelow && y < mapHeight - 1 && grid[y + 1][x1] != UNKNOWN) {
-                        spanBelow = 0;
-                    }
-                    x1++;
-                }
-            }
-        }
-        this.grids[map] = grid;
-        function createNodeId(map, x, y) {
-            return `${map}:${Math.floor(x)},${Math.floor(y)}`;
-        }
-        function createNodeData(map, x, y) {
-            return {
-                map: map,
-                x: Math.trunc(x),
-                y: Math.trunc(y)
-            };
-        }
-        function findClosestSpawn(x, y) {
-            let closest = {
-                x: -99999,
-                y: -99999,
-                distance: 99999
-            };
-            for (const spawn of G.maps[map].spawns) {
-                const distance = Math.sqrt((spawn[0] - x) ** 2 + (spawn[1] - y) ** 2);
-                if (distance < closest.distance) {
-                    closest = {
-                        x: spawn[0],
-                        y: spawn[1],
-                        distance: distance
-                    };
-                }
-            }
-            return closest;
-        }
-        const newNodes = [];
-        for (let y = 1; y < mapHeight - 1; y++) {
-            for (let x = 1; x < mapWidth - 1; x++) {
-                if (grid[y][x] != WALKABLE)
-                    continue;
-                const nodeID = createNodeId(map, x + G.geometry[map].min_x, y + G.geometry[map].min_y);
-                if (this.graph.hasNode(nodeID)) {
-                    newNodes.push(this.graph.getNode(nodeID));
-                    continue;
-                }
-                const nodeData = createNodeData(map, x + G.geometry[map].min_x, y + G.geometry[map].min_y);
-                if (grid[y - 1][x - 1] == UNWALKABLE
-                    && grid[y - 1][x] == UNWALKABLE
-                    && grid[y - 1][x + 1] == UNWALKABLE
-                    && grid[y][x - 1] == UNWALKABLE
-                    && grid[y + 1][x - 1] == UNWALKABLE) {
-                    newNodes.push(this.graph.addNode(nodeID, nodeData));
-                }
-                else if (grid[y - 1][x - 1] == UNWALKABLE
-                    && grid[y - 1][x] == UNWALKABLE
-                    && grid[y - 1][x + 1] == UNWALKABLE
-                    && grid[y][x + 1] == UNWALKABLE
-                    && grid[y + 1][x + 1] == UNWALKABLE) {
-                    newNodes.push(this.graph.addNode(nodeID, nodeData));
-                }
-                else if (grid[y - 1][x + 1] == UNWALKABLE
-                    && grid[y][x + 1] == UNWALKABLE
-                    && grid[y + 1][x - 1] == UNWALKABLE
-                    && grid[y + 1][x] == UNWALKABLE
-                    && grid[y + 1][x + 1] == UNWALKABLE) {
-                    newNodes.push(this.graph.addNode(nodeID, nodeData));
-                }
-                else if (grid[y - 1][x - 1] == UNWALKABLE
-                    && grid[y][x - 1] == UNWALKABLE
-                    && grid[y + 1][x - 1] == UNWALKABLE
-                    && grid[y + 1][x] == UNWALKABLE
-                    && grid[y + 1][x + 1] == UNWALKABLE) {
-                    newNodes.push(this.graph.addNode(nodeID, nodeData));
-                }
-                else if (grid[y - 1][x - 1] == UNWALKABLE
-                    && grid[y - 1][x] == WALKABLE
-                    && grid[y][x - 1] == WALKABLE) {
-                    newNodes.push(this.graph.addNode(nodeID, nodeData));
-                }
-                else if (grid[y - 1][x] == WALKABLE
-                    && grid[y - 1][x + 1] == UNWALKABLE
-                    && grid[y][x + 1] == WALKABLE) {
-                    newNodes.push(this.graph.addNode(nodeID, nodeData));
-                }
-                else if (grid[y][x + 1] == WALKABLE
-                    && grid[y + 1][x] == WALKABLE
-                    && grid[y + 1][x + 1] == UNWALKABLE) {
-                    newNodes.push(this.graph.addNode(nodeID, nodeData));
-                }
-                else if (grid[y][x - 1] == WALKABLE
-                    && grid[y + 1][x - 1] == UNWALKABLE
-                    && grid[y + 1][x] == WALKABLE) {
-                    newNodes.push(this.graph.addNode(nodeID, nodeData));
-                }
-            }
-        }
-        for (const npc of G.maps[map].npcs) {
-            if (npc.id != "transporter")
-                continue;
-            const closest = findClosestSpawn(npc.position[0], npc.position[1]);
-            const nodeID = createNodeId(map, closest.x, closest.y);
-            if (!this.graph.hasNode(nodeID)) {
-                const nodeData = createNodeData(map, closest.x, closest.y);
-                newNodes.push(this.graph.addNode(nodeID, nodeData));
-            }
-            else {
-                newNodes.push(this.graph.getNode(nodeID));
-            }
-            for (const map in G.npcs.transporter.places) {
-                const spawnID = G.npcs.transporter.places[map];
-                const spawn = G.maps[map].spawns[spawnID];
-                const nodeID2 = createNodeId(map, spawn[0], spawn[1]);
-                if (!this.graph.hasNode(nodeID2)) {
-                    const nodeData2 = createNodeData(map, spawn[0], spawn[1]);
-                    this.graph.addNode(nodeID2, nodeData2);
-                }
-                if (!this.graph.hasLink(nodeID, nodeID2)) {
-                    const linkData = {
-                        type: "transport",
-                        spawn: spawnID
-                    };
-                    this.graph.addLink(nodeID, nodeID2, linkData);
-                }
-            }
-        }
-        for (const door of G.maps[map].doors) {
-            if (door[7] || door[8])
-                continue;
-            const spawn = G.maps[map].spawns[door[6]];
-            const nodeID = createNodeId(map, spawn[0], spawn[1]);
-            if (!this.graph.hasNode(nodeID)) {
-                const nodeData = createNodeData(map, spawn[0], spawn[1]);
-                newNodes.push(this.graph.addNode(nodeID, nodeData));
-            }
-            else {
-                newNodes.push(this.graph.getNode(nodeID));
-            }
-            const spawn2 = G.maps[door[4]].spawns[door[5]];
-            const nodeID2 = createNodeId(door[4], spawn2[0], spawn2[1]);
-            if (!this.graph.hasNode(nodeID2)) {
-                const nodeData2 = createNodeData(door[4], spawn2[0], spawn2[1]);
-                this.graph.addNode(nodeID2, nodeData2);
-            }
-            if (!this.graph.hasLink(nodeID, nodeID2)) {
-                const linkData = {
-                    type: "transport",
-                    spawn: door[5]
-                };
-                this.graph.addLink(nodeID, nodeID2, linkData);
-            }
-        }
-        for (const spawn of G.maps[map].spawns) {
-            const spawnNodeId = createNodeId(map, spawn[0], spawn[1]);
-            if (!this.graph.hasNode(spawnNodeId)) {
-                const spawnData = createNodeData(map, spawn[0], spawn[1]);
-                newNodes.push(this.graph.addNode(spawnNodeId, spawnData));
-            }
-        }
-        for (let i = 0; i < newNodes.length; i++) {
-            for (let j = i + 1; j < newNodes.length; j++) {
-                const nodeI = newNodes[i];
-                const nodeJ = newNodes[j];
-                if (this.canMove(nodeI.data, nodeJ.data)) {
-                    this.graph.addLink(nodeI.id, nodeJ.id);
-                    this.graph.addLink(nodeJ.id, nodeI.id);
-                }
-            }
-        }
-        const townNodeID = createNodeId(map, G.maps[map].spawns[0][0], G.maps[map].spawns[0][1]);
-        const townNodeLinkData = {
-            type: "town"
-        };
-        for (const node of newNodes) {
-            this.graph.addLink(node.id, townNodeID, townNodeLinkData);
-        }
-    }
-    async prepare(start = FIRST_MAP) {
-        const maps = [start];
-        for (let i = 0; i < maps.length; i++) {
-            const map = maps[i];
-            for (const door of G.maps[map].doors) {
-                const connectedMap = door[4];
-                if (!maps.includes(connectedMap))
-                    maps.push(door[4]);
-            }
-        }
-        for (const destination in G.npcs.transporter.places) {
-            const map = destination;
-            if (!maps.includes(map))
-                maps.push(map);
-        }
-        for (const map of maps) {
-            await this.addToGraph(map);
-            await new Promise(resolve => setTimeout(resolve, SLEEP_FOR_MS));
-        }
-    }
-    getGraphInfo() {
-        console.info("Graph information ----------");
-        console.info(`# Nodes: ${this.graph.getNodeCount()}`);
-        console.info(`# Links: ${this.graph.getLinkCount()}`);
-        console.info("----------------------------");
-    }
-    getPath(start, goal) {
-        console.info(`Getting path from ${start.map}.${start.x},${start.y} to ${goal.map}.${goal.x}.${goal.y}`);
-        let distToStart = Number.MAX_VALUE;
-        let startNode;
-        let distToFinish = Number.MAX_VALUE;
-        let finishNode;
-        this.graph.forEachNode((node) => {
-            if (node.data.map == start.map) {
-                const distance = Math.sqrt((node.data.x - start.x) ** 2 + (node.data.y - start.y) ** 2);
-                if (distance < distToStart) {
-                    distToStart = distance;
-                    startNode = node.id;
-                }
-            }
-            if (node.data.map == goal.map) {
-                const distance = Math.sqrt((node.data.x - goal.x) ** 2 + (node.data.y - goal.y) ** 2);
-                if (distance < distToFinish) {
-                    distToFinish = distance;
-                    finishNode = node.id;
-                }
-            }
-        });
-        return this.pathfinder.find(startNode, finishNode);
-    }
-    async move(destination, finishDistanceTolerance = 0) {
-        let path;
-        if (destination.real_x && destination.real_y) {
-            path = this.getPath({ map: parent.character.map, x: parent.character.real_x, y: parent.character.real_y }, { map: destination.map, x: destination.real_x, y: destination.real_y });
-        }
-        else {
-            path = this.getPath({ map: parent.character.map, x: parent.character.real_x, y: parent.character.real_y }, { map: destination.map, x: destination.x, y: destination.y });
-        }
-        console.log("This is the path we found:");
-        console.log(path);
-        for (let i = path.length - 1; i > 0; i--) {
-            const node = path[i];
-            const nextNode = path[i - 1];
-            const link = this.graph.getLink(node.id, nextNode.id);
-            console.log(node.id, nextNode.id, link.data);
-        }
-        return;
-    }
-}
-
-// CONCATENATED MODULE: ./source/character.ts
-
-
-
-
-
-
-class character_Character {
-    constructor() {
-        this.astar = new astarsmartmove_AStarSmartMove();
-        this.nGraphMove = new ngraphmove_NGraphMove();
-        this.itemsToKeep = [
-            "computer", "tracker",
-            "goldbooster", "luckbooster", "xpbooster",
-            "hpot1", "mpot1",
-            "jacko", "lantern"
-        ];
-        this.itemsToSell = {
-            "shoes": 2, "pants": 2, "coat": 2, "helmet": 2, "gloves": 2,
-            "cclaw": 2, "hpamulet": 1, "hpbelt": 1, "maceofthedead": 2, "ringsj": 1, "slimestaff": 2, "spear": 2, "throwingstars": 2, "vitearring": 1, "vitring": 1,
-        };
-        this.itemsToDismantle = {};
-        this.itemsToExchange = new Set([
-            "5bucks", "gem0", "gem1",
-            "seashell",
-            "leather",
-            "candycane", "mistletoe", "ornament",
-            "candy0", "candy1",
-            "redenvelopev3",
-            "basketofeggs",
-            "armorbox", "bugbountybox", "gift0", "gift1", "mysterybox", "weaponbox", "xbox"
-        ]);
-        this.itemsToBuy = new Set([
-            ...this.itemsToExchange,
-            "dexbelt", "intbelt", "strbelt",
-            "ctristone", "dexring", "intring", "ringofluck", "strring", "suckerpunch", "tristone",
-            "dexearring", "intearring", "lostearring", "strearring",
-            "amuletofm", "dexamulet", "intamulet", "snring", "stramulet", "t2dexamulet", "t2intamulet", "t2stramulet",
-            "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull",
-            "t2quiver", "lantern", "mshield", "quiver", "sshield", "xshield",
-            "angelwings", "bcape", "cape", "ecape", "stealthcape",
-            "hboots", "mrnboots", "mwboots", "shoes1", "wingedboots", "xboots",
-            "hpants", "mrnpants", "mwpants", "pants1", "starkillers", "xpants",
-            "cdragon", "coat1", "harmor", "mcape", "mrnarmor", "mwarmor", "tshirt0", "tshirt1", "tshirt2", "tshirt3", "tshirt4", "tshirt6", "tshirt7", "tshirt8", "tshirt88", "tshirt9", "warpvest", "xarmor",
-            "eears", "fury", "helmet1", "hhelmet", "mrnhat", "mwhelmet", "partyhat", "rednose", "xhelmet",
-            "gloves1", "goldenpowerglove", "handofmidas", "hgloves", "mrngloves", "mwgloves", "poker", "powerglove", "xgloves",
-            "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "firebow", "frostbow", "froststaff", "gbow", "harbringer", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow", "t3bow", "wblade",
-            "ascale", "bfur", "cscale", "electronics", "feather0", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", "networkcard", "platinumingot", "platinumnugget", "pleather", "snakefang",
-            "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8",
-            "egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8",
-            "essenceofether", "essenceoffire", "essenceoffrost", "essenceoflife", "essenceofnature",
-            "bunnyelixir", "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate",
-            "cscroll3", "scroll3", "scroll4",
-            "bottleofxp", "bugbountybox", "monstertoken", "poison", "snakeoil"
-        ]);
-        this.holdPosition = false;
-        this.holdAttack = false;
-    }
-    async mainLoop() {
-        try {
-            if (parent.character.ctype != "merchant") {
-                this.equipBetterItems();
-                this.getMonsterhuntQuest();
-                await Object(trade["b" /* buyPots */])();
-            }
-            this.getNewYearTreeBuff();
-            Object(trade["e" /* dismantleItems */])(this.itemsToDismantle);
-            if (parent.character.slots.elixir == null) {
-                const items = Object(functions["c" /* findItems */])("candypop");
-                if (items.length) {
-                    equip(items[0].index);
-                }
-            }
-            for (const entity of Object(functions["h" /* getEntities */])({ isCtype: "merchant", isWithinDistance: 400 })) {
-                for (const slot in entity.slots) {
-                    const info = entity.slots[slot];
-                    if (!info)
-                        continue;
-                    if (!info.giveaway)
-                        continue;
-                    if (info.list.includes(parent.character.id))
-                        continue;
-                    parent.socket.emit("join_giveaway", { slot: slot, id: entity.id, rid: info.rid });
-                }
-            }
-            for (const entity of Object(functions["h" /* getEntities */])({ isCtype: "merchant", isWithinDistance: 400 })) {
-                for (const slot in entity.slots) {
-                    const info = entity.slots[slot];
-                    if (!info)
-                        continue;
-                    if (info.b)
-                        continue;
-                    if (!info.rid)
-                        continue;
-                    if (!this.itemsToBuy.has(info.name))
-                        continue;
-                    if (info.price > G.items[info.name].g * 2)
-                        continue;
-                    if (parent.character.gold < info.price)
-                        continue;
-                    if (info.q) {
-                        const quantityToBuy = Math.min(info.q, Math.floor(parent.character.gold / info.price));
-                        parent.socket.emit("trade_buy", { slot: slot, id: entity.id, rid: info.rid, q: quantityToBuy });
-                    }
-                    else {
-                        parent.socket.emit("trade_buy", { slot: slot, id: entity.id, rid: info.rid, q: 1 });
-                    }
-                }
-            }
-            this.loot();
-        }
-        catch (error) {
-            console.error(error);
-        }
-        setTimeout(async () => { this.mainLoop(); }, Math.max(250, parent.character.ping));
-    }
-    async run() {
-        try {
-            game_log("Preparing pathfinding...");
-            const before = Date.now();
-            await this.nGraphMove.prepare();
-            game_log(`Took ${Date.now() - before}ms to prepare pathfinding.`);
-            this.nGraphMove.getGraphInfo();
-        }
-        catch (e) {
-            console.error(e);
-        }
-        this.healLoop();
-        this.attackLoop();
-        this.scareLoop();
-        this.moveLoop();
-        this.infoLoop();
-        this.mainLoop();
-    }
-    infoLoop() {
-        const party = Object(source_info["c" /* getPartyInfo */])();
-        party[parent.character.name] = {
-            "lastSeen": new Date(),
-            "shouldSwitchServer": this.shouldSwitchServer(),
-            "monsterHuntTargets": this.getMonsterHuntTargets(),
-            "items": Object(functions["i" /* getInventory */])(),
-            "attack": parent.character.attack,
-            "frequency": parent.character.frequency,
-            "goldm": parent.character.goldm,
-            "last_ms": parent.character.last_ms,
-            "luckm": parent.character.luckm,
-            "map": parent.character.map,
-            "x": parent.character.real_x,
-            "y": parent.character.real_y,
-            "s": parent.character.s
-        };
-        Object(source_info["g" /* setPartyInfo */])(party);
-        const players = Object(source_info["d" /* getPlayersInfo */])();
-        let changed = false;
-        for (const player of Object(functions["h" /* getEntities */])({ isPlayer: true, isPartyMember: false })) {
-            players[player.id] = {
-                "lastSeen": new Date(),
-                "rip": player.rip,
-                "map": player.map,
-                "x": player.real_x,
-                "y": player.real_y,
-                "s": player.s,
-                "ctype": player.ctype
-            };
-            changed = true;
-        }
-        if (changed)
-            Object(source_info["h" /* setPlayersInfo */])(players);
-        const npcs = Object(source_info["b" /* getNPCInfo */])();
-        changed = false;
-        for (const npc of ["Angel", "Kane"]) {
-            if (!parent.entities[npc])
-                continue;
-            npcs[npc] = {
-                "lastSeen": new Date(),
-                "map": parent.entities[npc].map,
-                "x": parent.entities[npc].real_x,
-                "y": parent.entities[npc].real_y
-            };
-            changed = true;
-        }
-        if (changed)
-            Object(source_info["f" /* setNPCInfo */])(npcs);
-        const monsters = Object(source_info["a" /* getMonstersInfo */])();
-        changed = false;
-        for (const entity of Object(functions["h" /* getEntities */])({ isMonster: true, isRIP: false })) {
-            if (!(["fvampire", "goldenbat", "greenjr", "jr", "mvampire", "phoenix", "pinkgoo", "snowman", "wabbit"]).includes(entity.mtype))
-                continue;
-            monsters[entity.mtype] = {
-                "lastSeen": new Date(),
-                "id": entity.id,
-                "x": entity.real_x,
-                "y": entity.real_y,
-                "map": entity.map
-            };
-            changed = true;
-        }
-        if (changed)
-            Object(source_info["e" /* setMonstersInfo */])(monsters);
-        setTimeout(() => { this.infoLoop(); }, 2000);
-    }
-    getMonsterHuntTargets() {
-        const types = [];
-        let leastTimeRemaining = Number.MAX_VALUE;
-        const party = Object(source_info["c" /* getPartyInfo */])();
-        for (const memberName of parent.party_list) {
-            const member = party[memberName];
-            if (!member)
-                continue;
-            if (!member.s.monsterhunt || member.s.monsterhunt.c == 0)
-                continue;
-            if (!this.targetPriority[member.s.monsterhunt.id])
-                continue;
-            const coop = this.targetPriority[member.s.monsterhunt.id].coop;
-            if (coop) {
-                const availableTypes = Object(functions["j" /* getPartyMemberTypes */])();
-                const missingTypes = coop.filter(x => !availableTypes.has(x));
-                if (missingTypes.length)
-                    continue;
-            }
-            const timeLeft = member.s.monsterhunt.ms - (Date.now() - member.last_ms.getTime());
-            if (timeLeft < leastTimeRemaining) {
-                leastTimeRemaining = timeLeft;
-                types.unshift(member.s.monsterhunt.id);
-            }
-            else {
-                types.push(member.s.monsterhunt.id);
-            }
-        }
-        return types;
-    }
-    shouldSwitchServer() {
-        if (parent.character.ctype == "merchant")
-            return true;
-        if (!parent.character.s.monsterhunt)
-            return false;
-        if (parent.character.s.monsterhunt.c == 0)
-            return false;
-        if (this.getMonsterHuntTargets().length)
-            return false;
-        for (const monster in parent.S) {
-            if (monster == "grinch")
-                continue;
-            if (parent.S[monster].hp / parent.S[monster].max_hp > 0.9)
-                continue;
-            if (!parent.S[monster].live)
-                continue;
-            if (this.targetPriority[monster])
-                return false;
-        }
-        return true;
-    }
-    loot() {
-        let i = 0;
-        const party = Object(source_info["c" /* getPartyInfo */])();
-        for (const chestID in parent.chests) {
-            const chest = parent.chests[chestID];
-            if (distance(parent.character, chest) > 800)
-                continue;
-            let shouldLoot = true;
-            for (const id of parent.party_list) {
-                if (id == parent.character.id)
-                    continue;
-                const partyMember = parent.entities[id];
-                if (!partyMember)
-                    continue;
-                if (distance(partyMember, chest) > 800)
-                    continue;
-                if (!party[id])
-                    continue;
-                if (["chest3", "chest4"].includes(chest.skin)) {
-                    if (parent.character.goldm >= party[id].goldm)
-                        continue;
-                }
-                else {
-                    if (parent.character.luckm >= party[id].luckm)
-                        continue;
-                }
-                shouldLoot = false;
-                break;
-            }
-            if (shouldLoot) {
-                parent.socket.emit("open_chest", { id: chestID });
-                if (++i > 10)
-                    break;
-            }
-        }
-    }
-    async attackLoop() {
-        try {
-            const targets = this.getTargets(1);
-            if (targets.length && this.wantToAttack(targets[0])) {
-                await attack(targets[0]);
-                reduce_cooldown("attack", Math.min(...parent.pings));
-            }
-        }
-        catch (error) {
-            if (error.reason == "cooldown") {
-                setTimeout(async () => { this.attackLoop(); }, Math.min(...parent.pings) - error.remaining);
-                return;
-            }
-            else if (!["not_found", "disabled"].includes(error.reason)) {
-                console.error(error);
-            }
-            setTimeout(async () => { this.attackLoop(); }, Object(functions["e" /* getCooldownMS */])("attack"));
-            return;
-        }
-        setTimeout(async () => { this.attackLoop(); }, Object(functions["e" /* getCooldownMS */])("attack", true));
-    }
-    scareLoop() {
-        try {
-            const targets = Object(functions["h" /* getEntities */])({ isAttackingUs: true, isMonster: true, isRIP: false });
-            let wantToScare = false;
-            if (targets.length >= 3) {
-                wantToScare = true;
-            }
-            else if (targets.length && !this.targetPriority[targets[0].mtype]) {
-                wantToScare = true;
-            }
-            else if (parent.character.c.town
-                && (targets.length > 1
-                    || (targets.length == 1
-                        && distance(targets[0], parent.character) - targets[0].range - (targets[0].speed * 2)))) {
-                wantToScare = true;
-            }
-            else {
-                for (const target of targets) {
-                    if (distance(target, parent.character) > target.range)
-                        continue;
-                    if (Object(functions["a" /* calculateDamageRange */])(target, parent.character)[1] * 6 * target.frequency <= parent.character.hp)
-                        continue;
-                    wantToScare = true;
-                    break;
-                }
-            }
-            if (!Object(functions["m" /* isAvailable */])("scare")
-                || !wantToScare) {
-                setTimeout(() => { this.scareLoop(); }, Object(functions["e" /* getCooldownMS */])("scare"));
-                return;
-            }
-            if (parent.character.slots.orb.name == "jacko") {
-                use_skill("scare");
-                reduce_cooldown("scare", Math.min(...parent.pings));
-            }
-            else {
-                const items = Object(functions["c" /* findItems */])("jacko");
-                if (items.length) {
-                    const jackoI = items[0].index;
-                    equip(jackoI);
-                    use_skill("scare");
-                    reduce_cooldown("scare", Math.min(...parent.pings));
-                }
-            }
-        }
-        catch (error) {
-            console.error(error);
-        }
-        setTimeout(() => { this.scareLoop(); }, Object(functions["e" /* getCooldownMS */])("scare"));
-    }
-    getMovementLocation(mtype) {
-        if (!this.targetPriority[mtype])
-            return;
-        if (this.targetPriority[mtype].farmingPosition && this.targetPriority[mtype].holdPositionFarm)
-            return this.targetPriority[mtype].farmingPosition;
-        if (Object(functions["l" /* getVisibleMonsterTypes */])().has(mtype))
-            return;
-        if (this.targetPriority[mtype].farmingPosition) {
-            if (distance(parent.character, this.targetPriority[mtype].farmingPosition) < 300) {
-                return;
-            }
-            else {
-                return this.targetPriority[mtype].farmingPosition;
-            }
-        }
-        if (parent.S[mtype]) {
-            if (!parent.S[mtype].live)
-                return;
-            return parent.S[mtype];
-        }
-        const randomSpawn = Object(functions["k" /* getRandomMonsterSpawn */])(mtype);
-        if (randomSpawn)
-            return randomSpawn;
-    }
-    getMovementTarget() {
-        if (parent.character.rip) {
-            set_message("RIP");
-            return;
-        }
-        if (parent.character.s.monsterhunt && parent.character.s.monsterhunt.c == 0) {
-            set_message("Finish MH");
-            return { target: "monsterhunter", position: G.maps.main.ref.monsterhunter, range: 300 };
-        }
-        for (const entity of Object(functions["h" /* getEntities */])({ isMonster: true, isRIP: false })) {
-            if (entity.mtype != "goldenbat" && entity.mtype != "phoenix")
-                continue;
-            if (!this.targetPriority[entity.mtype])
-                continue;
-            set_message(entity.mtype);
-            return { target: entity.mtype, position: entity, range: parent.character.range };
-        }
-        const monsters = Object(source_info["a" /* getMonstersInfo */])();
-        for (const mtype in monsters) {
-            if (!this.targetPriority[mtype])
-                continue;
-            const info = monsters[mtype];
-            const entityInfo = parent.entities[info.id];
-            if (entityInfo) {
-                info.x = entityInfo.real_x;
-                info.y = entityInfo.real_y;
-            }
-            if (distance(parent.character, info) < parent.character.range * 2 && !entityInfo) {
-                delete monsters[mtype];
-                Object(source_info["e" /* setMonstersInfo */])(monsters);
-            }
-            else {
-                set_message(`SP ${mtype}`);
-                return { target: mtype, position: info, range: parent.character.range };
-            }
-        }
-        if (G.maps.main.ref.newyear_tree && !parent.character.s.holidayspirit) {
-            set_message("Xmas Tree");
-            return { target: "newyear_tree", position: G.maps.main.ref.newyear_tree, range: 300 };
-        }
-        if (Object(functions["n" /* isInventoryFull */])()) {
-            set_message("Full!");
-            return { target: "merchant", position: { map: "main", "x": 60, "y": -325 }, range: 300 };
-        }
-        for (const mtype in parent.S) {
-            if (!parent.S[mtype].live)
-                continue;
-            if (!this.targetPriority[mtype])
-                continue;
-            set_message(mtype);
-            return { target: mtype, position: parent.S[mtype], range: parent.character.range };
-        }
-        const party = Object(source_info["c" /* getPartyInfo */])();
-        const monsterHuntTargets = this.getMonsterHuntTargets();
-        if (monsterHuntTargets.length) {
-            const potentialTarget = monsterHuntTargets[0];
-            const coop = this.targetPriority[potentialTarget].coop;
-            if (coop) {
-                const readyMembers = new Set();
-                for (const memberName of parent.party_list) {
-                    if (!party[memberName] || !party[memberName].monsterHuntTargets)
-                        continue;
-                    if (party[memberName].monsterHuntTargets[0] != potentialTarget)
-                        continue;
-                    readyMembers.add(parent.party[memberName].type);
-                }
-                const notReady = coop.filter(x => !readyMembers.has(x));
-                if (notReady.length == 0) {
-                    set_message(`MH ${potentialTarget}`);
-                    return { target: potentialTarget, position: this.getMovementLocation(potentialTarget) };
-                }
-            }
-            else {
-                set_message(`MH ${potentialTarget}`);
-                return { target: potentialTarget, position: this.getMovementLocation(potentialTarget) };
-            }
-        }
-        if (!parent.character.s.monsterhunt) {
-            set_message("New MH");
-            return { target: "monsterhunter", position: G.maps.main.ref.monsterhunter, range: 300 };
-        }
-        if (this.mainTarget) {
-            set_message(this.mainTarget);
-            return { target: this.mainTarget, position: this.getMovementLocation(this.mainTarget) };
-        }
-    }
-    moveLoop() {
-        try {
-            if (this.holdPosition || smart.moving) {
-                setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
-                return;
-            }
-            const lastMovementTarget = this.movementTarget;
-            this.movementTarget = this.getMovementTarget();
-            if (this.movementTarget && this.movementTarget.position) {
-                if (!lastMovementTarget
-                    || this.movementTarget.target != lastMovementTarget.target
-                    || (lastMovementTarget.position && this.movementTarget.position.map != lastMovementTarget.position.map)) {
-                    this.astar.stop();
-                    this.astar.smartMove(this.movementTarget.position, this.movementTarget.range);
-                    this.nGraphMove.move(this.movementTarget.position, this.movementTarget.range);
-                    setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
-                    return;
-                }
-                if (!this.astar.isMoving()) {
-                    this.astar.smartMove(this.movementTarget.position, this.movementTarget.range);
-                    this.nGraphMove.move(this.movementTarget.position, this.movementTarget.range);
-                    setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
-                    return;
-                }
-            }
-            const targets = this.getTargets(1);
-            if (targets.length
-                && targets[0].mtype == this.movementTarget.target
-                && this.targetPriority[targets[0].mtype] && !this.targetPriority[targets[0].mtype].holdPositionFarm) {
-                this.astar.stop();
-            }
-            const targeted = get_targeted_monster();
-            if (targeted && targeted.rip) {
-                change_target(null, true);
-                this.astar.stop();
-            }
-            if (this.astar.isMoving()) {
-                setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
-                return;
-            }
-            if (this.targetPriority[this.movementTarget.target] && this.targetPriority[this.movementTarget.target].holdPositionFarm) {
-                setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
-                return;
-            }
-            const inEnemyAttackRange = [];
-            const inAggroRange = [];
-            const inAttackRange = [];
-            const inAttackRangeHighPriority = [];
-            const inExtendedAttackRange = [];
-            const inExtendedAttackRangeHighPriority = [];
-            const visible = [];
-            const visibleHighPriority = [];
-            for (const id in parent.entities) {
-                const entity = parent.entities[id];
-                if (entity.rip)
-                    continue;
-                if (!this.targetPriority[entity.mtype])
-                    continue;
-                const d = distance(parent.character, entity);
-                const enemyRange = Math.max(entity.range + entity.speed, 50);
-                if (enemyRange < parent.character.range
-                    && d < enemyRange) {
-                    if (entity.hp > Object(functions["a" /* calculateDamageRange */])(parent.character, entity)[0] || this.targetPriority[entity.mtype].holdAttackInEntityRange || entity.target == parent.character.name) {
-                        inEnemyAttackRange.push(entity);
-                    }
-                }
-                if (!entity.target && d < 50) {
-                    inAggroRange.push(entity);
-                }
-                if (d < parent.character.range) {
-                    inAttackRange.push(entity);
-                    if (this.movementTarget.target == entity.mtype)
-                        inAttackRangeHighPriority.push(entity);
-                }
-                else if (d < parent.character.range * 2) {
-                    inExtendedAttackRange.push(entity);
-                    if (this.movementTarget.target == entity.mtype)
-                        inExtendedAttackRangeHighPriority.push(entity);
-                }
-                visible.push(entity);
-                if (this.movementTarget.target == entity.mtype)
-                    visibleHighPriority.push(entity);
-            }
-            if (inEnemyAttackRange.length) {
-                const average = {
-                    x: 0,
-                    y: 0
-                };
-                let maxRange = 0;
-                for (const v of inEnemyAttackRange) {
-                    average.x += v.real_x;
-                    average.y += v.real_y;
-                    if (v.range + v.speed > maxRange) {
-                        maxRange = v.range + v.speed;
-                    }
-                }
-                average.x /= inEnemyAttackRange.length;
-                average.y /= inEnemyAttackRange.length;
-                const angle = Math.atan2(parent.character.real_y - average.y, parent.character.real_x - average.x);
-                const moveDistance = Math.min(parent.character.range, maxRange * 1.5);
-                const calculateEscape = (angle, moveDistance) => {
-                    const x = Math.cos(angle) * moveDistance;
-                    const y = Math.sin(angle) * moveDistance;
-                    return { x: parent.character.real_x + x, y: parent.character.real_y + y };
-                };
-                let escapePosition = calculateEscape(angle, moveDistance);
-                let angleChange = 0;
-                while (!can_move_to(escapePosition.x, escapePosition.y) && angleChange < 180) {
-                    if (angleChange <= 0) {
-                        angleChange = (-angleChange) + 1;
-                    }
-                    else {
-                        angleChange = -angleChange;
-                    }
-                    escapePosition = calculateEscape(angle + (angleChange * Math.PI / 180), moveDistance);
-                }
-                move(escapePosition.x, escapePosition.y);
-                setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
-                return;
-            }
-            if (inAttackRangeHighPriority.length) {
-                setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
-                return;
-            }
-            if (visibleHighPriority.length) {
-                let closest;
-                let d = Number.MAX_VALUE;
-                for (const v of visibleHighPriority) {
-                    const vD = distance(parent.character, v);
-                    if (vD < d) {
-                        d = vD;
-                        closest = v;
-                    }
-                }
-                this.astar.smartMove(closest, parent.character.range);
-                this.nGraphMove.move(closest, parent.character.range);
-                setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
-                return;
-            }
-            if (visible.length) {
-                let closest;
-                let d = Number.MAX_VALUE;
-                for (const v of visible) {
-                    const vD = distance(parent.character, v);
-                    if (vD < d) {
-                        d = vD;
-                        closest = v;
-                    }
-                }
-                this.astar.smartMove(closest, parent.character.range);
-                this.nGraphMove.move(closest, parent.character.range);
-                setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
-                return;
-            }
-        }
-        catch (error) {
-            console.error(error);
-        }
-        setTimeout(() => { this.moveLoop(); }, Math.max(400, parent.character.ping));
-    }
-    async healLoop() {
-        try {
-            if (parent.character.rip) {
-                respawn();
-                setTimeout(() => { this.healLoop(); }, Object(functions["e" /* getCooldownMS */])("use_town"));
-                return;
-            }
-            else if (!Object(functions["m" /* isAvailable */])("use_hp")) {
-                setTimeout(() => { this.healLoop(); }, Object(functions["e" /* getCooldownMS */])("use_hp"));
-                return;
-            }
-            const hpPots = ["hpot0", "hpot1"];
-            const mpPots = ["mpot0", "mpot1"];
-            let useMpPot = null;
-            let useHpPot = null;
-            for (let i = parent.character.items.length - 1; i >= 0; i--) {
-                const item = parent.character.items[i];
-                if (!item)
-                    continue;
-                if (!useHpPot && hpPots.includes(item.name)) {
-                    useHpPot = item;
-                }
-                else if (!useMpPot && mpPots.includes(item.name)) {
-                    useMpPot = item;
-                }
-                if (useHpPot && useMpPot) {
-                    break;
-                }
-            }
-            const hpRatio = parent.character.hp / parent.character.max_hp;
-            const mpRatio = parent.character.mp / parent.character.max_mp;
-            if (hpRatio <= mpRatio
-                && hpRatio != 1
-                && (!useHpPot
-                    || (useHpPot.name == "hpot0" && (parent.character.hp <= parent.character.max_hp - 200 || parent.character.hp < 50))
-                    || (useHpPot.name == "hpot1" && (parent.character.hp <= parent.character.max_hp - 400 || parent.character.hp < 50)))) {
-                use_skill("use_hp");
-                reduce_cooldown("use_hp", Math.min(...parent.pings));
-                reduce_cooldown("use_mp", Math.min(...parent.pings));
-            }
-            else if (mpRatio != 1
-                && (!useMpPot
-                    || (useMpPot.name == "mpot0" && (parent.character.mp <= parent.character.max_mp - 300 || parent.character.mp < 50))
-                    || (useMpPot.name == "mpot1" && (parent.character.mp <= parent.character.max_mp - 500 || parent.character.mp < 50)))) {
-                use_skill("use_mp");
-                reduce_cooldown("use_hp", Math.min(...parent.pings));
-                reduce_cooldown("use_mp", Math.min(...parent.pings));
-            }
-            else if (hpRatio < mpRatio) {
-                use_skill("regen_hp");
-                reduce_cooldown("use_hp", Math.min(...parent.pings));
-                reduce_cooldown("use_mp", Math.min(...parent.pings));
-            }
-            else if (mpRatio < hpRatio) {
-                use_skill("regen_mp");
-                reduce_cooldown("use_hp", Math.min(...parent.pings));
-                reduce_cooldown("use_mp", Math.min(...parent.pings));
-            }
-        }
-        catch (error) {
-            console.error(error);
-        }
-        setTimeout(() => { this.healLoop(); }, Object(functions["e" /* getCooldownMS */])("use_hp"));
-    }
-    getNewYearTreeBuff() {
-        if (!G.maps.main.ref.newyear_tree)
-            return;
-        if (parent.character.s.holidayspirit)
-            return;
-        if (distance(parent.character, G.maps.main.ref.newyear_tree) > 400)
-            return;
-        parent.socket.emit("interaction", { type: "newyear_tree" });
-    }
-    getMonsterhuntQuest() {
-        if (distance(parent.character, G.maps.main.ref.monsterhunter) > 400)
-            return;
-        if (!parent.character.s.monsterhunt) {
-            parent.socket.emit("monsterhunt");
-        }
-        else if (parent.character.s.monsterhunt.c == 0) {
-            parent.socket.emit("monsterhunt");
-        }
-    }
-    parseCM(characterName, data) {
-        if (!parent.party_list.includes(characterName) && parent.character.name != characterName
-            && !["earthiverse", "earthMag", "earthMag2"].includes(characterName)
-            && !(data.message == "monster")) {
-            game_log("Blocked CM from " + characterName);
-            return;
-        }
-        if (data.message == "info") {
-            const party = Object(source_info["c" /* getPartyInfo */])();
-            party[characterName] = data.info;
-            Object(source_info["g" /* setPartyInfo */])(party);
-        }
-        else if (data.message == "monster") {
-            const monsters = Object(source_info["a" /* getMonstersInfo */])();
-            monsters[data.id] = data.info;
-            Object(source_info["e" /* setMonstersInfo */])(monsters);
-        }
-        else if (data.message == "npc") {
-            const npcs = Object(source_info["b" /* getNPCInfo */])();
-            npcs[data.id] = data.info;
-            Object(source_info["f" /* setNPCInfo */])(npcs);
-        }
-        else if (data.message == "player") {
-            const players = Object(source_info["d" /* getPlayersInfo */])();
-            players[data.id] = data.info;
-            Object(source_info["h" /* setPlayersInfo */])(players);
-        }
-        else if (data.message == "chests") {
-            for (const chestID in data.chests) {
-                if (!parent.chests[chestID])
-                    parent.chests[chestID] = data.chests[chestID];
-            }
-        }
-    }
-    equipBetterItems() {
-        try {
-            const items = Object(functions["i" /* getInventory */])();
-            if (this.movementTarget.target && this.targetPriority[this.movementTarget.target]) {
-                for (const idealItem of this.targetPriority[this.movementTarget.target].equip || []) {
-                    let hasItem = false;
-                    for (const slot in parent.character.slots) {
-                        const slotInfo = parent.character.slots[slot];
-                        if (!slotInfo)
-                            continue;
-                        if (slotInfo.name == idealItem) {
-                            hasItem = true;
-                            break;
-                        }
-                    }
-                    if (!hasItem) {
-                        for (const item of items) {
-                            if (item.name == idealItem) {
-                                if (G.classes[parent.character.ctype].doublehand[G.items[idealItem].wtype])
-                                    unequip("offhand");
-                                equip(item.index);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            for (const slot in parent.character.slots) {
-                let slotItem = parent.character.slots[slot];
-                let betterItem;
-                if (!slotItem)
-                    continue;
-                for (const item of items) {
-                    if (item.name != slotItem.name)
-                        continue;
-                    if (!item.level || item.level <= slotItem.level)
-                        continue;
-                    slotItem = item;
-                    betterItem = item;
-                }
-                if (betterItem)
-                    equip(betterItem.index, slot);
-            }
-        }
-        catch (error) {
-            console.error(error);
-        }
-    }
-    getTargets(numTargets = 1, distanceCheck = parent.character.range) {
-        const targets = [];
-        const members = parent.party_list;
-        const claimedTargets = new Set();
-        for (const id in parent.entities) {
-            if (members.includes(id)) {
-                const target = parent.entities[id].target;
-                if (target)
-                    claimedTargets.add(target);
-            }
-        }
-        const potentialTargets = new FastPriorityQueue_default.a((x, y) => x.priority > y.priority);
-        for (const id in parent.entities) {
-            const potentialTarget = parent.entities[id];
-            if (potentialTarget.rip)
-                continue;
-            if (parent.party_list.includes(id))
-                continue;
-            if (!is_pvp() && potentialTarget.type != "monster")
-                continue;
-            if (is_pvp() && parent.party_list.includes(id))
-                continue;
-            if (!this.targetPriority[potentialTarget.mtype] && potentialTarget.target != parent.character.name)
-                continue;
-            let priority = this.targetPriority[potentialTarget.mtype] ? this.targetPriority[potentialTarget.mtype].priority : 0;
-            const d = distance(parent.character, potentialTarget);
-            if (d > distanceCheck)
-                continue;
-            priority -= d;
-            if (claimedTargets.has(id)) {
-                if (this.targetPriority[potentialTarget.mtype] && this.targetPriority[potentialTarget.mtype].coop)
-                    priority += parent.character.range;
-                if (potentialTarget.hp <= Object(functions["a" /* calculateDamageRange */])(parent.character, potentialTarget)[0])
-                    priority -= parent.character.range;
-            }
-            if (potentialTarget.mtype == this.mainTarget)
-                priority += 250;
-            if (this.movementTarget && potentialTarget.mtype == this.movementTarget.target)
-                priority += 1000;
-            if (potentialTarget.target == parent.character.name)
-                priority += 2000;
-            if (potentialTarget.cooperative)
-                priority += 1000 * (potentialTarget.max_hp - potentialTarget.hp) / potentialTarget.max_hp;
-            const priorityEntity = { id: potentialTarget.id, priority: priority };
-            potentialTargets.add(priorityEntity);
-        }
-        while (targets.length < numTargets && potentialTargets.size > 0) {
-            const entity = parent.entities[potentialTargets.poll().id];
-            if (entity)
-                targets.push(entity);
-        }
-        if (targets.length > 0)
-            change_target(targets[0], true);
-        return targets;
-    }
-    wantToAttack(e, s = "attack") {
-        if (!Object(functions["m" /* isAvailable */])(s))
-            return false;
-        if (parent.character.c.town)
-            return false;
-        let range = G.skills[s].range ? G.skills[s].range : parent.character.range;
-        const distanceToEntity = distance(parent.character, e);
-        if (G.skills[s].range_multiplier)
-            range *= G.skills[s].range_multiplier;
-        if (distanceToEntity > range)
-            return false;
-        const mp = G.skills[s].mp ? G.skills[s].mp : parent.character.mp_cost;
-        if (parent.character.mp < mp)
-            return false;
-        if (s != "attack" && e.immune)
-            return false;
-        if (s != "attack" && e["1hp"])
-            return false;
-        if (!is_pvp() && e.type == "monster" && !this.targetPriority[e.mtype])
-            return false;
-        if (!e.target) {
-            if (this.holdAttack)
-                return false;
-            if ((smart.moving || this.astar.isMoving()) && (this.movementTarget && this.movementTarget.target && this.movementTarget.target != e.mtype) && this.targetPriority[e.mtype].holdAttackWhileMoving)
-                return false;
-            if (this.targetPriority[e.mtype].holdAttackInEntityRange && distanceToEntity <= e.range)
-                return false;
-            if (this.targetPriority[e.mtype].coop) {
-                const availableTypes = [parent.character.ctype];
-                for (const member of parent.party_list) {
-                    const e = parent.entities[member];
-                    if (!e)
-                        continue;
-                    if (e.rip)
-                        continue;
-                    if (e.ctype == "priest" && distance(parent.character, e) > e.range)
-                        continue;
-                    availableTypes.push(e.ctype);
-                }
-                for (const type of this.targetPriority[e.mtype].coop) {
-                    if (!availableTypes.includes(type))
-                        return false;
-                }
-            }
-            if (Object(functions["a" /* calculateDamageRange */])(e, parent.character)[1] * 5 * e.frequency > parent.character.hp && distanceToEntity <= e.range)
-                return false;
-        }
-        return true;
-    }
-}
-
-
-/***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -3851,7 +3496,7 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports) {
 
 module.exports = function eventify(subject) {
@@ -3945,7 +3590,7 @@ function validateSubject(subject) {
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -3957,10 +3602,10 @@ function validateSubject(subject) {
  */
 module.exports = aStarPathSearch;
 
-var NodeHeap = __webpack_require__(4);
-var makeSearchStatePool = __webpack_require__(7);
-var heuristics = __webpack_require__(5);
-var defaultSettings = __webpack_require__(6);
+var NodeHeap = __webpack_require__(3);
+var makeSearchStatePool = __webpack_require__(8);
+var heuristics = __webpack_require__(4);
+var defaultSettings = __webpack_require__(5);
 
 var NO_PATH = defaultSettings.NO_PATH;
 
@@ -4096,7 +3741,7 @@ function reconstructPath(searchState) {
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -4106,10 +3751,10 @@ function reconstructPath(searchState) {
  */
 module.exports = aStarBi;
 
-var NodeHeap = __webpack_require__(4);
-var makeSearchStatePool = __webpack_require__(7);
-var heuristics = __webpack_require__(5);
-var defaultSettings = __webpack_require__(6);
+var NodeHeap = __webpack_require__(3);
+var makeSearchStatePool = __webpack_require__(8);
+var heuristics = __webpack_require__(4);
+var defaultSettings = __webpack_require__(5);
 
 var BY_FROM = 1;
 var BY_TO = 2;
@@ -4331,15 +3976,15 @@ function aStarBi(graph, options) {
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = nba;
 
-var NodeHeap = __webpack_require__(4);
-var heuristics = __webpack_require__(5);
-var defaultSettings = __webpack_require__(6);
-var makeNBASearchStatePool = __webpack_require__(16);
+var NodeHeap = __webpack_require__(3);
+var heuristics = __webpack_require__(4);
+var defaultSettings = __webpack_require__(5);
+var makeNBASearchStatePool = __webpack_require__(17);
 
 var NO_PATH = defaultSettings.NO_PATH;
 
@@ -4594,7 +4239,7 @@ function reconstructPath(searchState) {
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports) {
 
 module.exports = makeNBASearchStatePool;
@@ -4718,17 +4363,17 @@ function makeNBASearchStatePool() {
 
 
 /***/ }),
-/* 17 */,
 /* 18 */,
 /* 19 */,
 /* 20 */,
-/* 21 */
+/* 21 */,
+/* 22 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "warrior", function() { return warrior; });
-/* harmony import */ var _character__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(10);
+/* harmony import */ var _character__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9);
 /* harmony import */ var _trade__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2);
 /* harmony import */ var _functions__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(0);
 

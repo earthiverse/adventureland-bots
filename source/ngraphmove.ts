@@ -1,7 +1,7 @@
-import createGraph, { NodeId, Node, Link } from "ngraph.graph"
+import createGraph, { NodeId, Node, Graph } from "ngraph.graph"
 import path from "ngraph.path"
 import { PositionReal, MapName } from "./definitions/adventureland"
-import { Grids, Grid, NodeData, LinkData } from "./definitions/ngraphmap"
+import { Grids, Grid, NodeData, LinkData, PathData } from "./definitions/ngraphmap"
 
 // Variables for the grid
 const UNKNOWN = 1
@@ -17,8 +17,9 @@ const TRANSPORT_COST = 25
 const TOWN_COST = 100
 
 export class NGraphMove {
+    private static instance: NGraphMove
     private grids: Grids = {}
-    private graph = createGraph({ multigraph: true })
+    private graph: Graph<NodeData, LinkData> = createGraph({ multigraph: true })
     private pathfinder = path.aStar(this.graph, {
         distance(fromNode, toNode, link) {
             if (link.data && link.data.type == "transport") {
@@ -35,6 +36,49 @@ export class NGraphMove {
         },
         oriented: true
     })
+
+    /** Date the search started */
+    private searchStartTime: number
+    /** Date the search finished */
+    private searchFinishTime: number
+    /** Time the movement started */
+    private moveStartTime: number
+    /** Time the movement finished */
+    private moveFinishTime: number
+
+    private constructor() {
+        // Private to force singleton
+    }
+
+    static async getInstance(): Promise<NGraphMove> {
+        if (!this.instance) {
+            this.instance = new NGraphMove()
+            await this.instance.prepare()
+        }
+
+        return this.instance
+    }
+
+    private reset() {
+        this.searchStartTime = undefined
+        this.searchFinishTime = undefined
+        this.moveStartTime = undefined
+        this.moveFinishTime = undefined
+    }
+
+    public stop() {
+        this.reset()
+        if (parent.character.moving) stop()
+        if (parent.character.c.town) stop("town")
+    }
+
+    public isMoving(): boolean {
+        return this.moveFinishTime == undefined && this.searchStartTime != undefined
+    }
+
+    private wasCancelled(start: number): boolean {
+        return !this.searchStartTime || start < this.searchStartTime
+    }
 
     /**
      * Checks if you can move from the `from` position to the `to` position.
@@ -111,8 +155,8 @@ export class NGraphMove {
         }
         // 2C: Fill in the grid with walkable pixels
         for (const spawn of G.maps[map].spawns) {
-            let x = Math.floor(spawn[0]) - G.geometry[map].min_x
-            let y = Math.floor(spawn[1]) - G.geometry[map].min_y
+            let x = Math.trunc(spawn[0]) - G.geometry[map].min_x
+            let y = Math.trunc(spawn[1]) - G.geometry[map].min_y
             if (grid[y][x] == WALKABLE) continue // We've already flood filled this
             const stack = [[y, x]]
             while (stack.length) {
@@ -149,7 +193,7 @@ export class NGraphMove {
 
         // Some useful functions for later
         function createNodeId(map: MapName, x: number, y: number): NodeId {
-            return `${map}:${Math.floor(x)},${Math.floor(y)}`
+            return `${map}:${Math.trunc(x)},${Math.trunc(y)}`
         }
         function createNodeData(map: MapName, x: number, y: number): NodeData {
             return {
@@ -178,7 +222,7 @@ export class NGraphMove {
         }
 
         // 3A: Create nodes based on corners
-        const newNodes: Node<any>[] = []
+        const newNodes: Node<NodeData>[] = []
         for (let y = 1; y < mapHeight - 1; y++) {
             for (let x = 1; x < mapWidth - 1; x++) {
                 if (grid[y][x] != WALKABLE) continue
@@ -365,9 +409,9 @@ export class NGraphMove {
         console.info("----------------------------")
     }
 
-    private getPath(start: PositionReal, goal: PositionReal): Node<unknown>[] {
+    private getPath(start: NodeData, goal: NodeData): PathData {
         console.info(`Getting path from ${start.map}.${start.x},${start.y} to ${goal.map}.${goal.x}.${goal.y}`)
-        // Get the closest node to the start and finish
+        // Find the closest node to the start and finish points
         let distToStart = Number.MAX_VALUE
         let startNode: NodeId
         let distToFinish = Number.MAX_VALUE
@@ -389,33 +433,119 @@ export class NGraphMove {
             }
         })
 
-        // Get path from start to goal
-        return this.pathfinder.find(startNode, finishNode)
+        // Get the data for the path we need to travel (town, teleport, walking)
+        const rawPath = this.pathfinder.find(startNode, finishNode)
+        const optimizedPath: PathData = []
+        if (rawPath[rawPath.length - 1].data.x != start.x || rawPath[rawPath.length - 1].data.y != start.y) {
+            // Add the starting position
+            optimizedPath.push([start, rawPath[rawPath.length - 1].data, undefined])
+        }
+        for (let i = rawPath.length - 1; i > 0; i--) {
+            // Add the path nodes
+            const node = rawPath[i]
+            const nextNode = rawPath[i - 1]
+            const link = this.graph.getLink(node.id, nextNode.id)
+            optimizedPath.push([node.data, nextNode.data, link.data])
+        }
+        if (rawPath[0].data.x != goal.x || rawPath[0].data.y != goal.y) {
+            // Add the finishing position
+            optimizedPath.push([rawPath[0].data, goal, undefined])
+        }
+
+        // 2: TODO: Optimize town teleports
+
+
+        return optimizedPath
     }
 
-    public async move(destination: PositionReal, finishDistanceTolerance = 0): Promise<unknown> {
+    public async move(goal: PositionReal, finishDistanceTolerance = 0): Promise<unknown> {
+        this.reset()
+        const searchStart = Date.now()
+        this.searchStartTime = searchStart
+
+        const from: NodeData = {
+            map: parent.character.map,
+            x: parent.character.real_x,
+            y: parent.character.real_y
+        }
+        const to: NodeData = {
+            map: goal.map,
+            x: goal.real_x !== undefined ? goal.real_x : goal.x,
+            y: goal.real_y !== undefined ? goal.real_y : goal.y
+        }
+
         // Get the path
-        let path: Node<unknown>[]
-        if (destination.real_x && destination.real_y) {
-            path = this.getPath({ map: parent.character.map, x: parent.character.real_x, y: parent.character.real_y }, { map: destination.map, x: destination.real_x, y: destination.real_y })
-        } else {
-            path = this.getPath({ map: parent.character.map, x: parent.character.real_x, y: parent.character.real_y }, { map: destination.map, x: destination.x, y: destination.y })
+        const path = this.getPath(from, to)
+        this.searchFinishTime = Date.now()
+
+        // DEBUG
+        console.log(`We found a path from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] in ${this.searchFinishTime - this.searchStartTime}ms`)
+
+        function getCloseTo(from: NodeData): PositionReal {
+            if (finishDistanceTolerance == 0) return to // We want to go to this exact position
+
+            // Compute a line from `from` to `destinaton` that is `finishDistanceTolerance` units away.
+            const angle = Math.atan2(from.y - to.y, from.x - to.x)
+            return {
+                map: to.map,
+                x: to.x + Math.cos(angle) * finishDistanceTolerance,
+                y: to.y + Math.sin(angle) * finishDistanceTolerance
+            }
         }
 
-        // NOTE: DEBUG
-        console.log("This is the path we found:")
-        console.log(path)
-
-        // Traverse the path
-        for (let i = path.length - 1; i > 0; i--) {
-            const node = path[i]
-            const nextNode = path[i - 1]
-            const link = this.graph.getLink(node.id, nextNode.id)
-
-            // NOTE: DEBUG
-            console.log(node.id, nextNode.id, link.data)
+        async function performNextMovement(a: NodeData, b: NodeData, c: LinkData) {
+            if (c) {
+                if (c.type == "town") {
+                    // Use "town" to get to the next node
+                    use_skill("town")
+                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + 5000))
+                    return
+                } else if (c.type == "transport") {
+                    // Transport to the next node
+                    transport(b.map, c.spawn)
+                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings)))
+                    return
+                }
+            } else {
+                let walkTo = b
+                if (a.map == to.map && finishDistanceTolerance > 0) {
+                    walkTo = getCloseTo(b)
+                }
+                // Walk to the next node
+                const distance = Math.sqrt((walkTo.x - a.x) ** 2 + (walkTo.y - a.y) ** 2)
+                const timeout = new Promise((resolve, reject) => setTimeout(reject, 1100 * distance / parent.character.speed))
+                await Promise.race([move(walkTo.x, walkTo.y), timeout])
+            }
         }
 
-        return
+        this.moveStartTime = Date.now()
+        for (let i = 0; i < path.length; i++) {
+            const fromData = path[i][0]
+            const toData = path[i][1]
+            const linkData = path[i][2]
+
+            if (this.wasCancelled(searchStart)) {
+                console.log(`Search from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] was cancelled`)
+                return Promise.reject("cancelled")
+            } else if (parent.character.c.town || parent.character.moving) {
+                // If we're moving, wait.
+                await new Promise(resolve => setTimeout(resolve, SLEEP_FOR_MS))
+                i--
+                continue
+            } else if (!linkData && !this.canMove(fromData, toData)) {
+                // We got lost somewhere, retry
+                console.warn("NGraphMove movement failed. We're trying again.")
+                return this.move(goal, finishDistanceTolerance)
+            } else {
+                // Perform movement
+                await performNextMovement(fromData, toData, linkData)
+            }
+        }
+        this.moveFinishTime = Date.now()
+
+        // DEBUG
+        console.log(`We moved from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] in ${this.moveFinishTime - this.moveStartTime}ms`)
+
+        return Promise.resolve()
     }
 }

@@ -5,6 +5,7 @@ import { sellUnwantedItems, exchangeItems, buyFromPonty, openMerchantStand, clos
 import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots, sleep, getEmptySlots, isInventoryFull, buyIfNone } from "./functions"
 import { MovementTarget, TargetPriorityList, BankItemInfo, NPCInfo, PartyInfo, PlayersInfo } from "./definitions/bots"
 import { getPartyInfo, getPlayersInfo, setPlayersInfo, getNPCInfo, setNPCInfo } from "./info"
+import { NGraphMove } from "./ngraphmove"
 
 class Merchant extends Character {
     targetPriority: TargetPriorityList = {
@@ -218,7 +219,7 @@ class Merchant extends Character {
         try {
             game_log("Preparing pathfinding...")
             const before = Date.now()
-            await this.nGraphMove.prepare()
+            this.nGraphMove = await NGraphMove.getInstance()
             game_log(`Took ${Date.now() - before}ms to prepare pathfinding.`)
             this.nGraphMove.getGraphInfo()
         } catch (e) {

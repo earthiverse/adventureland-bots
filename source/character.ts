@@ -3,7 +3,7 @@ import { Entity, IPosition, ItemName, ItemInfo, SlotType, MonsterName, PositionR
 import { findItems, getInventory, getRandomMonsterSpawn, getCooldownMS, isAvailable, calculateDamageRange, isInventoryFull, getPartyMemberTypes, getVisibleMonsterTypes, getEntities } from "./functions"
 import { TargetPriorityList, InventoryItemInfo, ItemLevelInfo, PriorityEntity, MovementTarget, PartyInfo, PlayersInfo, NPCInfo, MonstersInfo } from "./definitions/bots"
 import { dismantleItems, buyPots } from "./trade"
-import { AStarSmartMove } from "./astarsmartmove"
+// import { AStarSmartMove } from "./astarsmartmove"
 import { getPartyInfo, setPartyInfo, getPlayersInfo, setPlayersInfo, getNPCInfo, setNPCInfo, getMonstersInfo, setMonstersInfo } from "./info"
 import { NGraphMove } from "./ngraphmove"
 
@@ -14,8 +14,8 @@ export abstract class Character {
     /** The default target if there's nothing else to attack */
     protected abstract mainTarget: MonsterName
 
-    protected astar = new AStarSmartMove()
-    protected nGraphMove = new NGraphMove()
+    // protected astar = new AStarSmartMove()
+    protected nGraphMove: NGraphMove
 
     protected itemsToKeep: ItemName[] = [
         // General
@@ -148,7 +148,7 @@ export abstract class Character {
                     if (parent.character.gold < info.price) continue // We don't have enough money
                     if (info.q) {
                         // They're stackable, buy as many as we can
-                        const quantityToBuy = Math.min(info.q, Math.floor(parent.character.gold / info.price))
+                        const quantityToBuy = Math.min(info.q, Math.trunc(parent.character.gold / info.price))
                         parent.socket.emit("trade_buy", { slot: slot, id: entity.id, rid: info.rid, q: quantityToBuy })
                     } else {
                         // They're not stackable, buy the one
@@ -167,9 +167,8 @@ export abstract class Character {
     public async run(): Promise<void> {
         // Prepare the pathfinder
         try {
-            game_log("Preparing pathfinding...")
             const before = Date.now()
-            await this.nGraphMove.prepare()
+            this.nGraphMove = await NGraphMove.getInstance()
             game_log(`Took ${Date.now() - before}ms to prepare pathfinding.`)
             this.nGraphMove.getGraphInfo()
         } catch (e) {
@@ -573,16 +572,18 @@ export abstract class Character {
                     || this.movementTarget.target != lastMovementTarget.target
                     || (lastMovementTarget.position && this.movementTarget.position.map != lastMovementTarget.position.map) /* Will this always be the case? Right now there are only snakes that spawn on more than one map, and we have them covered by setting a hunt position */) {
                     // New movement target
-                    this.astar.stop()
-                    this.astar.smartMove(this.movementTarget.position, this.movementTarget.range)
+                    // this.astar.stop()
+                    this.nGraphMove.stop()
+                    // this.astar.smartMove(this.movementTarget.position, this.movementTarget.range)
                     this.nGraphMove.move(this.movementTarget.position, this.movementTarget.range)
                     setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                     return
                 }
 
-                if (!this.astar.isMoving()) {
+                // if (!this.astar.isMoving()) {
+                if (!this.nGraphMove.isMoving()) {
                     // Same monster, new movement target
-                    this.astar.smartMove(this.movementTarget.position, this.movementTarget.range)
+                    // this.astar.smartMove(this.movementTarget.position, this.movementTarget.range)
                     this.nGraphMove.move(this.movementTarget.position, this.movementTarget.range)
                     setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                     return
@@ -594,16 +595,19 @@ export abstract class Character {
             if (targets.length
                 && targets[0].mtype == this.movementTarget.target
                 && this.targetPriority[targets[0].mtype] && !this.targetPriority[targets[0].mtype].holdPositionFarm) {
-                this.astar.stop()
+                // this.astar.stop()
+                this.nGraphMove.stop()
             }
             const targeted = get_targeted_monster()
             if (targeted && targeted.rip) {
                 change_target(null, true)
-                this.astar.stop()
+                // this.astar.stop()
+                this.nGraphMove.stop()
             }
 
             // Don't do anything if we're moving around
-            if (this.astar.isMoving()) {
+            // if (this.astar.isMoving()) {
+            if (this.nGraphMove.isMoving()) {
                 setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }
@@ -690,7 +694,7 @@ export abstract class Character {
                 }
                 let escapePosition = calculateEscape(angle, moveDistance)
                 let angleChange = 0
-                while (!can_move_to(escapePosition.x, escapePosition.y) && angleChange < 180) {
+                while (!this.nGraphMove.canMove({ map: parent.character.map, x: parent.character.real_x, y: parent.character.real_y }, { map: parent.character.map, x: escapePosition.x, y: escapePosition.y }) && angleChange < 180) {
                     if (angleChange <= 0) {
                         angleChange = (-angleChange) + 1
                     } else {
@@ -725,7 +729,7 @@ export abstract class Character {
                         closest = v
                     }
                 }
-                this.astar.smartMove(closest, parent.character.range)
+                // this.astar.smartMove(closest, parent.character.range)
                 this.nGraphMove.move(closest, parent.character.range)
                 setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
@@ -742,7 +746,7 @@ export abstract class Character {
                         closest = v
                     }
                 }
-                this.astar.smartMove(closest, parent.character.range)
+                // this.astar.smartMove(closest, parent.character.range)
                 this.nGraphMove.move(closest, parent.character.range)
                 setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
@@ -1156,7 +1160,7 @@ export abstract class Character {
         if (!e.target) {
             // Hold attack
             if (this.holdAttack) return false // Holding all attacks
-            if ((smart.moving || this.astar.isMoving()) && (this.movementTarget && this.movementTarget.target && this.movementTarget.target != e.mtype) && this.targetPriority[e.mtype].holdAttackWhileMoving) return false // Holding attacks while moving
+            if ((smart.moving /*|| this.astar.isMoving()*/ || this.nGraphMove.isMoving()) && (this.movementTarget && this.movementTarget.target && this.movementTarget.target != e.mtype) && this.targetPriority[e.mtype].holdAttackWhileMoving) return false // Holding attacks while moving
             if (this.targetPriority[e.mtype].holdAttackInEntityRange && distanceToEntity <= e.range) return false // Holding attacks in range
 
             // Don't attack if we have it as a coop target, but we don't have everyone there.

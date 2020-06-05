@@ -383,7 +383,7 @@ export function getMonsterSpawns(type: MonsterName): PositionReal[] {
 
 export function getRandomMonsterSpawn(type: MonsterName): PositionReal {
     const monsterSpawns = getMonsterSpawns(type)
-    return monsterSpawns[Math.floor(Math.random() * monsterSpawns.length)]
+    return monsterSpawns[Math.trunc(Math.random() * monsterSpawns.length)]
 }
 
 export function getClosestMonsterSpawn(type: MonsterName): PositionReal {
