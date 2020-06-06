@@ -886,7 +886,7 @@ async function buyScrolls() {
 const UNKNOWN = 1;
 const UNWALKABLE = 2;
 const WALKABLE = 3;
-const EXTRA_PADDING = 2;
+const EXTRA_PADDING = 4;
 const FIRST_MAP = "main";
 const SLEEP_FOR_MS = 50;
 const TRANSPORT_COST = 25;
