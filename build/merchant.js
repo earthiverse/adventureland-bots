@@ -988,7 +988,7 @@ class NGraphMove {
             const ySign = Math.sign(toTravel.y);
             const slope = toTravel.y / toTravel.x;
             while (truncTo.x !== current.x + xSign) {
-                current.y = Math.trunc(from.y + slope * (current.x - from.x));
+                current.y = Math.trunc(truncFrom.y + slope * (current.x - truncFrom.x));
                 if (grid[current.y][current.x] !== WALKABLE)
                     return false;
                 if (grid[current.y + ySign][current.x] !== WALKABLE)
@@ -1002,7 +1002,7 @@ class NGraphMove {
             const ySign = Math.sign(toTravel.y);
             const slope = toTravel.x / toTravel.y;
             while (truncTo.y !== current.y + ySign) {
-                current.x = Math.trunc(from.x + slope * (current.y - from.y));
+                current.x = Math.trunc(truncFrom.x + slope * (current.y - truncFrom.y));
                 if (grid[current.y][current.x] !== WALKABLE)
                     return false;
                 if (grid[current.y][current.x + xSign] !== WALKABLE)
