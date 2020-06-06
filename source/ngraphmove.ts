@@ -89,44 +89,82 @@ export class NGraphMove {
         return !this.searchStartTime || start < this.searchStartTime
     }
 
-    // TODO: This function is borked. It cuts too many corners.
-    // /**
-    //  * Checks if you can move from the `from` position to the `to` position.
-    //  * This function doesn't support movement across maps!
-    //  * @param from Position to start moving from
-    //  * @param to Position to move to
-    //  */
-    // public canMove(from: NodeData, to: NodeData): boolean {
-    //     if (from.map != to.map) {
-    //         console.error(`Don't use this function across maps. You tried to check canMove from ${from.map} to ${to.map}.`)
-    //         return false
-    //     }
-    //     const grid = this.grids[from.map]
-    //     const dx = Math.trunc(to.x) - Math.trunc(from.x), dy = Math.trunc(to.y) - Math.trunc(from.y)
-    //     const nx = Math.abs(dx), ny = Math.abs(dy)
-    //     const sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1
+    /**
+     * Checks if you can move from the `from` position to the `to` position.
+     * This function doesn't support movement across maps!
+     * @param from Position to start moving from
+     * @param to Position to move to
+     */
+    public canMove(from: NodeData, to: NodeData): boolean {
+        if (from.map != to.map) {
+            console.error(`Don't use this function across maps. You tried to check canMove from ${from.map} to ${to.map}.`)
+            return false
+        }
+        const grid = this.grids[from.map]
 
-    //     let x = Math.trunc(from.x) - G.geometry[from.map].min_x, y = Math.trunc(from.y) - G.geometry[from.map].min_y
-    //     for (let ix = 0, iy = 0; ix < nx || iy < ny;) {
-    //         if ((0.5 + ix) / nx == (0.5 + iy) / ny) {
-    //             x += sign_x
-    //             y += sign_y
-    //             ix++
-    //             iy++
-    //         } else if ((0.5 + ix) / nx < (0.5 + iy) / ny) {
-    //             x += sign_x
-    //             ix++
-    //         } else {
-    //             y += sign_y
-    //             iy++
-    //         }
+        const truncFrom = {
+            x: Math.trunc(from.x) - G.geometry[from.map].min_x,
+            y: Math.trunc(from.y) - G.geometry[from.map].min_y
+        }
+        const truncTo = {
+            x: Math.trunc(to.x) - G.geometry[from.map].min_x,
+            y: Math.trunc(to.y) - G.geometry[from.map].min_y
+        }
+        const toTravel = {
+            x: truncTo.x - truncFrom.x,
+            y: truncTo.y - truncFrom.y
+        }
+        const current = {
+            x: truncFrom.x,
+            y: truncFrom.y
+        }
 
-    //         if (grid[y][x] !== WALKABLE) {
-    //             return false
-    //         }
-    //     }
-    //     return true
-    // }
+        if (toTravel.x == 0) {
+            // It's a straight y-line
+            const sign = Math.sign(toTravel.y)
+            while (truncTo.y !== current.y + sign) {
+                if (grid[current.y][current.x] !== WALKABLE) return false
+                current.y += sign
+            }
+            return true
+        }
+
+        if (toTravel.y == 0) {
+            // It's a straight x-line
+            const sign = Math.sign(toTravel.x)
+            while (truncTo.x !== current.x + sign) {
+                if (grid[current.y][current.x] !== WALKABLE) return false
+                current.x += sign
+            }
+            return true
+        }
+
+        if (Math.abs(toTravel.x) >= Math.abs(toTravel.y)) {
+            // It's a diagonal line, longer in the x
+            const xSign = Math.sign(toTravel.x)
+            const ySign = Math.sign(toTravel.y)
+            const slope = toTravel.y / toTravel.x
+            while (truncTo.x !== current.x + xSign) {
+                current.y = Math.trunc(from.y + slope * (current.x - from.x))
+                if (grid[current.y][current.x] !== WALKABLE) return false
+                if (grid[current.y + ySign][current.x] !== WALKABLE) return false
+                current.x += xSign
+            }
+            return true
+        } else {
+            // It's a diagonal line, longer in the y
+            const xSign = Math.sign(toTravel.x)
+            const ySign = Math.sign(toTravel.y)
+            const slope = toTravel.x / toTravel.y
+            while (truncTo.y !== current.y + ySign) {
+                current.x = Math.trunc(from.x + slope * (current.y - from.y))
+                if (grid[current.y][current.x] !== WALKABLE) return false
+                if (grid[current.y][current.x + xSign] !== WALKABLE) return false
+                current.y += ySign
+            }
+            return true
+        }
+    }
 
     private async addToGraph(map: MapName): Promise<unknown> {
         if (this.grids[map]) {
@@ -372,8 +410,8 @@ export class NGraphMove {
             for (let j = i + 1; j < newNodes.length; j++) {
                 const nodeI = newNodes[i]
                 const nodeJ = newNodes[j]
-                if (can_move({ map: nodeI.data.map, x: nodeI.data.x, y: nodeI.data.y, going_x: nodeJ.data.x, going_y: nodeJ.data.y, base: parent.character.base })) {
-                    //if (this.canMove(nodeI.data, nodeJ.data)) {
+                // if (can_move({ map: nodeI.data.map, x: nodeI.data.x, y: nodeI.data.y, going_x: nodeJ.data.x, going_y: nodeJ.data.y, base: parent.character.base })) {
+                if (this.canMove(nodeI.data, nodeJ.data)) {
                     this.graph.addLink(nodeI.id, nodeJ.id)
                     this.graph.addLink(nodeJ.id, nodeI.id)
                 }
@@ -453,6 +491,10 @@ export class NGraphMove {
         // Get the data for the path we need to travel (town, teleport, walking)
         const rawPath = this.pathfinder.find(startNode, finishNode)
         console.log(rawPath)
+        if (rawPath.length == 0) {
+            console.error("could not find a path")
+            return undefined
+        }
         const optimizedPath: PathData = []
         if (rawPath[rawPath.length - 1].data.x != start.x || rawPath[rawPath.length - 1].data.y != start.y) {
             // Add the starting position
@@ -487,6 +529,9 @@ export class NGraphMove {
         // Get the path
         const path = this.getPath(from, to)
         this.searchFinishTime = Date.now()
+        if (!path) {
+            return Promise.reject(`We could not find a path from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] in ${this.searchFinishTime - this.searchStartTime}ms`)
+        }
 
         // DEBUG
         console.log(`We found a path from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] in ${this.searchFinishTime - this.searchStartTime}ms`)

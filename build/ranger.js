@@ -886,7 +886,7 @@ async function buyScrolls() {
 const UNKNOWN = 1;
 const UNWALKABLE = 2;
 const WALKABLE = 3;
-const EXTRA_PADDING = 0;
+const EXTRA_PADDING = 1;
 const FIRST_MAP = "main";
 const SLEEP_FOR_MS = 50;
 const TRANSPORT_COST = 25;
@@ -942,6 +942,75 @@ class NGraphMove {
     }
     wasCancelled(start) {
         return !this.searchStartTime || start < this.searchStartTime;
+    }
+    canMove(from, to) {
+        if (from.map != to.map) {
+            console.error(`Don't use this function across maps. You tried to check canMove from ${from.map} to ${to.map}.`);
+            return false;
+        }
+        const grid = this.grids[from.map];
+        const truncFrom = {
+            x: Math.trunc(from.x) - G.geometry[from.map].min_x,
+            y: Math.trunc(from.y) - G.geometry[from.map].min_y
+        };
+        const truncTo = {
+            x: Math.trunc(to.x) - G.geometry[from.map].min_x,
+            y: Math.trunc(to.y) - G.geometry[from.map].min_y
+        };
+        const toTravel = {
+            x: truncTo.x - truncFrom.x,
+            y: truncTo.y - truncFrom.y
+        };
+        const current = {
+            x: truncFrom.x,
+            y: truncFrom.y
+        };
+        if (toTravel.x == 0) {
+            const sign = Math.sign(toTravel.y);
+            while (truncTo.y !== current.y + sign) {
+                if (grid[current.y][current.x] !== WALKABLE)
+                    return false;
+                current.y += sign;
+            }
+            return true;
+        }
+        if (toTravel.y == 0) {
+            const sign = Math.sign(toTravel.x);
+            while (truncTo.x !== current.x + sign) {
+                if (grid[current.y][current.x] !== WALKABLE)
+                    return false;
+                current.x += sign;
+            }
+            return true;
+        }
+        if (Math.abs(toTravel.x) >= Math.abs(toTravel.y)) {
+            const xSign = Math.sign(toTravel.x);
+            const ySign = Math.sign(toTravel.y);
+            const slope = toTravel.y / toTravel.x;
+            while (truncTo.x !== current.x + xSign) {
+                current.y = Math.trunc(from.y + slope * (current.x - from.x));
+                if (grid[current.y][current.x] !== WALKABLE)
+                    return false;
+                if (grid[current.y + ySign][current.x] !== WALKABLE)
+                    return false;
+                current.x += xSign;
+            }
+            return true;
+        }
+        else {
+            const xSign = Math.sign(toTravel.x);
+            const ySign = Math.sign(toTravel.y);
+            const slope = toTravel.x / toTravel.y;
+            while (truncTo.y !== current.y + ySign) {
+                current.x = Math.trunc(from.x + slope * (current.y - from.y));
+                if (grid[current.y][current.x] !== WALKABLE)
+                    return false;
+                if (grid[current.y][current.x + xSign] !== WALKABLE)
+                    return false;
+                current.y += ySign;
+            }
+            return true;
+        }
     }
     async addToGraph(map) {
         if (this.grids[map]) {
@@ -1162,7 +1231,7 @@ class NGraphMove {
             for (let j = i + 1; j < newNodes.length; j++) {
                 const nodeI = newNodes[i];
                 const nodeJ = newNodes[j];
-                if (can_move({ map: nodeI.data.map, x: nodeI.data.x, y: nodeI.data.y, going_x: nodeJ.data.x, going_y: nodeJ.data.y, base: parent.character.base })) {
+                if (this.canMove(nodeI.data, nodeJ.data)) {
                     this.graph.addLink(nodeI.id, nodeJ.id);
                     this.graph.addLink(nodeJ.id, nodeI.id);
                 }
@@ -1203,7 +1272,7 @@ class NGraphMove {
         console.info("----------------------------");
     }
     getPath(start, goal) {
-        console.info(`Getting path from ${start.map}.${start.x},${start.y} to ${goal.map}.${goal.x}.${goal.y}`);
+        console.info(`Getting path from [${start.map},${start.x},${start.y}] to [${goal.map},${goal.x},${goal.y}]`);
         let distToStart = Number.MAX_VALUE;
         let startNode;
         let distToFinish = Number.MAX_VALUE;
@@ -1230,6 +1299,10 @@ class NGraphMove {
         });
         const rawPath = this.pathfinder.find(startNode, finishNode);
         console.log(rawPath);
+        if (rawPath.length == 0) {
+            console.error("could not find a path");
+            return undefined;
+        }
         const optimizedPath = [];
         if (rawPath[rawPath.length - 1].data.x != start.x || rawPath[rawPath.length - 1].data.y != start.y) {
             optimizedPath.push([start, rawPath[rawPath.length - 1].data, undefined]);
@@ -1253,6 +1326,9 @@ class NGraphMove {
         const to = NGraphMove.cleanPosition(goal);
         const path = this.getPath(from, to);
         this.searchFinishTime = Date.now();
+        if (!path) {
+            return Promise.reject(`We could not find a path from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] in ${this.searchFinishTime - this.searchStartTime}ms`);
+        }
         console.log(`We found a path from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] in ${this.searchFinishTime - this.searchStartTime}ms`);
         console.log(path);
         function getCloseTo(from) {
