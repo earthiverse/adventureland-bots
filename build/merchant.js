@@ -1321,7 +1321,8 @@ class NGraphMove {
         if (rawPath[0].data.x != goal.x || rawPath[0].data.y != goal.y) {
             optimizedPath.push([rawPath[0].data, goal, undefined]);
         }
-        if (optimizedPath[0][2] === undefined
+        if (optimizedPath.length > 1
+            && optimizedPath[0][2] === undefined
             && optimizedPath[1][2] && optimizedPath[1][2].type == "town"
             && optimizedPath[0][0].map == optimizedPath[1][0].map) {
             optimizedPath.shift();
@@ -1419,7 +1420,7 @@ class NGraphMove {
                     if (path[j][0].map != path[j][1].map)
                         break;
                 }
-                if (distance < TOWN_COST) {
+                if (distance > TOWN_COST) {
                     if (j == path.length) {
                         toData = path[j][1];
                     }

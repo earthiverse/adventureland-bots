@@ -518,7 +518,8 @@ export class NGraphMove {
         }
 
         // 2: Optimize Town Teleport
-        if (optimizedPath[0][2] === undefined // The first move isn't special
+        if (optimizedPath.length > 1
+            && optimizedPath[0][2] === undefined // The first move isn't special
             && optimizedPath[1][2] && optimizedPath[1][2].type == "town" // The first move is a teleport
             && optimizedPath[0][0].map == optimizedPath[1][0].map) { // The maps are the same
             optimizedPath.shift()
@@ -635,7 +636,8 @@ export class NGraphMove {
                     distance += Math.sqrt((path[j][1].x + path[j][0].x) ** 2 + (path[j][1].y - path[j][0].y) ** 2)
                     if (path[j][0].map != path[j][1].map) break // We found the last point that we can travel to on this map
                 }
-                if (distance < TOWN_COST) {
+                if (distance > TOWN_COST) {
+                    // We can save time by blinking!
                     if (j == path.length) {
                         toData = path[j][1]
                     } else {
