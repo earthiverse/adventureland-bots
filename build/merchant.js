@@ -1422,13 +1422,14 @@ class NGraphMove {
                 }
                 if (distance > TOWN_COST) {
                     if (j == path.length) {
-                        toData = path[j][1];
+                        toData = path[j - 1][1];
+                        i = j - 2;
                     }
                     else {
                         toData = path[j][0];
+                        i = j - 1;
                     }
                     linkData = { type: "blink" };
-                    i = j - 1;
                 }
             }
             await performNextMovement(fromData, toData, linkData);

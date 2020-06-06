@@ -639,12 +639,13 @@ export class NGraphMove {
                 if (distance > TOWN_COST) {
                     // We can save time by blinking!
                     if (j == path.length) {
-                        toData = path[j][1]
+                        toData = path[j - 1][1]
+                        i = j - 2
                     } else {
                         toData = path[j][0]
+                        i = j - 1
                     }
                     linkData = { type: "blink" }
-                    i = j - 1
                 }
             }
 
