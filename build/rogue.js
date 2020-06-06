@@ -1025,10 +1025,12 @@ class NGraphMove {
         const mapHeight = G.geometry[map].max_y - G.geometry[map].min_y;
         const grid = Array(mapHeight);
         for (let y = 0; y < mapHeight; y++) {
-            grid[y] = Array(mapWidth).fill(UNKNOWN);
+            grid[y] = [];
+            for (let x = 0; x < mapWidth; x++)
+                grid[y][x] = UNKNOWN;
         }
         for (const yLine of G.geometry[map].y_lines) {
-            for (let y = Math.max(0, yLine[0] - G.geometry[map].min_y - parent.character.base.v - EXTRA_PADDING); y < yLine[0] - G.geometry[map].min_y + parent.character.base.vn + EXTRA_PADDING && y < mapHeight; y++) {
+            for (let y = Math.max(0, yLine[0] - G.geometry[map].min_y - parent.character.base.vn - EXTRA_PADDING); y < yLine[0] - G.geometry[map].min_y + parent.character.base.v + EXTRA_PADDING && y < mapHeight; y++) {
                 for (let x = Math.max(0, yLine[1] - G.geometry[map].min_x - parent.character.base.h - EXTRA_PADDING); x < yLine[2] - G.geometry[map].min_x + parent.character.base.h + EXTRA_PADDING && x < mapWidth; x++) {
                     grid[y][x] = UNWALKABLE;
                 }
@@ -1036,7 +1038,7 @@ class NGraphMove {
         }
         for (const xLine of G.geometry[map].x_lines) {
             for (let x = Math.max(0, xLine[0] - G.geometry[map].min_x - parent.character.base.h - EXTRA_PADDING); x < xLine[0] - G.geometry[map].min_x + parent.character.base.h + EXTRA_PADDING && x < mapWidth; x++) {
-                for (let y = Math.max(0, xLine[1] - G.geometry[map].min_y - parent.character.base.v - EXTRA_PADDING); y < xLine[2] - G.geometry[map].min_y + parent.character.base.vn + EXTRA_PADDING && y < mapHeight; y++) {
+                for (let y = Math.max(0, xLine[1] - G.geometry[map].min_y - parent.character.base.vn - EXTRA_PADDING); y < xLine[2] - G.geometry[map].min_y + parent.character.base.v + EXTRA_PADDING && y < mapHeight; y++) {
                     grid[y][x] = UNWALKABLE;
                 }
             }
@@ -1044,7 +1046,7 @@ class NGraphMove {
         for (const spawn of G.maps[map].spawns) {
             let x = Math.trunc(spawn[0]) - G.geometry[map].min_x;
             let y = Math.trunc(spawn[1]) - G.geometry[map].min_y;
-            if (grid[y][x] == WALKABLE)
+            if (grid[y][x] === WALKABLE)
                 continue;
             const stack = [[y, x]];
             while (stack.length) {
