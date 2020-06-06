@@ -13,7 +13,7 @@ const EXTRA_PADDING = 1
 const FIRST_MAP: MapName = "main"
 const SLEEP_FOR_MS = 50
 const ENABLE_BLINK = true
-const TOWN_TIME = 4000
+const TOWN_TIME = 3000
 const WALK_TIMEOUT = 10000
 
 // Cost variables
