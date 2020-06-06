@@ -7,6 +7,7 @@ import { Grids, Grid, NodeData, LinkData, PathData } from "./definitions/ngraphm
 const UNKNOWN = 1
 const UNWALKABLE = 2
 const WALKABLE = 3
+const EXTRA_PADDING = 2
 
 // Other variables
 const FIRST_MAP: MapName = "main"
@@ -147,16 +148,16 @@ export class NGraphMove {
         // 2: Prepare the grid. The grid is a 2d array which says which "pixels" are walkable, and which ones aren't.
         // 2A: Make the y_lines unwalkable
         for (const yLine of G.geometry[map].y_lines) {
-            for (let y = yLine[0] - G.geometry[map].min_y - parent.character.base.v - 1; y < yLine[0] - G.geometry[map].min_y + parent.character.base.vn + 1 && y < mapHeight; y++) {
-                for (let x = yLine[1] - G.geometry[map].min_x - parent.character.base.h - 1; x < yLine[2] - G.geometry[map].min_x + parent.character.base.h + 1 && x < mapWidth; x++) {
+            for (let y = yLine[0] - G.geometry[map].min_y - parent.character.base.v - EXTRA_PADDING; y < yLine[0] - G.geometry[map].min_y + parent.character.base.vn + EXTRA_PADDING && y < mapHeight; y++) {
+                for (let x = yLine[1] - G.geometry[map].min_x - parent.character.base.h - EXTRA_PADDING; x < yLine[2] - G.geometry[map].min_x + parent.character.base.h + EXTRA_PADDING && x < mapWidth; x++) {
                     grid[y][x] = UNWALKABLE
                 }
             }
         }
         // 2B: Make the x_lines unwalkable
         for (const xLine of G.geometry[map].x_lines) {
-            for (let x = xLine[0] - G.geometry[map].min_x - parent.character.base.h - 1; x < xLine[0] - G.geometry[map].min_x + parent.character.base.h + 1 && x < mapWidth; x++) {
-                for (let y = xLine[1] - G.geometry[map].min_y - parent.character.base.v - 1; y < xLine[2] - G.geometry[map].min_y + parent.character.base.vn + 1 && y < mapHeight; y++) {
+            for (let x = xLine[0] - G.geometry[map].min_x - parent.character.base.h - EXTRA_PADDING; x < xLine[0] - G.geometry[map].min_x + parent.character.base.h + EXTRA_PADDING && x < mapWidth; x++) {
+                for (let y = xLine[1] - G.geometry[map].min_y - parent.character.base.v - EXTRA_PADDING; y < xLine[2] - G.geometry[map].min_y + parent.character.base.vn + EXTRA_PADDING && y < mapHeight; y++) {
                     grid[y][x] = UNWALKABLE
                 }
             }
