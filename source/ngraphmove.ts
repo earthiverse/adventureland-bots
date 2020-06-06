@@ -556,7 +556,7 @@ export class NGraphMove {
                 if (c.type == "town") {
                     // Use "town" to get to the next node
                     use_skill("town")
-                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + 5000))
+                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + 4000))
                     return
                 } else if (c.type == "transport") {
                     // Transport to the next node
@@ -566,8 +566,7 @@ export class NGraphMove {
                 }
             } else {
                 // Walk to the next node
-                move(b.x, b.y)
-                await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings)))
+                await move(b.x, b.y)
             }
         }
 
@@ -588,10 +587,9 @@ export class NGraphMove {
                 return Promise.reject("cancelled")
             }
 
-            if (distance < 0.01) {
+            if (distance < 0.001) {
                 // We're at the next node, continue
                 i++
-                await new Promise(resolve => setTimeout(resolve, SLEEP_FOR_MS))
                 continue
             }
 

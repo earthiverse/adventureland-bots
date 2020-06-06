@@ -1347,7 +1347,7 @@ class NGraphMove {
             if (c) {
                 if (c.type == "town") {
                     use_skill("town");
-                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + 5000));
+                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + 4000));
                     return;
                 }
                 else if (c.type == "transport") {
@@ -1357,8 +1357,7 @@ class NGraphMove {
                 }
             }
             else {
-                move(b.x, b.y);
-                await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings)));
+                await move(b.x, b.y);
             }
         }
         this.moveStartTime = Date.now();
@@ -1377,9 +1376,8 @@ class NGraphMove {
                 console.log(`Search from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] was cancelled`);
                 return Promise.reject("cancelled");
             }
-            if (distance < 0.01) {
+            if (distance < 0.001) {
                 i++;
-                await new Promise(resolve => setTimeout(resolve, SLEEP_FOR_MS));
                 continue;
             }
             if (parent.character.c.town || parent.character.moving) {
