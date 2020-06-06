@@ -1327,10 +1327,13 @@ class NGraphMove {
     }
     async move(goal, finishDistanceTolerance = 0) {
         this.reset();
-        const searchStart = Date.now();
-        this.searchStartTime = searchStart;
         const from = NGraphMove.cleanPosition(parent.character);
         const to = NGraphMove.cleanPosition(goal);
+        if (can_move_to(to.x, to.y)) {
+            return move(to.x, to.y);
+        }
+        const searchStart = Date.now();
+        this.searchStartTime = searchStart;
         const path = this.getPath(from, to);
         this.searchFinishTime = Date.now();
         if (!path) {

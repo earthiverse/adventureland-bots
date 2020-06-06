@@ -526,13 +526,17 @@ export class NGraphMove {
 
     public async move(goal: PositionReal, finishDistanceTolerance = 0): Promise<unknown> {
         this.reset()
-        const searchStart = Date.now()
-        this.searchStartTime = searchStart
 
         const from: NodeData = NGraphMove.cleanPosition(parent.character)
         const to: NodeData = NGraphMove.cleanPosition(goal)
 
+        if (can_move_to(to.x, to.y)) {
+            return move(to.x, to.y)
+        }
+
         // Get the path
+        const searchStart = Date.now()
+        this.searchStartTime = searchStart
         const path = this.getPath(from, to)
         this.searchFinishTime = Date.now()
         if (!path) {
