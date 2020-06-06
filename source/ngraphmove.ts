@@ -516,7 +516,7 @@ export class NGraphMove {
 
         // 2: Optimize Town Teleport
         if (optimizedPath[0][2] === undefined // The first move isn't special
-            && optimizedPath[1][2].type == "town" // The first move is a teleport
+            && optimizedPath[1][2] && optimizedPath[1][2].type == "town" // The first move is a teleport
             && optimizedPath[0][0].map == optimizedPath[1][0].map) { // The maps are the same
             optimizedPath.shift()
         }

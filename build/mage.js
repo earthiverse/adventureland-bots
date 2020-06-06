@@ -1319,7 +1319,7 @@ class NGraphMove {
             optimizedPath.push([rawPath[0].data, goal, undefined]);
         }
         if (optimizedPath[0][2] === undefined
-            && optimizedPath[1][2].type == "town"
+            && optimizedPath[1][2] && optimizedPath[1][2].type == "town"
             && optimizedPath[0][0].map == optimizedPath[1][0].map) {
             optimizedPath.shift();
         }
