@@ -7,7 +7,7 @@ import { Grids, Grid, NodeData, LinkData, PathData } from "./definitions/ngraphm
 const UNKNOWN = 1
 const UNWALKABLE = 2
 const WALKABLE = 3
-const EXTRA_PADDING = 0
+const EXTRA_PADDING = 1
 
 // Other variables
 const FIRST_MAP: MapName = "main"
@@ -422,7 +422,7 @@ export class NGraphMove {
     }
 
     private getPath(start: NodeData, goal: NodeData): PathData {
-        console.info(`Getting path from ${start.map}.${start.x},${start.y} to ${goal.map}.${goal.x}.${goal.y}`)
+        console.info(`Getting path from [${start.map},${start.x},${start.y}] to [${goal.map},${goal.x},${goal.y}]`)
         // Find the closest node to the start and finish points
         let distToStart = Number.MAX_VALUE
         let startNode: NodeId
@@ -452,6 +452,7 @@ export class NGraphMove {
 
         // Get the data for the path we need to travel (town, teleport, walking)
         const rawPath = this.pathfinder.find(startNode, finishNode)
+        console.log(rawPath)
         const optimizedPath: PathData = []
         if (rawPath[rawPath.length - 1].data.x != start.x || rawPath[rawPath.length - 1].data.y != start.y) {
             // Add the starting position

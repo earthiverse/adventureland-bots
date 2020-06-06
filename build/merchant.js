@@ -1229,6 +1229,7 @@ class NGraphMove {
             }
         });
         const rawPath = this.pathfinder.find(startNode, finishNode);
+        console.log(rawPath);
         const optimizedPath = [];
         if (rawPath[rawPath.length - 1].data.x != start.x || rawPath[rawPath.length - 1].data.y != start.y) {
             optimizedPath.push([start, rawPath[rawPath.length - 1].data, undefined]);
