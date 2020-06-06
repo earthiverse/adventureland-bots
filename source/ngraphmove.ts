@@ -429,6 +429,11 @@ export class NGraphMove {
         let distToFinish = Number.MAX_VALUE
         let finishNode: NodeId
         this.graph.forEachNode((node: { data: NodeData, id: NodeId }) => {
+            //DEBUG
+            if (!node.data) {
+                console.error("NO DATA!?")
+                console.error(node)
+            }
             if (node.data.map == start.map) {
                 const distance = Math.sqrt((node.data.x - start.x) ** 2 + (node.data.y - start.y) ** 2)
                 if (distance < distToStart) {
