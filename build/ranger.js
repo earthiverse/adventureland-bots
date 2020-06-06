@@ -1284,9 +1284,9 @@ class NGraphMove {
                 console.error("NO DATA!?");
                 console.error(node);
             }
-            if (node.data.map == parent.character.map && can_move_to(node.data.x, node.data.y)) {
+            if (node.data.map == parent.character.map) {
                 const distance = Math.sqrt((node.data.x - parent.character.real_x) ** 2 + (node.data.y - parent.character.real_y) ** 2);
-                if (distance < distToStart) {
+                if (distance < distToStart && can_move_to(node.data.x, node.data.y)) {
                     distToStart = distance;
                     startNode = node.id;
                 }
