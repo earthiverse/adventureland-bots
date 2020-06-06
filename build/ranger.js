@@ -990,15 +990,15 @@ class NGraphMove {
             grid[y] = Array(mapWidth).fill(UNKNOWN);
         }
         for (const yLine of G.geometry[map].y_lines) {
-            for (let y = Math.min(0, yLine[0] - G.geometry[map].min_y - parent.character.base.v - EXTRA_PADDING); y < yLine[0] - G.geometry[map].min_y + parent.character.base.vn + EXTRA_PADDING && y < mapHeight; y++) {
-                for (let x = Math.min(0, yLine[1] - G.geometry[map].min_x - parent.character.base.h - EXTRA_PADDING); x < yLine[2] - G.geometry[map].min_x + parent.character.base.h + EXTRA_PADDING && x < mapWidth; x++) {
+            for (let y = Math.max(0, yLine[0] - G.geometry[map].min_y - parent.character.base.v - EXTRA_PADDING); y < yLine[0] - G.geometry[map].min_y + parent.character.base.vn + EXTRA_PADDING && y < mapHeight; y++) {
+                for (let x = Math.max(0, yLine[1] - G.geometry[map].min_x - parent.character.base.h - EXTRA_PADDING); x < yLine[2] - G.geometry[map].min_x + parent.character.base.h + EXTRA_PADDING && x < mapWidth; x++) {
                     grid[y][x] = UNWALKABLE;
                 }
             }
         }
         for (const xLine of G.geometry[map].x_lines) {
-            for (let x = Math.min(0, xLine[0] - G.geometry[map].min_x - parent.character.base.h - EXTRA_PADDING); x < xLine[0] - G.geometry[map].min_x + parent.character.base.h + EXTRA_PADDING && x < mapWidth; x++) {
-                for (let y = Math.min(0, xLine[1] - G.geometry[map].min_y - parent.character.base.v - EXTRA_PADDING); y < xLine[2] - G.geometry[map].min_y + parent.character.base.vn + EXTRA_PADDING && y < mapHeight; y++) {
+            for (let x = Math.max(0, xLine[0] - G.geometry[map].min_x - parent.character.base.h - EXTRA_PADDING); x < xLine[0] - G.geometry[map].min_x + parent.character.base.h + EXTRA_PADDING && x < mapWidth; x++) {
+                for (let y = Math.max(0, xLine[1] - G.geometry[map].min_y - parent.character.base.v - EXTRA_PADDING); y < xLine[2] - G.geometry[map].min_y + parent.character.base.vn + EXTRA_PADDING && y < mapHeight; y++) {
                     grid[y][x] = UNWALKABLE;
                 }
             }
