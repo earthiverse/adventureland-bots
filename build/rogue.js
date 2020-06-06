@@ -1273,8 +1273,8 @@ class NGraphMove {
         console.info(`# Links: ${this.graph.getLinkCount()}`);
         console.info("----------------------------");
     }
-    getPath(start, goal) {
-        console.info(`Getting path from [${start.map},${start.x},${start.y}] to [${goal.map},${goal.x},${goal.y}]`);
+    getPath(goal) {
+        console.info(`Getting path from [${parent.character.map},${parent.character.real_x},${parent.character.real_y}] to [${goal.map},${goal.x},${goal.y}]`);
         let distToStart = Number.MAX_VALUE;
         let startNode;
         let distToFinish = Number.MAX_VALUE;
@@ -1284,8 +1284,8 @@ class NGraphMove {
                 console.error("NO DATA!?");
                 console.error(node);
             }
-            if (node.data.map == start.map) {
-                const distance = Math.sqrt((node.data.x - start.x) ** 2 + (node.data.y - start.y) ** 2);
+            if (node.data.map == parent.character.map && can_move_to(node.data.x, node.data.y)) {
+                const distance = Math.sqrt((node.data.x - parent.character.real_x) ** 2 + (node.data.y - parent.character.real_y) ** 2);
                 if (distance < distToStart) {
                     distToStart = distance;
                     startNode = node.id;
@@ -1306,8 +1306,8 @@ class NGraphMove {
             return undefined;
         }
         const optimizedPath = [];
-        if (rawPath[rawPath.length - 1].data.x != start.x || rawPath[rawPath.length - 1].data.y != start.y) {
-            optimizedPath.push([start, rawPath[rawPath.length - 1].data, undefined]);
+        if (rawPath[rawPath.length - 1].data.x != parent.character.real_x || rawPath[rawPath.length - 1].data.y != parent.character.real_y) {
+            optimizedPath.push([NGraphMove.cleanPosition(parent.character), rawPath[rawPath.length - 1].data, undefined]);
         }
         for (let i = rawPath.length - 1; i > 0; i--) {
             const node = rawPath[i];
@@ -1352,7 +1352,7 @@ class NGraphMove {
         }
         const searchStart = Date.now();
         this.searchStartTime = searchStart;
-        const path = this.getPath(from, to);
+        const path = this.getPath(to);
         this.searchFinishTime = Date.now();
         if (!path) {
             return Promise.reject(`We could not find a path from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] in ${this.searchFinishTime - this.searchStartTime}ms`);
