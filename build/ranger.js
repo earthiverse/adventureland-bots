@@ -1333,6 +1333,7 @@ class NGraphMove {
                 continue;
             }
             if (!linkData && !can_move_to(toData.x, toData.y)) {
+                await new Promise(resolve => setTimeout(resolve, SLEEP_FOR_MS));
                 console.warn("NGraphMove movement failed. We're trying again.");
                 return this.move(goal, finishDistanceTolerance);
             }
