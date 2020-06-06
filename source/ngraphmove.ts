@@ -586,10 +586,12 @@ export class NGraphMove {
                 } else if (c.type == "blink") {
                     use_skill("blink", [b.x, b.y])
                     await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings)))
+                    return
                 }
             } else {
                 // Walk to the next node (timeout after 5 seconds)
                 await Promise.race([move(b.x, b.y), new Promise(resolve => setTimeout(resolve, WALK_TIMEOUT))])
+                return
             }
         }
 
@@ -622,7 +624,7 @@ export class NGraphMove {
                 continue
             }
 
-            if (!linkData && !can_move_to(toData.x, toData.y)) {
+            if ((!linkData && !can_move_to(toData.x, toData.y)) || parent.character.map !== fromData.map) {
                 // We got lost somewhere, retry
                 await new Promise(resolve => setTimeout(resolve, SLEEP_FOR_MS))
                 console.warn("NGraphMove movement failed. We're trying again.")
