@@ -982,6 +982,7 @@ class NGraphMove {
         if (!G.maps[map]) {
             console.error(`${map} is not a valid map.`);
         }
+        console.info(`Preparing ${map}...`);
         const mapWidth = G.geometry[map].max_x - G.geometry[map].min_x;
         const mapHeight = G.geometry[map].max_y - G.geometry[map].min_y;
         const grid = Array(mapHeight);
@@ -989,15 +990,15 @@ class NGraphMove {
             grid[y] = Array(mapWidth).fill(UNKNOWN);
         }
         for (const yLine of G.geometry[map].y_lines) {
-            for (let y = yLine[0] - G.geometry[map].min_y - parent.character.base.v - EXTRA_PADDING; y < yLine[0] - G.geometry[map].min_y + parent.character.base.vn + EXTRA_PADDING && y < mapHeight; y++) {
-                for (let x = yLine[1] - G.geometry[map].min_x - parent.character.base.h - EXTRA_PADDING; x < yLine[2] - G.geometry[map].min_x + parent.character.base.h + EXTRA_PADDING && x < mapWidth; x++) {
+            for (let y = Math.min(0, yLine[0] - G.geometry[map].min_y - parent.character.base.v - EXTRA_PADDING); y < Math.max(mapHeight, yLine[0] - G.geometry[map].min_y + parent.character.base.vn + EXTRA_PADDING) && y < mapHeight; y++) {
+                for (let x = Math.min(0, yLine[1] - G.geometry[map].min_x - parent.character.base.h - EXTRA_PADDING); x < Math.max(mapWidth, yLine[2] - G.geometry[map].min_x + parent.character.base.h + EXTRA_PADDING) && x < mapWidth; x++) {
                     grid[y][x] = UNWALKABLE;
                 }
             }
         }
         for (const xLine of G.geometry[map].x_lines) {
-            for (let x = xLine[0] - G.geometry[map].min_x - parent.character.base.h - EXTRA_PADDING; x < xLine[0] - G.geometry[map].min_x + parent.character.base.h + EXTRA_PADDING && x < mapWidth; x++) {
-                for (let y = xLine[1] - G.geometry[map].min_y - parent.character.base.v - EXTRA_PADDING; y < xLine[2] - G.geometry[map].min_y + parent.character.base.vn + EXTRA_PADDING && y < mapHeight; y++) {
+            for (let x = Math.min(0, xLine[0] - G.geometry[map].min_x - parent.character.base.h - EXTRA_PADDING); x < xLine[0] - G.geometry[map].min_x + parent.character.base.h + EXTRA_PADDING && x < mapWidth; x++) {
+                for (let y = Math.min(0, xLine[1] - G.geometry[map].min_y - parent.character.base.v - EXTRA_PADDING); y < xLine[2] - G.geometry[map].min_y + parent.character.base.vn + EXTRA_PADDING && y < mapHeight; y++) {
                     grid[y][x] = UNWALKABLE;
                 }
             }
