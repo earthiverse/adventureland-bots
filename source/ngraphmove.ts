@@ -527,11 +527,31 @@ export class NGraphMove {
     public async move(goal: PositionReal, finishDistanceTolerance = 0): Promise<unknown> {
         this.reset()
 
+        function getCloseTo(from: NodeData): PositionReal {
+            if (finishDistanceTolerance == 0) return to // We want to go to this exact position
+
+            const distance = Math.sqrt((from.y - to.y) ** 2 + (from.x + to.x) ** 2)
+            if (distance < finishDistanceTolerance) return from // We're already close enough
+
+            // Compute a line from `from` to `destinaton` that is `finishDistanceTolerance` units away.
+            const angle = Math.atan2(from.y - to.y, from.x - to.x)
+            if (distance > finishDistanceTolerance) {
+                return {
+                    map: to.map,
+                    x: to.x + Math.cos(angle) * finishDistanceTolerance,
+                    y: to.y + Math.sin(angle) * finishDistanceTolerance
+                }
+            }
+        }
+
         const from: NodeData = NGraphMove.cleanPosition(parent.character)
         const to: NodeData = NGraphMove.cleanPosition(goal)
 
-        if (can_move_to(to.x, to.y)) {
-            return move(to.x, to.y)
+        if (from.map == to.map) {
+            const close = getCloseTo(to)
+            if (can_move_to(close.x, close.y)) {
+                return move(close.x, close.y)
+            }
         }
 
         // Get the path
@@ -546,18 +566,6 @@ export class NGraphMove {
         // DEBUG
         console.log(`We found a path from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] in ${this.searchFinishTime - this.searchStartTime}ms`)
         console.log(path)
-
-        function getCloseTo(from: NodeData): PositionReal {
-            if (finishDistanceTolerance == 0) return to // We want to go to this exact position
-
-            // Compute a line from `from` to `destinaton` that is `finishDistanceTolerance` units away.
-            const angle = Math.atan2(from.y - to.y, from.x - to.x)
-            return {
-                map: to.map,
-                x: to.x + Math.cos(angle) * finishDistanceTolerance,
-                y: to.y + Math.sin(angle) * finishDistanceTolerance
-            }
-        }
 
         async function performNextMovement(a: NodeData, b: NodeData, c: LinkData) {
             if (c) {

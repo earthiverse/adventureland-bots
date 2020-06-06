@@ -1327,10 +1327,28 @@ class NGraphMove {
     }
     async move(goal, finishDistanceTolerance = 0) {
         this.reset();
+        function getCloseTo(from) {
+            if (finishDistanceTolerance == 0)
+                return to;
+            const distance = Math.sqrt((from.y - to.y) ** 2 + (from.x + to.x) ** 2);
+            if (distance < finishDistanceTolerance)
+                return from;
+            const angle = Math.atan2(from.y - to.y, from.x - to.x);
+            if (distance > finishDistanceTolerance) {
+                return {
+                    map: to.map,
+                    x: to.x + Math.cos(angle) * finishDistanceTolerance,
+                    y: to.y + Math.sin(angle) * finishDistanceTolerance
+                };
+            }
+        }
         const from = NGraphMove.cleanPosition(parent.character);
         const to = NGraphMove.cleanPosition(goal);
-        if (can_move_to(to.x, to.y)) {
-            return move(to.x, to.y);
+        if (from.map == to.map) {
+            const close = getCloseTo(to);
+            if (can_move_to(close.x, close.y)) {
+                return move(close.x, close.y);
+            }
         }
         const searchStart = Date.now();
         this.searchStartTime = searchStart;
@@ -1341,16 +1359,6 @@ class NGraphMove {
         }
         console.log(`We found a path from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] in ${this.searchFinishTime - this.searchStartTime}ms`);
         console.log(path);
-        function getCloseTo(from) {
-            if (finishDistanceTolerance == 0)
-                return to;
-            const angle = Math.atan2(from.y - to.y, from.x - to.x);
-            return {
-                map: to.map,
-                x: to.x + Math.cos(angle) * finishDistanceTolerance,
-                y: to.y + Math.sin(angle) * finishDistanceTolerance
-            };
-        }
         async function performNextMovement(a, b, c) {
             if (c) {
                 if (c.type == "town") {
