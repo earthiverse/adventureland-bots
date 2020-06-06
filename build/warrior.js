@@ -1318,6 +1318,11 @@ class NGraphMove {
         if (rawPath[0].data.x != goal.x || rawPath[0].data.y != goal.y) {
             optimizedPath.push([rawPath[0].data, goal, undefined]);
         }
+        if (optimizedPath[0][2] === undefined
+            && optimizedPath[1][2].type == "town"
+            && optimizedPath[0][0].map == optimizedPath[1][0].map) {
+            optimizedPath.shift();
+        }
         return optimizedPath;
     }
     async move(goal, finishDistanceTolerance = 0) {
