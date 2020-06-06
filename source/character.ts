@@ -694,7 +694,8 @@ export abstract class Character {
                 }
                 let escapePosition = calculateEscape(angle, moveDistance)
                 let angleChange = 0
-                while (!this.nGraphMove.canMove({ map: parent.character.map, x: parent.character.real_x, y: parent.character.real_y }, { map: parent.character.map, x: escapePosition.x, y: escapePosition.y }) && angleChange < 180) {
+                //while (!this.nGraphMove.canMove({ map: parent.character.map, x: parent.character.real_x, y: parent.character.real_y }, { map: parent.character.map, x: escapePosition.x, y: escapePosition.y }) && angleChange < 180) {
+                while (!can_move_to(escapePosition.x, escapePosition.y) && angleChange < 180) {
                     if (angleChange <= 0) {
                         angleChange = (-angleChange) + 1
                     } else {

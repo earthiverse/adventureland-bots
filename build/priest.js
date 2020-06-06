@@ -886,7 +886,7 @@ async function buyScrolls() {
 const UNKNOWN = 1;
 const UNWALKABLE = 2;
 const WALKABLE = 3;
-const EXTRA_PADDING = 4;
+const EXTRA_PADDING = 0;
 const FIRST_MAP = "main";
 const SLEEP_FOR_MS = 50;
 const TRANSPORT_COST = 25;
@@ -942,37 +942,6 @@ class NGraphMove {
     }
     wasCancelled(start) {
         return !this.searchStartTime || start < this.searchStartTime;
-    }
-    canMove(from, to) {
-        if (from.map != to.map) {
-            console.error(`Don't use this function across maps. You tried to check canMove from ${from.map} to ${to.map}.`);
-            return false;
-        }
-        const grid = this.grids[from.map];
-        const dx = Math.trunc(to.x) - Math.trunc(from.x), dy = Math.trunc(to.y) - Math.trunc(from.y);
-        const nx = Math.abs(dx), ny = Math.abs(dy);
-        const sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1;
-        let x = Math.trunc(from.x) - G.geometry[from.map].min_x, y = Math.trunc(from.y) - G.geometry[from.map].min_y;
-        for (let ix = 0, iy = 0; ix < nx || iy < ny;) {
-            if ((0.5 + ix) / nx == (0.5 + iy) / ny) {
-                x += sign_x;
-                y += sign_y;
-                ix++;
-                iy++;
-            }
-            else if ((0.5 + ix) / nx < (0.5 + iy) / ny) {
-                x += sign_x;
-                ix++;
-            }
-            else {
-                y += sign_y;
-                iy++;
-            }
-            if (grid[y][x] !== WALKABLE) {
-                return false;
-            }
-        }
-        return true;
     }
     async addToGraph(map) {
         if (this.grids[map]) {
@@ -1193,7 +1162,7 @@ class NGraphMove {
             for (let j = i + 1; j < newNodes.length; j++) {
                 const nodeI = newNodes[i];
                 const nodeJ = newNodes[j];
-                if (this.canMove(nodeI.data, nodeJ.data)) {
+                if (can_move({ map: nodeI.data.map, x: nodeI.data.x, y: nodeI.data.y, going_x: nodeJ.data.x, going_y: nodeJ.data.y, base: parent.character.base })) {
                     this.graph.addLink(nodeI.id, nodeJ.id);
                     this.graph.addLink(nodeJ.id, nodeI.id);
                 }
@@ -2548,7 +2517,7 @@ class Character {
                 };
                 let escapePosition = calculateEscape(angle, moveDistance);
                 let angleChange = 0;
-                while (!this.nGraphMove.canMove({ map: parent.character.map, x: parent.character.real_x, y: parent.character.real_y }, { map: parent.character.map, x: escapePosition.x, y: escapePosition.y }) && angleChange < 180) {
+                while (!can_move_to(escapePosition.x, escapePosition.y) && angleChange < 180) {
                     if (angleChange <= 0) {
                         angleChange = (-angleChange) + 1;
                     }
