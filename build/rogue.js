@@ -889,6 +889,9 @@ const WALKABLE = 3;
 const EXTRA_PADDING = 1;
 const FIRST_MAP = "main";
 const SLEEP_FOR_MS = 50;
+const ENABLE_BLINK = true;
+const TOWN_TIME = 4000;
+const WALK_TIMEOUT = 10000;
 const TRANSPORT_COST = 25;
 const TOWN_COST = 100;
 class NGraphMove {
@@ -1363,7 +1366,7 @@ class NGraphMove {
             if (c) {
                 if (c.type == "town") {
                     use_skill("town");
-                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + 4000));
+                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + TOWN_TIME));
                     return;
                 }
                 else if (c.type == "transport") {
@@ -1371,9 +1374,13 @@ class NGraphMove {
                     await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings)));
                     return;
                 }
+                else if (c.type == "blink") {
+                    use_skill("blink", [b.x, b.y]);
+                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings)));
+                }
             }
             else {
-                await move(b.x, b.y);
+                await Promise.race([move(b.x, b.y), new Promise(resolve => setTimeout(resolve, WALK_TIMEOUT))]);
             }
         }
         this.moveStartTime = Date.now();
@@ -1386,8 +1393,8 @@ class NGraphMove {
             else {
                 toData = path[i][1];
             }
-            const linkData = path[i][2];
-            const distance = Math.sqrt((toData.x - parent.character.real_x) ** 2 + (toData.y - parent.character.real_y) ** 2);
+            let linkData = path[i][2];
+            let distance = Math.sqrt((toData.x - parent.character.real_x) ** 2 + (toData.y - parent.character.real_y) ** 2);
             if (this.wasCancelled(searchStart)) {
                 console.log(`Search from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] was cancelled`);
                 return Promise.reject("cancelled");
@@ -1405,7 +1412,24 @@ class NGraphMove {
                 console.warn("NGraphMove movement failed. We're trying again.");
                 return this.move(goal, finishDistanceTolerance);
             }
-            console.log(`STEP: [${fromData.map},${fromData.x},${fromData.y}] to [${toData.map},${toData.x},${toData.y}]`);
+            if (ENABLE_BLINK && can_use("blink") && parent.character.mp > G.skills.blink.mp) {
+                let j = i;
+                for (; j < path.length; j++) {
+                    distance += Math.sqrt((path[j][1].x + path[j][0].x) ** 2 + (path[j][1].y - path[j][0].y) ** 2);
+                    if (path[j][0].map != path[j][1].map)
+                        break;
+                }
+                if (distance < TOWN_COST) {
+                    if (j == path.length) {
+                        toData = path[j][1];
+                    }
+                    else {
+                        toData = path[j][0];
+                    }
+                    linkData = { type: "blink" };
+                    i = j - 1;
+                }
+            }
             await performNextMovement(fromData, toData, linkData);
         }
         this.moveFinishTime = Date.now();

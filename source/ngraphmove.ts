@@ -12,6 +12,9 @@ const EXTRA_PADDING = 1
 // Other variables
 const FIRST_MAP: MapName = "main"
 const SLEEP_FOR_MS = 50
+const ENABLE_BLINK = true
+const TOWN_TIME = 4000
+const WALK_TIMEOUT = 10000
 
 // Cost variables
 const TRANSPORT_COST = 25
@@ -572,17 +575,20 @@ export class NGraphMove {
                 if (c.type == "town") {
                     // Use "town" to get to the next node
                     use_skill("town")
-                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + 4000))
+                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + TOWN_TIME))
                     return
                 } else if (c.type == "transport") {
                     // Transport to the next node
                     transport(b.map, c.spawn)
                     await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings)))
                     return
+                } else if (c.type == "blink") {
+                    use_skill("blink", [b.x, b.y])
+                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings)))
                 }
             } else {
-                // Walk to the next node
-                await move(b.x, b.y)
+                // Walk to the next node (timeout after 5 seconds)
+                await Promise.race([move(b.x, b.y), new Promise(resolve => setTimeout(resolve, WALK_TIMEOUT))])
             }
         }
 
@@ -595,8 +601,8 @@ export class NGraphMove {
             } else {
                 toData = path[i][1]
             }
-            const linkData = path[i][2]
-            const distance = Math.sqrt((toData.x - parent.character.real_x) ** 2 + (toData.y - parent.character.real_y) ** 2)
+            let linkData = path[i][2]
+            let distance = Math.sqrt((toData.x - parent.character.real_x) ** 2 + (toData.y - parent.character.real_y) ** 2)
 
             if (this.wasCancelled(searchStart)) {
                 console.log(`Search from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] was cancelled`)
@@ -622,8 +628,24 @@ export class NGraphMove {
                 return this.move(goal, finishDistanceTolerance)
             }
 
-            // DEBUG
-            console.log(`STEP: [${fromData.map},${fromData.x},${fromData.y}] to [${toData.map},${toData.x},${toData.y}]`)
+            // See if we can use blink to speed up movement (if we are mage)
+            if (ENABLE_BLINK && can_use("blink") && parent.character.mp > G.skills.blink.mp) {
+                let j = i
+                for (; j < path.length; j++) {
+                    distance += Math.sqrt((path[j][1].x + path[j][0].x) ** 2 + (path[j][1].y - path[j][0].y) ** 2)
+                    if (path[j][0].map != path[j][1].map) break // We found the last point that we can travel to on this map
+                }
+                if (distance < TOWN_COST) {
+                    if (j == path.length) {
+                        toData = path[j][1]
+                    } else {
+                        toData = path[j][0]
+                    }
+                    linkData = { type: "blink" }
+                    i = j - 1
+                }
+            }
+
             // Perform movement
             await performNextMovement(fromData, toData, linkData)
         }

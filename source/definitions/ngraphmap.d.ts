@@ -14,6 +14,8 @@ export type LinkData = {
     spawn: number
 } | {
     type: "town"
+} | {
+    type: "blink"
 }
 
 export type PathData = [NodeData, NodeData, LinkData][]

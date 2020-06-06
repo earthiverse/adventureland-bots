@@ -146,7 +146,7 @@ declare global {
    */
   function can_transport(entity: Entity): boolean
   /**
-   * Checks if the given skill is on cooldown. As it is right now [2020-05-26], this is a duplicate of `is_on_cooldown()`.
+   * Checks if the skill is usable by the given character. Also checks if the given skill is on cooldown.
    * @param skill The skill to check
    * @param returns TRUE if not on cooldown, FALSE otherwise.
    */
