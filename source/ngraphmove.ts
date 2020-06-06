@@ -602,14 +602,14 @@ export class NGraphMove {
                 toData = path[i][1]
             }
             let linkData = path[i][2]
-            let distance = Math.sqrt((toData.x - parent.character.real_x) ** 2 + (toData.y - parent.character.real_y) ** 2)
+            let distance = Math.sqrt((Math.trunc(toData.x) - Math.trunc(parent.character.real_x)) ** 2 + (Math.trunc(toData.y) - Math.trunc(parent.character.real_y)) ** 2)
 
             if (this.wasCancelled(searchStart)) {
                 console.log(`Search from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] was cancelled`)
                 return Promise.reject("cancelled")
             }
 
-            if (distance < 0.001) {
+            if (distance < 1) {
                 // We're at the next node, continue
                 i++
                 continue
