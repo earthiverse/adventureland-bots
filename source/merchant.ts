@@ -202,13 +202,14 @@ class Merchant extends Character {
             compoundIfMany(4)
 
             // Sell MH coins
-            const tokens = findItem("monstertoken")
+            let tokens = findItem("monstertoken")
             if (tokens.q > 1) {
                 // Put the tokens in the inventory
                 unequip("trade1")
                 await sleep(Math.max(...parent.pings))
 
                 // Put the tokens back in the trade slot
+                tokens = findItem("monstertoken")
                 trade(tokens.index, "trade1", 275000, tokens.q - 1)
                 await sleep(Math.max(...parent.pings))
             }

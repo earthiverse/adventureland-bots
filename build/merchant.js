@@ -4866,10 +4866,11 @@ class merchant_Merchant extends character["a" /* Character */] {
             }
             upgradeIfMany(8);
             compoundIfMany(4);
-            const tokens = Object(functions["b" /* findItem */])("monstertoken");
+            let tokens = Object(functions["b" /* findItem */])("monstertoken");
             if (tokens.q > 1) {
                 unequip("trade1");
                 await Object(functions["p" /* sleep */])(Math.max(...parent.pings));
+                tokens = Object(functions["b" /* findItem */])("monstertoken");
                 trade(tokens.index, "trade1", 275000, tokens.q - 1);
                 await Object(functions["p" /* sleep */])(Math.max(...parent.pings));
             }

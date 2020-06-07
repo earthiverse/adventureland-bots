@@ -38,9 +38,10 @@ declare global {
   }
 
   /**
+   * Contains information about what bank packs are available.
    * [0]: The map where you can access this bank pack
-   * [1]: The cost of this bank pack if you use gold
-   * [2]: The cost of this bank pack if you use shells
+   * [1]: The cost to unlock this bank pack if you buy with gold
+   * [2]: The cost to unlock this bank pack if you buy with shells
    */
   const bank_packs: { [T in BankPackType]: [MapName, number, number] }
 
