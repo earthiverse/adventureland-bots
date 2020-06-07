@@ -38,6 +38,13 @@ declare global {
   }
 
   /**
+   * [0]: The map where you can access this bank pack
+   * [1]: The cost of this bank pack if you use gold
+   * [2]: The cost of this bank pack if you use shells
+   */
+  const bank_packs: { [T in BankPackType]: [MapName, number, number] }
+
+  /**
    * Accept a magiport request from a mage
    * @param name The name of the mage offering a magiport
    */
@@ -844,12 +851,52 @@ export type BankPackType =
   | "gold"
   | "items0"
   | "items1"
+  | "items10"
+  | "items11"
+  | "items12"
+  | "items13"
+  | "items14"
+  | "items15"
+  | "items16"
+  | "items17"
+  | "items18"
+  | "items19"
   | "items2"
+  | "items20"
+  | "items21"
+  | "items22"
+  | "items23"
+  | "items24"
+  | "items25"
+  | "items26"
+  | "items27"
+  | "items28"
+  | "items29"
   | "items3"
+  | "items30"
+  | "items31"
+  | "items32"
+  | "items33"
+  | "items34"
+  | "items35"
+  | "items36"
+  | "items37"
+  | "items38"
+  | "items39"
   | "items4"
+  | "items40"
+  | "items41"
+  | "items42"
+  | "items43"
+  | "items44"
+  | "items45"
+  | "items46"
+  | "items47"
   | "items5"
   | "items6"
   | "items7"
+  | "items8"
+  | "items9"
 
 export type SlotType =
   | "amulet"
@@ -1365,6 +1412,8 @@ export type MapName =
   | "abtesting"
   | "arena"
   | "bank"
+  | "bank_b"
+  | "bank_u"
   | "batcave"
   | "cave"
   | "cgallery"

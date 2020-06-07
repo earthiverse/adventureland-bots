@@ -180,13 +180,17 @@ export function getEmptySlots(store: ItemInfo[] = parent.character.items): numbe
     return slots
 }
 
+/**
+ * Gets a list of empty bank slot positions. Only returns empty slots for the current map.
+ */
 export function getEmptyBankSlots(): EmptyBankSlots[] {
-    if (parent.character.map != "bank") return // We can only find out what bank slots we have if we're on the bank map.
+    if (!["bank", "bank_b", "bank_u"].includes(parent.character.map)) return // We can only find out what bank slots we have if we're on the bank map.
 
     const emptySlots: EmptyBankSlots[] = []
 
-    for (const store in parent.character.bank) {
+    for (const store in bank_packs) {
         if (store == "gold") continue
+        if (bank_packs[store as BankPackType][0] != parent.character.map) continue
         for (let i = 0; i < 42; i++) {
             const item = parent.character.bank[store as BankPackType][i]
             if (!item) emptySlots.push({ pack: store as Exclude<BankPackType, "gold">, "index": i })

@@ -279,11 +279,13 @@ function getEmptySlots(store = parent.character.items) {
     return slots;
 }
 function getEmptyBankSlots() {
-    if (parent.character.map != "bank")
+    if (!["bank", "bank_b", "bank_u"].includes(parent.character.map))
         return;
     const emptySlots = [];
-    for (const store in parent.character.bank) {
+    for (const store in bank_packs) {
         if (store == "gold")
+            continue;
+        if (bank_packs[store][0] != parent.character.map)
             continue;
         for (let i = 0; i < 42; i++) {
             const item = parent.character.bank[store][i];
@@ -886,7 +888,7 @@ async function buyScrolls() {
 const UNKNOWN = 1;
 const UNWALKABLE = 2;
 const WALKABLE = 3;
-const EXTRA_PADDING = 0;
+const EXTRA_PADDING = 1;
 const FIRST_MAP = "main";
 const SLEEP_FOR_MS = 50;
 const ENABLE_BLINK = true;
@@ -4940,8 +4942,10 @@ class merchant_Merchant extends character["a" /* Character */] {
                 continue;
             allItems.push({ ...item, pack: "items" });
         }
-        for (const pack in parent.character.bank) {
+        for (const pack in bank_packs) {
             if (pack == "gold")
+                continue;
+            if (bank_packs[pack][0] !== parent.character.map)
                 continue;
             for (const item of Object(functions["i" /* getInventory */])(parent.character.bank[pack])) {
                 allItems.push({ ...item, pack: pack });

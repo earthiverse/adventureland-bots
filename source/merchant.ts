@@ -291,8 +291,9 @@ class Merchant extends Character {
             if (this.itemsToKeep.includes(item.name)) continue // We want to keep this item on us
             allItems.push({ ...item, pack: "items" })
         }
-        for (const pack in parent.character.bank) {
+        for (const pack in bank_packs) {
             if (pack == "gold") continue
+            if (bank_packs[pack as BankPackType][0] !== parent.character.map) continue
             for (const item of getInventory(parent.character.bank[pack as BankPackType])) {
                 allItems.push({ ...item, pack: pack as BankPackType })
             }
