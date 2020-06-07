@@ -4705,7 +4705,7 @@ function upgradeIfMany(maxLevel) {
 }
 
 // EXTERNAL MODULE: ./source/trade.ts
-var trade = __webpack_require__(2);
+var source_trade = __webpack_require__(2);
 
 // EXTERNAL MODULE: ./source/info.ts
 var info = __webpack_require__(1);
@@ -4850,24 +4850,31 @@ class merchant_Merchant extends character["a" /* Character */] {
     }
     async mainLoop() {
         try {
-            Object(trade["h" /* sellUnwantedItems */])(this.itemsToSell);
+            Object(source_trade["h" /* sellUnwantedItems */])(this.itemsToSell);
             let numItems = 0;
             for (let i = 0; i < 42; i++)
                 if (parent.character.items[i])
                     numItems++;
             if (numItems < 25)
-                Object(trade["f" /* exchangeItems */])(this.itemsToExchange);
+                Object(source_trade["f" /* exchangeItems */])(this.itemsToExchange);
             await this.newBankStuff();
             if (!parent.character.moving) {
-                Object(trade["g" /* openMerchantStand */])();
+                Object(source_trade["g" /* openMerchantStand */])();
             }
             else {
-                Object(trade["d" /* closeMerchantStand */])();
+                Object(source_trade["d" /* closeMerchantStand */])();
             }
             upgradeIfMany(8);
             compoundIfMany(4);
+            const tokens = Object(functions["b" /* findItem */])("monstertoken");
+            if (tokens.q > 1) {
+                unequip("trade1");
+                await Object(functions["p" /* sleep */])(Math.max(...parent.pings));
+                trade(tokens.index, "trade1", 275000, tokens.q - 1);
+                await Object(functions["p" /* sleep */])(Math.max(...parent.pings));
+            }
             upgradeItem("bow", 9);
-            await Object(trade["c" /* buyScrolls */])();
+            await Object(source_trade["c" /* buyScrolls */])();
             await super.mainLoop();
         }
         catch (error) {
@@ -4910,7 +4917,7 @@ class merchant_Merchant extends character["a" /* Character */] {
             setTimeout(() => { this.pontyLoop(); }, 250);
             return;
         }
-        Object(trade["a" /* buyFromPonty */])(this.itemsToBuy);
+        Object(source_trade["a" /* buyFromPonty */])(this.itemsToBuy);
         setTimeout(() => { this.pontyLoop(); }, 15000);
     }
     async newBankStuff() {

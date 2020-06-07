@@ -274,7 +274,7 @@ declare global {
   /** For buying things off players' merchants */
   function trade_buy(target: Entity, trade_slot: number)
   function transport(map: MapName, spawn?: number)
-  function unequip(slot: SlotType)
+  function unequip(slot: SlotType | TradeSlotType)
   function upgrade(itemInventoryPosition: number, scrollInventoryPosition: number, offeringInventoryPosition?: number): Promise<any>
   function use_skill(name: "3shot" | "5shot", targets: Entity[]): Promise<any>[]
   /** For destination, it's an array of [x, y] */
@@ -286,6 +286,7 @@ declare global {
   function use_skill(name: "throw", target: Entity, inventoryPostion: number): Promise<any>
   function use_skill(name: "town"): Promise<any>
   function use_skill(name: SkillName, target?: Entity, extraArg?: any): Promise<any>
+  function trade(inventoryPosition: number, tradeSlot: number | TradeSlotType, price: number, quantity: number): void
   /** This function uses move() if it can, otherwise it uses smart_move() */
   function xmove(x: number, y: number)
 
