@@ -22,7 +22,7 @@ module.exports = {
         }, ],
     },
     optimization: {
-        minimize: false
+        minimize: true
     },
     resolve: {
         extensions: [".tsx", ".ts", ".js"],
