@@ -7,7 +7,7 @@ import { Grids, Grid, NodeData, LinkData, PathData } from "./definitions/ngraphm
 const UNKNOWN = 1
 const UNWALKABLE = 2
 const WALKABLE = 3
-const EXTRA_PADDING = 1
+const EXTRA_PADDING = 0
 
 // Other variables
 const FIRST_MAP: MapName = "main"
