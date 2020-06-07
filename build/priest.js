@@ -891,6 +891,8 @@ const FIRST_MAP = "main";
 const SLEEP_FOR_MS = 50;
 const ENABLE_BLINK = true;
 const TOWN_TIME = 3000;
+const TRANSPORT_TIME = 1000;
+const BLINK_TIME = 1000;
 const WALK_TIMEOUT = 10000;
 const TRANSPORT_COST = 25;
 const TOWN_COST = 100;
@@ -1321,6 +1323,38 @@ class NGraphMove {
         if (rawPath[0].data.x != goal.x || rawPath[0].data.y != goal.y) {
             optimizedPath.push([rawPath[0].data, goal, undefined]);
         }
+        const character = NGraphMove.cleanPosition(parent.character);
+        let canMoveTo = 0;
+        for (let i = 0; i < optimizedPath.length; i++) {
+            const to = optimizedPath[i][1];
+            const link = optimizedPath[i][2];
+            if (link)
+                break;
+            if (character.map !== to.map)
+                break;
+            if (this.canMove(character, to))
+                canMoveTo = i;
+        }
+        if (canMoveTo > 0) {
+            optimizedPath.splice(0, canMoveTo);
+            optimizedPath[0][0] = character;
+        }
+        canMoveTo = optimizedPath.length - 1;
+        for (let i = optimizedPath.length - 1; i > 0; i--) {
+            const from = optimizedPath[i][0];
+            const to = optimizedPath[i][1];
+            const link = optimizedPath[i][2];
+            if (link)
+                break;
+            if (character.map !== to.map)
+                break;
+            if (this.canMove(from, goal))
+                canMoveTo = i;
+        }
+        if (canMoveTo < optimizedPath.length - 1) {
+            optimizedPath.splice(canMoveTo, optimizedPath.length - 1 - canMoveTo);
+            optimizedPath[optimizedPath.length - 1][1] = goal;
+        }
         if (optimizedPath.length > 1
             && optimizedPath[0][2] === undefined
             && optimizedPath[1][2] && optimizedPath[1][2].type == "town"
@@ -1372,12 +1406,12 @@ class NGraphMove {
                 }
                 else if (c.type == "transport") {
                     transport(b.map, c.spawn);
-                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings)));
+                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + TRANSPORT_TIME));
                     return;
                 }
                 else if (c.type == "blink") {
                     use_skill("blink", [b.x, b.y]);
-                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings)));
+                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + BLINK_TIME));
                     return;
                 }
             }
@@ -1411,8 +1445,8 @@ class NGraphMove {
                 continue;
             }
             if ((!linkData && !can_move_to(toData.x, toData.y)) || parent.character.map !== fromData.map) {
-                await new Promise(resolve => setTimeout(resolve, SLEEP_FOR_MS));
-                console.warn("NGraphMove movement failed. We're trying again.");
+                console.warn("NGraphMove movement failed. We're going to teleport to town and try again.");
+                await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + TOWN_TIME));
                 return this.move(goal, finishDistanceTolerance);
             }
             if (ENABLE_BLINK && can_use("blink") && parent.character.mp > G.skills.blink.mp) {

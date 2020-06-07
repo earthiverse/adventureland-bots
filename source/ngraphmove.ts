@@ -14,6 +14,8 @@ const FIRST_MAP: MapName = "main"
 const SLEEP_FOR_MS = 50
 const ENABLE_BLINK = true
 const TOWN_TIME = 3000
+const TRANSPORT_TIME = 1000
+const BLINK_TIME = 1000
 const WALK_TIMEOUT = 10000
 
 // Cost variables
@@ -501,6 +503,7 @@ export class NGraphMove {
             return undefined
         }
         const optimizedPath: PathData = []
+
         if (rawPath[rawPath.length - 1].data.x != parent.character.real_x || rawPath[rawPath.length - 1].data.y != parent.character.real_y) {
             // Add the starting position
             optimizedPath.push([NGraphMove.cleanPosition(parent.character), rawPath[rawPath.length - 1].data, undefined])
@@ -515,6 +518,40 @@ export class NGraphMove {
         if (rawPath[0].data.x != goal.x || rawPath[0].data.y != goal.y) {
             // Add the finishing position
             optimizedPath.push([rawPath[0].data, goal, undefined])
+        }
+
+        // Optimize starting position
+        const character = NGraphMove.cleanPosition(parent.character)
+        let canMoveTo = 0
+        for (let i = 0; i < optimizedPath.length; i++) {
+            const to = optimizedPath[i][1]
+            const link = optimizedPath[i][2]
+
+            if (link) break // We can't optimize across maps
+            if (character.map !== to.map) break
+
+            if (this.canMove(character, to)) canMoveTo = i
+        }
+        if (canMoveTo > 0) {
+            optimizedPath.splice(0, canMoveTo)
+            optimizedPath[0][0] = character
+        }
+
+        // Optimize finish position
+        canMoveTo = optimizedPath.length - 1
+        for (let i = optimizedPath.length - 1; i > 0; i--) {
+            const from = optimizedPath[i][0]
+            const to = optimizedPath[i][1]
+            const link = optimizedPath[i][2]
+
+            if (link) break // We shouldn't optimize over special movements
+            if (character.map !== to.map) break
+
+            if (this.canMove(from, goal)) canMoveTo = i
+        }
+        if (canMoveTo < optimizedPath.length - 1) {
+            optimizedPath.splice(canMoveTo, optimizedPath.length - 1 - canMoveTo)
+            optimizedPath[optimizedPath.length - 1][1] = goal
         }
 
         // 2: Optimize Town Teleport
@@ -581,11 +618,11 @@ export class NGraphMove {
                 } else if (c.type == "transport") {
                     // Transport to the next node
                     transport(b.map, c.spawn)
-                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings)))
+                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + TRANSPORT_TIME))
                     return
                 } else if (c.type == "blink") {
                     use_skill("blink", [b.x, b.y])
-                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings)))
+                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + BLINK_TIME))
                     return
                 }
             } else {
@@ -626,8 +663,8 @@ export class NGraphMove {
 
             if ((!linkData && !can_move_to(toData.x, toData.y)) || parent.character.map !== fromData.map) {
                 // We got lost somewhere, retry
-                await new Promise(resolve => setTimeout(resolve, SLEEP_FOR_MS))
-                console.warn("NGraphMove movement failed. We're trying again.")
+                console.warn("NGraphMove movement failed. We're going to teleport to town and try again.")
+                await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + TOWN_TIME))
                 return this.move(goal, finishDistanceTolerance)
             }
 
