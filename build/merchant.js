@@ -1446,6 +1446,7 @@ class NGraphMove {
             }
             if ((!linkData && !can_move_to(toData.x, toData.y)) || parent.character.map !== fromData.map) {
                 console.warn("NGraphMove movement failed. We're going to teleport to town and try again.");
+                use_skill("town");
                 await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + TOWN_TIME));
                 return this.move(goal, finishDistanceTolerance);
             }
