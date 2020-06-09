@@ -2,13 +2,14 @@
     "compileOnSave": true,
     "compilerOptions": {
         "lib": [
-            "ES2020",
-            "DOM"
+            "DOM",
+            "ES2020"
         ],
         "allowSyntheticDefaultImports": true,
         "target": "ES2020",
         "moduleResolution": "node",
-        "noImplicitAny": true,
+        /** TODO: Ideally this should be true */
+        "noImplicitAny": false,
         "outDir": "build",
         "removeComments": true,
         "rootDir": "source",
@@ -16,7 +17,7 @@
         "watch": false
     },
     "include": [
-        "source/server.ts"
+        "source/*.ts"
     ],
     "exclude": [
         "build",

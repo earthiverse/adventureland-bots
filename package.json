@@ -1,36 +1,30 @@
 {
-  "name": "adventureland-ai",
-  "version": "1.0.0",
-  "description": "Adventureland AI Script",
+  "name": "cli",
+  "version": "0.1.0",
+  "description": "My own CLI to interact with adventure time.",
   "main": "index.js",
-  "scripts": {
-    "build": "npx webpack --config ./webpack.config.js && tsc",
-    "start-server": "node build/server.js"
-  },
-  "author": "Kent Rasmussen",
-  "license": "MIT",
+  "type": "module", 
   "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^8.2.0",
-    "dotenv-webpack": "^1.8.0",
-    "express": "^4.17.1",
-    "fastpriorityqueue": "^0.6.3",
-    "ngraph.graph": "^19.1.0",
-    "ngraph.path": "^1.3.1"
+    "socket.io": "^2.3.0",
+    "socket.io-client": "^2.3.0"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.6",
-    "@types/express": "^4.17.6",
-    "@types/nconf": "^0.10.0",
-    "@types/node": "^14.0.6",
     "@types/socket.io": "^2.1.8",
-    "@typescript-eslint/eslint-plugin": "^3.0.2",
-    "@typescript-eslint/parser": "^3.0.2",
-    "eslint": "^7.1.0",
-    "socket.io": "^2.3.0",
-    "ts-loader": "^7.0.5",
-    "typescript": "^3.9.3",
-    "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.11"
-  }
+    "@types/socket.io-client": "^1.4.33",
+    "eslint": "^7.2.0",
+    "typescript": "^3.9.5"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/earthiverse/adventureland-bots.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/earthiverse/adventureland-bots/issues"
+  },
+  "homepage": "https://github.com/earthiverse/adventureland-bots#readme"
 }
