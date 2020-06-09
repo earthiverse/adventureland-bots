@@ -1,0 +1,25 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "lib": [
+            "ES2020",
+            "DOM"
+        ],
+        "allowSyntheticDefaultImports": true,
+        "target": "ES2020",
+        "moduleResolution": "node",
+        "noImplicitAny": true,
+        "outDir": "build",
+        "removeComments": true,
+        "rootDir": "source",
+        "sourceMap": false,
+        "watch": false
+    },
+    "include": [
+        "source/server.ts"
+    ],
+    "exclude": [
+        "build",
+        "node_modules"
+    ]
+}
