@@ -2,7 +2,6 @@
     "compileOnSave": true,
     "compilerOptions": {
         "lib": [
-            "DOM",
             "ES2020"
         ],
         "allowSyntheticDefaultImports": true,

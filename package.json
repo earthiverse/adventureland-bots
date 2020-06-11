@@ -3,14 +3,18 @@
   "version": "0.1.0",
   "description": "My own CLI to interact with adventure time.",
   "main": "index.js",
-  "type": "module", 
+  "type": "module",
   "dependencies": {
+    "cheerio": "^1.0.0-rc.3",
+    "dotenv": "^8.2.0",
     "socket.io": "^2.3.0",
     "socket.io-client": "^2.3.0"
   },
   "devDependencies": {
+    "@types/cheerio": "^0.22.18",
     "@types/socket.io": "^2.1.8",
     "@types/socket.io-client": "^1.4.33",
+    "axios": "^0.19.2",
     "eslint": "^7.2.0",
     "typescript": "^3.9.5"
   },

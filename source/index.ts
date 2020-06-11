@@ -1,39 +1,13 @@
-import SocketIO from "socket.io-client"
-import { WelcomeData, LoadedData } from "./definitions/adventureland-server"
+import dotenv from "dotenv"
+import { Game } from "./game.js"
 
-// ws://35.187.255.184:2053/socket.io/?EIO=3&transport=websocket
+dotenv.config({ path: "../.env" })
+console.log([process.env.AUTH, process.env.CHARACTER, process.env.USER])
 
-const localStorage = { debug: '*' }
-
-let fun = SocketIO("ws://35.187.255.184:2053", {
-    autoConnect: false,
-    transports: ["websocket"]
-})
-
-fun.on("connect", (data) => {
-    console.log("CONNECT! ----------")
-    console.log(data)
-    console.log("-------------------")
-})
-
-fun.on("welcome", (data: WelcomeData) => {
-    console.log("WELCOME! ----------")
-    console.log(data)
-    console.log("-------------------")
-    
-    fun.emit("loaded", {
-        height: 1080,
-        width: 1920,
-        scale: 2,
-        success: 1
-    } as LoadedData)
-})
-
-
-console.log("Opening socket...")
-fun.open()
+let game = new Game("ASIA", "I")
+game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER)
 
 setTimeout(() => {
     console.log("Closing socket...")
-    fun.close()
+    game.disconnect()
 }, 10000);

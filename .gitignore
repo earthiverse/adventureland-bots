@@ -56,3 +56,9 @@ typings/
 
 # next.js build output
 .next
+
+# secret variables
+.env
+
+# build
+build/*
