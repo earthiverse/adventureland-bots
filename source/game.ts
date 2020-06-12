@@ -1,17 +1,18 @@
 import axios from "axios"
 import socketio from "socket.io-client"
-import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, AuthData } from "./definitions/adventureland-server"
-import { ServerRegion, ServerIdentifier, Entity, CharacterEntity } from "./definitions/adventureland"
+import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, AuthData, StartData, EntityData } from "./definitions/adventureland-server"
+import { ServerRegion, ServerIdentifier } from "./definitions/adventureland"
 
 export class Game {
     public socket: SocketIOClient.Socket
-    private connecting: Promise<boolean>
+    private promises: Promise<boolean>[]
 
-    public character: CharacterEntity
-    public entities: { [id: string]: Entity }
+    public G: any
+    public character: any
+    public entities: { [id: string]: EntityData }
 
     constructor(region: ServerRegion, name: ServerIdentifier) {
-        this.connecting = new Promise<boolean>((resolve, reject) => {
+        this.promises.push(new Promise<boolean>((resolve, reject) => {
             Game.getServerList().then((data) => {
                 // Find the address of the server we want to connect to
                 for (let server of data) {
@@ -28,7 +29,28 @@ export class Game {
                 reject()
                 return
             })
-        })
+        }), new Promise<boolean>((resolve, reject) => {
+            Game.getGameData().then((data) => {
+                this.G = data
+            })
+        }))
+    }
+
+    private parseEntities(data: EntitiesData) {
+        // console.log("socket: entities!")
+        // console.log(data)
+
+        if (data.type == "all") {
+            // Erase all of the entities
+            this.entities = {}
+        }
+
+        for (let monster of data.monsters) {
+            this.entities[monster.id] = monster
+        }
+        for (let player of data.players) {
+
+        }
     }
 
     private prepare() {
@@ -40,19 +62,7 @@ export class Game {
         // on("connect")
 
         this.socket.on("entities", (data: EntitiesData) => {
-            // console.log("socket: entities!")
-            // console.log(data)
-
-            if (data.type == "all") {
-                // TODO: Probably erase all of the entities?
-            }
-
-            for (let monster of data.monsters) {
-
-            }
-            for (let player of data.players) {
-
-            }
+            this.parseEntities(data)
         })
 
         this.socket.on("game_error", (data) => {
@@ -73,6 +83,13 @@ export class Game {
             // console.log(data)
         })
 
+        this.socket.on("start", (data: StartData) => {
+            console.log("socket: start!")
+            console.log(data)
+
+            this.parseEntities(data.entities)
+        })
+
         this.socket.on("welcome", (data: WelcomeData) => {
             console.log("socket: welcome!")
             console.log(data)
@@ -89,16 +106,9 @@ export class Game {
     }
 
     async connect(auth: string, character: string, user: string) {
-        if (this.connecting) await this.connecting
+        await Promise.all(this.promises)
 
         // TODO: receive on("start")
-        this.socket.once("start", (data) => {
-            console.log("socket: start!")
-            console.log(data)
-
-            console.log("CLOSING!")
-            this.socket.close()
-        })
 
         this.socket.open()
 
@@ -124,11 +134,20 @@ export class Game {
         this.socket.close()
     }
 
+    static async getGameData(): Promise<any> {
+        const result = await axios.get("http://adventure.land/data.js")
+        if (result.status == 200) {
+            // Update X.servers with the latest data
+            let matches = result.data.match(/var\s+G\s*=\s*(\{.+\});/)
+            return JSON.parse(matches[1])
+        }
+    }
+
     static async getServerList(): Promise<ServerData[]> {
         // Get a list of the servers available
         const result = await axios.get("http://adventure.land")
         if (result.status == 200) {
-            // Update X.servers with the latest data
+            // We got a result!
             let matches = result.data.match(/X\.servers=(\[.+\]);/)
             return JSON.parse(matches[1])
         }

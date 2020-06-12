@@ -1,4 +1,4 @@
-import { MapName, ServerIdentifier, ServerRegion, MonsterName, NPCRole, NPCType, CharacterType, StatusInfo, SlotInfo } from "./adventureland"
+import { NPCType, CharacterType, StatusInfo, SlotInfo, ItemInfo } from "./adventureland"
 
 export type WelcomeData = {
     region: ServerRegion
@@ -18,8 +18,7 @@ export type LoadedData = {
     width: number
     // TODO: Find out what this is
     scale: number
-
-    success: 1
+    success: 1 | number
 }
 
 export type AuthData = {
@@ -52,7 +51,7 @@ export type EntitiesData = {
 
 export type EntityData = {
     id: string
-    type: MonsterName
+    type: MonsterType
 
     abs: boolean
     angle: number
@@ -125,7 +124,7 @@ export type ServerData = {
 }
 
 export type GameResponseData = {
-    response: "gold_received"
+    response: "gold_received" | string
     gold: number
     name: string
 }
@@ -137,9 +136,94 @@ export type HitData = {
     id: string
     pid: string
     projectile: string
-    source: "attack" | "heal"
+    source: "attack" | "heal" | string
 } | {
     anim: "miss"
     damage: 0
     miss: true
 }
+
+export type StartData = {
+    hp: number
+    max_hp: number
+    mp: number
+    max_mp: number
+    attack: number
+    frequency: number
+    speed: number
+    range: number
+    armor: number
+    resistance: number
+    level: number
+    rip: boolean
+    afk: "afk" | string
+    s: StatusInfo
+    // TODO: Figure this type out
+    c: any
+    // TODO: Figure this type out
+    q: any
+    age: number
+    pdps: number
+    id: string
+    x: number
+    y: number
+    cid: number
+    stand: boolean,
+    controller: string
+    skin: string
+    cx: any
+    slots: SlotInfo
+    ctype: CharacterType
+    owner: string
+    int: number
+    str: number
+    dex: number
+    vit: number
+    for: number
+    mp_cost: number
+    max_xp: number
+    goldm: number
+    xpm: number
+    luckm: number
+    map: MapName
+    in: string
+    isize: number
+    esize: number
+    gold: number
+    cash: number
+    targets: number
+    m: number
+    evasion: number
+    miss: number
+    reflection: number
+    lifesteal: number
+    manasteal: number
+    rpiercing: number
+    apiercing: number
+    crit: number
+    critdamage: number
+    dreturn: number
+    tax: number
+    xrange: number
+    items: ItemInfo[]
+    cc: number
+    ipass: string
+    // TODO: Figure this out
+    friends: any
+    // TODO: Figure this out
+    acx: any
+    xcx: string[]
+    // TODO: Figure this out
+    info: any
+    base_gold: {
+        [T in MonsterType]?: { [T in string]?: number }
+    }
+    // TODO: Figure this type out
+    s_info: any
+    entities: EntitiesData
+}
+
+export type MapName = string
+export type MonsterType = string
+export type ServerIdentifier = string
+export type ServerRegion = string
