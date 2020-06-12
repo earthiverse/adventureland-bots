@@ -522,7 +522,7 @@ export class NGraphMove {
 
         // Optimize starting position
         const character = NGraphMove.cleanPosition(parent.character)
-        let canMoveTo = 0
+        let canMove = 0
         for (let i = 0; i < optimizedPath.length; i++) {
             const to = optimizedPath[i][1]
             const link = optimizedPath[i][2]
@@ -530,27 +530,27 @@ export class NGraphMove {
             if (link) break // We can't optimize across maps
             if (character.map !== to.map) break
 
-            if (this.canMove(character, to)) canMoveTo = i
+            if (this.canMove(character, to)) canMove = i
         }
-        if (canMoveTo > 0) {
-            optimizedPath.splice(0, canMoveTo)
+        if (canMove > 0) {
+            optimizedPath.splice(0, canMove)
             optimizedPath[0][0] = character
         }
 
         // Optimize finish position
-        canMoveTo = optimizedPath.length - 1
-        for (let i = optimizedPath.length - 1; i > 0; i--) {
+        canMove = optimizedPath.length - 2
+        for (let i = optimizedPath.length - 3; i > 0; i--) {
             const from = optimizedPath[i][0]
             const to = optimizedPath[i][1]
             const link = optimizedPath[i][2]
 
             if (link) break // We shouldn't optimize over special movements
-            if (character.map !== to.map) break
+            if (goal.map !== to.map) break
 
-            if (this.canMove(from, goal)) canMoveTo = i
+            if (this.canMove(from, goal)) canMove = i
         }
-        if (canMoveTo < optimizedPath.length - 1) {
-            optimizedPath.splice(canMoveTo, optimizedPath.length - 1 - canMoveTo)
+        if (canMove < optimizedPath.length - 2) {
+            optimizedPath.splice(canMove + 1, optimizedPath.length - (canMove + 2))
             optimizedPath[optimizedPath.length - 1][1] = goal
         }
 
