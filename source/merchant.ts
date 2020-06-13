@@ -3,8 +3,8 @@ import { MonsterName, PositionReal, BankPackType } from "./definitions/adventure
 import { upgradeIfMany, compoundIfMany, upgradeItem } from "./upgrade"
 import { sellUnwantedItems, exchangeItems, buyFromPonty, openMerchantStand, closeMerchantStand, buyScrolls } from "./trade"
 import { getInventory, isPlayer, getCooldownMS, isAvailable, getEmptyBankSlots, sleep, getEmptySlots, isInventoryFull, buyIfNone, findItem } from "./functions"
-import { MovementTarget, TargetPriorityList, BankItemInfo, NPCInfo, PartyInfo, PlayersInfo } from "./definitions/bots"
-import { getPartyInfo, getPlayersInfo, setPlayersInfo, getNPCInfo, setNPCInfo } from "./info"
+import { MovementTarget, TargetPriorityList, BankItemInfo, NPCInfo, PartyInfo, PlayersInfo, MonstersInfo } from "./definitions/bots"
+import { getPartyInfo, getPlayersInfo, setPlayersInfo, getNPCInfo, setNPCInfo, getMonstersInfo, setMonstersInfo } from "./info"
 import { NGraphMove } from "./ngraphmove"
 
 class Merchant extends Character {
@@ -155,6 +155,28 @@ class Merchant extends Character {
             } else {
                 set_message("Find Angel")
                 return { position: npcs.Angel }
+            }
+        }
+
+        // Special Monsters -- Move to monster
+        const monsters: MonstersInfo = getMonstersInfo()
+        for (const mtype in monsters) {
+            const info = monsters[mtype as MonsterName]
+
+            // Update info if we can see it
+            const entityInfo = parent.entities[info.id]
+            if (entityInfo) {
+                info.x = entityInfo.real_x
+                info.y = entityInfo.real_y
+            }
+
+            if (distance(parent.character, info) < parent.character.range * 2 && !entityInfo) {
+                // We got close to it, but we can't see it...
+                delete monsters[mtype as MonsterName]
+                setMonstersInfo(monsters)
+            } else {
+                set_message(`SP ${mtype}`)
+                return { target: mtype as MonsterName, position: info, range: parent.character.range }
             }
         }
 

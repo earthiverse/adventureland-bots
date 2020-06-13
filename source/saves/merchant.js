@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-/* eslint-disable @typescript-eslint/camelcase */
 /* eslint-disable no-undef */
+
+use_skill("town") // Try to teleport to town for safety
+
 import("https://earthiverse.github.io/adventureland-bots/build/merchant.js")
     .then(() => {
         bots.merchant.run()
@@ -15,7 +16,8 @@ import("https://earthiverse.github.io/adventureland-bots/build/merchant.js")
             return value
         }
 
-        function showQuests() {
+        function showMHInfo() {
+            // MH Quests
             const party = JSON.parse(localStorage.getItem(`${parent.server_region}.${parent.server_identifier}_party`), reviver) || {}
             for (const id in party) {
                 if (!parent.party_list.includes(id)) continue
@@ -24,12 +26,17 @@ import("https://earthiverse.github.io/adventureland-bots/build/merchant.js")
                     game_log(member.s.monsterhunt.id + ": " + member.s.monsterhunt.c + " in " + Math.floor(member.s.monsterhunt.ms / 1000 / 60) + "m")
                 }
             }
-            game_log("Coins: " + parent.character.items[30].q)
+
+            // MH Coin count
+            let coins = locate_item("monstertoken") == -1 ? 0 : parent.character.items[locate_item("monstertoken")].q
+            coins += parent.character.slots.trade1 == undefined ? 0 : parent.character.slots.trade1.q
+            game_log(`Coins: ${coins}`)
+
             setTimeout(() => {
-                showQuests()
+                showMHInfo()
             }, 10000)
         }
-        showQuests()
+        showMHInfo()
     }, () => {
         load_code("merchant")
         bots.merchant.run()

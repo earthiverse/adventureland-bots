@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-/* eslint-disable @typescript-eslint/camelcase */
 /* eslint-disable no-undef */
+
+use_skill("town") // Try to teleport to town for safety
+
 import("https://earthiverse.github.io/adventureland-bots/build/rogue.js")
     .then(() => {
         bots.rogue.run()
