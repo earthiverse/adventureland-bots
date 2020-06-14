@@ -24,3 +24,9 @@ function on_magiport(name) {
     if(name != "earthMag") return
     accept_magiport(name)
 }
+
+function on_combined_damage() {
+    let x = -10 + Math.round(20 * Math.random())
+    let y = -10 + Math.round(20 * Math.random())
+    move(parent.character.real_x + x, parent.character.real_y + y)
+}
