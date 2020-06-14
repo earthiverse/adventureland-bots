@@ -527,6 +527,7 @@ export class NGraphMove {
     }
 
     public async move(goal: PositionReal, finishDistanceTolerance = 0): Promise<unknown> {
+        console.info(`Starting move from [${parent.character.map},${parent.character.real_x},${parent.character.real_y}] to [${goal.map},${goal.x},${goal.y}]`)
         this.reset()
 
         function getCloseTo(from: NodeData): PositionReal {
