@@ -26,7 +26,6 @@ class Ranger extends Character {
         "bbpompom": {
             "coop": ["priest"],
             "holdPositionFarm": true,
-            "holdAttackWhileMoving": true,
             "priority": 0,
             "farmingPosition": {
                 "map": "winter_cave",
@@ -48,14 +47,11 @@ class Ranger extends Character {
         "bigbird": {
             // The ranger is fast enough to avoid these fairly well
             "priority": 0,
-            "holdAttackInEntityRange": true,
-            "holdAttackWhileMoving": true,
             "equip": ["firebow", "t2quiver"]
         },
         "boar": {
             // Don't attack if we're walking by them, they hurt.
             "priority": 0,
-            "holdAttackWhileMoving": true,
             "equip": ["firebow", "t2quiver"]
         },
         "booboo": {
@@ -71,8 +67,6 @@ class Ranger extends Character {
             "equip": ["hbow", "quiver"]
         },
         "cgoo": {
-            "holdAttackInEntityRange": true,
-            "holdAttackWhileMoving": true,
             "priority": 0,
             "equip": ["t2bow", "t2quiver"]
         },
@@ -115,7 +109,6 @@ class Ranger extends Character {
         "ghost": {
             "coop": ["priest"],
             "priority": 0,
-            "holdAttackWhileMoving": true,
             "holdPositionFarm": true,
             "farmingPosition": {
                 "map": "halloween",
@@ -148,7 +141,6 @@ class Ranger extends Character {
             "equip": ["t2bow", "t2quiver"]
         },
         "iceroamer": {
-            "holdAttackWhileMoving": true,
             "priority": 0,
             "equip": ["t2bow", "t2quiver"]
         },
@@ -302,8 +294,6 @@ class Ranger extends Character {
             "equip": ["hbow", "quiver"]
         },
         "stoneworm": {
-            "holdAttackInEntityRange": true,
-            "holdAttackWhileMoving": true,
             "priority": 0,
             "equip": ["bowofthedead", "t2quiver"]
         },
@@ -326,8 +316,6 @@ class Ranger extends Character {
         "wolfie": {
             // The ranger is fast enough to kill these without dying too much.
             "priority": 0,
-            "holdAttackInEntityRange": true,
-            "holdAttackWhileMoving": true,
             "equip": ["firebow", "t2quiver"]
         },
         "xscorpion": {

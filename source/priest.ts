@@ -29,7 +29,6 @@ class Priest extends Character {
         "bbpompom": {
             "coop": ["priest"],
             "holdPositionFarm": true,
-            "holdAttackWhileMoving": true,
             "priority": DIFFICULT,
             "farmingPosition": {
                 "map": "winter_cave",
@@ -49,7 +48,6 @@ class Priest extends Character {
         "bigbird": {
             // The ranger is fast enough to avoid these fairly well
             "priority": DIFFICULT,
-            "holdAttackWhileMoving": true,
             "holdPositionFarm": true,
             "farmingPosition": {
                 "map": "main",
@@ -61,7 +59,6 @@ class Priest extends Character {
             // The ranger is fast enough to kill these without dying too much.
             "coop": ["warrior", "priest"],
             "priority": DIFFICULT,
-            "holdAttackWhileMoving": true,
             "holdPositionFarm": true,
             farmingPosition: {
                 "map": "winterland",
@@ -71,7 +68,6 @@ class Priest extends Character {
         },
         "booboo": {
             "priority": DIFFICULT,
-            "holdAttackWhileMoving": true,
             "holdPositionFarm": true,
             farmingPosition: {
                 "map": "spookytown",
@@ -80,8 +76,6 @@ class Priest extends Character {
             }
         },
         "cgoo": {
-            "holdAttackWhileMoving": true,
-            "holdAttackInEntityRange": true,
             "priority": DIFFICULT
         },
         "crab": {
@@ -121,7 +115,6 @@ class Priest extends Character {
         "ghost": {
             "coop": ["priest"],
             "priority": 0,
-            "holdAttackWhileMoving": true,
             "holdPositionFarm": true,
             "farmingPosition": {
                 "map": "halloween",
@@ -149,7 +142,6 @@ class Priest extends Character {
             "priority": EASY
         },
         "iceroamer": {
-            "holdAttackWhileMoving": true,
             "priority": DIFFICULT,
         },
         "jr": {
@@ -283,8 +275,6 @@ class Priest extends Character {
         },
         "stoneworm": {
             // Don't attack if we're walking by them, they hurt.
-            "holdAttackInEntityRange": true,
-            "holdAttackWhileMoving": true,
             "priority": DIFFICULT
         },
         "tortoise": {
@@ -305,7 +295,6 @@ class Priest extends Character {
             // The ranger is fast enough to kill these without dying too much.
             "coop": ["warrior", "priest"],
             "priority": DIFFICULT,
-            "holdAttackWhileMoving": true,
             "holdPositionFarm": true,
             farmingPosition: {
                 "map": "winterland",

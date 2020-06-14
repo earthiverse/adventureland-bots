@@ -19,8 +19,8 @@ const BLINK_TIME = 1000
 const WALK_TIMEOUT = 10000
 
 // Cost variables
-const TRANSPORT_COST = 25
-const TOWN_COST = 100
+const TRANSPORT_COST = parent.character.speed * TRANSPORT_TIME / 1000
+const TOWN_COST = parent.character.speed * TOWN_TIME / 1000
 
 export class NGraphMove {
     private static instance: NGraphMove
@@ -80,7 +80,7 @@ export class NGraphMove {
         this.moveFinishTime = undefined
     }
 
-    public stop() {
+    public stop(): void {
         this.reset()
         if (parent.character.moving) stop()
         if (parent.character.c.town) stop("town")
@@ -106,69 +106,30 @@ export class NGraphMove {
             return false
         }
         const grid = this.grids[from.map]
+        const dx = to.x - from.x, dy = to.y - from.y
+        const nx = Math.abs(dx), ny = Math.abs(dy)
+        const sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1
 
-        const truncFrom = {
-            x: Math.trunc(from.x) - G.geometry[from.map].min_x,
-            y: Math.trunc(from.y) - G.geometry[from.map].min_y
-        }
-        const truncTo = {
-            x: Math.trunc(to.x) - G.geometry[from.map].min_x,
-            y: Math.trunc(to.y) - G.geometry[from.map].min_y
-        }
-        const toTravel = {
-            x: truncTo.x - truncFrom.x,
-            y: truncTo.y - truncFrom.y
-        }
-        const current = {
-            x: truncFrom.x,
-            y: truncFrom.y
-        }
+        let x = from.x - G.geometry[from.map].min_x, y = from.y - G.geometry[from.map].min_y
+        for (let ix = 0, iy = 0; ix < nx || iy < ny;) {
+            if ((0.5 + ix) / nx == (0.5 + iy) / ny) {
+                x += sign_x
+                y += sign_y
+                ix++
+                iy++
+            } else if ((0.5 + ix) / nx < (0.5 + iy) / ny) {
+                x += sign_x
+                ix++
+            } else {
+                y += sign_y
+                iy++
+            }
 
-        if (toTravel.x == 0) {
-            // It's a straight y-line
-            const sign = Math.sign(toTravel.y)
-            while (truncTo.y !== current.y + sign) {
-                if (grid[current.y][current.x] !== WALKABLE) return false
-                current.y += sign
+            if (grid[y][x] !== WALKABLE) {
+                return false
             }
-            return true
         }
-
-        if (toTravel.y == 0) {
-            // It's a straight x-line
-            const sign = Math.sign(toTravel.x)
-            while (truncTo.x !== current.x + sign) {
-                if (grid[current.y][current.x] !== WALKABLE) return false
-                current.x += sign
-            }
-            return true
-        }
-
-        if (Math.abs(toTravel.x) >= Math.abs(toTravel.y)) {
-            // It's a diagonal line, longer in the x
-            const xSign = Math.sign(toTravel.x)
-            const ySign = Math.sign(toTravel.y)
-            const slope = toTravel.y / toTravel.x
-            while (truncTo.x !== current.x + xSign) {
-                current.y = Math.trunc(truncFrom.y + slope * (current.x - truncFrom.x))
-                if (grid[current.y][current.x] !== WALKABLE) return false
-                if (grid[current.y + ySign][current.x] !== WALKABLE) return false
-                current.x += xSign
-            }
-            return true
-        } else {
-            // It's a diagonal line, longer in the y
-            const xSign = Math.sign(toTravel.x)
-            const ySign = Math.sign(toTravel.y)
-            const slope = toTravel.x / toTravel.y
-            while (truncTo.y !== current.y + ySign) {
-                current.x = Math.trunc(truncFrom.x + slope * (current.y - truncFrom.y))
-                if (grid[current.y][current.x] !== WALKABLE) return false
-                if (grid[current.y][current.x + xSign] !== WALKABLE) return false
-                current.y += ySign
-            }
-            return true
-        }
+        return true
     }
 
     private async addToGraph(map: MapName): Promise<unknown> {
