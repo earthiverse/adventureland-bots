@@ -106,11 +106,11 @@ export class NGraphMove {
             return false
         }
         const grid = this.grids[from.map]
-        const dx = to.x - from.x, dy = to.y - from.y
+        const dx = Math.trunc(to.x) - Math.trunc(from.x), dy = Math.trunc(to.y) - Math.trunc(from.y)
         const nx = Math.abs(dx), ny = Math.abs(dy)
         const sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1
 
-        let x = from.x - G.geometry[from.map].min_x, y = from.y - G.geometry[from.map].min_y
+        let x = Math.trunc(from.x) - G.geometry[from.map].min_x, y = Math.trunc(from.y) - G.geometry[from.map].min_y
         for (let ix = 0, iy = 0; ix < nx || iy < ny;) {
             if ((0.5 + ix) / nx == (0.5 + iy) / ny) {
                 x += sign_x
