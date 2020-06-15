@@ -1,14 +1,14 @@
 import axios from "axios"
 import socketio from "socket.io-client"
-import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, AuthData, StartData, EntityData } from "./definitions/adventureland-server"
-import { ServerRegion, ServerIdentifier } from "./definitions/adventureland"
+import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, AuthData, StartData, EntityData, CharacterData } from "./definitions/adventureland-server"
+import { ServerRegion, ServerIdentifier, CharacterEntity } from "./definitions/adventureland"
 
 export class Game {
     public socket: SocketIOClient.Socket
     private promises: Promise<boolean>[]
 
     public G: any
-    public character: any
+    public character: CharacterData
     public entities: { [id: string]: EntityData }
 
     constructor(region: ServerRegion, name: ServerIdentifier) {
@@ -34,6 +34,76 @@ export class Game {
                 this.G = data
             })
         }))
+    }
+
+    private parseCharacter(data: CharacterData) {
+        this.character = {
+            hp: data.hp,
+            max_hp: data.max_hp,
+            mp: data.mp,
+            max_mp: data.max_mp,
+            attack: data.attack,
+            frequency: data.frequency,
+            speed: data.speed,
+            range: data.range,
+            armor: data.armor,
+            resistance: data.resistance,
+            level: data.level,
+            rip: data.rip,
+            afk: data.afk,
+            s: data.s,
+            c: data.c,
+            q: data.q,
+            age: data.age,
+            pdps: data.pdps,
+            id: data.id,
+            x: data.x,
+            y: data.y,
+            cid: data.cid,
+            stand: data.stand,
+            controller: data.controller,
+            skin: data.skin,
+            cx: data.cx,
+            slots: data.slots,
+            ctype: data.ctype,
+            owner: data.owner,
+            int: data.int,
+            str: data.str,
+            dex: data.dex,
+            vit: data.vit,
+            for: data.for,
+            mp_cost: data.mp_cost,
+            max_xp: data.max_xp,
+            goldm: data.goldm,
+            xpm: data.xpm,
+            luckm: data.luckm,
+            map: data.map,
+            in: data.in,
+            isize: data.isize,
+            esize: data.esize,
+            gold: data.gold,
+            cash: data.cash,
+            targets: data.targets,
+            m: data.m,
+            evasion: data.evasion,
+            miss: data.miss,
+            reflection: data.reflection,
+            lifesteal: data.lifesteal,
+            manasteal: data.manasteal,
+            rpiercing: data.rpiercing,
+            apiercing: data.apiercing,
+            crit: data.crit,
+            critdamage: data.critdamage,
+            dreturn: data.dreturn,
+            tax: data.tax,
+            xrange: data.xrange,
+            items: data.items,
+            cc: data.cc,
+            ipass: data.ipass,
+            friends: data.friends,
+            acx: data.acx,
+            xcx: data.xcx
+        }
     }
 
     private parseEntities(data: EntitiesData) {
@@ -86,7 +156,7 @@ export class Game {
         this.socket.on("start", (data: StartData) => {
             console.log("socket: start!")
             console.log(data)
-
+            this.parseCharacter(data)
             this.parseEntities(data.entities)
         })
 

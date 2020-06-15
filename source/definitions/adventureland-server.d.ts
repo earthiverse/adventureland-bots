@@ -143,7 +143,7 @@ export type HitData = {
     miss: true
 }
 
-export type StartData = {
+export type CharacterData = {
     hp: number
     max_hp: number
     mp: number
@@ -213,6 +213,9 @@ export type StartData = {
     // TODO: Figure this out
     acx: any
     xcx: string[]
+}
+
+export type StartData = CharacterData & {
     // TODO: Figure this out
     info: any
     base_gold: {
