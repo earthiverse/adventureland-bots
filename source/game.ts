@@ -1,6 +1,6 @@
 import axios from "axios"
 import socketio from "socket.io-client"
-import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, AuthData, StartData, EntityData, CharacterData } from "./definitions/adventureland-server"
+import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, AuthData, StartData, EntityData, CharacterData, PartyData, ChestData, PlayerData, QData, DisappearData, ChestOpenedData, HitData } from "./definitions/adventureland-server"
 import { ServerRegion, ServerIdentifier, CharacterEntity } from "./definitions/adventureland"
 
 export class Game {
@@ -8,8 +8,12 @@ export class Game {
     private promises: Promise<boolean>[]
 
     public G: any
+
     public character: CharacterData
-    public entities: { [id: string]: EntityData }
+    public chests = new Map<string, ChestData>()
+    public entities = new Map<string, EntityData>()
+    public party: PartyData
+    public players = new Map<string, PlayerData>()
 
     constructor(region: ServerRegion, name: ServerIdentifier) {
         this.promises.push(new Promise<boolean>((resolve, reject) => {
@@ -112,14 +116,15 @@ export class Game {
 
         if (data.type == "all") {
             // Erase all of the entities
-            this.entities = {}
+            this.entities.clear()
+            this.players.clear()
         }
 
         for (let monster of data.monsters) {
-            this.entities[monster.id] = monster
+            this.entities.set(monster.id, monster)
         }
         for (let player of data.players) {
-
+            this.players.set(player.id, player)
         }
     }
 
@@ -131,26 +136,55 @@ export class Game {
 
         // on("connect")
 
+        this.socket.on("chest_opened", (data: ChestOpenedData) => {
+            this.chests.delete(data.id)
+        })
+
+        this.socket.on("disappear", (data: DisappearData) => {
+            this.players.delete(data.id)
+        })
+
+        this.socket.on("drop", (data: ChestData) => {
+            this.chests.set(data.id, data)
+        })
+
         this.socket.on("entities", (data: EntitiesData) => {
             this.parseEntities(data)
         })
 
-        this.socket.on("game_error", (data) => {
-            console.log("socket: game_error!")
-            console.log(data)
+        // TODO: Figure out type. I think it's just a string?
+        this.socket.on("game_error", (data: any) => {
+            console.error(`Game Error: ${data}`)
         })
 
         this.socket.on("game_response", (data: GameResponseData) => {
-            console.log("socket: game_response!")
-            console.log(data)
-            if (data.response == "gold_received") {
+            if (typeof data == "string") {
+                console.info(`Game Response: ${data}`)
+            } else if (data.response == "gold_received") {
                 this.character.gold += data.gold
             }
         })
 
-        this.socket.on("hit", (data) => {
+        this.socket.on("hit", (data: HitData) => {
             // console.log("socket: hit!")
             // console.log(data)
+            if (data.anim == "miss") return
+            
+            if (data.kill == true) {
+                this.entities.delete(data.id)
+            }
+        })
+
+        this.socket.on("party_update", (data: PartyData) => {
+            this.party = data
+        })
+
+        this.socket.on("player", (data: CharacterData) => {
+            this.parseCharacter(data)
+        })
+
+        this.socket.on("q_data", (data: QData) => {
+
         })
 
         this.socket.on("start", (data: StartData) => {

@@ -279,7 +279,7 @@ declare global {
   function upgrade(itemInventoryPosition: number, scrollInventoryPosition: number, offeringInventoryPosition?: number): Promise<any>
   function use_skill(name: "3shot" | "5shot", targets: Entity[]): Promise<any>[]
   /** For destination, it's an array of [x, y] */
-  function use_skill(name: "blink", destination: number[])
+  function use_skill(name: "blink", destination: [number, number])
   /** The string is the ID of the target, the number is how much mana to spend on the attack */
   function use_skill(name: "cburst", targets: [string, number][]): Promise<any>
   function use_skill(name: "energize", target: Entity, mp: number): Promise<any>

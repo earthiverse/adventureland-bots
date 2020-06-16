@@ -1,25 +1,4 @@
-import { NPCType, CharacterType, StatusInfo, SlotInfo, ItemInfo } from "./adventureland"
-
-export type WelcomeData = {
-    region: ServerRegion
-    map: MapName
-    // TODO: Find out what this is
-    info: any
-    name: ServerIdentifier
-    pvp: boolean
-    x: number
-    y: number
-}
-
-export type LoadedData = {
-    /** The height of the monitor's resolution */
-    height: number
-    /** The width of the monitor's resolution */
-    width: number
-    // TODO: Find out what this is
-    scale: number
-    success: 1 | number
-}
+import { NPCType, CharacterType, StatusInfo, SlotInfo, ItemInfo, MapName, MonsterName, ItemName, ServerRegion, ServerIdentifier } from "./adventureland"
 
 export type AuthData = {
     // TODO: Find out where to get this auth string
@@ -38,109 +17,6 @@ export type AuthData = {
     no_graphics: "True" | ""
 
     code_slot?: number
-}
-
-export type EntitiesData = {
-    type: "all" | "xy"
-    in: MapName
-    map: MapName
-
-    monsters: EntityData[]
-    players: PlayerData[]
-}
-
-export type EntityData = {
-    id: string
-    type: MonsterType
-
-    abs: boolean
-    angle: number
-    armor: number
-    attack: number
-    cid: number
-    frequency: number
-    going_x: number
-    going_y: number
-    hp: number
-    level: number
-    max_hp: number
-    move_num: number
-    moving: boolean
-    resistance: number
-    // TODO: Figure out what this is
-    s: any
-    speed: number
-    /** The ID of the target */
-    target?: string
-    xp: number
-
-    x: number
-    y: number
-}
-
-export type PlayerData = {
-    id: string
-    ctype: CharacterType | NPCType
-
-    abs: boolean
-    angle: number
-    armor: number
-    // TODO: Figure out what this is
-    c: any
-    cid: number
-    // TODO: Figure out what this is
-    cx: any
-    focus?: string
-    frequency: number
-    going_x: number
-    going_y: number
-    hp: number
-    level: number
-    max_hp: number
-    max_mp: number
-    move_num: number
-    moving: boolean
-    mp: number
-    owner: string
-    // TODO: Figure out what this is
-    pdps: number
-    // TODO: Figure out what this is
-    q: any
-    range: number
-    resistance: number
-    rip: boolean
-    s: StatusInfo
-    skin: string
-    slots: SlotInfo
-}
-
-export type ServerData = {
-    addr: string
-    port: number
-    region: ServerRegion
-    name: ServerIdentifier
-    players: number
-    key: string
-}
-
-export type GameResponseData = {
-    response: "gold_received" | string
-    gold: number
-    name: string
-}
-
-export type HitData = {
-    anim: Exclude<string, "miss">
-    damage: number
-    hid: string
-    id: string
-    pid: string
-    projectile: string
-    source: "attack" | "heal" | string
-} | {
-    anim: "miss"
-    damage: 0
-    miss: true
 }
 
 export type CharacterData = {
@@ -215,18 +91,218 @@ export type CharacterData = {
     xcx: string[]
 }
 
+export type ChestData = {
+    chest: "chest3" | "chest4" | "chest6" | string
+    id: string
+    items: number
+    map: MapName
+    party: string
+    x: number
+    y: number
+}
+
+export type ChestOpenedData = {
+    id: string
+    gold: number
+    goldm: number
+    items: {
+        name: string
+        q?: number
+        level?: number
+        looter: string
+    }[]
+    opener: string
+    party: boolean
+} | {
+    id: string
+    gone: true
+}
+
+export type DisappearData = {
+    id: string
+    reason: "transport" | string
+    s: number
+    to: MapName
+}
+
+export type EntitiesData = {
+    type: "all" | "xy"
+    in: MapName
+    map: MapName
+
+    monsters: EntityData[]
+    players: PlayerData[]
+}
+
+export type EntityData = {
+    id: string
+    type: MonsterName
+
+    abs: boolean
+    angle: number
+    armor: number
+    attack: number
+    cid: number
+    frequency: number
+    going_x: number
+    going_y: number
+    hp: number
+    level: number
+    max_hp: number
+    move_num: number
+    moving: boolean
+    resistance: number
+    // TODO: Figure out what this is
+    s: any
+    speed: number
+    /** The ID of the target */
+    target?: string
+    xp: number
+
+    x: number
+    y: number
+}
+
+export type GameResponseData = {
+    response: "bank_restrictions" | "gold_received" | "item_placeholder" | "item_received" | string
+    gold: number
+    name: string
+} | "skill_too_far" | "upgrade_in_progress"
+
+export type HitData = {
+    anim: "arrow_hit" | "slash1" | "miss" | string
+    damage: number
+    lifesteal?: number
+    hid?: string
+    id?: string
+    pid?: string
+    projectile?: string
+    source?: "attack" | "heal" | string
+    miss?: boolean
+    kill?: boolean
+}
+
+export type LoadedData = {
+    /** The height of the monitor's resolution */
+    height: number
+    /** The width of the monitor's resolution */
+    width: number
+    // TODO: Find out what this is
+    scale: number
+    success: 1 | number
+}
+
+export type PartyData = {
+    list: string[]
+    message?: string
+    party: {
+        [T in string]: {
+            gold: number
+            in: MapName
+            // TODO: What is this?
+            l: number
+            level: number
+            luck: number
+            map: MapName
+            share: number
+            skin: string
+            type: string
+            x: number
+            xp: number
+            y: number
+        }
+    }
+}
+
+export type PlayerData = {
+    id: string
+    ctype: CharacterType | NPCType
+
+    abs: boolean
+    angle: number
+    armor: number
+    // TODO: Figure out what this is
+    c: any
+    cid: number
+    // TODO: Figure out what this is
+    cx: any
+    focus?: string
+    frequency: number
+    going_x: number
+    going_y: number
+    hp: number
+    level: number
+    max_hp: number
+    max_mp: number
+    move_num: number
+    moving: boolean
+    mp: number
+    owner: string
+    // TODO: Figure out what this is
+    pdps: number
+    // TODO: Figure out what this is
+    q: any
+    range: number
+    resistance: number
+    rip: boolean
+    s: StatusInfo
+    skin: string
+    slots: SlotInfo
+}
+
+export type QData = {
+    num: number
+    p: {
+        chance: number
+        level: number
+        name: ItemName
+        nums: number[]
+        scroll: ItemName
+        success?: boolean
+    }
+    q: {
+        compound?: {
+            len: number
+            ms: number
+            num: number
+            // NOTE: I don't think this value is used?
+            nums: number[]
+        }
+        upgrade?: {
+            len: number
+            ms: number
+            num: number
+        }
+    }
+}
+
+export type ServerData = {
+    addr: string
+    port: number
+    region: ServerRegion
+    name: ServerIdentifier
+    players: number
+    key: string
+}
+
 export type StartData = CharacterData & {
     // TODO: Figure this out
     info: any
     base_gold: {
-        [T in MonsterType]?: { [T in string]?: number }
+        [T in MonsterName]?: { [T in string]?: number }
     }
     // TODO: Figure this type out
     s_info: any
     entities: EntitiesData
 }
 
-export type MapName = string
-export type MonsterType = string
-export type ServerIdentifier = string
-export type ServerRegion = string
+export type WelcomeData = {
+    region: ServerRegion
+    map: MapName
+    // TODO: Find out what this is
+    info: any
+    name: ServerIdentifier
+    pvp: boolean
+    x: number
+    y: number
+}
