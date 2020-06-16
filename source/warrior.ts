@@ -271,7 +271,7 @@ class Warrior extends Character {
         super()
         this.itemsToKeep.push(
             // Weapons
-            "basher", "bataxe", "candycanesword", "carrotsword", "fireblade", "fsword", "swordofthedead", "wblade", "woodensword",
+            "basher", "bataxe", "candycanesword", "carrotsword", "fireblade", "fsword", "sword", "swordofthedead", "wblade", "woodensword",
 
             // Shields
             "mshield", "shield", "sshield", "xshield"

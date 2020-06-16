@@ -1665,6 +1665,7 @@ export type NPCType =
 export type ServerIdentifier =
   | "I"
   | "II"
+  | "III"
   | "PVP"
 
 export type ServerRegion =

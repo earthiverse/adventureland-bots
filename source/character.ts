@@ -481,11 +481,8 @@ export abstract class Character {
             const coop = this.targetPriority[mtype as MonsterName].coop
             if (coop) {
                 // Check if other members are available to fight it
-                const readyMembers = new Set<CharacterType>()
-                for (const memberName of parent.party_list) {
-                    readyMembers.add(parent.party[memberName].type)
-                }
-                const notReady = coop.filter(x => !readyMembers.has(x))
+                const memberTypes = getPartyMemberTypes()
+                const notReady = coop.filter(x => !memberTypes.has(x))
                 if (notReady.length > 0) {
                     continue // We don't have everyone we need to fight, so we're not going to fight it.
                 }
@@ -532,9 +529,7 @@ export abstract class Character {
 
         // Monster Hunts -- Move to monster
         const monsterHuntTargets: MonsterName[] = this.getMonsterHuntTargets()
-        if (monsterHuntTargets.length) {
-            const potentialTarget = monsterHuntTargets[0]
-
+        for (const potentialTarget of monsterHuntTargets) {
             const coop = this.targetPriority[potentialTarget].coop
             if (coop) {
                 // Check if other members are fighting it, too
