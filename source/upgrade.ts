@@ -44,7 +44,7 @@ export function compoundItem(itemname: ItemName, targetLevel: number): void {
     compound(items[0].index, items[1].index, items[2].index, scroll.index)
 }
 
-export function upgradeItem(itemname: ItemName, targetLevel: number): void {
+export async function upgradeItem(itemname: ItemName, targetLevel: number): Promise<void> {
     if (parent.character.map == "bank") return // We can't do things in the bank
     if (parent.character.q.upgrade) return // Already upgrading
     if (!findItems("computer").length) {
@@ -73,8 +73,7 @@ export function upgradeItem(itemname: ItemName, targetLevel: number): void {
         } else if (grade == 2) {
             scroll = findItem("scroll2")
         }
-        if (scroll) upgrade(item.index, scroll.index)
-        return
+        if (scroll) return upgrade(item.index, scroll.index)
     }
 }
 

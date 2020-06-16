@@ -238,7 +238,7 @@ class Merchant extends Character {
 
             // I want a +10 bow eventually
             await buyIfNone("bow", 9, 4)
-            upgradeItem("bow", 9)
+            await upgradeItem("bow", 9)
 
             await buyScrolls()
 

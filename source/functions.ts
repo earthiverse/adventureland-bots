@@ -61,6 +61,27 @@ export function findItem(name: ItemName): InventoryItemInfo {
     }
 }
 
+// export function calculateValue(name: ItemName): number {
+//     // From Archalias on 2020-05-30 in general on Discord
+//     // https://discordapp.com/channels/238332476743745536/238332476743745536/716049637579948124
+//     const baseChance = [
+//         99.99,
+//         98.19,
+//         95.66,
+//         70.92,
+//         62.50,
+//         42.52,
+//         26.84,
+//         18.26,
+//         11.88,
+//         4.8,
+//         33.00,
+//         20.00,
+//     ]
+
+//     return -1
+// }
+
 export function findItems(name: ItemName): InventoryItemInfo[] {
     const items: InventoryItemInfo[] = []
     for (let i = 0; i < 42; i++) {
@@ -433,8 +454,9 @@ export function getNearbyMonsterSpawns(position: IPosition, radius = 1000): Mons
     return locations
 }
 
-/** Only works for items sold by the merchant */
-export async function buyIfNone(itemName: ItemName, targetLevel = 9, targetQuantity = 1): Promise<void> {
+/** Only works for items sold by NPCs */
+// TODO: Improve to find the NPC that sells the item
+export async function buyIfNone(itemName: ItemName, targetLevel = 9, targetQuantity = 2): Promise<void> {
     if (!findItem("computer")) {
         let foundNPCBuyer = false
         if (!G.maps[parent.character.map].npcs) return
@@ -455,5 +477,5 @@ export async function buyIfNone(itemName: ItemName, targetLevel = 9, targetQuant
     if (items.length >= targetQuantity) return // We have enough
 
     items = findItems(itemName)
-    if (items.length < Math.min(2, targetQuantity)) await buy_with_gold(itemName, 1) // Buy more if we don't have any to upgrade
+    if (items.length < targetQuantity) return buy_with_gold(itemName, targetQuantity - items.length) // Buy more if we don't have any to upgrade
 }
