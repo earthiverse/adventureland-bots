@@ -37,7 +37,7 @@ class Ranger extends Character {
         "bee": {
             "priority": 50,
             "holdPositionFarm": true,
-            farmingPosition: {
+            "farmingPosition": {
                 "map": "main",
                 "x": 550,
                 "y": 1100

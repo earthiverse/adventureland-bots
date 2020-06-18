@@ -504,8 +504,12 @@ export class NGraphMove {
             const to = optimizedPath[i][1]
             const link = optimizedPath[i][2]
 
-            if (link) break // We can't optimize across maps
-            if (character.map !== to.map) break
+            if (character.map !== to.map) break // We can't optimize across maps
+            if (link && link.type == "town") {
+                canMove = i
+                break
+            }
+            if (link) break
 
             if (this.canMove(character, to)) canMove = i
         }
