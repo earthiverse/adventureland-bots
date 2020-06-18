@@ -104,7 +104,13 @@ class Ranger extends Character {
             "coop": ["warrior", "priest"],
             "priority": 0,
             "holdAttackWhileMoving": true,
-            "equip": ["firebow", "t2quiver"]
+            "equip": ["firebow", "t2quiver"],
+            "holdPositionFarm": true,
+            "farmingPosition": {
+                "map": "halloween",
+                "x": -225,
+                "y": -1500
+            }
         },
         "ghost": {
             "coop": ["priest"],

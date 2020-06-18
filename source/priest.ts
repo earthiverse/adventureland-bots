@@ -110,7 +110,13 @@ class Priest extends Character {
         "fvampire": {
             "coop": ["warrior", "ranger"],
             "priority": 0,
-            "holdAttackWhileMoving": true
+            "holdAttackWhileMoving": true,
+            "holdPositionFarm": true,
+            "farmingPosition": {
+                "map": "halloween",
+                "x": -150,
+                "y": -1500
+            }
         },
         "ghost": {
             "coop": ["priest"],

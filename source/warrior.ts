@@ -86,7 +86,13 @@ class Warrior extends Character {
             "coop": ["priest", "ranger"],
             "priority": 0,
             "holdAttackWhileMoving": true,
-            "equip": ["basher"]
+            "equip": ["basher"],
+            "holdPositionFarm": true,
+            "farmingPosition": {
+                "map": "halloween",
+                "x": -150,
+                "y": -1575
+            }
         },
         "ghost": {
             "coop": ["priest"],
