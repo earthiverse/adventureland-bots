@@ -18,6 +18,7 @@ const TOWN_TIME = 3000
 const TRANSPORT_TIME = 1000
 const BLINK_TIME = 1000
 const WALK_TIMEOUT = 10000
+const USE_CACHE = true
 
 // Cost variables
 const TRANSPORT_COST = parent.character.speed * TRANSPORT_TIME / 1000
@@ -207,205 +208,196 @@ export class NGraphMove {
         // Add the grid
         this.grids[map] = grid
 
-        // Use the cache to speed things up
-        // Create nodes & links
-        for (const node of CachedNodes as [NodeId, NodeData][]) {
-            this.graph.addNode(node[0], node[1])
+        // Some useful functions for later
+        function createNodeId(map: MapName, x: number, y: number): NodeId {
+            return `${map}:${Math.trunc(x)},${Math.trunc(y)}`
+        }
+        function createNodeData(map: MapName, x: number, y: number): NodeData {
+            return {
+                map: map,
+                x: Math.trunc(x),
+                y: Math.trunc(y)
+            }
+        }
+        function findClosestSpawn(x: number, y: number): { x: number, y: number, distance: number } {
+            let closest = {
+                x: -99999,
+                y: -99999,
+                distance: 99999
+            }
+            for (const spawn of G.maps[map].spawns) {
+                const distance = Math.sqrt((spawn[0] - x) ** 2 + (spawn[1] - y) ** 2)
+                if (distance < closest.distance) {
+                    closest = {
+                        x: spawn[0],
+                        y: spawn[1],
+                        distance: distance
+                    }
+                }
+            }
+            return closest
         }
 
-        // Create links
-        for (const link of CachedLinks as [NodeId, NodeId, LinkData?][]) {
-            this.graph.addLink(link[0], link[1], link[2])
+        if (!USE_CACHE) {
+            // 3: Create nodes
+
+            // 3A: Create nodes based on corners
+            const newNodes: Node<NodeData>[] = []
+            for (let y = 1; y < mapHeight - 1; y++) {
+                for (let x = 1; x < mapWidth - 1; x++) {
+                    if (grid[y][x] != WALKABLE) continue
+
+                    const nodeID = createNodeId(map, x + G.geometry[map].min_x, y + G.geometry[map].min_y)
+                    if (this.graph.hasNode(nodeID)) {
+                        newNodes.push(this.graph.getNode(nodeID))
+                        continue
+                    }
+                    const nodeData = createNodeData(map, x + G.geometry[map].min_x, y + G.geometry[map].min_y)
+
+                    if (grid[y - 1][x - 1] == UNWALKABLE
+                        && grid[y - 1][x] == UNWALKABLE
+                        && grid[y - 1][x + 1] == UNWALKABLE
+                        && grid[y][x - 1] == UNWALKABLE
+                        && grid[y + 1][x - 1] == UNWALKABLE) {
+                        // Inside-1
+                        newNodes.push(this.graph.addNode(nodeID, nodeData))
+                    } else if (grid[y - 1][x - 1] == UNWALKABLE
+                        && grid[y - 1][x] == UNWALKABLE
+                        && grid[y - 1][x + 1] == UNWALKABLE
+                        && grid[y][x + 1] == UNWALKABLE
+                        && grid[y + 1][x + 1] == UNWALKABLE) {
+                        // Inside-2
+                        newNodes.push(this.graph.addNode(nodeID, nodeData))
+                    } else if (grid[y - 1][x + 1] == UNWALKABLE
+                        && grid[y][x + 1] == UNWALKABLE
+                        && grid[y + 1][x - 1] == UNWALKABLE
+                        && grid[y + 1][x] == UNWALKABLE
+                        && grid[y + 1][x + 1] == UNWALKABLE) {
+                        // Inside-3
+                        newNodes.push(this.graph.addNode(nodeID, nodeData))
+                    } else if (grid[y - 1][x - 1] == UNWALKABLE
+                        && grid[y][x - 1] == UNWALKABLE
+                        && grid[y + 1][x - 1] == UNWALKABLE
+                        && grid[y + 1][x] == UNWALKABLE
+                        && grid[y + 1][x + 1] == UNWALKABLE) {
+                        // Inside-4
+                        newNodes.push(this.graph.addNode(nodeID, nodeData))
+                    } else if (grid[y - 1][x - 1] == UNWALKABLE
+                        && grid[y - 1][x] == WALKABLE
+                        && grid[y][x - 1] == WALKABLE) {
+                        // Outside-1
+                        newNodes.push(this.graph.addNode(nodeID, nodeData))
+                    } else if (grid[y - 1][x] == WALKABLE
+                        && grid[y - 1][x + 1] == UNWALKABLE
+                        && grid[y][x + 1] == WALKABLE) {
+                        // Outside-2
+                        newNodes.push(this.graph.addNode(nodeID, nodeData))
+                    } else if (grid[y][x + 1] == WALKABLE
+                        && grid[y + 1][x] == WALKABLE
+                        && grid[y + 1][x + 1] == UNWALKABLE) {
+                        // Outside-3
+                        newNodes.push(this.graph.addNode(nodeID, nodeData))
+                    } else if (grid[y][x - 1] == WALKABLE
+                        && grid[y + 1][x - 1] == UNWALKABLE
+                        && grid[y + 1][x] == WALKABLE) {
+                        // Outside-4
+                        newNodes.push(this.graph.addNode(nodeID, nodeData))
+                    }
+                }
+            }
+            // 3B: Create nodes and links for transporters
+            for (const npc of G.maps[map].npcs) {
+                if (npc.id != "transporter") continue
+                const closest = findClosestSpawn(npc.position[0], npc.position[1])
+
+                const nodeID = createNodeId(map, closest.x, closest.y)
+                if (!this.graph.hasNode(nodeID)) {
+                    const nodeData = createNodeData(map, closest.x, closest.y)
+                    newNodes.push(this.graph.addNode(nodeID, nodeData))
+                } else {
+                    newNodes.push(this.graph.getNode(nodeID))
+                }
+
+                // Create links to destinations
+                for (const map in G.npcs.transporter.places) {
+                    const spawnID = G.npcs.transporter.places[map as MapName]
+                    const spawn = G.maps[map as MapName].spawns[spawnID]
+
+                    const nodeID2 = createNodeId(map as MapName, spawn[0], spawn[1])
+                    if (!this.graph.hasNode(nodeID2)) {
+                        const nodeData2 = createNodeData(map as MapName, spawn[0], spawn[1])
+                        this.graph.addNode(nodeID2, nodeData2)
+                    }
+
+                    if (!this.graph.hasLink(nodeID, nodeID2)) {
+                        const linkData: LinkData = {
+                            type: "transport",
+                            spawn: spawnID
+                        }
+                        this.graph.addLink(nodeID, nodeID2, linkData)
+                    }
+                }
+            }
+            // 3C: Create nodes and links for doors
+            for (const door of G.maps[map].doors) {
+                // TODO: Figure out how to know if we have access to a locked door
+                if (door[7] || door[8]) continue
+
+                const spawn = G.maps[map].spawns[door[6]]
+                const nodeID = createNodeId(map, spawn[0], spawn[1])
+                if (!this.graph.hasNode(nodeID)) {
+                    const nodeData = createNodeData(map, spawn[0], spawn[1])
+                    newNodes.push(this.graph.addNode(nodeID, nodeData))
+                } else {
+                    newNodes.push(this.graph.getNode(nodeID))
+                }
+
+                // Create link to destination
+                const spawn2 = G.maps[door[4]].spawns[door[5]]
+                const nodeID2 = createNodeId(door[4], spawn2[0], spawn2[1])
+                if (!this.graph.hasNode(nodeID2)) {
+                    const nodeData2 = createNodeData(door[4], spawn2[0], spawn2[1])
+                    this.graph.addNode(nodeID2, nodeData2)
+                }
+                if (!this.graph.hasLink(nodeID, nodeID2)) {
+                    const linkData: LinkData = {
+                        type: "transport",
+                        spawn: door[5]
+                    }
+                    this.graph.addLink(nodeID, nodeID2, linkData)
+                }
+            }
+            // 3D: Create nodes for spawns
+            for (const spawn of G.maps[map].spawns) {
+                const spawnNodeId = createNodeId(map, spawn[0], spawn[1])
+                if (!this.graph.hasNode(spawnNodeId)) {
+                    const spawnData = createNodeData(map, spawn[0], spawn[1])
+                    newNodes.push(this.graph.addNode(spawnNodeId, spawnData))
+                }
+            }
+
+            // 3E: Create links between nodes which are walkable
+            for (let i = 0; i < newNodes.length; i++) {
+                for (let j = i + 1; j < newNodes.length; j++) {
+                    const nodeI = newNodes[i]
+                    const nodeJ = newNodes[j]
+                    // if (can_move({ map: nodeI.data.map, x: nodeI.data.x, y: nodeI.data.y, going_x: nodeJ.data.x, going_y: nodeJ.data.y, base: parent.character.base })) {
+                    if (this.canMove(nodeI.data, nodeJ.data)) {
+                        this.graph.addLink(nodeI.id, nodeJ.id)
+                        this.graph.addLink(nodeJ.id, nodeI.id)
+                    }
+                }
+            }
+
+            // 3F: Create "town" links
+            const townNodeID = createNodeId(map, G.maps[map].spawns[0][0], G.maps[map].spawns[0][1])
+            const townNodeLinkData: LinkData = {
+                type: "town"
+            }
+            for (const node of newNodes) {
+                this.graph.addLink(node.id, townNodeID, townNodeLinkData)
+            }
         }
-        return
-
-        // // 3: Create nodes
-        // // Some useful functions for later
-        // function createNodeId(map: MapName, x: number, y: number): NodeId {
-        //     return `${map}:${Math.trunc(x)},${Math.trunc(y)}`
-        // }
-        // function createNodeData(map: MapName, x: number, y: number): NodeData {
-        //     return {
-        //         map: map,
-        //         x: Math.trunc(x),
-        //         y: Math.trunc(y)
-        //     }
-        // }
-        // function findClosestSpawn(x: number, y: number): { x: number, y: number, distance: number } {
-        //     let closest = {
-        //         x: -99999,
-        //         y: -99999,
-        //         distance: 99999
-        //     }
-        //     for (const spawn of G.maps[map].spawns) {
-        //         const distance = Math.sqrt((spawn[0] - x) ** 2 + (spawn[1] - y) ** 2)
-        //         if (distance < closest.distance) {
-        //             closest = {
-        //                 x: spawn[0],
-        //                 y: spawn[1],
-        //                 distance: distance
-        //             }
-        //         }
-        //     }
-        //     return closest
-        // }
-
-        // // 3A: Create nodes based on corners
-        // const newNodes: Node<NodeData>[] = []
-        // for (let y = 1; y < mapHeight - 1; y++) {
-        //     for (let x = 1; x < mapWidth - 1; x++) {
-        //         if (grid[y][x] != WALKABLE) continue
-
-        //         const nodeID = createNodeId(map, x + G.geometry[map].min_x, y + G.geometry[map].min_y)
-        //         if (this.graph.hasNode(nodeID)) {
-        //             newNodes.push(this.graph.getNode(nodeID))
-        //             continue
-        //         }
-        //         const nodeData = createNodeData(map, x + G.geometry[map].min_x, y + G.geometry[map].min_y)
-
-        //         if (grid[y - 1][x - 1] == UNWALKABLE
-        //             && grid[y - 1][x] == UNWALKABLE
-        //             && grid[y - 1][x + 1] == UNWALKABLE
-        //             && grid[y][x - 1] == UNWALKABLE
-        //             && grid[y + 1][x - 1] == UNWALKABLE) {
-        //             // Inside-1
-        //             newNodes.push(this.graph.addNode(nodeID, nodeData))
-        //         } else if (grid[y - 1][x - 1] == UNWALKABLE
-        //             && grid[y - 1][x] == UNWALKABLE
-        //             && grid[y - 1][x + 1] == UNWALKABLE
-        //             && grid[y][x + 1] == UNWALKABLE
-        //             && grid[y + 1][x + 1] == UNWALKABLE) {
-        //             // Inside-2
-        //             newNodes.push(this.graph.addNode(nodeID, nodeData))
-        //         } else if (grid[y - 1][x + 1] == UNWALKABLE
-        //             && grid[y][x + 1] == UNWALKABLE
-        //             && grid[y + 1][x - 1] == UNWALKABLE
-        //             && grid[y + 1][x] == UNWALKABLE
-        //             && grid[y + 1][x + 1] == UNWALKABLE) {
-        //             // Inside-3
-        //             newNodes.push(this.graph.addNode(nodeID, nodeData))
-        //         } else if (grid[y - 1][x - 1] == UNWALKABLE
-        //             && grid[y][x - 1] == UNWALKABLE
-        //             && grid[y + 1][x - 1] == UNWALKABLE
-        //             && grid[y + 1][x] == UNWALKABLE
-        //             && grid[y + 1][x + 1] == UNWALKABLE) {
-        //             // Inside-4
-        //             newNodes.push(this.graph.addNode(nodeID, nodeData))
-        //         } else if (grid[y - 1][x - 1] == UNWALKABLE
-        //             && grid[y - 1][x] == WALKABLE
-        //             && grid[y][x - 1] == WALKABLE) {
-        //             // Outside-1
-        //             newNodes.push(this.graph.addNode(nodeID, nodeData))
-        //         } else if (grid[y - 1][x] == WALKABLE
-        //             && grid[y - 1][x + 1] == UNWALKABLE
-        //             && grid[y][x + 1] == WALKABLE) {
-        //             // Outside-2
-        //             newNodes.push(this.graph.addNode(nodeID, nodeData))
-        //         } else if (grid[y][x + 1] == WALKABLE
-        //             && grid[y + 1][x] == WALKABLE
-        //             && grid[y + 1][x + 1] == UNWALKABLE) {
-        //             // Outside-3
-        //             newNodes.push(this.graph.addNode(nodeID, nodeData))
-        //         } else if (grid[y][x - 1] == WALKABLE
-        //             && grid[y + 1][x - 1] == UNWALKABLE
-        //             && grid[y + 1][x] == WALKABLE) {
-        //             // Outside-4
-        //             newNodes.push(this.graph.addNode(nodeID, nodeData))
-        //         }
-        //     }
-        // }
-        // // 3B: Create nodes and links for transporters
-        // for (const npc of G.maps[map].npcs) {
-        //     if (npc.id != "transporter") continue
-        //     const closest = findClosestSpawn(npc.position[0], npc.position[1])
-
-        //     const nodeID = createNodeId(map, closest.x, closest.y)
-        //     if (!this.graph.hasNode(nodeID)) {
-        //         const nodeData = createNodeData(map, closest.x, closest.y)
-        //         newNodes.push(this.graph.addNode(nodeID, nodeData))
-        //     } else {
-        //         newNodes.push(this.graph.getNode(nodeID))
-        //     }
-
-        //     // Create links to destinations
-        //     for (const map in G.npcs.transporter.places) {
-        //         const spawnID = G.npcs.transporter.places[map as MapName]
-        //         const spawn = G.maps[map as MapName].spawns[spawnID]
-
-        //         const nodeID2 = createNodeId(map as MapName, spawn[0], spawn[1])
-        //         if (!this.graph.hasNode(nodeID2)) {
-        //             const nodeData2 = createNodeData(map as MapName, spawn[0], spawn[1])
-        //             this.graph.addNode(nodeID2, nodeData2)
-        //         }
-
-        //         if (!this.graph.hasLink(nodeID, nodeID2)) {
-        //             const linkData: LinkData = {
-        //                 type: "transport",
-        //                 spawn: spawnID
-        //             }
-        //             this.graph.addLink(nodeID, nodeID2, linkData)
-        //         }
-        //     }
-        // }
-        // // 3C: Create nodes and links for doors
-        // for (const door of G.maps[map].doors) {
-        //     // TODO: Figure out how to know if we have access to a locked door
-        //     if (door[7] || door[8]) continue
-
-        //     const spawn = G.maps[map].spawns[door[6]]
-        //     const nodeID = createNodeId(map, spawn[0], spawn[1])
-        //     if (!this.graph.hasNode(nodeID)) {
-        //         const nodeData = createNodeData(map, spawn[0], spawn[1])
-        //         newNodes.push(this.graph.addNode(nodeID, nodeData))
-        //     } else {
-        //         newNodes.push(this.graph.getNode(nodeID))
-        //     }
-
-        //     // Create link to destination
-        //     const spawn2 = G.maps[door[4]].spawns[door[5]]
-        //     const nodeID2 = createNodeId(door[4], spawn2[0], spawn2[1])
-        //     if (!this.graph.hasNode(nodeID2)) {
-        //         const nodeData2 = createNodeData(door[4], spawn2[0], spawn2[1])
-        //         this.graph.addNode(nodeID2, nodeData2)
-        //     }
-        //     if (!this.graph.hasLink(nodeID, nodeID2)) {
-        //         const linkData: LinkData = {
-        //             type: "transport",
-        //             spawn: door[5]
-        //         }
-        //         this.graph.addLink(nodeID, nodeID2, linkData)
-        //     }
-        // }
-        // // 3D: Create nodes for spawns
-        // for (const spawn of G.maps[map].spawns) {
-        //     const spawnNodeId = createNodeId(map, spawn[0], spawn[1])
-        //     if (!this.graph.hasNode(spawnNodeId)) {
-        //         const spawnData = createNodeData(map, spawn[0], spawn[1])
-        //         newNodes.push(this.graph.addNode(spawnNodeId, spawnData))
-        //     }
-        // }
-
-        // // 3E: Create links between nodes which are walkable
-        // for (let i = 0; i < newNodes.length; i++) {
-        //     for (let j = i + 1; j < newNodes.length; j++) {
-        //         const nodeI = newNodes[i]
-        //         const nodeJ = newNodes[j]
-        //         // if (can_move({ map: nodeI.data.map, x: nodeI.data.x, y: nodeI.data.y, going_x: nodeJ.data.x, going_y: nodeJ.data.y, base: parent.character.base })) {
-        //         if (this.canMove(nodeI.data, nodeJ.data)) {
-        //             this.graph.addLink(nodeI.id, nodeJ.id)
-        //             this.graph.addLink(nodeJ.id, nodeI.id)
-        //         }
-        //     }
-        // }
-
-        // // 3F: Create "town" links
-        // const townNodeID = createNodeId(map, G.maps[map].spawns[0][0], G.maps[map].spawns[0][1])
-        // const townNodeLinkData: LinkData = {
-        //     type: "town"
-        // }
-        // for (const node of newNodes) {
-        //     this.graph.addLink(node.id, townNodeID, townNodeLinkData)
-        // }
     }
 
     public async prepare(start: MapName = FIRST_MAP): Promise<void> {
@@ -423,6 +415,18 @@ export class NGraphMove {
         for (const destination in G.npcs.transporter.places) {
             const map = destination as MapName
             if (!maps.includes(map)) maps.push(map)
+        }
+
+        if (USE_CACHE) {
+            // Create nodes & links
+            for (const node of CachedNodes as [NodeId, NodeData][]) {
+                this.graph.addNode(node[0], node[1])
+            }
+
+            // Create links
+            for (const link of CachedLinks as [NodeId, NodeId, LinkData?][]) {
+                this.graph.addLink(link[0], link[1], link[2])
+            }
         }
 
         // Prepare all of the maps
