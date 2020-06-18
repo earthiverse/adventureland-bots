@@ -551,6 +551,11 @@ export abstract class Character {
             }
         }
 
+        const nodes = []
+        this.nGraphMove.graph.forEachNode((node) => {
+            nodes.push(node.id, node.data)
+        })
+
         // Monster Hunts -- New monster hunt
         if (!parent.character.s.monsterhunt) {
             set_message("New MH")
