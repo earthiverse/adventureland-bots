@@ -18,7 +18,7 @@ const TOWN_TIME = 2000
 const TRANSPORT_TIME = 750
 const BLINK_TIME = 750
 const WALK_TIMEOUT = 10000
-const USE_CACHE = true
+const USE_CACHE = false
 
 // Cost variables
 const TRANSPORT_COST = parent.character.speed * TRANSPORT_TIME / 1000
