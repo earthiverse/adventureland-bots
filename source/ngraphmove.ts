@@ -14,9 +14,9 @@ const EXTRA_PADDING = 1
 const FIRST_MAP: MapName = "main"
 const SLEEP_FOR_MS = 50
 const ENABLE_BLINK = true
-const TOWN_TIME = 3000
-const TRANSPORT_TIME = 1000
-const BLINK_TIME = 1000
+const TOWN_TIME = 2000
+const TRANSPORT_TIME = 750
+const BLINK_TIME = 750
 const WALK_TIMEOUT = 10000
 const USE_CACHE = true
 
@@ -500,15 +500,11 @@ export class NGraphMove {
         // Optimize starting position
         const character = NGraphMove.cleanPosition(parent.character)
         let canMove = 0
-        for (let i = 0; i < optimizedPath.length; i++) {
+        for (let i = 1; i < optimizedPath.length; i++) {
             const to = optimizedPath[i][1]
             const link = optimizedPath[i][2]
 
             if (character.map !== to.map) break // We can't optimize across maps
-            if (link && link.type == "town") {
-                canMove = i
-                break
-            }
             if (link) break
 
             if (this.canMove(character, to)) canMove = i
@@ -519,19 +515,19 @@ export class NGraphMove {
         }
 
         // Optimize finish position
-        canMove = optimizedPath.length - 2
-        for (let i = optimizedPath.length - 3; i > 0; i--) {
+        canMove = optimizedPath.length - 1
+        for (let i = optimizedPath.length - 2; i > 0; i--) {
             const from = optimizedPath[i][0]
             const to = optimizedPath[i][1]
             const link = optimizedPath[i][2]
 
             if (link) break // We shouldn't optimize over special movements
-            if (goal.map !== to.map) break
+            if (to.map != goal.map) break
 
             if (this.canMove(from, goal)) canMove = i
         }
-        if (canMove < optimizedPath.length - 2) {
-            optimizedPath.splice(canMove + 1, optimizedPath.length - (canMove + 2))
+        if (canMove < optimizedPath.length - 1) {
+            optimizedPath.splice(canMove + 1)
             optimizedPath[optimizedPath.length - 1][1] = goal
         }
 
@@ -589,26 +585,26 @@ export class NGraphMove {
         console.log(`We found a path from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] in ${this.searchFinishTime - this.searchStartTime}ms`)
         console.log(path)
 
-        async function performNextMovement(a: NodeData, b: NodeData, c: LinkData) {
-            if (c) {
-                if (c.type == "town") {
+        async function performNextMovement(to: NodeData, link: LinkData) {
+            if (link) {
+                if (link.type == "town") {
                     // Use "town" to get to the next node
                     use_skill("town")
                     await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + TOWN_TIME))
                     return
-                } else if (c.type == "transport") {
+                } else if (link.type == "transport") {
                     // Transport to the next node
-                    transport(b.map, c.spawn)
+                    transport(to.map, link.spawn)
                     await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + TRANSPORT_TIME))
                     return
-                } else if (c.type == "blink") {
-                    use_skill("blink", [b.x, b.y])
+                } else if (link.type == "blink") {
+                    use_skill("blink", [to.x, to.y])
                     await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + BLINK_TIME))
                     return
                 }
             } else {
                 // Walk to the next node (timeout after 5 seconds)
-                await Promise.race([move(b.x, b.y), new Promise(resolve => setTimeout(resolve, WALK_TIMEOUT))])
+                await Promise.race([move(to.x, to.y), new Promise(resolve => setTimeout(resolve, WALK_TIMEOUT))])
                 return
             }
         }
@@ -671,7 +667,7 @@ export class NGraphMove {
             }
 
             // Perform movement
-            await performNextMovement(fromData, toData, linkData)
+            await performNextMovement(toData, linkData)
         }
         this.moveFinishTime = Date.now()
 

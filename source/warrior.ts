@@ -471,19 +471,25 @@ class Warrior extends Character {
 
     async tauntLoop(): Promise<void> {
         try {
-            let incomingDamage = 0
+            let dps = 0
+            let dpsLimit = 500
+            const priests = getEntities({ isCtype: "priest", isPartyMember: true })
+            for (const priest of priests) {
+                if (distance(parent.character, priest) > priest.range) continue // Priest is out of range
+                dpsLimit += (priest.attack * 0.9 * priest.frequency) / 2
+            }
             const attackingUs = getEntities({ isAttackingUs: true, isRIP: false, isMonster: true })
             for (const e of attackingUs) {
                 // Entity is attacking us directly
-                incomingDamage += calculateDamageRange(e, parent.character)[1]
+                dps += calculateDamageRange(e, parent.character)[1] * e.frequency
             }
-            if (incomingDamage < 1000 && attackingUs.length < 3) {
+            if (dps < dpsLimit && attackingUs.length < 3) {
                 const attackingParty = getEntities({ isAttackingParty: true, isAttackingUs: false, isMonster: true, isRIP: false, isWithinDistance: G.skills.taunt.range })
                 for (const e of attackingParty) {
                     // Entity is attacking a party member
                     if (!this.wantToAttack(e, "taunt")) continue
-                    const damage = calculateDamageRange(e, parent.character)[1]
-                    if (incomingDamage + damage > 1000) continue
+                    const damage = calculateDamageRange(e, parent.character)[1] * e.frequency
+                    if (dps + damage > dpsLimit) continue
 
                     await use_skill("taunt", e)
                     reduce_cooldown("taunt", Math.min(...parent.pings))
@@ -495,8 +501,8 @@ class Warrior extends Character {
                 for (const e of notAttacking) {
                     // Entity isn't attacking anyone in our party
                     if (!this.wantToAttack(e, "taunt")) continue
-                    const damage = calculateDamageRange(e, parent.character)[1]
-                    if (incomingDamage + damage > 1000) continue
+                    const damage = calculateDamageRange(e, parent.character)[1] * e.frequency
+                    if (dps + damage > dpsLimit) continue
 
                     const d = distance(parent.character, e)
                     if (d > parent.character.range && e.range > parent.character.range * 4) continue // Monsters won't come close enough to let us attack them
