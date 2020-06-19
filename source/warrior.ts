@@ -125,10 +125,6 @@ class Warrior extends Character {
             "holdAttackWhileMoving": true,
             "equip": ["basher"]
         },
-        "iceroamer": {
-            "priority": DIFFICULT,
-            "equip": ["basher"]
-        },
         "mechagnome": {
             "coop": ["priest", "ranger"],
             "holdPositionFarm": true,
