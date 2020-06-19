@@ -545,10 +545,13 @@ export class NGraphMove {
     public async move(goal: PositionReal, finishDistanceTolerance = 0): Promise<unknown> {
         this.reset()
 
+        const from: NodeData = NGraphMove.cleanPosition(parent.character)
+        const to: NodeData = NGraphMove.cleanPosition(goal)
+
         function getCloseTo(from: NodeData): PositionReal {
             if (finishDistanceTolerance == 0) return to // We want to go to this exact position
 
-            const distance = Math.sqrt((from.y - to.y) ** 2 + (from.x + to.x) ** 2)
+            const distance = Math.sqrt((from.y - to.y) ** 2 + (from.x - to.x) ** 2)
             if (distance < finishDistanceTolerance) return from // We're already close enough
 
             // Compute a line from `from` to `destinaton` that is `finishDistanceTolerance` units away.
@@ -561,9 +564,6 @@ export class NGraphMove {
                 }
             }
         }
-
-        const from: NodeData = NGraphMove.cleanPosition(parent.character)
-        const to: NodeData = NGraphMove.cleanPosition(goal)
 
         if (from.map == to.map) {
             const close = getCloseTo(to)
@@ -650,7 +650,7 @@ export class NGraphMove {
             if (ENABLE_BLINK && can_use("blink") && parent.character.mp > G.skills.blink.mp) {
                 let j = i
                 for (; j < path.length; j++) {
-                    distance += Math.sqrt((path[j][1].x + path[j][0].x) ** 2 + (path[j][1].y - path[j][0].y) ** 2)
+                    distance += Math.sqrt((path[j][1].x - path[j][0].x) ** 2 + (path[j][1].y - path[j][0].y) ** 2)
                     if (path[j][0].map != path[j][1].map) break // We found the last point that we can travel to on this map
                 }
                 if (distance > TOWN_COST) {

@@ -356,6 +356,7 @@ class Warrior extends Character {
             if (isAvailable("agitate")) {
                 let inAgitateCount = 0
                 let damage = 0
+
                 for (const id in parent.entities) {
                     const e = parent.entities[id]
                     if (e.type != "monster") continue
