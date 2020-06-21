@@ -437,7 +437,7 @@ export abstract class Character {
         if (this.targetPriority[mtype].farmingPosition && this.targetPriority[mtype].holdPositionFarm) return this.targetPriority[mtype].farmingPosition // We have a specific position to farm these monsters
         if (getVisibleMonsterTypes().has(mtype)) return // There's one nearby, we don't need to move
         if (this.targetPriority[mtype].farmingPosition) {
-            if (distance(parent.character, this.targetPriority[mtype].farmingPosition) < 300) {
+            if (distance(parent.character, this.targetPriority[mtype].farmingPosition) < parent.character.range) {
                 return // We're nearby killing other things while we wait for whatever it is to respawn
             } else {
                 return this.targetPriority[mtype].farmingPosition // We're not nearby, let's go to the farming position
@@ -503,7 +503,11 @@ export abstract class Character {
                 setMonstersInfo(monsters)
             } else {
                 set_message(`SP ${mtype}`)
-                return { target: mtype as MonsterName, position: info, range: parent.character.range }
+                if (this.targetPriority[mtype as MonsterName].farmingPosition && this.targetPriority[mtype as MonsterName].holdPositionFarm) {
+                    return { target: mtype as MonsterName, position: this.targetPriority[mtype as MonsterName].farmingPosition, range: parent.character.range }
+                } else {
+                    return { target: mtype as MonsterName, position: info, range: parent.character.range }
+                }
             }
         }
 
@@ -588,7 +592,7 @@ export abstract class Character {
                     // this.astar.stop()
                     this.nGraphMove.stop()
                     // this.astar.smartMove(this.movementTarget.position, this.movementTarget.range)
-                    this.nGraphMove.move(NGraphMove.cleanPosition(this.movementTarget.position), this.movementTarget.range)
+                    this.nGraphMove.move(this.movementTarget.position, this.movementTarget.range)
                     setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                     return
                 }
@@ -597,7 +601,7 @@ export abstract class Character {
                 if (!this.nGraphMove.isMoving()) {
                     // Same monster, new movement target
                     // this.astar.smartMove(this.movementTarget.position, this.movementTarget.range)
-                    this.nGraphMove.move(NGraphMove.cleanPosition(this.movementTarget.position), this.movementTarget.range)
+                    this.nGraphMove.move(this.movementTarget.position, this.movementTarget.range)
                     setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                     return
                 }
@@ -744,7 +748,7 @@ export abstract class Character {
                     }
                 }
                 // this.astar.smartMove(closest, parent.character.range)
-                this.nGraphMove.move(NGraphMove.cleanPosition(closest), parent.character.range)
+                this.nGraphMove.move(closest, parent.character.range)
                 setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }
@@ -761,7 +765,7 @@ export abstract class Character {
                     }
                 }
                 // this.astar.smartMove(closest, parent.character.range)
-                this.nGraphMove.move(NGraphMove.cleanPosition(closest), parent.character.range)
+                this.nGraphMove.move(closest, parent.character.range)
                 setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }

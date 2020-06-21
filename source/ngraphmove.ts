@@ -545,6 +545,8 @@ export class NGraphMove {
     public async move(goal: PositionReal, finishDistanceTolerance = 0): Promise<unknown> {
         this.reset()
 
+        if (distance(parent.character, goal) <= finishDistanceTolerance) return // We're already close enough
+
         const from: NodeData = NGraphMove.cleanPosition(parent.character)
         const to: NodeData = NGraphMove.cleanPosition(goal)
 

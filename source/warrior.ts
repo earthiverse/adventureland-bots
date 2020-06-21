@@ -355,7 +355,16 @@ class Warrior extends Character {
         try {
             if (isAvailable("agitate")) {
                 let inAgitateCount = 0
-                let damage = 0
+                let dps = 0
+                let dpsLimit = 500
+                const priests = getEntities({ isCtype: "priest", isPartyMember: true })
+                for (const priest of priests) {
+                    if (distance(parent.character, priest) > priest.range) continue // Priest is out of range
+                    dpsLimit += (priest.attack * 0.9 * priest.frequency) / 2
+                }
+
+                // TODO: Improve getEntities to add isTargetingOtherPlayer
+                // const entities = getEntities({isMonster: true, isRIP: false, isat})
 
                 for (const id in parent.entities) {
                     const e = parent.entities[id]
@@ -371,14 +380,14 @@ class Warrior extends Character {
                     if (!this.targetPriority[e.mtype]) {
                         // Something we don't want is here
                         inAgitateCount = 10
-                        damage = 9999
+                        dps = 9999
                         break
                     }
 
                     inAgitateCount++
-                    damage += calculateDamageRange(e, parent.character)[1]
+                    dps += calculateDamageRange(e, parent.character)[1] * e.frequency
                 }
-                if (inAgitateCount > 0 && inAgitateCount <= 3 && damage < 1000) {
+                if (inAgitateCount > 0 && inAgitateCount <= 3 && dps < dpsLimit) {
                     use_skill("agitate")
                     reduce_cooldown("agitate", Math.min(...parent.pings))
                 }
