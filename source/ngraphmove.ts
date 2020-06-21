@@ -615,7 +615,7 @@ export class NGraphMove {
         for (let i = 0; i < path.length;) {
             const fromData = path[i][0]
             let toData
-            if (i == path.length) {
+            if (i == path.length - 1) {
                 toData = getCloseTo(path[i][1])
             } else {
                 toData = path[i][1]
