@@ -223,18 +223,18 @@ class Merchant extends Character {
             upgradeIfMany(8)
             compoundIfMany(4)
 
-            // Sell MH coins
-            let tokens = findItem("monstertoken")
-            if (tokens.q > 1) {
-                // Put the tokens in the inventory
-                unequip("trade1")
-                await sleep(Math.max(...parent.pings))
+            // // Sell MH coins
+            // let tokens = findItem("monstertoken")
+            // if (tokens.q > 1) {
+            //     // Put the tokens in the inventory
+            //     unequip("trade1")
+            //     await sleep(Math.min(...parent.pings))
 
-                // Put the tokens back in the trade slot
-                tokens = findItem("monstertoken")
-                trade(tokens.index, "trade1", 275000, tokens.q - 1)
-                await sleep(Math.max(...parent.pings))
-            }
+            //     // Put the tokens back in the trade slot
+            //     tokens = findItem("monstertoken")
+            //     trade(tokens.index, "trade1", 275000, tokens.q - 1)
+            //     await sleep(Math.min(...parent.pings))
+            // }
 
             // I want a +10 bow eventually
             await buyIfNone("bow", 9, 4)
