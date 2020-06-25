@@ -19,9 +19,3 @@ function on_party_invite(name) {
 function on_cm(name, data) {
     bots.mage.parseCM(name, data)
 }
-
-function on_combined_damage() {
-    let x = -10 + Math.round(20 * Math.random())
-    let y = -10 + Math.round(20 * Math.random())
-    move(parent.character.real_x + x, parent.character.real_y + y)
-}

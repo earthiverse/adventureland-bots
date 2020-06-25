@@ -448,6 +448,8 @@ export type GMonster = {
   frequency: number;
   hp: number;
   range: number;
+  /** Respawn time in seconds. Can be -1 (e.g. goldenbat), which means it's special. */
+  respawn: number;
   speed: number;
   xp: number;
 }

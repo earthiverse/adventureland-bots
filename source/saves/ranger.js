@@ -12,15 +12,20 @@ import("https://earthiverse.github.io/adventureland-bots/build/ranger.js")
     })
 
 const scripts = {
-    //"earthWar": "warrior_start",
-    //"earthPri": "priest_start",
-    "earthMag": "mage_start",
-    "earthMag2": "mage_start",
+    "earthWar": "warrior_start",
+    "earthPri": "priest_start",
+    //"earthMag": "mage_start",
+    //"earthMag2": "mage_start",
     "earthMer": "merchant_start"
 }
+let delay = 30000
 for (const character in scripts) {
-    if (!parent.party[character])
-        start_character(character, scripts[character])
+    if (!parent.party[character]) {
+        setTimeout(async () => {
+            start_character(character, scripts[character])
+        }, delay)
+        delay += 30000
+    }
 }
 
 function on_cm(name, data) {
@@ -28,14 +33,8 @@ function on_cm(name, data) {
 }
 
 function on_magiport(name) {
-    if(name != "earthMag" && name != "earthMag2") return
+    if (name != "earthMag" && name != "earthMag2") return
     accept_magiport(name)
-}
-
-function on_combined_damage() {
-    let x = -10 + Math.round(20 * Math.random())
-    let y = -10 + Math.round(20 * Math.random())
-    move(parent.character.real_x + x, parent.character.real_y + y)
 }
 
 pause()

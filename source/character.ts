@@ -165,28 +165,41 @@ export abstract class Character {
     }
 
     public async run(): Promise<void> {
-        // Prepare the pathfinder
-        try {
-            const before = Date.now()
-            this.nGraphMove = await NGraphMove.getInstance()
-            game_log(`Took ${Date.now() - before}ms to prepare pathfinding.`)
-            this.nGraphMove.getGraphInfo()
-        } catch (e) {
-            console.error(e)
-        }
-
         this.healLoop()
         this.attackLoop()
         this.scareLoop()
+        await this.moveSetup()
         this.moveLoop()
+        await this.infoSetup()
         this.infoLoop()
         this.mainLoop()
+    }
+
+    protected async infoSetup(): Promise<void> {
+        // Setup death timers for special monsters
+        parent.socket.on("death", (data: { id: string }) => {
+            const entity = parent.entities[data.id]
+            if (entity && entity.mtype && entity.mtype in ["fvampire", "greenjr", "jr", "mvampire"]) {
+                setTimeout(async () => {
+                    // Create a fake entity to appear when the respawn is up
+                    const info = getMonstersInfo()
+                    info[entity.mtype] = {
+                        id: "-1",
+                        lastSeen: new Date(),
+                        map: entity.map,
+                        x: entity.real_x,
+                        y: entity.real_y
+                    }
+                    setMonstersInfo(info)
+                }, (G.monsters[entity.mtype].respawn + 5) * 1000)
+            }
+        })
     }
 
     /**
      * Stores information
      */
-    protected infoLoop(): void {
+    protected async infoLoop(): Promise<void> {
         // Add info about ourselves
         const party: PartyInfo = getPartyInfo()
         party[parent.character.name] = {
@@ -239,7 +252,7 @@ export abstract class Character {
         if (changed) setNPCInfo(npcs)
 
         // Add info about Monsters
-        const monsters: MonstersInfo = getMonstersInfo()
+        const monsters = getMonstersInfo()
         changed = false
         for (const entity of getEntities({ isMonster: true, isRIP: false })) {
             if (!(["fvampire", "goldenbat", "greenjr", "jr", "mvampire", "phoenix", "pinkgoo", "snowman", "wabbit"]).includes(entity.mtype)) continue
@@ -474,8 +487,8 @@ export abstract class Character {
         }
 
         // Special Monsters -- Move to monster
-        const party: PartyInfo = getPartyInfo()
-        const monsters: MonstersInfo = getMonstersInfo()
+        const party = getPartyInfo()
+        const monsters = getMonstersInfo()
         for (const mtype in monsters) {
             if (!this.targetPriority[mtype as MonsterName]) continue // Not a target we can do
             const coop = this.targetPriority[mtype as MonsterName].coop
@@ -571,6 +584,25 @@ export abstract class Character {
         if (this.mainTarget) {
             set_message(this.mainTarget)
             return { target: this.mainTarget, position: this.getMovementLocation(this.mainTarget) }
+        }
+    }
+
+    protected async moveSetup(): Promise<void> {
+        try {
+            // Prepare the pathfinder
+            const before = Date.now()
+            this.nGraphMove = await NGraphMove.getInstance()
+            game_log(`Took ${Date.now() - before}ms to prepare pathfinding.`)
+            this.nGraphMove.getGraphInfo()
+
+            // Event to scramble characters if we take stacked damage
+            parent.socket.on("stacked", () => {
+                const x = -25 + Math.round(50 * Math.random())
+                const y = -25 + Math.round(50 * Math.random())
+                move(parent.character.real_x + x, parent.character.real_y + y)
+            })
+        } catch (e) {
+            console.error(e)
         }
     }
 
@@ -891,7 +923,7 @@ export abstract class Character {
                 }
             })
              */
-            const monsters: MonstersInfo = getMonstersInfo()
+            const monsters = getMonstersInfo()
             monsters[data.id as MonsterName] = data.info
             setMonstersInfo(monsters)
         } else if (data.message == "npc") {
