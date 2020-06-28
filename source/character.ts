@@ -175,11 +175,19 @@ export abstract class Character {
         this.mainLoop()
     }
 
+    // protected async lootSetup(): Promise<void> {
+
+    // }
+
     protected async infoSetup(): Promise<void> {
         // Setup death timers for special monsters
         parent.socket.on("death", (data: { id: string }) => {
             const entity = parent.entities[data.id]
-            if (entity && entity.mtype && entity.mtype in ["fvampire", "greenjr", "jr", "mvampire"]) {
+            if (entity && entity.mtype
+                && entity.mtype in ["fvampire", "greenjr", "jr", "mvampire"]
+                && G.monsters[entity.mtype].respawn && G.monsters[entity.mtype].respawn > 0) {
+                const wait = (G.monsters[entity.mtype].respawn + 5) * 1000
+                console.info(`Setting respawn timer for ${entity.mtype} for ${wait}ms`)
                 setTimeout(async () => {
                     // Create a fake entity to appear when the respawn is up
                     const info = getMonstersInfo()
@@ -191,7 +199,7 @@ export abstract class Character {
                         y: entity.real_y
                     }
                     setMonstersInfo(info)
-                }, (G.monsters[entity.mtype].respawn + 5) * 1000)
+                }, wait)
             }
         })
     }
@@ -597,6 +605,7 @@ export abstract class Character {
 
             // Event to scramble characters if we take stacked damage
             parent.socket.on("stacked", () => {
+                console.info(`Scrambling ${parent.character.id} because we're stacked!`)
                 const x = -25 + Math.round(50 * Math.random())
                 const y = -25 + Math.round(50 * Math.random())
                 move(parent.character.real_x + x, parent.character.real_y + y)

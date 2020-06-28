@@ -237,8 +237,8 @@ class Merchant extends Character {
             // }
 
             // I want a +10 bow eventually
-            await buyIfNone("bow", 9, 4)
-            await upgradeItem("bow", 9)
+            // await buyIfNone("bow", 9, 4)
+            // await upgradeItem("bow", 9)
 
             await buyScrolls()
 
@@ -250,21 +250,12 @@ class Merchant extends Character {
     }
 
     public async run() {
-        // Prepare the pathfinder
-        try {
-            game_log("Preparing pathfinding...")
-            const before = Date.now()
-            this.nGraphMove = await NGraphMove.getInstance()
-            game_log(`Took ${Date.now() - before}ms to prepare pathfinding.`)
-            this.nGraphMove.getGraphInfo()
-        } catch (e) {
-            console.error(e)
-        }
-
         this.attackLoop()
         this.healLoop()
         this.scareLoop()
+        await this.moveSetup()
         this.moveLoop()
+        await this.infoSetup()
         this.infoLoop()
         this.mainLoop()
         this.luckLoop()
