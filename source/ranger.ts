@@ -260,7 +260,7 @@ class Ranger extends Character {
                 "x": -296.5,
                 "y": 557.5
             },
-            "equip": ["crossbow", "quiver"]
+            "equip": ["hbow", "quiver"]
         },
         "rat": {
             "priority": 0,
@@ -298,7 +298,7 @@ class Ranger extends Character {
         },
         "squigtoad": {
             "priority": 250,
-            "equip": ["crossbow", "quiver"]
+            "equip": ["hbow", "quiver"]
         },
         "stoneworm": {
             "priority": 0,
