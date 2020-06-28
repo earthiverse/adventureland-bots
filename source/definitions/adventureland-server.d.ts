@@ -1,5 +1,19 @@
 import { NPCType, CharacterType, StatusInfo, SlotInfo, ItemInfo, MapName, MonsterName, ItemName, ServerRegion, ServerIdentifier } from "./adventureland"
 
+export type ActionData = {
+    attacker: string
+    damage: number
+    eta: number
+    m: number
+    pid: string
+    projectile: "arrow" | "pmag" | "supershot" | string
+    source: "attack" | "supershot" | string
+    target: string
+    type: "attack" | "supershot" | string
+    x: number
+    y: number
+}
+
 export type AuthData = {
     // TODO: Find out where to get this auth string
     auth: string
@@ -163,6 +177,10 @@ export type EntityData = {
     y: number
 }
 
+export type EvalData = {
+    code: string
+}
+
 export type GameResponseData = {
     response: "bank_restrictions" | "gold_received" | "item_placeholder" | "item_received" | string
     gold: number
@@ -170,13 +188,15 @@ export type GameResponseData = {
 } | "skill_too_far" | "upgrade_in_progress"
 
 export type HitData = {
-    anim: "arrow_hit" | "slash1" | "miss" | string
+    anim: "arrow_hit" | "miss" | "reflect" | "slash1" | string
     damage: number
     lifesteal?: number
+    evade?: boolean
     hid?: string
     id?: string
     pid?: string
     projectile?: string
+    reflect?: boolean
     source?: "attack" | "heal" | string
     miss?: boolean
     kill?: boolean
@@ -190,6 +210,18 @@ export type LoadedData = {
     // TODO: Find out what this is
     scale: number
     success: 1 | number
+}
+
+export type NewMapData = {
+    direction: number
+    effect: number
+    entities: EntitiesData
+    in: MapName
+    info: any
+    m: number
+    map: MapName
+    x: number
+    y: number
 }
 
 export type PartyData = {

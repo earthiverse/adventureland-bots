@@ -1,19 +1,20 @@
 import axios from "axios"
 import socketio from "socket.io-client"
-import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, AuthData, StartData, EntityData, CharacterData, PartyData, ChestData, PlayerData, QData, DisappearData, ChestOpenedData, HitData } from "./definitions/adventureland-server"
+import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, AuthData, StartData, EntityData, CharacterData, PartyData, ChestData, PlayerData, QData, DisappearData, ChestOpenedData, HitData, NewMapData, ActionData, EvalData } from "./definitions/adventureland-server"
 import { ServerRegion, ServerIdentifier, CharacterEntity } from "./definitions/adventureland"
 
 export class Game {
     public socket: SocketIOClient.Socket
-    private promises: Promise<boolean>[]
+    private promises: Promise<boolean>[] = []
 
-    public G: any
+    static G: any
 
     public character: CharacterData
     public chests = new Map<string, ChestData>()
     public entities = new Map<string, EntityData>()
     public party: PartyData
     public players = new Map<string, PlayerData>()
+    public projectiles = new Map<string, ActionData & { date: Date }>()
 
     constructor(region: ServerRegion, name: ServerIdentifier) {
         this.promises.push(new Promise<boolean>((resolve, reject) => {
@@ -25,8 +26,8 @@ export class Game {
                             autoConnect: false,
                             transports: ["websocket"]
                         })
-                        resolve()
                         this.prepare()
+                        resolve()
                         return
                     }
                 }
@@ -34,13 +35,17 @@ export class Game {
                 return
             })
         }), new Promise<boolean>((resolve, reject) => {
-            Game.getGameData().then((data) => {
-                this.G = data
-            })
+            if (!Game.G) {
+                Game.getGameData().then((data) => {
+                    Game.G = data
+                    resolve()
+                })
+            }
         }))
     }
 
     private parseCharacter(data: CharacterData) {
+        console.log("Updating character...")
         this.character = {
             hp: data.hp,
             max_hp: data.max_hp,
@@ -129,9 +134,8 @@ export class Game {
     }
 
     private prepare() {
-        this.socket.on("action", (data: any) => {
-            // console.log("socket: action!")
-            // console.log(data)
+        this.socket.on("action", (data: ActionData) => {
+            this.projectiles.set(data.pid, { ...data, date: new Date() })
         })
 
         // on("connect")
@@ -152,6 +156,10 @@ export class Game {
             this.parseEntities(data)
         })
 
+        this.socket.on("eval", (data: EvalData) => {
+            // TODO: Regex skill_timeout('attack',834.1518117738793)
+        })
+
         // TODO: Figure out type. I think it's just a string?
         this.socket.on("game_error", (data: any) => {
             console.error(`Game Error: ${data}`)
@@ -168,11 +176,28 @@ export class Game {
         this.socket.on("hit", (data: HitData) => {
             // console.log("socket: hit!")
             // console.log(data)
-            if (data.anim == "miss") return
-            
+            if (data.miss || data.evade) {
+                this.projectiles.delete(data.pid)
+                return
+            }
+
+            if (data.reflect) {
+                // TODO: Reflect!
+                this.projectiles.get(data.pid)
+            }
+
             if (data.kill == true) {
                 this.entities.delete(data.id)
             }
+        })
+
+        this.socket.on("new_map", (data: NewMapData) => {
+            this.parseEntities(data.entities)
+
+            this.character.x = data.x
+            this.character.y = data.y
+            this.character.in = data.in
+            this.character.map = data.map
         })
 
         this.socket.on("party_update", (data: PartyData) => {
@@ -207,14 +232,25 @@ export class Game {
                 success: 1
             } as LoadedData)
         })
+
+        console.log("Prepared!")
     }
 
     async connect(auth: string, character: string, user: string) {
+
+        console.log("!!")
+
         await Promise.all(this.promises)
+
+        console.log("promises, promises...")
 
         // TODO: receive on("start")
 
+        console.log("??")
+
         this.socket.open()
+
+        console.log("??")
 
         // When we're loaded, authenticate
         this.socket.once("welcome", () => {
@@ -232,6 +268,7 @@ export class Game {
             } as AuthData)
         })
 
+        console.log("Connected?")
     }
 
     async disconnect() {
@@ -239,21 +276,27 @@ export class Game {
     }
 
     static async getGameData(): Promise<any> {
+        console.log("Fetching http://adventure.land/data.js...")
         const result = await axios.get("http://adventure.land/data.js")
         if (result.status == 200) {
             // Update X.servers with the latest data
             let matches = result.data.match(/var\s+G\s*=\s*(\{.+\});/)
             return JSON.parse(matches[1])
+        } else {
+            console.error("Error fetching http://adventure.land/data.js")
         }
     }
 
     static async getServerList(): Promise<ServerData[]> {
         // Get a list of the servers available
+        console.log("Fetching http://adventure.land...")
         const result = await axios.get("http://adventure.land")
         if (result.status == 200) {
             // We got a result!
             let matches = result.data.match(/X\.servers=(\[.+\]);/)
             return JSON.parse(matches[1])
+        } else {
+            console.error("Error fetching http://adventure.land!")
         }
     }
 }
