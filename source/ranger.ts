@@ -1,18 +1,19 @@
 import { Character } from "./character"
-import { MonsterName, Entity } from "./definitions/adventureland"
+import { MonsterName, Entity, ItemName } from "./definitions/adventureland"
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from "./trade"
 import { TargetPriorityList } from "./definitions/bots"
 import { isPlayer, getCooldownMS, isAvailable, calculateDamageRange, getEntities } from "./functions"
 
 class Ranger extends Character {
+    // TODO: Figure out optimal weapons based on damage + crit + hp and override this in a function and put it in run()
     targetPriority: TargetPriorityList = {
         "arcticbee": {
             "priority": 0,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "t2quiver"]
         },
         "armadillo": {
             "priority": 0,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "t2quiver"]
         },
         "bat": {
             "priority": 0,
@@ -32,7 +33,7 @@ class Ranger extends Character {
                 "x": -50,
                 "y": -100
             },
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "t2quiver"]
         },
         "bee": {
             "priority": 50,
@@ -42,7 +43,7 @@ class Ranger extends Character {
                 "x": 550,
                 "y": 1100
             },
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "t2quiver"]
         },
         "bigbird": {
             // The ranger is fast enough to avoid these fairly well
@@ -68,20 +69,20 @@ class Ranger extends Character {
         },
         "cgoo": {
             "priority": 0,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "t2quiver"]
         },
         "crab": {
             "priority": 0,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "t2quiver"]
         },
         "crabx": {
             // They can hurt, but they move really slow and they're pretty out of the way.
             "priority": 100,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "t2quiver"]
         },
         "croc": {
             "priority": 100,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "t2quiver"]
         },
         // "dragold": {
         //     "coop": ["priest", "warrior"],
@@ -130,11 +131,11 @@ class Ranger extends Character {
                 "x": -200,
                 "y": -450
             },
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "t2quiver"]
         },
         "goo": {
             "priority": -50,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "t2quiver"]
         },
         "greenjr": {
             "priority": 1000,
@@ -144,11 +145,11 @@ class Ranger extends Character {
         },
         "hen": {
             "priority": 0,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "t2quiver"]
         },
         "iceroamer": {
             "priority": 0,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "t2quiver"]
         },
         "jr": {
             // jr has a high evasion %, but the ranger can kinda do it still
@@ -171,7 +172,7 @@ class Ranger extends Character {
         },
         "minimush": {
             "priority": 100,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "t2quiver"]
         },
         "mole": {
             "coop": ["priest", "warrior"],
@@ -224,7 +225,7 @@ class Ranger extends Character {
         },
         "osnake": {
             "priority": 500,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "t2quiver"]
         },
         "phoenix": {
             "priority": 1000,
@@ -242,7 +243,7 @@ class Ranger extends Character {
         },
         "poisio": {
             "priority": 250,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "t2quiver"]
         },
         "porcupine": {
             "priority": 0,
@@ -263,11 +264,11 @@ class Ranger extends Character {
         },
         "rat": {
             "priority": 0,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "t2quiver"]
         },
         "rooster": {
             "priority": 0,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "t2quiver"]
         },
         "scorpion": {
             "priority": 250,
@@ -281,11 +282,11 @@ class Ranger extends Character {
                 "x": -74,
                 "y": 1904
             },
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "t2quiver"]
         },
         "snowman": {
             "priority": 1000,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "t2quiver"]
         },
         "spider": {
             "priority": 100,
@@ -305,7 +306,7 @@ class Ranger extends Character {
         },
         "tortoise": {
             "priority": 0,
-            "equip": ["t2bow", "t2quiver"]
+            "equip": ["hbow", "t2quiver"]
         },
         "wolf": {
             "coop": ["priest", "warrior"],
