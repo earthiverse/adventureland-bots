@@ -165,24 +165,31 @@ export abstract class Character {
     }
 
     public async run(): Promise<void> {
+        await this.lootSetup()
+        await this.infoSetup()
+        this.infoLoop()
         this.healLoop()
-        this.attackLoop()
         this.scareLoop()
         await this.moveSetup()
         this.moveLoop()
-        await this.infoSetup()
-        this.infoLoop()
         this.mainLoop()
+        this.attackLoop()
     }
 
-    // protected async lootSetup(): Promise<void> {
-
-    // }
+    protected async lootSetup(): Promise<void> {
+        parent.socket.on("drop", (data: { id: string } & IPosition) => {
+            console.info(`Chest dropped at ${data.map},${data.x},${data.y}`)
+        })
+    }
 
     protected async infoSetup(): Promise<void> {
         // Setup death timers for special monsters
         parent.socket.on("death", (data: { id: string }) => {
             const entity = parent.entities[data.id]
+
+            // DEBUG
+            console.info(`${data.id} died. In parent.entities?: ${entity != undefined}.`)
+
             if (entity && entity.mtype
                 && entity.mtype in ["fvampire", "greenjr", "jr", "mvampire"]
                 && G.monsters[entity.mtype].respawn && G.monsters[entity.mtype].respawn > 0) {
