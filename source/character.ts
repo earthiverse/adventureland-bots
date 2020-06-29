@@ -165,7 +165,7 @@ export abstract class Character {
     }
 
     public async run(): Promise<void> {
-        await this.lootSetup()
+        // await this.lootSetup()
         await this.infoSetup()
         this.infoLoop()
         this.healLoop()
@@ -176,15 +176,42 @@ export abstract class Character {
         this.attackLoop()
     }
 
-    protected async lootSetup(): Promise<void> {
-        parent.socket.on("drop", (data: { id: string } & IPosition) => {
-            console.info(`Chest dropped at ${data.map},${data.x},${data.y}`)
-        })
-    }
+    // protected async lootSetup(): Promise<void> {
+    //     parent.socket.on("drop", (data: { id: string, } & IPosition) => {
+    //         console.info(`Chest dropped at ${data.map},${data.x},${data.y}`)
+    //         if (distance(parent.character, data) > 800) return // Chests over a 800 radius have a penalty as per @Wizard in #feedback (Discord) on 11/26/2019
+    //         const party: PartyInfo = getPartyInfo()
+
+    //         let shouldLoot = true
+    //         for (const id of parent.party_list) {
+    //             if (id == parent.character.id) continue // Skip ourself
+
+    //             const partyMember = parent.entities[id]
+    //             if (!partyMember) continue
+    //             if (distance(partyMember, chest) > 800) continue
+    //             if (!party[id]) continue
+
+    //             if (["chest3", "chest4"].includes(chest.skin)) {
+    //                 if (parent.character.goldm >= party[id].goldm) continue
+    //             }
+    //             else {
+    //                 if (parent.character.luckm >= party[id].luckm) continue
+    //             }
+
+    //             shouldLoot = false
+    //             break
+    //         }
+
+    //         if (shouldLoot) {
+    //             parent.socket.emit("open_chest", { id: data.id })
+    //         }
+    //     })
+    // }
 
     protected async infoSetup(): Promise<void> {
         // Setup death timers for special monsters
-        parent.socket.on("death", (data: { id: string }) => {
+        parent.socket.on("hit", (data: { id: string, kill?: boolean }) => {
+            if (!data.kill) return // We only care if the entity dies
             const entity = parent.entities[data.id]
 
             // DEBUG
@@ -607,8 +634,7 @@ export abstract class Character {
             // Prepare the pathfinder
             const before = Date.now()
             this.nGraphMove = await NGraphMove.getInstance()
-            game_log(`Took ${Date.now() - before}ms to prepare pathfinding.`)
-            this.nGraphMove.getGraphInfo()
+            console.info(`Took ${Date.now() - before}ms to prepare pathfinding.`)
 
             // Event to scramble characters if we take stacked damage
             parent.socket.on("stacked", () => {
