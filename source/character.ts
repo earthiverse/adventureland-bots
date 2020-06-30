@@ -535,8 +535,6 @@ export abstract class Character {
 
             const info = monsters[mtype as MonsterName]
 
-            if (["phoenix"].includes(mtype) && parent.character.map != info.map) continue // Don't move to phoenixes on other maps
-
             const coop = this.targetPriority[mtype as MonsterName].coop
             if (coop) {
                 // Check if other members are available to fight it
