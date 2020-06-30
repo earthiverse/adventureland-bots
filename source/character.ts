@@ -214,7 +214,7 @@ export abstract class Character {
             if (!data.kill) return // We only care if the entity dies
             const entity = parent.entities[data.id]
             if (entity && entity.mtype
-                && entity.mtype in ["fvampire", "greenjr", "jr", "mvampire"]
+                && ["fvampire", "greenjr", "jr", "mvampire"].includes(entity.mtype)
                 && G.monsters[entity.mtype].respawn && G.monsters[entity.mtype].respawn > 0) {
                 const wait = (G.monsters[entity.mtype].respawn + 5) * 1000
 
@@ -532,6 +532,11 @@ export abstract class Character {
         const monsters = getMonstersInfo()
         for (const mtype in monsters) {
             if (!this.targetPriority[mtype as MonsterName]) continue // Not a target we can do
+
+            const info = monsters[mtype as MonsterName]
+
+            if (["phoenix"].includes(mtype) && parent.character.map != info.map) continue // Don't move to phoenixes on other maps
+
             const coop = this.targetPriority[mtype as MonsterName].coop
             if (coop) {
                 // Check if other members are available to fight it
@@ -541,8 +546,6 @@ export abstract class Character {
                     continue // We don't have everyone we need to fight, so we're not going to fight it.
                 }
             }
-
-            const info = monsters[mtype as MonsterName]
 
             // Update info if we can see it
             const entityInfo = parent.entities[info.id]
