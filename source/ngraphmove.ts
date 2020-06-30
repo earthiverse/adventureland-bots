@@ -136,13 +136,11 @@ export class NGraphMove {
 
     private async addToGraph(map: MapName): Promise<unknown> {
         if (this.grids[map]) {
-            console.info(`We have already prepared ${map}.`)
             return // We already have information about this map
         }
         if (!G.maps[map]) {
             console.error(`${map} is not a valid map.`) // Not a map
         }
-        console.info(`Preparing ${map}...`)
 
         const mapWidth = G.geometry[map].max_x - G.geometry[map].min_x
         const mapHeight = G.geometry[map].max_y - G.geometry[map].min_y
@@ -444,7 +442,6 @@ export class NGraphMove {
     }
 
     private getPath(goal: NodeData): PathData {
-        console.info(`Getting path from [${parent.character.map},${parent.character.real_x},${parent.character.real_y}] to [${goal.map},${goal.x},${goal.y}]`)
         // Find the closest node to the start and finish points
         let distToStart = Number.MAX_VALUE
         let startNode: NodeId
@@ -474,7 +471,6 @@ export class NGraphMove {
 
         // Get the data for the path we need to travel (town, teleport, walking)
         const rawPath = this.pathfinder.find(startNode, finishNode)
-        console.log(rawPath)
         if (rawPath.length == 0) {
             console.error("could not find a path")
             return undefined
@@ -583,10 +579,6 @@ export class NGraphMove {
             return Promise.reject(`We could not find a path from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] in ${this.searchFinishTime - this.searchStartTime}ms`)
         }
 
-        // DEBUG
-        console.log(`We found a path from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] in ${this.searchFinishTime - this.searchStartTime}ms`)
-        console.log(path)
-
         async function performNextMovement(to: NodeData, link: LinkData) {
             if (link) {
                 if (link.type == "town") {
@@ -624,7 +616,6 @@ export class NGraphMove {
             let distance = Math.sqrt((Math.trunc(toData.x) - Math.trunc(parent.character.real_x)) ** 2 + (Math.trunc(toData.y) - Math.trunc(parent.character.real_y)) ** 2)
 
             if (this.wasCancelled(searchStart)) {
-                console.log(`Search from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] was cancelled`)
                 return Promise.reject("cancelled")
             }
 
@@ -672,9 +663,6 @@ export class NGraphMove {
             await performNextMovement(toData, linkData)
         }
         this.moveFinishTime = Date.now()
-
-        // DEBUG
-        console.log(`We moved from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] in ${this.moveFinishTime - this.moveStartTime}ms`)
 
         return
     }

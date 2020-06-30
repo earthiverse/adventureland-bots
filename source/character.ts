@@ -213,15 +213,14 @@ export abstract class Character {
         parent.socket.on("hit", (data: { id: string, kill?: boolean }) => {
             if (!data.kill) return // We only care if the entity dies
             const entity = parent.entities[data.id]
-
-            // DEBUG
-            console.info(`${data.id} died. In parent.entities?: ${entity != undefined}.`)
-
             if (entity && entity.mtype
                 && entity.mtype in ["fvampire", "greenjr", "jr", "mvampire"]
                 && G.monsters[entity.mtype].respawn && G.monsters[entity.mtype].respawn > 0) {
                 const wait = (G.monsters[entity.mtype].respawn + 5) * 1000
+
+                // DEBUG
                 console.info(`Setting respawn timer for ${entity.mtype} for ${wait}ms`)
+
                 setTimeout(async () => {
                     // Create a fake entity to appear when the respawn is up
                     const info = getMonstersInfo()
@@ -638,7 +637,9 @@ export abstract class Character {
 
             // Event to scramble characters if we take stacked damage
             parent.socket.on("stacked", () => {
+                // DEBUG
                 console.info(`Scrambling ${parent.character.id} because we're stacked!`)
+
                 const x = -25 + Math.round(50 * Math.random())
                 const y = -25 + Math.round(50 * Math.random())
                 move(parent.character.real_x + x, parent.character.real_y + y)
