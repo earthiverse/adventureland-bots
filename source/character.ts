@@ -23,9 +23,11 @@ export abstract class Character {
         // Boosters
         "goldbooster", "luckbooster", "xpbooster",
         // Healing
-        "hpot1", "mpot1", /* "hotchocolate", "candypop", */
-        // Used to avoid monster hits
-        "jacko", "lantern"
+        "hpot1", "mpot1",
+        // Consumables
+        /* "candypop", "hotchocolate", */
+        // Orbs
+        "jacko", "lantern", "orbg", "test_orb"
     ]
     protected itemsToSell: ItemLevelInfo = {
         // Default clothing
@@ -209,6 +211,10 @@ export abstract class Character {
         game.on("hit", (data: { id: string, kill?: boolean }) => {
             if (!data.kill) return // We only care if the entity dies
             const entity = parent.entities[data.id]
+
+            // DEBUG
+            console.info(`${data.id} died.`)
+
             if (entity && entity.mtype
                 && ["fvampire", "greenjr", "jr", "mvampire"].includes(entity.mtype)
                 && G.monsters[entity.mtype].respawn && G.monsters[entity.mtype].respawn > 0) {

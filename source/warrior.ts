@@ -13,7 +13,7 @@ class Warrior extends Character {
     targetPriority: TargetPriorityList = {
         "arcticbee": {
             "priority": EASY,
-            "equip": ["basher"]
+            "equip": ["woodensword", "candycanesword", "jacko"]
         },
         "bat": {
             "priority": EASY,
@@ -22,7 +22,7 @@ class Warrior extends Character {
                 "x": 1250,
                 "y": -800
             },
-            "equip": ["basher"]
+            "equip": ["basher", "jacko"]
         },
         "bbpompom": {
             "coop": ["priest"],
@@ -34,11 +34,11 @@ class Warrior extends Character {
                 "x": 0,
                 "y": -100
             },
-            "equip": ["basher"]
+            "equip": ["basher", "jacko"]
         },
         "bee": {
             "priority": EASY,
-            "equip": ["bataxe"]
+            "equip": ["bataxe", "orbg"]
         },
         "boar": {
             // The ranger is fast enough to kill these without dying too much.
@@ -51,19 +51,19 @@ class Warrior extends Character {
                 "x": 0,
                 "y": -850
             },
-            "equip": ["basher"]
+            "equip": ["basher", "jacko"]
         },
         "crab": {
             "priority": EASY,
-            "equip": ["bataxe"]
+            "equip": ["bataxe", "orbg"]
         },
         "crabx": {
             "priority": MEDIUM,
-            "equip": ["basher"]
+            "equip": ["basher", "jacko"]
         },
         "croc": {
             "priority": EASY,
-            "equip": ["basher"]
+            "equip": ["woodensword", "candycanesword", "orbg"]
         },
         // "dragold": {
         //     "coop": ["priest"],
@@ -80,19 +80,19 @@ class Warrior extends Character {
                 "x": 200,
                 "y": -700
             },
-            "equip": ["basher"]
+            "equip": ["basher", "jacko"]
         },
         "fvampire": {
             "coop": ["priest", "ranger"],
             "priority": 0,
             "holdAttackWhileMoving": true,
-            "equip": ["basher"],
             "holdPositionFarm": true,
             "farmingPosition": {
                 "map": "halloween",
                 "x": -150,
                 "y": -1575
-            }
+            },
+            "equip": ["basher", "jacko"]
         },
         "ghost": {
             "coop": ["priest"],
@@ -104,7 +104,7 @@ class Warrior extends Character {
                 "x": 400,
                 "y": -1100
             },
-            "equip": ["basher"]
+            "equip": ["basher", "jacko"]
         },
         "goldenbat": {
             "priority": SPECIAL,
@@ -113,17 +113,17 @@ class Warrior extends Character {
                 "x": 1250,
                 "y": -800
             },
-            "equip": ["basher"]
+            "equip": ["basher", "jacko"]
         },
         "goo": {
             "priority": EASY,
-            "equip": ["bataxe"]
+            "equip": ["bataxe", "orbg"]
         },
         "greenjr": {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
-            "equip": ["basher"]
+            "equip": ["basher", "jacko"]
         },
         "mechagnome": {
             "coop": ["priest", "ranger"],
@@ -135,11 +135,11 @@ class Warrior extends Character {
                 "x": 150,
                 "y": -100
             },
-            "equip": ["basher"]
+            "equip": ["basher", "jacko"]
         },
         "minimush": {
             "priority": EASY,
-            "equip": ["bataxe"]
+            "equip": ["bataxe", "orbg"]
         },
         "mole": {
             "coop": ["priest", "warrior"],
@@ -151,7 +151,7 @@ class Warrior extends Character {
                 "x": 0,
                 "y": -75
             },
-            "equip": ["basher"]
+            "equip": ["basher", "jacko"]
         },
         "mummy": {
             "coop": ["priest"],
@@ -163,12 +163,12 @@ class Warrior extends Character {
                 "x": 255,
                 "y": -1125
             },
-            "equip": ["basher"]
+            "equip": ["basher", "jacko"]
         },
         "mvampire": {
             priority: DIFFICULT,
             "coop": ["priest"],
-            "equip": ["basher"]
+            "equip": ["basher", "jacko"]
         },
         "oneeye": {
             "coop": ["ranger", "priest"],
@@ -180,15 +180,15 @@ class Warrior extends Character {
                 "x": -150,
                 "y": 0
             },
-            "equip": ["basher"]
+            "equip": ["basher", "jacko"]
         },
         "osnake": {
             "priority": EASY,
-            "equip": ["bataxe"]
+            "equip": ["bataxe", "orbg"]
         },
         "phoenix": {
             "priority": SPECIAL,
-            "equip": ["basher"]
+            "equip": ["woodensword", "candycanesword", "orbg"]
         },
         // "pinkgoblin": {
         //     "priority": 100,
@@ -198,19 +198,19 @@ class Warrior extends Character {
         // },
         "pinkgoo": {
             "priority": 1000,
-            "equip": ["candycanesword", "woodensword"]
+            "equip": ["candycanesword", "woodensword", "jacko"]
         },
         "poisio": {
             priority: MEDIUM,
-            "equip": ["basher"]
+            "equip": ["woodensword", "candycanesword", "orbg"]
         },
         "rat": {
             "priority": EASY,
-            "equip": ["basher"]
+            "equip": ["bataxe", "orbg"]
         },
         "scorpion": {
             "priority": MEDIUM,
-            "equip": ["basher"]
+            "equip": ["woodensword", "candycanesword", "jacko"]
         },
         "snake": {
             // Farm them on the main map because of the +1000% luck and gold bonus chances
@@ -220,26 +220,27 @@ class Warrior extends Character {
                 "x": -74,
                 "y": 1904
             },
-            "equip": ["bataxe"]
+            "equip": ["bataxe", "orbg"]
         },
         "snowman": {
             "priority": SPECIAL,
-            "equip": ["candycanesword", "woodensword"]
+            "equip": ["candycanesword", "woodensword", "jacko"]
         },
         "spider": {
             "priority": MEDIUM,
-            "equip": ["basher"]
+            "equip": ["woodensword", "candycanesword", "jacko"]
         },
         "squig": {
             "priority": EASY,
-            "equip": ["bataxe"]
+            "equip": ["bataxe", "orbg"]
         },
         "squigtoad": {
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["bataxe", "orbg"]
         },
         "tortoise": {
             "priority": EASY,
-            "equip": ["basher"]
+            "equip": ["woodensword", "candycanesword", "orbg"]
         },
         "wolf": {
             "coop": ["priest"],
@@ -251,7 +252,7 @@ class Warrior extends Character {
                 "x": 450,
                 "y": -2500
             },
-            "equip": ["basher"]
+            "equip": ["basher", "jacko"]
         },
         "wolfie": {
             // The ranger is fast enough to kill these without dying too much.
@@ -264,7 +265,7 @@ class Warrior extends Character {
                 "x": 0,
                 "y": -1825
             },
-            "equip": ["basher"]
+            "equip": ["basher", "jacko"]
         },
     }
     mainTarget: MonsterName = "scorpion"

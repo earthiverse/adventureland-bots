@@ -9,11 +9,11 @@ class Ranger extends Character {
     targetPriority: TargetPriorityList = {
         "arcticbee": {
             "priority": 0,
-            "equip": ["hbow", "t2quiver"]
+            "equip": ["hbow", "t2quiver", "orbg"]
         },
         "armadillo": {
             "priority": 0,
-            "equip": ["hbow", "t2quiver"]
+            "equip": ["hbow", "t2quiver", "orbg"]
         },
         "bat": {
             "priority": 0,
@@ -22,7 +22,7 @@ class Ranger extends Character {
                 "x": -200,
                 "y": -450
             },
-            "equip": ["bowofthedead", "t2quiver"]
+            "equip": ["bowofthedead", "t2quiver", "orbg"]
         },
         "bbpompom": {
             "coop": ["priest"],
@@ -33,7 +33,7 @@ class Ranger extends Character {
                 "x": -50,
                 "y": -100
             },
-            "equip": ["hbow", "t2quiver"]
+            "equip": ["hbow", "t2quiver", "jacko"]
         },
         "bee": {
             "priority": 50,
@@ -43,17 +43,17 @@ class Ranger extends Character {
                 "x": 550,
                 "y": 1100
             },
-            "equip": ["hbow", "t2quiver"]
+            "equip": ["hbow", "t2quiver", "orbg"]
         },
         "bigbird": {
             // The ranger is fast enough to avoid these fairly well
             "priority": 0,
-            "equip": ["firebow", "t2quiver"]
+            "equip": ["firebow", "t2quiver", "jacko"]
         },
         "boar": {
             // Don't attack if we're walking by them, they hurt.
             "priority": 0,
-            "equip": ["firebow", "t2quiver"]
+            "equip": ["firebow", "t2quiver", "jacko"]
         },
         "booboo": {
             "coop": ["priest"],
@@ -65,24 +65,24 @@ class Ranger extends Character {
                 "x": 190,
                 "y": -650
             },
-            "equip": ["hbow", "quiver"]
+            "equip": ["hbow", "quiver", "jacko"]
         },
         "cgoo": {
             "priority": 0,
-            "equip": ["hbow", "t2quiver"]
+            "equip": ["hbow", "t2quiver", "jacko"]
         },
         "crab": {
             "priority": 0,
-            "equip": ["hbow", "t2quiver"]
+            "equip": ["hbow", "t2quiver", "orbg"]
         },
         "crabx": {
             // They can hurt, but they move really slow and they're pretty out of the way.
             "priority": 100,
-            "equip": ["hbow", "t2quiver"]
+            "equip": ["hbow", "t2quiver", "orbg"]
         },
         "croc": {
             "priority": 100,
-            "equip": ["hbow", "t2quiver"]
+            "equip": ["hbow", "t2quiver", "orbg"]
         },
         // "dragold": {
         //     "coop": ["priest", "warrior"],
@@ -99,19 +99,19 @@ class Ranger extends Character {
                 "x": 150,
                 "y": -650
             },
-            "equip": ["firebow", "t2quiver"]
+            "equip": ["firebow", "t2quiver", "jacko"]
         },
         "fvampire": {
             "coop": ["warrior", "priest"],
             "priority": 0,
             "holdAttackWhileMoving": true,
-            "equip": ["firebow", "t2quiver"],
             "holdPositionFarm": true,
             "farmingPosition": {
                 "map": "halloween",
                 "x": -225,
                 "y": -1500
-            }
+            },
+            "equip": ["firebow", "t2quiver", "jacko"]
         },
         "ghost": {
             "coop": ["priest"],
@@ -122,7 +122,7 @@ class Ranger extends Character {
                 "x": 400,
                 "y": -1200
             },
-            "equip": ["firebow", "t2quiver"]
+            "equip": ["firebow", "t2quiver", "jacko"]
         },
         "goldenbat": {
             "priority": 1000,
@@ -131,32 +131,32 @@ class Ranger extends Character {
                 "x": -200,
                 "y": -450
             },
-            "equip": ["hbow", "t2quiver"]
+            "equip": ["hbow", "t2quiver", "orbg"]
         },
         "goo": {
             "priority": -50,
-            "equip": ["hbow", "t2quiver"]
+            "equip": ["hbow", "t2quiver", "orbg"]
         },
         "greenjr": {
             "priority": 1000,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
-            "equip": ["firebow", "t2quiver"]
+            "equip": ["firebow", "t2quiver", "jacko"]
         },
         "hen": {
             "priority": 0,
-            "equip": ["hbow", "t2quiver"]
+            "equip": ["hbow", "t2quiver", "orbg"]
         },
         "iceroamer": {
             "priority": 0,
-            "equip": ["hbow", "t2quiver"]
+            "equip": ["hbow", "t2quiver", "jacko"]
         },
         "jr": {
             // jr has a high evasion %, but the ranger can kinda do it still
             "priority": 1000,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
-            "equip": ["firebow", "t2quiver"]
+            "equip": ["firebow", "t2quiver", "jacko"]
         },
         "mechagnome": {
             "coop": ["priest", "ranger"],
@@ -168,11 +168,11 @@ class Ranger extends Character {
                 "x": 150,
                 "y": -150
             },
-            "equip": ["firebow", "t2quiver"]
+            "equip": ["firebow", "t2quiver", "jacko"]
         },
         "minimush": {
             "priority": 100,
-            "equip": ["hbow", "t2quiver"]
+            "equip": ["hbow", "t2quiver", "orbg"]
         },
         "mole": {
             "coop": ["priest", "warrior"],
@@ -184,7 +184,7 @@ class Ranger extends Character {
                 "x": -50,
                 "y": -75
             },
-            "equip": ["firebow", "t2quiver"]
+            "equip": ["firebow", "t2quiver", "jacko"]
         },
         "mummy": {
             "coop": ["priest", "warrior"],
@@ -196,20 +196,20 @@ class Ranger extends Character {
                 "x": 175,
                 "y": -1060
             },
-            "equip": ["firebow", "t2quiver"]
+            "equip": ["firebow", "t2quiver", "jacko"]
         },
         "mrgreen": {
             "priority": 1000,
-            "equip": ["firebow", "t2quiver"]
+            "equip": ["firebow", "t2quiver", "jacko"]
         },
         "mrpumpkin": {
             "priority": 1000,
-            "equip": ["firebow", "t2quiver"]
+            "equip": ["firebow", "t2quiver", "jacko"]
         },
         "mvampire": {
             priority: 0,
             "coop": ["priest"],
-            "equip": ["firebow", "t2quiver"]
+            "equip": ["firebow", "t2quiver", "jacko"]
         },
         "oneeye": {
             "coop": ["priest", "warrior"],
@@ -221,15 +221,15 @@ class Ranger extends Character {
                 "x": -100,
                 "y": 0
             },
-            "equip": ["firebow", "t2quiver"]
+            "equip": ["firebow", "t2quiver", "jacko"]
         },
         "osnake": {
             "priority": 500,
-            "equip": ["hbow", "t2quiver"]
+            "equip": ["hbow", "t2quiver", "orbg"]
         },
         "phoenix": {
             "priority": 1000,
-            "equip": ["firebow", "t2quiver"]
+            "equip": ["firebow", "t2quiver", "jacko"]
         },
         // "pinkgoblin": {
         //     "priority": 100,
@@ -239,15 +239,15 @@ class Ranger extends Character {
         // },
         "pinkgoo": {
             "priority": 1000,
-            "equip": ["bow", "t2quiver"]
+            "equip": ["bow", "t2quiver", "jacko"]
         },
         "poisio": {
             "priority": 250,
-            "equip": ["hbow", "t2quiver"]
+            "equip": ["hbow", "t2quiver", "orbg"]
         },
         "porcupine": {
             "priority": 0,
-            "equip": ["crossbow", "t2quiver"]
+            "equip": ["crossbow", "t2quiver", "orbg"]
         },
         "prat": {
             // Go to a cliff where we can attack them, but they can't attack us.
@@ -260,19 +260,19 @@ class Ranger extends Character {
                 "x": -296.5,
                 "y": 557.5
             },
-            "equip": ["hbow", "quiver"]
+            "equip": ["hbow", "quiver", "orbg"]
         },
         "rat": {
             "priority": 0,
-            "equip": ["hbow", "t2quiver"]
+            "equip": ["hbow", "t2quiver", "orbg"]
         },
         "rooster": {
             "priority": 0,
-            "equip": ["hbow", "t2quiver"]
+            "equip": ["hbow", "t2quiver", "orbg"]
         },
         "scorpion": {
             "priority": 250,
-            "equip": ["bowofthedead", "t2quiver"]
+            "equip": ["bowofthedead", "t2quiver", "orbg"]
         },
         "snake": {
             // Farm them on the main map because of the +1000% luck and gold bonus chances
@@ -282,31 +282,31 @@ class Ranger extends Character {
                 "x": -74,
                 "y": 1904
             },
-            "equip": ["hbow", "t2quiver"]
+            "equip": ["hbow", "t2quiver", "orbg"]
         },
         "snowman": {
             "priority": 1000,
-            "equip": ["hbow", "t2quiver"]
+            "equip": ["hbow", "t2quiver", "orbg"]
         },
         "spider": {
             "priority": 100,
-            "equip": ["bowofthedead", "t2quiver"]
+            "equip": ["bowofthedead", "t2quiver", "orbg"]
         },
         "squig": {
             "priority": 100,
-            "equip": ["hbow", "t2quiver"]
+            "equip": ["hbow", "t2quiver", "orbg"]
         },
         "squigtoad": {
             "priority": 250,
-            "equip": ["hbow", "quiver"]
+            "equip": ["hbow", "quiver", "orbg"]
         },
         "stoneworm": {
             "priority": 0,
-            "equip": ["bowofthedead", "t2quiver"]
+            "equip": ["bowofthedead", "t2quiver", "jacko"]
         },
         "tortoise": {
             "priority": 0,
-            "equip": ["hbow", "t2quiver"]
+            "equip": ["hbow", "t2quiver", "orbg"]
         },
         "wolf": {
             "coop": ["priest", "warrior"],
@@ -318,12 +318,12 @@ class Ranger extends Character {
                 "x": 375,
                 "y": -2475
             },
-            "equip": ["firebow", "t2quiver"]
+            "equip": ["firebow", "t2quiver", "jacko"]
         },
         "wolfie": {
             // The ranger is fast enough to kill these without dying too much.
             "priority": 0,
-            "equip": ["firebow", "t2quiver"]
+            "equip": ["firebow", "t2quiver", "jacko"]
         },
         "xscorpion": {
             "priority": 0,
@@ -335,7 +335,7 @@ class Ranger extends Character {
                 "x": -230,
                 "y": 570
             },
-            "equip": ["firebow", "t2quiver"]
+            "equip": ["firebow", "t2quiver", "orbg"]
         }
     }
     mainTarget: MonsterName = "scorpion"

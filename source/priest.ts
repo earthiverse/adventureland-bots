@@ -13,10 +13,12 @@ const SPECIAL = 500
 class Priest extends Character {
     targetPriority: TargetPriorityList = {
         "arcticbee": {
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["orbg"]
         },
         "armadillo": {
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["orbg"]
         },
         "bat": {
             "priority": EASY,
@@ -24,7 +26,8 @@ class Priest extends Character {
                 "map": "cave",
                 "x": 300,
                 "y": -1100
-            }
+            },
+            "equip": ["orbg"]
         },
         "bbpompom": {
             "coop": ["priest"],
@@ -34,16 +37,18 @@ class Priest extends Character {
                 "map": "winter_cave",
                 "x": 50,
                 "y": -100
-            }
+            },
+            "equip": ["jacko"]
         },
         "bee": {
             "priority": EASY,
             "holdPositionFarm": true,
-            farmingPosition: {
+            "farmingPosition": {
                 "map": "main",
                 "x": 200,
                 "y": 1500
-            }
+            },
+            "equip": ["orbg"]
         },
         "bigbird": {
             // The ranger is fast enough to avoid these fairly well
@@ -53,40 +58,47 @@ class Priest extends Character {
                 "map": "main",
                 "x": 1450,
                 "y": 30
-            }
+            },
+            "equip": ["jacko"]
         },
         "boar": {
             // The ranger is fast enough to kill these without dying too much.
             "coop": ["warrior", "priest"],
             "priority": DIFFICULT,
             "holdPositionFarm": true,
-            farmingPosition: {
+            "farmingPosition": {
                 "map": "winterland",
                 "x": -50,
                 "y": -850
-            }
+            },
+            "equip": ["jacko"]
         },
         "booboo": {
             "priority": DIFFICULT,
             "holdPositionFarm": true,
-            farmingPosition: {
+            "farmingPosition": {
                 "map": "spookytown",
                 "x": 250,
                 "y": -600
-            }
+            },
+            "equip": ["jacko"]
         },
         "cgoo": {
-            "priority": DIFFICULT
+            "priority": DIFFICULT,
+            "equip": ["jacko"]
         },
         "crab": {
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["orbg"]
         },
         "crabx": {
             // They can hurt, but they move really slow and they're pretty out of the way.
-            "priority": MEDIUM
+            "priority": MEDIUM,
+            "equip": ["orbg"]
         },
         "croc": {
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["orbg"]
         },
         // "dragold": {
         //     "coop": ["warrior"],
@@ -102,10 +114,12 @@ class Priest extends Character {
                 "map": "desertland",
                 "x": 100,
                 "y": -650
-            }
+            },
+            "equip": ["jacko"]
         },
         "frog": {
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["orbg"]
         },
         "fvampire": {
             "coop": ["warrior", "ranger"],
@@ -116,7 +130,8 @@ class Priest extends Character {
                 "map": "halloween",
                 "x": -150,
                 "y": -1500
-            }
+            },
+            "equip": ["jacko"]
         },
         "ghost": {
             "coop": ["priest"],
@@ -126,7 +141,8 @@ class Priest extends Character {
                 "map": "halloween",
                 "x": 300,
                 "y": -1100
-            }
+            },
+            "equip": ["jacko"]
         },
         "goldenbat": {
             "priority": SPECIAL,
@@ -134,26 +150,32 @@ class Priest extends Character {
                 "map": "cave",
                 "x": 300,
                 "y": -1100
-            }
+            },
+            "equip": ["jacko"]
         },
         "goo": {
             "priority": EASY,
+            "equip": ["orbg"]
         },
         "greenjr": {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
-            "holdAttackWhileMoving": true
+            "holdAttackWhileMoving": true,
+            "equip": ["jacko"]
         },
         "hen": {
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["orbg"]
         },
         "iceroamer": {
             "priority": DIFFICULT,
+            "equip": ["jacko"]
         },
         "jr": {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
-            "holdAttackWhileMoving": true
+            "holdAttackWhileMoving": true,
+            "equip": ["jacko"]
         },
         "mechagnome": {
             "coop": ["priest", "ranger"],
@@ -164,10 +186,12 @@ class Priest extends Character {
                 "map": "cyberland",
                 "x": 100,
                 "y": -150
-            }
+            },
+            "equip": ["jacko"]
         },
         "minimush": {
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["orbg"]
         },
         "mole": {
             "coop": ["priest", "warrior"],
@@ -178,13 +202,16 @@ class Priest extends Character {
                 "map": "tunnel",
                 "x": 50,
                 "y": -75
-            }
+            },
+            "equip": ["jacko"]
         },
         "mrgreen": {
-            "priority": SPECIAL
+            "priority": SPECIAL,
+            "equip": ["jacko"]
         },
         "mrpumpkin": {
-            "priority": SPECIAL
+            "priority": SPECIAL,
+            "equip": ["jacko"]
         },
         "mummy": {
             "coop": ["warrior"],
@@ -195,11 +222,13 @@ class Priest extends Character {
                 "map": "spookytown",
                 "x": 210,
                 "y": -1030
-            }
+            },
+            "equip": ["jacko"]
         },
         "mvampire": {
             priority: 0,
-            "coop": ["ranger"]
+            "coop": ["ranger"],
+            "equip": ["jacko"]
         },
         "oneeye": {
             "coop": ["ranger", "warrior"],
@@ -210,13 +239,16 @@ class Priest extends Character {
                 "map": "level2w",
                 "x": -135,
                 "y": -50
-            }
+            },
+            "equip": ["jacko"]
         },
         "osnake": {
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["orbg"]
         },
         "phoenix": {
-            "priority": SPECIAL
+            "priority": SPECIAL,
+            "equip": ["orbg"]
         },
         // "pinkgoblin": {
         //     "priority": 100,
@@ -224,18 +256,22 @@ class Priest extends Character {
         //     "coop": ["warrior", "ranger"]
         // },
         "pinkgoo": {
-            "priority": 1000
+            "priority": 1000,
+            "equip": ["jacko"]
         },
         "plantoid": {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
-            "holdAttackWhileMoving": true
+            "holdAttackWhileMoving": true,
+            "equip": ["jacko"]
         },
         "poisio": {
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["orbg"]
         },
         "porcupine": {
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["orbg"]
         },
         "prat": {
             // Our plan is to go to a spot on a cliff where they can't attack us, but we can attack them.
@@ -243,48 +279,60 @@ class Priest extends Character {
             "holdPositionFarm": true,
             "holdAttackInEntityRange": true,
             "priority": DIFFICULT,
-            farmingPosition: {
+            "farmingPosition": {
                 "map": "level1",
                 "x": -296.5,
                 "y": 557.5
-            }
+            },
+            "equip": ["jacko"]
         },
         "rat": {
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["orbg"]
         },
         "rooster": {
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["orbg"]
         },
         "scorpion": {
-            "priority": MEDIUM
+            "priority": MEDIUM,
+            "equip": ["orbg"]
         },
         "snake": {
             // Farm them on the main map because of the +1000% luck and gold bonus chances
             "priority": EASY,
-            farmingPosition: {
+            holdPositionFarm: true,
+            "farmingPosition": {
                 "map": "main",
                 "x": -74,
                 "y": 1904
-            }
+            },
+            "equip": ["orbg"]
         },
         "snowman": {
-            "priority": SPECIAL
+            "priority": SPECIAL,
+            "equip": ["orbg"]
         },
         "spider": {
-            "priority": MEDIUM
+            "priority": MEDIUM,
+            "equip": ["orbg"]
         },
         "squig": {
             "priority": EASY,
+            "equip": ["orbg"]
         },
         "squigtoad": {
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["orbg"]
         },
         "stoneworm": {
             // Don't attack if we're walking by them, they hurt.
-            "priority": DIFFICULT
+            "priority": DIFFICULT,
+            "equip": ["jacko"]
         },
         "tortoise": {
-            "priority": EASY
+            "priority": EASY,
+            "equip": ["orbg"]
         },
         "wolf": {
             "coop": ["warrior"],
@@ -295,29 +343,32 @@ class Priest extends Character {
                 "map": "winterland",
                 "x": 525,
                 "y": -2475
-            }
+            },
+            "equip": ["jacko"]
         },
         "wolfie": {
             // The ranger is fast enough to kill these without dying too much.
             "coop": ["warrior", "priest"],
             "priority": DIFFICULT,
             "holdPositionFarm": true,
-            farmingPosition: {
+            "farmingPosition": {
                 "map": "winterland",
                 "x": -50,
                 "y": -1825
-            }
+            },
+            "equip": ["jacko"]
         },
         "xscorpion": {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
             "holdPositionFarm": true,
-            farmingPosition: {
+            "farmingPosition": {
                 "map": "halloween",
                 "x": -230,
                 "y": 570
-            }
+            },
+            "equip": ["orbg"]
         }
     }
     mainTarget: MonsterName = "scorpion"
