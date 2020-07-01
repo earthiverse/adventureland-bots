@@ -19,6 +19,7 @@ export function isPlayer(entity: Entity): boolean {
 
 export async function startKonami(): Promise<MonsterName> {
     const result = new Promise<MonsterName>((resolve) => {
+        // TODO: Switch this to parent.socket.on() and remove it. There are many game_response events which could cause this one to get lost.
         parent.socket.once("game_response", (response: { response: string; monster: MonsterName }) => {
             resolve(response.monster)
         })

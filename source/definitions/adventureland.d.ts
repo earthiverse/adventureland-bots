@@ -45,6 +45,26 @@ declare global {
    */
   const bank_packs: { [T in BankPackType]: [MapName, number, number] }
 
+  const character: {
+    // TODO: Get a list of events
+    /**
+     * Sets up an event listener for the character. See http://adventure.land/docs/code/character/events for more info.
+     * @param event The event name to listen to
+     * @param callback The function that gets called when the event triggers
+     */
+    on(event: string, callback?: (data: any) => void): void
+  }
+
+  const game: {
+    // TODO: Get a list of events
+    /**
+     * Sets up an event listener for the game. See http://adventure.land/docs/code/game/events for more info.
+     * @param event The event name to listen to
+     * @param callback The function that gets called when the event triggers
+     */
+    on(event: string, callback?: (data: any) => void): void
+  }
+
   /**
    * Accept a magiport request from a mage
    * @param name The name of the mage offering a magiport

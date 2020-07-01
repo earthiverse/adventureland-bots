@@ -31,7 +31,7 @@ export abstract class Character {
         // Default clothing
         "shoes": 2, "pants": 2, "coat": 2, "helmet": 2, "gloves": 2,
         // Common & useless stuff
-        "cclaw": 2, "hpamulet": 1, "hpbelt": 1, "maceofthedead": 2, "ringsj": 1, "slimestaff": 2, "spear": 2, "throwingstars": 2, "vitearring": 1, "vitring": 1,
+        "cclaw": 2, "hpamulet": 1, "hpbelt": 1, "ringsj": 1, "vitearring": 1, "vitring": 1,
     }
     protected itemsToDismantle: ItemLevelInfo = {
     }
@@ -156,8 +156,6 @@ export abstract class Character {
                     }
                 }
             }
-
-            this.loot()
         } catch (error) {
             console.error(error)
         }
@@ -165,7 +163,7 @@ export abstract class Character {
     }
 
     public async run(): Promise<void> {
-        // await this.lootSetup()
+        await this.lootSetup()
         await this.infoSetup()
         this.infoLoop()
         this.healLoop()
@@ -176,41 +174,40 @@ export abstract class Character {
         this.attackLoop()
     }
 
-    // protected async lootSetup(): Promise<void> {
-    //     parent.socket.on("drop", (data: { id: string, } & IPosition) => {
-    //         console.info(`Chest dropped at ${data.map},${data.x},${data.y}`)
-    //         if (distance(parent.character, data) > 800) return // Chests over a 800 radius have a penalty as per @Wizard in #feedback (Discord) on 11/26/2019
-    //         const party: PartyInfo = getPartyInfo()
+    protected async lootSetup(): Promise<void> {
+        game.on("drop", (data: { id: string, chest: string } & IPosition) => {
+            console.info(`Chest dropped at ${data.map},${data.x},${data.y}`)
+            if (distance(parent.character, data) > 800) return // Chests over a 800 radius have a penalty as per @Wizard in #feedback (Discord) on 11/26/2019
+            const party: PartyInfo = getPartyInfo()
 
-    //         let shouldLoot = true
-    //         for (const id of parent.party_list) {
-    //             if (id == parent.character.id) continue // Skip ourself
+            let shouldLoot = true
+            for (const id of parent.party_list) {
+                if (id == parent.character.id) continue // Skip ourself
 
-    //             const partyMember = parent.entities[id]
-    //             if (!partyMember) continue
-    //             if (distance(partyMember, chest) > 800) continue
-    //             if (!party[id]) continue
+                const partyMember = parent.entities[id]
+                if (!partyMember) continue
+                if (distance(partyMember, data) > 800) continue
+                if (!party[id]) continue
 
-    //             if (["chest3", "chest4"].includes(chest.skin)) {
-    //                 if (parent.character.goldm >= party[id].goldm) continue
-    //             }
-    //             else {
-    //                 if (parent.character.luckm >= party[id].luckm) continue
-    //             }
+                if (["chest3", "chest4"].includes(data.chest)) {
+                    if (parent.character.goldm >= party[id].goldm) continue
+                } else {
+                    if (parent.character.luckm >= party[id].luckm) continue
+                }
 
-    //             shouldLoot = false
-    //             break
-    //         }
+                shouldLoot = false
+                break
+            }
 
-    //         if (shouldLoot) {
-    //             parent.socket.emit("open_chest", { id: data.id })
-    //         }
-    //     })
-    // }
+            if (shouldLoot) {
+                parent.socket.emit("open_chest", { id: data.id })
+            }
+        })
+    }
 
     protected async infoSetup(): Promise<void> {
         // Setup death timers for special monsters
-        parent.socket.on("hit", (data: { id: string, kill?: boolean }) => {
+        game.on("hit", (data: { id: string, kill?: boolean }) => {
             if (!data.kill) return // We only care if the entity dies
             const entity = parent.entities[data.id]
             if (entity && entity.mtype
@@ -380,40 +377,6 @@ export abstract class Character {
         // }
 
         return true
-    }
-
-    protected loot(): void {
-        let i = 0
-        const party: PartyInfo = getPartyInfo()
-        for (const chestID in parent.chests) {
-            const chest = parent.chests[chestID]
-            if (distance(parent.character, chest) > 800) continue // Chests over a 800 radius have a penalty as per @Wizard in #feedback (Discord) on 11/26/2019
-
-            let shouldLoot = true
-            for (const id of parent.party_list) {
-                if (id == parent.character.id) continue // Skip ourself
-
-                const partyMember = parent.entities[id]
-                if (!partyMember) continue
-                if (distance(partyMember, chest) > 800) continue
-                if (!party[id]) continue
-
-                if (["chest3", "chest4"].includes(chest.skin)) {
-                    if (parent.character.goldm >= party[id].goldm) continue
-                }
-                else {
-                    if (parent.character.luckm >= party[id].luckm) continue
-                }
-
-                shouldLoot = false
-                break
-            }
-
-            if (shouldLoot) {
-                parent.socket.emit("open_chest", { id: chestID })
-                if (++i > 10) break // Only open 10 chests at a time to help with server call costs
-            }
-        }
     }
 
     protected async attackLoop(): Promise<void> {
@@ -637,7 +600,7 @@ export abstract class Character {
             console.info(`Took ${Date.now() - before}ms to prepare pathfinding.`)
 
             // Event to scramble characters if we take stacked damage
-            parent.socket.on("stacked", () => {
+            character.on("stacked", () => {
                 // DEBUG
                 console.info(`Scrambling ${parent.character.id} because we're stacked!`)
 
