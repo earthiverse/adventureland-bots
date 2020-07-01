@@ -176,7 +176,6 @@ export abstract class Character {
 
     protected async lootSetup(): Promise<void> {
         parent.socket.on("drop", (data: { id: string, chest: string } & IPosition) => {
-            console.info(`Chest dropped at ${data.map},${data.x},${data.y}`)
             if (distance(parent.character, data) > 800) return // Chests over a 800 radius have a penalty as per @Wizard in #feedback (Discord) on 11/26/2019
             const party: PartyInfo = getPartyInfo()
 
