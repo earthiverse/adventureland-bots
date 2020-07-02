@@ -208,12 +208,12 @@ export abstract class Character {
 
     protected async infoSetup(): Promise<void> {
         // Setup death timers for special monsters
-        game.on("hit", (data: { id: string, kill?: boolean }) => {
+        game.on("hit", (data: { target: string, kill?: boolean }) => {
             if (!data.kill) return // We only care if the entity dies
-            const entity = parent.entities[data.id]
+            const entity = parent.entities[data.target]
 
             // DEBUG
-            console.info(`${data.id} died.`)
+            console.info(`${data.target} died.`)
 
             if (entity && entity.mtype
                 && ["fvampire", "greenjr", "jr", "mvampire"].includes(entity.mtype)
