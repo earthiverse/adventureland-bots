@@ -34,8 +34,10 @@ class Merchant extends Character {
         super()
 
         // Remove weapons and armor, we don't switch as a merchant
-        this.itemsToKeep.splice(this.itemsToKeep.indexOf("lantern"), 1)
         this.itemsToKeep.splice(this.itemsToKeep.indexOf("jacko"), 1)
+        this.itemsToKeep.splice(this.itemsToKeep.indexOf("lantern"), 1)
+        this.itemsToKeep.splice(this.itemsToKeep.indexOf("orbg"), 1)
+        this.itemsToKeep.splice(this.itemsToKeep.indexOf("test_orb"), 1)
 
         this.itemsToKeep.push(
             "cscroll0", "cscroll1", "cscroll2",
