@@ -212,13 +212,10 @@ export abstract class Character {
             if (!data.kill) return // We only care if the entity dies
             const entity = parent.entities[data.target]
 
-            // DEBUG
-            console.info(`${data.target} died.`)
-
             if (entity && entity.mtype
                 && ["fvampire", "greenjr", "jr", "mvampire"].includes(entity.mtype)
                 && G.monsters[entity.mtype].respawn && G.monsters[entity.mtype].respawn > 0) {
-                const wait = (G.monsters[entity.mtype].respawn + 5) * 1000
+                const wait = (G.monsters[entity.mtype].respawn + 60) * 1000
 
                 // DEBUG
                 console.info(`Setting respawn timer for ${entity.mtype} for ${wait}ms`)
