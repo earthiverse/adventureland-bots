@@ -1,7 +1,7 @@
 import axios from "axios"
 import socketio from "socket.io-client"
 import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, AuthData, StartData, EntityData, CharacterData, PartyData, ChestData, PlayerData, QData, DisappearData, ChestOpenedData, HitData, NewMapData, ActionData, EvalData } from "./definitions/adventureland-server"
-import { ServerRegion, ServerIdentifier, CharacterEntity } from "./definitions/adventureland"
+import { ServerRegion, ServerIdentifier, CharacterEntity, SkillName } from "./definitions/adventureland"
 
 export class Game {
     public socket: SocketIOClient.Socket
@@ -12,6 +12,7 @@ export class Game {
     public character: CharacterData
     public chests = new Map<string, ChestData>()
     public entities = new Map<string, EntityData>()
+    public nextSkill = new Map<SkillName, Date>()
     public party: PartyData
     public players = new Map<string, PlayerData>()
     public projectiles = new Map<string, ActionData & { date: Date }>()
@@ -68,6 +69,8 @@ export class Game {
             id: data.id,
             x: data.x,
             y: data.y,
+            going_x: data.going_x,
+            going_y: data.going_y,
             cid: data.cid,
             stand: data.stand,
             controller: data.controller,
@@ -157,7 +160,23 @@ export class Game {
         })
 
         this.socket.on("eval", (data: EvalData) => {
-            // TODO: Regex skill_timeout('attack',834.1518117738793)
+            // Skill timeouts (like attack) are sent via eval
+            const skillReg = /skill_timeout\s*\(\s*['\"](.+?)['\"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.exec(data.code)
+            if (skillReg) {
+                const skill = skillReg[1] as SkillName
+                let cooldown = Number.parseFloat(skillReg[2])
+                if (!cooldown) G.skills[skill].cooldown
+                this.nextSkill.set(skill, new Date(Date.now() + Math.ceil(cooldown)))
+                return
+            }
+
+            // Potion timeouts are sent via eval
+            const potReg = /pot_timeout\s*\(\s*(\d+\.?\d+?)\s*\)/.exec(data.code)
+            if (potReg) {
+                let cooldown = Number.parseFloat(skillReg[2])
+                this.nextSkill.set("use_hp", new Date(Date.now() + Math.ceil(cooldown)))
+                return
+            }
         })
 
         // TODO: Figure out type. I think it's just a string?

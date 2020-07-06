@@ -57,6 +57,8 @@ export type CharacterData = {
     id: string
     x: number
     y: number
+    going_x?: number
+    going_y?: number
     cid: number
     stand: boolean,
     controller: string
