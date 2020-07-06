@@ -103,7 +103,7 @@ export class Bot {
         let nextSkill = this.game.nextSkill.get(skill)
         if (!nextSkill) return 0
 
-        let cooldown = Date.now() - nextSkill.getTime()
+        let cooldown = nextSkill.getTime() - Date.now()
         if (cooldown < 0) return 0
         return cooldown
     }

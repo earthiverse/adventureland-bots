@@ -173,7 +173,7 @@ export class Game {
             // Potion timeouts are sent via eval
             const potReg = /pot_timeout\s*\(\s*(\d+\.?\d+?)\s*\)/.exec(data.code)
             if (potReg) {
-                let cooldown = Number.parseFloat(skillReg[2])
+                let cooldown = Number.parseFloat(potReg[1])
                 this.nextSkill.set("use_hp", new Date(Date.now() + Math.ceil(cooldown)))
                 return
             }
@@ -256,20 +256,9 @@ export class Game {
     }
 
     async connect(auth: string, character: string, user: string) {
-
-        console.log("!!")
-
         await Promise.all(this.promises)
 
-        console.log("promises, promises...")
-
-        // TODO: receive on("start")
-
-        console.log("??")
-
         this.socket.open()
-
-        console.log("??")
 
         // When we're loaded, authenticate
         this.socket.once("welcome", () => {
@@ -286,8 +275,15 @@ export class Game {
                 width: 1920
             } as AuthData)
         })
-
-        console.log("Connected?")
+        
+        return new Promise((resolve, reject) => {
+            this.socket.once("start", (data) => {
+                resolve()
+            })
+            setTimeout(() => {
+                reject(`Start Timeout (10000ms)`)
+            }, 10000)
+        })
     }
 
     async disconnect() {
