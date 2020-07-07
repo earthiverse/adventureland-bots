@@ -468,7 +468,9 @@ export type GMonster = {
   frequency: number;
   hp: number;
   range: number;
-  /** Respawn time in seconds. Can be -1 (e.g. goldenbat), which means it's special. */
+  /** Respawn time in seconds.
+   * Can be -1 (e.g. goldenbat), which means it's special.
+   * For >200 second respawn monsters, the variance is from 0.6 to 2.2 of their base time (https://discordapp.com/channels/238332476743745536/238332476743745536/729997473484898327) */
   respawn: number;
   speed: number;
   xp: number;

@@ -215,7 +215,9 @@ export abstract class Character {
             if (entity && entity.mtype
                 && ["fvampire", "greenjr", "jr", "mvampire"].includes(entity.mtype)
                 && G.monsters[entity.mtype].respawn && G.monsters[entity.mtype].respawn > 0) {
-                const wait = (G.monsters[entity.mtype].respawn + 60) * 1000
+                // For >200 second respawn monsters, the variance is from 0.6 to 2.2 of their base time
+                // https://discordapp.com/channels/238332476743745536/238332476743745536/729997473484898327
+                const wait = (G.monsters[entity.mtype].respawn * 2.2) * 1000
 
                 // DEBUG
                 console.info(`Setting respawn timer for ${entity.mtype} for ${wait}ms`)
