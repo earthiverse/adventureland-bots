@@ -1,16 +1,21 @@
 import dotenv from "dotenv"
 import { Game } from "./game.js"
 import { Bot } from "./bot.js"
+import { ChestData } from "./definitions/adventureland-server.js"
 
-dotenv.config({ path: "../.env" })
+dotenv.config({ path: "../earthRan2.env" })
 console.log([process.env.AUTH, process.env.CHARACTER, process.env.USER])
 
 let game = new Game("US", "I")
 console.log("Connecting...")
-game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(() => {
+game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(async () => {
     console.info("Starting bot!")
-
     let bot = new Bot(game)
+
+    // Open chests as soon as they are dropped
+    game.socket.on("drop", (data: ChestData) => {
+        game.socket.emit("open_chest", { id: data.id })
+    })
 
     async function attackLoop() {
         // Cooldown check
