@@ -12,12 +12,18 @@ game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(asy
     console.info("Starting bot!")
     let bot = new Bot(game)
 
+    game.socket.on("disconnect_reason", (data: string) => {
+        console.warn(`Disconnecting (${data})`)
+        game.disconnect()
+    })
+
     // Open chests as soon as they are dropped
     game.socket.on("drop", (data: ChestData) => {
         game.socket.emit("open_chest", { id: data.id })
     })
 
     async function attackLoop() {
+        if (!game.active) return
         // Cooldown check
         if (bot.getCooldown("attack")) {
             console.info(`Attack is on cooldown ${bot.getCooldown("attack")}`)
@@ -38,6 +44,7 @@ game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(asy
     attackLoop()
 
     async function healLoop() {
+        if (!game.active) return
         if (bot.getCooldown("use_hp")) {
             console.info(`Heal is on cooldown ${bot.getCooldown("use_hp")}`)
             setTimeout(async () => { healLoop() }, bot.getCooldown("use_hp"))

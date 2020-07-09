@@ -59,6 +59,7 @@ export type CharacterData = {
     y: number
     going_x?: number
     going_y?: number
+    moving: boolean
     cid: number
     stand: boolean,
     controller: string
@@ -105,6 +106,8 @@ export type CharacterData = {
     // TODO: Figure this out
     acx: any
     xcx: string[]
+    // Extra events (e.g. ["game_response", {response: "upgrade_success", level: 4, num: 8}])
+    hitchhikers?: [string, any][]
 }
 
 export type ChestData = {
@@ -132,6 +135,11 @@ export type ChestOpenedData = {
 } | {
     id: string
     gone: true
+}
+
+export type DeathData = {
+    id: string
+    place?: "attack" | string
 }
 
 export type DisappearData = {
@@ -183,11 +191,31 @@ export type EvalData = {
     code: string
 }
 
-export type GameResponseData = {
+export type GameResponseData = GameResponseDataObject | GameResponseDataString
+
+// TODO: split these in to other objects
+export type GameResponseDataObject = GameResponseAttackFailed | GameResponseBuySuccess | {
     response: "bank_restrictions" | "gold_received" | "item_placeholder" | "item_received" | string
     gold: number
     name: string
-} | "skill_too_far" | "upgrade_in_progress"
+}
+
+export type GameResponseDataString = "buy_cant_npc" | "buy_cant_space" | "buy_cost" | "skill_too_far" | "upgrade_in_progress" | string
+
+export type GameResponseAttackFailed = {
+    response: "attack_failed",
+    place: "attack" | string
+    id: string
+}
+
+export type GameResponseBuySuccess = {
+    response: "buy_succcess"
+    cost: number
+    // Inventory slot that the item is now in
+    num: number
+    name: ItemName
+    q: number
+}
 
 export type HitData = {
     anim: "arrow_hit" | "miss" | "reflect" | "slash1" | string

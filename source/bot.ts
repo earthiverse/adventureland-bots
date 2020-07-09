@@ -1,6 +1,6 @@
-import { Game } from "./game";
-import { CharacterData, ActionData, NewMapData, EvalData, EntityData } from "./definitions/adventureland-server";
-import { SkillName, MonsterName } from "./definitions/adventureland";
+import { Game } from "./game.js";
+import { CharacterData, ActionData, NewMapData, EvalData, EntityData, GameResponseData, GameResponseBuySuccess, GameResponseDataObject, DeathData, GameResponseAttackFailed } from "./definitions/adventureland-server";
+import { SkillName, MonsterName, ItemName } from "./definitions/adventureland";
 
 const TIMEOUT = 5000
 
@@ -11,17 +11,118 @@ export class Bot {
         this.game = game
     }
 
-    public async move(x: number, y: number) {
-        const moveStarted = new Promise((resolve) => {
-            const moveCheck = (data: CharacterData) => {
-                if (data.going_x == x && data.going_y == y) {
-                    this.game.socket.removeListener("player", moveCheck)
+    public async attack(id: string) {
+        if (!this.game.entities.has(id)) return Promise.reject(`No Entity with ID '${id}'`)
+
+        const attackStarted = new Promise((resolve, reject) => {
+            const deathCheck = (data: DeathData) => {
+                if (data.id == id) {
+                    this.game.socket.removeListener("action", attackCheck)
+                    this.game.socket.removeListener("game_response", failCheck)
+                    this.game.socket.removeListener("death", deathCheck)
+                    reject(`Entity ${id} not found`)
+                }
+            }
+            const failCheck = (data: GameResponseData) => {
+                if ((data as GameResponseDataObject).response == "attack_failed") {
+                    if ((data as GameResponseAttackFailed).id == id) {
+                        this.game.socket.removeListener("action", attackCheck)
+                        this.game.socket.removeListener("game_response", failCheck)
+                        this.game.socket.removeListener("death", deathCheck)
+                        reject(`Attack on ${id} failed.`)
+                    }
+                }
+            }
+            const attackCheck = (data: ActionData) => {
+                if (data.attacker == this.game.character.id) {
+                    this.game.socket.removeListener("action", attackCheck)
+                    this.game.socket.removeListener("game_response", failCheck)
+                    this.game.socket.removeListener("death", deathCheck)
                     resolve()
                 }
             }
-            this.game.socket.on("player", moveCheck)
+            setTimeout(() => {
+                this.game.socket.removeListener("action", attackCheck)
+                this.game.socket.removeListener("game_response", failCheck)
+                this.game.socket.removeListener("death", deathCheck)
+                reject(`Attack Timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.game.socket.on("action", attackCheck)
+            this.game.socket.on("game_response", failCheck)
+            this.game.socket.on("death", deathCheck)
         })
-        const moveTimeout = new Promise((_resolve, reject) => setTimeout(reject, TIMEOUT))
+        this.game.socket.emit("attack", { id: id })
+        return attackStarted
+    }
+
+    public async buy(itemName: ItemName, quantity: number = 1) {
+        const itemReceived = new Promise((resolve, reject) => {
+            const buyCheck1 = (data: CharacterData) => {
+                if (!data.hitchhikers) return
+                for (let hitchhiker of data.hitchhikers) {
+                    if (hitchhiker[0] == "game_response") {
+                        let data: GameResponseData = hitchhiker[1]
+                        if ((data as GameResponseDataObject).response == "buy_success"
+                            && (data as GameResponseBuySuccess).name == itemName
+                            && (data as GameResponseBuySuccess).q == quantity) {
+                            this.game.socket.removeListener("player", buyCheck1)
+                            this.game.socket.removeListener("game_response", buyCheck2)
+                            resolve()
+                        }
+                    }
+                }
+            }
+            const buyCheck2 = (data: GameResponseData) => {
+                if (data = "buy_cant_npc") {
+                    this.game.socket.removeListener("player", buyCheck1)
+                    this.game.socket.removeListener("game_response", buyCheck2)
+                    reject(`Cannot buy ${quantity} ${itemName}(s) from an NPC`)
+                } else if (data == "buy_cant_space") {
+                    this.game.socket.removeListener("player", buyCheck1)
+                    this.game.socket.removeListener("game_response", buyCheck2)
+                    reject(`Not enough inventory space to buy ${quantity} ${itemName}(s)`)
+                } else if (data == "buy_cost") {
+                    this.game.socket.removeListener("player", buyCheck1)
+                    this.game.socket.removeListener("game_response", buyCheck2)
+                    reject(`Not enough gold to buy ${quantity} ${itemName}(s)`)
+                }
+            }
+            setTimeout(() => {
+                this.game.socket.removeListener("player", buyCheck1)
+                this.game.socket.removeListener("game_response", buyCheck2)
+                reject(`Buy Timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.game.socket.on("player", buyCheck1)
+            this.game.socket.on("game_response", buyCheck2)
+        })
+
+        if (Game.G.items[itemName].s) {
+            // Item is stackable
+            this.game.socket.emit("buy", { name: itemName, quantity: quantity })
+        } else {
+            // Item is not stackable.
+            this.game.socket.emit("buy", { name: itemName })
+        }
+        return itemReceived
+    }
+
+    public async move(x: number, y: number) {
+        const moveFinished = new Promise((resolve, reject) => {
+            const moveFinishedCheck = (data: CharacterData) => {
+                // TODO: Improve this to check if we moved again, and if we did, reject()
+                if (data.moving) return
+                if (data.x == x && data.y == y) {
+                    this.game.socket.removeListener("player", moveFinishedCheck)
+                    resolve()
+                }
+            }
+            const distance = Math.sqrt((this.game.character.x - x) ** 2 - (this.game.character.y - y) ** 2)
+            setTimeout(() => {
+                this.game.socket.removeListener("player", moveFinishedCheck)
+                reject(`Move Timeout (${TIMEOUT + distance * 1000 / this.game.character.speed}ms)`)
+            }, (TIMEOUT + distance * 1000 / this.game.character.speed))
+            this.game.socket.on("player", moveFinishedCheck)
+        })
         this.game.socket.emit("move", {
             x: this.game.character.x,
             y: this.game.character.y,
@@ -29,61 +130,47 @@ export class Bot {
             going_y: y,
             m: this.game.character.m
         })
-        return Promise.race([moveStarted, moveTimeout])
+        return moveFinished
     }
 
-    public async attack(id: string) {
-        if (!this.game.entities.has(id)) return Promise.reject(`No Entity with ID '${id}'`)
+    public async regenHP() {
+        if (this.game.nextSkill.get("use_hp")?.getTime() > Date.now()) return Promise.reject("use_hp is on cooldown")
 
-        const attackStarted = new Promise((resolve, reject) => {
-            const attackCheck = (data: ActionData) => {
-                if (data.attacker == this.game.character.id) {
-                    this.game.socket.removeListener("action", attackCheck)
+        const regenReceived = new Promise((resolve, reject) => {
+            const regenCheck = (data: EvalData) => {
+                if (data.code.includes("pot_timeout")) {
+                    this.game.socket.removeListener("eval", regenCheck)
                     resolve()
                 }
             }
             setTimeout(() => {
-                this.game.socket.removeListener("action", attackCheck)
-                reject(`Attack Timeout (${TIMEOUT}ms)`)
+                this.game.socket.removeListener("eval", regenCheck)
+                reject(`regenHP Timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
-            this.game.socket.on("action", attackCheck)
-        })
-        this.game.socket.emit("attack", { id: id })
-        return attackStarted
-    }
-
-    public async regenHP() {
-        if (this.game.nextSkill.get("use_hp")?.getTime() < Date.now()) return Promise.reject("use_hp is on cooldown")
-
-        const regenReceived = new Promise((resolve) => {
-            const regenCheck = (data: EvalData) => {
-                if (data.code.includes("pot_timeout")) {
-                    this.game.socket.removeListener("eval", regenCheck)
-                    resolve()
-                }
-            }
             this.game.socket.on("eval", regenCheck)
         })
-        const regenTimeout = new Promise((_resolve, reject) => setTimeout(reject, TIMEOUT))
         this.game.socket.emit("use", { item: "hp" })
-        return Promise.race([regenReceived, regenTimeout])
+        return regenReceived
     }
 
     public async regenMP() {
-        if (this.game.nextSkill.get("use_mp")?.getTime() < Date.now()) return Promise.reject("use_mp is on cooldown")
+        if (this.game.nextSkill.get("use_mp")?.getTime() > Date.now()) return Promise.reject("use_mp is on cooldown")
 
-        const regenReceived = new Promise((resolve) => {
+        const regenReceived = new Promise((resolve, reject) => {
             const regenCheck = (data: EvalData) => {
                 if (data.code.includes("pot_timeout")) {
                     this.game.socket.removeListener("eval", regenCheck)
                     resolve()
                 }
             }
+            setTimeout(() => {
+                this.game.socket.removeListener("eval", regenCheck)
+                reject(`regenMP Timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
             this.game.socket.on("eval", regenCheck)
         })
-        const regenTimeout = new Promise((_resolve, reject) => setTimeout(reject, TIMEOUT))
         this.game.socket.emit("use", { item: "mp" })
-        return Promise.race([regenReceived, regenTimeout])
+        return regenReceived
     }
 
     public async warpToTown() {
@@ -94,9 +181,12 @@ export class Bot {
                 if (currentMap == data.map) resolve()
                 else reject(`We are now in ${data.map}, but we should be in ${currentMap}`)
             })
+
+            setTimeout(() => {
+                reject(`warpToTown Timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
         })
-        const warpTimeout = new Promise((_resolve, reject) => setTimeout(reject, TIMEOUT))
-        return Promise.race([warpComplete, warpTimeout])
+        return warpComplete
     }
 
     public getCooldown(skill: SkillName): number {

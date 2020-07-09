@@ -306,132 +306,134 @@ declare global {
     use_town: boolean;
   }
 
-  let G: {
-    base_gold: { [T in MonsterName]?: {
-      /** The base amount of gold this monster drops if you kill it in the given map */
-      [T in MapName]?: number
+  let G: GData
+}
+
+export type GData = {
+  base_gold: { [T in MonsterName]?: {
+    /** The base amount of gold this monster drops if you kill it in the given map */
+    [T in MapName]?: number
+  } };
+  classes: { [T in CharacterType]: {
+    /** A list of items that the character can equip using both hands */
+    doublehand: { [T in WeaponType]?: {
+      /** Modifier on the given stat for equipping this type of item */
+      [T in StatType]?: number
     } };
-    classes: { [T in CharacterType]: {
-      /** A list of items that the character can equip using both hands */
-      doublehand: { [T in WeaponType]?: {
-        /** Modifier on the given stat for equipping this type of item */
-        [T in StatType]?: number
-      } };
-      /** A list of items that the character can equip in its mainhand */
-      mainhand: { [T in WeaponType]?: {
-        /** Modifier on the given stat for equipping this type of item */
-        [T in StatType]?: number
-      } };
-      /** A list of items that the character can equip in its offhand */
-      offhand: { [T in WeaponType]?: {
-        /** Modifier on the given stat for equipping this type of item */
-        [T in StatType]?: number
-      } };
+    /** A list of items that the character can equip in its mainhand */
+    mainhand: { [T in WeaponType]?: {
+      /** Modifier on the given stat for equipping this type of item */
+      [T in StatType]?: number
     } };
-    conditions: { [T in ConditionName]: {
-      /** Indicates whether the condition is a penalty or not */
-      bad: boolean;
-      buff: boolean;
-      /** The length the condition lasts in ms */
-      duration: number;
-    } & {
-        [T in StatType]?: number
-      } };
-    dismantle: { [T in ItemName]?: {
-      /** The cost of dismantling the item */
-      cost: number;
-      /** A list of items you will get if you dismantle. If the number is < 1, it indicates the probability of getting that item. */
-      items: [number, ItemName][];
+    /** A list of items that the character can equip in its offhand */
+    offhand: { [T in WeaponType]?: {
+      /** Modifier on the given stat for equipping this type of item */
+      [T in StatType]?: number
     } };
-    items: { [T in ItemName]: GItem };
-    geometry: {
-      [T in MapName]: {
-        max_x: number;
-        max_y: number;
-        min_x: number;
-        min_y: number;
-        /* The line is from ([0], [1]) to ([0], [2]) */
-        x_lines: [number, number, number][];
-        /* The line is from ([1], [0]) to ([2], [0]) */
-        y_lines: [number, number, number][];
-      }
+  } };
+  conditions: { [T in ConditionName]: {
+    /** Indicates whether the condition is a penalty or not */
+    bad: boolean;
+    buff: boolean;
+    /** The length the condition lasts in ms */
+    duration: number;
+  } & {
+      [T in StatType]?: number
+    } };
+  dismantle: { [T in ItemName]?: {
+    /** The cost of dismantling the item */
+    cost: number;
+    /** A list of items you will get if you dismantle. If the number is < 1, it indicates the probability of getting that item. */
+    items: [number, ItemName][];
+  } };
+  items: { [T in ItemName]: GItem };
+  geometry: {
+    [T in MapName]: {
+      max_x: number;
+      max_y: number;
+      min_x: number;
+      min_y: number;
+      /* The line is from ([0], [1]) to ([0], [2]) */
+      x_lines: [number, number, number][];
+      /* The line is from ([1], [0]) to ([2], [0]) */
+      y_lines: [number, number, number][];
+    }
+  };
+  maps: { [T in MapName]: {
+    doors: DoorInfo[];
+    /** The name of the map, if this changes, the map layout probably changed. */
+    key: string;
+    ignore?: boolean;
+    instance?: boolean;
+    irregular?: boolean;
+    monsters: {
+      count: number;
+      boundary?: [number, number, number, number];
+      boundaries?: [MapName, number, number, number, number][];
+      type: MonsterName;
+    }[];
+    /** Not sure what this means. Might mean that only one character of the players can be here at a time. */
+    mount: boolean;
+    no_bounds?: boolean;
+    npcs: GMapsNPC[];
+    on_death: number;
+    ref: {
+      [id: string]: IPosition & {
+        map: MapName;
+        in: MapName;
+        id: string;
+      };
     };
-    maps: { [T in MapName]: {
-      doors: DoorInfo[];
-      /** The name of the map, if this changes, the map layout probably changed. */
-      key: string;
-      ignore?: boolean;
-      instance?: boolean;
-      irregular?: boolean;
-      monsters: {
-        count: number;
-        boundary?: [number, number, number, number];
-        boundaries?: [MapName, number, number, number, number][];
-        type: MonsterName;
-      }[];
-      /** Not sure what this means. Might mean that only one character of the players can be here at a time. */
-      mount: boolean;
-      no_bounds?: boolean;
-      npcs: GMapsNPC[];
-      on_death: number;
-      ref: {
-        [id: string]: IPosition & {
-          map: MapName;
-          in: MapName;
-          id: string;
-        };
-      };
-      /**
-       * [0]: x position where you spawn
-       * [1]: y position where you spawn
-       * [2]: Direction to face the character when you spawn
-       */
-      spawns: [number, number, number?][];
-    } };
-    monsters: { [T in MonsterName]: GMonster };
-    npcs: { [T in NPCType]: {
-      id: NPCType;
-      /** Full name of NPC */
-      name: string;
-      /** A list of places you can transport to with this NPC. The number is the spawn */
-      places?: {
-        [T in MapName]?: number
-      };
-      role: NPCRole;
-    } };
-    // TODO: Get list of quest names
-    quests: { [T in string]: PositionReal & {
-      id: NPCType;
-    } };
-    skills: { [T in SkillName]: {
-      apiercing?: number;
-      class?: CharacterType[];
-      cooldown: number;
-      cooldown_multiplier?: number;
-      damage_multiplier?: number;
-      level?: number;
-      /** Can we use this skill on monsters? */
-      monster?: boolean;
-      /** MP Cost for skill */
-      mp?: number;
-      /** The name of the skill */
-      name: string;
-      range?: number;
-      range_multiplier?: number;
-      /** For MP use skills on the mage, 1 mp will equal this much damage */
-      ratio?: number;
-      /** The cooldown this skill shares with another skill */
-      share?: SkillName;
-      /** The item(s) required to use this skill */
-      slot?: [SlotType, ItemName][];
-      /** Does this skill require a single target? (Don't use an array) */
-      target?: boolean;
-      /** Does this skill require multiple targets? (Use an array) */
-      targets?: boolean;
-      /** The weapon type needed to use this skill */
-      wtype?: WeaponType;
-    } };
-  }
+    /**
+     * [0]: x position where you spawn
+     * [1]: y position where you spawn
+     * [2]: Direction to face the character when you spawn
+     */
+    spawns: [number, number, number?][];
+  } };
+  monsters: { [T in MonsterName]: GMonster };
+  npcs: { [T in NPCType]: {
+    id: NPCType;
+    /** Full name of NPC */
+    name: string;
+    /** A list of places you can transport to with this NPC. The number is the spawn */
+    places?: {
+      [T in MapName]?: number
+    };
+    role: NPCRole;
+  } };
+  // TODO: Get list of quest names
+  quests: { [T in string]: PositionReal & {
+    id: NPCType;
+  } };
+  skills: { [T in SkillName]: {
+    apiercing?: number;
+    class?: CharacterType[];
+    cooldown: number;
+    cooldown_multiplier?: number;
+    damage_multiplier?: number;
+    level?: number;
+    /** Can we use this skill on monsters? */
+    monster?: boolean;
+    /** MP Cost for skill */
+    mp?: number;
+    /** The name of the skill */
+    name: string;
+    range?: number;
+    range_multiplier?: number;
+    /** For MP use skills on the mage, 1 mp will equal this much damage */
+    ratio?: number;
+    /** The cooldown this skill shares with another skill */
+    share?: SkillName;
+    /** The item(s) required to use this skill */
+    slot?: [SlotType, ItemName][];
+    /** Does this skill require a single target? (Don't use an array) */
+    target?: boolean;
+    /** Does this skill require multiple targets? (Use an array) */
+    targets?: boolean;
+    /** The weapon type needed to use this skill */
+    wtype?: WeaponType;
+  } };
 }
 
 // TODO: Get a better name for this.

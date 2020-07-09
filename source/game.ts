@@ -1,14 +1,15 @@
 import axios from "axios"
 import socketio from "socket.io-client"
-import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, AuthData, StartData, EntityData, CharacterData, PartyData, ChestData, PlayerData, QData, DisappearData, ChestOpenedData, HitData, NewMapData, ActionData, EvalData } from "./definitions/adventureland-server"
-import { ServerRegion, ServerIdentifier, CharacterEntity, SkillName } from "./definitions/adventureland"
+import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, AuthData, StartData, EntityData, CharacterData, PartyData, ChestData, PlayerData, QData, DisappearData, ChestOpenedData, HitData, NewMapData, ActionData, EvalData, DeathData } from "./definitions/adventureland-server"
+import { ServerRegion, ServerIdentifier, CharacterEntity, SkillName, GData } from "./definitions/adventureland"
 
 export class Game {
     public socket: SocketIOClient.Socket
     private promises: Promise<boolean>[] = []
 
-    static G: any
+    static G: GData
 
+    public active = false
     public character: CharacterData
     public chests = new Map<string, ChestData>()
     public entities = new Map<string, EntityData>()
@@ -46,7 +47,6 @@ export class Game {
     }
 
     private parseCharacter(data: CharacterData) {
-        console.log("Updating character...")
         this.character = {
             hp: data.hp,
             max_hp: data.max_hp,
@@ -71,6 +71,7 @@ export class Game {
             y: data.y,
             going_x: data.going_x,
             going_y: data.going_y,
+            moving: data.moving,
             cid: data.cid,
             stand: data.stand,
             controller: data.controller,
@@ -136,6 +137,14 @@ export class Game {
         }
     }
 
+    private parseGameResponse(data: GameResponseData) {
+        if (typeof data == "string") {
+            console.info(`Game Response: ${data}`)
+        } else if (data.response == "gold_received") {
+            this.character.gold += data.gold
+        }
+    }
+
     private prepare() {
         this.socket.on("action", (data: ActionData) => {
             this.projectiles.set(data.pid, { ...data, date: new Date() })
@@ -147,8 +156,17 @@ export class Game {
             this.chests.delete(data.id)
         })
 
+        this.socket.on("death", (data: DeathData) => {
+            this.entities.delete(data.id)
+            // TODO: Does this get called for players, too? Players turn in to grave stones...
+        })
+
         this.socket.on("disappear", (data: DisappearData) => {
             this.players.delete(data.id)
+        })
+
+        this.socket.on("disconnect", () => {
+            this.disconnect()
         })
 
         this.socket.on("drop", (data: ChestData) => {
@@ -175,6 +193,7 @@ export class Game {
             if (potReg) {
                 let cooldown = Number.parseFloat(potReg[1])
                 this.nextSkill.set("use_hp", new Date(Date.now() + Math.ceil(cooldown)))
+                this.nextSkill.set("use_mp", new Date(Date.now() + Math.ceil(cooldown)))
                 return
             }
         })
@@ -185,11 +204,7 @@ export class Game {
         })
 
         this.socket.on("game_response", (data: GameResponseData) => {
-            if (typeof data == "string") {
-                console.info(`Game Response: ${data}`)
-            } else if (data.response == "gold_received") {
-                this.character.gold += data.gold
-            }
+            this.parseGameResponse(data)
         })
 
         this.socket.on("hit", (data: HitData) => {
@@ -206,11 +221,14 @@ export class Game {
             }
 
             if (data.kill == true) {
+                this.projectiles.delete(data.pid)
                 this.entities.delete(data.id)
             }
         })
 
         this.socket.on("new_map", (data: NewMapData) => {
+            this.projectiles.clear()
+
             this.parseEntities(data.entities)
 
             this.character.x = data.x
@@ -225,6 +243,13 @@ export class Game {
 
         this.socket.on("player", (data: CharacterData) => {
             this.parseCharacter(data)
+            if (data.hitchhikers) {
+                for (let hitchhiker of data.hitchhikers) {
+                    if (hitchhiker[0] == "game_response") {
+                        this.parseGameResponse(hitchhiker[1])
+                    }
+                }
+            }
         })
 
         this.socket.on("q_data", (data: QData) => {
@@ -275,7 +300,9 @@ export class Game {
                 width: 1920
             } as AuthData)
         })
-        
+
+        this.active = true
+
         return new Promise((resolve, reject) => {
             this.socket.once("start", (data) => {
                 resolve()
@@ -287,6 +314,7 @@ export class Game {
     }
 
     async disconnect() {
+        this.active = false
         this.socket.close()
     }
 
