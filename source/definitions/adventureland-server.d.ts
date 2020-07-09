@@ -194,13 +194,13 @@ export type EvalData = {
 export type GameResponseData = GameResponseDataObject | GameResponseDataString
 
 // TODO: split these in to other objects
-export type GameResponseDataObject = GameResponseAttackFailed | GameResponseBuySuccess | {
+export type GameResponseDataObject = GameResponseAttackFailed | GameResponseBuySuccess | GameResponseItemSent | {
     response: "bank_restrictions" | "gold_received" | "item_placeholder" | "item_received" | string
     gold: number
     name: string
 }
 
-export type GameResponseDataString = "buy_cant_npc" | "buy_cant_space" | "buy_cost" | "skill_too_far" | "upgrade_in_progress" | string
+export type GameResponseDataString = "buy_cant_npc" | "buy_cant_space" | "buy_cost" | "skill_too_far" | "trade_get_closer" | "upgrade_in_progress" | string
 
 export type GameResponseAttackFailed = {
     response: "attack_failed",
@@ -214,6 +214,14 @@ export type GameResponseBuySuccess = {
     // Inventory slot that the item is now in
     num: number
     name: ItemName
+    q: number
+}
+
+export type GameResponseItemSent = {
+    response: "item_sent"
+    // User ID the item was sent to
+    name: string
+    item: ItemName
     q: number
 }
 

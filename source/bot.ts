@@ -1,5 +1,5 @@
 import { Game } from "./game.js";
-import { CharacterData, ActionData, NewMapData, EvalData, EntityData, GameResponseData, GameResponseBuySuccess, GameResponseDataObject, DeathData, GameResponseAttackFailed } from "./definitions/adventureland-server";
+import { CharacterData, ActionData, NewMapData, EvalData, EntityData, GameResponseData, GameResponseBuySuccess, GameResponseDataObject, DeathData, GameResponseAttackFailed, GameResponseItemSent } from "./definitions/adventureland-server";
 import { SkillName, MonsterName, ItemName } from "./definitions/adventureland";
 
 const TIMEOUT = 5000
@@ -51,6 +51,7 @@ export class Bot {
             this.game.socket.on("game_response", failCheck)
             this.game.socket.on("death", deathCheck)
         })
+
         this.game.socket.emit("attack", { id: id })
         return attackStarted
     }
@@ -123,6 +124,7 @@ export class Bot {
             }, (TIMEOUT + distance * 1000 / this.game.character.speed))
             this.game.socket.on("player", moveFinishedCheck)
         })
+
         this.game.socket.emit("move", {
             x: this.game.character.x,
             y: this.game.character.y,
@@ -149,6 +151,7 @@ export class Bot {
             }, TIMEOUT)
             this.game.socket.on("eval", regenCheck)
         })
+
         this.game.socket.emit("use", { item: "hp" })
         return regenReceived
     }
@@ -169,12 +172,46 @@ export class Bot {
             }, TIMEOUT)
             this.game.socket.on("eval", regenCheck)
         })
+
         this.game.socket.emit("use", { item: "mp" })
         return regenReceived
     }
 
+    public async sendItem(to: string, slot: number, quantity: number = 1) {
+        if (!this.game.players.has(to)) return Promise.reject(`"${to}" is not nearby.`)
+        if (!this.game.character.items[slot]) return Promise.reject(`No item in inventory slot ${slot}.`)
+        if (this.game.character.items[slot]?.q < quantity) return Promise.reject(`We only have a quantity of ${this.game.character.items[slot].q}, not ${quantity}.`)
+
+        const item = this.game.character.items[slot]
+
+        const itemSent = new Promise((resolve, reject) => {
+            const sentCheck = (data: GameResponseData) => {
+                if (data == "trade_get_closer") {
+                    this.game.socket.removeListener("game_response", sentCheck)
+                    reject(`sendItem failed, ${to} is too far away`)
+                } else if (data == "trade_bspace") {
+                    this.game.socket.removeListener("game_response", sentCheck)
+                    reject(`sendItem failed, ${to} has no inventory space`)
+                } else if ((data as GameResponseItemSent).response == "item_sent"
+                    && (data as GameResponseItemSent).name == to
+                    && (data as GameResponseItemSent).item == item.name
+                    && (data as GameResponseItemSent).q == quantity) {
+                    this.game.socket.removeListener("game_response", sentCheck)
+                    resolve()
+                }
+            }
+            setTimeout(() => {
+                this.game.socket.removeListener("game_response", sentCheck)
+                reject(`sendItem Timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.game.socket.on("game_response", sentCheck)
+        })
+
+        this.game.socket.emit("send", { name: to, num: slot, q: quantity });
+        return itemSent
+    }
+
     public async warpToTown() {
-        this.game.socket.emit("town")
         const currentMap = this.game.character.map
         const warpComplete = new Promise((resolve, reject) => {
             this.game.socket.once("new_map", (data: NewMapData) => {
@@ -186,6 +223,8 @@ export class Bot {
                 reject(`warpToTown Timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
         })
+
+        this.game.socket.emit("town")
         return warpComplete
     }
 
