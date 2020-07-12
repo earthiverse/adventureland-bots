@@ -629,8 +629,7 @@ export abstract class Character {
             this.movementTarget = this.getMovementTarget()
             if (this.movementTarget && this.movementTarget.position) {
                 if (!lastMovementTarget
-                    || this.movementTarget.target != lastMovementTarget.target
-                    || (lastMovementTarget.position && this.movementTarget.position.map != lastMovementTarget.position.map) /* Will this always be the case? Right now there are only snakes that spawn on more than one map, and we have them covered by setting a hunt position */) {
+                    || this.movementTarget.target != lastMovementTarget.target) {
                     // New movement target
                     // this.astar.stop()
                     this.nGraphMove.stop()
