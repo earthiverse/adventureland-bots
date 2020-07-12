@@ -149,6 +149,14 @@ export type DisappearData = {
     to: MapName
 }
 
+export type DisappearingTextData = {
+    message: string
+    x: number
+    y: number
+    id: string
+    args: any
+}
+
 export type EntitiesData = {
     type: "all" | "xy"
     in: MapName
@@ -194,7 +202,7 @@ export type EvalData = {
 export type GameResponseData = GameResponseDataObject | GameResponseDataString
 
 // TODO: split these in to other objects
-export type GameResponseDataObject = GameResponseAttackFailed | GameResponseBuySuccess | GameResponseItemSent | {
+export type GameResponseDataObject = GameResponseAttackFailed | GameResponseBankRestrictions | GameResponseBuySuccess | GameResponseItemSent | {
     response: "bank_restrictions" | "gold_received" | "item_placeholder" | "item_received" | string
     gold: number
     name: string
@@ -206,6 +214,11 @@ export type GameResponseAttackFailed = {
     response: "attack_failed",
     place: "attack" | string
     id: string
+}
+
+export type GameResponseBankRestrictions = {
+    response: "bank_restrictions"
+    place: "compound" | string
 }
 
 export type GameResponseBuySuccess = {
@@ -298,6 +311,8 @@ export type PlayerData = {
     cx: any
     focus?: string
     frequency: number
+    x: number
+    y: number
     going_x: number
     going_y: number
     hp: number

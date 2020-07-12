@@ -961,6 +961,7 @@ export type ConditionName =
   | "fullguard"
   | "hardshell"
   | "holidayspirit"
+  | "invincible"
   | "licenced"
   | "marked"
   | "mcourage"
@@ -1672,6 +1673,7 @@ export type NPCType =
 
 // TODO: Confirm that PVP is actually the identifier for PVP servers
 export type ServerIdentifier =
+  | "HARDCORE"
   | "I"
   | "II"
   | "PVP"
