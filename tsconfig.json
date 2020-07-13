@@ -8,8 +8,7 @@
         "allowSyntheticDefaultImports": true,
         "target": "ES2020",
         "moduleResolution": "node",
-        /** TODO: Ideally this should be true */
-        "noImplicitAny": false,
+        "noImplicitAny": true,
         "outDir": "build",
         "removeComments": true,
         "rootDir": "source",
