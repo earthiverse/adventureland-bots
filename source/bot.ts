@@ -1,6 +1,6 @@
 import { Game } from "./game.js";
-import { CharacterData, ActionData, NewMapData, EvalData, EntityData, GameResponseData, GameResponseBuySuccess, GameResponseDataObject, DeathData, GameResponseAttackFailed, GameResponseItemSent, PlayerData, GameResponseBankRestrictions, DisappearingTextData } from "./definitions/adventureland-server";
-import { SkillName, MonsterName, ItemName, SlotType } from "./definitions/adventureland";
+import { CharacterData, ActionData, NewMapData, EvalData, EntityData, GameResponseData, GameResponseBuySuccess, GameResponseDataObject, DeathData, GameResponseAttackFailed, GameResponseItemSent, PlayerData, GameResponseBankRestrictions, DisappearingTextData, UpgradeData } from "./definitions/adventureland-server"
+import { SkillName, MonsterName, ItemName, SlotType } from "./definitions/adventureland"
 
 const TIMEOUT = 5000
 
@@ -45,7 +45,7 @@ export class Bot {
                 this.game.socket.removeListener("action", attackCheck)
                 this.game.socket.removeListener("game_response", failCheck)
                 this.game.socket.removeListener("death", deathCheck)
-                reject(`attack Timeout (${TIMEOUT}ms)`)
+                reject(`attack timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
             this.game.socket.on("action", attackCheck)
             this.game.socket.on("game_response", failCheck)
@@ -93,7 +93,7 @@ export class Bot {
             setTimeout(() => {
                 this.game.socket.removeListener("player", buyCheck1)
                 this.game.socket.removeListener("game_response", buyCheck2)
-                reject(`Buy Timeout (${TIMEOUT}ms)`)
+                reject(`buy timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
             this.game.socket.on("player", buyCheck1)
             this.game.socket.on("game_response", buyCheck2)
@@ -113,14 +113,14 @@ export class Bot {
         const item1Info = parent.character.items[item1Pos]
         const item2Info = parent.character.items[item2Pos]
         const item3Info = parent.character.items[item3Pos]
-        if (!item1Info) return Promise.reject(`There is no item in position ${item1Pos}`)
-        if (!item2Info) return Promise.reject(`There is no item in position ${item2Pos}`)
-        if (!item3Info) return Promise.reject(`There is no item in position ${item3Pos}`)
+        if (!item1Info) return Promise.reject(`There is no item in inventory slot ${item1Pos}.`)
+        if (!item2Info) return Promise.reject(`There is no item in inventory slot ${item2Pos}.`)
+        if (!item3Info) return Promise.reject(`There is no item in inventory slot ${item3Pos}.`)
         if (item1Info.name != item2Info.name || item1Info.name != item3Info.name) return Promise.reject("You can only combine 3 of the same items.")
         if (item1Info.level != item2Info.level || item1Info.level != item3Info.level) return Promise.reject("You can only combine 3 items of the same level.")
 
         const compoundComplete = new Promise<boolean>((resolve, reject) => {
-            const completeCheck = (data: any) => {
+            const completeCheck = (data: UpgradeData) => {
                 if (data.type == "compound") {
                     this.game.socket.removeListener("upgrade", completeCheck)
                     this.game.socket.removeListener("game_response", bankCheck)
@@ -138,7 +138,7 @@ export class Bot {
             setTimeout(() => {
                 this.game.socket.removeListener("upgrade", completeCheck)
                 this.game.socket.removeListener("game_response", bankCheck)
-                reject(`compound Timeout (60000ms)`)
+                reject(`compound timeout (60000ms)`)
             }, 60000)
             this.game.socket.on("upgrade", completeCheck)
             this.game.socket.on("game_response", bankCheck)
@@ -193,7 +193,7 @@ export class Bot {
             setTimeout(() => {
                 this.game.socket.removeListener("player", equipCheck)
                 this.game.socket.removeListener("disappearing_text", cantEquipCheck)
-                reject(`Equip Timeout (${TIMEOUT}ms)`)
+                reject(`equip timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
             this.game.socket.on("player", equipCheck)
             this.game.socket.on("disappearing_text", cantEquipCheck)
@@ -201,6 +201,38 @@ export class Bot {
 
         this.game.socket.emit("equip", { num: inventoryPos, slot: equipSlot })
         return equipFinished
+    }
+
+    public async exchange(inventoryPos: number) {
+        if (!this.game.character.items[inventoryPos]) return Promise.reject(`No item in inventory slot ${inventoryPos}.`)
+
+        const exchangeFinished = new Promise((resolve, reject) => {
+            const completeCheck = (data: UpgradeData) => {
+                if (data.type == "exchange") {
+                    this.game.socket.removeListener("upgrade", completeCheck)
+                    this.game.socket.removeListener("game_response", bankCheck)
+                    resolve(data.success == 1)
+                }
+            }
+            const bankCheck = (data: GameResponseData) => {
+                if ((data as GameResponseBankRestrictions).response == "bank_restrictions"
+                    && (data as GameResponseBankRestrictions).place == "upgrade") {
+                    this.game.socket.removeListener("upgrade", completeCheck)
+                    this.game.socket.removeListener("game_response", bankCheck)
+                    reject("You can't exchange items in the bank.")
+                }
+            }
+            setTimeout(() => {
+                this.game.socket.removeListener("upgrade", completeCheck)
+                this.game.socket.removeListener("game_response", bankCheck)
+                reject(`exchange timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.game.socket.on("game_response", bankCheck)
+            this.game.socket.on("upgrade", completeCheck)
+        })
+
+        this.game.socket.emit("exchange", { item_num: inventoryPos, q: parent.character.items[inventoryPos]?.q })
+        return exchangeFinished
     }
 
     public async move(x: number, y: number) {
@@ -216,7 +248,7 @@ export class Bot {
             const distance = Math.sqrt((this.game.character.x - x) ** 2 - (this.game.character.y - y) ** 2)
             setTimeout(() => {
                 this.game.socket.removeListener("player", moveFinishedCheck)
-                reject(`Move Timeout (${TIMEOUT + distance * 1000 / this.game.character.speed}ms)`)
+                reject(`move timeout (${TIMEOUT + distance * 1000 / this.game.character.speed}ms)`)
             }, (TIMEOUT + distance * 1000 / this.game.character.speed))
             this.game.socket.on("player", moveFinishedCheck)
         })
@@ -243,7 +275,7 @@ export class Bot {
             }
             setTimeout(() => {
                 this.game.socket.removeListener("eval", regenCheck)
-                reject(`regenHP Timeout (${TIMEOUT}ms)`)
+                reject(`regenHP timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
             this.game.socket.on("eval", regenCheck)
         })
@@ -264,7 +296,7 @@ export class Bot {
             }
             setTimeout(() => {
                 this.game.socket.removeListener("eval", regenCheck)
-                reject(`regenMP Timeout (${TIMEOUT}ms)`)
+                reject(`regenMP timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
             this.game.socket.on("eval", regenCheck)
         })
@@ -298,7 +330,7 @@ export class Bot {
             }
             setTimeout(() => {
                 this.game.socket.removeListener("game_response", sentCheck)
-                reject(`sendItem Timeout (${TIMEOUT}ms)`)
+                reject(`sendItem timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
             this.game.socket.on("game_response", sentCheck)
         })
@@ -309,7 +341,7 @@ export class Bot {
 
     public async unequip(slot: SlotType) {
         if (this.game.character.slots[slot] === null) return Promise.reject(`Slot ${slot} is empty; nothing to unequip.`)
-        if (this.game.character[slot] === undefined) return Promise.reject(`Slot ${slot} does not exist.`)
+        if (this.game.character.slots[slot] === undefined) return Promise.reject(`Slot ${slot} does not exist.`)
 
         const unequipped = new Promise((resolve, reject) => {
             const unequipCheck = (data: CharacterData) => {
@@ -320,7 +352,7 @@ export class Bot {
             }
             setTimeout(() => {
                 this.game.socket.removeListener("player", unequipCheck)
-                reject(`unequip Timeout (${TIMEOUT}ms)`)
+                reject(`unequip timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
         })
 
@@ -329,11 +361,11 @@ export class Bot {
     }
 
     public async upgrade(itemPos: number, scrollPos: number): Promise<boolean> {
-        if (!this.game.character.items[itemPos]) return Promise.reject(`There is no item in position ${itemPos}`)
-        if (!this.game.character.items[scrollPos]) return Promise.reject(`There is no scroll in position ${scrollPos}`)
+        if (!this.game.character.items[itemPos]) return Promise.reject(`There is no item in inventory slot ${itemPos}.`)
+        if (!this.game.character.items[scrollPos]) return Promise.reject(`There is no scroll in inventory slot ${scrollPos}.`)
 
         const upgradeComplete = new Promise<boolean>((resolve, reject) => {
-            const completeCheck = (data: any) => {
+            const completeCheck = (data: UpgradeData) => {
                 if (data.type == "upgrade") {
                     this.game.socket.removeListener("upgrade", completeCheck)
                     this.game.socket.removeListener("game_response", bankCheck)
@@ -351,7 +383,7 @@ export class Bot {
             setTimeout(() => {
                 this.game.socket.removeListener("upgrade", completeCheck)
                 this.game.socket.removeListener("game_response", bankCheck)
-                reject(`upgrade Timeout (60000ms)`)
+                reject(`upgrade timeout (60000ms)`)
             }, 60000)
             this.game.socket.on("upgrade", completeCheck)
             this.game.socket.on("game_response", bankCheck)
@@ -370,7 +402,7 @@ export class Bot {
             })
 
             setTimeout(() => {
-                reject(`warpToTown Timeout (${TIMEOUT}ms)`)
+                reject(`warpToTown timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
         })
 

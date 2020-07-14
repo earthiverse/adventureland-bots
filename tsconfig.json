@@ -8,7 +8,7 @@
         "allowSyntheticDefaultImports": true,
         "target": "ES2020",
         "moduleResolution": "node",
-        "noImplicitAny": true,
+        "noImplicitAny": false,
         "outDir": "build",
         "removeComments": true,
         "rootDir": "source",

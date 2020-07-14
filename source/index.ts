@@ -7,11 +7,11 @@ import { SlotInfo, SlotType, ItemInfo, ItemName } from "./definitions/adventurel
 dotenv.config({ path: "../earthiverse.env" })
 console.log([process.env.AUTH, process.env.CHARACTER, process.env.USER])
 
-let game = new Game("US", "HARDCORE")
+const game = new Game("US", "HARDCORE")
 console.log("Connecting...")
 game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(async () => {
     console.info("Starting bot!")
-    let bot = new Bot(game)
+    const bot = new Bot(game)
 
     game.socket.on("disconnect_reason", (data: string) => {
         console.warn(`Disconnecting (${data})`)
@@ -26,9 +26,10 @@ game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(asy
     async function attackLoop() {
         try {
             if (!game.active) return
+
             // Cooldown check
             if (bot.getCooldown("attack")) {
-                console.info(`Attack is on cooldown ${bot.getCooldown("attack")}`)
+                console.info(`attack is on cooldown ${bot.getCooldown("attack")}`)
                 setTimeout(async () => { attackLoop() }, bot.getCooldown("attack"))
                 return
             }
@@ -150,22 +151,22 @@ game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(asy
         try {
             if (!game.active) return
 
-            const items: { [T in ItemName]?: { [T in number]?: number[] } } = {}
+            const items: { [T in ItemName]?: { [T in string]?: number[] } } = {}
             for (let inventoryPos = 0; inventoryPos < game.character.items.length; inventoryPos++) {
                 let item = game.character.items[inventoryPos]
                 if (!item) return
                 if (!G.items[item.name].compound) return // Not compoundable
 
                 if (!items[item.name]) items[item.name] = {}
-                if (!items[item.name][item.level]) items[item.name][item.level] = []
-                items[item.name][item.level].push(inventoryPos)
+                if (!items[item.name][item.level.toString()]) items[item.name][item.level.toString()] = []
+                items[item.name][item.level.toString()].push(inventoryPos)
             }
 
             let compoundThese: { itemName: ItemName, itemLevel: number, inventoryPos: number[] }
             for (let name in items) {
-                for (let level of items[name]) {
-                    if (items[name][level].length >= 3) {
-                        compoundThese = { itemName: name as ItemName, itemLevel: level, inventoryPos: items[name][level] }
+                for (let level in items[name as ItemName]) {
+                    if (items[name as ItemName][level].length >= 3) {
+                        compoundThese = { itemName: name as ItemName, itemLevel: Number.parseInt(level), inventoryPos: items[name as ItemName][level] }
                         break
                     }
                 }
@@ -180,7 +181,7 @@ game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(asy
                     }
                 }
                 await bot.buy(cscroll, 1)
-                let success = await bot.compound(compoundThese[0], compoundThese[1], compoundThese[2], bot.findItem(cscroll))
+                let success = await bot.compound(compoundThese.inventoryPos[0], compoundThese.inventoryPos[1], compoundThese.inventoryPos[2], bot.findItem(cscroll))
                 if (success) {
                     // Check if it's better than what we currently have
                 }
@@ -196,8 +197,9 @@ game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(asy
     async function healLoop() {
         try {
             if (!game.active) return
+
             if (bot.getCooldown("use_hp")) {
-                console.info(`Heal is on cooldown ${bot.getCooldown("use_hp")}`)
+                console.info(`heal is on cooldown ${bot.getCooldown("use_hp")}`)
                 setTimeout(async () => { healLoop() }, bot.getCooldown("use_hp"))
                 return
             }
@@ -206,16 +208,10 @@ game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(asy
             let mpRatio = game.character.mp / game.character.max_mp
             if (hpRatio < mpRatio) {
                 await bot.regenHP()
-                setTimeout(async () => { healLoop() }, bot.getCooldown("use_hp"))
-                return
             } else if (mpRatio < hpRatio) {
                 await bot.regenMP()
-                setTimeout(async () => { healLoop() }, bot.getCooldown("use_mp"))
-                return
             } else if (hpRatio < 1) {
                 await bot.regenHP()
-                setTimeout(async () => { healLoop() }, bot.getCooldown("use_hp"))
-                return
             }
         } catch (e) {
             console.error(e)
@@ -226,24 +222,47 @@ game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(asy
     healLoop()
 
     async function moveLoop() {
-        if (!game.active) return
+        try {
+            if (!game.active) return
 
-        // TODO: Find optimal monster to farm
+            // TODO: Find optimal monster to farm
 
-        // TODO: Move around
+            // TODO: Move around
+        } catch (e) {
+            console.error(e)
+        }
 
         setTimeout(async () => { moveLoop() }, 500)
     }
     moveLoop()
 
+    async function respawnLoop() {
+        try {
+            if (!game.active) return
+
+            if (parent.character.rip) {
+                // TODO: Respawn
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { respawnLoop() }, 500)
+    }
+    respawnLoop()
+
     async function upgradeLoop() {
-        if (!game.active) return
+        try {
+            if (!game.active) return
 
-        // TODO: Buy upgrade scrolls
+            // TODO: Buy upgrade scrolls
 
-        // TODO: Upgrade things in inventory
+            // TODO: Upgrade things in inventory
 
-        // TODO: Equip if it's higher than the one we currently have
+            // TODO: Equip if it's higher than the one we currently have
+        } catch (e) {
+            console.error(e)
+        }
 
         setTimeout(async () => { upgradeLoop() }, 500)
     }

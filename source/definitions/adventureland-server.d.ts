@@ -381,6 +381,12 @@ export type StartData = CharacterData & {
     entities: EntitiesData
 }
 
+export type UpgradeData = {
+    type: "compound" | "exchange" | "upgrade" | string
+    /** 0 = fail, 1 = success */
+    success: 0 | 1
+}
+
 export type WelcomeData = {
     region: ServerRegion
     map: MapName

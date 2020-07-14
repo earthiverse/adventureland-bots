@@ -304,11 +304,11 @@ export class Game {
         this.active = true
 
         return new Promise((resolve, reject) => {
-            this.socket.once("start", (data) => {
+            this.socket.once("start", () => {
                 resolve()
             })
             setTimeout(() => {
-                reject(`Start Timeout (10000ms)`)
+                reject(`start timeout (10000ms)`)
             }, 10000)
         })
     }
