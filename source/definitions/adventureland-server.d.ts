@@ -322,6 +322,7 @@ export type PlayerData = {
     move_num: number
     moving: boolean
     mp: number
+    npc?: string
     owner: string
     // TODO: Figure out what this is
     pdps: number

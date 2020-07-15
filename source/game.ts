@@ -4,19 +4,20 @@ import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, Au
 import { ServerRegion, ServerIdentifier, CharacterEntity, SkillName, GData } from "./definitions/adventureland"
 
 export class Game {
-    public socket: SocketIOClient.Socket
     private promises: Promise<boolean>[] = []
 
-    static G: GData
+    public static socket: SocketIOClient.Socket
 
-    public active = false
-    public character: CharacterData
-    public chests = new Map<string, ChestData>()
-    public entities = new Map<string, EntityData>()
-    public nextSkill = new Map<SkillName, Date>()
-    public party: PartyData
-    public players = new Map<string, PlayerData>()
-    public projectiles = new Map<string, ActionData & { date: Date }>()
+    public static G: GData
+
+    public static active = false
+    public static character: CharacterData
+    public static chests = new Map<string, ChestData>()
+    public static entities = new Map<string, EntityData>()
+    public static nextSkill = new Map<SkillName, Date>()
+    public static party: PartyData
+    public static players = new Map<string, PlayerData>()
+    public static projectiles = new Map<string, ActionData & { date: Date }>()
 
     constructor(region: ServerRegion, name: ServerIdentifier) {
         this.promises.push(new Promise<boolean>((resolve, reject) => {
@@ -24,7 +25,7 @@ export class Game {
                 // Find the address of the server we want to connect to
                 for (let server of data) {
                     if (server.region == region && server.name == name) {
-                        this.socket = socketio(`ws://${server.addr}:${server.port}`, {
+                        Game.socket = socketio(`ws://${server.addr}:${server.port}`, {
                             autoConnect: false,
                             transports: ["websocket"]
                         })
@@ -47,7 +48,7 @@ export class Game {
     }
 
     private parseCharacter(data: CharacterData) {
-        this.character = {
+        Game.character = {
             hp: data.hp,
             max_hp: data.max_hp,
             mp: data.mp,
@@ -125,15 +126,16 @@ export class Game {
 
         if (data.type == "all") {
             // Erase all of the entities
-            this.entities.clear()
-            this.players.clear()
+            Game.entities.clear()
+            Game.players.clear()
         }
 
         for (let monster of data.monsters) {
-            this.entities.set(monster.id, monster)
+            Game.entities.set(monster.id, monster)
         }
         for (let player of data.players) {
-            this.players.set(player.id, player)
+            if (player.id == Game.character?.id) continue // Skip our own character (it gets sent in 'start')
+            Game.players.set(player.id, player)
         }
     }
 
@@ -141,50 +143,50 @@ export class Game {
         if (typeof data == "string") {
             console.info(`Game Response: ${data}`)
         } else if (data.response == "gold_received") {
-            this.character.gold += data.gold
+            Game.character.gold += data.gold
         }
     }
 
     private prepare() {
-        this.socket.on("action", (data: ActionData) => {
-            this.projectiles.set(data.pid, { ...data, date: new Date() })
+        Game.socket.on("action", (data: ActionData) => {
+            Game.projectiles.set(data.pid, { ...data, date: new Date() })
         })
 
         // on("connect")
 
-        this.socket.on("chest_opened", (data: ChestOpenedData) => {
-            this.chests.delete(data.id)
+        Game.socket.on("chest_opened", (data: ChestOpenedData) => {
+            Game.chests.delete(data.id)
         })
 
-        this.socket.on("death", (data: DeathData) => {
-            this.entities.delete(data.id)
+        Game.socket.on("death", (data: DeathData) => {
+            Game.entities.delete(data.id)
             // TODO: Does this get called for players, too? Players turn in to grave stones...
         })
 
-        this.socket.on("disappear", (data: DisappearData) => {
-            this.players.delete(data.id)
+        Game.socket.on("disappear", (data: DisappearData) => {
+            Game.players.delete(data.id)
         })
 
-        this.socket.on("disconnect", () => {
+        Game.socket.on("disconnect", () => {
             this.disconnect()
         })
 
-        this.socket.on("drop", (data: ChestData) => {
-            this.chests.set(data.id, data)
+        Game.socket.on("drop", (data: ChestData) => {
+            Game.chests.set(data.id, data)
         })
 
-        this.socket.on("entities", (data: EntitiesData) => {
+        Game.socket.on("entities", (data: EntitiesData) => {
             this.parseEntities(data)
         })
 
-        this.socket.on("eval", (data: EvalData) => {
+        Game.socket.on("eval", (data: EvalData) => {
             // Skill timeouts (like attack) are sent via eval
             const skillReg = /skill_timeout\s*\(\s*['\"](.+?)['\"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.exec(data.code)
             if (skillReg) {
                 const skill = skillReg[1] as SkillName
                 let cooldown = Number.parseFloat(skillReg[2])
                 if (!cooldown) G.skills[skill].cooldown
-                this.nextSkill.set(skill, new Date(Date.now() + Math.ceil(cooldown)))
+                Game.nextSkill.set(skill, new Date(Date.now() + Math.ceil(cooldown)))
                 return
             }
 
@@ -192,56 +194,57 @@ export class Game {
             const potReg = /pot_timeout\s*\(\s*(\d+\.?\d+?)\s*\)/.exec(data.code)
             if (potReg) {
                 let cooldown = Number.parseFloat(potReg[1])
-                this.nextSkill.set("use_hp", new Date(Date.now() + Math.ceil(cooldown)))
-                this.nextSkill.set("use_mp", new Date(Date.now() + Math.ceil(cooldown)))
+                Game.nextSkill.set("use_hp", new Date(Date.now() + Math.ceil(cooldown)))
+                Game.nextSkill.set("use_mp", new Date(Date.now() + Math.ceil(cooldown)))
                 return
             }
         })
 
         // TODO: Figure out type. I think it's just a string?
-        this.socket.on("game_error", (data: any) => {
+        Game.socket.on("game_error", (data: any) => {
             console.error(`Game Error: ${data}`)
+            this.disconnect()
         })
 
-        this.socket.on("game_response", (data: GameResponseData) => {
+        Game.socket.on("game_response", (data: GameResponseData) => {
             this.parseGameResponse(data)
         })
 
-        this.socket.on("hit", (data: HitData) => {
+        Game.socket.on("hit", (data: HitData) => {
             // console.log("socket: hit!")
             // console.log(data)
             if (data.miss || data.evade) {
-                this.projectiles.delete(data.pid)
+                Game.projectiles.delete(data.pid)
                 return
             }
 
             if (data.reflect) {
                 // TODO: Reflect!
-                this.projectiles.get(data.pid)
+                Game.projectiles.get(data.pid)
             }
 
             if (data.kill == true) {
-                this.projectiles.delete(data.pid)
-                this.entities.delete(data.id)
+                Game.projectiles.delete(data.pid)
+                Game.entities.delete(data.id)
             }
         })
 
-        this.socket.on("new_map", (data: NewMapData) => {
-            this.projectiles.clear()
+        Game.socket.on("new_map", (data: NewMapData) => {
+            Game.projectiles.clear()
 
             this.parseEntities(data.entities)
 
-            this.character.x = data.x
-            this.character.y = data.y
-            this.character.in = data.in
-            this.character.map = data.map
+            Game.character.x = data.x
+            Game.character.y = data.y
+            Game.character.in = data.in
+            Game.character.map = data.map
         })
 
-        this.socket.on("party_update", (data: PartyData) => {
-            this.party = data
+        Game.socket.on("party_update", (data: PartyData) => {
+            Game.party = data
         })
 
-        this.socket.on("player", (data: CharacterData) => {
+        Game.socket.on("player", (data: CharacterData) => {
             this.parseCharacter(data)
             if (data.hitchhikers) {
                 for (let hitchhiker of data.hitchhikers) {
@@ -252,24 +255,24 @@ export class Game {
             }
         })
 
-        this.socket.on("q_data", (data: QData) => {
+        Game.socket.on("q_data", (data: QData) => {
 
         })
 
-        this.socket.on("start", (data: StartData) => {
+        Game.socket.on("start", (data: StartData) => {
             console.log("socket: start!")
             console.log(data)
             this.parseCharacter(data)
             this.parseEntities(data.entities)
         })
 
-        this.socket.on("welcome", (data: WelcomeData) => {
+        Game.socket.on("welcome", (data: WelcomeData) => {
             console.log("socket: welcome!")
             console.log(data)
 
             // Send a response that we're ready to go
             console.log("socket: loaded...")
-            this.socket.emit("loaded", {
+            Game.socket.emit("loaded", {
                 height: 1080,
                 width: 1920,
                 scale: 2,
@@ -283,12 +286,12 @@ export class Game {
     async connect(auth: string, character: string, user: string) {
         await Promise.all(this.promises)
 
-        this.socket.open()
+        Game.socket.open()
 
         // When we're loaded, authenticate
-        this.socket.once("welcome", () => {
+        Game.socket.once("welcome", () => {
             console.log("socket: authenticating...")
-            this.socket.emit("auth", {
+            Game.socket.emit("auth", {
                 auth: auth,
                 character: character,
                 height: 1080,
@@ -301,10 +304,10 @@ export class Game {
             } as AuthData)
         })
 
-        this.active = true
+        Game.active = true
 
         return new Promise((resolve, reject) => {
-            this.socket.once("start", () => {
+            Game.socket.once("start", () => {
                 resolve()
             })
             setTimeout(() => {
@@ -314,8 +317,8 @@ export class Game {
     }
 
     async disconnect() {
-        this.active = false
-        this.socket.close()
+        Game.active = false
+        Game.socket.close()
     }
 
     static async getGameData(): Promise<any> {

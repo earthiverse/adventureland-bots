@@ -5,59 +5,57 @@ import { SkillName, MonsterName, ItemName, SlotType } from "./definitions/advent
 const TIMEOUT = 5000
 
 export class Bot {
-    private game: Game
 
-    constructor(game: Game) {
-        this.game = game
+    constructor() {
     }
 
     public async attack(id: string) {
-        if (!this.game.entities.has(id)) return Promise.reject(`No Entity with ID '${id}'`)
+        if (!Game.entities.has(id) && !Game.players.has(id)) return Promise.reject(`No Entity with ID '${id}'`)
 
         const attackStarted = new Promise((resolve, reject) => {
             const deathCheck = (data: DeathData) => {
                 if (data.id == id) {
-                    this.game.socket.removeListener("action", attackCheck)
-                    this.game.socket.removeListener("game_response", failCheck)
-                    this.game.socket.removeListener("death", deathCheck)
+                    Game.socket.removeListener("action", attackCheck)
+                    Game.socket.removeListener("game_response", failCheck)
+                    Game.socket.removeListener("death", deathCheck)
                     reject(`Entity ${id} not found`)
                 }
             }
             const failCheck = (data: GameResponseData) => {
                 if ((data as GameResponseDataObject).response == "attack_failed") {
                     if ((data as GameResponseAttackFailed).id == id) {
-                        this.game.socket.removeListener("action", attackCheck)
-                        this.game.socket.removeListener("game_response", failCheck)
-                        this.game.socket.removeListener("death", deathCheck)
+                        Game.socket.removeListener("action", attackCheck)
+                        Game.socket.removeListener("game_response", failCheck)
+                        Game.socket.removeListener("death", deathCheck)
                         reject(`Attack on ${id} failed.`)
                     }
                 }
             }
             const attackCheck = (data: ActionData) => {
-                if (data.attacker == this.game.character.id) {
-                    this.game.socket.removeListener("action", attackCheck)
-                    this.game.socket.removeListener("game_response", failCheck)
-                    this.game.socket.removeListener("death", deathCheck)
+                if (data.attacker == Game.character.id) {
+                    Game.socket.removeListener("action", attackCheck)
+                    Game.socket.removeListener("game_response", failCheck)
+                    Game.socket.removeListener("death", deathCheck)
                     resolve()
                 }
             }
             setTimeout(() => {
-                this.game.socket.removeListener("action", attackCheck)
-                this.game.socket.removeListener("game_response", failCheck)
-                this.game.socket.removeListener("death", deathCheck)
+                Game.socket.removeListener("action", attackCheck)
+                Game.socket.removeListener("game_response", failCheck)
+                Game.socket.removeListener("death", deathCheck)
                 reject(`attack timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
-            this.game.socket.on("action", attackCheck)
-            this.game.socket.on("game_response", failCheck)
-            this.game.socket.on("death", deathCheck)
+            Game.socket.on("action", attackCheck)
+            Game.socket.on("game_response", failCheck)
+            Game.socket.on("death", deathCheck)
         })
 
-        this.game.socket.emit("attack", { id: id })
+        Game.socket.emit("attack", { id: id })
         return attackStarted
     }
 
     public async buy(itemName: ItemName, quantity: number = 1) {
-        if (this.game.character.gold < G.items[itemName].gold) return Promise.reject(`Insufficient gold. We have ${this.game.character.gold}, but the item costs ${G.items[itemName].gold}`)
+        if (Game.character.gold < Game.G.items[itemName].gold) return Promise.reject(`Insufficient gold. We have ${Game.character.gold}, but the item costs ${Game.G.items[itemName].gold}`)
 
         const itemReceived = new Promise((resolve, reject) => {
             const buyCheck1 = (data: CharacterData) => {
@@ -68,8 +66,8 @@ export class Bot {
                         if ((data as GameResponseDataObject).response == "buy_success"
                             && (data as GameResponseBuySuccess).name == itemName
                             && (data as GameResponseBuySuccess).q == quantity) {
-                            this.game.socket.removeListener("player", buyCheck1)
-                            this.game.socket.removeListener("game_response", buyCheck2)
+                            Game.socket.removeListener("player", buyCheck1)
+                            Game.socket.removeListener("game_response", buyCheck2)
                             resolve()
                         }
                     }
@@ -77,34 +75,34 @@ export class Bot {
             }
             const buyCheck2 = (data: GameResponseData) => {
                 if (data = "buy_cant_npc") {
-                    this.game.socket.removeListener("player", buyCheck1)
-                    this.game.socket.removeListener("game_response", buyCheck2)
+                    Game.socket.removeListener("player", buyCheck1)
+                    Game.socket.removeListener("game_response", buyCheck2)
                     reject(`Cannot buy ${quantity} ${itemName}(s) from an NPC`)
                 } else if (data == "buy_cant_space") {
-                    this.game.socket.removeListener("player", buyCheck1)
-                    this.game.socket.removeListener("game_response", buyCheck2)
+                    Game.socket.removeListener("player", buyCheck1)
+                    Game.socket.removeListener("game_response", buyCheck2)
                     reject(`Not enough inventory space to buy ${quantity} ${itemName}(s)`)
                 } else if (data == "buy_cost") {
-                    this.game.socket.removeListener("player", buyCheck1)
-                    this.game.socket.removeListener("game_response", buyCheck2)
+                    Game.socket.removeListener("player", buyCheck1)
+                    Game.socket.removeListener("game_response", buyCheck2)
                     reject(`Not enough gold to buy ${quantity} ${itemName}(s)`)
                 }
             }
             setTimeout(() => {
-                this.game.socket.removeListener("player", buyCheck1)
-                this.game.socket.removeListener("game_response", buyCheck2)
+                Game.socket.removeListener("player", buyCheck1)
+                Game.socket.removeListener("game_response", buyCheck2)
                 reject(`buy timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
-            this.game.socket.on("player", buyCheck1)
-            this.game.socket.on("game_response", buyCheck2)
+            Game.socket.on("player", buyCheck1)
+            Game.socket.on("game_response", buyCheck2)
         })
 
         if (Game.G.items[itemName].s) {
             // Item is stackable
-            this.game.socket.emit("buy", { name: itemName, quantity: quantity })
+            Game.socket.emit("buy", { name: itemName, quantity: quantity })
         } else {
             // Item is not stackable.
-            this.game.socket.emit("buy", { name: itemName })
+            Game.socket.emit("buy", { name: itemName })
         }
         return itemReceived
     }
@@ -122,29 +120,29 @@ export class Bot {
         const compoundComplete = new Promise<boolean>((resolve, reject) => {
             const completeCheck = (data: UpgradeData) => {
                 if (data.type == "compound") {
-                    this.game.socket.removeListener("upgrade", completeCheck)
-                    this.game.socket.removeListener("game_response", bankCheck)
+                    Game.socket.removeListener("upgrade", completeCheck)
+                    Game.socket.removeListener("game_response", bankCheck)
                     resolve(data.success == 1)
                 }
             }
             const bankCheck = (data: GameResponseData) => {
                 if ((data as GameResponseBankRestrictions).response == "bank_restrictions"
                     && (data as GameResponseBankRestrictions).place == "compound") {
-                    this.game.socket.removeListener("upgrade", completeCheck)
-                    this.game.socket.removeListener("game_response", bankCheck)
+                    Game.socket.removeListener("upgrade", completeCheck)
+                    Game.socket.removeListener("game_response", bankCheck)
                     reject("You can't compound items in the bank.")
                 }
             }
             setTimeout(() => {
-                this.game.socket.removeListener("upgrade", completeCheck)
-                this.game.socket.removeListener("game_response", bankCheck)
+                Game.socket.removeListener("upgrade", completeCheck)
+                Game.socket.removeListener("game_response", bankCheck)
                 reject(`compound timeout (60000ms)`)
             }, 60000)
-            this.game.socket.on("upgrade", completeCheck)
-            this.game.socket.on("game_response", bankCheck)
+            Game.socket.on("upgrade", completeCheck)
+            Game.socket.on("game_response", bankCheck)
         })
 
-        this.game.socket.emit("compound", {
+        Game.socket.emit("compound", {
             "items": [item1Pos, item2Pos, item3Pos],
             "scroll_num": cscrollPos,
             "clevel": 0
@@ -153,11 +151,11 @@ export class Bot {
     }
 
     public async equip(inventoryPos: number, equipSlot?: SlotType) {
-        if (!this.game.character.items[inventoryPos]) return Promise.reject(`No item in inventory slot ${inventoryPos}.`)
+        if (!Game.character.items[inventoryPos]) return Promise.reject(`No item in inventory slot ${inventoryPos}.`)
 
-        const iInfo = this.game.character.items[inventoryPos]
+        const iInfo = Game.character.items[inventoryPos]
         // const gInfo = Game.G.items[iInfo.name]
-        // const beforeSlots = this.game.character.slots
+        // const beforeSlots = Game.character.slots
 
         const equipFinished = new Promise((resolve, reject) => {
             const equipCheck = (data: CharacterData) => {
@@ -167,8 +165,8 @@ export class Bot {
                     if (item.name == iInfo.name
                         && item.level == iInfo.level
                         && item.p == iInfo.p) {
-                        this.game.socket.removeListener("player", equipCheck)
-                        this.game.socket.removeListener("disappearing_text", cantEquipCheck)
+                        Game.socket.removeListener("player", equipCheck)
+                        Game.socket.removeListener("disappearing_text", cantEquipCheck)
                         resolve()
                     }
                 } else {
@@ -176,62 +174,62 @@ export class Bot {
                     for (let slot in data.slots) {
                         const item = data.slots[slot as SlotType]
                         if (item.name == iInfo.name) {
-                            this.game.socket.removeListener("player", equipCheck)
-                            this.game.socket.removeListener("disappearing_text", cantEquipCheck)
+                            Game.socket.removeListener("player", equipCheck)
+                            Game.socket.removeListener("disappearing_text", cantEquipCheck)
                             resolve()
                         }
                     }
                 }
             }
             const cantEquipCheck = (data: DisappearingTextData) => {
-                if (data.id == this.game.character.id && data.message == "CAN'T EQUIP") {
-                    this.game.socket.removeListener("player", equipCheck)
-                    this.game.socket.removeListener("disappearing_text", cantEquipCheck)
+                if (data.id == Game.character.id && data.message == "CAN'T EQUIP") {
+                    Game.socket.removeListener("player", equipCheck)
+                    Game.socket.removeListener("disappearing_text", cantEquipCheck)
                     reject(`Can't equip '${inventoryPos}' (${iInfo.name})`)
                 }
             }
             setTimeout(() => {
-                this.game.socket.removeListener("player", equipCheck)
-                this.game.socket.removeListener("disappearing_text", cantEquipCheck)
+                Game.socket.removeListener("player", equipCheck)
+                Game.socket.removeListener("disappearing_text", cantEquipCheck)
                 reject(`equip timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
-            this.game.socket.on("player", equipCheck)
-            this.game.socket.on("disappearing_text", cantEquipCheck)
+            Game.socket.on("player", equipCheck)
+            Game.socket.on("disappearing_text", cantEquipCheck)
         })
 
-        this.game.socket.emit("equip", { num: inventoryPos, slot: equipSlot })
+        Game.socket.emit("equip", { num: inventoryPos, slot: equipSlot })
         return equipFinished
     }
 
     public async exchange(inventoryPos: number) {
-        if (!this.game.character.items[inventoryPos]) return Promise.reject(`No item in inventory slot ${inventoryPos}.`)
+        if (!Game.character.items[inventoryPos]) return Promise.reject(`No item in inventory slot ${inventoryPos}.`)
 
         const exchangeFinished = new Promise((resolve, reject) => {
             const completeCheck = (data: UpgradeData) => {
                 if (data.type == "exchange") {
-                    this.game.socket.removeListener("upgrade", completeCheck)
-                    this.game.socket.removeListener("game_response", bankCheck)
+                    Game.socket.removeListener("upgrade", completeCheck)
+                    Game.socket.removeListener("game_response", bankCheck)
                     resolve(data.success == 1)
                 }
             }
             const bankCheck = (data: GameResponseData) => {
                 if ((data as GameResponseBankRestrictions).response == "bank_restrictions"
                     && (data as GameResponseBankRestrictions).place == "upgrade") {
-                    this.game.socket.removeListener("upgrade", completeCheck)
-                    this.game.socket.removeListener("game_response", bankCheck)
+                    Game.socket.removeListener("upgrade", completeCheck)
+                    Game.socket.removeListener("game_response", bankCheck)
                     reject("You can't exchange items in the bank.")
                 }
             }
             setTimeout(() => {
-                this.game.socket.removeListener("upgrade", completeCheck)
-                this.game.socket.removeListener("game_response", bankCheck)
+                Game.socket.removeListener("upgrade", completeCheck)
+                Game.socket.removeListener("game_response", bankCheck)
                 reject(`exchange timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
-            this.game.socket.on("game_response", bankCheck)
-            this.game.socket.on("upgrade", completeCheck)
+            Game.socket.on("game_response", bankCheck)
+            Game.socket.on("upgrade", completeCheck)
         })
 
-        this.game.socket.emit("exchange", { item_num: inventoryPos, q: parent.character.items[inventoryPos]?.q })
+        Game.socket.emit("exchange", { item_num: inventoryPos, q: parent.character.items[inventoryPos]?.q })
         return exchangeFinished
     }
 
@@ -241,162 +239,162 @@ export class Bot {
                 // TODO: Improve this to check if we moved again, and if we did, reject()
                 if (data.moving) return
                 if (data.x == x && data.y == y) {
-                    this.game.socket.removeListener("player", moveFinishedCheck)
+                    Game.socket.removeListener("player", moveFinishedCheck)
                     resolve()
                 }
             }
-            const distance = Math.sqrt((this.game.character.x - x) ** 2 - (this.game.character.y - y) ** 2)
+            const distance = Math.sqrt((Game.character.x - x) ** 2 - (Game.character.y - y) ** 2)
             setTimeout(() => {
-                this.game.socket.removeListener("player", moveFinishedCheck)
-                reject(`move timeout (${TIMEOUT + distance * 1000 / this.game.character.speed}ms)`)
-            }, (TIMEOUT + distance * 1000 / this.game.character.speed))
-            this.game.socket.on("player", moveFinishedCheck)
+                Game.socket.removeListener("player", moveFinishedCheck)
+                reject(`move timeout (${TIMEOUT + distance * 1000 / Game.character.speed}ms)`)
+            }, (TIMEOUT + distance * 1000 / Game.character.speed))
+            Game.socket.on("player", moveFinishedCheck)
         })
 
-        this.game.socket.emit("move", {
-            x: this.game.character.x,
-            y: this.game.character.y,
+        Game.socket.emit("move", {
+            x: Game.character.x,
+            y: Game.character.y,
             going_x: x,
             going_y: y,
-            m: this.game.character.m
+            m: Game.character.m
         })
         return moveFinished
     }
 
     public async regenHP() {
-        if (this.game.nextSkill.get("use_hp")?.getTime() > Date.now()) return Promise.reject("use_hp is on cooldown")
+        if (Game.nextSkill.get("use_hp")?.getTime() > Date.now()) return Promise.reject("use_hp is on cooldown")
 
         const regenReceived = new Promise((resolve, reject) => {
             const regenCheck = (data: EvalData) => {
                 if (data.code.includes("pot_timeout")) {
-                    this.game.socket.removeListener("eval", regenCheck)
+                    Game.socket.removeListener("eval", regenCheck)
                     resolve()
                 }
             }
             setTimeout(() => {
-                this.game.socket.removeListener("eval", regenCheck)
+                Game.socket.removeListener("eval", regenCheck)
                 reject(`regenHP timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
-            this.game.socket.on("eval", regenCheck)
+            Game.socket.on("eval", regenCheck)
         })
 
-        this.game.socket.emit("use", { item: "hp" })
+        Game.socket.emit("use", { item: "hp" })
         return regenReceived
     }
 
     public async regenMP() {
-        if (this.game.nextSkill.get("use_mp")?.getTime() > Date.now()) return Promise.reject("use_mp is on cooldown")
+        if (Game.nextSkill.get("use_mp")?.getTime() > Date.now()) return Promise.reject("use_mp is on cooldown")
 
         const regenReceived = new Promise((resolve, reject) => {
             const regenCheck = (data: EvalData) => {
                 if (data.code.includes("pot_timeout")) {
-                    this.game.socket.removeListener("eval", regenCheck)
+                    Game.socket.removeListener("eval", regenCheck)
                     resolve()
                 }
             }
             setTimeout(() => {
-                this.game.socket.removeListener("eval", regenCheck)
+                Game.socket.removeListener("eval", regenCheck)
                 reject(`regenMP timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
-            this.game.socket.on("eval", regenCheck)
+            Game.socket.on("eval", regenCheck)
         })
 
-        this.game.socket.emit("use", { item: "mp" })
+        Game.socket.emit("use", { item: "mp" })
         return regenReceived
     }
 
     public async sendItem(to: string, inventoryPos: number, quantity: number = 1) {
-        if (!this.game.players.has(to)) return Promise.reject(`"${to}" is not nearby.`)
-        if (!this.game.character.items[inventoryPos]) return Promise.reject(`No item in inventory slot ${inventoryPos}.`)
-        if (this.game.character.items[inventoryPos]?.q < quantity) return Promise.reject(`We only have a quantity of ${this.game.character.items[inventoryPos].q}, not ${quantity}.`)
+        if (!Game.players.has(to)) return Promise.reject(`"${to}" is not nearby.`)
+        if (!Game.character.items[inventoryPos]) return Promise.reject(`No item in inventory slot ${inventoryPos}.`)
+        if (Game.character.items[inventoryPos]?.q < quantity) return Promise.reject(`We only have a quantity of ${Game.character.items[inventoryPos].q}, not ${quantity}.`)
 
-        const item = this.game.character.items[inventoryPos]
+        const item = Game.character.items[inventoryPos]
 
         const itemSent = new Promise((resolve, reject) => {
             const sentCheck = (data: GameResponseData) => {
                 if (data == "trade_get_closer") {
-                    this.game.socket.removeListener("game_response", sentCheck)
+                    Game.socket.removeListener("game_response", sentCheck)
                     reject(`sendItem failed, ${to} is too far away`)
                 } else if (data == "trade_bspace") {
-                    this.game.socket.removeListener("game_response", sentCheck)
+                    Game.socket.removeListener("game_response", sentCheck)
                     reject(`sendItem failed, ${to} has no inventory space`)
                 } else if ((data as GameResponseItemSent).response == "item_sent"
                     && (data as GameResponseItemSent).name == to
                     && (data as GameResponseItemSent).item == item.name
                     && (data as GameResponseItemSent).q == quantity) {
-                    this.game.socket.removeListener("game_response", sentCheck)
+                    Game.socket.removeListener("game_response", sentCheck)
                     resolve()
                 }
             }
             setTimeout(() => {
-                this.game.socket.removeListener("game_response", sentCheck)
+                Game.socket.removeListener("game_response", sentCheck)
                 reject(`sendItem timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
-            this.game.socket.on("game_response", sentCheck)
+            Game.socket.on("game_response", sentCheck)
         })
 
-        this.game.socket.emit("send", { name: to, num: inventoryPos, q: quantity });
+        Game.socket.emit("send", { name: to, num: inventoryPos, q: quantity });
         return itemSent
     }
 
     public async unequip(slot: SlotType) {
-        if (this.game.character.slots[slot] === null) return Promise.reject(`Slot ${slot} is empty; nothing to unequip.`)
-        if (this.game.character.slots[slot] === undefined) return Promise.reject(`Slot ${slot} does not exist.`)
+        if (Game.character.slots[slot] === null) return Promise.reject(`Slot ${slot} is empty; nothing to unequip.`)
+        if (Game.character.slots[slot] === undefined) return Promise.reject(`Slot ${slot} does not exist.`)
 
         const unequipped = new Promise((resolve, reject) => {
             const unequipCheck = (data: CharacterData) => {
-                if (this.game.character.slots[slot] === null) {
-                    this.game.socket.removeListener("player", unequipCheck)
+                if (Game.character.slots[slot] === null) {
+                    Game.socket.removeListener("player", unequipCheck)
                     resolve()
                 }
             }
             setTimeout(() => {
-                this.game.socket.removeListener("player", unequipCheck)
+                Game.socket.removeListener("player", unequipCheck)
                 reject(`unequip timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
         })
 
-        this.game.socket.emit("unequip", { slot: slot })
+        Game.socket.emit("unequip", { slot: slot })
         return unequipped
     }
 
     public async upgrade(itemPos: number, scrollPos: number): Promise<boolean> {
-        if (!this.game.character.items[itemPos]) return Promise.reject(`There is no item in inventory slot ${itemPos}.`)
-        if (!this.game.character.items[scrollPos]) return Promise.reject(`There is no scroll in inventory slot ${scrollPos}.`)
+        if (!Game.character.items[itemPos]) return Promise.reject(`There is no item in inventory slot ${itemPos}.`)
+        if (!Game.character.items[scrollPos]) return Promise.reject(`There is no scroll in inventory slot ${scrollPos}.`)
 
         const upgradeComplete = new Promise<boolean>((resolve, reject) => {
             const completeCheck = (data: UpgradeData) => {
                 if (data.type == "upgrade") {
-                    this.game.socket.removeListener("upgrade", completeCheck)
-                    this.game.socket.removeListener("game_response", bankCheck)
+                    Game.socket.removeListener("upgrade", completeCheck)
+                    Game.socket.removeListener("game_response", bankCheck)
                     resolve(data.success == 1)
                 }
             }
             const bankCheck = (data: GameResponseData) => {
                 if ((data as GameResponseBankRestrictions).response == "bank_restrictions"
                     && (data as GameResponseBankRestrictions).place == "upgrade") {
-                    this.game.socket.removeListener("upgrade", completeCheck)
-                    this.game.socket.removeListener("game_response", bankCheck)
+                    Game.socket.removeListener("upgrade", completeCheck)
+                    Game.socket.removeListener("game_response", bankCheck)
                     reject("You can't upgrade items in the bank.")
                 }
             }
             setTimeout(() => {
-                this.game.socket.removeListener("upgrade", completeCheck)
-                this.game.socket.removeListener("game_response", bankCheck)
+                Game.socket.removeListener("upgrade", completeCheck)
+                Game.socket.removeListener("game_response", bankCheck)
                 reject(`upgrade timeout (60000ms)`)
             }, 60000)
-            this.game.socket.on("upgrade", completeCheck)
-            this.game.socket.on("game_response", bankCheck)
+            Game.socket.on("upgrade", completeCheck)
+            Game.socket.on("game_response", bankCheck)
         })
 
-        this.game.socket.emit("upgrade", { item_num: itemPos, scroll_num: scrollPos, clevel: this.game.character.items[itemPos].level })
+        Game.socket.emit("upgrade", { item_num: itemPos, scroll_num: scrollPos, clevel: Game.character.items[itemPos].level })
         return upgradeComplete
     }
 
     public async warpToTown() {
-        const currentMap = this.game.character.map
+        const currentMap = Game.character.map
         const warpComplete = new Promise((resolve, reject) => {
-            this.game.socket.once("new_map", (data: NewMapData) => {
+            Game.socket.once("new_map", (data: NewMapData) => {
                 if (currentMap == data.map) resolve()
                 else reject(`We are now in ${data.map}, but we should be in ${currentMap}`)
             })
@@ -406,13 +404,13 @@ export class Bot {
             }, TIMEOUT)
         })
 
-        this.game.socket.emit("town")
+        Game.socket.emit("town")
         return warpComplete
     }
 
     public findItem(itemName: ItemName): number {
-        for (let i = 0; i < this.game.character.items.length; i++) {
-            let item = this.game.character.items[i]
+        for (let i = 0; i < Game.character.items.length; i++) {
+            let item = Game.character.items[i]
             if (!item) continue
 
             if (item.name == itemName) return i
@@ -420,7 +418,7 @@ export class Bot {
     }
 
     public getCooldown(skill: SkillName): number {
-        let nextSkill = this.game.nextSkill.get(skill)
+        let nextSkill = Game.nextSkill.get(skill)
         if (!nextSkill) return 0
 
         let cooldown = nextSkill.getTime() - Date.now()
@@ -431,9 +429,9 @@ export class Bot {
     public getNearestMonster(mtype?: MonsterName): { monster: EntityData, distance: number } {
         let closest: EntityData;
         let closestD = Number.MAX_VALUE
-        this.game.entities.forEach((entity) => {
+        Game.entities.forEach((entity) => {
             if (mtype && entity.type != mtype) return
-            let d = Math.sqrt((this.game.character.x - entity.x) ** 2 + (this.game.character.y - entity.y) ** 2)
+            let d = Math.sqrt((Game.character.x - entity.x) ** 2 + (Game.character.y - entity.y) ** 2)
             if (d < closestD) {
                 closest = entity
                 closestD = d
@@ -445,9 +443,10 @@ export class Bot {
     public getNearestPlayer(): { player: PlayerData, distance: number } {
         let closest: PlayerData;
         let closestD = Number.MAX_VALUE
-        this.game.players.forEach((player) => {
+        Game.players.forEach((player) => {
             if (player.s?.invincible) return
-            let d = Math.sqrt((this.game.character.x - player.x) ** 2 + (this.game.character.y - player.y) ** 2)
+            if (player.npc) return
+            let d = Math.sqrt((Game.character.x - player.x) ** 2 + (Game.character.y - player.y) ** 2)
             if (d < closestD) {
                 closest = player
                 closestD = d

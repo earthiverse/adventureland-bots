@@ -4,28 +4,31 @@ import { Bot } from "./bot.js"
 import { ChestData } from "./definitions/adventureland-server.js"
 import { SlotInfo, SlotType, ItemInfo, ItemName } from "./definitions/adventureland.js"
 
-dotenv.config({ path: "../earthiverse.env" })
+dotenv.config({ path: "../earthRan2.env" })
 console.log([process.env.AUTH, process.env.CHARACTER, process.env.USER])
 
-const game = new Game("US", "HARDCORE")
+const game = new Game("US", "I")
 console.log("Connecting...")
+
+const PVP = false
+
 game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(async () => {
     console.info("Starting bot!")
-    const bot = new Bot(game)
+    const bot = new Bot()
 
-    game.socket.on("disconnect_reason", (data: string) => {
+    Game.socket.on("disconnect_reason", (data: string) => {
         console.warn(`Disconnecting (${data})`)
         game.disconnect()
     })
 
     // Open chests as soon as they are dropped
-    game.socket.on("drop", (data: ChestData) => {
-        game.socket.emit("open_chest", { id: data.id })
+    Game.socket.on("drop", (data: ChestData) => {
+        Game.socket.emit("open_chest", { id: data.id })
     })
 
     async function attackLoop() {
         try {
-            if (!game.active) return
+            if (!Game.active) return
 
             // Cooldown check
             if (bot.getCooldown("attack")) {
@@ -36,11 +39,11 @@ game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(asy
 
             // Attack the nearest player
             let nearestPlayer = bot.getNearestPlayer()
-            if (nearestPlayer && nearestPlayer.distance < game.character.range) {
+            if (PVP && nearestPlayer && nearestPlayer.distance < Game.character.range) {
                 await bot.attack(nearestPlayer.player.id)
             } else {
                 let nearestMonster = bot.getNearestMonster("goo")
-                if (nearestMonster.distance <= game.character.range) {
+                if (nearestMonster.distance <= Game.character.range) {
                     await bot.attack(nearestMonster.monster.id)
                 }
             }
@@ -56,14 +59,14 @@ game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(asy
 
     async function buyLoop() {
         try {
-            if (!game.active) return
+            if (!Game.active) return
 
             let purchases: Promise<any>[] = []
 
             // Buy healing items 
             let numHPPots = 0
             let numMPPots = 0
-            for (let item of game.character.items) {
+            for (let item of Game.character.items) {
                 if (!item) continue
                 if (item.name == "hpot1") {
                     numHPPots += item.q
@@ -78,7 +81,7 @@ game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(asy
             let lowestLevel = 20
             let lowestSlot: SlotType = undefined
             for (let slot of ["mainhand", "chest", "pants", "shoes", "helmet", "gloves"] as SlotType[]) {
-                let itemInfo = game.character.slots[slot]
+                let itemInfo = Game.character.slots[slot]
                 if (!itemInfo) {
                     lowestSlot = slot
                     break
@@ -91,7 +94,7 @@ game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(asy
 
             // If we don't have an item in the inventory, buy one
             let hasItem = false
-            for (let item of game.character.items) {
+            for (let item of Game.character.items) {
                 if (!item) continue
                 if (lowestSlot == "mainhand" && item.name == "bow") {
                     hasItem = true
@@ -149,13 +152,13 @@ game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(asy
 
     async function compoundLoop() {
         try {
-            if (!game.active) return
+            if (!Game.active) return
 
             const items: { [T in ItemName]?: { [T in string]?: number[] } } = {}
-            for (let inventoryPos = 0; inventoryPos < game.character.items.length; inventoryPos++) {
-                let item = game.character.items[inventoryPos]
+            for (let inventoryPos = 0; inventoryPos < Game.character.items.length; inventoryPos++) {
+                let item = Game.character.items[inventoryPos]
                 if (!item) return
-                if (!G.items[item.name].compound) return // Not compoundable
+                if (!Game.G.items[item.name].compound) return // Not compoundable
 
                 if (!items[item.name]) items[item.name] = {}
                 if (!items[item.name][item.level.toString()]) items[item.name][item.level.toString()] = []
@@ -175,8 +178,8 @@ game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(asy
 
             let cscroll: ItemName
             if (compoundThese) {
-                for (let i = 0; i < G.items[compoundThese.itemName].grades.length; i++) {
-                    if (compoundThese.itemLevel <= G.items[compoundThese.itemName].grades[i]) {
+                for (let i = 0; i < Game.G.items[compoundThese.itemName].grades.length; i++) {
+                    if (compoundThese.itemLevel <= Game.G.items[compoundThese.itemName].grades[i]) {
                         cscroll = `cscroll${i}` as ItemName
                     }
                 }
@@ -196,7 +199,7 @@ game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(asy
 
     async function healLoop() {
         try {
-            if (!game.active) return
+            if (!Game.active) return
 
             if (bot.getCooldown("use_hp")) {
                 console.info(`heal is on cooldown ${bot.getCooldown("use_hp")}`)
@@ -204,8 +207,8 @@ game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(asy
                 return
             }
 
-            let hpRatio = game.character.hp / game.character.max_hp
-            let mpRatio = game.character.mp / game.character.max_mp
+            let hpRatio = Game.character.hp / Game.character.max_hp
+            let mpRatio = Game.character.mp / Game.character.max_mp
             if (hpRatio < mpRatio) {
                 await bot.regenHP()
             } else if (mpRatio < hpRatio) {
@@ -223,7 +226,7 @@ game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(asy
 
     async function moveLoop() {
         try {
-            if (!game.active) return
+            if (!Game.active) return
 
             // TODO: Find optimal monster to farm
 
@@ -238,9 +241,9 @@ game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(asy
 
     async function respawnLoop() {
         try {
-            if (!game.active) return
+            if (!Game.active) return
 
-            if (parent.character.rip) {
+            if (Game.character.rip) {
                 // TODO: Respawn
             }
         } catch (e) {
@@ -253,7 +256,7 @@ game.connect(process.env.AUTH, process.env.CHARACTER, process.env.USER).then(asy
 
     async function upgradeLoop() {
         try {
-            if (!game.active) return
+            if (!Game.active) return
 
             // TODO: Buy upgrade scrolls
 
