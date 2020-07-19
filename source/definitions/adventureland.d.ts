@@ -504,7 +504,7 @@ export type GItem = {
   s: number;
   /** Contains information about what stats the item will gain with each upgrade level. Set if the item is upgradable. */
   upgrade?: {
-    [T in StatType]?: number
+    [T in StatType | "stat"]?: number
   };
   type: ItemType;
   wtype: WeaponType;
