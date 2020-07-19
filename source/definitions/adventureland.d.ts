@@ -650,6 +650,7 @@ export type ItemInfo = {
   } | "shiny" | "glitched" | "superfast";
   /** If set, the item is for sale, or purchase */
   rid?: string;
+  stat_type?: StatType
 }
 
 /**

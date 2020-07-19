@@ -206,6 +206,7 @@ class Hardcore {
                 const gData2 = G.items[parent.character.slots.mainhand.name]
                 bestBowScore = 0
                 if (gData2.range) bestBowScore += gData2.range
+                if (gData2.upgrade.range) bestBowScore += gData2.upgrade.range * parent.character.slots.mainhand.level
             }
 
             // Quiver
@@ -616,7 +617,7 @@ class Hardcore {
                 if (gInfo.type == "weapon" && gInfo.wtype != "bow" && gInfo.wtype != "crossbow") {
                     // Sell all weapons that aren't bows
                     sell(item.index)
-                } else if (gInfo.type == "cosmetics" || gInfo.type == "jar" || gInfo.type == "qubics" || gInfo.type == "shield" || gInfo.type == "source" || gInfo.type == "token") {
+                } else if (gInfo.type == "cosmetics" || gInfo.type == "jar" || gInfo.type == "key" || gInfo.type == "qubics" || gInfo.type == "shield" || gInfo.type == "source" || gInfo.type == "token") {
                     // Sell unusable items
                     sell(item.index)
                 } else if (gInfo.e > 1) {
@@ -663,8 +664,15 @@ class Hardcore {
             }
 
             if (lowestLevelItem) {
-                const scroll = findItem("scroll2")
-                if (scroll) upgrade(lowestLevelItem.index, scroll.index)
+                if (!lowestLevelItem.stat_type || lowestLevelItem.stat_type != "dex") {
+                    // Upgrade with stat
+                    const scroll = findItem("dexscroll")
+                    if (scroll) upgrade(lowestLevelItem.index, scroll.index)
+                } else {
+                    // Upgrade with level up scroll
+                    const scroll = findItem("scroll2")
+                    if (scroll) upgrade(lowestLevelItem.index, scroll.index)
+                }
             }
         } catch (e) {
             console.error(e)
