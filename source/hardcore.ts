@@ -176,7 +176,9 @@ class Hardcore {
                 const gData2 = G.items[parent.character.slots.shoes.name]
                 bestShoesScore = 0
                 if (gData2.armor) bestShoesScore += gData2.armor
+                if (gData2.upgrade.armor) bestShoesScore += gData2.upgrade.armor * parent.character.slots.shoes.level
                 if (gData2.resistance) bestShoesScore += gData2.resistance
+                if (gData2.upgrade.resistance) bestShoesScore += gData2.upgrade.resistance * parent.character.slots.shoes.level
             }
 
             // Gloves
@@ -196,7 +198,9 @@ class Hardcore {
                 const gData2 = G.items[parent.character.slots.cape.name]
                 bestCapeScore = 0
                 if (gData2.armor) bestCapeScore += gData2.armor
+                if (gData2.compound.armor) bestCapeScore += gData2.compound.armor * parent.character.slots.cape.level
                 if (gData2.resistance) bestCapeScore += gData2.resistance
+                if (gData2.compound.resistance) bestCapeScore += gData2.compound.resistance * parent.character.slots.cape.level
             }
 
             // Bow
@@ -226,6 +230,7 @@ class Hardcore {
                 const gData2 = G.items[parent.character.slots.amulet.name]
                 bestAmuletScore = 0
                 if (gData2.vit) bestAmuletScore += gData2.vit
+                if (gData2.compound.vit) bestAmuletScore += gData2.compound.vit * parent.character.slots.amulet.level
             }
 
             // Ring1
@@ -255,6 +260,7 @@ class Hardcore {
                 const gData2 = G.items[parent.character.slots.earring1.name]
                 bestEarring1Score = 0
                 if (gData2.vit) bestEarring1Score += gData2.vit
+                if (gData2.compound.vit) bestEarring1Score += gData2.compound.vit * parent.character.slots.earring1.level
             }
 
             // Earring2
@@ -264,6 +270,7 @@ class Hardcore {
                 const gData2 = G.items[parent.character.slots.earring2.name]
                 bestEarring2Score = 0
                 if (gData2.vit) bestEarring2Score += gData2.vit
+                if (gData2.compound.vit) bestEarring2Score += gData2.compound.vit * parent.character.slots.earring2.level
             }
 
             // Belt
@@ -273,6 +280,7 @@ class Hardcore {
                 const gData2 = G.items[parent.character.slots.belt.name]
                 bestBeltScore = 0
                 if (gData2.vit) bestBeltScore += gData2.vit
+                if (gData2.compound.vit) bestBeltScore += gData2.compound.vit * parent.character.slots.belt.level
             }
 
             // Orb
@@ -282,6 +290,7 @@ class Hardcore {
                 const gData2 = G.items[parent.character.slots.orb.name]
                 bestOrbScore = 0
                 if (gData2.vit) bestOrbScore += gData2.vit
+                if (gData2.compound.vit) bestOrbScore += gData2.compound.vit * parent.character.slots.orb.level
             }
 
             for (const item of getInventory()) {
@@ -319,6 +328,7 @@ class Hardcore {
                     if (gData.armor) pantsScore += gData.armor
                     if (gData.upgrade.armor) pantsScore += gData.upgrade.armor * item.level
                     if (gData.resistance) pantsScore += gData.resistance
+                    if (gData.upgrade.resistance) pantsScore += gData.upgrade.resistance * item.level
                     if (pantsScore > bestPantsScore) {
                         bestPants = item
                         bestPantsScore = pantsScore
@@ -328,6 +338,7 @@ class Hardcore {
                     if (gData.armor) shoesScore += gData.armor
                     if (gData.upgrade.armor) shoesScore += gData.upgrade.armor * item.level
                     if (gData.resistance) shoesScore += gData.resistance
+                    if (gData.upgrade.resistance) shoesScore += gData.upgrade.resistance * item.level
                     if (shoesScore > bestShoesScore) {
                         bestShoes = item
                         bestShoesScore = shoesScore
@@ -337,6 +348,7 @@ class Hardcore {
                     if (gData.armor) glovesScore += gData.armor
                     if (gData.upgrade.armor) glovesScore += gData.upgrade.armor * item.level
                     if (gData.resistance) glovesScore += gData.resistance
+                    if (gData.upgrade.resistance) glovesScore += gData.upgrade.resistance * item.level
                     if (glovesScore > bestGlovesScore) {
                         bestGloves = item
                         bestGlovesScore = glovesScore
@@ -346,6 +358,7 @@ class Hardcore {
                     if (gData.armor) capeScore += gData.armor
                     if (gData.upgrade.armor) capeScore += gData.upgrade.armor * item.level
                     if (gData.resistance) capeScore += gData.resistance
+                    if (gData.upgrade.resistance) capeScore += gData.upgrade.resistance * item.level
                     if (capeScore > bestCapeScore) {
                         bestCape = item
                         bestCapeScore = capeScore
@@ -361,6 +374,7 @@ class Hardcore {
                 } else if (gData.type == "amulet") {
                     let amuletScore = 0
                     if (gData.vit) amuletScore += gData.vit
+                    if (gData.compound.vit) amuletScore += gData.compound.vit * item.level
                     if (amuletScore > bestAmuletScore) {
                         bestAmulet = item
                         bestAmuletScore = amuletScore
@@ -617,7 +631,7 @@ class Hardcore {
                 if (gInfo.type == "weapon" && gInfo.wtype != "bow" && gInfo.wtype != "crossbow") {
                     // Sell all weapons that aren't bows
                     sell(item.index)
-                } else if (gInfo.type == "cosmetics" || gInfo.type == "jar" || gInfo.type == "key" || gInfo.type == "petlicence" || gInfo.type == "qubics" || gInfo.type == "shield" || gInfo.type == "source" || gInfo.type == "token") {
+                } else if (gInfo.type == "cosmetics" || gInfo.type == "jar" || gInfo.type == "key" || gInfo.type == "petlicence" || gInfo.type == "qubics" || gInfo.type == "shield" || gInfo.type == "source" || gInfo.type == "throw" || gInfo.type == "token") {
                     // Sell unusable items
                     sell(item.index)
                 } else if (gInfo.e > 1) {
