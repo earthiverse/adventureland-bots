@@ -268,6 +268,11 @@ declare global {
   /** Returns the inventory position of the item, or -1 if it's not found */
   function locate_item(item: ItemName): number
   /**
+   * If no ID is given, it will loot some chests.
+   * @param id The ID of a chest (from `parent.chests`)
+   */
+  function loot(id?: string): void
+  /**
    * The promise returned is not upon arrival at the destination, it's upon the server confirming it recieved your request.
    * @param x 
    * @param y 
@@ -734,14 +739,58 @@ export type DamageType =
   | "magical"
   | "physical"
 
-// TODO: Get all types
 export type ItemType =
+  | "activator"
+  | "amulet"
+  | "belt"
+  | "booster"
   | "box"
   | "cape"
+  | "chest"
+  | "chrysalis"
+  | "computer"
+  | "container"
+  | "cosmetics"
+  | "cscroll"
+  | "earring"
+  | "elixir"
+  | "flute"
   | "gem"
+  | "gloves"
+  | "helmet"
+  | "jar"
+  | "key"
+  | "licence"
   | "material"
   | "misc"
+  | "misc_offhand"
+  | "offering"
+  | "orb"
+  | "pants"
+  | "petlicence"
+  | "placeholder"
+  | "pot"
+  | "pscroll"
+  | "qubics"
   | "quest"
+  | "quiver"
+  | "ring"
+  | "shield"
+  | "shoes"
+  | "skill_item"
+  | "source"
+  | "spawner"
+  | "stand"
+  | "stone"
+  | "test"
+  | "throw"
+  | "token"
+  | "tome"
+  | "tracker"
+  | "uscroll"
+  | "weapon"
+  | "xp"
+  | "xscroll"
 
 // TODO: Get all stat types
 export type StatType =
@@ -966,6 +1015,7 @@ export type ConditionName =
   | "burned"
   | "charging"
   | "charmed"
+  | "dampened"
   | "darkblessing"
   | "easterluck"
   | "eburn"
@@ -976,6 +1026,7 @@ export type ConditionName =
   | "fullguard"
   | "hardshell"
   | "holidayspirit"
+  | "invincible"
   | "licenced"
   | "marked"
   | "mcourage"
@@ -989,6 +1040,7 @@ export type ConditionName =
   | "power"
   | "reflection"
   | "rspeed"
+  | "shocked"
   | "slowness"
   | "stack"
   | "stoned"

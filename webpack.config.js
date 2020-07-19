@@ -12,7 +12,8 @@ module.exports = {
         priest: "./source/priest.ts",
         ranger: "./source/ranger.ts",
         rogue: "./source/rogue.ts",
-        warrior: "./source/warrior.ts"
+        warrior: "./source/warrior.ts",
+        hardcore: "./source/hardcore.ts"
     },
     module: {
         rules: [{
