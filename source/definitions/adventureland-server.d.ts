@@ -390,7 +390,10 @@ export type UpgradeData = {
 
 export type WelcomeData = {
     region: ServerRegion
+    in: MapName
     map: MapName
+    // TODO: Find out if this is "hardcore" on a hardcore server
+    gameplay: "normal" | string
     // TODO: Find out what this is
     info: any
     name: ServerIdentifier
