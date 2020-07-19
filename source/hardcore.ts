@@ -34,6 +34,7 @@ class Hardcore {
                 if (entity.s.invincible) continue // Don't attack things that are invincible
                 if (entity.npc) continue // Don't attack NPCs
                 if (entity.mtype && entity.target && !entity.cooperative && entity.target != parent.character.id) continue // Don't attack monsters that are attacking other players
+                if (entity.mtype && entity.mtype != this.mainTarget) continue // Only attack the main target
                 const d = distance(parent.character, entity)
                 if (d > parent.character.range) continue // Don't attack things out of range
 
@@ -110,7 +111,7 @@ class Hardcore {
                 for (let j = i + 1; j < items.length; j++) {
                     const item2 = items[j]
                     if (item2.name != item.name) continue
-                    if (item2.level != item2.level) continue
+                    if (item2.level != item.level) continue
                     same.push(item2)
                 }
 
@@ -128,6 +129,8 @@ class Hardcore {
         setTimeout(async () => { this.compoundLoop() }, TIMEOUT)
     }
 
+    // TODO: This code is broken! It only counts the stats as a level 0 item, not as the actual level it is.
+    // TODO: You should fix this.
     async equipLoop() {
         try {
             // Helmet
@@ -137,7 +140,9 @@ class Hardcore {
                 const gData2 = G.items[parent.character.slots.helmet.name]
                 bestHelmetScore = 0
                 if (gData2.armor) bestHelmetScore += gData2.armor
+                if (gData2.upgrade.armor) bestHelmetScore += gData2.upgrade.armor * parent.character.slots.helmet.level
                 if (gData2.resistance) bestHelmetScore += gData2.resistance
+                if (gData2.upgrade.resistance) bestHelmetScore += gData2.upgrade.resistance * parent.character.slots.helmet.level
             }
 
             // Chest
@@ -147,7 +152,9 @@ class Hardcore {
                 const gData2 = G.items[parent.character.slots.chest.name]
                 bestChestScore = 0
                 if (gData2.armor) bestChestScore += gData2.armor
+                if (gData2.upgrade.armor) bestChestScore += gData2.upgrade.armor * parent.character.slots.chest.level
                 if (gData2.resistance) bestChestScore += gData2.resistance
+                if (gData2.upgrade.resistance) bestChestScore += gData2.upgrade.resistance * parent.character.slots.chest.level
             }
 
             // Pants
@@ -157,7 +164,9 @@ class Hardcore {
                 const gData2 = G.items[parent.character.slots.pants.name]
                 bestPantsScore = 0
                 if (gData2.armor) bestPantsScore += gData2.armor
+                if (gData2.upgrade.armor) bestPantsScore += gData2.upgrade.armor * parent.character.slots.pants.level
                 if (gData2.resistance) bestPantsScore += gData2.resistance
+                if (gData2.upgrade.resistance) bestPantsScore += gData2.upgrade.resistance * parent.character.slots.pants.level
             }
 
             // Shoes
@@ -205,8 +214,8 @@ class Hardcore {
             if (parent.character.slots.offhand) {
                 const gData2 = G.items[parent.character.slots.offhand.name]
                 bestQuiverScore = 0
-                if (gData2.armor) bestQuiverScore += gData2.armor
-                if (gData2.resistance) bestQuiverScore += gData2.resistance
+                if (gData2.range) bestQuiverScore += gData2.range
+                if (gData2.upgrade.range) bestQuiverScore += gData2.upgrade.range * parent.character.slots.offhand.level
             }
 
             // Amulet
@@ -225,6 +234,7 @@ class Hardcore {
                 const gData2 = G.items[parent.character.slots.ring1.name]
                 bestRing1Score = 0
                 if (gData2.vit) bestRing1Score += gData2.vit
+                if (gData2.compound.vit) bestRing1Score += gData2.compound.vit * parent.character.slots.ring1.level
             }
 
             // Ring2
@@ -234,6 +244,7 @@ class Hardcore {
                 const gData2 = G.items[parent.character.slots.ring2.name]
                 bestRing2Score = 0
                 if (gData2.vit) bestRing2Score += gData2.vit
+                if (gData2.compound.vit) bestRing2Score += gData2.compound.vit * parent.character.slots.ring2.level
             }
 
             // Earring1
@@ -277,6 +288,7 @@ class Hardcore {
                 if (gData.type == "weapon" && gData.wtype == "bow") {
                     let bowScore = 0
                     if (gData.range) bowScore += gData.range
+                    if (gData.upgrade.range) bowScore += gData.upgrade.range * item.level
                     if (bowScore > bestBowScore) {
                         bestBow = item
                         bestBowScore = bowScore
@@ -284,7 +296,9 @@ class Hardcore {
                 } else if (gData.type == "helmet") {
                     let helmetScore = 0
                     if (gData.armor) helmetScore += gData.armor
+                    if (gData.upgrade.armor) helmetScore += gData.upgrade.armor * item.level
                     if (gData.resistance) helmetScore += gData.resistance
+                    if (gData.upgrade.resistance) helmetScore += gData.upgrade.resistance * item.level
                     if (helmetScore > bestHelmetScore) {
                         bestHelmet = item
                         bestHelmetScore = helmetScore
@@ -292,7 +306,9 @@ class Hardcore {
                 } else if (gData.type == "chest") {
                     let chestScore = 0
                     if (gData.armor) chestScore += gData.armor
+                    if (gData.upgrade.armor) chestScore += gData.upgrade.armor * item.level
                     if (gData.resistance) chestScore += gData.resistance
+                    if (gData.upgrade.resistance) chestScore += gData.upgrade.resistance * item.level
                     if (chestScore > bestChestScore) {
                         bestChest = item
                         bestChestScore = chestScore
@@ -300,6 +316,7 @@ class Hardcore {
                 } else if (gData.type == "pants") {
                     let pantsScore = 0
                     if (gData.armor) pantsScore += gData.armor
+                    if (gData.upgrade.armor) pantsScore += gData.upgrade.armor * item.level
                     if (gData.resistance) pantsScore += gData.resistance
                     if (pantsScore > bestPantsScore) {
                         bestPants = item
@@ -308,6 +325,7 @@ class Hardcore {
                 } else if (gData.type == "shoes") {
                     let shoesScore = 0
                     if (gData.armor) shoesScore += gData.armor
+                    if (gData.upgrade.armor) shoesScore += gData.upgrade.armor * item.level
                     if (gData.resistance) shoesScore += gData.resistance
                     if (shoesScore > bestShoesScore) {
                         bestShoes = item
@@ -316,6 +334,7 @@ class Hardcore {
                 } else if (gData.type == "gloves") {
                     let glovesScore = 0
                     if (gData.armor) glovesScore += gData.armor
+                    if (gData.upgrade.armor) glovesScore += gData.upgrade.armor * item.level
                     if (gData.resistance) glovesScore += gData.resistance
                     if (glovesScore > bestGlovesScore) {
                         bestGloves = item
@@ -324,6 +343,7 @@ class Hardcore {
                 } else if (gData.type == "cape") {
                     let capeScore = 0
                     if (gData.armor) capeScore += gData.armor
+                    if (gData.upgrade.armor) capeScore += gData.upgrade.armor * item.level
                     if (gData.resistance) capeScore += gData.resistance
                     if (capeScore > bestCapeScore) {
                         bestCape = item
@@ -332,6 +352,7 @@ class Hardcore {
                 } else if (gData.type == "quiver") {
                     let quiverScore = 0
                     if (gData.range) quiverScore += gData.range
+                    if (gData.upgrade.range) quiverScore += gData.upgrade.range * item.level
                     if (quiverScore > bestQuiverScore) {
                         bestQuiver = item
                         bestQuiverScore = quiverScore
@@ -341,11 +362,12 @@ class Hardcore {
                     if (gData.vit) amuletScore += gData.vit
                     if (amuletScore > bestAmuletScore) {
                         bestAmulet = item
-                        bestAmuletScore = 0
+                        bestAmuletScore = amuletScore
                     }
                 } else if (gData.type == "ring") {
                     let ringScore = 0
                     if (gData.vit) ringScore += gData.vit
+                    if (gData.compound.vit) ringScore += gData.compound.vit * item.level
                     if (ringScore > bestRing1Score) {
                         bestRing1 = item
                         bestRing1Score = ringScore
@@ -356,6 +378,7 @@ class Hardcore {
                 } else if (gData.type == "earring") {
                     let earringScore = 0
                     if (gData.vit) earringScore += gData.vit
+                    if (gData.compound.vit) earringScore += gData.compound.vit * item.level
                     if (earringScore > bestEarring1Score) {
                         bestEarring1 = item
                         bestEarring1Score = earringScore
@@ -366,6 +389,7 @@ class Hardcore {
                 } else if (gData.type == "belt") {
                     let beltScore = 0
                     if (gData.vit) beltScore += gData.vit
+                    if (gData.compound.vit) beltScore += gData.compound.vit * item.level
                     if (beltScore > bestBeltScore) {
                         bestBelt = item
                         bestBeltScore = beltScore
@@ -373,6 +397,7 @@ class Hardcore {
                 } else if (gData.type == "orb") {
                     let orbScore = 0
                     if (gData.vit) orbScore += gData.vit
+                    if (gData.compound.vit) orbScore += gData.compound.vit * item.level
                     if (orbScore > bestOrbScore) {
                         bestOrb = item
                         bestOrbScore = orbScore
@@ -414,7 +439,7 @@ class Hardcore {
             for (const item of getInventory()) {
                 if (G.items[item.name].e && item.q >= G.items[item.name].e) {
                     exchange(item.index)
-                } else if(item.name == "glitch") {
+                } else if (item.name == "glitch") {
                     exchange(item.index)
                 }
             }
@@ -591,14 +616,20 @@ class Hardcore {
                 if (gInfo.type == "weapon" && gInfo.wtype != "bow" && gInfo.wtype != "crossbow") {
                     // Sell all weapons that aren't bows
                     sell(item.index)
-                } else if (gInfo.type == "shield" || gInfo.type == "source") {
+                } else if (gInfo.type == "cosmetics" || gInfo.type == "jar" || gInfo.type == "qubics" || gInfo.type == "shield" || gInfo.type == "source" || gInfo.type == "token") {
                     // Sell unusable items
                     sell(item.index)
                 } else if (gInfo.e > 1) {
                     // Sell things that we need to exchange more than one of
                     sell(item.index)
-                } else if (item.name == "offering") {
+                } else if (gInfo.type == "pscroll" && item.name != "dexscroll") {
+                    // Sell scrolls that are not dex scrolls
+                    sell(item.index)
+                } else if (item.name == "offering" || item.name == "mpot0" || item.name == "hpot0") {
                     // Sell specific items
+                    sell(item.index)
+                } else if (gInfo.type == "gem" && !gInfo.e) {
+                    // Sell unexchangable gems
                     sell(item.index)
                 }
             }
@@ -609,6 +640,7 @@ class Hardcore {
         setTimeout(async () => { this.sellLoop() }, TIMEOUT)
     }
 
+    // TODO: Upgrade all stat items with dex scrolls first
     async upgradeLoop() {
         try {
             if (parent.character.q.upgrade // Already upgrading something
