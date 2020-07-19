@@ -6,6 +6,8 @@ import { PriorityEntity, InventoryItemInfo } from "./definitions/bots"
 const TIMEOUT = 500
 
 class Hardcore {
+    mainTarget: MonsterName = "goo"
+
     async run() {
         this.attackLoop()
         this.buyLoop()
@@ -94,6 +96,7 @@ class Hardcore {
             if (parent.character.q.compound // Already compounding something
                 || parent.character.map == "bank") { // We can't do things in the bank
                 setTimeout(async () => { this.compoundLoop() }, TIMEOUT)
+                return
             }
 
             const items = getInventory()
@@ -405,10 +408,13 @@ class Hardcore {
             if (parent.character.q.exchange // Already exchanging something
                 || parent.character.map == "bank") { // We can't do things in the bank
                 setTimeout(async () => { this.exchangeLoop() }, TIMEOUT)
+                return
             }
 
             for (const item of getInventory()) {
-                if (G.items[item.name].e && item.q > G.items[item.name].e) {
+                if (G.items[item.name].e && item.q >= G.items[item.name].e) {
+                    exchange(item.index)
+                } else if(item.name == "glitch") {
                     exchange(item.index)
                 }
             }
@@ -507,14 +513,12 @@ class Hardcore {
     async moveLoop() {
         try {
             if (!smart.moving) {
-                const type: MonsterName = "goo"
-
                 let closestDistance = Number.MAX_VALUE
                 let closest
                 for (const entityId in parent.entities) {
                     const entity = parent.entities[entityId]
                     if (!entity.mtype) continue
-                    if (entity.mtype != type) continue
+                    if (entity.mtype != this.mainTarget) continue
                     const d = distance(parent.character, entity)
                     if (d < closestDistance) {
                         closestDistance = d
@@ -523,7 +527,7 @@ class Hardcore {
                 }
 
                 if (!closest) {
-                    smart_move(type)
+                    smart_move(this.mainTarget)
                 } else if (closestDistance > parent.character.range) {
                     xmove(closest.real_x, closest.real_y)
                 }
@@ -610,6 +614,7 @@ class Hardcore {
             if (parent.character.q.upgrade // Already upgrading something
                 || parent.character.map == "bank") { // We can't do things in the bank
                 setTimeout(async () => { this.upgradeLoop() }, TIMEOUT)
+                return
             }
 
             let lowestLevel = Number.MAX_VALUE
