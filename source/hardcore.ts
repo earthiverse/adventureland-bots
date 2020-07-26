@@ -184,11 +184,13 @@ class Hardcore {
             // Gloves
             let bestGloves: InventoryItemInfo
             let bestGlovesScore = -1
-            if (parent.character.slots.shoes) {
-                const gData2 = G.items[parent.character.slots.shoes.name]
+            if (parent.character.slots.gloves) {
+                const gData2 = G.items[parent.character.slots.gloves.name]
                 bestGlovesScore = 0
                 if (gData2.armor) bestGlovesScore += gData2.armor
+                if (gData2.upgrade.armor) bestGlovesScore += gData2.upgrade.armor * parent.character.slots.gloves.level
                 if (gData2.resistance) bestGlovesScore += gData2.resistance
+                if (gData2.upgrade.resistance) bestGlovesScore += gData2.upgrade.resistance * parent.character.slots.gloves.level
             }
 
             // Cape
@@ -631,7 +633,7 @@ class Hardcore {
                 if (gInfo.type == "weapon" && gInfo.wtype != "bow" && gInfo.wtype != "crossbow") {
                     // Sell all weapons that aren't bows
                     sell(item.index)
-                } else if (gInfo.type == "cosmetics" || gInfo.type == "jar" || gInfo.type == "key" || gInfo.type == "petlicence" || gInfo.type == "qubics" || gInfo.type == "shield" || gInfo.type == "source" || gInfo.type == "throw" || gInfo.type == "token") {
+                } else if (gInfo.type == "cosmetics" || gInfo.type == "jar" || gInfo.type == "key" || gInfo.type == "petlicence" || gInfo.type == "qubics" || gInfo.type == "quest" || gInfo.type == "shield" || gInfo.type == "source" || gInfo.type == "throw" || gInfo.type == "token") {
                     // Sell unusable items
                     sell(item.index)
                 } else if (gInfo.e > 1) {
@@ -640,7 +642,7 @@ class Hardcore {
                 } else if (gInfo.type == "pscroll" && item.name != "dexscroll") {
                     // Sell scrolls that are not dex scrolls
                     sell(item.index)
-                } else if (item.name == "offering" || item.name == "mpot0" || item.name == "hpot0") {
+                } else if (item.name == "fieldgen0" || item.name == "greenbomb" || item.name == "hpot0" || item.name == "mpot0" || item.name == "offering" || item.name == "solitaire" || item.name == "swirlipop" || item.name == "x0" || item.name == "x1" || item.name == "x2" || item.name == "x3" || item.name == "x4" || item.name == "x5" || item.name == "x6" || item.name == "x7" || item.name == "x8") {
                     // Sell specific items
                     sell(item.index)
                 } else if (gInfo.type == "gem" && !gInfo.e) {
@@ -655,7 +657,6 @@ class Hardcore {
         setTimeout(async () => { this.sellLoop() }, TIMEOUT)
     }
 
-    // TODO: Upgrade all stat items with dex scrolls first
     async upgradeLoop() {
         try {
             if (parent.character.q.upgrade // Already upgrading something

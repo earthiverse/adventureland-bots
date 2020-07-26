@@ -1186,6 +1186,7 @@ export type ItemName =
   | "fcape"
   | "fclaw"
   | "feather0"
+  | "fieldgen0"
   | "fierygloves"
   | "figurine"
   | "fireblade"
