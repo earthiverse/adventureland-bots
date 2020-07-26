@@ -308,7 +308,24 @@ class Merchant extends Character {
         for (const item of getInventory()) {
             if (emptyBankSlots.length == 0) break
             if (this.itemsToKeep.includes(item.name)) continue
-            if (item.q) continue // We'll deal with stackable items on their own
+
+            // See if we can stack it on something else
+            if (item.q) {
+                let found = false
+                for (const pack in bank_packs) {
+                    if (found) break
+                    if (bank_packs[pack as BankPackType][0] !== parent.character.map) continue
+                    for (const item2 of getInventory(parent.character.bank[pack as BankPackType])) {
+                        if (item.name == item2.name
+                            && item.q + item2.q <= G.items[item.name].s) {
+                            bank_store(item.index, pack as BankPackType, item2.index)
+                            found = true
+                            break
+                        }
+                    }
+                }
+                if (found) continue
+            }
 
             const slot = emptyBankSlots.shift()
             bank_store(item.index, slot.pack, slot.index)
