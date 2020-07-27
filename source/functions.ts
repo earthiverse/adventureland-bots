@@ -46,7 +46,7 @@ export async function startKonami(): Promise<MonsterName> {
 /** Returns the inventory for the player, with all empty slots removed. */
 export function getInventory(inventory = parent.character.items): InventoryItemInfo[] {
     const items: InventoryItemInfo[] = []
-    for (let i = 0; i < 42; i++) {
+    for (let i = 0; i < inventory.length; i++) {
         if (!inventory[i]) continue // No item in this slot
         items.push({ ...inventory[i], index: i })
     }
