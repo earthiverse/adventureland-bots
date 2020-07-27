@@ -208,7 +208,19 @@ export type GameResponseDataObject = GameResponseAttackFailed | GameResponseBank
     name: string
 }
 
-export type GameResponseDataString = "buy_cant_npc" | "buy_cant_space" | "buy_cost" | "skill_too_far" | "trade_get_closer" | "upgrade_in_progress" | string
+export type GameResponseDataString =
+    | "buy_cant_npc"
+    | "buy_cant_space"
+    | "buy_cost"
+    /** Too far away from monster hunt npc */
+    | "ecu_get_closer"
+    /** When a merchant tries to start a monster hunt */
+    | "monsterhunt_merchant"
+    | "monsterhunt_started"
+    | "skill_too_far"
+    | "trade_get_closer"
+    | "upgrade_in_progress"
+    | string
 
 export type GameResponseAttackFailed = {
     response: "attack_failed",

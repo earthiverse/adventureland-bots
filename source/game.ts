@@ -24,7 +24,7 @@ export class Game {
         this.promises.push(new Promise<boolean>((resolve, reject) => {
             this.getServerList().then((data) => {
                 // Find the address of the server we want to connect to
-                for (let server of data) {
+                for (const server of data) {
                     if (server.region == region && server.name == name) {
                         this.socket = socketio(`ws://${server.addr}:${server.port}`, {
                             autoConnect: false,
@@ -131,10 +131,10 @@ export class Game {
             this.players.clear()
         }
 
-        for (let monster of data.monsters) {
+        for (const monster of data.monsters) {
             this.entities.set(monster.id, monster)
         }
-        for (let player of data.players) {
+        for (const player of data.players) {
             if (player.id == this.character?.id) continue // Skip our own character (it gets sent in 'start')
             this.players.set(player.id, player)
         }
@@ -182,10 +182,10 @@ export class Game {
 
         this.socket.on("eval", (data: EvalData) => {
             // Skill timeouts (like attack) are sent via eval
-            const skillReg = /skill_timeout\s*\(\s*['\"](.+?)['\"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.exec(data.code)
+            const skillReg = /skill_timeout\s*\(\s*['"](.+?)['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.exec(data.code)
             if (skillReg) {
                 const skill = skillReg[1] as SkillName
-                let cooldown = Number.parseFloat(skillReg[2])
+                const cooldown = Number.parseFloat(skillReg[2])
                 if (!cooldown) G.skills[skill].cooldown
                 this.nextSkill.set(skill, new Date(Date.now() + Math.ceil(cooldown)))
                 return
@@ -194,7 +194,7 @@ export class Game {
             // Potion timeouts are sent via eval
             const potReg = /pot_timeout\s*\(\s*(\d+\.?\d+?)\s*\)/.exec(data.code)
             if (potReg) {
-                let cooldown = Number.parseFloat(potReg[1])
+                const cooldown = Number.parseFloat(potReg[1])
                 this.nextSkill.set("use_hp", new Date(Date.now() + Math.ceil(cooldown)))
                 this.nextSkill.set("use_mp", new Date(Date.now() + Math.ceil(cooldown)))
                 return
@@ -248,7 +248,7 @@ export class Game {
         this.socket.on("player", (data: CharacterData) => {
             this.parseCharacter(data)
             if (data.hitchhikers) {
-                for (let hitchhiker of data.hitchhikers) {
+                for (const hitchhiker of data.hitchhikers) {
                     if (hitchhiker[0] == "game_response") {
                         this.parseGameResponse(hitchhiker[1])
                     }
@@ -256,9 +256,9 @@ export class Game {
             }
         })
 
-        this.socket.on("q_data", (data: QData) => {
+        // this.socket.on("q_data", (data: QData) => {
 
-        })
+        // })
 
         this.socket.on("start", (data: StartData) => {
             console.log("socket: start!")
@@ -312,12 +312,12 @@ export class Game {
                 resolve()
             })
             setTimeout(() => {
-                reject(`start timeout (10000ms)`)
+                reject("start timeout (10000ms)")
             }, 10000)
         })
     }
 
-    async disconnect() {
+    disconnect(): void {
         this.active = false
         this.socket.close()
     }
@@ -327,7 +327,7 @@ export class Game {
         const result = await axios.get("http://adventure.land/data.js")
         if (result.status == 200) {
             // Update X.servers with the latest data
-            let matches = result.data.match(/var\s+G\s*=\s*(\{.+\});/)
+            const matches = result.data.match(/var\s+G\s*=\s*(\{.+\});/)
             return JSON.parse(matches[1]) as GData
         } else {
             console.error("Error fetching http://adventure.land/data.js")
@@ -340,7 +340,7 @@ export class Game {
         const result = await axios.get("http://adventure.land")
         if (result.status == 200) {
             // We got a result!
-            let matches = result.data.match(/X\.servers=(\[.+\]);/)
+            const matches = result.data.match(/X\.servers=(\[.+\]);/)
             return JSON.parse(matches[1])
         } else {
             console.error("Error fetching http://adventure.land!")
