@@ -619,7 +619,11 @@ export class NGraphMove {
                 return Promise.reject("cancelled")
             }
 
-            if (distance < 1) {
+            if (linkData && linkData.type == "town" && can_move_to(to.x, to.y) && distance < TOWN_COST) {
+                // Town warps now place us randomly around the spawn, so this is us compensating for it.
+                await performNextMovement(to, undefined)
+                continue
+            } else if (distance < 1) {
                 // We're at the next node, continue
                 i++
                 continue
