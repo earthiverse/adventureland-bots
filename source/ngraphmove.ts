@@ -387,14 +387,14 @@ export class NGraphMove {
                 }
             }
 
-            // 3F: Create "town" links
-            const townNodeID = createNodeId(map, G.maps[map].spawns[0][0], G.maps[map].spawns[0][1])
-            const townNodeLinkData: LinkData = {
-                type: "town"
-            }
-            for (const node of newNodes) {
-                this.graph.addLink(node.id, townNodeID, townNodeLinkData)
-            }
+            // // 3F: Create "town" links
+            // const townNodeID = createNodeId(map, G.maps[map].spawns[0][0], G.maps[map].spawns[0][1])
+            // const townNodeLinkData: LinkData = {
+            //     type: "town"
+            // }
+            // for (const node of newNodes) {
+            //     this.graph.addLink(node.id, townNodeID, townNodeLinkData)
+            // }
         }
     }
 
@@ -581,12 +581,13 @@ export class NGraphMove {
 
         async function performNextMovement(to: NodeData, link: LinkData) {
             if (link) {
-                if (link.type == "town") {
-                    // Use "town" to get to the next node
-                    use_skill("town")
-                    await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + TOWN_TIME))
-                    return
-                } else if (link.type == "transport") {
+                // if (link.type == "town") {
+                //     // Use "town" to get to the next node
+                //     use_skill("town")
+                //     await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + TOWN_TIME))
+                //     return
+                // } else
+                if (link.type == "transport") {
                     // Transport to the next node
                     transport(to.map, link.spawn)
                     await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + TRANSPORT_TIME))
@@ -619,11 +620,7 @@ export class NGraphMove {
                 return Promise.reject("cancelled")
             }
 
-            if (linkData && linkData.type == "town" && can_move_to(to.x, to.y) && distance < TOWN_COST) {
-                // Town warps now place us randomly around the spawn, so this is us compensating for it.
-                await performNextMovement(to, undefined)
-                continue
-            } else if (distance < 1) {
+            if (distance < 1) {
                 // We're at the next node, continue
                 i++
                 continue
