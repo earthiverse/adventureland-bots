@@ -297,7 +297,7 @@ export abstract class Character {
         const monsters = getMonstersInfo()
         changed = false
         for (const entity of getEntities({ isMonster: true, isRIP: false })) {
-            if (!(["fvampire", "goldenbat", "greenjr", "jr", "mvampire", "phoenix", "pinkgoo", "snowman", "wabbit"]).includes(entity.mtype)) continue
+            if (!(["fvampire", "goldenbat", "greenjr", "jr", "mvampire", /*"phoenix",*/ "pinkgoo", "snowman", "wabbit"]).includes(entity.mtype)) continue
             monsters[entity.mtype] = {
                 "lastSeen": new Date(),
                 "id": entity.id,
@@ -488,7 +488,7 @@ export abstract class Character {
 
         // Rare Monsters -- Move to monster
         for (const entity of getEntities({ isMonster: true, isRIP: false })) {
-            if (entity.mtype != "goldenbat" && entity.mtype != "phoenix") continue
+            if (!["fvampire", "goldenbat", "greenjr", "jr", "mvampire", "phoenix", "pinkgoo", "snowman", "wabbit"].includes(entity.mtype)) continue
             if (!this.targetPriority[entity.mtype]) continue // Not a target
             set_message(entity.mtype)
             return { target: entity.mtype, position: entity, range: parent.character.range }
