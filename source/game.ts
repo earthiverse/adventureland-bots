@@ -1,7 +1,7 @@
 import axios from "axios"
 import socketio from "socket.io-client"
-import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, AuthData, StartData, EntityData, CharacterData, PartyData, ChestData, PlayerData, QData, DisappearData, ChestOpenedData, HitData, NewMapData, ActionData, EvalData, DeathData } from "./definitions/adventureland-server"
-import { ServerRegion, ServerIdentifier, CharacterEntity, SkillName, GData } from "./definitions/adventureland"
+import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, AuthData, StartData, EntityData, CharacterData, PartyData, ChestData, PlayerData, DisappearData, ChestOpenedData, HitData, NewMapData, ActionData, EvalData, DeathData } from "./definitions/adventureland-server"
+import { ServerRegion, ServerIdentifier, SkillName, GData, BankInfo } from "./definitions/adventureland"
 
 export class Game {
     private promises: Promise<boolean>[] = []
@@ -11,6 +11,7 @@ export class Game {
     public G: GData
 
     public active = false
+    public bank: BankInfo
     public character: CharacterData
     public chests = new Map<string, ChestData>()
     public entities = new Map<string, EntityData>()
@@ -38,7 +39,7 @@ export class Game {
                 reject()
                 return
             })
-        }), new Promise<boolean>((resolve, reject) => {
+        }), new Promise<boolean>((resolve) => {
             if (!this.G) {
                 this.getGameData().then((data) => {
                     this.G = data
@@ -49,6 +50,7 @@ export class Game {
     }
 
     private parseCharacter(data: CharacterData) {
+        // Update all the character information we can
         this.character = {
             hp: data.hp,
             max_hp: data.max_hp,
@@ -119,6 +121,9 @@ export class Game {
             acx: data.acx,
             xcx: data.xcx
         }
+
+        // Update Bank information if it's available
+        if (data.user) this.bank = data.user
     }
 
     private parseEntities(data: EntitiesData) {
@@ -143,8 +148,6 @@ export class Game {
     private parseGameResponse(data: GameResponseData) {
         if (typeof data == "string") {
             console.info(`Game Response: ${data}`)
-        } else if (data.response == "gold_received") {
-            this.character.gold += data.gold
         }
     }
 

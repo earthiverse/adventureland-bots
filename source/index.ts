@@ -2,7 +2,7 @@ import dotenv from "dotenv"
 import { Game } from "./game.js"
 import { Bot } from "./bot.js"
 import { ChestData } from "./definitions/adventureland-server.js"
-import { SlotInfo, SlotType, ItemInfo, ItemName } from "./definitions/adventureland.js"
+import { SlotType, ItemName } from "./definitions/adventureland.js"
 
 dotenv.config({ path: "../earthRan2.env" })
 console.log([process.env.AUTH, process.env.CHARACTER, process.env.USER])
@@ -36,11 +36,11 @@ async function startRanger(auth: string, character: string, user: string) {
             }
 
             // Attack the nearest player
-            let nearestPlayer = bot.getNearestPlayer()
+            const nearestPlayer = bot.getNearestPlayer()
             if (bot.isPVP() && nearestPlayer && nearestPlayer.distance < bot.game.character.range) {
                 await bot.attack(nearestPlayer.player.id)
             } else {
-                let nearestMonster = bot.getNearestMonster("goo")
+                const nearestMonster = bot.getNearestMonster("goo")
                 if (nearestMonster.distance <= bot.game.character.range) {
                     await bot.attack(nearestMonster.monster.id)
                 }
@@ -59,12 +59,12 @@ async function startRanger(auth: string, character: string, user: string) {
         try {
             if (!bot.game.active) return
 
-            let purchases: Promise<any>[] = []
+            const purchases: Promise<any>[] = []
 
             // Buy healing items 
             let numHPPots = 0
             let numMPPots = 0
-            for (let item of bot.game.character.items) {
+            for (const item of bot.game.character.items) {
                 if (!item) continue
                 if (item.name == "hpot1") {
                     numHPPots += item.q
@@ -78,8 +78,8 @@ async function startRanger(auth: string, character: string, user: string) {
             // Find the lowest level item we currently have equipped
             let lowestLevel = 20
             let lowestSlot: SlotType = undefined
-            for (let slot of ["mainhand", "chest", "pants", "shoes", "helmet", "gloves"] as SlotType[]) {
-                let itemInfo = bot.game.character.slots[slot]
+            for (const slot of ["mainhand", "chest", "pants", "shoes", "helmet", "gloves"] as SlotType[]) {
+                const itemInfo = bot.game.character.slots[slot]
                 if (!itemInfo) {
                     lowestSlot = slot
                     break
@@ -92,7 +92,7 @@ async function startRanger(auth: string, character: string, user: string) {
 
             // If we don't have an item in the inventory, buy one
             let hasItem = false
-            for (let item of bot.game.character.items) {
+            for (const item of bot.game.character.items) {
                 if (!item) continue
                 if (lowestSlot == "mainhand" && item.name == "bow") {
                     hasItem = true
@@ -136,8 +136,8 @@ async function startRanger(auth: string, character: string, user: string) {
                 }
             }
 
-            let results = await Promise.allSettled(purchases)
-            for (let result of results) {
+            const results = await Promise.allSettled(purchases)
+            for (const result of results) {
                 if (result.status == "rejected") console.error(result.reason)
             }
         } catch (e) {
@@ -154,7 +154,7 @@ async function startRanger(auth: string, character: string, user: string) {
 
             const items: { [T in ItemName]?: { [T in string]?: number[] } } = {}
             for (let inventoryPos = 0; inventoryPos < bot.game.character.items.length; inventoryPos++) {
-                let item = bot.game.character.items[inventoryPos]
+                const item = bot.game.character.items[inventoryPos]
                 if (!item) return
                 if (!bot.game.G.items[item.name].compound) return // Not compoundable
 
@@ -164,8 +164,8 @@ async function startRanger(auth: string, character: string, user: string) {
             }
 
             let compoundThese: { itemName: ItemName, itemLevel: number, inventoryPos: number[] }
-            for (let name in items) {
-                for (let level in items[name as ItemName]) {
+            for (const name in items) {
+                for (const level in items[name as ItemName]) {
                     if (items[name as ItemName][level].length >= 3) {
                         compoundThese = { itemName: name as ItemName, itemLevel: Number.parseInt(level), inventoryPos: items[name as ItemName][level] }
                         break
@@ -182,7 +182,7 @@ async function startRanger(auth: string, character: string, user: string) {
                     }
                 }
                 await bot.buy(cscroll, 1)
-                let success = await bot.compound(compoundThese.inventoryPos[0], compoundThese.inventoryPos[1], compoundThese.inventoryPos[2], bot.findItem(cscroll))
+                const success = await bot.compound(compoundThese.inventoryPos[0], compoundThese.inventoryPos[1], compoundThese.inventoryPos[2], bot.findItem(cscroll))
                 if (success) {
                     // Check if it's better than what we currently have
                 }
@@ -205,8 +205,8 @@ async function startRanger(auth: string, character: string, user: string) {
                 return
             }
 
-            let hpRatio = bot.game.character.hp / bot.game.character.max_hp
-            let mpRatio = bot.game.character.mp / bot.game.character.max_mp
+            const hpRatio = bot.game.character.hp / bot.game.character.max_hp
+            const mpRatio = bot.game.character.mp / bot.game.character.max_mp
             if (hpRatio < mpRatio) {
                 await bot.regenHP()
             } else if (mpRatio < hpRatio) {

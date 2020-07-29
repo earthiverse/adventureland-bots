@@ -1,4 +1,4 @@
-import { NPCType, CharacterType, StatusInfo, SlotInfo, ItemInfo, MapName, MonsterName, ItemName, ServerRegion, ServerIdentifier } from "./adventureland"
+import { NPCType, CharacterType, StatusInfo, SlotInfo, ItemInfo, MapName, MonsterName, ItemName, ServerRegion, ServerIdentifier, BankPackType, BankInfo } from "./adventureland"
 
 export type ActionData = {
     attacker: string
@@ -106,8 +106,10 @@ export type CharacterData = {
     // TODO: Figure this out
     acx: any
     xcx: string[]
-    // Extra events (e.g. ["game_response", {response: "upgrade_success", level: 4, num: 8}])
+    /** Extra events (e.g. ["game_response", {response: "upgrade_success", level: 4, num: 8}]) */
     hitchhikers?: [string, any][]
+    /** Holds bank information when the character is inside the bank */
+    user?: BankInfo
 }
 
 export type ChestData = {

@@ -487,11 +487,7 @@ export type GItem = {
 * For the current character
 */
 export type CharacterEntity = Entity & {
-  bank: {
-    [T in BankPackType]: ItemInfo[]
-  } & {
-    gold: number;
-  };
+  bank?: BankInfo;
   /** Channeling actions */
   c: {
     town?: {
@@ -587,6 +583,12 @@ export type Entity = PositionMovable & {
   type: "character" | "monster";
   vx: number;
   vy: number;
+}
+
+export type BankInfo = {
+  [T in Exclude<BankPackType, "gold">]?: ItemInfo[]
+} & {
+  gold: number;
 }
 
 export type ChestInfo = PositionReal & {
