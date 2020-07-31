@@ -70,18 +70,18 @@ class Warrior extends Character {
         //     "priority": SPECIAL,
         //     "holdAttackWhileMoving": true
         // },
-        "fireroamer": {
-            "coop": ["priest"],
-            "priority": 0,
-            "holdPositionFarm": true,
-            "holdAttackWhileMoving": true,
-            "farmingPosition": {
-                "map": "desertland",
-                "x": 200,
-                "y": -700
-            },
-            "equip": ["basher", "jacko"]
-        },
+        // "fireroamer": {
+        //     "coop": ["priest"],
+        //     "priority": 0,
+        //     "holdPositionFarm": true,
+        //     "holdAttackWhileMoving": true,
+        //     "farmingPosition": {
+        //         "map": "desertland",
+        //         "x": 200,
+        //         "y": -700
+        //     },
+        //     "equip": ["basher", "jacko"]
+        // },
         "fvampire": {
             "coop": ["priest", "ranger"],
             "priority": 0,

@@ -81,17 +81,17 @@ class Mage extends Character {
         "croc": {
             "priority": EASY
         },
-        "fireroamer": {
-            "coop": ["priest", "warrior"],
-            "priority": 0,
-            "holdPositionFarm": true,
-            "holdAttackWhileMoving": true,
-            "farmingPosition": {
-                "map": "desertland",
-                "x": 150,
-                "y": -650
-            }
-        },
+        // "fireroamer": {
+        //     "coop": ["priest", "warrior"],
+        //     "priority": 0,
+        //     "holdPositionFarm": true,
+        //     "holdAttackWhileMoving": true,
+        //     "farmingPosition": {
+        //         "map": "desertland",
+        //         "x": 150,
+        //         "y": -650
+        //     }
+        // },
         "frog": {
             "priority": EASY
         },
