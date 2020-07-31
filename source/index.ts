@@ -10,7 +10,7 @@ console.log([process.env.AUTH, process.env.CHARACTER, process.env.USER])
 async function startRanger(auth: string, character: string, user: string) {
     const game = new Game("US", "I")
     await game.connect(auth, character, user)
-    
+
     console.info("Starting bot!")
     const bot = new Bot(game)
 
@@ -36,7 +36,7 @@ async function startRanger(auth: string, character: string, user: string) {
             }
 
             // Attack the nearest player
-            const nearestPlayer = bot.getNearestPlayer()
+            const nearestPlayer = bot.getNearestAttackablePlayer()
             if (bot.isPVP() && nearestPlayer && nearestPlayer.distance < bot.game.character.range) {
                 await bot.attack(nearestPlayer.player.id)
             } else {
@@ -182,7 +182,7 @@ async function startRanger(auth: string, character: string, user: string) {
                     }
                 }
                 await bot.buy(cscroll, 1)
-                const success = await bot.compound(compoundThese.inventoryPos[0], compoundThese.inventoryPos[1], compoundThese.inventoryPos[2], bot.findItem(cscroll))
+                const success = await bot.compound(compoundThese.inventoryPos[0], compoundThese.inventoryPos[1], compoundThese.inventoryPos[2], await bot.locateItem(cscroll))
                 if (success) {
                     // Check if it's better than what we currently have
                 }

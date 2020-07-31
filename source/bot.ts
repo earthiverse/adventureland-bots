@@ -5,15 +5,31 @@ import { Tools } from "./tools.js"
 
 const TIMEOUT = 5000
 
-export class Bot {
+/**
+ * Implement functions that depend on server events here
+ */
+class BotSocket {
     public game: Game
 
     constructor(game: Game) {
         this.game = game
     }
 
+    // // TODO: Not finished
+    // public acceptMagiport(): Promise<unknown> {
+    //     const acceptedMagiport = new Promise((resolve, reject) => {
+
+    //         setTimeout(() => {
+    //             reject(`acceptMagiport timeout (${TIMEOUT}ms)`)
+    //         }, TIMEOUT)
+    //     })
+
+    //     parent.socket.emit("magiport", { name: name })
+    //     return acceptedMagiport
+    // }
+
     // TODO: Return attack info
-    public async attack(id: string): Promise<unknown> {
+    public attack(id: string): Promise<unknown> {
         if (!this.game.entities.has(id) && !this.game.players.has(id)) return Promise.reject(`No Entity with ID '${id}'`)
 
         const attackStarted = new Promise((resolve, reject) => {
@@ -59,7 +75,7 @@ export class Bot {
     }
 
     // TODO: Return buy info
-    public async buy(itemName: ItemName, quantity = 1): Promise<unknown> {
+    public buy(itemName: ItemName, quantity = 1): Promise<unknown> {
         if (this.game.character.gold < this.game.G.items[itemName].gold) return Promise.reject(`Insufficient gold. We have ${this.game.character.gold}, but the item costs ${this.game.G.items[itemName].gold}`)
 
         const itemReceived = new Promise((resolve, reject) => {
@@ -113,7 +129,7 @@ export class Bot {
     }
 
     // TODO: Return better compound info
-    public async compound(item1Pos: number, item2Pos: number, item3Pos: number, cscrollPos: number, offeringPos?: number): Promise<boolean> {
+    public compound(item1Pos: number, item2Pos: number, item3Pos: number, cscrollPos: number, offeringPos?: number): Promise<boolean> {
         const item1Info = parent.character.items[item1Pos]
         const item2Info = parent.character.items[item2Pos]
         const item3Info = parent.character.items[item3Pos]
@@ -156,7 +172,7 @@ export class Bot {
         return compoundComplete
     }
 
-    public async equip(inventoryPos: number, equipSlot?: SlotType): Promise<unknown> {
+    public equip(inventoryPos: number, equipSlot?: SlotType): Promise<unknown> {
         if (!this.game.character.items[inventoryPos]) return Promise.reject(`No item in inventory slot ${inventoryPos}.`)
 
         const iInfo = this.game.character.items[inventoryPos]
@@ -207,7 +223,7 @@ export class Bot {
         return equipFinished
     }
 
-    public async exchange(inventoryPos: number): Promise<unknown> {
+    public exchange(inventoryPos: number): Promise<unknown> {
         if (!this.game.character.items[inventoryPos]) return Promise.reject(`No item in inventory slot ${inventoryPos}.`)
 
         const exchangeFinished = new Promise((resolve, reject) => {
@@ -239,7 +255,7 @@ export class Bot {
         return exchangeFinished
     }
 
-    public async getMonsterHuntQuest(): Promise<unknown> {
+    public getMonsterHuntQuest(): Promise<unknown> {
         const questGot = new Promise((resolve, reject) => {
             const questGotCheck = (data: GameResponseData) => {
                 if (data == "ecu_get_closer") {
@@ -276,7 +292,7 @@ export class Bot {
         return questGot
     }
 
-    public async move(x: number, y: number): Promise<unknown> {
+    public move(x: number, y: number): Promise<unknown> {
         const moveFinished = new Promise((resolve, reject) => {
             const moveFinishedCheck = (data: CharacterData) => {
                 // TODO: Improve this to check if we moved again, and if we did, reject()
@@ -304,8 +320,8 @@ export class Bot {
         return moveFinished
     }
 
-    public async regenHP(): Promise<unknown> {
-        if (this.game.nextSkill.get("use_hp")?.getTime() > Date.now()) return Promise.reject("use_hp is on cooldown")
+    public regenHP(): Promise<unknown> {
+        // if (this.game.nextSkill.get("use_hp")?.getTime() > Date.now()) return Promise.reject("use_hp is on cooldown")
 
         const regenReceived = new Promise((resolve, reject) => {
             const regenCheck = (data: EvalData) => {
@@ -325,8 +341,8 @@ export class Bot {
         return regenReceived
     }
 
-    public async regenMP(): Promise<unknown> {
-        if (this.game.nextSkill.get("use_mp")?.getTime() > Date.now()) return Promise.reject("use_mp is on cooldown")
+    public regenMP(): Promise<unknown> {
+        // if (this.game.nextSkill.get("use_mp")?.getTime() > Date.now()) return Promise.reject("use_mp is on cooldown")
 
         const regenReceived = new Promise((resolve, reject) => {
             const regenCheck = (data: EvalData) => {
@@ -346,7 +362,7 @@ export class Bot {
         return regenReceived
     }
 
-    public async sendItem(to: string, inventoryPos: number, quantity = 1): Promise<unknown> {
+    public sendItem(to: string, inventoryPos: number, quantity = 1): Promise<unknown> {
         if (!this.game.players.has(to)) return Promise.reject(`"${to}" is not nearby.`)
         if (!this.game.character.items[inventoryPos]) return Promise.reject(`No item in inventory slot ${inventoryPos}.`)
         if (this.game.character.items[inventoryPos]?.q < quantity) return Promise.reject(`We only have a quantity of ${this.game.character.items[inventoryPos].q}, not ${quantity}.`)
@@ -380,7 +396,7 @@ export class Bot {
         return itemSent
     }
 
-    public async unequip(slot: SlotType): Promise<unknown> {
+    public unequip(slot: SlotType): Promise<unknown> {
         if (this.game.character.slots[slot] === null) return Promise.reject(`Slot ${slot} is empty; nothing to unequip.`)
         if (this.game.character.slots[slot] === undefined) return Promise.reject(`Slot ${slot} does not exist.`)
 
@@ -401,7 +417,7 @@ export class Bot {
         return unequipped
     }
 
-    public async upgrade(itemPos: number, scrollPos: number): Promise<boolean> {
+    public upgrade(itemPos: number, scrollPos: number): Promise<boolean> {
         if (!this.game.character.items[itemPos]) return Promise.reject(`There is no item in inventory slot ${itemPos}.`)
         if (!this.game.character.items[scrollPos]) return Promise.reject(`There is no scroll in inventory slot ${scrollPos}.`)
 
@@ -434,30 +450,30 @@ export class Bot {
         return upgradeComplete
     }
 
-    // TODO: Not finished
-    public async useHPPot(itemPos: number): Promise<unknown> {
-        if (!this.game.character.items[itemPos]) return Promise.reject(`There is no item in inventory slot ${itemPos}.`)
-        if (this.game.nextSkill.get("use_hp")?.getTime() > Date.now()) return Promise.reject("use_hp is on cooldown")
+    // // TODO: Not finished
+    // public useHPPot(itemPos: number): Promise<unknown> {
+    //     if (!this.game.character.items[itemPos]) return Promise.reject(`There is no item in inventory slot ${itemPos}.`)
+    //     // if (this.game.nextSkill.get("use_hp")?.getTime() > Date.now()) return Promise.reject("use_hp is on cooldown")
 
-        const healReceived = new Promise((resolve, reject) => {
-            const healCheck = (data: EvalData) => {
-                if (data.code.includes("pot_timeout")) {
-                    this.game.socket.removeListener("eval", healCheck)
-                    resolve()
-                }
-            }
-            setTimeout(() => {
-                this.game.socket.removeListener("eval", healCheck)
-                reject(`regenHP timeout (${TIMEOUT}ms)`)
-            }, TIMEOUT)
-            this.game.socket.on("eval", healCheck)
-        })
+    //     const healReceived = new Promise((resolve, reject) => {
+    //         const healCheck = (data: EvalData) => {
+    //             if (data.code.includes("pot_timeout")) {
+    //                 this.game.socket.removeListener("eval", healCheck)
+    //                 resolve()
+    //             }
+    //         }
+    //         setTimeout(() => {
+    //             this.game.socket.removeListener("eval", healCheck)
+    //             reject(`regenHP timeout (${TIMEOUT}ms)`)
+    //         }, TIMEOUT)
+    //         this.game.socket.on("eval", healCheck)
+    //     })
 
-        this.game.socket.emit("use", { item: "mp" })
-        return healReceived
-    }
+    //     this.game.socket.emit("use", { item: "mp" })
+    //     return healReceived
+    // }
 
-    public async warpToTown(): Promise<unknown> {
+    public warpToTown(): Promise<unknown> {
         const currentMap = this.game.character.map
         const warpComplete = new Promise((resolve, reject) => {
             this.game.socket.once("new_map", (data: NewMapData) => {
@@ -473,16 +489,12 @@ export class Bot {
         this.game.socket.emit("town")
         return warpComplete
     }
+}
 
-    public findItem(itemName: ItemName): number {
-        for (let i = 0; i < this.game.character.items.length; i++) {
-            const item = this.game.character.items[i]
-            if (!item) continue
-
-            if (item.name == itemName) return i
-        }
-    }
-
+/**
+ * Implement functions that don't depend on server events here
+ */
+export class Bot extends BotSocket {
     public getCooldown(skill: SkillName): number {
         const nextSkill = this.game.nextSkill.get(skill)
         if (!nextSkill) return 0
@@ -503,10 +515,10 @@ export class Bot {
                 closestD = d
             }
         })
-        return { monster: closest, distance: closestD }
+        if (closest) return { monster: closest, distance: closestD }
     }
 
-    public getNearestPlayer(): { player: PlayerData, distance: number } {
+    public getNearestAttackablePlayer(): { player: PlayerData, distance: number } {
         let closest: PlayerData
         let closestD = Number.MAX_VALUE
         this.game.players.forEach((player) => {
@@ -518,11 +530,58 @@ export class Bot {
                 closestD = d
             }
         })
-        return { player: closest, distance: closestD }
+        if (closest) return ({ player: closest, distance: closestD })
     }
 
+    /**
+     * Returns a boolean corresponding to whether or not the item is in our inventory.
+     * @param itemName The item to look for
+     * @param inventory Where to look for the item
+     */
+    public hasItem(itemName: ItemName, inventory = this.game.character.items): boolean {
+        for (let i = 0; i < inventory.length; i++) {
+            const item = inventory[i]
+            if (!item) continue
+
+            if (item.name == itemName) return true
+        }
+        return false
+    }
+
+    /**
+     * Returns a boolean corresponding to whether or not we have a given item equipped.
+     * @param itemName The item to look for
+     */
+    public isEquipped(itemName: ItemName): boolean {
+        for (const slot in this.game.character.slots) {
+            if (!this.game.character.slots[slot as SlotType]) continue // Nothing equipped in this slot
+            if (this.game.character.slots[slot as SlotType].name == itemName) return true
+        }
+        return false
+    }
+
+    /**
+     * Returns a boolean corresponding to whether or not we can attack other players
+     */
     public isPVP(): boolean {
         if (this.game.G[this.game.character.map].pvp) return true
         return this.game.server.pvp
+    }
+
+    /**
+     * Returns the index of the item in the given inventory
+     * @param itemName The item to look for
+     * @param inventory Where to look for the item
+     */
+    public locateItem(itemName: ItemName, inventory = this.game.character.items): Promise<number> {
+        return new Promise((resolve, reject) => {
+            for (let i = 0; i < inventory.length; i++) {
+                const item = inventory[i]
+                if (!item) continue
+
+                if (item.name == itemName) resolve(i)
+            }
+            reject(`Could not locate ${itemName}.`)
+        })
     }
 }

@@ -611,7 +611,7 @@ export type ItemInfo = {
     level: number;
     scroll: ItemName;
     nums: number[];
-  } | "shiny" | "glitched" | "superfast";
+  } | TitleName;
   /** If set, the item is for sale, or purchase */
   rid?: string;
 }
@@ -748,6 +748,17 @@ export type StatType =
   | "speed"
   | "str"
   | "vit"
+
+/** These can be placed on items. They respond to the keys in `G.titles`. */
+export type TitleName =
+  | "critmonger"
+  | "firehazard"
+  | "glitched"
+  | "legacy"
+  | "lucky"
+  | "shiny"
+  | "sniper"
+  | "superfast"
 
 export type WeaponType =
   | "axe"
