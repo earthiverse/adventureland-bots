@@ -408,8 +408,13 @@ export abstract class Character {
             const targets = getEntities({ isAttackingUs: true, isMonster: true, isRIP: false })
             let wantToScare = false
             if (targets.length >= 3) {
+                // We have 3 or more monsters attacking us
+                wantToScare = true
+            } else if (targets.length && parent.character.s.burned) {
+                // Scare monsters away if we are burned
                 wantToScare = true
             } else if (targets.length && !this.targetPriority[targets[0].mtype]) {
+                // A monster we don't want to attack is targeting us
                 wantToScare = true
             } else if (parent.character.c.town // We're teleporting to town (attacks will disrupt it)
                 && (targets.length > 1 // We have things attacking us
@@ -420,7 +425,6 @@ export abstract class Character {
                 for (const target of targets) {
                     if (distance(target, parent.character) > target.range) continue // They're out of range
                     if (calculateDamageRange(target, parent.character)[1] * 6 * target.frequency <= parent.character.hp) continue // We can tank a few of their shots
-                    // if (this.targets[target.mtype]) continue
 
                     wantToScare = true
                     break
@@ -1238,8 +1242,12 @@ export abstract class Character {
                 }
             }
 
+            // We are burned
+            if (parent.character.s.burned) return false
+
             // Low HP
-            if (calculateDamageRange(e, parent.character)[1] * 5 * e.frequency > parent.character.hp && distanceToEntity <= e.range) return false
+            if (calculateDamageRange(e, parent.character)[1] * 5 * e.frequency > parent.character.hp
+                && (this.targetPriority[e.mtype].holdAttackInEntityRange || distanceToEntity <= e.range)) return false
         }
 
         return true

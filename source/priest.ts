@@ -105,18 +105,18 @@ class Priest extends Character {
         //     "priority": SPECIAL,
         //     "holdAttackWhileMoving": true
         // },
-        // "fireroamer": {
-        //     "coop": ["warrior"],
-        //     "priority": 0,
-        //     "holdPositionFarm": true,
-        //     "holdAttackWhileMoving": true,
-        //     "farmingPosition": {
-        //         "map": "desertland",
-        //         "x": 100,
-        //         "y": -650
-        //     },
-        //     "equip": ["jacko"]
-        // },
+        "fireroamer": {
+            "coop": ["warrior"],
+            "priority": 0,
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "farmingPosition": {
+                "map": "desertland",
+                "x": 100,
+                "y": -650
+            },
+            "equip": ["jacko"]
+        },
         "frog": {
             "priority": EASY,
             "equip": ["orbg"]
