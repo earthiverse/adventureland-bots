@@ -201,6 +201,12 @@ export type EvalData = {
     code: string
 }
 
+export type GameLogData = GameLogDataString
+export type GameLogDataString =
+    | "Already partying"
+    | "Invitation expired"
+    | string
+
 export type GameResponseData = GameResponseDataObject | GameResponseDataString
 
 // TODO: split these in to other objects
@@ -220,9 +226,10 @@ export type GameResponseDataString =
     | "monsterhunt_merchant"
     | "monsterhunt_started"
     | "skill_too_far"
+    | "trade_bspace"
     | "trade_get_closer"
     | "upgrade_in_progress"
-    | string
+// | string
 
 export type GameResponseAttackFailed = {
     response: "attack_failed",
@@ -265,6 +272,12 @@ export type HitData = {
     source?: "attack" | "heal" | string
     miss?: boolean
     kill?: boolean
+}
+
+/** Used for the 'invite' socket message */
+export type InviteData = {
+    /** The name of the character who invited */
+    name: string
 }
 
 export type LoadedData = {

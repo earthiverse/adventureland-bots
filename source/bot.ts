@@ -1,5 +1,5 @@
 import { Game } from "./game.js"
-import { CharacterData, ActionData, NewMapData, EvalData, EntityData, GameResponseData, GameResponseBuySuccess, GameResponseDataObject, DeathData, GameResponseAttackFailed, GameResponseItemSent, PlayerData, GameResponseBankRestrictions, DisappearingTextData, UpgradeData } from "./definitions/adventureland-server"
+import { CharacterData, ActionData, NewMapData, EvalData, EntityData, GameResponseData, GameResponseBuySuccess, GameResponseDataObject, DeathData, GameResponseAttackFailed, GameResponseItemSent, PlayerData, GameResponseBankRestrictions, DisappearingTextData, UpgradeData, PartyData, GameLogData } from "./definitions/adventureland-server"
 import { SkillName, MonsterName, ItemName, SlotType } from "./definitions/adventureland"
 import { Tools } from "./tools.js"
 
@@ -8,7 +8,7 @@ const TIMEOUT = 5000
 /**
  * Implement functions that depend on server events here
  */
-class BotSocket {
+class BotBase {
     public game: Game
 
     constructor(game: Game) {
@@ -27,6 +27,58 @@ class BotSocket {
     //     parent.socket.emit("magiport", { name: name })
     //     return acceptedMagiport
     // }
+
+    /**
+     * Accepts another character's party invite.
+     * @param id The ID of the character's party you want to accept the invite for.
+     */
+    public acceptPartyInvite(id: string): Promise<PartyData> {
+        const acceptedInvite = new Promise<PartyData>((resolve, reject) => {
+            const partyCheck = (data: PartyData) => {
+                if (data.list.includes(parent.character.name)
+                    && data.list.includes(id)) {
+                    this.game.socket.removeListener("party_update", partyCheck)
+                    this.game.socket.removeListener("game_log", unableCheck)
+                    resolve(data)
+                }
+            }
+
+            const unableCheck = (data: GameLogData) => {
+                const notFound = RegExp("^.+? is not found$")
+                if (data == "Invitation expired") {
+                    this.game.socket.removeListener("party_update", partyCheck)
+                    this.game.socket.removeListener("game_log", unableCheck)
+                    reject(data)
+                } else if (notFound.test(data)) {
+                    this.game.socket.removeListener("party_update", partyCheck)
+                    this.game.socket.removeListener("game_log", unableCheck)
+                    reject(data)
+                } else if (data == "Already partying") {
+                    if (this.game.party.list.includes(parent.character.name)
+                        && this.game.party.list.includes(id)) {
+                        // NOTE: We resolve the promise even if we have already accepted it if we're in the correct party.
+                        this.game.socket.removeListener("party_update", partyCheck)
+                        this.game.socket.removeListener("game_log", unableCheck)
+                        resolve(this.game.party)
+                    } else {
+                        this.game.socket.removeListener("party_update", partyCheck)
+                        this.game.socket.removeListener("game_log", unableCheck)
+                        reject(data)
+                    }
+                }
+            }
+
+            setTimeout(() => {
+                this.game.socket.removeListener("party_update", partyCheck)
+                this.game.socket.removeListener("game_log", unableCheck)
+                reject(`acceptPartyInvite timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.game.socket.on("party_update", partyCheck)
+            this.game.socket.on("game_log", unableCheck)
+        })
+
+        return acceptedInvite
+    }
 
     // TODO: Return attack info
     public attack(id: string): Promise<unknown> {
@@ -396,6 +448,15 @@ class BotSocket {
         return itemSent
     }
 
+    /**
+     * 
+     * @param id The character ID to invite to our party.
+     */
+    // TODO: See what socket events happen, and see if we can see if the server picked up our request
+    public sendPartyInvite(id: string) {
+        parent.socket.emit("party", { event: "request", name: id })
+    }
+
     public unequip(slot: SlotType): Promise<unknown> {
         if (this.game.character.slots[slot] === null) return Promise.reject(`Slot ${slot} is empty; nothing to unequip.`)
         if (this.game.character.slots[slot] === undefined) return Promise.reject(`Slot ${slot} does not exist.`)
@@ -494,7 +555,7 @@ class BotSocket {
 /**
  * Implement functions that don't depend on server events here
  */
-export class Bot extends BotSocket {
+export class Bot extends BotBase {
     public getCooldown(skill: SkillName): number {
         const nextSkill = this.game.nextSkill.get(skill)
         if (!nextSkill) return 0
