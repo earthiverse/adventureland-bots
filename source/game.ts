@@ -189,7 +189,6 @@ export class Game {
             if (skillReg) {
                 const skill = skillReg[1] as SkillName
                 const cooldown = Number.parseFloat(skillReg[2])
-                if (!cooldown) G.skills[skill].cooldown
                 this.nextSkill.set(skill, new Date(Date.now() + Math.ceil(cooldown)))
                 return
             }
@@ -287,7 +286,7 @@ export class Game {
         console.log("Prepared!")
     }
 
-    async connect(auth: string, character: string, user: string) {
+    async connect(auth: string, character: string, user: string): Promise<unknown> {
         await Promise.all(this.promises)
 
         this.socket.open()
