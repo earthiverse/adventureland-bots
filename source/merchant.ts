@@ -62,7 +62,7 @@ class Merchant extends Character {
         if (is_pvp()) {
             vendorPlace = { map: "woffice", "x": 0, "y": 0 }
         } else {
-            vendorPlace = { map: "main", "x": 60, "y": -325 }
+            vendorPlace = { map: "main", "x": -750, "y": -1750 }
         }
 
         // Christmas Tree Bonus -- Visit the tree if it's up and we don't have it
