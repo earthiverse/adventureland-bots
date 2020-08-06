@@ -62,6 +62,7 @@ async function startRanger(auth: string, character: string, user: string) {
             let closestD = Number.MAX_VALUE
             for (const entity of bot.game.entities.values()) {
                 if (entity.type != "crabx") continue // Only target crabs
+                if (entity.hp < entity.max_hp) continue // Only target full hp crabs
 
                 const distance = Tools.distance(bot.game.character, entity)
                 if (distance < closestD) {
@@ -72,8 +73,8 @@ async function startRanger(auth: string, character: string, user: string) {
 
             if (closest && (closestD < 30 || closestD > 90)) {
                 const angle = Math.atan2(bot.game.character.y - closest.y, bot.game.character.x - closest.x)
-                const x = bot.game.character.x - Math.cos(angle) * 60
-                const y = bot.game.character.y - Math.sin(angle) * 60
+                const x = bot.game.character.x - Math.cos(angle) * (closestD - 60)
+                const y = bot.game.character.y - Math.sin(angle) * (closestD - 60)
 
                 await bot.move(x, y).catch()
             }
@@ -137,6 +138,29 @@ async function startRanger(auth: string, character: string, user: string) {
         setTimeout(async () => { lootLoop() }, 1000)
     }
     lootLoop()
+
+    async function sendItemLoop() {
+        try {
+            if (bot.game.players.has("earthMer")) {
+                const merchant = bot.game.players.get("earthMer")
+                const distance = Tools.distance(bot.game.character, merchant)
+                if (distance < 400) {
+                    for (let i = 3; i < bot.game.character.items.length; i++) {
+                        const item = bot.game.character.items[i]
+                        if (!item) continue
+
+                        await bot.sendItem("earthMer", i, item.q)
+                        break // Only send one item at a time
+}
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { sendItemLoop() }, 1000)
+    }
+    sendItemLoop()
 }
 
 async function startMage(auth: string, character: string, user: string) {
@@ -258,6 +282,29 @@ async function startMage(auth: string, character: string, user: string) {
         setTimeout(async () => { lootLoop() }, 1000)
     }
     lootLoop()
+
+    async function sendItemLoop() {
+        try {
+            if (bot.game.players.has("earthMer")) {
+                const merchant = bot.game.players.get("earthMer")
+                const distance = Tools.distance(bot.game.character, merchant)
+                if (distance < 400) {
+                    for (let i = 3; i < bot.game.character.items.length; i++) {
+                        const item = bot.game.character.items[i]
+                        if (!item) continue
+
+                        await bot.sendItem("earthMer", i, item.q)
+                        break // Only send one item at a time
+                    }
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { sendItemLoop() }, 1000)
+    }
+    sendItemLoop()
 }
 
 async function run() {

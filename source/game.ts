@@ -354,7 +354,7 @@ export class Game {
         console.log("Fetching http://adventure.land/data.js...")
         const result = await axios.get("http://adventure.land/data.js")
         if (result.status == 200) {
-            // Update X.servers with the latest data
+            // Update G with the latest data
             const matches = result.data.match(/var\s+G\s*=\s*(\{.+\});/)
             return JSON.parse(matches[1]) as GData
         } else {
@@ -367,7 +367,7 @@ export class Game {
         console.log("Fetching http://adventure.land...")
         const result = await axios.get("http://adventure.land")
         if (result.status == 200) {
-            // We got a result!
+            // Use X.servers to get the server data
             const matches = result.data.match(/X\.servers=(\[.+\]);/)
             return JSON.parse(matches[1])
         } else {

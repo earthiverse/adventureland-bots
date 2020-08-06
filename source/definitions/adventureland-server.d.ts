@@ -236,6 +236,8 @@ export type GameResponseDataString =
     /** When a merchant tries to start a monster hunt */
     | "monsterhunt_merchant"
     | "monsterhunt_started"
+    /** When you try to send an item to another character, but they don't have room for it in their inventory */
+    | "send_no_space"
     | "skill_too_far"
     | "trade_bspace"
     | "trade_get_closer"

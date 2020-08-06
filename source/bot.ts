@@ -492,7 +492,7 @@ class BotBase {
                 if (data == "trade_get_closer") {
                     this.game.socket.removeListener("game_response", sentCheck)
                     reject(`sendItem failed, ${to} is too far away`)
-                } else if (data == "trade_bspace") {
+                } else if (data == "send_no_space") {
                     this.game.socket.removeListener("game_response", sentCheck)
                     reject(`sendItem failed, ${to} has no inventory space`)
                 } else if ((data as GameResponseItemSent).response == "item_sent"
