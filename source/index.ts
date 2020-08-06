@@ -38,12 +38,28 @@ async function startRanger(auth: string, character: string, user: string) {
                 targets.push(id)
             }
 
+            let nearbyPlayer = false
+            for (const player of bot.game.players.values()) {
+                if (player.ctype == "merchant") continue // Merchants can't do enough damage their first attack to mess with us
+                if (player.npc) continue // NPCs can't mess with us
+
+                if (player.id != "earthiverse"
+                    && player.id != "earthMer"
+                    && player.id != "earthMag"
+                    && player.id != "earthMag2") {
+                    nearbyPlayer = true
+                    break
+                }
+            }
+
+            if (!nearbyPlayer) {
             if (targets.length >= 5 && bot.game.character.mp >= bot.game.G.skills["5shot"].mp) {
                 await bot.fiveShot(targets[0], targets[1], targets[2], targets[3], targets[4])
             } else if (targets.length >= 3 && bot.game.character.mp >= bot.game.G.skills["3shot"].mp) {
                 await bot.threeShot(targets[0], targets[1], targets[2])
             } else if (targets.length > 0 && bot.game.character.mp >= bot.game.character.mp_cost) {
                 await bot.attack(targets[0])
+            }
             }
         } catch (e) {
             console.error(e)

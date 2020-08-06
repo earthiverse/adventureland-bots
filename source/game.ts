@@ -2,6 +2,7 @@ import axios from "axios"
 import socketio from "socket.io-client"
 import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, AuthData, StartData, EntityData, CharacterData, PartyData, ChestData, PlayerData, DisappearData, ChestOpenedData, HitData, NewMapData, ActionData, EvalData, DeathData, AchievementProgressData } from "./definitions/adventureland-server"
 import { ServerRegion, ServerIdentifier, SkillName, GData, BankInfo } from "./definitions/adventureland"
+import { Tools } from "./tools.js"
 
 export class Game {
     private promises: Promise<boolean>[] = []
@@ -136,6 +137,20 @@ export class Game {
             // Erase all of the entities
             this.entities.clear()
             this.players.clear()
+        } else if (this.character) {
+            // Erase all players and entities that are more than 600 units away
+            let toDelete: string[] = []
+            for (const [id, entity] of this.entities) {
+                if (Tools.distance(this.character, entity) < 600) continue
+                toDelete.push(id)
+            }
+            for (const id of toDelete) this.entities.delete(id)
+            toDelete = []
+            for (const [id, player] of this.players) {
+                if (Tools.distance(this.character, player) < 600) continue
+                toDelete.push(id)
+            }
+            for (const id of toDelete) this.players.delete(id)
         }
 
         for (const monster of data.monsters) {
