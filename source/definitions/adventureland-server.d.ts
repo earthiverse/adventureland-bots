@@ -1,5 +1,15 @@
 import { NPCType, CharacterType, StatusInfo, SlotInfo, ItemInfo, MapName, MonsterName, ItemName, ServerRegion, ServerIdentifier, BankPackType, BankInfo } from "./adventureland"
 
+export type AchievementProgressData = {
+    name: string
+} | AchievementProgressDataFirehazard
+
+export type AchievementProgressDataFirehazard = {
+    name: "firehazard"
+    count: number
+    needed: number
+}
+
 export type ActionData = {
     attacker: string
     damage: number
@@ -175,19 +185,18 @@ export type EntityData = {
     abs: boolean
     angle: number
     armor: number
-    attack: number
+    attack?: number
     cid: number
     frequency: number
     going_x: number
     going_y: number
-    hp: number
+    hp?: number
     level: number
-    max_hp: number
+    max_hp?: number
     move_num: number
     moving: boolean
     resistance: number
-    // TODO: Figure out what this is
-    s: any
+    s: StatusInfo
     speed: number
     /** The ID of the target */
     target?: string
@@ -220,6 +229,8 @@ export type GameResponseDataString =
     | "buy_cant_npc"
     | "buy_cant_space"
     | "buy_cost"
+    /** When you're too far from Ponty and try to view Ponty's items */
+    | "buy_get_closer"
     /** Too far away from monster hunt npc */
     | "ecu_get_closer"
     /** When a merchant tries to start a monster hunt */

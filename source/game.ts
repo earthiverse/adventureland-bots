@@ -1,16 +1,17 @@
 import axios from "axios"
 import socketio from "socket.io-client"
-import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, AuthData, StartData, EntityData, CharacterData, PartyData, ChestData, PlayerData, DisappearData, ChestOpenedData, HitData, NewMapData, ActionData, EvalData, DeathData } from "./definitions/adventureland-server"
+import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, AuthData, StartData, EntityData, CharacterData, PartyData, ChestData, PlayerData, DisappearData, ChestOpenedData, HitData, NewMapData, ActionData, EvalData, DeathData, AchievementProgressData } from "./definitions/adventureland-server"
 import { ServerRegion, ServerIdentifier, SkillName, GData, BankInfo } from "./definitions/adventureland"
 
 export class Game {
     private promises: Promise<boolean>[] = []
 
+    public active = false
     public socket: SocketIOClient.Socket
 
     public G: GData
 
-    public active = false
+    public achievements = new Map<string, AchievementProgressData>()
     public bank: BankInfo
     public character: CharacterData
     public chests = new Map<string, ChestData>()
@@ -128,6 +129,7 @@ export class Game {
 
     private parseEntities(data: EntitiesData) {
         // console.log("socket: entities!")
+        // console.log("updating entities")
         // console.log(data)
 
         if (data.type == "all") {
@@ -137,7 +139,20 @@ export class Game {
         }
 
         for (const monster of data.monsters) {
-            this.entities.set(monster.id, monster)
+            if (!this.entities.has(monster.id)) {
+                // Set everything
+                if (!monster.hp) monster.hp = this.G.monsters[monster.type].hp
+                if (!monster.max_hp) monster.max_hp = this.G.monsters[monster.type].hp
+                if (!monster.speed) monster.speed = this.G.monsters[monster.type].speed
+                if (!monster.attack) monster.attack = this.G.monsters[monster.type].attack
+                // TODO: Set more 'soft properties'
+
+                this.entities.set(monster.id, monster)
+            } else {
+                // Update everything
+                const entity = this.entities.get(monster.id)
+                for (const attr in monster) entity[attr] = monster[attr]
+            }
         }
         for (const player of data.players) {
             if (player.id == this.character?.id) continue // Skip our own character (it gets sent in 'start')
@@ -152,6 +167,11 @@ export class Game {
     }
 
     private prepare() {
+        this.socket.on("achievement_progress", (data: AchievementProgressData) => {
+            this.achievements.set(data.name, data)
+            console.log(data)
+        })
+
         this.socket.on("action", (data: ActionData) => {
             this.projectiles.set(data.pid, { ...data, date: new Date() })
         })
@@ -229,6 +249,12 @@ export class Game {
             if (data.kill == true) {
                 this.projectiles.delete(data.pid)
                 this.entities.delete(data.id)
+            } else if (data.damage) {
+                const entity = this.entities.get(data.id)
+                if (entity) {
+                    entity.hp = entity.hp - data.damage
+                    this.entities.set(data.id, entity)
+                }
             }
         })
 

@@ -33,6 +33,8 @@ export class Pathfinder {
         if (from.map != to.map) return false // We can't walk across maps
         if (!Pathfinder.grids[from.map]) this.generateGrid(from.map) // Generate the grid if we haven't yet
 
+        const grid = Pathfinder.grids[from.map]
+
         const dx = Math.trunc(to.x) - Math.trunc(from.x), dy = Math.trunc(to.y) - Math.trunc(from.y)
         const nx = Math.abs(dx), ny = Math.abs(dy)
         const sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1

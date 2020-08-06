@@ -1,27 +1,18 @@
-import dotenv from "dotenv"
 import { Game } from "./game.js"
-import { Bot } from "./bot.js"
-import { ChestData } from "./definitions/adventureland-server.js"
-import { SlotType, ItemName } from "./definitions/adventureland.js"
-
-dotenv.config({ path: "../earthRan2.env" })
-console.log([process.env.AUTH, process.env.CHARACTER, process.env.USER])
+import { Bot, RangerBot } from "./bot.js"
+import { Tools } from "./tools.js"
+import { EntityData } from "./definitions/adventureland-server.js"
 
 async function startRanger(auth: string, character: string, user: string) {
-    const game = new Game("US", "I")
+    const game = new Game("EU", "I")
     await game.connect(auth, character, user)
 
-    console.info("Starting bot!")
-    const bot = new Bot(game)
+    console.info(`Starting ranger (${character})!`)
+    const bot = new RangerBot(game)
 
     bot.game.socket.on("disconnect_reason", (data: string) => {
         console.warn(`Disconnecting (${data})`)
         bot.game.disconnect()
-    })
-
-    // Open chests as soon as they are dropped
-    bot.game.socket.on("drop", (data: ChestData) => {
-        bot.game.socket.emit("open_chest", { id: data.id })
     })
 
     async function attackLoop() {
@@ -35,165 +26,62 @@ async function startRanger(auth: string, character: string, user: string) {
                 return
             }
 
-            // Attack the nearest player
-            const nearestPlayer = bot.getNearestAttackablePlayer()
-            if (bot.isPVP() && nearestPlayer && nearestPlayer.distance < bot.game.character.range) {
-                await bot.attack(nearestPlayer.player.id)
-            } else {
-                const nearestMonster = bot.getNearestMonster("goo")
-                if (nearestMonster.distance <= bot.game.character.range) {
-                    await bot.attack(nearestMonster.monster.id)
+            const targets: string[] = []
+            // console.log(`# entities: ${bot.game.entities.size}`)
+            for (const [id, entity] of bot.game.entities) {
+                if (entity.type != "crabx") continue // Only attack large crabs
+                if (entity.hp < entity.max_hp) {
+                    continue // Only attack those with full HP
                 }
+                if (Tools.distance(bot.game.character, entity) > bot.game.character.range) continue // Only attack those in range
+
+                targets.push(id)
             }
 
-            // Attack
+            if (targets.length >= 5 && bot.game.character.mp >= bot.game.G.skills["5shot"].mp) {
+                await bot.fiveShot(targets[0], targets[1], targets[2], targets[3], targets[4])
+            } else if (targets.length >= 3 && bot.game.character.mp >= bot.game.G.skills["3shot"].mp) {
+                await bot.threeShot(targets[0], targets[1], targets[2])
+            } else if (targets.length > 0 && bot.game.character.mp >= bot.game.character.mp_cost) {
+                await bot.attack(targets[0])
+            }
         } catch (e) {
             console.error(e)
         }
 
-        setTimeout(async () => { attackLoop() }, bot.getCooldown("attack"))
+        setTimeout(async () => { attackLoop() }, Math.max(bot.getCooldown("attack"), 10))
     }
     attackLoop()
 
-    async function buyLoop() {
+    async function moveLoop() {
+        setTimeout(async () => { moveLoop() }, 250)
+
         try {
-            if (!bot.game.active) return
+            // Find the closest crabx
+            let closest: EntityData
+            let closestD = Number.MAX_VALUE
+            for (const entity of bot.game.entities.values()) {
+                if (entity.type != "crabx") continue // Only target crabs
 
-            const purchases: Promise<any>[] = []
-
-            // Buy healing items 
-            let numHPPots = 0
-            let numMPPots = 0
-            for (const item of bot.game.character.items) {
-                if (!item) continue
-                if (item.name == "hpot1") {
-                    numHPPots += item.q
-                } else if (item.name == "mpot1") {
-                    numMPPots += item.q
-                }
-            }
-            if (numHPPots < 25) purchases.push(bot.buy("hpot1", 25 - numMPPots))
-            if (numMPPots < 25) purchases.push(bot.buy("mpot1", 25 - numMPPots))
-
-            // Find the lowest level item we currently have equipped
-            let lowestLevel = 20
-            let lowestSlot: SlotType = undefined
-            for (const slot of ["mainhand", "chest", "pants", "shoes", "helmet", "gloves"] as SlotType[]) {
-                const itemInfo = bot.game.character.slots[slot]
-                if (!itemInfo) {
-                    lowestSlot = slot
-                    break
-                }
-                if (itemInfo.level < lowestLevel) {
-                    lowestLevel = itemInfo.level
-                    lowestSlot = slot
+                const distance = Tools.distance(bot.game.character, entity)
+                if (distance < closestD) {
+                    closest = entity
+                    closestD = distance
                 }
             }
 
-            // If we don't have an item in the inventory, buy one
-            let hasItem = false
-            for (const item of bot.game.character.items) {
-                if (!item) continue
-                if (lowestSlot == "mainhand" && item.name == "bow") {
-                    hasItem = true
-                    break
-                }
-                if (lowestSlot == "chest" && item.name == "coat") {
-                    hasItem = true
-                    break
-                }
-                if (lowestSlot == "pants" && item.name == "pants") {
-                    hasItem = true
-                    break
-                }
-                if (lowestSlot == "shoes" && item.name == "shoes") {
-                    hasItem = true
-                    break
-                }
-                if (lowestSlot == "helmet" && item.name == "helmet") {
-                    hasItem = true
-                    break
-                }
-                if (lowestSlot == "gloves" && item.name == "gloves") {
-                    hasItem = true
-                    break
-                }
-            }
+            if (closest && (closestD < 30 || closestD > 90)) {
+                const angle = Math.atan2(bot.game.character.y - closest.y, bot.game.character.x - closest.x)
+                const x = bot.game.character.x - Math.cos(angle) * 60
+                const y = bot.game.character.y - Math.sin(angle) * 60
 
-            if (!hasItem) {
-                if (lowestSlot == "mainhand") {
-                    purchases.push(bot.buy("bow", 1))
-                } else if (lowestSlot == "chest") {
-                    purchases.push(bot.buy("coat", 1))
-                } else if (lowestSlot == "pants") {
-                    purchases.push(bot.buy("pants", 1))
-                } else if (lowestSlot == "shoes") {
-                    purchases.push(bot.buy("shoes", 1))
-                } else if (lowestSlot == "helmet") {
-                    purchases.push(bot.buy("helmet", 1))
-                } else if (lowestSlot == "gloves") {
-                    purchases.push(bot.buy("gloves", 1))
-                }
-            }
-
-            const results = await Promise.allSettled(purchases)
-            for (const result of results) {
-                if (result.status == "rejected") console.error(result.reason)
+                await bot.move(x, y).catch()
             }
         } catch (e) {
-            console.error(e)
+            //console.error(e)
         }
-
-        setTimeout(async () => { buyLoop() }, 500)
     }
-    buyLoop()
-
-    async function compoundLoop() {
-        try {
-            if (!bot.game.active) return
-
-            const items: { [T in ItemName]?: { [T in string]?: number[] } } = {}
-            for (let inventoryPos = 0; inventoryPos < bot.game.character.items.length; inventoryPos++) {
-                const item = bot.game.character.items[inventoryPos]
-                if (!item) return
-                if (!bot.game.G.items[item.name].compound) return // Not compoundable
-
-                if (!items[item.name]) items[item.name] = {}
-                if (!items[item.name][item.level.toString()]) items[item.name][item.level.toString()] = []
-                items[item.name][item.level.toString()].push(inventoryPos)
-            }
-
-            let compoundThese: { itemName: ItemName, itemLevel: number, inventoryPos: number[] }
-            for (const name in items) {
-                for (const level in items[name as ItemName]) {
-                    if (items[name as ItemName][level].length >= 3) {
-                        compoundThese = { itemName: name as ItemName, itemLevel: Number.parseInt(level), inventoryPos: items[name as ItemName][level] }
-                        break
-                    }
-                }
-                if (compoundThese) break
-            }
-
-            let cscroll: ItemName
-            if (compoundThese) {
-                for (let i = 0; i < bot.game.G.items[compoundThese.itemName].grades.length; i++) {
-                    if (compoundThese.itemLevel <= bot.game.G.items[compoundThese.itemName].grades[i]) {
-                        cscroll = `cscroll${i}` as ItemName
-                    }
-                }
-                await bot.buy(cscroll, 1)
-                const success = await bot.compound(compoundThese.inventoryPos[0], compoundThese.inventoryPos[1], compoundThese.inventoryPos[2], await bot.locateItem(cscroll))
-                if (success) {
-                    // Check if it's better than what we currently have
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { compoundLoop() }, 500)
-    }
-    compoundLoop()
+    moveLoop()
 
     async function healLoop() {
         try {
@@ -205,14 +93,150 @@ async function startRanger(auth: string, character: string, user: string) {
                 return
             }
 
+            const missingHP = bot.game.character.max_hp - bot.game.character.hp
+            const missingMP = bot.game.character.max_mp - bot.game.character.mp
             const hpRatio = bot.game.character.hp / bot.game.character.max_hp
             const mpRatio = bot.game.character.mp / bot.game.character.max_mp
             if (hpRatio < mpRatio) {
-                await bot.regenHP()
+                if (missingHP >= 400 && bot.hasItem("hpot1")) {
+                    await bot.useHPPot(await bot.locateItem("hpot1"))
+                } else {
+                    await bot.regenHP()
+                }
             } else if (mpRatio < hpRatio) {
-                await bot.regenMP()
+                if (missingMP >= 500 && bot.hasItem("mpot1")) {
+                    const mppot1 = await bot.locateItem("mpot1")
+                    await bot.useMPPot(mppot1)
+                } else {
+                    await bot.regenMP()
+                }
             } else if (hpRatio < 1) {
-                await bot.regenHP()
+                if (missingHP >= 400 && bot.hasItem("hpot1")) {
+                    await bot.useHPPot(await bot.locateItem("hpot1"))
+                } else {
+                    await bot.regenHP()
+                }
+            }
+        } catch (e) {
+            //console.error(e)
+        }
+
+        setTimeout(async () => { healLoop() }, bot.getCooldown("use_hp"))
+    }
+    healLoop()
+
+    async function lootLoop() {
+        try {
+            for (const id of bot.game.chests.keys()) {
+                bot.game.socket.emit("open_chest", { id: id })
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { lootLoop() }, 1000)
+    }
+    lootLoop()
+}
+
+async function startMage(auth: string, character: string, user: string) {
+    const game = new Game("EU", "I")
+    await game.connect(auth, character, user)
+
+    console.info(`Starting mage (${character})!`)
+    const bot = new Bot(game)
+
+    bot.game.socket.on("disconnect_reason", (data: string) => {
+        console.warn(`Disconnecting (${data})`)
+        bot.game.disconnect()
+    })
+
+    async function attackLoop() {
+        try {
+            if (!bot.game.active) return
+
+            // Cooldown check
+            if (bot.getCooldown("attack")) {
+                console.info(`attack is on cooldown ${bot.getCooldown("attack")}`)
+                setTimeout(async () => { attackLoop() }, bot.getCooldown("attack"))
+                return
+            }
+
+            const targets: string[] = []
+            for (const [id, entity] of bot.game.entities) {
+                if (entity.type != "crabx") continue // Only attack large crabs
+                if (entity.hp == entity.max_hp) continue // Only attack those that are damaged
+                if (entity.s.burned) continue // Don't attack monsters that are burning
+                if (Tools.distance(bot.game.character, entity) > bot.game.character.range) continue // Only attack those in range
+
+                targets.push(id)
+            }
+
+            if (targets.length > 0 && bot.game.character.mp >= bot.game.character.mp_cost) {
+                await bot.attack(targets[0])
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { attackLoop() }, Math.max(bot.getCooldown("attack"), 10))
+    }
+    attackLoop()
+
+    async function moveLoop() {
+        setTimeout(async () => { moveLoop() }, 250)
+
+        try {
+            // Find the closest crabx
+            if (bot.game.players.has("earthiverse")) {
+                const earthiverse = bot.game.players.get("earthiverse")
+                const distance = Tools.distance(earthiverse, bot.game.character)
+
+                if (earthiverse && distance > 60) {
+                    const x = earthiverse.x + (-15 + Math.random() * 30)
+                    const y = earthiverse.y + (-15 + Math.random() * 30)
+
+                    await bot.move(x, y)
+                }
+            }
+        } catch (e) {
+            // console.error(e)
+        }
+    }
+    moveLoop()
+
+    async function healLoop() {
+        try {
+            if (!bot.game.active) return
+
+            if (bot.getCooldown("use_hp")) {
+                console.info(`heal is on cooldown ${bot.getCooldown("use_hp")}`)
+                setTimeout(async () => { healLoop() }, bot.getCooldown("use_hp"))
+                return
+            }
+
+            const missingHP = bot.game.character.max_hp - bot.game.character.hp
+            const missingMP = bot.game.character.max_mp - bot.game.character.mp
+            const hpRatio = bot.game.character.hp / bot.game.character.max_hp
+            const mpRatio = bot.game.character.mp / bot.game.character.max_mp
+            if (hpRatio < mpRatio) {
+                if (missingHP >= 400 && bot.hasItem("hpot1")) {
+                    await bot.useHPPot(await bot.locateItem("hpot1"))
+                } else {
+                    await bot.regenHP()
+                }
+            } else if (mpRatio < hpRatio) {
+                if (missingMP >= 500 && bot.hasItem("mpot1")) {
+                    await bot.useMPPot(await bot.locateItem("mpot1"))
+                } else {
+                    await bot.regenMP()
+                }
+            } else if (hpRatio < 1) {
+                if (missingHP >= 400 && bot.hasItem("hpot1")) {
+                    await bot.useHPPot(await bot.locateItem("hpot1"))
+                } else {
+                    await bot.regenHP()
+                }
             }
         } catch (e) {
             console.error(e)
@@ -222,56 +246,24 @@ async function startRanger(auth: string, character: string, user: string) {
     }
     healLoop()
 
-    async function moveLoop() {
+    async function lootLoop() {
         try {
-            if (!bot.game.active) return
-
-            // TODO: Find optimal monster to farm
-
-            // TODO: Move around
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { moveLoop() }, 500)
-    }
-    moveLoop()
-
-    async function respawnLoop() {
-        try {
-            if (!bot.game.active) return
-
-            if (bot.game.character.rip) {
-                // TODO: Respawn
+            for (const id of bot.game.chests.keys()) {
+                bot.game.socket.emit("open_chest", { id: id })
             }
         } catch (e) {
             console.error(e)
         }
 
-        setTimeout(async () => { respawnLoop() }, 500)
+        setTimeout(async () => { lootLoop() }, 1000)
     }
-    respawnLoop()
-
-    async function upgradeLoop() {
-        try {
-            if (!bot.game.active) return
-
-            // TODO: Buy upgrade scrolls
-
-            // TODO: Upgrade things in inventory
-
-            // TODO: Equip if it's higher than the one we currently have
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { upgradeLoop() }, 500)
-    }
-    upgradeLoop()
+    lootLoop()
 }
 
 async function run() {
-    startRanger(process.env.AUTH, process.env.CHARACTER, process.env.USER)
+    startRanger("secret!", "secret?", "secret?") //earthiverse
+    startMage("secret!", "secret?", "secret?") //earthMag
+    startMage("secret!", "secret?", "secret?") //earthMag2
 }
 
 run()

@@ -1,7 +1,7 @@
-import { MapName } from "./definitions/adventureland";
+import { MapName } from "./definitions/adventureland"
 
 export class Tools {
-    public static distance(a: { x: number, y: number, map?: MapName }, b: { x: number, y: number, map?: MapName }) {
+    public static distance(a: { x: number, y: number, map?: MapName }, b: { x: number, y: number, map?: MapName }): number {
         if (a.map && b.map) {
             if (a.map != b.map) return Number.MAX_VALUE
         }

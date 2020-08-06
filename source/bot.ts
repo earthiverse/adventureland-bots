@@ -1,6 +1,6 @@
 import { Game } from "./game.js"
 import { CharacterData, ActionData, NewMapData, EvalData, EntityData, GameResponseData, GameResponseBuySuccess, GameResponseDataObject, DeathData, GameResponseAttackFailed, GameResponseItemSent, PlayerData, GameResponseBankRestrictions, DisappearingTextData, UpgradeData, PartyData, GameLogData } from "./definitions/adventureland-server"
-import { SkillName, MonsterName, ItemName, SlotType } from "./definitions/adventureland"
+import { SkillName, MonsterName, ItemName, SlotType, ItemInfo } from "./definitions/adventureland"
 import { Tools } from "./tools.js"
 
 const TIMEOUT = 5000
@@ -35,7 +35,7 @@ class BotBase {
     public acceptPartyInvite(id: string): Promise<PartyData> {
         const acceptedInvite = new Promise<PartyData>((resolve, reject) => {
             const partyCheck = (data: PartyData) => {
-                if (data.list.includes(parent.character.name)
+                if (data.list.includes(this.game.character.id)
                     && data.list.includes(id)) {
                     this.game.socket.removeListener("party_update", partyCheck)
                     this.game.socket.removeListener("game_log", unableCheck)
@@ -54,7 +54,7 @@ class BotBase {
                     this.game.socket.removeListener("game_log", unableCheck)
                     reject(data)
                 } else if (data == "Already partying") {
-                    if (this.game.party.list.includes(parent.character.name)
+                    if (this.game.party.list.includes(this.game.character.id)
                         && this.game.party.list.includes(id)) {
                         // NOTE: We resolve the promise even if we have already accepted it if we're in the correct party.
                         this.game.socket.removeListener("party_update", partyCheck)
@@ -81,41 +81,54 @@ class BotBase {
     }
 
     // TODO: Return attack info
-    public attack(id: string): Promise<unknown> {
+    public attack(id: string): Promise<string> {
         if (!this.game.entities.has(id) && !this.game.players.has(id)) return Promise.reject(`No Entity with ID '${id}'`)
 
-        const attackStarted = new Promise((resolve, reject) => {
+        const attackStarted = new Promise<string>((resolve, reject) => {
+            let dealtWith = false
             const deathCheck = (data: DeathData) => {
                 if (data.id == id) {
-                    this.game.socket.removeListener("action", attackCheck)
-                    this.game.socket.removeListener("game_response", failCheck)
-                    this.game.socket.removeListener("death", deathCheck)
-                    reject(`Entity ${id} not found`)
+                    if (!dealtWith) {
+                        this.game.socket.removeListener("action", attackCheck)
+                        this.game.socket.removeListener("game_response", failCheck)
+                        this.game.socket.removeListener("death", deathCheck)
+                        reject(`Entity ${id} not found`)
+                        dealtWith = true
+                    }
                 }
             }
             const failCheck = (data: GameResponseData) => {
                 if ((data as GameResponseDataObject).response == "attack_failed") {
                     if ((data as GameResponseAttackFailed).id == id) {
-                        this.game.socket.removeListener("action", attackCheck)
-                        this.game.socket.removeListener("game_response", failCheck)
-                        this.game.socket.removeListener("death", deathCheck)
-                        reject(`Attack on ${id} failed.`)
+                        if (!dealtWith) {
+                            this.game.socket.removeListener("action", attackCheck)
+                            this.game.socket.removeListener("game_response", failCheck)
+                            this.game.socket.removeListener("death", deathCheck)
+                            reject(`Attack on ${id} failed.`)
+                            dealtWith = true
+                        }
                     }
                 }
             }
             const attackCheck = (data: ActionData) => {
-                if (data.attacker == this.game.character.id) {
-                    this.game.socket.removeListener("action", attackCheck)
-                    this.game.socket.removeListener("game_response", failCheck)
-                    this.game.socket.removeListener("death", deathCheck)
-                    resolve()
+                if (data.attacker == this.game.character.id && data.target == id && data.type == "attack") {
+                    if (!dealtWith) {
+                        this.game.socket.removeListener("action", attackCheck)
+                        this.game.socket.removeListener("game_response", failCheck)
+                        this.game.socket.removeListener("death", deathCheck)
+                        resolve(data.pid)
+                        dealtWith = true
+                    }
                 }
             }
             setTimeout(() => {
-                this.game.socket.removeListener("action", attackCheck)
-                this.game.socket.removeListener("game_response", failCheck)
-                this.game.socket.removeListener("death", deathCheck)
-                reject(`attack timeout (${TIMEOUT}ms)`)
+                if (!dealtWith) {
+                    dealtWith = true
+                    this.game.socket.removeListener("action", attackCheck)
+                    this.game.socket.removeListener("game_response", failCheck)
+                    this.game.socket.removeListener("death", deathCheck)
+                    reject(`attack timeout (${TIMEOUT}ms)`)
+                }
             }, TIMEOUT)
             this.game.socket.on("action", attackCheck)
             this.game.socket.on("game_response", failCheck)
@@ -182,12 +195,14 @@ class BotBase {
 
     // TODO: Return better compound info
     public compound(item1Pos: number, item2Pos: number, item3Pos: number, cscrollPos: number, offeringPos?: number): Promise<boolean> {
-        const item1Info = parent.character.items[item1Pos]
-        const item2Info = parent.character.items[item2Pos]
-        const item3Info = parent.character.items[item3Pos]
-        if (!item1Info) return Promise.reject(`There is no item in inventory slot ${item1Pos}.`)
-        if (!item2Info) return Promise.reject(`There is no item in inventory slot ${item2Pos}.`)
-        if (!item3Info) return Promise.reject(`There is no item in inventory slot ${item3Pos}.`)
+        const item1Info = this.game.character.items[item1Pos]
+        const item2Info = this.game.character.items[item2Pos]
+        const item3Info = this.game.character.items[item3Pos]
+        const cscrollInfo = this.game.character.items[cscrollPos]
+        if (!item1Info) return Promise.reject(`There is no item in inventory slot ${item1Pos} (item1).`)
+        if (!item2Info) return Promise.reject(`There is no item in inventory slot ${item2Pos} (item2).`)
+        if (!item3Info) return Promise.reject(`There is no item in inventory slot ${item3Pos} (item3).`)
+        if (!cscrollInfo) return Promise.reject(`There is no item in inventory slot ${cscrollPos} (cscroll).`)
         if (item1Info.name != item2Info.name || item1Info.name != item3Info.name) return Promise.reject("You can only combine 3 of the same items.")
         if (item1Info.level != item2Info.level || item1Info.level != item3Info.level) return Promise.reject("You can only combine 3 items of the same level.")
 
@@ -303,7 +318,7 @@ class BotBase {
             this.game.socket.on("upgrade", completeCheck)
         })
 
-        this.game.socket.emit("exchange", { item_num: inventoryPos, q: parent.character.items[inventoryPos]?.q })
+        this.game.socket.emit("exchange", { item_num: inventoryPos, q: this.game.character.items[inventoryPos]?.q })
         return exchangeFinished
     }
 
@@ -344,20 +359,57 @@ class BotBase {
         return questGot
     }
 
+    public getPontyItems(): Promise<ItemInfo[]> {
+        const pontyItems = new Promise<ItemInfo[]>((resolve, reject) => {
+            const distanceCheck = (data: GameResponseData) => {
+                if (data == "buy_get_closer") {
+                    this.game.socket.removeListener("game_response", distanceCheck)
+                    this.game.socket.removeListener("secondhands", secondhandsItems)
+                    reject("Too far away from secondhands NPC.")
+                }
+            }
+
+            const secondhandsItems = (data: ItemInfo[]) => {
+                this.game.socket.removeListener("game_response", distanceCheck)
+                this.game.socket.removeListener("secondhands", secondhandsItems)
+                resolve(data)
+            }
+
+            setTimeout(() => {
+                this.game.socket.removeListener("game_response", distanceCheck)
+                this.game.socket.removeListener("secondhands", secondhandsItems)
+                reject(`getPontyItems timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.game.socket.on("secondhands", secondhandsItems)
+            this.game.socket.on("game_response", distanceCheck)
+        })
+
+        this.game.socket.emit("secondhands")
+        return pontyItems
+    }
+
+    // TODO: Can we do this without truncing?
     public move(x: number, y: number): Promise<unknown> {
         const moveFinished = new Promise((resolve, reject) => {
+            let dealtWith = false
+            const distance = Tools.distance(this.game.character, { x: Math.trunc(x), y: Math.trunc(y) })
             const moveFinishedCheck = (data: CharacterData) => {
                 // TODO: Improve this to check if we moved again, and if we did, reject()
                 if (data.moving) return
-                if (data.x == x && data.y == y) {
-                    this.game.socket.removeListener("player", moveFinishedCheck)
-                    resolve()
+                if (data.x == Math.trunc(x) && data.y == Math.trunc(y)) {
+                    if (!dealtWith) {
+                        this.game.socket.removeListener("player", moveFinishedCheck)
+                        resolve()
+                        dealtWith = true
+                    }
                 }
             }
-            const distance = Tools.distance(this.game.character, { x: x, y: y })
             setTimeout(() => {
-                this.game.socket.removeListener("player", moveFinishedCheck)
-                reject(`move timeout (${TIMEOUT + distance * 1000 / this.game.character.speed}ms)`)
+                if (!dealtWith) {
+                    this.game.socket.removeListener("player", moveFinishedCheck)
+                    reject(`move timeout (${TIMEOUT + distance * 1000 / this.game.character.speed}ms)`)
+                    dealtWith = true
+                }
             }, (TIMEOUT + distance * 1000 / this.game.character.speed))
             this.game.socket.on("player", moveFinishedCheck)
         })
@@ -365,8 +417,8 @@ class BotBase {
         this.game.socket.emit("move", {
             x: this.game.character.x,
             y: this.game.character.y,
-            going_x: x,
-            going_y: y,
+            going_x: Math.trunc(x),
+            going_y: Math.trunc(y),
             m: this.game.character.m
         })
         return moveFinished
@@ -376,15 +428,22 @@ class BotBase {
         // if (this.game.nextSkill.get("use_hp")?.getTime() > Date.now()) return Promise.reject("use_hp is on cooldown")
 
         const regenReceived = new Promise((resolve, reject) => {
+            let dealtWith = false
             const regenCheck = (data: EvalData) => {
                 if (data.code.includes("pot_timeout")) {
-                    this.game.socket.removeListener("eval", regenCheck)
-                    resolve()
+                    if (!dealtWith) {
+                        this.game.socket.removeListener("eval", regenCheck)
+                        resolve()
+                        dealtWith = true
+                    }
                 }
             }
             setTimeout(() => {
-                this.game.socket.removeListener("eval", regenCheck)
-                reject(`regenHP timeout (${TIMEOUT}ms)`)
+                if (!dealtWith) {
+                    this.game.socket.removeListener("eval", regenCheck)
+                    reject(`regenHP timeout (${TIMEOUT}ms)`)
+                    dealtWith = true
+                }
             }, TIMEOUT)
             this.game.socket.on("eval", regenCheck)
         })
@@ -397,15 +456,22 @@ class BotBase {
         // if (this.game.nextSkill.get("use_mp")?.getTime() > Date.now()) return Promise.reject("use_mp is on cooldown")
 
         const regenReceived = new Promise((resolve, reject) => {
+            let dealtWith = false
             const regenCheck = (data: EvalData) => {
                 if (data.code.includes("pot_timeout")) {
-                    this.game.socket.removeListener("eval", regenCheck)
-                    resolve()
+                    if (!dealtWith) {
+                        this.game.socket.removeListener("eval", regenCheck)
+                        resolve()
+                        dealtWith = true
+                    }
                 }
             }
             setTimeout(() => {
-                this.game.socket.removeListener("eval", regenCheck)
-                reject(`regenMP timeout (${TIMEOUT}ms)`)
+                if (!dealtWith) {
+                    this.game.socket.removeListener("eval", regenCheck)
+                    reject(`regenMP timeout (${TIMEOUT}ms)`)
+                    dealtWith = true
+                }
             }, TIMEOUT)
             this.game.socket.on("eval", regenCheck)
         })
@@ -454,7 +520,7 @@ class BotBase {
      */
     // TODO: See what socket events happen, and see if we can see if the server picked up our request
     public sendPartyInvite(id: string) {
-        parent.socket.emit("party", { event: "request", name: id })
+        this.game.socket.emit("party", { event: "request", name: id })
     }
 
     public unequip(slot: SlotType): Promise<unknown> {
@@ -511,28 +577,63 @@ class BotBase {
         return upgradeComplete
     }
 
-    // // TODO: Not finished
-    // public useHPPot(itemPos: number): Promise<unknown> {
-    //     if (!this.game.character.items[itemPos]) return Promise.reject(`There is no item in inventory slot ${itemPos}.`)
-    //     // if (this.game.nextSkill.get("use_hp")?.getTime() > Date.now()) return Promise.reject("use_hp is on cooldown")
+    // TODO: Check if it's an HP Pot
+    public useHPPot(itemPos: number): Promise<unknown> {
+        if (!this.game.character.items[itemPos]) return Promise.reject(`There is no item in inventory slot ${itemPos}.`)
 
-    //     const healReceived = new Promise((resolve, reject) => {
-    //         const healCheck = (data: EvalData) => {
-    //             if (data.code.includes("pot_timeout")) {
-    //                 this.game.socket.removeListener("eval", healCheck)
-    //                 resolve()
-    //             }
-    //         }
-    //         setTimeout(() => {
-    //             this.game.socket.removeListener("eval", healCheck)
-    //             reject(`regenHP timeout (${TIMEOUT}ms)`)
-    //         }, TIMEOUT)
-    //         this.game.socket.on("eval", healCheck)
-    //     })
+        const healReceived = new Promise((resolve, reject) => {
+            let dealtWith = false
+            const healCheck = (data: EvalData) => {
+                if (data.code.includes("pot_timeout")) {
+                    if (!dealtWith) {
+                        this.game.socket.removeListener("eval", healCheck)
+                        resolve()
+                        dealtWith = true
+                    }
+                }
+            }
+            setTimeout(() => {
+                if (!dealtWith) {
+                    this.game.socket.removeListener("eval", healCheck)
+                    reject(`useHPPot timeout (${TIMEOUT}ms)`)
+                    dealtWith = true
+                }
+            }, TIMEOUT)
+            this.game.socket.on("eval", healCheck)
+        })
 
-    //     this.game.socket.emit("use", { item: "mp" })
-    //     return healReceived
-    // }
+        this.game.socket.emit("equip", { num: itemPos })
+        return healReceived
+    }
+
+    // TODO: Check if it's an MP Pot
+    public useMPPot(itemPos: number): Promise<unknown> {
+        if (!this.game.character.items[itemPos]) return Promise.reject(`There is no item in inventory slot ${itemPos}.`)
+
+        const healReceived = new Promise((resolve, reject) => {
+            let dealtWith = false
+            const healCheck = (data: EvalData) => {
+                if (data.code.includes("pot_timeout")) {
+                    if (!dealtWith) {
+                        this.game.socket.removeListener("eval", healCheck)
+                        resolve()
+                        dealtWith = true
+                    }
+                }
+            }
+            setTimeout(() => {
+                if (!dealtWith) {
+                    this.game.socket.removeListener("eval", healCheck)
+                    reject(`useMPPot timeout (${TIMEOUT}ms)`)
+                    dealtWith = true
+                }
+            }, TIMEOUT)
+            this.game.socket.on("eval", healCheck)
+        })
+
+        this.game.socket.emit("equip", { num: itemPos })
+        return healReceived
+    }
 
     public warpToTown(): Promise<unknown> {
         const currentMap = this.game.character.map
@@ -640,9 +741,95 @@ export class Bot extends BotBase {
                 const item = inventory[i]
                 if (!item) continue
 
-                if (item.name == itemName) resolve(i)
+                if (item.name == itemName) {
+                    resolve(i)
+                    return
+                }
             }
             reject(`Could not locate ${itemName}.`)
         })
+    }
+}
+
+/** Implement functions that only apply to rangers */
+export class RangerBot extends Bot {
+    public fiveShot(target1: string, target2: string, target3: string, target4: string, target5: string): Promise<string[]> {
+        const attackStarted = new Promise<string[]>((resolve, reject) => {
+            const projectiles: string[] = []
+
+            const attackCheck = (data: ActionData) => {
+                if (data.attacker == this.game.character.id
+                    && data.type == "5shot"
+                    && (data.target == target1 || data.target == target2 || data.target == target3 || data.target == target4 || data.target == target5)) {
+                    projectiles.push(data.pid)
+                }
+            }
+
+            const cooldownCheck = (data: EvalData) => {
+                const skillReg = /skill_timeout\s*\(\s*['"](.+?)['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.exec(data.code)
+                if (skillReg) {
+                    const skill = skillReg[1] as SkillName
+                    if (skill == "5shot") {
+                        this.game.socket.removeListener("action", attackCheck)
+                        this.game.socket.removeListener("eval", cooldownCheck)
+                        resolve(projectiles)
+                    }
+                }
+            }
+
+            setTimeout(() => {
+                this.game.socket.removeListener("action", attackCheck)
+                this.game.socket.removeListener("eval", cooldownCheck)
+                reject(`attack timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.game.socket.on("action", attackCheck)
+            this.game.socket.on("eval", cooldownCheck)
+        })
+
+        this.game.socket.emit("skill", {
+            name: "5shot",
+            ids: [target1, target2, target3, target4, target5]
+        })
+        return attackStarted
+    }
+
+    public threeShot(target1: string, target2: string, target3: string): Promise<string[]> {
+        const attackStarted = new Promise<string[]>((resolve, reject) => {
+            const projectiles: string[] = []
+
+            const attackCheck = (data: ActionData) => {
+                if (data.attacker == this.game.character.id
+                    && data.type == "3shot"
+                    && (data.target == target1 || data.target == target2 || data.target == target3)) {
+                    projectiles.push(data.pid)
+                }
+            }
+
+            const cooldownCheck = (data: EvalData) => {
+                const skillReg = /skill_timeout\s*\(\s*['"](.+?)['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.exec(data.code)
+                if (skillReg) {
+                    const skill = skillReg[1] as SkillName
+                    if (skill == "3shot") {
+                        this.game.socket.removeListener("action", attackCheck)
+                        this.game.socket.removeListener("eval", cooldownCheck)
+                        resolve(projectiles)
+                    }
+                }
+            }
+
+            setTimeout(() => {
+                this.game.socket.removeListener("action", attackCheck)
+                this.game.socket.removeListener("eval", cooldownCheck)
+                reject(`attack timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.game.socket.on("action", attackCheck)
+            this.game.socket.on("eval", cooldownCheck)
+        })
+
+        this.game.socket.emit("skill", {
+            name: "3shot",
+            ids: [target1, target2, target3]
+        })
+        return attackStarted
     }
 }
