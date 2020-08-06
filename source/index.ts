@@ -42,7 +42,7 @@ async function startRanger(auth: string, character: string, user: string) {
             for (const player of bot.game.players.values()) {
                 if (player.ctype == "merchant") continue // Merchants can't do enough damage their first attack to mess with us
                 if (player.npc) continue // NPCs can't mess with us
-
+                if (Tools.distance(bot.game.character, player) > 300) continue // Far enough away that they probably won't mess with us (unless they're deliberately trying to mess with us using supershot)
                 if (player.id != "earthiverse"
                     && player.id != "earthMer"
                     && player.id != "earthMag"

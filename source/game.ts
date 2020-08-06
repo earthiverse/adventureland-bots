@@ -151,6 +151,8 @@ export class Game {
                 toDelete.push(id)
             }
             for (const id of toDelete) this.players.delete(id)
+
+            // TODO: Update x,y based on going_x,going_y, and the time since we last updated it.
         }
 
         for (const monster of data.monsters) {
