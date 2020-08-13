@@ -630,7 +630,7 @@ class Hardcore {
                     continue
                 }
 
-                if (gInfo.type == "weapon" && gInfo.wtype != "bow" && gInfo.wtype != "crossbow") {
+                if (gInfo.type == "weapon" && !gInfo.wtype.includes("bow") && !gInfo.wtype.includes("crossbow")) {
                     // Sell all weapons that aren't bows
                     sell(item.index)
                 } else if (gInfo.type == "cosmetics" || gInfo.type == "jar" || gInfo.type == "key" || gInfo.type == "petlicence" || gInfo.type == "qubics" || gInfo.type == "quest" || gInfo.type == "shield" || gInfo.type == "source" || gInfo.type == "throw" || gInfo.type == "token") {

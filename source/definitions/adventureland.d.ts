@@ -454,7 +454,7 @@ declare global {
       /** Does this skill require multiple targets? (Use an array) */
       targets?: boolean;
       /** The weapon type needed to use this skill */
-      wtype?: WeaponType;
+      wtype?: WeaponType | WeaponType[];
     } };
   }
 }

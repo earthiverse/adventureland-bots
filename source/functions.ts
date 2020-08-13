@@ -232,8 +232,8 @@ export function isAvailable(skill: SkillName): boolean {
     if (parent.character.rip) return false
 
     // Check if we have the required weapon to use this skill
-    const skillWeaponType = G.skills[skill].wtype
-    if (skillWeaponType && skillWeaponType != G.items[parent.character.slots.mainhand.name].wtype) return false
+    const skillWeaponTypes = G.skills[skill].wtype
+    if (skillWeaponTypes && !skillWeaponTypes.includes(G.items[parent.character.slots.mainhand.name].wtype)) return false
 
     // Check if we have the required items to use this skill
     if (G.skills[skill].slot) {
