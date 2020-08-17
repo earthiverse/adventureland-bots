@@ -29,6 +29,84 @@ export class Pathfinder {
         return this.instance
     }
 
+    public canWalk2(from: IPosition, to: IPosition): boolean {
+        if (from.map != to.map) return false // We can't walk across maps
+        if (!Pathfinder.grids[from.map]) this.generateGrid(from.map) // Generate the grid if we haven't yet
+
+        const grid = Pathfinder.grids[from.map]
+        if (grid[from.y][from.x] != WALKABLE) return false
+
+        // The following code is adapted from http://eugen.dedu.free.fr/projects/bresenham/
+
+        let ystep, xstep // the step on y and x axis
+        let error // the error accumulated during the incremenet
+        let errorprev // *vision the previous value of the error variable
+        let y = from.y, x = from.x // the line points
+        let dx = to.x - from.x
+        let dy = to.y - from.y
+
+        if (dy < 0) {
+            ystep = -1
+            dy = -dy
+        } else {
+            ystep = 1
+        }
+        if (dx < 0) {
+            xstep = -1
+            dx = -dx
+        } else {
+            xstep = 1
+        }
+        const ddy = 2 * dy
+        const ddx = 2 * dx
+
+        if (ddx >= ddy) { // first octant (0 <= slope <= 1)
+            // compulsory initialization (even for errorprev, needed when dx==dy)
+            errorprev = error = dx  // start in the middle of the square
+            for (let i = 0; i < dx; i++) {  // do not use the first point (already done)
+                x += xstep
+                error += ddy
+                if (error > ddx) {  // increment y if AFTER the middle ( > )
+                    y += ystep
+                    error -= ddx
+                    // three cases (octant == right->right-top for directions below):
+                    if (error + errorprev < ddx) {  // bottom square also
+                        if (grid[y - ystep][x] != WALKABLE) return false
+                    } else if (error + errorprev > ddx) {  // left square also
+                        if (grid[y][x - xstep] != WALKABLE) return false
+                    } else {  // corner: bottom and left squares also
+                        if (grid[y - ystep][x] != WALKABLE) return false
+                        if (grid[y][x - xstep] != WALKABLE) return false
+                    }
+                }
+                if (grid[y][x] != WALKABLE) return false
+                errorprev = error
+            }
+        } else {  // the same as above
+            errorprev = error = dy
+            for (let i = 0; i < dy; i++) {
+                y += ystep
+                error += ddx
+                if (error > ddy) {
+                    x += xstep
+                    error -= ddy
+                    if (error + errorprev < ddy) {
+                        if (grid[y][x - xstep] != WALKABLE) return false
+                    } else if (error + errorprev > ddy) {
+                        if (grid[y - ystep][x] != WALKABLE) return false
+                    } else {
+                        if (grid[y][x - xstep] != WALKABLE) return false
+                        if (grid[y - ystep][x] != WALKABLE) return false
+                    }
+                }
+                if (grid[y][x] != WALKABLE) return false
+                errorprev = error
+            }
+        }
+
+        return true
+    }
+
     public canWalk(from: IPosition, to: IPosition): boolean {
         if (from.map != to.map) return false // We can't walk across maps
         if (!Pathfinder.grids[from.map]) this.generateGrid(from.map) // Generate the grid if we haven't yet
@@ -121,6 +199,9 @@ export class Pathfinder {
                 }
             }
         }
+
+        // Add to our grids
+        Pathfinder.grids[map] = grid
 
         return grid
     }
