@@ -177,8 +177,9 @@ class Merchant extends Character {
                 delete monsters[mtype as MonsterName]
                 setMonstersInfo(monsters)
             } else {
-                set_message(`SP ${mtype}`)
-                return { target: mtype as MonsterName, position: info, range: parent.character.range }
+                // TEMPORARY -- don't go to special monsters while we're farming crabx's.
+                // set_message(`SP ${mtype}`)
+                // return { target: mtype as MonsterName, position: info, range: parent.character.range }
             }
         }
 
