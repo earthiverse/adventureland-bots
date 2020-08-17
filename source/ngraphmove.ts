@@ -46,13 +46,13 @@ export class NGraphMove {
     })
 
     /** Date the search started */
-    private searchStartTime: number
+    public searchStartTime: number
     /** Date the search finished */
-    private searchFinishTime: number
+    public searchFinishTime: number
     /** Time the movement started */
-    private moveStartTime: number
+    public moveStartTime: number
     /** Time the movement finished */
-    private moveFinishTime: number
+    public moveFinishTime: number
 
     private constructor() {
         // Private to force singleton

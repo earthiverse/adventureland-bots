@@ -671,6 +671,10 @@ export abstract class Character {
             // Don't do anything if we're moving around
             // if (this.astar.isMoving()) {
             if (this.nGraphMove.isMoving()) {
+                // TODO: DEBUG -- We get stuck a lot lately, so we'll just stop the nGraphMove every 60s, since restarting movement is really fast anyways...
+                if (Date.now() - this.nGraphMove.searchStartTime > 60000) {
+                    this.nGraphMove.stop()
+                }
                 setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }
