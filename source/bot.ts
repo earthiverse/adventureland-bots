@@ -1,9 +1,9 @@
 import { Game } from "./game.js"
-import { CharacterData, ActionData, NewMapData, EvalData, EntityData, GameResponseData, GameResponseBuySuccess, GameResponseDataObject, DeathData, GameResponseAttackFailed, GameResponseItemSent, PlayerData, GameResponseBankRestrictions, DisappearingTextData, UpgradeData, PartyData, GameLogData } from "./definitions/adventureland-server"
+import { CharacterData, ActionData, NewMapData, EvalData, EntityData, GameResponseData, GameResponseBuySuccess, GameResponseDataObject, DeathData, GameResponseAttackFailed, GameResponseItemSent, PlayerData, GameResponseBankRestrictions, DisappearingTextData, UpgradeData, PartyData, GameLogData, GameResponseAttackTooFar } from "./definitions/adventureland-server"
 import { SkillName, MonsterName, ItemName, SlotType, ItemInfo } from "./definitions/adventureland"
 import { Tools } from "./tools.js"
 
-const TIMEOUT = 5000
+const TIMEOUT = 1000
 
 /**
  * Implement functions that depend on server events here
@@ -85,50 +85,44 @@ class BotBase {
         if (!this.game.entities.has(id) && !this.game.players.has(id)) return Promise.reject(`No Entity with ID '${id}'`)
 
         const attackStarted = new Promise<string>((resolve, reject) => {
-            let dealtWith = false
             const deathCheck = (data: DeathData) => {
                 if (data.id == id) {
-                    if (!dealtWith) {
-                        this.game.socket.removeListener("action", attackCheck)
-                        this.game.socket.removeListener("game_response", failCheck)
-                        this.game.socket.removeListener("death", deathCheck)
-                        reject(`Entity ${id} not found`)
-                        dealtWith = true
-                    }
+                    this.game.socket.removeListener("action", attackCheck)
+                    this.game.socket.removeListener("game_response", failCheck)
+                    this.game.socket.removeListener("death", deathCheck)
+                    reject(`Entity ${id} not found`)
                 }
             }
             const failCheck = (data: GameResponseData) => {
                 if ((data as GameResponseDataObject).response == "attack_failed") {
                     if ((data as GameResponseAttackFailed).id == id) {
-                        if (!dealtWith) {
-                            this.game.socket.removeListener("action", attackCheck)
-                            this.game.socket.removeListener("game_response", failCheck)
-                            this.game.socket.removeListener("death", deathCheck)
-                            reject(`Attack on ${id} failed.`)
-                            dealtWith = true
-                        }
+                        this.game.socket.removeListener("action", attackCheck)
+                        this.game.socket.removeListener("game_response", failCheck)
+                        this.game.socket.removeListener("death", deathCheck)
+                        reject(`Attack on ${id} failed.`)
+                    }
+                } else if ((data as GameResponseDataObject).response == "too_far") {
+                    if ((data as GameResponseAttackTooFar).id == id) {
+                        this.game.socket.removeListener("action", attackCheck)
+                        this.game.socket.removeListener("game_response", failCheck)
+                        this.game.socket.removeListener("death", deathCheck)
+                        reject(`${id} is too far away to attack (dist: ${((data as GameResponseAttackTooFar).dist)}).`)
                     }
                 }
             }
             const attackCheck = (data: ActionData) => {
                 if (data.attacker == this.game.character.id && data.target == id && data.type == "attack") {
-                    if (!dealtWith) {
-                        this.game.socket.removeListener("action", attackCheck)
-                        this.game.socket.removeListener("game_response", failCheck)
-                        this.game.socket.removeListener("death", deathCheck)
-                        resolve(data.pid)
-                        dealtWith = true
-                    }
-                }
-            }
-            setTimeout(() => {
-                if (!dealtWith) {
-                    dealtWith = true
                     this.game.socket.removeListener("action", attackCheck)
                     this.game.socket.removeListener("game_response", failCheck)
                     this.game.socket.removeListener("death", deathCheck)
-                    reject(`attack timeout (${TIMEOUT}ms)`)
+                    resolve(data.pid)
                 }
+            }
+            setTimeout(() => {
+                this.game.socket.removeListener("action", attackCheck)
+                this.game.socket.removeListener("game_response", failCheck)
+                this.game.socket.removeListener("death", deathCheck)
+                reject(`attack timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
             this.game.socket.on("action", attackCheck)
             this.game.socket.on("game_response", failCheck)

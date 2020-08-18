@@ -4,7 +4,7 @@ import { Tools } from "./tools.js"
 import { EntityData } from "./definitions/adventureland-server.js"
 
 async function startRanger(auth: string, character: string, user: string) {
-    const game = new Game("EU", "I")
+    const game = new Game("ASIA", "I")
     await game.connect(auth, character, user)
 
     console.info(`Starting ranger (${character})!`)
@@ -30,10 +30,18 @@ async function startRanger(auth: string, character: string, user: string) {
             // console.log(`# entities: ${bot.game.entities.size}`)
             for (const [id, entity] of bot.game.entities) {
                 if (entity.type != "crabx") continue // Only attack large crabs
-                if (entity.hp < entity.max_hp) {
-                    continue // Only attack those with full HP
+                if (entity.hp < entity.max_hp) continue // Only attack those with full HP
+                if (Tools.distance(bot.game.character, entity) > bot.game.character.range + bot.game.character.xrange) continue // Only attack those in range
+
+                // Don't attack if there's a projectile going towards it
+                let isTargetedbyProjectile = false
+                for (const projectile of bot.game.projectiles.values()) {
+                    if (projectile.target == id) {
+                        isTargetedbyProjectile = true
+                        break
                 }
-                if (Tools.distance(bot.game.character, entity) > bot.game.character.range) continue // Only attack those in range
+                }
+                if (isTargetedbyProjectile) continue
 
                 targets.push(id)
             }
@@ -53,11 +61,11 @@ async function startRanger(auth: string, character: string, user: string) {
             }
 
             if (!nearbyPlayer) {
-            if (targets.length >= 5 && bot.game.character.mp >= bot.game.G.skills["5shot"].mp) {
+                /*if (targets.length >= 5 && bot.game.character.mp >= bot.game.G.skills["5shot"].mp) {
                 await bot.fiveShot(targets[0], targets[1], targets[2], targets[3], targets[4])
             } else if (targets.length >= 3 && bot.game.character.mp >= bot.game.G.skills["3shot"].mp) {
                 await bot.threeShot(targets[0], targets[1], targets[2])
-            } else if (targets.length > 0 && bot.game.character.mp >= bot.game.character.mp_cost) {
+                } else*/ if (targets.length > 0 && bot.game.character.mp >= bot.game.character.mp_cost) {
                 await bot.attack(targets[0])
             }
             }
@@ -180,7 +188,7 @@ async function startRanger(auth: string, character: string, user: string) {
 }
 
 async function startMage(auth: string, character: string, user: string) {
-    const game = new Game("EU", "I")
+    const game = new Game("ASIA", "I")
     await game.connect(auth, character, user)
 
     console.info(`Starting mage (${character})!`)

@@ -219,7 +219,7 @@ export type GameLogDataString =
 export type GameResponseData = GameResponseDataObject | GameResponseDataString
 
 // TODO: split these in to other objects
-export type GameResponseDataObject = GameResponseAttackFailed | GameResponseBankRestrictions | GameResponseBuySuccess | GameResponseItemSent | {
+export type GameResponseDataObject = GameResponseAttackFailed | GameResponseAttackTooFar | GameResponseBankRestrictions | GameResponseBuySuccess | GameResponseItemSent | {
     response: "bank_restrictions" | "gold_received" | "item_placeholder" | "item_received" | string
     gold: number
     name: string
@@ -248,6 +248,13 @@ export type GameResponseAttackFailed = {
     response: "attack_failed",
     place: "attack" | string
     id: string
+}
+
+export type GameResponseAttackTooFar = {
+    response: "too_far",
+    place: "attack"
+    id: string
+    dist: number
 }
 
 export type GameResponseBankRestrictions = {
@@ -374,6 +381,7 @@ export type PlayerData = {
     s: StatusInfo
     skin: string
     slots: SlotInfo
+    speed: number
 }
 
 export type QData = {

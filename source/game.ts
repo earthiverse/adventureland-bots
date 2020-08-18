@@ -6,6 +6,7 @@ import { Tools } from "./tools.js"
 
 export class Game {
     private promises: Promise<boolean>[] = []
+    private lastUpdate: number
 
     public active = false
     public socket: SocketIOClient.Socket
@@ -152,18 +153,69 @@ export class Game {
             }
             for (const id of toDelete) this.players.delete(id)
 
-            // TODO: Update x,y based on going_x,going_y, and the time since we last updated it.
+            // Update positions based on heading and the time since we last updated it.
+            if (this.lastUpdate) {
+                const msSinceLastUpdate = Date.now() - this.lastUpdate
+                for (const entity of this.entities.values()) {
+                    if (!entity.moving) continue
+                    let justUpdated = false
+                    for (const entity2 of data.monsters) {
+                        // Don't update the movements for those that were just updated
+                        if (entity.id == entity2.id) {
+                            justUpdated = true
+                            break
+                        }
+                    }
+                    if (justUpdated) continue
+                    const distanceTravelled = entity.speed * msSinceLastUpdate / 1000
+                    const angle = Math.atan2(entity.going_y - entity.y, entity.going_x - entity.x)
+                    const distanceToGoal = Tools.distance({ x: entity.x, y: entity.y }, { x: entity.going_x, y: entity.going_y })
+                    if (distanceTravelled > distanceToGoal) {
+                        entity.moving = false
+                        entity.x = entity.going_x
+                        entity.y = entity.going_y
+                    } else {
+                        entity.x = entity.x + Math.cos(angle) * distanceTravelled
+                        entity.y = entity.y + Math.sin(angle) * distanceTravelled
+                    }
+                }
+                for (const player of this.players.values()) {
+                    if (!player.moving) continue
+                    let justUpdated = false
+                    for (const entity2 of data.players) {
+                        // Don't update the movements for those that were just updated
+                        if (player.id == entity2.id) {
+                            justUpdated = true
+                            break
+                        }
+                    }
+                    if (justUpdated) continue
+                    const distanceTravelled = player.speed * msSinceLastUpdate / 1000
+                    const angle = Math.atan2(player.going_y - player.y, player.going_x - player.x)
+                    const distanceToGoal = Tools.distance({ x: player.x, y: player.y }, { x: player.going_x, y: player.going_y })
+                    if (distanceTravelled > distanceToGoal) {
+                        player.moving = false
+                        player.x = player.going_x
+                        player.y = player.going_y
+                    } else {
+                        player.x = player.x + Math.cos(angle) * distanceTravelled
+                        player.y = player.y + Math.sin(angle) * distanceTravelled
+                    }
+                }
+            }
+            this.lastUpdate = Date.now()
         }
 
         for (const monster of data.monsters) {
             if (!this.entities.has(monster.id)) {
-                // Set everything
-                if (!monster.hp) monster.hp = this.G.monsters[monster.type].hp
-                if (!monster.max_hp) monster.max_hp = this.G.monsters[monster.type].hp
-                if (!monster.speed) monster.speed = this.G.monsters[monster.type].speed
-                if (!monster.attack) monster.attack = this.G.monsters[monster.type].attack
-                // TODO: Set more 'soft properties'
+                // Set soft properties
+                if (monster["max_hp"] === undefined) monster["max_hp"] = this.G.monsters[monster.type]["hp"]
+                if (monster["max_mp"] === undefined) monster["max_mp"] = this.G.monsters[monster.type]["mp"]
+                for (const attribute of ["attack", "hp", "mp", "speed"]) {
+                    if (monster[attribute] === undefined) monster[attribute] = this.G.monsters[monster.type][attribute]
+                }
 
+                // Set everything else
                 this.entities.set(monster.id, monster)
             } else {
                 // Update everything
@@ -180,6 +232,8 @@ export class Game {
     private parseGameResponse(data: GameResponseData) {
         if (typeof data == "string") {
             console.info(`Game Response: ${data}`)
+        } else {
+            console.info(`Game Response: ${data.response}`)
         }
     }
 
