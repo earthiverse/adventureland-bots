@@ -1,5 +1,5 @@
 import { Game } from "./game.js"
-import { CharacterData, ActionData, NewMapData, EvalData, EntityData, GameResponseData, GameResponseBuySuccess, GameResponseDataObject, DeathData, GameResponseAttackFailed, GameResponseItemSent, PlayerData, GameResponseBankRestrictions, DisappearingTextData, UpgradeData, PartyData, GameLogData, GameResponseAttackTooFar } from "./definitions/adventureland-server"
+import { CharacterData, ActionData, NewMapData, EvalData, EntityData, GameResponseData, GameResponseBuySuccess, GameResponseDataObject, DeathData, GameResponseAttackFailed, GameResponseItemSent, PlayerData, GameResponseBankRestrictions, DisappearingTextData, UpgradeData, PartyData, GameLogData, GameResponseAttackTooFar, GameResponseCooldown } from "./definitions/adventureland-server"
 import { SkillName, MonsterName, ItemName, SlotType, ItemInfo } from "./definitions/adventureland"
 import { Tools } from "./tools.js"
 
@@ -81,6 +81,7 @@ class BotBase {
     }
 
     // TODO: Return attack info
+    // TODO: Add 'notthere' (e.g. calling attack("12345") returns ["notthere", {place: "attack"}])
     public attack(id: string): Promise<string> {
         if (!this.game.entities.has(id) && !this.game.players.has(id)) return Promise.reject(`No Entity with ID '${id}'`)
 
@@ -94,7 +95,12 @@ class BotBase {
                 }
             }
             const failCheck = (data: GameResponseData) => {
-                if ((data as GameResponseDataObject).response == "attack_failed") {
+                if ((data as GameResponseDataObject).response == "disabled") {
+                    this.game.socket.removeListener("action", attackCheck)
+                    this.game.socket.removeListener("game_response", failCheck)
+                    this.game.socket.removeListener("death", deathCheck)
+                    reject(`Attack on ${id} failed (disabled).`)
+                } else if ((data as GameResponseDataObject).response == "attack_failed") {
                     if ((data as GameResponseAttackFailed).id == id) {
                         this.game.socket.removeListener("action", attackCheck)
                         this.game.socket.removeListener("game_response", failCheck)
@@ -107,6 +113,13 @@ class BotBase {
                         this.game.socket.removeListener("game_response", failCheck)
                         this.game.socket.removeListener("death", deathCheck)
                         reject(`${id} is too far away to attack (dist: ${((data as GameResponseAttackTooFar).dist)}).`)
+                    }
+                } else if ((data as GameResponseDataObject).response == "cooldown") {
+                    if ((data as GameResponseCooldown).id == id) {
+                        this.game.socket.removeListener("action", attackCheck)
+                        this.game.socket.removeListener("game_response", failCheck)
+                        this.game.socket.removeListener("death", deathCheck)
+                        reject(`Attack on ${id} failed due to cooldown (ms: ${((data as GameResponseCooldown).ms)}).`)
                     }
                 }
             }

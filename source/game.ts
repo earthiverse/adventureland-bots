@@ -1,6 +1,6 @@
 import axios from "axios"
 import socketio from "socket.io-client"
-import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, AuthData, StartData, EntityData, CharacterData, PartyData, ChestData, PlayerData, DisappearData, ChestOpenedData, HitData, NewMapData, ActionData, EvalData, DeathData, AchievementProgressData } from "./definitions/adventureland-server"
+import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, AuthData, StartData, EntityData, CharacterData, PartyData, ChestData, PlayerData, DisappearData, ChestOpenedData, HitData, NewMapData, ActionData, EvalData, DeathData, AchievementProgressData, GameResponseDataObject, GameResponseCooldown } from "./definitions/adventureland-server"
 import { ServerRegion, ServerIdentifier, SkillName, GData, BankInfo } from "./definitions/adventureland"
 import { Tools } from "./tools.js"
 
@@ -25,7 +25,7 @@ export class Game {
     public entities = new Map<string, EntityData>()
     public nextSkill = new Map<SkillName, Date>()
     public party: PartyData
-    public pings: number[]
+    public pings: number[] = []
     public players = new Map<string, PlayerData>()
     public projectiles = new Map<string, ActionData & { date: Date }>()
     public server: WelcomeData
@@ -240,6 +240,15 @@ export class Game {
             console.info(`Game Response: ${data}`)
         } else {
             console.info(`Game Response: ${data.response}`)
+        }
+
+        // Adjust cooldowns
+        if ((data as GameResponseDataObject).response == "cooldown") {
+            const skill = (data as GameResponseCooldown).skill
+            if (skill) {
+                const cooldown = (data as GameResponseCooldown).ms
+                this.setNextSkill(skill, new Date(Date.now() + Math.ceil(cooldown)))
+            }
         }
     }
 
@@ -490,7 +499,7 @@ export class Game {
 export class PingCompensatedGame extends Game {
     async connect(auth: string, character: string, user: string): Promise<unknown> {
         const promise = super.connect(auth, character, user)
-        return promise.then(async () => { this.pingLoop })
+        return promise.then(async () => { this.pingLoop() })
     }
 
     protected setNextSkill(skill: SkillName, next: Date): void {
@@ -500,7 +509,7 @@ export class PingCompensatedGame extends Game {
             pingCompensation = Math.min(...this.pings)
         }
 
-        this.setNextSkill(skill, new Date(next.getDate() - pingCompensation))
+        this.nextSkill.set(skill, new Date(next.getTime() - pingCompensation))
     }
 
     public pingLoop(): void {

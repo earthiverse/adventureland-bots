@@ -4,7 +4,7 @@ import { Tools } from "./tools.js"
 import { EntityData } from "./definitions/adventureland-server.js"
 
 async function startRanger(auth: string, character: string, user: string) {
-    const game = new Game("ASIA", "I")
+    const game = new Game("US", "II")
     await game.connect(auth, character, user)
 
     console.info(`Starting ranger (${character})!`)
@@ -43,7 +43,7 @@ async function startRanger(auth: string, character: string, user: string) {
             for (const player of bot.game.players.values()) {
                 if (player.ctype == "merchant") continue // Merchants can't do enough damage their first attack to mess with us
                 if (player.npc) continue // NPCs can't mess with us
-                if (Tools.distance(bot.game.character, player) > 300) continue // Far enough away that they probably won't mess with us (unless they're deliberately trying to mess with us using supershot)
+                if (Tools.distance(bot.game.character, player) > 500) continue // Far enough away that they probably won't mess with us (unless they're deliberately trying to mess with us using supershot)
                 if (player.id != "earthiverse"
                     && player.id != "earthMer"
                     && player.id != "earthMag"
@@ -156,7 +156,7 @@ async function startRanger(auth: string, character: string, user: string) {
                 const merchant = bot.game.players.get("earthMer")
                 const distance = Tools.distance(bot.game.character, merchant)
                 if (distance < 400) {
-                    for (let i = 3; i < bot.game.character.items.length; i++) {
+                    for (let i = 2; i < bot.game.character.items.length; i++) {
                         const item = bot.game.character.items[i]
                         if (!item) continue
 
@@ -175,7 +175,7 @@ async function startRanger(auth: string, character: string, user: string) {
 }
 
 async function startMage(auth: string, character: string, user: string) {
-    const game = new Game("ASIA", "I")
+    const game = new Game("US", "II")
     await game.connect(auth, character, user)
 
     console.info(`Starting mage (${character})!`)

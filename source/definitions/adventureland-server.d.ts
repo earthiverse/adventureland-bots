@@ -1,4 +1,4 @@
-import { NPCType, CharacterType, StatusInfo, SlotInfo, ItemInfo, MapName, MonsterName, ItemName, ServerRegion, ServerIdentifier, BankPackType, BankInfo } from "./adventureland"
+import { NPCType, CharacterType, StatusInfo, SlotInfo, ItemInfo, MapName, MonsterName, ItemName, ServerRegion, ServerIdentifier, BankPackType, BankInfo, SkillName } from "./adventureland"
 
 export type AchievementProgressData = {
     name: string
@@ -219,7 +219,7 @@ export type GameLogDataString =
 export type GameResponseData = GameResponseDataObject | GameResponseDataString
 
 // TODO: split these in to other objects
-export type GameResponseDataObject = GameResponseAttackFailed | GameResponseAttackTooFar | GameResponseBankRestrictions | GameResponseBuySuccess | GameResponseItemSent | {
+export type GameResponseDataObject = GameResponseAttackDisabled | GameResponseAttackFailed | GameResponseCooldown | GameResponseAttackTooFar | GameResponseBankRestrictions | GameResponseBuySuccess | GameResponseItemSent | {
     response: "bank_restrictions" | "gold_received" | "item_placeholder" | "item_received" | string
     gold: number
     name: string
@@ -238,20 +238,34 @@ export type GameResponseDataString =
     | "monsterhunt_started"
     /** When you try to send an item to another character, but they don't have room for it in their inventory */
     | "send_no_space"
+    | "skill_cant_incapacitated"
     | "skill_too_far"
     | "trade_bspace"
     | "trade_get_closer"
     | "upgrade_in_progress"
 // | string
 
+export type GameResponseAttackDisabled = {
+    response: "disabled"
+    place: "attack"
+}
+
 export type GameResponseAttackFailed = {
-    response: "attack_failed",
-    place: "attack" | string
+    response: "attack_failed"
+    place: "attack"
     id: string
 }
 
+export type GameResponseCooldown = {
+    response: "cooldown"
+    skill?: SkillName
+    place: SkillName
+    id: string
+    ms: number
+}
+
 export type GameResponseAttackTooFar = {
-    response: "too_far",
+    response: "too_far"
     place: "attack"
     id: string
     dist: number

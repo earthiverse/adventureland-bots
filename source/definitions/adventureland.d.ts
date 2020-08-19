@@ -1378,6 +1378,7 @@ export type ServerIdentifier =
   | "HARDCORE"
   | "I"
   | "II"
+  | "III"
   | "PVP"
 
 export type ServerRegion =
