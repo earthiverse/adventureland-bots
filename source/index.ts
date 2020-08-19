@@ -1,4 +1,4 @@
-import { Game } from "./game.js"
+import { PingCompensatedGame as Game } from "./game.js"
 import { Bot, RangerBot } from "./bot.js"
 import { Tools } from "./tools.js"
 import { EntityData } from "./definitions/adventureland-server.js"
@@ -39,7 +39,7 @@ async function startRanger(auth: string, character: string, user: string) {
                     if (projectile.target == id) {
                         isTargetedbyProjectile = true
                         break
-                }
+                    }
                 }
                 if (isTargetedbyProjectile) continue
 
@@ -62,12 +62,12 @@ async function startRanger(auth: string, character: string, user: string) {
 
             if (!nearbyPlayer) {
                 /*if (targets.length >= 5 && bot.game.character.mp >= bot.game.G.skills["5shot"].mp) {
-                await bot.fiveShot(targets[0], targets[1], targets[2], targets[3], targets[4])
-            } else if (targets.length >= 3 && bot.game.character.mp >= bot.game.G.skills["3shot"].mp) {
-                await bot.threeShot(targets[0], targets[1], targets[2])
+                    await bot.fiveShot(targets[0], targets[1], targets[2], targets[3], targets[4])
+                } else if (targets.length >= 3 && bot.game.character.mp >= bot.game.G.skills["3shot"].mp) {
+                    await bot.threeShot(targets[0], targets[1], targets[2])
                 } else*/ if (targets.length > 0 && bot.game.character.mp >= bot.game.character.mp_cost) {
-                await bot.attack(targets[0])
-            }
+                    await bot.attack(targets[0])
+                }
             }
         } catch (e) {
             console.error(e)
@@ -175,7 +175,7 @@ async function startRanger(auth: string, character: string, user: string) {
 
                         await bot.sendItem("earthMer", i, item.q)
                         break // Only send one item at a time
-}
+                    }
                 }
             }
         } catch (e) {

@@ -4,9 +4,14 @@ import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, Au
 import { ServerRegion, ServerIdentifier, SkillName, GData, BankInfo } from "./definitions/adventureland"
 import { Tools } from "./tools.js"
 
+const PING_EVERY_MS = 30000
+const MAX_PINGS = 100
+
 export class Game {
-    private promises: Promise<boolean>[] = []
     private lastUpdate: number
+    private promises: Promise<boolean>[] = []
+    private pingNum = 1
+    private pingMap = new Map<string, number>()
 
     public active = false
     public socket: SocketIOClient.Socket
@@ -20,6 +25,7 @@ export class Game {
     public entities = new Map<string, EntityData>()
     public nextSkill = new Map<SkillName, Date>()
     public party: PartyData
+    public pings: number[]
     public players = new Map<string, PlayerData>()
     public projectiles = new Map<string, ActionData & { date: Date }>()
     public server: WelcomeData
@@ -237,6 +243,24 @@ export class Game {
         }
     }
 
+    // TODO: Convert to async, and return a promise
+    protected sendPing(): string {
+        // Get the next pingID
+        const pingID = this.pingNum.toString()
+        this.pingNum++
+
+        // Set the pingID in the map
+        this.pingMap.set(pingID, Date.now())
+
+        // Get the ping
+        this.socket.emit("ping_trig", { id: pingID })
+        return pingID
+    }
+
+    protected setNextSkill(skill: SkillName, next: Date): void {
+        this.nextSkill.set(skill, next)
+    }
+
     private prepare() {
         this.socket.on("achievement_progress", (data: AchievementProgressData) => {
             this.achievements.set(data.name, data)
@@ -280,7 +304,7 @@ export class Game {
             if (skillReg) {
                 const skill = skillReg[1] as SkillName
                 const cooldown = Number.parseFloat(skillReg[2])
-                this.nextSkill.set(skill, new Date(Date.now() + Math.ceil(cooldown)))
+                this.setNextSkill(skill, new Date(Date.now() + Math.ceil(cooldown)))
                 return
             }
 
@@ -288,8 +312,8 @@ export class Game {
             const potReg = /pot_timeout\s*\(\s*(\d+\.?\d+?)\s*\)/.exec(data.code)
             if (potReg) {
                 const cooldown = Number.parseFloat(potReg[1])
-                this.nextSkill.set("use_hp", new Date(Date.now() + Math.ceil(cooldown)))
-                this.nextSkill.set("use_mp", new Date(Date.now() + Math.ceil(cooldown)))
+                this.setNextSkill("use_hp", new Date(Date.now() + Math.ceil(cooldown)))
+                this.setNextSkill("use_mp", new Date(Date.now() + Math.ceil(cooldown)))
                 return
             }
         })
@@ -342,6 +366,21 @@ export class Game {
 
         this.socket.on("party_update", (data: PartyData) => {
             this.party = data
+        })
+
+        this.socket.on("ping_ack", (data: { id: string }) => {
+            if (this.pingMap.has(data.id)) {
+                // Add the new ping
+                const ping = Date.now() - this.pingMap.get(data.id)
+                this.pings.push(ping)
+                console.log(`Ping: ${ping}`)
+
+                // Remove the oldest ping
+                if (this.pings.length > MAX_PINGS) this.pings.shift()
+
+                // Remove the ping from the map
+                this.pingMap.delete(data.id)
+            }
         })
 
         this.socket.on("player", (data: CharacterData) => {
@@ -444,5 +483,28 @@ export class Game {
         } else {
             console.error("Error fetching http://adventure.land!")
         }
+    }
+}
+
+// TODO: Compensate movement
+export class PingCompensatedGame extends Game {
+    async connect(auth: string, character: string, user: string): Promise<unknown> {
+        const promise = super.connect(auth, character, user)
+        return promise.then(async () => { this.pingLoop })
+    }
+
+    protected setNextSkill(skill: SkillName, next: Date): void {
+        // TODO: Get ping compensation
+        let pingCompensation = 0
+        if (this.pings.length > 0) {
+            pingCompensation = Math.min(...this.pings)
+        }
+
+        this.setNextSkill(skill, new Date(next.getDate() - pingCompensation))
+    }
+
+    public pingLoop(): void {
+        this.sendPing()
+        setTimeout(async () => { this.pingLoop() }, PING_EVERY_MS)
     }
 }
