@@ -19,13 +19,6 @@ async function startRanger(auth: string, character: string, user: string) {
         try {
             if (!bot.game.active) return
 
-            // Cooldown check
-            if (bot.getCooldown("attack")) {
-                console.info(`attack is on cooldown ${bot.getCooldown("attack")}`)
-                setTimeout(async () => { attackLoop() }, bot.getCooldown("attack"))
-                return
-            }
-
             const targets: string[] = []
             // console.log(`# entities: ${bot.game.entities.size}`)
             for (const [id, entity] of bot.game.entities) {
@@ -112,12 +105,6 @@ async function startRanger(auth: string, character: string, user: string) {
         try {
             if (!bot.game.active) return
 
-            if (bot.getCooldown("use_hp")) {
-                console.info(`heal is on cooldown ${bot.getCooldown("use_hp")}`)
-                setTimeout(async () => { healLoop() }, bot.getCooldown("use_hp"))
-                return
-            }
-
             const missingHP = bot.game.character.max_hp - bot.game.character.hp
             const missingMP = bot.game.character.max_mp - bot.game.character.mp
             const hpRatio = bot.game.character.hp / bot.game.character.max_hp
@@ -203,13 +190,6 @@ async function startMage(auth: string, character: string, user: string) {
         try {
             if (!bot.game.active) return
 
-            // Cooldown check
-            if (bot.getCooldown("attack")) {
-                console.info(`attack is on cooldown ${bot.getCooldown("attack")}`)
-                setTimeout(async () => { attackLoop() }, bot.getCooldown("attack"))
-                return
-            }
-
             const targets: string[] = []
             for (const [id, entity] of bot.game.entities) {
                 if (entity.type != "crabx") continue // Only attack large crabs
@@ -256,12 +236,6 @@ async function startMage(auth: string, character: string, user: string) {
     async function healLoop() {
         try {
             if (!bot.game.active) return
-
-            if (bot.getCooldown("use_hp")) {
-                console.info(`heal is on cooldown ${bot.getCooldown("use_hp")}`)
-                setTimeout(async () => { healLoop() }, bot.getCooldown("use_hp"))
-                return
-            }
 
             const missingHP = bot.game.character.max_hp - bot.game.character.hp
             const missingMP = bot.game.character.max_mp - bot.game.character.mp
