@@ -679,6 +679,8 @@ export type StatusInfo = {
     mluck?: {
       /** The ID of the merchant who cast mluck */
       f: string;
+      /** A flag to show if the mluck was cast by the user's merchant. If false, it can be mlucked by any merchant. */
+      strong: boolean;
     };
     monsterhunt?: {
       /** The server ID where the monster hunt is valid */

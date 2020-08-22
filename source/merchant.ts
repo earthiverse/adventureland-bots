@@ -110,6 +110,7 @@ class Merchant extends Character {
         for (const name in players) {
             if (name == parent.character.name) continue // Skip ourself
             const player = parent.entities[name] ? parent.entities[name] : players[name]
+            if (player.s && player.s.mluck && player.s.mluck.strong && player.s.mluck.f !== parent.character.id) continue // They are 'strongly' mlucked, so we can't override it.
             if (distance(parent.character, player) <= G.skills.mluck.range && (!player.s.mluck || Date.now() - players[name].lastSeen.getTime() > 3000000 || player.s.mluck.ms < 1800000)) {
                 // This player moved.
                 delete players[name]
@@ -592,7 +593,7 @@ class Merchant extends Character {
                 return
             }
 
-            if (!parent.character.s.mluck || parent.character.s["mluck"].ms < 10000 || parent.character.s["mluck"].f != parent.character.name) {
+            if (!parent.character.s.mluck || parent.character.s.mluck.ms < 10000 || parent.character.s.mluck.f != parent.character.name) {
                 // Luck ourself
                 use_skill("mluck", parent.character)
                 await sleep(G.skills["mluck"].cooldown)
@@ -607,10 +608,11 @@ class Merchant extends Character {
                     || !isAvailable("mluck")) // On cooldown
                     continue
                 if (this.luckedCharacters[luckTarget.name] && this.luckedCharacters[luckTarget.name] > Date.now() - parent.character.ping * 2) continue // Prevent spamming luck
-                if (!luckTarget.s || !luckTarget.s["mluck"] || luckTarget.s["mluck"].ms < 3540000 /* 59 minutes */ || luckTarget.s["mluck"].f != parent.character.name) {
+                if (luckTarget.s && luckTarget.s.mluck && luckTarget.s.mluck.strong && luckTarget.s.mluck.f != parent.character.id) continue // They are 'strongly' mlucked, so we can't override it
+                if (!luckTarget.s || !luckTarget.s.mluck || luckTarget.s.mluck.ms < 3540000 /* 59 minutes */ || luckTarget.s.mluck.f != parent.character.name) {
                     this.luckedCharacters[luckTarget.name] = Date.now()
                     use_skill("mluck", luckTarget)
-                    await sleep(G.skills["mluck"].cooldown)
+                    await sleep(G.skills.mluck.cooldown)
                 }
             }
         } catch (error) {
