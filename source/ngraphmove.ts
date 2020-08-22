@@ -103,16 +103,17 @@ export class NGraphMove {
         }
 
         const grid = this.grids[from.map]
-        if (grid[from.y][from.x] !== WALKABLE) return false
 
         // The following code is adapted from http://eugen.dedu.free.fr/projects/bresenham/
 
         let ystep, xstep // the step on y and x axis
         let error // the error accumulated during the incremenet
         let errorprev // *vision the previous value of the error variable
-        let y = from.y, x = from.x // the line points
-        let dx = to.x - from.x
-        let dy = to.y - from.y
+        let y = Math.trunc(from.y) - G.geometry[from.map].min_y, x = Math.trunc(from.x) - G.geometry[from.map].min_x // the line points
+        let dx = Math.trunc(to.x) - Math.trunc(from.x)
+        let dy = Math.trunc(to.y) - Math.trunc(from.y)
+
+        if (grid[y][x] !== WALKABLE) return false
 
         if (dy < 0) {
             ystep = -1
