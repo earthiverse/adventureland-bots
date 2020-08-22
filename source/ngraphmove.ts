@@ -8,7 +8,7 @@ import { nodes as CachedNodes, links as CachedLinks } from "./ngraphmove_cache"
 const UNKNOWN = 1
 const UNWALKABLE = 2
 const WALKABLE = 3
-const EXTRA_PADDING = 1
+const EXTRA_PADDING = 0
 
 // Other variables
 const FIRST_MAP: MapName = "main"
@@ -94,6 +94,86 @@ export class NGraphMove {
 
     private wasCancelled(start: number): boolean {
         return !this.searchStartTime || start < this.searchStartTime
+    }
+
+    public canMove2(from: NodeData, to: NodeData): boolean {
+        if (from.map != to.map) {
+            console.error(`Don't use this function across maps. You tried to check canMove from ${from.map} to ${to.map}.`)
+            return false
+        }
+
+        const grid = this.grids[from.map]
+        if (grid[from.y][from.x] !== WALKABLE) return false
+
+        // The following code is adapted from http://eugen.dedu.free.fr/projects/bresenham/
+
+        let ystep, xstep // the step on y and x axis
+        let error // the error accumulated during the incremenet
+        let errorprev // *vision the previous value of the error variable
+        let y = from.y, x = from.x // the line points
+        let dx = to.x - from.x
+        let dy = to.y - from.y
+
+        if (dy < 0) {
+            ystep = -1
+            dy = -dy
+        } else {
+            ystep = 1
+        }
+        if (dx < 0) {
+            xstep = -1
+            dx = -dx
+        } else {
+            xstep = 1
+        }
+        const ddy = 2 * dy
+        const ddx = 2 * dx
+
+        if (ddx >= ddy) { // first octant (0 <= slope <= 1)
+            // compulsory initialization (even for errorprev, needed when dx==dy)
+            errorprev = error = dx  // start in the middle of the square
+            for (let i = 0; i < dx; i++) {  // do not use the first point (already done)
+                x += xstep
+                error += ddy
+                if (error > ddx) {  // increment y if AFTER the middle ( > )
+                    y += ystep
+                    error -= ddx
+                    // three cases (octant == right->right-top for directions below):
+                    if (error + errorprev < ddx) {  // bottom square also
+                        if (grid[y - ystep][x] != WALKABLE) return false
+                    } else if (error + errorprev > ddx) {  // left square also
+                        if (grid[y][x - xstep] != WALKABLE) return false
+                    } else {  // corner: bottom and left squares also
+                        if (grid[y - ystep][x] != WALKABLE) return false
+                        if (grid[y][x - xstep] != WALKABLE) return false
+                    }
+                }
+                if (grid[y][x] !== WALKABLE) return false
+                errorprev = error
+            }
+        } else {  // the same as above
+            errorprev = error = dy
+            for (let i = 0; i < dy; i++) {
+                y += ystep
+                error += ddx
+                if (error > ddy) {
+                    x += xstep
+                    error -= ddy
+                    if (error + errorprev < ddy) {
+                        if (grid[y][x - xstep] != WALKABLE) return false
+                    } else if (error + errorprev > ddy) {
+                        if (grid[y - ystep][x] != WALKABLE) return false
+                    } else {
+                        if (grid[y][x - xstep] != WALKABLE) return false
+                        if (grid[y - ystep][x] != WALKABLE) return false
+                    }
+                }
+                if (grid[y][x] !== WALKABLE) return false
+                errorprev = error
+            }
+        }
+
+        return true
     }
 
     /**
@@ -380,7 +460,7 @@ export class NGraphMove {
                     const nodeI = newNodes[i]
                     const nodeJ = newNodes[j]
                     // if (can_move({ map: nodeI.data.map, x: nodeI.data.x, y: nodeI.data.y, going_x: nodeJ.data.x, going_y: nodeJ.data.y, base: parent.character.base })) {
-                    if (this.canMove(nodeI.data, nodeJ.data)) {
+                    if (this.canMove2(nodeI.data, nodeJ.data)) {
                         this.graph.addLink(nodeI.id, nodeJ.id)
                         this.graph.addLink(nodeJ.id, nodeI.id)
                     }
@@ -503,7 +583,7 @@ export class NGraphMove {
             if (character.map !== to.map) break // We can't optimize across maps
             if (link) break
 
-            if (this.canMove(character, to)) canMove = i
+            if (this.canMove2(character, to)) canMove = i
         }
         if (canMove > 0) {
             optimizedPath.splice(0, canMove)
@@ -520,7 +600,7 @@ export class NGraphMove {
             if (link) break // We shouldn't optimize over special movements
             if (to.map != goal.map) break
 
-            if (this.canMove(from, goal)) canMove = i
+            if (this.canMove2(from, goal)) canMove = i
         }
         if (canMove < optimizedPath.length - 1) {
             optimizedPath.splice(canMove + 1)
