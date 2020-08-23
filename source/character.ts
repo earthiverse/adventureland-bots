@@ -1183,6 +1183,14 @@ export abstract class Character {
                 if (potentialTarget.hp <= calculateDamageRange(parent.character, potentialTarget)[0]) priority -= parent.character.range
             }
 
+            // Adjust priority if it will burn to death
+            if (potentialTarget.s && potentialTarget.s.burned) {
+                // Reduce the amount of time by a bit to account for some error
+                const burnTime = (potentialTarget.s.burned.ms - 500 - potentialTarget.s.burned.ms % 1000) / 1000
+                const burnDamage = burnTime * potentialTarget.s.burned.intensity
+                if (burnDamage > potentialTarget.hp) priority -= 5000
+            }
+
             // Increase priority if it's our "main target"
             if (potentialTarget.mtype == this.mainTarget) priority += 250
 

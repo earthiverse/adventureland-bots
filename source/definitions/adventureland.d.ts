@@ -672,6 +672,12 @@ export type StatusInfo = {
     /** How many ms left before this condition expires */
     ms: number;
   } } & {
+    burned?: {
+      // (Unconfirmed) the damage that the burn will do per second.
+      intensity: number
+      // The character ID that caused the burn
+      f: string
+    }
     coop?: {
       id: string;
       p: number;
