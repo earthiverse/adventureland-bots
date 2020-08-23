@@ -1168,6 +1168,7 @@ export abstract class Character {
             if (!is_pvp() && potentialTarget.type != "monster") continue // Not interested in non-monsters unless it's PvP
             if (is_pvp() && parent.party_list.includes(id)) continue
             if (!this.targetPriority[potentialTarget.mtype] && potentialTarget.target != parent.character.name) continue // Not a monster we care about, and it's not attacking us
+            if (!potentialTarget.cooperative && !parent.party_list.includes(potentialTarget.target)) continue // It's attacking player, we can't get credit for it, or loot from it
 
             // Set the priority based on our targetPriority
             let priority = this.targetPriority[potentialTarget.mtype] ? this.targetPriority[potentialTarget.mtype].priority : 0
