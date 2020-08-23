@@ -354,7 +354,8 @@ class Warrior extends Character {
     // TODO: Improve. 
     agitateLoop(): void {
         try {
-            if (isAvailable("agitate")) {
+            if (isAvailable("agitate")
+                && !parent.character.c.town /* Don't use if we're teleporting */) {
                 let inAgitateCount = 0
                 let dps = 0
                 let dpsLimit = 500
