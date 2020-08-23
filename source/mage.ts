@@ -199,7 +199,7 @@ class Mage extends Character {
             farmingPosition: {
                 "map": "level1",
                 "x": -296.5,
-                "y": 557.5
+                "y": 537.5
             }
         },
         "rat": {

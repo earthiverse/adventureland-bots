@@ -257,7 +257,7 @@ class Ranger extends Character {
             "priority": 0,
             farmingPosition: {
                 "map": "level1",
-                "x": -296.5,
+                "x": -316.5,
                 "y": 557.5
             },
             "equip": ["hbow", "quiver", "orbg"]
@@ -332,7 +332,7 @@ class Ranger extends Character {
             "holdPositionFarm": true,
             farmingPosition: {
                 "map": "halloween",
-                "x": -230,
+                "x": -210,
                 "y": 570
             },
             "equip": ["firebow", "t2quiver", "orbg"]
