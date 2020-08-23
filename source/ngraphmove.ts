@@ -469,13 +469,13 @@ export class NGraphMove {
             }
 
             // // 3F: Create "town" links
-            // const townNodeID = createNodeId(map, G.maps[map].spawns[0][0], G.maps[map].spawns[0][1])
-            // const townNodeLinkData: LinkData = {
-            //     type: "town"
-            // }
-            // for (const node of newNodes) {
-            //     this.graph.addLink(node.id, townNodeID, townNodeLinkData)
-            // }
+            const townNodeID = createNodeId(map, G.maps[map].spawns[0][0], G.maps[map].spawns[0][1])
+            const townNodeLinkData: LinkData = {
+                type: "town"
+            }
+            for (const node of newNodes) {
+                this.graph.addLink(node.id, townNodeID, townNodeLinkData)
+            }
         }
     }
 
@@ -662,13 +662,17 @@ export class NGraphMove {
 
         async function performNextMovement(to: NodeData, link: LinkData) {
             if (link) {
-                // if (link.type == "town") {
-                //     // Use "town" to get to the next node
-                //     use_skill("town")
-                //     await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + TOWN_TIME))
-                //     return
-                // } else
-                if (link.type == "transport") {
+                if (link.type == "town") {
+                    if (distance(parent.character, to) < TOWN_COST) {
+                        // Walk to the town node
+                        await Promise.race([move(to.x, to.y), new Promise(resolve => setTimeout(resolve, WALK_TIMEOUT))])
+                    } else {
+                        // Use "town" to get to the next node
+                        use_skill("town")
+                        await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + TOWN_TIME))
+                    }
+                    return
+                } else if (link.type == "transport") {
                     // Transport to the next node
                     transport(to.map, link.spawn)
                     await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + TRANSPORT_TIME))
