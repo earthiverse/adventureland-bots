@@ -292,7 +292,7 @@ class Mage extends Character {
         }
     }
 
-    cburstLoop(): void {
+    protected async cburstLoop() {
         try {
             const targets: [string, number][] = []
             let manaUse = G.skills.cburst.mp
@@ -307,16 +307,16 @@ class Mage extends Character {
                 targets.push([target.id, manaCost])
             }
             if (isAvailable("cburst") && targets.length) {
-                use_skill("cburst", targets)
+                await use_skill("cburst", targets)
                 reduce_cooldown("cburst", Math.min(...parent.pings))
             }
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.cburstLoop() }, getCooldownMS("cburst"))
+        setTimeout(async () => { this.cburstLoop() }, getCooldownMS("cburst"))
     }
 
-    energizeLoop(): void {
+    protected async energizeLoop() {
         try {
             // Get nearby party members
             if (isAvailable("energize")) {
@@ -324,7 +324,7 @@ class Mage extends Character {
                     return (a.mp / a.max_mp) < (b.mp / b.max_mp) ? -1 : 1
                 })
                 for (const entity of partyMembers) {
-                    use_skill("energize", entity)
+                    await use_skill("energize", entity)
                     reduce_cooldown("energize", Math.min(...parent.pings))
                     break
                 }
@@ -332,7 +332,7 @@ class Mage extends Character {
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.energizeLoop() }, getCooldownMS("energize"))
+        setTimeout(async () => { this.energizeLoop() }, getCooldownMS("energize"))
     }
 
     // magiportLoop(): void {
@@ -358,7 +358,7 @@ class Mage extends Character {
     //     } catch (error) {
     //         console.error(error)
     //     }
-    //     setTimeout(() => { this.magiportLoop() }, getCooldownMS("magiport"))
+    //     setTimeout(async () => { this.magiportLoop() }, getCooldownMS("magiport"))
     // }
 }
 

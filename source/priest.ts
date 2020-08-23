@@ -2,7 +2,7 @@ import { Character } from "./character"
 import { MonsterName } from "./definitions/adventureland"
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from "./trade"
 import { TargetPriorityList, PriorityEntity } from "./definitions/bots"
-import { getCooldownMS, isAvailable } from "./functions"
+import { getCooldownMS, isAvailable, calculateDamageRange } from "./functions"
 import FastPriorityQueue from "fastpriorityqueue"
 
 const DIFFICULT = 10
@@ -400,50 +400,47 @@ class Priest extends Character {
     async run() {
         await super.run()
         this.darkBlessingLoop()
+        this.curseLoop()
         this.partyHealLoop()
     }
 
-    protected partyHealLoop(): void {
+    protected async partyHealLoop() {
         if (isAvailable("partyheal")) {
             for (const member of parent.party_list) {
                 const e = parent.entities[member]
                 if (!e) continue
                 if (e.rip) continue
                 if (e.hp / e.max_hp < 0.5) {
-                    use_skill("partyheal")
+                    await use_skill("partyheal")
                     reduce_cooldown("partyheal", Math.min(...parent.pings))
                     break
                 }
             }
         }
-        setTimeout(() => { this.partyHealLoop() }, getCooldownMS("partyheal"))
+        setTimeout(async () => { this.partyHealLoop() }, getCooldownMS("partyheal"))
     }
 
     // protected absorbLoop(): void {
 
     // }
 
-    protected darkBlessingLoop(): void {
+    protected async darkBlessingLoop() {
         if (isAvailable("darkblessing")) {
-            // Check if there are at least two party members nearby
-            let count = 0
-            for (const member of parent.party_list) {
-                const e = parent.entities[member]
-                if (!e) continue
-                if (e.ctype == "merchant") continue
-                if (e.id == parent.character.id) continue
+            await use_skill("darkblessing")
+            reduce_cooldown("darkblessing", Math.min(...parent.pings))
+        }
+        setTimeout(async () => { this.darkBlessingLoop() }, getCooldownMS("darkblessing"))
+    }
 
-                if (distance(parent.character, e) < G.skills["darkblessing"].range) {
-                    count += 1
-                }
-                if (count == 2) {
-                    use_skill("darkblessing")
-                    reduce_cooldown("darkblessing", Math.min(...parent.pings))
-                    break
-                }
+    protected async curseLoop() {
+        const entity = get_targeted_monster()
+        if (this.wantToAttack(entity)) {
+            if (entity.hp > calculateDamageRange(parent.character, entity)[0] * 5) {
+                await use_skill("curse", entity)
+                reduce_cooldown("curse", Math.min(...parent.pings))
             }
         }
-        setTimeout(() => { this.darkBlessingLoop() }, getCooldownMS("darkblessing"))
+        setTimeout(async () => { this.curseLoop() }, getCooldownMS("curse"))
     }
 
     protected async attackLoop(): Promise<void> {

@@ -383,7 +383,7 @@ class Ranger extends Character {
             //         else if (parent.server_region == "EU" && parent.server_identifier == "II")
             //             change_server("ASIA", "I")
 
-            //         setTimeout(() => { this.mainLoop() }, 30000)
+            //         setTimeout(async () => { this.mainLoop() }, 30000)
             //         return
             //     }
             // } else {
@@ -397,20 +397,20 @@ class Ranger extends Character {
         }
     }
 
-    huntersmarkLoop(): void {
+    protected async huntersmarkLoop() {
         try {
             const targets = this.getTargets(1)
             if (targets.length // We have a target
                 && !targets[0].s.marked // The target isn't marked
                 && targets[0].hp > calculateDamageRange(parent.character, targets[0])[0] * 5 // The target has a lot of HP
                 && this.wantToAttack(targets[0], "huntersmark")) { // We want to attack it 
-                use_skill("huntersmark", targets[0])
+                await use_skill("huntersmark", targets[0])
                 reduce_cooldown("huntersmark", Math.min(...parent.pings))
             }
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.huntersmarkLoop() }, getCooldownMS("huntersmark"))
+        setTimeout(async () => { this.huntersmarkLoop() }, getCooldownMS("huntersmark"))
     }
 
     async trackLoop(): Promise<void> {
@@ -418,13 +418,13 @@ class Ranger extends Character {
             if (isAvailable("track") // We can use it
                 && is_pvp() // Only track if we can be attacked by other players
             ) {
-                use_skill("track")
+                await use_skill("track")
                 reduce_cooldown("track", Math.min(...parent.pings))
             }
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.trackLoop() }, getCooldownMS("track"))
+        setTimeout(async () => { this.trackLoop() }, getCooldownMS("track"))
     }
 
     async fourFingersLoop(): Promise<void> {
@@ -439,13 +439,13 @@ class Ranger extends Character {
                 && targets[0].target == parent.character.name // The target is targetting us
                 && parent.character.hp < targets[0].attack * 10 // We don't have much HP
             ) {
-                use_skill("4fingers", targets[0])
+                await use_skill("4fingers", targets[0])
                 reduce_cooldown("4fingers", Math.min(...parent.pings))
             }
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.fourFingersLoop() }, getCooldownMS("4fingers"))
+        setTimeout(async () => { this.fourFingersLoop() }, getCooldownMS("4fingers"))
     }
 
     async superShotLoop(): Promise<void> {
@@ -460,7 +460,7 @@ class Ranger extends Character {
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.superShotLoop() }, getCooldownMS("supershot"))
+        setTimeout(async () => { this.superShotLoop() }, getCooldownMS("supershot"))
     }
 
     protected async attackLoop(): Promise<void> {

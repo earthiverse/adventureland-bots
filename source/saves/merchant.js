@@ -32,7 +32,7 @@ import("https://earthiverse.github.io/adventureland-bots/build/merchant.js")
             coins += parent.character.slots.trade1 == undefined ? 0 : parent.character.slots.trade1.q
             game_log(`Coins: ${coins}`)
 
-            setTimeout(() => {
+            setTimeout(async () => {
                 showMHInfo()
             }, 10000)
         }

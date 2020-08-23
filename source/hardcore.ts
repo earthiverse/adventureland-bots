@@ -510,22 +510,22 @@ class Hardcore {
                 && (!useHpPot
                     || (useHpPot.name == "hpot0" && (parent.character.hp <= parent.character.max_hp - 200 || parent.character.hp < 50))
                     || (useHpPot.name == "hpot1" && (parent.character.hp <= parent.character.max_hp - 400 || parent.character.hp < 50)))) {
-                use_skill("use_hp")
-                reduce_cooldown("use_hp", Math.min(...parent.pings))
-                reduce_cooldown("use_mp", Math.min(...parent.pings))
+                await use_skill("use_hp")
+                await reduce_cooldown("use_hp", Math.min(...parent.pings))
+                await reduce_cooldown("use_mp", Math.min(...parent.pings))
             } else if (mpRatio != 1
                 && (!useMpPot
                     || (useMpPot.name == "mpot0" && (parent.character.mp <= parent.character.max_mp - 300 || parent.character.mp < 50))
                     || (useMpPot.name == "mpot1" && (parent.character.mp <= parent.character.max_mp - 500 || parent.character.mp < 50)))) {
-                use_skill("use_mp")
+                await use_skill("use_mp")
                 reduce_cooldown("use_hp", Math.min(...parent.pings))
                 reduce_cooldown("use_mp", Math.min(...parent.pings))
             } else if (hpRatio < mpRatio) {
-                use_skill("regen_hp")
+                await use_skill("regen_hp")
                 reduce_cooldown("use_hp", Math.min(...parent.pings))
                 reduce_cooldown("use_mp", Math.min(...parent.pings))
             } else if (mpRatio < hpRatio) {
-                use_skill("regen_mp")
+                await use_skill("regen_mp")
                 reduce_cooldown("use_hp", Math.min(...parent.pings))
                 reduce_cooldown("use_mp", Math.min(...parent.pings))
             }
@@ -595,7 +595,7 @@ class Hardcore {
             }
             if (!foundPonty) {
                 // We're not near Ponty, so don't buy from him.
-                setTimeout(() => { this.pontyLoop() }, 250)
+                setTimeout(async () => { this.pontyLoop() }, 250)
                 return
             }
 

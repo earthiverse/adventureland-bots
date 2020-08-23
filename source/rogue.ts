@@ -62,12 +62,12 @@ class Rogue extends Character {
         if (isAvailable("quickstab") && targets.length) {
             if (targets[0].hp <= calculateDamageRange(parent.character, targets[0])[0] * G.skills["quickstab"].damage_multiplier) {
                 // We can kill it with one stab, do it.
-                use_skill("quickstab", targets[0])
+                await use_skill("quickstab", targets[0])
                 reduce_cooldown("quickstab", Math.min(...parent.pings))
             }
         }
 
-        setTimeout(() => { this.quickStabLoop() }, getCooldownMS("quickstab"))
+        setTimeout(async () => { this.quickStabLoop() }, getCooldownMS("quickstab"))
     }
 }
 

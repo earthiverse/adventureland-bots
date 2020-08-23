@@ -304,7 +304,7 @@ class Warrior extends Character {
             setTimeout(async () => { this.mainLoop() }, 250)
         }
     }
-    protected scareLoop(): void {
+    protected async scareLoop() {
         try {
             const targets = getEntities({ isAttackingUs: true, isRIP: false, isMonster: true })
             let wantToScare = false
@@ -326,14 +326,14 @@ class Warrior extends Character {
             }
             if (!isAvailable("scare") // On cooldown
                 || !wantToScare) { // Can't be easily killed
-                setTimeout(() => { this.scareLoop() }, getCooldownMS("scare"))
+                setTimeout(async () => { this.scareLoop() }, getCooldownMS("scare"))
                 return
             }
 
 
             if (parent.character.slots.orb.name == "jacko") {
                 // We have a jacko equipped
-                use_skill("scare")
+                await use_skill("scare")
                 reduce_cooldown("scare", Math.min(...parent.pings))
             } else {
                 // Check if we have a jacko in our inventory
@@ -341,18 +341,18 @@ class Warrior extends Character {
                 if (items.length) {
                     const jackoI = items[0].index
                     equip(jackoI) // Equip the jacko
-                    use_skill("scare") // Scare the monsters away
+                    await use_skill("scare") // Scare the monsters away
                     reduce_cooldown("scare", Math.min(...parent.pings))
                 }
             }
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.scareLoop() }, getCooldownMS("scare"))
+        setTimeout(async () => { this.scareLoop() }, getCooldownMS("scare"))
     }
 
     // TODO: Improve. 
-    agitateLoop(): void {
+    protected async agitateLoop() {
         try {
             if (isAvailable("agitate")
                 && !parent.character.c.town /* Don't use if we're teleporting */) {
@@ -390,52 +390,38 @@ class Warrior extends Character {
                     dps += calculateDamageRange(e, parent.character)[1] * e.frequency
                 }
                 if (inAgitateCount > 0 && inAgitateCount <= 3 && dps < dpsLimit) {
-                    use_skill("agitate")
+                    await use_skill("agitate")
                     reduce_cooldown("agitate", Math.min(...parent.pings))
                 }
             }
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.agitateLoop() }, getCooldownMS("agitate"))
+        setTimeout(async () => { this.agitateLoop() }, getCooldownMS("agitate"))
     }
 
-    warcryLoop(): void {
+    protected async warcryLoop() {
         if (isAvailable("warcry")) {
-            // Check if there are at least two party members nearby
-            let count = 0
-            for (const member of parent.party_list) {
-                const e = parent.entities[member]
-                if (!e) continue
-                if (e.ctype == "merchant") continue
-
-                if (distance(parent.character, e) < G.skills["warcry"].range) {
-                    count += 1
-                }
-                if (count == 2) {
-                    use_skill("warcry")
-                    reduce_cooldown("warcry", Math.min(...parent.pings))
-                    break
-                }
-            }
+            await use_skill("warcry")
+            reduce_cooldown("warcry", Math.min(...parent.pings))
         }
-        setTimeout(() => { this.warcryLoop() }, getCooldownMS("warcry"))
+        setTimeout(async () => { this.warcryLoop() }, getCooldownMS("warcry"))
     }
 
-    stompLoop(): void {
+    protected async stompLoop() {
         // Stomp monsters with high HP
         const attackingTargets = getEntities({ isAttackingUs: true, isRIP: false })
         if (isAvailable("stomp") && attackingTargets.length) {
 
             if (attackingTargets[0].hp > 25000 && distance(parent.character, attackingTargets[0]) < parent.character.range) {
-                use_skill("stomp")
+                await use_skill("stomp")
                 reduce_cooldown("stomp", Math.min(...parent.pings))
             }
         }
-        setTimeout(() => { this.stompLoop() }, getCooldownMS("stomp"))
+        setTimeout(async () => { this.stompLoop() }, getCooldownMS("stomp"))
     }
 
-    cleaveLoop(): void {
+    protected async cleaveLoop() {
         const wanted: Entity[] = []
         const unwanted: Entity[] = []
         for (const e of getEntities({ isMonster: true, isRIP: false, isWithinDistance: G.skills.cleave.range })) {
@@ -458,30 +444,30 @@ class Warrior extends Character {
         }
 
         if (isAvailable("cleave") && wanted.length > 3 && unwantedDamage < 1000) {
-            use_skill("cleave")
+            await use_skill("cleave")
             reduce_cooldown("cleave", Math.min(...parent.pings))
         }
-        setTimeout(() => { this.cleaveLoop() }, getCooldownMS("cleave"))
+        setTimeout(async () => { this.cleaveLoop() }, getCooldownMS("cleave"))
     }
 
-    chargeLoop(): void {
-        if (isAvailable("charge")) use_skill("charge")
-        setTimeout(() => { this.chargeLoop() }, getCooldownMS("charge"))
+    protected async chargeLoop() {
+        if (isAvailable("charge")) await use_skill("charge")
+        setTimeout(async () => { this.chargeLoop() }, getCooldownMS("charge"))
     }
 
-    hardshellLoop(): void {
+    protected async hardshellLoop() {
         const targets = getEntities({ isAttackingUs: true, isRIP: false })
         if (isAvailable("hardshell")
             && targets.length // We have a target
             && distance(targets[0], parent.character) <= targets[0].range // In range of their attacks
             && parent.character.hp < calculateDamageRange(targets[0], parent.character)[1] * 5) { // Not a lot of HP remaining
-            use_skill("hardshell")
+            await use_skill("hardshell")
             reduce_cooldown("hardshell", Math.min(...parent.pings))
         }
-        setTimeout(() => { this.hardshellLoop() }, getCooldownMS("hardshell"))
+        setTimeout(async () => { this.hardshellLoop() }, getCooldownMS("hardshell"))
     }
 
-    async tauntLoop(): Promise<void> {
+    protected async tauntLoop(): Promise<void> {
         try {
             let dps = 0
             let dpsLimit = 500
@@ -505,7 +491,7 @@ class Warrior extends Character {
 
                     await use_skill("taunt", e)
                     reduce_cooldown("taunt", Math.min(...parent.pings))
-                    setTimeout(() => { this.tauntLoop() }, getCooldownMS("taunt"))
+                    setTimeout(async () => { this.tauntLoop() }, getCooldownMS("taunt"))
                     return
                 }
 
@@ -522,14 +508,14 @@ class Warrior extends Character {
 
                     await use_skill("taunt", e)
                     reduce_cooldown("taunt", Math.min(...parent.pings))
-                    setTimeout(() => { this.tauntLoop() }, getCooldownMS("taunt"))
+                    setTimeout(async () => { this.tauntLoop() }, getCooldownMS("taunt"))
                     return
                 }
             }
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.tauntLoop() }, getCooldownMS("taunt"))
+        setTimeout(async () => { this.tauntLoop() }, getCooldownMS("taunt"))
     }
 }
 

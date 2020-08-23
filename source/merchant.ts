@@ -281,14 +281,14 @@ class Merchant extends Character {
         }
         if (!foundPonty) {
             // We're not near Ponty, so don't buy from him.
-            setTimeout(() => { this.pontyLoop() }, 250)
+            setTimeout(async () => { this.pontyLoop() }, 250)
             return
         }
 
         buyFromPonty(this.itemsToBuy) // Other things
 
         // We bought things from Ponty, wait a long time before trying to buy again.
-        setTimeout(() => { this.pontyLoop() }, 15000)
+        setTimeout(async () => { this.pontyLoop() }, 15000)
     }
 
     private didBankStuff = 0;
@@ -590,7 +590,7 @@ class Merchant extends Character {
     private async luckLoop(): Promise<void> {
         try {
             if (parent.character.mp < 10) {
-                setTimeout(() => { this.luckLoop() }, getCooldownMS("mluck"))
+                setTimeout(async () => { this.luckLoop() }, getCooldownMS("mluck"))
                 return
             }
 
@@ -622,7 +622,7 @@ class Merchant extends Character {
             console.error(parent.entities)
         }
 
-        setTimeout(() => { this.luckLoop() }, getCooldownMS("mluck"))
+        setTimeout(async () => { this.luckLoop() }, getCooldownMS("mluck"))
     }
 }
 

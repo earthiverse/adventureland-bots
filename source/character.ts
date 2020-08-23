@@ -309,7 +309,7 @@ export abstract class Character {
         }
         if (changed) setMonstersInfo(monsters)
 
-        setTimeout(() => { this.infoLoop() }, 2000)
+        setTimeout(async () => { this.infoLoop() }, 2000)
     }
 
     public getMonsterHuntTargets(): MonsterName[] {
@@ -403,7 +403,7 @@ export abstract class Character {
         setTimeout(async () => { this.attackLoop() }, getCooldownMS("attack", true))
     }
 
-    protected scareLoop(): void {
+    protected async scareLoop(): Promise<void> {
         try {
             const targets = getEntities({ isAttackingUs: true, isMonster: true, isRIP: false })
             let wantToScare = false
@@ -432,14 +432,14 @@ export abstract class Character {
             }
             if (!isAvailable("scare") // On cooldown
                 || !wantToScare) { // Can't be easily killed
-                setTimeout(() => { this.scareLoop() }, getCooldownMS("scare"))
+                setTimeout(async () => { this.scareLoop() }, getCooldownMS("scare"))
                 return
             }
 
 
             if (parent.character.slots.orb.name == "jacko") {
                 // We have a jacko equipped
-                use_skill("scare")
+                await use_skill("scare")
                 reduce_cooldown("scare", Math.min(...parent.pings))
             } else {
                 // Check if we have a jacko in our inventory
@@ -447,14 +447,14 @@ export abstract class Character {
                 if (items.length) {
                     const jackoI = items[0].index
                     equip(jackoI) // Equip the jacko
-                    use_skill("scare") // Scare the monsters away
+                    await use_skill("scare") // Scare the monsters away
                     reduce_cooldown("scare", Math.min(...parent.pings))
                 }
             }
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.scareLoop() }, getCooldownMS("scare"))
+        setTimeout(async () => { this.scareLoop() }, getCooldownMS("scare"))
     }
 
     protected getMovementLocation(mtype: MonsterName): PositionReal {
@@ -624,7 +624,7 @@ export abstract class Character {
     protected moveLoop(): void {
         try {
             if (this.holdPosition || smart.moving) {
-                setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
+                setTimeout(async () => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }
 
@@ -639,7 +639,7 @@ export abstract class Character {
                     this.nGraphMove.stop()
                     // this.astar.smartMove(this.movementTarget.position, this.movementTarget.range)
                     this.nGraphMove.move(this.movementTarget.position, this.movementTarget.range)
-                    setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
+                    setTimeout(async () => { this.moveLoop() }, Math.max(400, parent.character.ping))
                     return
                 }
 
@@ -648,7 +648,7 @@ export abstract class Character {
                     // Same monster, new movement target
                     // this.astar.smartMove(this.movementTarget.position, this.movementTarget.range)
                     this.nGraphMove.move(this.movementTarget.position, this.movementTarget.range)
-                    setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
+                    setTimeout(async () => { this.moveLoop() }, Math.max(400, parent.character.ping))
                     return
                 }
             }
@@ -675,13 +675,13 @@ export abstract class Character {
                 if (Date.now() - this.nGraphMove.searchStartTime > 60000) {
                     this.nGraphMove.stop()
                 }
-                setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
+                setTimeout(async () => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }
 
             // Don't do anything if we're holding position for this monster
             if (this.targetPriority[this.movementTarget.target as MonsterName] && this.targetPriority[this.movementTarget.target as MonsterName].holdPositionFarm) {
-                setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
+                setTimeout(async () => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }
 
@@ -772,7 +772,7 @@ export abstract class Character {
                 }
 
                 move(escapePosition.x, escapePosition.y)
-                setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
+                setTimeout(async () => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }
 
@@ -780,7 +780,7 @@ export abstract class Character {
 
             // 3. Don't move if there's a monster we can attack from our current position
             if (inAttackRangeHighPriority.length) {
-                setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
+                setTimeout(async () => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }
 
@@ -799,7 +799,7 @@ export abstract class Character {
                 }
                 // this.astar.smartMove(closest, parent.character.range)
                 this.nGraphMove.move(closest, parent.character.range)
-                setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
+                setTimeout(async () => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }
 
@@ -816,13 +816,13 @@ export abstract class Character {
                 }
                 // this.astar.smartMove(closest, parent.character.range)
                 this.nGraphMove.move(closest, parent.character.range)
-                setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
+                setTimeout(async () => { this.moveLoop() }, Math.max(400, parent.character.ping))
                 return
             }
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.moveLoop() }, Math.max(400, parent.character.ping))
+        setTimeout(async () => { this.moveLoop() }, Math.max(400, parent.character.ping))
     }
 
     protected async healLoop(): Promise<void> {
@@ -830,10 +830,10 @@ export abstract class Character {
             if (parent.character.rip) {
                 // Respawn if we're dead
                 respawn()
-                setTimeout(() => { this.healLoop() }, getCooldownMS("use_town"))
+                setTimeout(async () => { this.healLoop() }, getCooldownMS("use_town"))
                 return
             } else if (!isAvailable("use_hp")) {
-                setTimeout(() => { this.healLoop() }, getCooldownMS("use_hp"))
+                setTimeout(async () => { this.healLoop() }, getCooldownMS("use_hp"))
                 return
             }
 
@@ -868,29 +868,29 @@ export abstract class Character {
                 && (!useHpPot
                     || (useHpPot.name == "hpot0" && (parent.character.hp <= parent.character.max_hp - 200 || parent.character.hp < 50))
                     || (useHpPot.name == "hpot1" && (parent.character.hp <= parent.character.max_hp - 400 || parent.character.hp < 50)))) {
-                use_skill("use_hp")
+                await use_skill("use_hp")
                 reduce_cooldown("use_hp", Math.min(...parent.pings))
                 reduce_cooldown("use_mp", Math.min(...parent.pings))
             } else if (mpRatio != 1
                 && (!useMpPot
                     || (useMpPot.name == "mpot0" && (parent.character.mp <= parent.character.max_mp - 300 || parent.character.mp < 50))
                     || (useMpPot.name == "mpot1" && (parent.character.mp <= parent.character.max_mp - 500 || parent.character.mp < 50)))) {
-                use_skill("use_mp")
+                await use_skill("use_mp")
                 reduce_cooldown("use_hp", Math.min(...parent.pings))
                 reduce_cooldown("use_mp", Math.min(...parent.pings))
             } else if (hpRatio < mpRatio) {
-                use_skill("regen_hp")
+                await use_skill("regen_hp")
                 reduce_cooldown("use_hp", Math.min(...parent.pings))
                 reduce_cooldown("use_mp", Math.min(...parent.pings))
             } else if (mpRatio < hpRatio) {
-                use_skill("regen_mp")
+                await use_skill("regen_mp")
                 reduce_cooldown("use_hp", Math.min(...parent.pings))
                 reduce_cooldown("use_mp", Math.min(...parent.pings))
             }
         } catch (error) {
             console.error(error)
         }
-        setTimeout(() => { this.healLoop() }, getCooldownMS("use_hp"))
+        setTimeout(async () => { this.healLoop() }, getCooldownMS("use_hp"))
     }
 
 
