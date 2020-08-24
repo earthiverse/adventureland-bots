@@ -238,7 +238,7 @@ export class NGraphMove {
         // 2A: Make the y_lines unwalkable
         for (const yLine of G.geometry[map].y_lines) {
             for (let y = Math.max(0, yLine[0] - G.geometry[map].min_y - parent.character.base.vn - EXTRA_PADDING); y <= yLine[0] - G.geometry[map].min_y + parent.character.base.v + EXTRA_PADDING && y < mapHeight; y++) {
-                for (let x = Math.max(0, yLine[1] - G.geometry[map].min_x - parent.character.base.h + 1 - EXTRA_PADDING); x <= yLine[2] - G.geometry[map].min_x + parent.character.base.h + EXTRA_PADDING && x < mapWidth; x++) {
+                for (let x = Math.max(0, yLine[1] - G.geometry[map].min_x - parent.character.base.h - EXTRA_PADDING); x <= yLine[2] - G.geometry[map].min_x + parent.character.base.h + EXTRA_PADDING && x < mapWidth; x++) {
                     grid[y][x] = UNWALKABLE
                 }
             }
@@ -720,9 +720,11 @@ export class NGraphMove {
             if ((!linkData && !can_move_to(toData.x, toData.y)) || parent.character.map !== fromData.map) {
                 // We got lost somewhere, retry
                 console.warn("NGraphMove movement failed. We're going to teleport to town and try again.")
-                console.log("----- Path -----")
-                console.log(path)
-                console.log("----------------")
+                console.log("---- Link -----")
+                console.log(linkData)
+                console.log("---------------")
+                console.log("----- Character Position -----")
+                console.log(`{map: "${parent.character.map}", x: ${parent.character.real_x}, y: ${parent.character.real_y}`)
                 use_skill("town")
                 await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + TOWN_TIME))
                 return this.move(goal, finishDistanceTolerance)
