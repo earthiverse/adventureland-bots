@@ -1,5 +1,5 @@
 import { Character } from "./character"
-import { MonsterName, Entity, ItemName } from "./definitions/adventureland"
+import { MonsterName, Entity } from "./definitions/adventureland"
 import { transferItemsToMerchant, sellUnwantedItems, transferGoldToMerchant } from "./trade"
 import { TargetPriorityList } from "./definitions/bots"
 import { isPlayer, getCooldownMS, isAvailable, calculateDamageRange, getEntities } from "./functions"
@@ -9,7 +9,7 @@ class Ranger extends Character {
     targetPriority: TargetPriorityList = {
         "arcticbee": {
             "priority": 0,
-            "equip": ["hbow", "t2quiver", "orbg"]
+            "equip": ["crossbow", "t2quiver", "orbg"]
         },
         "armadillo": {
             "priority": 0,
@@ -22,7 +22,7 @@ class Ranger extends Character {
                 "x": -200,
                 "y": -450
             },
-            "equip": ["bowofthedead", "t2quiver", "orbg"]
+            "equip": ["firebow", "t2quiver", "orbg"]
         },
         "bbpompom": {
             "coop": ["priest"],
@@ -272,7 +272,7 @@ class Ranger extends Character {
         },
         "scorpion": {
             "priority": 250,
-            "equip": ["bowofthedead", "t2quiver", "orbg"]
+            "equip": ["firebow", "t2quiver", "orbg"]
         },
         "snake": {
             // Farm them on the main map because of the +1000% luck and gold bonus chances
@@ -290,7 +290,7 @@ class Ranger extends Character {
         },
         "spider": {
             "priority": 100,
-            "equip": ["bowofthedead", "t2quiver", "orbg"]
+            "equip": ["firebow", "t2quiver", "orbg"]
         },
         "squig": {
             "priority": 100,
@@ -302,7 +302,7 @@ class Ranger extends Character {
         },
         "stoneworm": {
             "priority": 0,
-            "equip": ["bowofthedead", "t2quiver", "jacko"]
+            "equip": ["firebow", "t2quiver", "jacko"]
         },
         "tortoise": {
             "priority": 0,
