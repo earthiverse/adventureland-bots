@@ -233,12 +233,12 @@ class Merchant extends Character {
             if (tokens.q > 1) {
                 // Put the tokens in the inventory
                 unequip("trade1")
-                await sleep(Math.min(...parent.pings))
+                await sleep(Math.min(...parent.pings) * 2)
 
                 // Put the tokens back in the trade slot
                 tokens = findItem("monstertoken")
-                trade(tokens.index, "trade1", 1000000, tokens.q - 1)
-                await sleep(Math.min(...parent.pings))
+                trade(tokens.index, "trade1", 1000000, Math.min(9999, tokens.q - 1))
+                await sleep(Math.min(...parent.pings) * 2)
             }
 
             // I want a +10 bow eventually
