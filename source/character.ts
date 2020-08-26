@@ -313,8 +313,12 @@ export abstract class Character {
     }
 
     public getMonsterHuntTargets(): MonsterName[] {
-        const types: MonsterName[] = []
-        let leastTimeRemaining = Number.MAX_VALUE
+        const hunts: {
+            target: MonsterName
+            priority: number
+            timeLeft: number
+        }[] = []
+
         const party: PartyInfo = getPartyInfo()
         for (const memberName of parent.party_list) {
             // NOTE: TODO: Gonna check if not checking parent.entities improves the lagginess when we are between monster hunts.
@@ -322,30 +326,43 @@ export abstract class Character {
             const member = party[memberName]
             if (!member) continue // No information yet
             if (!member.s.monsterhunt || member.s.monsterhunt.c == 0) continue // Character doesn't have a monster hunt, or it's (almost) finished
-            if (!this.targetPriority[member.s.monsterhunt.id]) continue // Not in our target priority
+            const target = member.s.monsterhunt.id
+            if (!this.targetPriority[target]) continue // Not in our target priority
 
             // Check if we can co-op
-            const coop = this.targetPriority[member.s.monsterhunt.id].coop
+            const coop = this.targetPriority[target].coop
             if (coop) {
                 const availableTypes = getPartyMemberTypes()
                 const missingTypes = coop.filter(x => !availableTypes.has(x))
                 if (missingTypes.length) continue
             }
 
-            // TODO: Check if we can do enough damage to complete the monster hunt in the given time
-
-            // Sort by time left.
-            // TODO: Improve prioritization. For example, frogs are easy, so do them first
-            const timeLeft = member.s.monsterhunt.ms - (Date.now() - member.last_ms.getTime())
-            if (timeLeft < leastTimeRemaining) {
-                leastTimeRemaining = timeLeft
-                types.unshift(member.s.monsterhunt.id)
-            } else {
-                types.push(member.s.monsterhunt.id)
+            let priority = 0
+            if (["fvampire", "goldenbat", "greenjr", "jr", "mvampire", "phoenix", "pinkgoo", "snowman", "wabbit"].includes(target)) {
+                priority = 1
             }
+
+            const timeLeft = member.s.monsterhunt.ms - (Date.now() - member.last_ms.getTime())
+
+            hunts.push({
+                target: target,
+                priority: priority,
+                timeLeft: timeLeft,
+            })
         }
 
-        return types
+        hunts.sort((a, b) => {
+            // 1. Priority
+            if (a.priority !== b.priority) return b.priority - a.priority
+
+            // 2. Time left
+            return a.timeLeft - b.timeLeft
+        })
+
+        return hunts.reduce((a, v) => {
+            a.push(v.target)
+            return a
+        }, [])
     }
 
     public shouldSwitchServer(): boolean {
