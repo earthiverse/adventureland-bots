@@ -8,10 +8,10 @@ const PING_EVERY_MS = 30000
 const MAX_PINGS = 100
 
 export class Game {
-    private lastUpdate: number
-    private promises: Promise<boolean>[] = []
-    private pingNum = 1
-    private pingMap = new Map<string, number>()
+    protected lastUpdate: number
+    protected promises: Promise<boolean>[] = []
+    protected pingNum = 1
+    protected pingMap = new Map<string, number>()
 
     public active = false
     public socket: SocketIOClient.Socket
@@ -135,7 +135,7 @@ export class Game {
         if (data.user) this.bank = data.user
     }
 
-    private parseEntities(data: EntitiesData) {
+    protected parseEntities(data: EntitiesData): void {
         // console.log("socket: entities!")
         // console.log("updating entities")
         // console.log(data)
@@ -495,7 +495,6 @@ export class Game {
     }
 }
 
-// TODO: Compensate movement
 export class PingCompensatedGame extends Game {
     async connect(auth: string, character: string, user: string): Promise<unknown> {
         const promise = super.connect(auth, character, user)
@@ -510,6 +509,44 @@ export class PingCompensatedGame extends Game {
         }
 
         this.nextSkill.set(skill, new Date(next.getTime() - pingCompensation))
+    }
+
+    protected parseEntities(data: EntitiesData): void {
+        super.parseEntities(data)
+
+        const pingCompensation = Math.min(...this.pings) / 2
+
+        // Update positions based on ping compensation
+        for (const monster of data.monsters) {
+            const entity = this.entities.get(monster.id)
+            if (!entity.moving) continue
+            const distanceTravelled = entity.speed * pingCompensation / 1000
+            const angle = Math.atan2(entity.going_y - entity.y, entity.going_x - entity.x)
+            const distanceToGoal = Tools.distance({ x: entity.x, y: entity.y }, { x: entity.going_x, y: entity.going_y })
+            if (distanceTravelled > distanceToGoal) {
+                entity.moving = false
+                entity.x = entity.going_x
+                entity.y = entity.going_y
+            } else {
+                entity.x = entity.x + Math.cos(angle) * distanceTravelled
+                entity.y = entity.y + Math.sin(angle) * distanceTravelled
+            }
+        }
+        for (const player of data.players) {
+            const entity = this.players.get(player.id)
+            if (!entity.moving) continue
+            const distanceTravelled = entity.speed * pingCompensation / 1000
+            const angle = Math.atan2(entity.going_y - entity.y, entity.going_x - entity.x)
+            const distanceToGoal = Tools.distance({ x: entity.x, y: entity.y }, { x: entity.going_x, y: entity.going_y })
+            if (distanceTravelled > distanceToGoal) {
+                entity.moving = false
+                entity.x = entity.going_x
+                entity.y = entity.going_y
+            } else {
+                entity.x = entity.x + Math.cos(angle) * distanceTravelled
+                entity.y = entity.y + Math.sin(angle) * distanceTravelled
+            }
+        }
     }
 
     public pingLoop(): void {
