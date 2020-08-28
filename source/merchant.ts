@@ -46,9 +46,8 @@ class Merchant extends Character {
             "dexscroll", "intscroll", "strscroll",
             "monstertoken",
 
-            // Temporary
-            "platinumnugget",
-            "bow"
+            // Temporary -- We're going to make orb of beginnings!
+            "ascale", "pleather", "cscale", "bfur"
         )
     }
 
@@ -239,6 +238,15 @@ class Merchant extends Character {
                 tokens = findItem("monstertoken")
                 trade(tokens.index, "trade1", 1000000, Math.min(9999, tokens.q - 1))
                 await sleep(Math.min(...parent.pings) * 2)
+            }
+
+            // We're making orb of beginnings!
+            const ascale = findItem("ascale")
+            const cscale = findItem("cscale")
+            const pleather = findItem("pleather")
+            const bfur = findItem("bfur")
+            if (ascale.q > 1 && cscale.q > 1 && pleather.q > 1 && bfur.q > 1 && numItems < 35) {
+                auto_craft("orbg")
             }
 
             // I want a +10 bow eventually
