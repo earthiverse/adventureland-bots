@@ -69,6 +69,11 @@ class Ranger extends Character {
         },
         "cgoo": {
             "priority": 0,
+            "farmingPosition": {
+                "map": "arena",
+                "x": 0,
+                "y": -200
+            },
             "equip": ["hbow", "t2quiver", "jacko"]
         },
         "crab": {

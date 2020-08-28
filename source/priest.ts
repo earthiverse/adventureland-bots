@@ -85,6 +85,11 @@ class Priest extends Character {
         },
         "cgoo": {
             "priority": DIFFICULT,
+            "farmingPosition": {
+                "map": "arena",
+                "x": 700,
+                "y": -400
+            },
             "equip": ["jacko"]
         },
         "crab": {

@@ -692,7 +692,7 @@ export class NGraphMove {
         this.moveStartTime = Date.now()
         for (let i = 0; i < path.length;) {
             const fromData = path[i][0]
-            let toData
+            let toData: NodeData
             if (i == path.length - 1) {
                 toData = getCloseTo(path[i][1])
             } else {
@@ -720,11 +720,15 @@ export class NGraphMove {
             if ((!linkData && !can_move_to(toData.x, toData.y)) || parent.character.map !== fromData.map) {
                 // We got lost somewhere, retry
                 console.warn("NGraphMove movement failed. We're going to teleport to town and try again.")
-                console.log("---- Link -----")
-                console.log(linkData)
+                console.log("---- Path -----")
+                console.log(`${path}`)
                 console.log("---------------")
+                console.log("---- Target Destination -----")
+                console.log(`{map: "${toData.map}", x: ${toData.x}", y: ${toData.y}}`)
+                console.log("-----------------------------")
                 console.log("----- Character Position -----")
                 console.log(`{map: "${parent.character.map}", x: ${parent.character.real_x}, y: ${parent.character.real_y}`)
+                console.log("------------------------------")
                 use_skill("town")
                 await new Promise(resolve => setTimeout(resolve, Math.max(...parent.pings) + TOWN_TIME))
                 return this.move(goal, finishDistanceTolerance)
