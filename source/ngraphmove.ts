@@ -28,7 +28,7 @@ export class NGraphMove {
     private static instance: NGraphMove
     private grids: Grids = {}
     public graph: Graph<NodeData, LinkData> = createGraph({ multigraph: true })
-    private pathfinder = path.aStar(this.graph, {
+    private pathfinder = path.nba(this.graph, {
         distance(fromNode, toNode, link) {
             if (link.data && link.data.type == "transport") {
                 // We are using the transporter
