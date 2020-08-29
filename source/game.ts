@@ -519,7 +519,7 @@ export class PingCompensatedGame extends Game {
         // Update positions based on ping compensation
         for (const monster of data.monsters) {
             const entity = this.entities.get(monster.id)
-            if (!entity.moving) continue
+            if (!entity || !entity.moving) continue
             const distanceTravelled = entity.speed * pingCompensation / 1000
             const angle = Math.atan2(entity.going_y - entity.y, entity.going_x - entity.x)
             const distanceToGoal = Tools.distance({ x: entity.x, y: entity.y }, { x: entity.going_x, y: entity.going_y })
@@ -534,7 +534,7 @@ export class PingCompensatedGame extends Game {
         }
         for (const player of data.players) {
             const entity = this.players.get(player.id)
-            if (!entity.moving) continue
+            if (!entity || !entity.moving) continue
             const distanceTravelled = entity.speed * pingCompensation / 1000
             const angle = Math.atan2(entity.going_y - entity.y, entity.going_x - entity.x)
             const distanceToGoal = Tools.distance({ x: entity.x, y: entity.y }, { x: entity.going_x, y: entity.going_y })

@@ -5,6 +5,7 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
+    "@neopass/wordlist": "^0.5.2",
     "cheerio": "^1.0.0-rc.3",
     "dotenv": "^8.2.0",
     "ngraph.graph": "^19.1.0",
