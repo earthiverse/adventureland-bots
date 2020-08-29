@@ -721,7 +721,7 @@ export class NGraphMove {
                 // We got lost somewhere, retry
                 console.warn("NGraphMove movement failed. We're going to teleport to town and try again.")
                 console.log("---- Path -----")
-                console.log(`${path}`)
+                console.log(path)
                 console.log("---------------")
                 console.log("---- Target Destination -----")
                 console.log(`{map: "${toData.map}", x: ${toData.x}", y: ${toData.y}}`)
