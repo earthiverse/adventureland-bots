@@ -33,8 +33,11 @@ async function startWarrior(auth: string, character: string, user: string, serve
                 }
             }
 
-            // Taunt a new enemy if we can
-            if (numTargeting + closeTargets < 3) {
+            if (closeTargets > 0 && numTargeting + closeTargets < 3) {
+                // Taunt no more than 3 enemies
+                await bot.agitate()
+            } else if(closeTargets > 0 && game.character.hp / game.character.max_hp > 0.75) {
+                // Taunt all enemies if we have a lot of HP
                 await bot.agitate()
             }
         } catch (e) {
