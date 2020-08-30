@@ -550,29 +550,6 @@ export class PingCompensatedGame extends Game {
         }
     }
 
-    protected parseGameResponse(data: GameResponseData): void {
-        if (typeof data == "string") {
-            console.info(`Game Response: ${data}`)
-        } else {
-            console.info(`Game Response: ${data.response}`)
-        }
-
-        // Get ping compensation
-        let pingCompensation = 0
-        if (this.pings.length > 0) {
-            pingCompensation = Math.min(...this.pings)
-        }
-
-        // Adjust cooldowns
-        if ((data as GameResponseDataObject).response == "cooldown") {
-            const skill = (data as GameResponseCooldown).skill
-            if (skill) {
-                const cooldown = (data as GameResponseCooldown).ms
-                this.setNextSkill(skill, new Date(Date.now() + Math.ceil(cooldown) - pingCompensation))
-            }
-        }
-    }
-
     public pingLoop(): void {
         this.sendPing()
         setTimeout(async () => { this.pingLoop() }, PING_EVERY_MS)
