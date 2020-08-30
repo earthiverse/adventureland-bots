@@ -143,6 +143,7 @@ export abstract class Character {
                 for (const slot in entity.slots) {
                     const info = entity.slots[slot as TradeSlotType]
                     if (!info) continue // Empty slot
+                    if (info.giveaway) continue // It's a giveaway, it's not for sale
                     if (info.b) continue // Item isn't for sale, they're buying it
                     if (!info.rid) continue // Item isn't for sale
                     if (!this.itemsToBuy.has(info.name)) continue // We don't want to buy it
