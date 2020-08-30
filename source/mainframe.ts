@@ -18,23 +18,39 @@ async function startMainframeBot(auth: string, character: string, user: string, 
         bot.game.disconnect()
     })
 
+    async function lootLoop() {
+        try {
+            for (const id of bot.game.chests.keys()) {
+                bot.game.socket.emit("open_chest", { id: id })
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { lootLoop() }, 1000)
+    }
+    lootLoop()
+
     async function submitLoop() {
         if (game.players.size > 0) {
 
             // Wait for players to go away
-            setTimeout(async () => { submitLoop() }, 1000)
+            console.log("waiting for players to go away")
+            console.log(game.players.keys())
+            setTimeout(async () => { submitLoop() }, 10000)
             return
         }
         const word = words.pop()
         const then = Date.now()
         const mainframeCheck = (data: { owner: string, message: string, id: string }) => {
+            console.log(`${data.owner}: ${data.message}`)
             if (data.owner == "mainframe") {
-                console.log(`${word} -> ${data.message}`)
                 bot.game.socket.removeListener("chat_log", mainframeCheck)
                 setTimeout(async () => { submitLoop() }, 100 - (Date.now() - then))
             }
         }
         bot.game.socket.on("chat_log", mainframeCheck)
+        console.log(`give ${word}`)
         bot.game.socket.emit("eval", { command: `give ${word}` })
     }
     submitLoop()

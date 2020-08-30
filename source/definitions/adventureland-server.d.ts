@@ -236,6 +236,8 @@ export type GameResponseDataString =
     /** When a merchant tries to start a monster hunt */
     | "monsterhunt_merchant"
     | "monsterhunt_started"
+    /** When you attack or use a skill with "id" set to "null" */
+    | "no_target"
     /** When you try to send an item to another character, but they don't have room for it in their inventory */
     | "send_no_space"
     | "skill_cant_incapacitated"

@@ -2,6 +2,7 @@ import { Game } from "./game.js"
 import { CharacterData, ActionData, NewMapData, EvalData, EntityData, GameResponseData, GameResponseBuySuccess, GameResponseDataObject, DeathData, GameResponseAttackFailed, GameResponseItemSent, PlayerData, GameResponseBankRestrictions, DisappearingTextData, UpgradeData, PartyData, GameLogData, GameResponseAttackTooFar, GameResponseCooldown } from "./definitions/adventureland-server"
 import { SkillName, MonsterName, ItemName, SlotType, ItemInfo } from "./definitions/adventureland"
 import { Tools } from "./tools.js"
+import { Pathfinder } from "./pathfinder.js"
 
 const TIMEOUT = 1000
 
@@ -82,6 +83,7 @@ class BotBase {
 
     // TODO: Return attack info
     // TODO: Add 'notthere' (e.g. calling attack("12345") returns ["notthere", {place: "attack"}])
+    // TODO: Check if cooldown is sent after attack
     public attack(id: string): Promise<string> {
         if (!this.game.entities.has(id) && !this.game.players.has(id)) return Promise.reject(`No Entity with ID '${id}'`)
 
@@ -395,15 +397,22 @@ class BotBase {
         return pontyItems
     }
 
-    // TODO: Can we do this without truncing?
     public move(x: number, y: number): Promise<unknown> {
+        const pathfinder = Pathfinder.getInstance(this.game.G)
+        const safeTo = pathfinder.getSafeWalkTo(
+            { map: this.game.character.map, x: this.game.character.x, y: this.game.character.y },
+            { map: this.game.character.map, x, y })
+        if (safeTo.x !== x || safeTo.y !== y) {
+            console.warn(`move: We can't move to {x: ${x}, y: ${y}} safely. We will move to {x: ${safeTo.x}, y: ${safeTo.y}.}`)
+        }
+
         const moveFinished = new Promise((resolve, reject) => {
             let dealtWith = false
-            const distance = Tools.distance(this.game.character, { x: Math.trunc(x), y: Math.trunc(y) })
+            const distance = Tools.distance(this.game.character, { x: safeTo.x, y: safeTo.y })
             const moveFinishedCheck = (data: CharacterData) => {
                 // TODO: Improve this to check if we moved again, and if we did, reject()
                 if (data.moving) return
-                if (data.x == Math.trunc(x) && data.y == Math.trunc(y)) {
+                if (data.x == safeTo.x && data.y == safeTo.y) {
                     if (!dealtWith) {
                         this.game.socket.removeListener("player", moveFinishedCheck)
                         resolve()
@@ -424,8 +433,8 @@ class BotBase {
         this.game.socket.emit("move", {
             x: this.game.character.x,
             y: this.game.character.y,
-            going_x: Math.trunc(x),
-            going_y: Math.trunc(y),
+            going_x: safeTo.x,
+            going_y: safeTo.y,
             m: this.game.character.m
         })
         return moveFinished
@@ -772,7 +781,9 @@ export class RangerBot extends Bot {
                 }
             }
 
+            // TODO: Confirm that the cooldown is always sent after the projectiles
             const cooldownCheck = (data: EvalData) => {
+                // TODO: Change this to a true/false match with 5shot hardcoded in the regex for performance
                 const skillReg = /skill_timeout\s*\(\s*['"](.+?)['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.exec(data.code)
                 if (skillReg) {
                     const skill = skillReg[1] as SkillName
@@ -812,7 +823,9 @@ export class RangerBot extends Bot {
                 }
             }
 
+            // TODO: Confirm that the cooldown is always sent after the projectiles
             const cooldownCheck = (data: EvalData) => {
+                // TODO: Change this to a true/false match with 3shot hardcoded in the regex for performance
                 const skillReg = /skill_timeout\s*\(\s*['"](.+?)['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.exec(data.code)
                 if (skillReg) {
                     const skill = skillReg[1] as SkillName
@@ -838,5 +851,81 @@ export class RangerBot extends Bot {
             ids: [target1, target2, target3]
         })
         return attackStarted
+    }
+}
+
+/** Implement functions that only apply to warriors */
+export class WarriorBot extends Bot {
+    // TODO: Investigate why the cooldown check doesn't work.
+    public agitate(): Promise<unknown> {
+        const agitated = new Promise((resolve, reject) => {
+            const cooldownCheck = (data: EvalData) => {
+                // TODO: Change this to a true/false match with agitate hardcoded in the regex for performance
+                const skillReg = /skill_timeout\s*\(\s*['"](.+?)['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.exec(data.code)
+                if (skillReg) {
+                    const skill = skillReg[1] as SkillName
+                    if (skill == "agitate") {
+                        this.game.socket.removeListener("eval", cooldownCheck)
+                        resolve()
+                    }
+                }
+            }
+
+            setTimeout(() => {
+                this.game.socket.removeListener("eval", cooldownCheck)
+                reject(`agitate timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.game.socket.on("eval", cooldownCheck)
+        })
+
+        this.game.socket.emit("skill", {
+            name: "agitate"
+        })
+        return agitated
+    }
+
+    // TODO: Investigate if cooldown is before or after the "action" event. We are getting lots of "failed due to cooldowns"
+    public taunt(target: string): Promise<string> {
+        const tauntStarted = new Promise<string>((resolve, reject) => {
+            const tauntCheck = (data: ActionData) => {
+                if (data.attacker == this.game.character.id
+                    && data.type == "taunt"
+                    && data.target == target) {
+                    resolve(data.pid)
+                    this.game.socket.removeListener("action", tauntCheck)
+                }
+            }
+
+            const failCheck = (data: GameResponseData) => {
+                if ((data as GameResponseDataObject).response == "no_target") {
+                    this.game.socket.removeListener("action", tauntCheck)
+                    this.game.socket.removeListener("game_response", failCheck)
+                    reject(`Taunt on ${target} failed (no target).`)
+                } else if ((data as GameResponseDataObject).response == "too_far") {
+                    if ((data as GameResponseAttackTooFar).id == target) {
+                        this.game.socket.removeListener("action", tauntCheck)
+                        this.game.socket.removeListener("game_response", failCheck)
+                        reject(`${target} is too far away to taunt (dist: ${((data as GameResponseAttackTooFar).dist)}).`)
+                    }
+                } else if ((data as GameResponseDataObject).response == "cooldown") {
+                    if ((data as GameResponseCooldown).id == target) {
+                        this.game.socket.removeListener("action", tauntCheck)
+                        this.game.socket.removeListener("game_response", failCheck)
+                        reject(`Taunt on ${target} failed due to cooldown (ms: ${((data as GameResponseCooldown).ms)}).`)
+                    }
+                }
+            }
+
+            setTimeout(() => {
+                this.game.socket.removeListener("action", tauntCheck)
+                this.game.socket.removeListener("game_response", failCheck)
+                reject(`taunt timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.game.socket.on("action", tauntCheck)
+            this.game.socket.on("game_response", failCheck)
+        })
+
+        this.game.socket.emit("skill", { name: "taunt", id: target })
+        return tauntStarted
     }
 }

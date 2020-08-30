@@ -235,7 +235,7 @@ export class Game {
         }
     }
 
-    private parseGameResponse(data: GameResponseData) {
+    protected parseGameResponse(data: GameResponseData): void {
         if (typeof data == "string") {
             console.info(`Game Response: ${data}`)
         } else {
@@ -354,6 +354,7 @@ export class Game {
                 this.projectiles.delete(data.pid)
                 this.entities.delete(data.id)
             } else if (data.damage) {
+                this.projectiles.delete(data.pid)
                 const entity = this.entities.get(data.id)
                 if (entity) {
                     entity.hp = entity.hp - data.damage
@@ -502,7 +503,7 @@ export class PingCompensatedGame extends Game {
     }
 
     protected setNextSkill(skill: SkillName, next: Date): void {
-        // TODO: Get ping compensation
+        // Get ping compensation
         let pingCompensation = 0
         if (this.pings.length > 0) {
             pingCompensation = Math.min(...this.pings)
@@ -545,6 +546,29 @@ export class PingCompensatedGame extends Game {
             } else {
                 entity.x = entity.x + Math.cos(angle) * distanceTravelled
                 entity.y = entity.y + Math.sin(angle) * distanceTravelled
+            }
+        }
+    }
+
+    protected parseGameResponse(data: GameResponseData): void {
+        if (typeof data == "string") {
+            console.info(`Game Response: ${data}`)
+        } else {
+            console.info(`Game Response: ${data.response}`)
+        }
+
+        // Get ping compensation
+        let pingCompensation = 0
+        if (this.pings.length > 0) {
+            pingCompensation = Math.min(...this.pings)
+        }
+
+        // Adjust cooldowns
+        if ((data as GameResponseDataObject).response == "cooldown") {
+            const skill = (data as GameResponseCooldown).skill
+            if (skill) {
+                const cooldown = (data as GameResponseCooldown).ms
+                this.setNextSkill(skill, new Date(Date.now() + Math.ceil(cooldown) - pingCompensation))
             }
         }
     }
