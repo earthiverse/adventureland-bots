@@ -1,5 +1,5 @@
 import { Game } from "./game.js"
-import { CharacterData, ActionData, NewMapData, EvalData, EntityData, GameResponseData, GameResponseBuySuccess, GameResponseDataObject, DeathData, GameResponseAttackFailed, GameResponseItemSent, PlayerData, GameResponseBankRestrictions, DisappearingTextData, UpgradeData, PartyData, GameLogData, GameResponseAttackTooFar, GameResponseCooldown } from "./definitions/adventureland-server"
+import { CharacterData, ActionData, NewMapData, EvalData, EntityData, GameResponseData, GameResponseBuySuccess, GameResponseDataObject, DeathData, GameResponseAttackFailed, GameResponseItemSent, PlayerData, GameResponseBankRestrictions, DisappearingTextData, UpgradeData, PartyData, GameLogData, GameResponseAttackTooFar, GameResponseCooldown, UIData } from "./definitions/adventureland-server"
 import { SkillName, MonsterName, ItemName, SlotType, ItemInfo } from "./definitions/adventureland"
 import { Tools } from "./tools.js"
 import { Pathfinder } from "./pathfinder.js"
@@ -496,6 +496,38 @@ class BotBase {
         return regenReceived
     }
 
+    public scare(): Promise<string[]> {
+        const scared = new Promise<string[]>((resolve, reject) => {
+            // TODO: Move this typescript to a definition
+            let ids: string[]
+            const idsCheck = (data: UIData) => {
+                if (data.type == "scare") {
+                    ids = data.ids
+                    this.game.socket.removeListener("ui", idsCheck)
+                }
+            }
+
+            const cooldownCheck = (data: EvalData) => {
+                if (/skill_timeout\s*\(\s*['"]scare['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
+                    this.game.socket.removeListener("ui", idsCheck)
+                    this.game.socket.removeListener("eval", cooldownCheck)
+                    resolve(ids)
+                }
+            }
+
+            setTimeout(() => {
+                this.game.socket.removeListener("ui", idsCheck)
+                this.game.socket.removeListener("eval", cooldownCheck)
+                reject(`sendItem timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.game.socket.on("ui", idsCheck)
+            this.game.socket.on("eval", cooldownCheck)
+        })
+
+        this.game.socket.emit("skill", { name: "scare" })
+        return scared
+    }
+
     public sendItem(to: string, inventoryPos: number, quantity = 1): Promise<unknown> {
         if (!this.game.players.has(to)) return Promise.reject(`"${to}" is not nearby.`)
         if (!this.game.character.items[inventoryPos]) return Promise.reject(`No item in inventory slot ${inventoryPos}.`)
@@ -519,6 +551,7 @@ class BotBase {
                     resolve()
                 }
             }
+
             setTimeout(() => {
                 this.game.socket.removeListener("game_response", sentCheck)
                 reject(`sendItem timeout (${TIMEOUT}ms)`)
@@ -783,15 +816,10 @@ export class RangerBot extends Bot {
 
             // TODO: Confirm that the cooldown is always sent after the projectiles
             const cooldownCheck = (data: EvalData) => {
-                // TODO: Change this to a true/false match with 5shot hardcoded in the regex for performance
-                const skillReg = /skill_timeout\s*\(\s*['"](.+?)['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.exec(data.code)
-                if (skillReg) {
-                    const skill = skillReg[1] as SkillName
-                    if (skill == "5shot") {
-                        this.game.socket.removeListener("action", attackCheck)
-                        this.game.socket.removeListener("eval", cooldownCheck)
-                        resolve(projectiles)
-                    }
+                if (/skill_timeout\s*\(\s*['"]5shot['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
+                    this.game.socket.removeListener("action", attackCheck)
+                    this.game.socket.removeListener("eval", cooldownCheck)
+                    resolve(projectiles)
                 }
             }
 
@@ -825,15 +853,10 @@ export class RangerBot extends Bot {
 
             // TODO: Confirm that the cooldown is always sent after the projectiles
             const cooldownCheck = (data: EvalData) => {
-                // TODO: Change this to a true/false match with 3shot hardcoded in the regex for performance
-                const skillReg = /skill_timeout\s*\(\s*['"](.+?)['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.exec(data.code)
-                if (skillReg) {
-                    const skill = skillReg[1] as SkillName
-                    if (skill == "3shot") {
-                        this.game.socket.removeListener("action", attackCheck)
-                        this.game.socket.removeListener("eval", cooldownCheck)
-                        resolve(projectiles)
-                    }
+                if (/skill_timeout\s*\(\s*['"]3shot['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
+                    this.game.socket.removeListener("action", attackCheck)
+                    this.game.socket.removeListener("eval", cooldownCheck)
+                    resolve(projectiles)
                 }
             }
 
@@ -860,14 +883,9 @@ export class WarriorBot extends Bot {
     public agitate(): Promise<unknown> {
         const agitated = new Promise((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
-                // TODO: Change this to a true/false match with agitate hardcoded in the regex for performance
-                const skillReg = /skill_timeout\s*\(\s*['"](.+?)['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.exec(data.code)
-                if (skillReg) {
-                    const skill = skillReg[1] as SkillName
-                    if (skill == "agitate") {
-                        this.game.socket.removeListener("eval", cooldownCheck)
-                        resolve()
-                    }
+                if (/skill_timeout\s*\(\s*['"]agitate['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
+                    this.game.socket.removeListener("eval", cooldownCheck)
+                    resolve()
                 }
             }
 

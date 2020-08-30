@@ -446,6 +446,38 @@ export type StartData = CharacterData & {
     entities: EntitiesData
 }
 
+export type UIData = {
+    type: "mluck"
+    from: string
+    to: string
+} | {
+    type: "scare"
+    name: string
+    ids: string[]
+} | {
+    type: "+$"
+    // TODO: Is there a type for these?
+    id: "basics" | "scrolls" | string
+    /** The character who bought the item */
+    name: string
+    item: {
+        name: ItemName
+        q: number
+    }
+} | {
+    type: "-$"
+    // TODO: Is there a type for these?
+    id: "basics" | "scrolls" | string
+    /** The character who sold the item */
+    name: string
+    item: {
+        name: ItemName
+        q: number
+    }
+    /** The slot number where the item was being stored in inventory. */
+    num: string
+}
+
 export type UpgradeData = {
     type: "compound" | "exchange" | "upgrade" | string
     /** 0 = fail, 1 = success */
