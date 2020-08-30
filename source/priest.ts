@@ -335,6 +335,12 @@ class Priest extends Character {
             "priority": DIFFICULT,
             "equip": ["jacko"]
         },
+        "tinyp": {
+            "priority": 1000,
+            "equip": ["orbg"],
+            "attackOnlyWhenImmobile": true,
+            "coop": ["warrior"]
+        },
         "tortoise": {
             "priority": EASY,
             "equip": ["orbg"]

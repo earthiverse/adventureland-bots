@@ -1257,6 +1257,9 @@ export abstract class Character {
             if ((smart.moving /*|| this.astar.isMoving()*/ || this.nGraphMove.isMoving()) && (this.movementTarget && this.movementTarget.target && this.movementTarget.target != e.mtype) && this.targetPriority[e.mtype].holdAttackWhileMoving) return false // Holding attacks while moving
             if (this.targetPriority[e.mtype].holdAttackInEntityRange && distanceToEntity <= e.range) return false // Holding attacks in range
 
+            // Only attack if immobile
+            if (this.targetPriority[e.mtype].attackOnlyWhenImmobile && e.s && !(e.s.stunned)) return false
+
             // Don't attack if we have it as a coop target, but we don't have everyone there.
             if (this.targetPriority[e.mtype].coop) {
                 const availableTypes = [parent.character.ctype]

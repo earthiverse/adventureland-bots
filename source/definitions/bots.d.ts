@@ -16,6 +16,9 @@ export interface TargetPriorityInfo {
     /** If true, we won't move to attack the monsters. Use this with map, x, and y to go to a safe (unreachable) spot. */
     holdPositionFarm?: boolean;
 
+    /** If true, we will only attack the monster if it is immobile (e.g. bashed). Used to kill tinyp. */
+    attackOnlyWhenImmobile?: boolean;
+
     farmingPosition?: PositionReal;
     /* A list of ideal items to equip to bettter deal with these monsters */
     equip?: ItemName[];

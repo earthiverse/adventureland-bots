@@ -309,6 +309,12 @@ class Ranger extends Character {
             "priority": 0,
             "equip": ["firebow", "t2quiver", "jacko"]
         },
+        "tinyp": {
+            "priority": 1000,
+            "equip": ["firebow", "quiver", "orbg"],
+            "attackOnlyWhenImmobile": true,
+            "coop": ["warrior"]
+        },
         "tortoise": {
             "priority": 0,
             "equip": ["hbow", "t2quiver", "orbg"]

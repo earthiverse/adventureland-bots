@@ -234,6 +234,11 @@ class Warrior extends Character {
             "priority": EASY,
             "equip": ["bataxe", "orbg"]
         },
+        "tinyp": {
+            "priority": SPECIAL,
+            "equip": ["basher", "orbg"],
+            "attackOnlyWhenImmobile": true
+        },
         "squigtoad": {
             "priority": EASY,
             "equip": ["bataxe", "orbg"]
@@ -410,10 +415,14 @@ class Warrior extends Character {
 
     protected async stompLoop() {
         // Stomp monsters with high HP
-        const attackingTargets = getEntities({ isAttackingUs: true, isRIP: false })
-        if (isAvailable("stomp") && attackingTargets.length) {
-
-            if (attackingTargets[0].hp > 25000 && distance(parent.character, attackingTargets[0]) < parent.character.range) {
+        const attackingTargets = getEntities({ isAttackingUs: true, isRIP: false, isWithinDistance: parent.character.range })
+        // Stomp tinyp's
+        const tinyp = getEntities({ isMonsterType: ["tinyp"], isWithinDistance: parent.character.range })
+        if (isAvailable("stomp")) {
+            if (attackingTargets.length && attackingTargets[0].hp > 25000) {
+                await use_skill("stomp")
+                reduce_cooldown("stomp", Math.min(...parent.pings))
+            } else if (tinyp.length) {
                 await use_skill("stomp")
                 reduce_cooldown("stomp", Math.min(...parent.pings))
             }
