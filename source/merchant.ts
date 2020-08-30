@@ -240,19 +240,6 @@ class Merchant extends Character {
                 await sleep(Math.min(...parent.pings) * 2)
             }
 
-            // We're making orb of beginnings!
-            const ascale = findItem("ascale")
-            const cscale = findItem("cscale")
-            const pleather = findItem("pleather")
-            const bfur = findItem("bfur")
-            if (ascale.q > 1 && cscale.q > 1 && pleather.q > 1 && bfur.q > 1 && numItems < 35) {
-                auto_craft("orbg")
-            }
-
-            // I want a +10 bow eventually
-            // await buyIfNone("bow", 9, 4)
-            // await upgradeItem("bow", 9)
-
             await buyScrolls()
 
             await super.mainLoop()
