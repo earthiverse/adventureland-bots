@@ -14,15 +14,15 @@ const EXTRA_PADDING = 0
 const FIRST_MAP: MapName = "main"
 const SLEEP_FOR_MS = 50
 const ENABLE_BLINK = true
-const TOWN_TIME = 2000
-const TRANSPORT_TIME = 750
-const BLINK_TIME = 750
+const TOWN_TIME = 3000
+const TRANSPORT_TIME = 500
+const BLINK_TIME = 500
 const WALK_TIMEOUT = 10000
 const USE_CACHE = false
 
 // Cost variables
-const TRANSPORT_COST = parent.character.speed * TRANSPORT_TIME / 1000
-const TOWN_COST = parent.character.speed * TOWN_TIME / 1000
+const TRANSPORT_COST = 50 * TRANSPORT_TIME / 1000
+const TOWN_COST = 50 * TOWN_TIME / 1000
 
 export class NGraphMove {
     private static instance: NGraphMove
