@@ -76,7 +76,7 @@ async function startWarrior(auth: string, character: string, user: string, serve
             //console.error(e)
         }
 
-        setTimeout(async () => { healLoop() }, bot.getCooldown("use_hp"))
+        setTimeout(async () => { healLoop() }, Math.max(bot.getCooldown("use_hp"), 10))
     }
     healLoop()
 
@@ -224,7 +224,7 @@ async function startMage(auth: string, character: string, user: string, server: 
             console.error(e)
         }
 
-        setTimeout(async () => { healLoop() }, bot.getCooldown("use_hp"))
+        setTimeout(async () => { healLoop() }, Math.max(bot.getCooldown("use_hp"), 10))
     }
     healLoop()
 

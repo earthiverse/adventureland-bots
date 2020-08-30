@@ -631,22 +631,15 @@ class BotBase {
         if (!this.game.character.items[itemPos]) return Promise.reject(`There is no item in inventory slot ${itemPos}.`)
 
         const healReceived = new Promise((resolve, reject) => {
-            let dealtWith = false
             const healCheck = (data: EvalData) => {
                 if (data.code.includes("pot_timeout")) {
-                    if (!dealtWith) {
-                        this.game.socket.removeListener("eval", healCheck)
-                        resolve()
-                        dealtWith = true
-                    }
+                    this.game.socket.removeListener("eval", healCheck)
+                    resolve()
                 }
             }
             setTimeout(() => {
-                if (!dealtWith) {
-                    this.game.socket.removeListener("eval", healCheck)
-                    reject(`useHPPot timeout (${TIMEOUT}ms)`)
-                    dealtWith = true
-                }
+                this.game.socket.removeListener("eval", healCheck)
+                reject(`useHPPot timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
             this.game.socket.on("eval", healCheck)
         })
@@ -660,22 +653,15 @@ class BotBase {
         if (!this.game.character.items[itemPos]) return Promise.reject(`There is no item in inventory slot ${itemPos}.`)
 
         const healReceived = new Promise((resolve, reject) => {
-            let dealtWith = false
             const healCheck = (data: EvalData) => {
                 if (data.code.includes("pot_timeout")) {
-                    if (!dealtWith) {
-                        this.game.socket.removeListener("eval", healCheck)
-                        resolve()
-                        dealtWith = true
-                    }
+                    this.game.socket.removeListener("eval", healCheck)
+                    resolve()
                 }
             }
             setTimeout(() => {
-                if (!dealtWith) {
-                    this.game.socket.removeListener("eval", healCheck)
-                    reject(`useMPPot timeout (${TIMEOUT}ms)`)
-                    dealtWith = true
-                }
+                this.game.socket.removeListener("eval", healCheck)
+                reject(`useMPPot timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
             this.game.socket.on("eval", healCheck)
         })
@@ -885,15 +871,28 @@ export class WarriorBot extends Bot {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]agitate['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
                     this.game.socket.removeListener("eval", cooldownCheck)
+                    this.game.socket.removeListener("game_response", failCheck)
                     resolve()
+                }
+            }
+
+            const failCheck = (data: GameResponseData) => {
+                if ((data as GameResponseDataObject).response == "cooldown") {
+                    if ((data as GameResponseCooldown).skill == "agitate") {
+                        this.game.socket.removeListener("eval", cooldownCheck)
+                        this.game.socket.removeListener("game_response", failCheck)
+                        reject(`Agitate failed due to cooldown (ms: ${((data as GameResponseCooldown).ms)}).`)
+                    }
                 }
             }
 
             setTimeout(() => {
                 this.game.socket.removeListener("eval", cooldownCheck)
+                this.game.socket.removeListener("game_response", failCheck)
                 reject(`agitate timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
             this.game.socket.on("eval", cooldownCheck)
+            this.game.socket.on("game_response", failCheck)
         })
 
         this.game.socket.emit("skill", {

@@ -309,10 +309,15 @@ export class Game {
 
         this.socket.on("eval", (data: EvalData) => {
             // Skill timeouts (like attack) are sent via eval
-            const skillReg = /skill_timeout\s*\(\s*['"](.+?)['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.exec(data.code)
-            if (skillReg) {
-                const skill = skillReg[1] as SkillName
-                const cooldown = Number.parseFloat(skillReg[2])
+            const skillReg1 = /skill_timeout\s*\(\s*['"](.+?)['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.exec(data.code)
+            if (skillReg1) {
+                const skill = skillReg1[1] as SkillName
+                let cooldown: number
+                if (skillReg1[2]) {
+                    cooldown = Number.parseFloat(skillReg1[2])
+                } else if (this.G.skills[skill].cooldown) {
+                    cooldown = this.G.skills[skill].cooldown
+                }
                 this.setNextSkill(skill, new Date(Date.now() + Math.ceil(cooldown)))
                 return
             }
