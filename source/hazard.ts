@@ -149,7 +149,7 @@ async function startWarrior(auth: string, character: string, user: string, serve
                 const merchant = game.players.get("earthMer")
                 const distance = Tools.distance(game.character, merchant)
                 if (distance < 400) {
-                    for (let i = 3; i < game.character.items.length; i++) {
+                    for (let i = 4; i < game.character.items.length; i++) {
                         const item = game.character.items[i]
                         if (!item) continue
 
@@ -341,7 +341,7 @@ async function startMage(auth: string, character: string, user: string, server: 
                 const merchant = game.players.get("earthMer")
                 const distance = Tools.distance(game.character, merchant)
                 if (distance < 400) {
-                    for (let i = 7; i < game.character.items.length; i++) {
+                    for (let i = 3; i < game.character.items.length; i++) {
                         const item = game.character.items[i]
                         if (!item) continue
 
@@ -397,8 +397,13 @@ async function startPriest(auth: string, character: string, user: string, server
 
             const friend = game.players.get("earthWar")
             if (friend && friend.hp / friend.max_hp < 0.5) {
+                // Heal our tank
                 await bot.heal(friend.id)
+            } else if (game.character.hp / game.character.max_hp < 1) {
+                // Heal ourselves
+                await bot.heal(game.character.id)
             } else if (targets.length > 0 && game.character.mp >= game.character.mp_cost) {
+                // Attack monsters
                 await bot.attack(targets[0])
             }
         } catch (e) {
@@ -487,7 +492,7 @@ async function startPriest(auth: string, character: string, user: string, server
                 const merchant = game.players.get("earthMer")
                 const distance = Tools.distance(game.character, merchant)
                 if (distance < 400) {
-                    for (let i = 7; i < game.character.items.length; i++) {
+                    for (let i = 3; i < game.character.items.length; i++) {
                         const item = game.character.items[i]
                         if (!item) continue
 
