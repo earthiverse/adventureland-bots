@@ -778,8 +778,63 @@ export class MageBot extends Bot {
 
 export class PriestBot extends Bot {
     public heal(id: string): Promise<string> {
-        // TODO: Return what attack returns, but change the console logs to heal.
-        return this.attack(id)
+        // if (!this.game.entities.has(id) && !this.game.players.has(id)) return Promise.reject(`No Entity with ID '${id}'`)
+
+        const healStarted = new Promise<string>((resolve, reject) => {
+            const deathCheck = (data: DeathData) => {
+                if (data.id == id) {
+                    this.game.socket.removeListener("action", attackCheck)
+                    this.game.socket.removeListener("game_response", failCheck)
+                    this.game.socket.removeListener("death", deathCheck)
+                    reject(`Entity ${id} not found`)
+                }
+            }
+            const failCheck = (data: GameResponseData) => {
+                if (typeof data == "object") {
+                    if (data.response == "disabled") {
+                        this.game.socket.removeListener("action", attackCheck)
+                        this.game.socket.removeListener("game_response", failCheck)
+                        this.game.socket.removeListener("death", deathCheck)
+                        reject(`Heal on ${id} failed (disabled).`)
+                    } else if (data.response == "attack_failed" && data.id == id) {
+                        this.game.socket.removeListener("action", attackCheck)
+                        this.game.socket.removeListener("game_response", failCheck)
+                        this.game.socket.removeListener("death", deathCheck)
+                        reject(`Heal on ${id} failed.`)
+                    } else if (data.response == "too_far" && data.id == id) {
+                        this.game.socket.removeListener("action", attackCheck)
+                        this.game.socket.removeListener("game_response", failCheck)
+                        this.game.socket.removeListener("death", deathCheck)
+                        reject(`${id} is too far away to heal (dist: ${data.dist}).`)
+                    } else if (data.response == "cooldown" && data.id == id) {
+                        this.game.socket.removeListener("action", attackCheck)
+                        this.game.socket.removeListener("game_response", failCheck)
+                        this.game.socket.removeListener("death", deathCheck)
+                        reject(`Heal on ${id} failed due to cooldown (ms: ${data.ms}).`)
+                    }
+                }
+            }
+            const attackCheck = (data: ActionData) => {
+                if (data.attacker == this.game.character.id && data.target == id && data.type == "heal") {
+                    this.game.socket.removeListener("action", attackCheck)
+                    this.game.socket.removeListener("game_response", failCheck)
+                    this.game.socket.removeListener("death", deathCheck)
+                    resolve(data.pid)
+                }
+            }
+            setTimeout(() => {
+                this.game.socket.removeListener("action", attackCheck)
+                this.game.socket.removeListener("game_response", failCheck)
+                this.game.socket.removeListener("death", deathCheck)
+                reject(`heal timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.game.socket.on("action", attackCheck)
+            this.game.socket.on("game_response", failCheck)
+            this.game.socket.on("death", deathCheck)
+        })
+
+        this.game.socket.emit("heal", { id: id })
+        return healStarted
     }
 }
 
