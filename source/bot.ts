@@ -660,6 +660,9 @@ class BotBase {
  */
 export class Bot extends BotBase {
     public getCooldown(skill: SkillName): number {
+        // Check if this skill is shared with another cooldown
+        if (this.game.G.skills[skill].share) skill = this.game.G.skills[skill].share
+
         const nextSkill = this.game.nextSkill.get(skill)
         if (!nextSkill) return 0
 
