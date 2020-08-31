@@ -1,7 +1,7 @@
 import axios from "axios"
 import socketio from "socket.io-client"
 import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, AuthData, StartData, EntityData, CharacterData, PartyData, ChestData, PlayerData, DisappearData, ChestOpenedData, HitData, NewMapData, ActionData, EvalData, DeathData, AchievementProgressData } from "./definitions/adventureland-server"
-import { ServerRegion, ServerIdentifier, SkillName, GData, BankInfo } from "./definitions/adventureland"
+import { ServerRegion, ServerIdentifier, SkillName, GData, BankInfo, ConditionName } from "./definitions/adventureland"
 import { Tools } from "./tools.js"
 
 const PING_EVERY_MS = 30000
@@ -531,8 +531,8 @@ export class PingCompensatedGame extends Game {
 
         const pingCompensation = Math.min(...this.pings) / 2
 
-        // Update positions based on ping compensation
         for (const monster of data.monsters) {
+            // Compensate position
             const entity = this.entities.get(monster.id)
             if (!entity || !entity.moving) continue
             const distanceTravelled = entity.speed * pingCompensation / 1000
@@ -546,8 +546,16 @@ export class PingCompensatedGame extends Game {
                 entity.x = entity.x + Math.cos(angle) * distanceTravelled
                 entity.y = entity.y + Math.sin(angle) * distanceTravelled
             }
+
+            // Compensate conditions
+            for (const condition in entity.s) {
+                if (entity.s[condition as ConditionName].ms) {
+                    entity.s[condition as ConditionName].ms -= pingCompensation
+                }
+            }
         }
         for (const player of data.players) {
+            // Compensate position
             const entity = this.players.get(player.id)
             if (!entity || !entity.moving) continue
             const distanceTravelled = entity.speed * pingCompensation / 1000
@@ -560,6 +568,13 @@ export class PingCompensatedGame extends Game {
             } else {
                 entity.x = entity.x + Math.cos(angle) * distanceTravelled
                 entity.y = entity.y + Math.sin(angle) * distanceTravelled
+            }
+
+            // Compensate conditions
+            for (const condition in entity.s) {
+                if (entity.s[condition as ConditionName].ms) {
+                    entity.s[condition as ConditionName].ms -= pingCompensation
+                }
             }
         }
     }
