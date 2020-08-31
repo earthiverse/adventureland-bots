@@ -1,5 +1,5 @@
 import { Game } from "./game.js"
-import { CharacterData, ActionData, NewMapData, EvalData, EntityData, GameResponseData, GameResponseBuySuccess, GameResponseDataObject, DeathData, GameResponseAttackFailed, GameResponseItemSent, PlayerData, GameResponseBankRestrictions, DisappearingTextData, UpgradeData, PartyData, GameLogData, GameResponseAttackTooFar, GameResponseCooldown, UIData } from "./definitions/adventureland-server"
+import { CharacterData, ActionData, NewMapData, EvalData, EntityData, GameResponseData, GameResponseDataObject, DeathData, PlayerData, DisappearingTextData, UpgradeData, PartyData, GameLogData, UIData } from "./definitions/adventureland-server"
 import { SkillName, MonsterName, ItemName, SlotType, ItemInfo } from "./definitions/adventureland"
 import { Tools } from "./tools.js"
 import { Pathfinder } from "./pathfinder.js"
@@ -81,11 +81,10 @@ class BotBase {
         return acceptedInvite
     }
 
-    // TODO: Return attack info
     // TODO: Add 'notthere' (e.g. calling attack("12345") returns ["notthere", {place: "attack"}])
     // TODO: Check if cooldown is sent after attack
     public attack(id: string): Promise<string> {
-        if (!this.game.entities.has(id) && !this.game.players.has(id)) return Promise.reject(`No Entity with ID '${id}'`)
+        // if (!this.game.entities.has(id) && !this.game.players.has(id)) return Promise.reject(`No Entity with ID '${id}'`)
 
         const attackStarted = new Promise<string>((resolve, reject) => {
             const deathCheck = (data: DeathData) => {
@@ -97,31 +96,27 @@ class BotBase {
                 }
             }
             const failCheck = (data: GameResponseData) => {
-                if ((data as GameResponseDataObject).response == "disabled") {
-                    this.game.socket.removeListener("action", attackCheck)
-                    this.game.socket.removeListener("game_response", failCheck)
-                    this.game.socket.removeListener("death", deathCheck)
-                    reject(`Attack on ${id} failed (disabled).`)
-                } else if ((data as GameResponseDataObject).response == "attack_failed") {
-                    if ((data as GameResponseAttackFailed).id == id) {
+                if (typeof data == "object") {
+                    if (data.response == "disabled") {
+                        this.game.socket.removeListener("action", attackCheck)
+                        this.game.socket.removeListener("game_response", failCheck)
+                        this.game.socket.removeListener("death", deathCheck)
+                        reject(`Attack on ${id} failed (disabled).`)
+                    } else if (data.response == "attack_failed" && data.id == id) {
                         this.game.socket.removeListener("action", attackCheck)
                         this.game.socket.removeListener("game_response", failCheck)
                         this.game.socket.removeListener("death", deathCheck)
                         reject(`Attack on ${id} failed.`)
-                    }
-                } else if ((data as GameResponseDataObject).response == "too_far") {
-                    if ((data as GameResponseAttackTooFar).id == id) {
+                    } else if (data.response == "too_far" && data.id == id) {
                         this.game.socket.removeListener("action", attackCheck)
                         this.game.socket.removeListener("game_response", failCheck)
                         this.game.socket.removeListener("death", deathCheck)
-                        reject(`${id} is too far away to attack (dist: ${((data as GameResponseAttackTooFar).dist)}).`)
-                    }
-                } else if ((data as GameResponseDataObject).response == "cooldown") {
-                    if ((data as GameResponseCooldown).id == id) {
+                        reject(`${id} is too far away to attack (dist: ${data.dist}).`)
+                    } else if (data.response == "cooldown" && data.id == id) {
                         this.game.socket.removeListener("action", attackCheck)
                         this.game.socket.removeListener("game_response", failCheck)
                         this.game.socket.removeListener("death", deathCheck)
-                        reject(`Attack on ${id} failed due to cooldown (ms: ${((data as GameResponseCooldown).ms)}).`)
+                        reject(`Attack on ${id} failed due to cooldown (ms: ${data.ms}).`)
                     }
                 }
             }
@@ -158,9 +153,10 @@ class BotBase {
                 for (const hitchhiker of data.hitchhikers) {
                     if (hitchhiker[0] == "game_response") {
                         const data: GameResponseData = hitchhiker[1]
-                        if ((data as GameResponseDataObject).response == "buy_success"
-                            && (data as GameResponseBuySuccess).name == itemName
-                            && (data as GameResponseBuySuccess).q == quantity) {
+                        if (typeof data == "object"
+                            && data.response == "buy_success"
+                            && data.name == itemName
+                            && data.q == quantity) {
                             this.game.socket.removeListener("player", buyCheck1)
                             this.game.socket.removeListener("game_response", buyCheck2)
                             resolve()
@@ -224,8 +220,7 @@ class BotBase {
                 }
             }
             const bankCheck = (data: GameResponseData) => {
-                if ((data as GameResponseBankRestrictions).response == "bank_restrictions"
-                    && (data as GameResponseBankRestrictions).place == "compound") {
+                if (typeof data == "object" && data.response == "bank_restrictions" && data.place == "compound") {
                     this.game.socket.removeListener("upgrade", completeCheck)
                     this.game.socket.removeListener("game_response", bankCheck)
                     reject("You can't compound items in the bank.")
@@ -311,8 +306,7 @@ class BotBase {
                 }
             }
             const bankCheck = (data: GameResponseData) => {
-                if ((data as GameResponseBankRestrictions).response == "bank_restrictions"
-                    && (data as GameResponseBankRestrictions).place == "upgrade") {
+                if (typeof data == "object" && data.response == "bank_restrictions" && data.place == "upgrade") {
                     this.game.socket.removeListener("upgrade", completeCheck)
                     this.game.socket.removeListener("game_response", bankCheck)
                     reject("You can't exchange items in the bank.")
@@ -407,25 +401,18 @@ class BotBase {
         }
 
         const moveFinished = new Promise((resolve, reject) => {
-            let dealtWith = false
             const distance = Tools.distance(this.game.character, { x: safeTo.x, y: safeTo.y })
             const moveFinishedCheck = (data: CharacterData) => {
                 // TODO: Improve this to check if we moved again, and if we did, reject()
                 if (data.moving) return
                 if (data.x == safeTo.x && data.y == safeTo.y) {
-                    if (!dealtWith) {
-                        this.game.socket.removeListener("player", moveFinishedCheck)
-                        resolve()
-                        dealtWith = true
-                    }
+                    this.game.socket.removeListener("player", moveFinishedCheck)
+                    resolve()
                 }
             }
             setTimeout(() => {
-                if (!dealtWith) {
-                    this.game.socket.removeListener("player", moveFinishedCheck)
-                    reject(`move timeout (${TIMEOUT + distance * 1000 / this.game.character.speed}ms)`)
-                    dealtWith = true
-                }
+                this.game.socket.removeListener("player", moveFinishedCheck)
+                reject(`move timeout (${TIMEOUT + distance * 1000 / this.game.character.speed}ms)`)
             }, (TIMEOUT + distance * 1000 / this.game.character.speed))
             this.game.socket.on("player", moveFinishedCheck)
         })
@@ -441,25 +428,16 @@ class BotBase {
     }
 
     public regenHP(): Promise<unknown> {
-        // if (this.game.nextSkill.get("use_hp")?.getTime() > Date.now()) return Promise.reject("use_hp is on cooldown")
-
         const regenReceived = new Promise((resolve, reject) => {
-            let dealtWith = false
             const regenCheck = (data: EvalData) => {
                 if (data.code.includes("pot_timeout")) {
-                    if (!dealtWith) {
-                        this.game.socket.removeListener("eval", regenCheck)
-                        resolve()
-                        dealtWith = true
-                    }
+                    this.game.socket.removeListener("eval", regenCheck)
+                    resolve()
                 }
             }
             setTimeout(() => {
-                if (!dealtWith) {
-                    this.game.socket.removeListener("eval", regenCheck)
-                    reject(`regenHP timeout (${TIMEOUT}ms)`)
-                    dealtWith = true
-                }
+                this.game.socket.removeListener("eval", regenCheck)
+                reject(`regenHP timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
             this.game.socket.on("eval", regenCheck)
         })
@@ -472,22 +450,15 @@ class BotBase {
         // if (this.game.nextSkill.get("use_mp")?.getTime() > Date.now()) return Promise.reject("use_mp is on cooldown")
 
         const regenReceived = new Promise((resolve, reject) => {
-            let dealtWith = false
             const regenCheck = (data: EvalData) => {
                 if (data.code.includes("pot_timeout")) {
-                    if (!dealtWith) {
-                        this.game.socket.removeListener("eval", regenCheck)
-                        resolve()
-                        dealtWith = true
-                    }
+                    this.game.socket.removeListener("eval", regenCheck)
+                    resolve()
                 }
             }
             setTimeout(() => {
-                if (!dealtWith) {
-                    this.game.socket.removeListener("eval", regenCheck)
-                    reject(`regenMP timeout (${TIMEOUT}ms)`)
-                    dealtWith = true
-                }
+                this.game.socket.removeListener("eval", regenCheck)
+                reject(`regenMP timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
             this.game.socket.on("eval", regenCheck)
         })
@@ -543,10 +514,7 @@ class BotBase {
                 } else if (data == "send_no_space") {
                     this.game.socket.removeListener("game_response", sentCheck)
                     reject(`sendItem failed, ${to} has no inventory space`)
-                } else if ((data as GameResponseItemSent).response == "item_sent"
-                    && (data as GameResponseItemSent).name == to
-                    && (data as GameResponseItemSent).item == item.name
-                    && (data as GameResponseItemSent).q == quantity) {
+                } else if (typeof data == "object" && data.response == "item_sent" && data.name == to && data.item == item.name && data.q == quantity) {
                     this.game.socket.removeListener("game_response", sentCheck)
                     resolve()
                 }
@@ -606,8 +574,7 @@ class BotBase {
                 }
             }
             const bankCheck = (data: GameResponseData) => {
-                if ((data as GameResponseBankRestrictions).response == "bank_restrictions"
-                    && (data as GameResponseBankRestrictions).place == "upgrade") {
+                if (typeof data == "object" && data.response == "bank_restrictions" && data.place == "upgrade") {
                     this.game.socket.removeListener("upgrade", completeCheck)
                     this.game.socket.removeListener("game_response", bankCheck)
                     reject("You can't upgrade items in the bank.")
@@ -786,6 +753,36 @@ export class Bot extends BotBase {
     }
 }
 
+/** Implement functions that only apply to mages */
+export class MageBot extends Bot {
+    public energize(target: string): Promise<unknown> {
+        const energized = new Promise((resolve, reject) => {
+            const cooldownCheck = (data: EvalData) => {
+                if (/skill_timeout\s*\(\s*['"]energize['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
+                    this.game.socket.removeListener("eval", cooldownCheck)
+                    resolve()
+                }
+            }
+
+            setTimeout(() => {
+                this.game.socket.removeListener("eval", cooldownCheck)
+                reject(`energize timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.game.socket.on("eval", cooldownCheck)
+        })
+
+        this.game.socket.emit("skill", { name: "energize", id: target })
+        return energized
+    }
+}
+
+export class PriestBot extends Bot {
+    public heal(id: string): Promise<string> {
+        // TODO: Return what attack returns, but change the console logs to heal.
+        return this.attack(id)
+    }
+}
+
 /** Implement functions that only apply to rangers */
 export class RangerBot extends Bot {
     public fiveShot(target1: string, target2: string, target3: string, target4: string, target5: string): Promise<string[]> {
@@ -812,7 +809,7 @@ export class RangerBot extends Bot {
             setTimeout(() => {
                 this.game.socket.removeListener("action", attackCheck)
                 this.game.socket.removeListener("eval", cooldownCheck)
-                reject(`attack timeout (${TIMEOUT}ms)`)
+                reject(`5shot timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
             this.game.socket.on("action", attackCheck)
             this.game.socket.on("eval", cooldownCheck)
@@ -849,7 +846,7 @@ export class RangerBot extends Bot {
             setTimeout(() => {
                 this.game.socket.removeListener("action", attackCheck)
                 this.game.socket.removeListener("eval", cooldownCheck)
-                reject(`attack timeout (${TIMEOUT}ms)`)
+                reject(`3shot timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
             this.game.socket.on("action", attackCheck)
             this.game.socket.on("eval", cooldownCheck)
@@ -877,12 +874,10 @@ export class WarriorBot extends Bot {
             }
 
             const failCheck = (data: GameResponseData) => {
-                if ((data as GameResponseDataObject).response == "cooldown") {
-                    if ((data as GameResponseCooldown).skill == "agitate") {
-                        this.game.socket.removeListener("eval", cooldownCheck)
-                        this.game.socket.removeListener("game_response", failCheck)
-                        reject(`Agitate failed due to cooldown (ms: ${((data as GameResponseCooldown).ms)}).`)
-                    }
+                if (typeof data == "object" && data.response == "cooldown" && data.skill == "agitate") {
+                    this.game.socket.removeListener("eval", cooldownCheck)
+                    this.game.socket.removeListener("game_response", failCheck)
+                    reject(`Agitate failed due to cooldown (ms: ${data.ms}).`)
                 }
             }
 
@@ -901,6 +896,39 @@ export class WarriorBot extends Bot {
         return agitated
     }
 
+    public hardshell(): Promise<unknown> {
+        const hardshelled = new Promise((resolve, reject) => {
+            const cooldownCheck = (data: EvalData) => {
+                if (/skill_timeout\s*\(\s*['"]hardshell['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
+                    this.game.socket.removeListener("eval", cooldownCheck)
+                    this.game.socket.removeListener("game_response", failCheck)
+                    resolve()
+                }
+            }
+
+            const failCheck = (data: GameResponseData) => {
+                if (typeof data == "object" && data.response == "cooldown" && data.skill == "hardshell") {
+                    this.game.socket.removeListener("eval", cooldownCheck)
+                    this.game.socket.removeListener("game_response", failCheck)
+                    reject(`Hardshell failed due to cooldown (ms: ${data.ms}).`)
+                }
+            }
+
+            setTimeout(() => {
+                this.game.socket.removeListener("eval", cooldownCheck)
+                this.game.socket.removeListener("game_response", failCheck)
+                reject(`hardshell timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.game.socket.on("eval", cooldownCheck)
+            this.game.socket.on("game_response", failCheck)
+        })
+
+        this.game.socket.emit("skill", {
+            name: "hardshell"
+        })
+        return hardshelled
+    }
+
     // TODO: Investigate if cooldown is before or after the "action" event. We are getting lots of "failed due to cooldowns"
     public taunt(target: string): Promise<string> {
         const tauntStarted = new Promise<string>((resolve, reject) => {
@@ -914,21 +942,19 @@ export class WarriorBot extends Bot {
             }
 
             const failCheck = (data: GameResponseData) => {
-                if ((data as GameResponseDataObject).response == "no_target") {
-                    this.game.socket.removeListener("action", tauntCheck)
-                    this.game.socket.removeListener("game_response", failCheck)
-                    reject(`Taunt on ${target} failed (no target).`)
-                } else if ((data as GameResponseDataObject).response == "too_far") {
-                    if ((data as GameResponseAttackTooFar).id == target) {
+                if (typeof data == "object") {
+                    if (data.response == "no_target") {
                         this.game.socket.removeListener("action", tauntCheck)
                         this.game.socket.removeListener("game_response", failCheck)
-                        reject(`${target} is too far away to taunt (dist: ${((data as GameResponseAttackTooFar).dist)}).`)
-                    }
-                } else if ((data as GameResponseDataObject).response == "cooldown") {
-                    if ((data as GameResponseCooldown).id == target) {
+                        reject(`Taunt on ${target} failed (no target).`)
+                    } else if (data.response == "too_far" && data.id == target) {
                         this.game.socket.removeListener("action", tauntCheck)
                         this.game.socket.removeListener("game_response", failCheck)
-                        reject(`Taunt on ${target} failed due to cooldown (ms: ${((data as GameResponseCooldown).ms)}).`)
+                        reject(`${target} is too far away to taunt (dist: ${data.dist}).`)
+                    } else if (data.response == "cooldown" && data.id == target) {
+                        this.game.socket.removeListener("action", tauntCheck)
+                        this.game.socket.removeListener("game_response", failCheck)
+                        reject(`Taunt on ${target} failed due to cooldown (ms: ${data.ms}).`)
                     }
                 }
             }

@@ -1,6 +1,6 @@
 import axios from "axios"
 import socketio from "socket.io-client"
-import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, AuthData, StartData, EntityData, CharacterData, PartyData, ChestData, PlayerData, DisappearData, ChestOpenedData, HitData, NewMapData, ActionData, EvalData, DeathData, AchievementProgressData, GameResponseDataObject, GameResponseCooldown } from "./definitions/adventureland-server"
+import { ServerData, WelcomeData, LoadedData, EntitiesData, GameResponseData, AuthData, StartData, EntityData, CharacterData, PartyData, ChestData, PlayerData, DisappearData, ChestOpenedData, HitData, NewMapData, ActionData, EvalData, DeathData, AchievementProgressData } from "./definitions/adventureland-server"
 import { ServerRegion, ServerIdentifier, SkillName, GData, BankInfo } from "./definitions/adventureland"
 import { Tools } from "./tools.js"
 
@@ -236,19 +236,26 @@ export class Game {
     }
 
     protected parseGameResponse(data: GameResponseData): void {
-        if (typeof data == "string") {
-            console.info(`Game Response: ${data}`)
-        } else {
-            console.info(`Game Response: ${data.response}`)
-        }
-
         // Adjust cooldowns
-        if ((data as GameResponseDataObject).response == "cooldown") {
-            const skill = (data as GameResponseCooldown).skill
-            if (skill) {
-                const cooldown = (data as GameResponseCooldown).ms
-                this.setNextSkill(skill, new Date(Date.now() + Math.ceil(cooldown)))
+        if (typeof (data) == "object") {
+            if (data.response == "cooldown") {
+                // A skill is on cooldown
+                const skill = data.skill
+                if (skill) {
+                    const cooldown = data.ms
+                    this.setNextSkill(skill, new Date(Date.now() + Math.ceil(cooldown)))
+                }
+            } else if (data.response == "ex_condition") {
+                // The condition expired
+                delete this.character.s[data.name]
+            } else {
+                // DEBUG
+                console.info("Game Response Data -----")
+                console.info(data)
             }
+        } else if (typeof (data) == "string") {
+            // DEBUG
+            console.info(`Game Response: ${data}`)
         }
     }
 
@@ -471,6 +478,7 @@ export class Game {
     }
 
     disconnect(): void {
+        console.warn("Disconnecting!")
         this.active = false
         this.socket.close()
     }
@@ -501,6 +509,7 @@ export class Game {
     }
 }
 
+// TODO: compensate condition durations
 export class PingCompensatedGame extends Game {
     async connect(auth: string, character: string, user: string): Promise<unknown> {
         const promise = super.connect(auth, character, user)
@@ -556,7 +565,9 @@ export class PingCompensatedGame extends Game {
     }
 
     public pingLoop(): void {
-        this.sendPing()
-        setTimeout(async () => { this.pingLoop() }, PING_EVERY_MS)
+        if (this.active) {
+            this.sendPing()
+            setTimeout(async () => { this.pingLoop() }, PING_EVERY_MS)
+        }
     }
 }

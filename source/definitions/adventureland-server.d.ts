@@ -219,8 +219,51 @@ export type GameLogDataString =
 export type GameResponseData = GameResponseDataObject | GameResponseDataString
 
 // TODO: split these in to other objects
-export type GameResponseDataObject = GameResponseAttackDisabled | GameResponseAttackFailed | GameResponseCooldown | GameResponseAttackTooFar | GameResponseBankRestrictions | GameResponseBuySuccess | GameResponseItemSent | {
-    response: "bank_restrictions" | "gold_received" | "item_placeholder" | "item_received" | string
+export type GameResponseDataObject = {
+    response: "attack_failed"
+    place: "attack"
+    id: string
+} | {
+    response: "bank_restrictions"
+    place: "compound" | string
+} | {
+    response: "buy_success"
+    cost: number
+    // Inventory slot that the item is now in
+    num: number
+    name: ItemName
+    q: number
+} | {
+    response: "cooldown"
+    skill?: SkillName
+    place: SkillName
+    id: string
+    ms: number
+} | {
+    response: "disabled"
+    place: "attack"
+} |
+/** Called when a condition expires */
+{
+    response: "ex_condition"
+    name: SkillName
+} | {
+    response: "item_sent"
+    // User ID the item was sent to
+    name: string
+    item: ItemName
+    q: number
+} | {
+    response: "no_target"
+    // TODO: See what else gets returned
+} | {
+    response: "too_far"
+    place: "attack"
+    id: string
+    dist: number
+} | {
+    // TODO: Separate these in to separate objects
+    response: "gold_received" | "item_placeholder" | "item_received"
     gold: number
     name: string
 }
@@ -246,54 +289,6 @@ export type GameResponseDataString =
     | "trade_get_closer"
     | "upgrade_in_progress"
 // | string
-
-export type GameResponseAttackDisabled = {
-    response: "disabled"
-    place: "attack"
-}
-
-export type GameResponseAttackFailed = {
-    response: "attack_failed"
-    place: "attack"
-    id: string
-}
-
-export type GameResponseCooldown = {
-    response: "cooldown"
-    skill?: SkillName
-    place: SkillName
-    id: string
-    ms: number
-}
-
-export type GameResponseAttackTooFar = {
-    response: "too_far"
-    place: "attack"
-    id: string
-    dist: number
-}
-
-export type GameResponseBankRestrictions = {
-    response: "bank_restrictions"
-    place: "compound" | string
-}
-
-export type GameResponseBuySuccess = {
-    response: "buy_succcess"
-    cost: number
-    // Inventory slot that the item is now in
-    num: number
-    name: ItemName
-    q: number
-}
-
-export type GameResponseItemSent = {
-    response: "item_sent"
-    // User ID the item was sent to
-    name: string
-    item: ItemName
-    q: number
-}
 
 export type HitData = {
     anim: "arrow_hit" | "miss" | "reflect" | "slash1" | string

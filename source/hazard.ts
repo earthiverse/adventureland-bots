@@ -1,7 +1,8 @@
 import { PingCompensatedGame as Game } from "./game.js"
-import { Bot, WarriorBot } from "./bot.js"
+import { WarriorBot, MageBot, PriestBot } from "./bot.js"
 import { Tools } from "./tools.js"
 import { ServerRegion, ServerIdentifier } from "./definitions/adventureland.js"
+import { PlayerData } from "./definitions/adventureland-server.js"
 
 async function startWarrior(auth: string, character: string, user: string, server: ServerRegion, identifier: ServerIdentifier) {
     const game = new Game(server, identifier)
@@ -10,14 +11,14 @@ async function startWarrior(auth: string, character: string, user: string, serve
     console.info(`Starting warrior (${character})!`)
     const bot = new WarriorBot(game)
 
-    bot.game.socket.on("disconnect_reason", (data: string) => {
+    game.socket.on("disconnect_reason", (data: string) => {
         console.warn(`Disconnecting (${data})`)
-        bot.game.disconnect()
+        game.disconnect()
     })
 
     async function agitateLoop() {
         try {
-            if (!bot.game.active) return
+            if (!game.active) return
 
             let numTargeting = 0
             let closeTargets = 0
@@ -33,10 +34,10 @@ async function startWarrior(auth: string, character: string, user: string, serve
                 }
             }
 
-            if (closeTargets > 0 && numTargeting + closeTargets < 3) {
+            if (closeTargets > 1 && numTargeting + closeTargets < 3) {
                 // Taunt no more than 3 enemies
                 await bot.agitate()
-            } else if(closeTargets > 0 && game.character.hp / game.character.max_hp > 0.75) {
+            } else if (closeTargets > 1 && game.character.hp / game.character.max_hp > 0.75) {
                 // Taunt all enemies if we have a lot of HP
                 await bot.agitate()
             }
@@ -47,14 +48,56 @@ async function startWarrior(auth: string, character: string, user: string, serve
     }
     agitateLoop()
 
+    async function buyLoop() {
+        try {
+            if (!game.active) return
+
+            if (Tools.hasItem("computer", game.character.items)) {
+                // Buy HP Pots
+                const numHpot1 = Tools.countItem("hpot1", game.character.items)
+                if (numHpot1 < 1000) await bot.buy("hpot1", 1000 - numHpot1)
+
+                // Buy MP Pots
+                const numMpot1 = Tools.countItem("mpot1", game.character.items)
+                if (numMpot1 < 1000) await bot.buy("mpot1", 1000 - numMpot1)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        setTimeout(async () => { buyLoop() }, 60000)
+    }
+    buyLoop()
+
+    async function hardshellLoop() {
+        try {
+            if (!game.active) return
+
+            let numTargeting = 0
+            for (const entity of game.entities.values()) {
+                if (entity.target == game.character.id) {
+                    numTargeting++
+                    continue
+                }
+            }
+
+            // Use hardshell if we are low on HP and entities are attacking us
+            if (numTargeting > 0 && game.character.hp / game.character.max_hp < 0.25) await bot.hardshell()
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { hardshellLoop() }, Math.max(bot.getCooldown("hardshell"), 10))
+    }
+    hardshellLoop()
+
     async function healLoop() {
         try {
-            if (!bot.game.active) return
+            if (!game.active) return
 
-            const missingHP = bot.game.character.max_hp - bot.game.character.hp
-            const missingMP = bot.game.character.max_mp - bot.game.character.mp
-            const hpRatio = bot.game.character.hp / bot.game.character.max_hp
-            const mpRatio = bot.game.character.mp / bot.game.character.max_mp
+            const missingHP = game.character.max_hp - game.character.hp
+            const missingMP = game.character.max_mp - game.character.mp
+            const hpRatio = game.character.hp / game.character.max_hp
+            const mpRatio = game.character.mp / game.character.max_mp
             if (hpRatio < mpRatio) {
                 if (missingHP >= 400 && bot.hasItem("hpot1")) {
                     await bot.useHPPot(await bot.locateItem("hpot1"))
@@ -85,8 +128,10 @@ async function startWarrior(auth: string, character: string, user: string, serve
 
     async function lootLoop() {
         try {
-            for (const id of bot.game.chests.keys()) {
-                bot.game.socket.emit("open_chest", { id: id })
+            if (!game.active) return
+
+            for (const id of game.chests.keys()) {
+                game.socket.emit("open_chest", { id: id })
             }
         } catch (e) {
             console.error(e)
@@ -98,12 +143,14 @@ async function startWarrior(auth: string, character: string, user: string, serve
 
     async function sendItemLoop() {
         try {
-            if (bot.game.players.has("earthMer")) {
-                const merchant = bot.game.players.get("earthMer")
-                const distance = Tools.distance(bot.game.character, merchant)
+            if (!game.active) return
+
+            if (game.players.has("earthMer")) {
+                const merchant = game.players.get("earthMer")
+                const distance = Tools.distance(game.character, merchant)
                 if (distance < 400) {
-                    for (let i = 3; i < bot.game.character.items.length; i++) {
-                        const item = bot.game.character.items[i]
+                    for (let i = 3; i < game.character.items.length; i++) {
+                        const item = game.character.items[i]
                         if (!item) continue
 
                         await bot.sendItem("earthMer", i, item.q)
@@ -121,7 +168,7 @@ async function startWarrior(auth: string, character: string, user: string, serve
 
     async function tauntLoop() {
         try {
-            if (!bot.game.active) return
+            if (!game.active) return
 
             let numTargeting = 0
             const closeTargets: string[] = []
@@ -154,27 +201,27 @@ async function startMage(auth: string, character: string, user: string, server: 
     await game.connect(auth, character, user)
 
     console.info(`Starting mage (${character})!`)
-    const bot = new Bot(game)
+    const bot = new MageBot(game)
 
-    bot.game.socket.on("disconnect_reason", (data: string) => {
+    game.socket.on("disconnect_reason", (data: string) => {
         console.warn(`Disconnecting (${data})`)
-        bot.game.disconnect()
+        game.disconnect()
     })
 
     async function attackLoop() {
         try {
-            if (!bot.game.active) return
+            if (!game.active) return
 
             const targets: string[] = []
-            for (const [id, entity] of bot.game.entities) {
+            for (const [id, entity] of game.entities) {
                 if (entity.type != "scorpion") continue // Only attack scorpions
                 if (entity.target != "earthWar") continue // Only attack those attacking our warrior
                 if (entity.s.burned) continue // Don't attack monsters that are burning
-                if (Tools.distance(bot.game.character, entity) > bot.game.character.range) continue // Only attack those in range
+                if (Tools.distance(game.character, entity) > game.character.range) continue // Only attack those in range
 
                 // Don't attack if there's a projectile going towards it
                 let isTargetedbyProjectile = false
-                for (const projectile of bot.game.projectiles.values()) {
+                for (const projectile of game.projectiles.values()) {
                     if (projectile.target == id) {
                         isTargetedbyProjectile = true
                         break
@@ -185,7 +232,7 @@ async function startMage(auth: string, character: string, user: string, server: 
                 targets.push(id)
             }
 
-            if (targets.length > 0 && bot.game.character.mp >= bot.game.character.mp_cost) {
+            if (targets.length > 0 && game.character.mp >= game.character.mp_cost) {
                 await bot.attack(targets[0])
             }
         } catch (e) {
@@ -196,14 +243,54 @@ async function startMage(auth: string, character: string, user: string, server: 
     }
     attackLoop()
 
+    async function buyLoop() {
+        try {
+            if (!game.active) return
+
+            if (Tools.hasItem("computer", game.character.items)) {
+                // Buy HP Pots
+                const numHpot1 = Tools.countItem("hpot1", game.character.items)
+                if (numHpot1 < 1000) await bot.buy("hpot1", 1000 - numHpot1)
+
+                // Buy MP Pots
+                const numMpot1 = Tools.countItem("mpot1", game.character.items)
+                if (numMpot1 < 1000) await bot.buy("mpot1", 1000 - numMpot1)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        setTimeout(async () => { buyLoop() }, 60000)
+    }
+    buyLoop()
+
+    async function energizeLoop() {
+        try {
+            if (!game.active) return
+
+            let friend: PlayerData
+            if (game.character.id == "earthMag") {
+                friend = game.players.get("earthMag2")
+            } else if (game.character.id == "earthMag2") {
+                friend = game.players.get("earthMag")
+            }
+
+            if (friend) await bot.energize(friend.id)
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { energizeLoop() }, Math.max(bot.getCooldown("energize"), 10))
+    }
+    energizeLoop()
+
     async function healLoop() {
         try {
-            if (!bot.game.active) return
+            if (!game.active) return
 
-            const missingHP = bot.game.character.max_hp - bot.game.character.hp
-            const missingMP = bot.game.character.max_mp - bot.game.character.mp
-            const hpRatio = bot.game.character.hp / bot.game.character.max_hp
-            const mpRatio = bot.game.character.mp / bot.game.character.max_mp
+            const missingHP = game.character.max_hp - game.character.hp
+            const missingMP = game.character.max_mp - game.character.mp
+            const hpRatio = game.character.hp / game.character.max_hp
+            const mpRatio = game.character.mp / game.character.max_mp
             if (hpRatio < mpRatio) {
                 if (missingHP >= 400 && bot.hasItem("hpot1")) {
                     await bot.useHPPot(await bot.locateItem("hpot1"))
@@ -233,8 +320,10 @@ async function startMage(auth: string, character: string, user: string, server: 
 
     async function lootLoop() {
         try {
-            for (const id of bot.game.chests.keys()) {
-                bot.game.socket.emit("open_chest", { id: id })
+            if (!game.active) return
+
+            for (const id of game.chests.keys()) {
+                game.socket.emit("open_chest", { id: id })
             }
         } catch (e) {
             console.error(e)
@@ -246,12 +335,160 @@ async function startMage(auth: string, character: string, user: string, server: 
 
     async function sendItemLoop() {
         try {
-            if (bot.game.players.has("earthMer")) {
-                const merchant = bot.game.players.get("earthMer")
-                const distance = Tools.distance(bot.game.character, merchant)
+            if (!game.active) return
+
+            if (game.players.has("earthMer")) {
+                const merchant = game.players.get("earthMer")
+                const distance = Tools.distance(game.character, merchant)
                 if (distance < 400) {
-                    for (let i = 3; i < bot.game.character.items.length; i++) {
-                        const item = bot.game.character.items[i]
+                    for (let i = 7; i < game.character.items.length; i++) {
+                        const item = game.character.items[i]
+                        if (!item) continue
+
+                        await bot.sendItem("earthMer", i, item.q)
+                        break // Only send one item at a time
+                    }
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { sendItemLoop() }, 1000)
+    }
+    sendItemLoop()
+}
+
+async function startPriest(auth: string, character: string, user: string, server: ServerRegion, identifier: ServerIdentifier) {
+    const game = new Game(server, identifier)
+    await game.connect(auth, character, user)
+
+    console.info(`Starting priest (${character})!`)
+    const bot = new PriestBot(game)
+
+    game.socket.on("disconnect_reason", (data: string) => {
+        console.warn(`Disconnecting (${data})`)
+        game.disconnect()
+    })
+
+    async function attackLoop() {
+        try {
+            if (!game.active) return
+
+            const targets: string[] = []
+            for (const [id, entity] of game.entities) {
+                if (entity.type != "scorpion") continue // Only attack scorpions
+                if (entity.target != "earthWar") continue // Only attack those attacking our warrior
+                if (entity.s.burned) continue // Don't attack monsters that are burning
+                if (Tools.distance(game.character, entity) > game.character.range) continue // Only attack those in range
+
+                // Don't attack if there's a projectile going towards it
+                let isTargetedbyProjectile = false
+                for (const projectile of game.projectiles.values()) {
+                    if (projectile.target == id) {
+                        isTargetedbyProjectile = true
+                        break
+                    }
+                }
+                if (isTargetedbyProjectile) continue
+
+                targets.push(id)
+            }
+
+            const friend = game.players.get("earthWar")
+            if (friend && friend.hp / friend.max_hp < 0.5) {
+                await bot.heal(friend.id)
+            } else if (targets.length > 0 && game.character.mp >= game.character.mp_cost) {
+                await bot.attack(targets[0])
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { attackLoop() }, Math.max(bot.getCooldown("attack"), 10))
+    }
+    attackLoop()
+
+    async function buyLoop() {
+        try {
+            if (!game.active) return
+
+            if (Tools.hasItem("computer", game.character.items)) {
+                // Buy HP Pots
+                const numHpot1 = Tools.countItem("hpot1", game.character.items)
+                if (numHpot1 < 1000) await bot.buy("hpot1", 1000 - numHpot1)
+
+                // Buy MP Pots
+                const numMpot1 = Tools.countItem("mpot1", game.character.items)
+                if (numMpot1 < 1000) await bot.buy("mpot1", 1000 - numMpot1)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        setTimeout(async () => { buyLoop() }, 60000)
+    }
+    buyLoop()
+
+    async function healLoop() {
+        try {
+            if (!game.active) return
+
+            const missingHP = game.character.max_hp - game.character.hp
+            const missingMP = game.character.max_mp - game.character.mp
+            const hpRatio = game.character.hp / game.character.max_hp
+            const mpRatio = game.character.mp / game.character.max_mp
+            if (hpRatio < mpRatio) {
+                if (missingHP >= 400 && bot.hasItem("hpot1")) {
+                    await bot.useHPPot(await bot.locateItem("hpot1"))
+                } else {
+                    await bot.regenHP()
+                }
+            } else if (mpRatio < hpRatio) {
+                if (missingMP >= 500 && bot.hasItem("mpot1")) {
+                    await bot.useMPPot(await bot.locateItem("mpot1"))
+                } else {
+                    await bot.regenMP()
+                }
+            } else if (hpRatio < 1) {
+                if (missingHP >= 400 && bot.hasItem("hpot1")) {
+                    await bot.useHPPot(await bot.locateItem("hpot1"))
+                } else {
+                    await bot.regenHP()
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { healLoop() }, Math.max(bot.getCooldown("use_hp"), 10))
+    }
+    healLoop()
+
+    async function lootLoop() {
+        try {
+            if (!game.active) return
+
+            for (const id of game.chests.keys()) {
+                game.socket.emit("open_chest", { id: id })
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { lootLoop() }, 1000)
+    }
+    lootLoop()
+
+    async function sendItemLoop() {
+        try {
+            if (!game.active) return
+
+            if (game.players.has("earthMer")) {
+                const merchant = game.players.get("earthMer")
+                const distance = Tools.distance(game.character, merchant)
+                if (distance < 400) {
+                    for (let i = 7; i < game.character.items.length; i++) {
+                        const item = game.character.items[i]
                         if (!item) continue
 
                         await bot.sendItem("earthMer", i, item.q)
