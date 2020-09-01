@@ -93,7 +93,11 @@ async function run() {
                 }
             }
             ranger.game.socket.on("game_response", gameResponseCooldown)
-            await ranger.attack(getTarget())
+            try {
+                await ranger.attack(getTarget())
+            } catch(e) {
+                // Ignore this error
+            }
 
             console.log("-------------------------")
             const elapsedTime = gameResponseTime - evalTime
@@ -109,6 +113,39 @@ async function run() {
         setTimeout(async () => { testLoop() }, 10000)
     }
     testLoop()
+
+    async function healLoop() {
+        try {
+            const missingHP = mage.game.character.max_hp - mage.game.character.hp
+            const missingMP = mage.game.character.max_mp - mage.game.character.mp
+            const hpRatio = mage.game.character.hp / mage.game.character.max_hp
+            const mpRatio = mage.game.character.mp / mage.game.character.max_mp
+            if (hpRatio < mpRatio) {
+                if (missingHP >= 400 && mage.hasItem("hpot1")) {
+                    await mage.useHPPot(await mage.locateItem("hpot1"))
+                } else {
+                    await mage.regenHP()
+                }
+            } else if (mpRatio < hpRatio) {
+                if (missingMP >= 500 && mage.hasItem("mpot1")) {
+                    await mage.useMPPot(await mage.locateItem("mpot1"))
+                } else {
+                    await mage.regenMP()
+                }
+            } else if (hpRatio < 1) {
+                if (missingHP >= 400 && mage.hasItem("hpot1")) {
+                    await mage.useHPPot(await mage.locateItem("hpot1"))
+                } else {
+                    await mage.regenHP()
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { healLoop() }, Math.max(mage.getCooldown("use_hp"), 10))
+    }
+    healLoop()
 }
 
 run()
