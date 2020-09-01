@@ -386,6 +386,7 @@ export class Game {
             this.character.map = data.map
         })
 
+        // TODO: Confirm this works for leave_party(), too.
         this.socket.on("party_update", (data: PartyData) => {
             this.party = data
         })

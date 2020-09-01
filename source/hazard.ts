@@ -16,6 +16,10 @@ async function startWarrior(auth: string, character: string, user: string, serve
         game.disconnect()
     })
 
+    game.socket.on("request", (data: { name: string }) => {
+        bot.acceptPartyRequest(data.name)
+    })
+
     async function agitateLoop() {
         try {
             if (!game.active) return
@@ -333,6 +337,19 @@ async function startMage(auth: string, character: string, user: string, server: 
     }
     lootLoop()
 
+    async function partyLoop() {
+        try {
+            if (!game.party) {
+                bot.sendPartyRequest("earthWar")
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { partyLoop() }, 10000)
+    }
+    partyLoop()
+
     async function sendItemLoop() {
         try {
             if (!game.active) return
@@ -483,6 +500,20 @@ async function startPriest(auth: string, character: string, user: string, server
         setTimeout(async () => { lootLoop() }, 1000)
     }
     lootLoop()
+
+    async function partyLoop() {
+        try {
+            if (!game.party) {
+                console.log("Let's party!!")
+                bot.sendPartyRequest("earthWar")
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { partyLoop() }, 10000)
+    }
+    partyLoop()
 
     async function sendItemLoop() {
         try {

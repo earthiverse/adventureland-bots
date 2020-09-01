@@ -78,7 +78,30 @@ class BotBase {
             this.game.socket.on("game_log", unableCheck)
         })
 
+        this.game.socket.emit("party", { event: "accept", name: id })
         return acceptedInvite
+    }
+
+    // TODO: Add failure checks
+    public acceptPartyRequest(id: string): Promise<PartyData> {
+        const acceptedRequest = new Promise<PartyData>((resolve, reject) => {
+            const partyCheck = (data: PartyData) => {
+                if (data.list.includes(this.game.character.id)
+                    && data.list.includes(id)) {
+                    this.game.socket.removeListener("party_update", partyCheck)
+                    resolve(data)
+                }
+            }
+
+            setTimeout(() => {
+                this.game.socket.removeListener("party_update", partyCheck)
+                reject(`acceptPartyRequest timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.game.socket.on("party_update", partyCheck)
+        })
+
+        this.game.socket.emit("party", { event: "raccept", name: id })
+        return acceptedRequest
     }
 
     // TODO: Add 'notthere' (e.g. calling attack("12345") returns ["notthere", {place: "attack"}])
@@ -391,6 +414,11 @@ class BotBase {
         return pontyItems
     }
 
+    // TODO: Add promises
+    public leaveParty() {
+        this.game.socket.emit("party", { event: "leave" })
+    }
+
     public move(x: number, y: number): Promise<unknown> {
         const pathfinder = Pathfinder.getInstance(this.game.G)
         const safeTo = pathfinder.getSafeWalkTo(
@@ -532,11 +560,20 @@ class BotBase {
     }
 
     /**
-     * 
+     * Invites the given character to our party.
      * @param id The character ID to invite to our party.
      */
     // TODO: See what socket events happen, and see if we can see if the server picked up our request
     public sendPartyInvite(id: string) {
+        this.game.socket.emit("party", { event: "invite", name: id })
+    }
+
+    /**
+     * Requests to join another character's party.
+     * @param id The character ID to request a party invite from.
+     */
+    // TODO: See what socket events happen, and see if we can see if the server picked up our request
+    public sendPartyRequest(id: string) {
         this.game.socket.emit("party", { event: "request", name: id })
     }
 
