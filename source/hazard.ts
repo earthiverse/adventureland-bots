@@ -8,7 +8,7 @@ async function startWarrior(auth: string, character: string, user: string, serve
     const game = new Game(server, identifier)
     await game.connect(auth, character, user)
 
-    console.info(`Starting warrior (${character})!`)
+    console.info(`Starting warrior (${game.character.id})!`)
     const bot = new WarriorBot(game)
 
     game.socket.on("disconnect_reason", (data: string) => {
@@ -200,7 +200,7 @@ async function startMage(auth: string, character: string, user: string, server: 
     const game = new Game(server, identifier)
     await game.connect(auth, character, user)
 
-    console.info(`Starting mage (${character})!`)
+    console.info(`Starting mage (${game.character.id})!`)
     const bot = new MageBot(game)
 
     game.socket.on("disconnect_reason", (data: string) => {
@@ -363,7 +363,7 @@ async function startPriest(auth: string, character: string, user: string, server
     const game = new Game(server, identifier)
     await game.connect(auth, character, user)
 
-    console.info(`Starting priest (${character})!`)
+    console.info(`Starting priest (${game.character.id})!`)
     const bot = new PriestBot(game)
 
     game.socket.on("disconnect_reason", (data: string) => {
