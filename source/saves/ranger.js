@@ -37,4 +37,10 @@ function on_magiport(name) {
     accept_magiport(name)
 }
 
+function on_party_request(name) {
+    if(["earthMer", "earthMag", "earthMag2", "earthWar", "earthWar2", "earthPri", "earthPri2"].includes(name)) {
+        accept_party_request(name)
+    }
+}
+
 pause()

@@ -377,8 +377,6 @@ class Ranger extends Character {
             transferGoldToMerchant(process.env.MERCHANT, 100000)
             sellUnwantedItems(this.itemsToSell)
 
-            this.createParty(["earthMer", "earthMag", "earthMag2", "earthWar", "earthWar2", "earthPri", "earthPri2"])
-
             // const shouldSwitch = this.shouldSwitchServer()
             // if (shouldSwitch) {
             //     if (Date.now() - this.switchServerCheck > 60000) {
@@ -536,14 +534,6 @@ class Ranger extends Character {
 
         // Can't do a special attack, so let's do a normal one
         await super.attackLoop()
-    }
-
-    createParty(members: string[]): void {
-        if (parent.party_list.length >= 4) return // We already have the maximum amount of party members
-        for (const member of members) {
-            if (!parent.party[member])
-                send_party_invite(member)
-        }
     }
 }
 

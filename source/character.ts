@@ -116,6 +116,10 @@ export abstract class Character {
                 await buyPots()
             }
 
+            if (!parent.party && parent.character.name !== "earthiverse") {
+                send_party_request("earthiverse")
+            }
+
             this.getNewYearTreeBuff()
             dismantleItems(this.itemsToDismantle)
 
