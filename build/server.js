@@ -9,3 +9,4 @@ const server = app.listen(portConfig, () => {
     const info = server.address();
     console.log("Server has started on port %s!", info.port);
 });
+export {};
