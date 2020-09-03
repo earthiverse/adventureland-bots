@@ -116,7 +116,7 @@ export abstract class Character {
                 await buyPots()
             }
 
-            if (!parent.party && parent.character.name !== "earthiverse") {
+            if (!parent.party_list.includes(parent.character.id) && parent.character.id !== "earthiverse") {
                 send_party_request("earthiverse")
             }
 
@@ -324,8 +324,15 @@ export abstract class Character {
             timeLeft: number
         }[] = []
 
+        const members: string[] = []
+        if (parent.party_list.length > 0) {
+            members.push(...parent.party_list)
+        } else {
+            members.push(parent.character.id)
+        }
+
         const party: PartyInfo = getPartyInfo()
-        for (const memberName of parent.party_list) {
+        for (const memberName of members) {
             // NOTE: TODO: Gonna check if not checking parent.entities improves the lagginess when we are between monster hunts.
             // const member = parent.entities[memberName] ? parent.entities[memberName] : this.info.party[memberName]
             const member = party[memberName]
