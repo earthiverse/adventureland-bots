@@ -658,6 +658,10 @@ export class NGraphMove {
         this.searchFinishTime = Date.now()
         if (!path) {
             return Promise.reject(`We could not find a path from [${from.map},${from.x},${from.y}] to [${to.map},${to.x},${to.y}] in ${this.searchFinishTime - this.searchStartTime}ms`)
+        } else {
+            console.log("----- DEBUG: path -----")
+            console.log(path)
+            console.log("-----------------------")
         }
 
         async function performNextMovement(to: NodeData, link: LinkData) {
