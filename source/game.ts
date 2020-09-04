@@ -38,6 +38,7 @@ export class Game {
                     if (server.region == region && server.name == name) {
                         this.socket = socketio(`ws://${server.addr}:${server.port}`, {
                             autoConnect: false,
+                            reconnection: false,
                             transports: ["websocket"]
                         })
                         this.prepare()
@@ -248,6 +249,9 @@ export class Game {
             } else if (data.response == "ex_condition") {
                 // The condition expired
                 delete this.character.s[data.name]
+
+                // TODO: See if "buy_success" is called before our updated character is sent, and if it is, adjust our gold and items.
+
             } else {
                 // DEBUG
                 console.info("Game Response Data -----")
@@ -284,6 +288,7 @@ export class Game {
         })
 
         this.socket.on("action", (data: ActionData) => {
+            // TODO: do we need this 'date'?
             this.projectiles.set(data.pid, { ...data, date: new Date() })
         })
 
@@ -339,9 +344,13 @@ export class Game {
             }
         })
 
-        // TODO: Figure out type. I think it's just a string?
-        this.socket.on("game_error", (data: any) => {
-            console.error(`Game Error: ${data}`)
+        this.socket.on("game_error", (data: string | { message: string }) => {
+            if (typeof data == "string") {
+                console.error(`Game Error: ${data}`)
+            } else {
+                console.error("Game Error ----------")
+                console.error(data)
+            }
             this.disconnect()
         })
 
@@ -478,7 +487,7 @@ export class Game {
         })
     }
 
-    disconnect(): void {
+    async disconnect(): Promise<void> {
         console.warn("Disconnecting!")
         this.active = false
         this.socket.close()

@@ -339,6 +339,8 @@ async function startMage(auth: string, character: string, user: string, server: 
 
     async function partyLoop() {
         try {
+            if (!game.active) return
+
             if (!game.party) {
                 bot.sendPartyRequest("earthWar")
             }
@@ -503,8 +505,9 @@ async function startPriest(auth: string, character: string, user: string, server
 
     async function partyLoop() {
         try {
+            if (!game.active) return
+            
             if (!game.party) {
-                console.log("Let's party!!")
                 bot.sendPartyRequest("earthWar")
             }
         } catch (e) {
