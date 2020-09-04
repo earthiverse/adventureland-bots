@@ -170,7 +170,7 @@ export abstract class Character {
     }
 
     public async run(): Promise<void> {
-        await this.lootSetup()
+        this.lootLoop()
         await this.infoSetup()
         this.infoLoop()
         this.healLoop()
@@ -181,34 +181,42 @@ export abstract class Character {
         this.attackLoop()
     }
 
-    protected async lootSetup(): Promise<void> {
-        parent.socket.on("drop", (data: { id: string, chest: string } & IPosition) => {
-            if (distance(parent.character, data) > 800) return // Chests over a 800 radius have a penalty as per @Wizard in #feedback (Discord) on 11/26/2019
-            const party: PartyInfo = getPartyInfo()
+    protected async lootLoop(): Promise<void> {
+        try {
+            for (const chestID in parent.chests) {
+                const data = parent.chests[chestID]
 
-            let shouldLoot = true
-            for (const id of parent.party_list) {
-                if (id == parent.character.id) continue // Skip ourself
+                if (distance(parent.character, data) > 800) return // Chests over a 800 radius have a penalty as per @Wizard in #feedback (Discord) on 11/26/2019
+                const party: PartyInfo = getPartyInfo()
 
-                const partyMember = parent.entities[id]
-                if (!partyMember) continue
-                if (distance(partyMember, data) > 800) continue
-                if (!party[id]) continue
+                let shouldLoot = true
+                for (const id of parent.party_list) {
+                    if (id == parent.character.id) continue // Skip ourself
 
-                if (["chest3", "chest4"].includes(data.chest)) {
-                    if (parent.character.goldm >= party[id].goldm) continue
-                } else {
-                    if (parent.character.luckm >= party[id].luckm) continue
+                    const partyMember = parent.entities[id]
+                    if (!partyMember) continue
+                    if (distance(partyMember, data) > 800) continue
+                    if (!party[id]) continue
+
+                    if (["chest3", "chest4"].includes(data.skin)) {
+                        if (parent.character.goldm >= party[id].goldm) continue
+                    } else {
+                        if (parent.character.luckm >= party[id].luckm) continue
+                    }
+
+                    shouldLoot = false
+                    break
                 }
 
-                shouldLoot = false
-                break
+                if (shouldLoot) {
+                    parent.socket.emit("open_chest", { id: chestID })
+                }
             }
+        } catch (e) {
+            console.error(e)
+        }
 
-            if (shouldLoot) {
-                parent.socket.emit("open_chest", { id: data.id })
-            }
-        })
+        setTimeout(async () => { this.lootLoop() }, 2000)
     }
 
     protected async infoSetup(): Promise<void> {
@@ -324,15 +332,8 @@ export abstract class Character {
             timeLeft: number
         }[] = []
 
-        const members: string[] = []
-        if (parent.party_list.length > 0) {
-            members.push(...parent.party_list)
-        } else {
-            members.push(parent.character.id)
-        }
-
         const party: PartyInfo = getPartyInfo()
-        for (const memberName of members) {
+        for (const memberName of parent.party_list.length > 0 ? parent.party_list : [parent.character.id]) {
             // NOTE: TODO: Gonna check if not checking parent.entities improves the lagginess when we are between monster hunts.
             // const member = parent.entities[memberName] ? parent.entities[memberName] : this.info.party[memberName]
             const member = party[memberName]
@@ -1181,10 +1182,12 @@ export abstract class Character {
         // Find out what targets are already claimed by our party members
         const members = parent.party_list
         const claimedTargets: Set<string> = new Set<string>()
-        for (const id in parent.entities) {
-            if (members.includes(id)) {
-                const target = parent.entities[id].target
-                if (target) claimedTargets.add(target)
+        if (members.length > 0) {
+            for (const id in parent.entities) {
+                if (members.includes(id) && id !== parent.character.id) {
+                    const target = parent.entities[id].target
+                    if (target) claimedTargets.add(target)
+                }
             }
         }
 

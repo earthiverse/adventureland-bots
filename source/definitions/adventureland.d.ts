@@ -627,9 +627,10 @@ export type Entity = PositionMovable & {
   vy: number;
 }
 
+// TODO: Improve this, add missing info
 export type ChestInfo = PositionReal & {
   alpha: number;
-  skin: "chest3" | string;
+  skin: "chest3" | "chest4" | string;
 }
 
 export type ItemInfo = {

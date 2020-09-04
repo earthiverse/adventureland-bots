@@ -250,7 +250,7 @@ class Merchant extends Character {
     }
 
     public async run() {
-        await this.lootSetup()
+        this.lootLoop()
         this.attackLoop()
         this.healLoop()
         this.scareLoop()
