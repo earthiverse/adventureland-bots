@@ -667,7 +667,7 @@ export class NGraphMove {
         async function performNextMovement(to: NodeData, link: LinkData) {
             if (link) {
                 if (link.type == "town") {
-                    if (distance(parent.character, to) < TOWN_COST) {
+                    if (distance(parent.character, to) < TOWN_COST && can_move_to(to.x, to.y)) {
                         // Walk to the town node
                         await Promise.race([move(to.x, to.y), new Promise(resolve => setTimeout(resolve, WALK_TIMEOUT))])
                     } else {
