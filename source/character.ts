@@ -183,11 +183,12 @@ export abstract class Character {
 
     protected async lootLoop(): Promise<void> {
         try {
+            const party: PartyInfo = getPartyInfo()
+
             for (const chestID in parent.chests) {
                 const data = parent.chests[chestID]
 
-                if (distance(parent.character, data) > 800) return // Chests over a 800 radius have a penalty as per @Wizard in #feedback (Discord) on 11/26/2019
-                const party: PartyInfo = getPartyInfo()
+                if (distance(parent.character, data) > 800) continue // Chests over a 800 radius have a penalty as per @Wizard in #feedback (Discord) on 11/26/2019
 
                 let shouldLoot = true
                 for (const id of parent.party_list) {
