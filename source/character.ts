@@ -217,7 +217,7 @@ export abstract class Character {
             console.error(e)
         }
 
-        setTimeout(async () => { this.lootLoop() }, 2000)
+        setTimeout(async () => { this.lootLoop() }, Math.min(...parent.pings) * 2)
     }
 
     protected async infoSetup(): Promise<void> {
