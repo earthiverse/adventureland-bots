@@ -238,8 +238,10 @@ export function isAvailable(skill: SkillName): boolean {
     // Check if we have the required items to use this skill
     if (G.skills[skill].slot) {
         for (const requiredItem of G.skills[skill].slot) {
-            if (!parent.character.slots[requiredItem[0]]) return false // Nothing equipped in the slot we need
-            if (parent.character.slots[requiredItem[0]].name != requiredItem[1]) return false // Something else is equipped in the slot we need
+            if (!locate_item(requiredItem[1])) {
+                if (!parent.character.slots[requiredItem[0]]) return false // Nothing equipped in the slot we need
+                if (parent.character.slots[requiredItem[0]].name != requiredItem[1]) return false // Something else is equipped in the slot we need
+            }
         }
     }
 
