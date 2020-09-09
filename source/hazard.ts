@@ -2,8 +2,12 @@ import { PingCompensatedGame as Game } from "./game.js"
 import { WarriorBot, MageBot, PriestBot } from "./bot.js"
 import { Tools } from "./tools.js"
 import { ServerRegion, ServerIdentifier } from "./definitions/adventureland.js"
-import { PlayerData } from "./definitions/adventureland-server.js"
 
+const AGGRO_CHAR = "earthWar"
+
+/**
+ * Used to aggro monsters. Equip the weapon you want firehazard on on this character.
+ */
 async function startWarrior(auth: string, character: string, user: string, server: ServerRegion, identifier: ServerIdentifier) {
     const game = new Game(server, identifier)
     await game.connect(auth, character, user)
@@ -200,6 +204,9 @@ async function startWarrior(auth: string, character: string, user: string, serve
     tauntLoop()
 }
 
+/**
+ * Used to aggro monsters. Equip the weapon you want firehazard on on this character.
+ */
 async function startMage(auth: string, character: string, user: string, server: ServerRegion, identifier: ServerIdentifier) {
     const game = new Game(server, identifier)
     await game.connect(auth, character, user)
@@ -211,41 +218,6 @@ async function startMage(auth: string, character: string, user: string, server: 
         console.warn(`Disconnecting (${data})`)
         game.disconnect()
     })
-
-    async function attackLoop() {
-        try {
-            if (!game.active) return
-
-            const targets: string[] = []
-            for (const [id, entity] of game.entities) {
-                if (entity.type != "scorpion") continue // Only attack scorpions
-                if (entity.target != "earthWar") continue // Only attack those attacking our warrior
-                if (entity.s.burned) continue // Don't attack monsters that are burning
-                if (Tools.distance(game.character, entity) > game.character.range) continue // Only attack those in range
-
-                // Don't attack if there's a projectile going towards it
-                let isTargetedbyProjectile = false
-                for (const projectile of game.projectiles.values()) {
-                    if (projectile.target == id) {
-                        isTargetedbyProjectile = true
-                        break
-                    }
-                }
-                if (isTargetedbyProjectile) continue
-
-                targets.push(id)
-            }
-
-            if (targets.length > 0 && game.character.mp >= game.character.mp_cost) {
-                await bot.attack(targets[0])
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { attackLoop() }, Math.max(bot.getCooldown("attack"), 10))
-    }
-    attackLoop()
 
     async function buyLoop() {
         try {
@@ -267,25 +239,42 @@ async function startMage(auth: string, character: string, user: string, server: 
     }
     buyLoop()
 
-    async function energizeLoop() {
+    async function cburstLoop() {
         try {
             if (!game.active) return
 
-            let friend: PlayerData
-            if (game.character.id == "earthMag") {
-                friend = game.players.get("earthMag2")
-            } else if (game.character.id == "earthMag2") {
-                friend = game.players.get("earthMag")
+            const targets: [string, number][] = []
+            for (const [id, entity] of game.entities) {
+                if (entity.type != "scorpion") continue // Only attack scorpions
+                if (entity.target) continue // Don't attack them if they are already targeting a player
+                if (entity.s.burned) continue // Don't attack monsters that are burning
+                if (Tools.distance(game.character, entity) > game.character.range) continue // Only attack those in range
+
+                // Don't attack if there's a projectile going towards it
+                let isTargetedbyProjectile = false
+                for (const projectile of game.projectiles.values()) {
+                    if (projectile.target == id) {
+                        isTargetedbyProjectile = true
+                        break
+                    }
+                }
+                if (isTargetedbyProjectile) continue
+
+                // Attack each target for 1 damage
+                targets.push([id, 2])
             }
 
-            if (friend) await bot.energize(friend.id)
+            if (targets.length > 0) {
+                bot.cburst(targets)
+            }
+
         } catch (e) {
             console.error(e)
         }
 
-        setTimeout(async () => { energizeLoop() }, Math.max(bot.getCooldown("energize"), 10))
+        setTimeout(async () => { cburstLoop() }, Math.max(bot.getCooldown("cburst"), 10))
     }
-    energizeLoop()
+    cburstLoop()
 
     async function healLoop() {
         try {
@@ -342,7 +331,7 @@ async function startMage(auth: string, character: string, user: string, server: 
             if (!game.active) return
 
             if (!game.party) {
-                bot.sendPartyRequest("earthWar")
+                bot.sendPartyRequest(AGGRO_CHAR)
             }
         } catch (e) {
             console.error(e)
@@ -378,6 +367,9 @@ async function startMage(auth: string, character: string, user: string, server: 
     sendItemLoop()
 }
 
+/**
+ * Used to attack monsters. Equip this character with a fire staff.
+ */
 async function startPriest(auth: string, character: string, user: string, server: ServerRegion, identifier: ServerIdentifier) {
     const game = new Game(server, identifier)
     await game.connect(auth, character, user)
@@ -397,7 +389,7 @@ async function startPriest(auth: string, character: string, user: string, server
             const targets: string[] = []
             for (const [id, entity] of game.entities) {
                 if (entity.type != "scorpion") continue // Only attack scorpions
-                if (entity.target != "earthWar") continue // Only attack those attacking our warrior
+                if (entity.target != AGGRO_CHAR) continue // Only attack those attacking our warrior
                 if (entity.s.burned) continue // Don't attack monsters that are burning
                 if (Tools.distance(game.character, entity) > game.character.range) continue // Only attack those in range
 
@@ -414,7 +406,7 @@ async function startPriest(auth: string, character: string, user: string, server
                 targets.push(id)
             }
 
-            const friend = game.players.get("earthWar")
+            const friend = game.players.get(AGGRO_CHAR)
             if (friend && friend.hp / friend.max_hp < 0.5) {
                 // Heal our tank
                 await bot.heal(friend.id)
@@ -506,9 +498,9 @@ async function startPriest(auth: string, character: string, user: string, server
     async function partyLoop() {
         try {
             if (!game.active) return
-            
+
             if (!game.party) {
-                bot.sendPartyRequest("earthWar")
+                bot.sendPartyRequest(AGGRO_CHAR)
             }
         } catch (e) {
             console.error(e)

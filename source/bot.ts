@@ -1,5 +1,5 @@
 import { Game } from "./game.js"
-import { CharacterData, ActionData, NewMapData, EvalData, EntityData, GameResponseData, GameResponseDataObject, DeathData, PlayerData, DisappearingTextData, UpgradeData, PartyData, GameLogData, UIData } from "./definitions/adventureland-server"
+import { CharacterData, ActionData, NewMapData, EvalData, EntityData, GameResponseData, DeathData, PlayerData, DisappearingTextData, UpgradeData, PartyData, GameLogData, UIData } from "./definitions/adventureland-server"
 import { SkillName, MonsterName, ItemName, SlotType, ItemInfo } from "./definitions/adventureland"
 import { Tools } from "./tools.js"
 import { Pathfinder } from "./pathfinder.js"
@@ -795,6 +795,30 @@ export class Bot extends BotBase {
 
 /** Implement functions that only apply to mages */
 export class MageBot extends Bot {
+    /**
+     * 
+     * @param targets Put in pairs of entity IDs, and how much mp to spend attacking each target. E.g.: [["12345", "100"]]
+     */
+    public cburst(targets: [string, number][]): Promise<unknown> {
+        const cbursted = new Promise((resolve, reject) => {
+            const cooldownCheck = (data: EvalData) => {
+                if (/skill_timeout\s*\(\s*['"]cburst['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
+                    this.game.socket.removeListener("eval", cooldownCheck)
+                    resolve()
+                }
+            }
+
+            setTimeout(() => {
+                this.game.socket.removeListener("eval", cooldownCheck)
+                reject(`cburst timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.game.socket.on("eval", cooldownCheck)
+        })
+
+        this.game.socket.emit("cburst", targets)
+        return cbursted
+    }
+
     public energize(target: string): Promise<unknown> {
         const energized = new Promise((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
