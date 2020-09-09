@@ -12,6 +12,7 @@ export class Game {
     protected promises: Promise<boolean>[] = []
     protected pingNum = 1
     protected pingMap = new Map<string, number>()
+    protected timeouts = new Map<string, ReturnType<typeof setTimeout>>()
 
     public active = false
     public socket: SocketIOClient.Socket
@@ -491,6 +492,9 @@ export class Game {
         console.warn("Disconnecting!")
         this.active = false
         this.socket.close()
+
+        // Cancel all timeouts
+        for (const timer of this.timeouts.values()) clearTimeout(timer)
     }
 
     async getGameData(): Promise<GData> {
@@ -592,7 +596,7 @@ export class PingCompensatedGame extends Game {
     public pingLoop(): void {
         if (this.active) {
             this.sendPing()
-            setTimeout(async () => { this.pingLoop() }, PING_EVERY_MS)
+            this.timeouts.set("pingLoop", setTimeout(async () => { this.pingLoop() }, PING_EVERY_MS))
         }
     }
 }
