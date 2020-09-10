@@ -16,7 +16,7 @@
         "watch": false
     },
     "include": [
-        "source/*.ts"
+        "source/**/*.ts"
     ],
     "exclude": [
         "build",

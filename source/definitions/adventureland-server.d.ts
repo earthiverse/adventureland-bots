@@ -122,6 +122,23 @@ export type CharacterData = {
     user?: BankInfo
 }
 
+export type CharacterListData = {
+    map: MapName
+    in: MapName
+    name: string
+    level: number
+    skin: string
+    cx: any
+    online: number
+    y: number
+    x: number
+    type: CharacterType
+    id: string
+
+    secret?: string
+    server?: string
+}
+
 export type ChestData = {
     chest: "chest3" | "chest4" | "chest6" | string
     id: string
