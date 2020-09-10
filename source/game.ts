@@ -265,7 +265,7 @@ export class Game {
     }
 
     // TODO: Convert to async, and return a promise
-    protected sendPing(): string {
+    public sendPing(): string {
         // Get the next pingID
         const pingID = this.pingNum.toString()
         this.pingNum++
