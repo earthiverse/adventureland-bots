@@ -265,7 +265,7 @@ async function startMage(auth: string, character: string, user: string, server: 
             }
 
             if (targets.length > 0) {
-                bot.cburst(targets)
+                await bot.cburst(targets)
             }
 
         } catch (e) {
@@ -349,7 +349,7 @@ async function startMage(auth: string, character: string, user: string, server: 
                 const merchant = game.players.get("earthMer")
                 const distance = Tools.distance(game.character, merchant)
                 if (distance < 400) {
-                    for (let i = 3; i < game.character.items.length; i++) {
+                    for (let i = 4; i < game.character.items.length; i++) {
                         const item = game.character.items[i]
                         if (!item) continue
 

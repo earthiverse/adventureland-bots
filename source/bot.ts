@@ -815,7 +815,7 @@ export class MageBot extends Bot {
             this.game.socket.on("eval", cooldownCheck)
         })
 
-        this.game.socket.emit("cburst", targets)
+        this.game.socket.emit("skill", { name: "cburst", targets: targets })
         return cbursted
     }
 
