@@ -219,6 +219,10 @@ async function startMage(auth: string, character: string, user: string, server: 
         game.disconnect()
     })
 
+    game.socket.on("request", (data: { name: string }) => {
+        bot.acceptPartyRequest(data.name)
+    })
+
     async function buyLoop() {
         try {
             if (!game.active) return
@@ -325,21 +329,6 @@ async function startMage(auth: string, character: string, user: string, server: 
         setTimeout(async () => { lootLoop() }, 1000)
     }
     lootLoop()
-
-    async function partyLoop() {
-        try {
-            if (!game.active) return
-
-            if (!game.party) {
-                bot.sendPartyRequest(AGGRO_CHAR)
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { partyLoop() }, 10000)
-    }
-    partyLoop()
 
     async function sendItemLoop() {
         try {
