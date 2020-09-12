@@ -4,17 +4,101 @@ import { AchievementProgressData, CharacterData, ServerData, CharacterListData, 
 import { connect, disconnect } from "./database/database.js"
 import { UserModel } from "./database/users/users.model.js"
 import { IUserDocument } from "./database/users/users.types.js"
-import { ServerRegion, ServerIdentifier, GData, SkillName, BankInfo, ConditionName } from "./definitions/adventureland"
-import { Tools } from "./tools"
+import { ServerRegion, ServerIdentifier, GData, SkillName, BankInfo, ConditionName, MapName } from "./definitions/adventureland"
+import { Tools } from "./tools.js"
+import { CharacterModel } from "./database/characters/characters.model.js"
+import { Server } from "socket.io"
 
 // TODO: Move to config file
 const PING_EVERY_MS = 30000
 const MAX_PINGS = 100
 
-// Connect to the MongoDB database
 connect()
 
-class Player {
+class Observer {
+    public socket: SocketIOClient.Socket
+
+    protected serverRegion: ServerRegion
+    protected serverIdentifier: ServerIdentifier
+    protected map: MapName
+    protected x: number
+    protected y: number
+
+    constructor(serverData: ServerData) {
+        this.serverRegion = serverData.region
+        this.serverIdentifier = serverData.name
+
+        this.socket = socketio(`ws://${serverData.addr}:${serverData.port}`, {
+            autoConnect: false,
+            transports: ["websocket"]
+        })
+
+        this.socket.on("welcome", (data: WelcomeData) => {
+            this.map = data.map
+            this.x = data.x
+            this.y = data.y
+
+            // Send a response that we're ready to go
+            this.socket.emit("loaded", {
+                height: 1080,
+                width: 1920,
+                scale: 2,
+                success: 1
+            } as LoadedData)
+        })
+
+        this.socket.on("entities", (data: EntitiesData) => {
+            this.parseEntities(data)
+        })
+
+        this.socket.on("new_map", (data: NewMapData) => {
+            this.map = data.name
+            this.x = data.x
+            this.y = data.y
+            this.parseEntities(data.entities)
+        })
+    }
+
+    protected async parseEntities(data: EntitiesData): Promise<void> {
+        // Update all the players
+        for (const player of data.players) {
+            CharacterModel.findOneAndUpdate({ name: player.id }, {
+                map: this.map,
+                x: player.x,
+                y: player.y,
+                serverRegion: this.serverRegion,
+                serverIdentifier: this.serverIdentifier,
+                lastSeen: Date.now(),
+                s: player.s
+            }, { upsert: true, useFindAndModify: false }).exec()
+        }
+
+        // TODO: Update entities if they're special
+    }
+
+    public async connect() {
+        console.log("Connecting...")
+        const connected = new Promise<unknown>((resolve, reject) => {
+            this.socket.once("welcome", (data: WelcomeData) => {
+                if (data.region !== this.serverRegion || data.name !== this.serverIdentifier) {
+                    reject(`We wanted the server ${this.serverRegion}${this.serverIdentifier}, but we are on ${data.region}${data.name}.`)
+                }
+
+                resolve()
+            })
+
+            setTimeout(() => {
+                reject("Failed to start within 10s.")
+            }, 10000)
+        })
+
+        this.socket.open()
+
+        return connected
+    }
+}
+
+class Player extends Observer {
     protected userID: string
     protected userAuth: string
     protected characterID: string
@@ -25,7 +109,6 @@ class Player {
     protected timeouts = new Map<string, ReturnType<typeof setTimeout>>()
 
     public G: GData
-    public socket: SocketIOClient.Socket
 
     public achievements = new Map<string, AchievementProgressData>()
     public bank: BankInfo
@@ -39,17 +122,12 @@ class Player {
     public projectiles = new Map<string, ActionData & { date: Date }>()
     public server: WelcomeData
 
-    constructor(userID: string, userAuth: string, characterID: string, g: GData, wsURL: string) {
+    constructor(userID: string, userAuth: string, characterID: string, g: GData, serverData: ServerData) {
+        super(serverData)
         this.userID = userID
         this.userAuth = userAuth
         this.characterID = characterID
         this.G = g
-
-        this.socket = socketio(wsURL, {
-            autoConnect: false,
-            reconnection: false,
-            transports: ["websocket"]
-        })
 
         this.socket.on("achievement_progress", (data: AchievementProgressData) => {
             this.achievements.set(data.name, data)
@@ -77,7 +155,8 @@ class Player {
         })
 
         this.socket.on("disconnect", () => {
-            this.disconnect()
+            // NOTE: We will try to automatically reconnect
+            // this.disconnect()
         })
 
         this.socket.on("drop", (data: ChestData) => {
@@ -161,7 +240,7 @@ class Player {
             this.character.x = data.x
             this.character.y = data.y
             this.character.in = data.in
-            this.character.map = data.map
+            this.character.map = data.name
         })
 
         // TODO: Confirm this works for leave_party(), too.
@@ -298,10 +377,8 @@ class Player {
         if (data.user) this.bank = data.user
     }
 
-    protected parseEntities(data: EntitiesData): void {
-        // console.log("socket: entities!")
-        // console.log("updating entities")
-        // console.log(data)
+    protected async parseEntities(data: EntitiesData): Promise<void> {
+        super.parseEntities(data)
 
         if (data.type == "all") {
             // Erase all of the entities
@@ -430,6 +507,30 @@ class Player {
     }
 
     public async connect() {
+        const connected = new Promise<unknown>((resolve, reject) => {
+            const failCheck = (data: string | { message: string }) => {
+                if (typeof data == "string") {
+                    reject(`Failed to connect: ${data}`)
+                } else {
+                    reject(`Failed to connect: ${data.message}`)
+                }
+            }
+
+            const startCheck = () => {
+                resolve()
+            }
+
+
+            setTimeout(() => {
+                this.socket.removeListener("start", startCheck)
+                this.socket.removeListener("game_error", failCheck)
+                reject("Failed to start within 10s.")
+            }, 10000)
+
+            this.socket.once("start", startCheck)
+            this.socket.once("game_error", failCheck)
+        })
+
         // When we're loaded, authenticate
         this.socket.once("welcome", () => {
             console.log("socket: authenticating...")
@@ -448,18 +549,14 @@ class Player {
 
         this.socket.open()
 
-        return new Promise((resolve, reject) => {
-            this.socket.once("start", () => {
-                resolve()
-            })
-            setTimeout(() => {
-                reject("start timeout (10000ms)")
-            }, 10000)
-        })
+        return connected
     }
 
     public async disconnect(): Promise<void> {
+        if (this.socket.disconnected) return
         console.warn("Disconnecting!")
+
+        // Close the socket
         this.socket.close()
 
         // Cancel all timeouts
@@ -488,14 +585,28 @@ export class Game2 {
     // TODO: Move this type to type definitions
     protected static characters: { [T in string]?: CharacterListData } = {}
 
+    public static players: { [T in string]: Player } = {}
+    public static observers: { [T in string]: Observer } = {}
+
     public static G: GData
 
     private constructor() {
         // Private to force static methods
     }
 
+    public static async disconnect(): Promise<void> {
+        // Stop all characters
+        this.stopAllCharacters()
+
+        // Stop all observers
+        this.stopAllObservers()
+
+        // Disconnect from the databasee
+        disconnect()
+    }
+
     static async login(email: string, password: string): Promise<boolean> {
-        // See if we already have a loginAuth stored in our database
+        // See if we already have a userAuth stored in our database
         const user = await UserModel.findOne({ email: email, password: password }).exec()
 
         if (user) {
@@ -517,7 +628,7 @@ export class Game2 {
                     const result = /^auth=(.+?);/.exec(cookie)
                     if (result) {
                         // Save our data to the database
-                        this.user = await UserModel.findOneAndUpdate({ email: email, password: password }, { email: email, password: password, userID: result[1].split("-")[0], userAuth: result[1].split("-")[1] }, { upsert: true, new: true, lean: true }).exec()
+                        this.user = await UserModel.findOneAndUpdate({ email: email, password: password }, { email: email, password: password, userID: result[1].split("-")[0], userAuth: result[1].split("-")[1] }, { upsert: true, new: true, lean: true, useFindAndModify: true }).exec()
                         console.log(this.user)
                         break
                     }
@@ -539,18 +650,56 @@ export class Game2 {
     static async startCharacter(characterName: string, serverRegion: ServerRegion, serverID: ServerIdentifier): Promise<Player> {
         if (!this.user) return Promise.reject("You must login first.")
         if (!this.characters) await this.updateServersAndCharacters()
+        if (!this.G) await this.updateGData()
 
-        // Get Server URL
-        const wsURL = `ws://${this.servers[serverRegion][serverID].addr}:${this.servers[serverRegion][serverID].port}`
         const userID = this.user.userID
         const userAuth = this.user.userAuth
         const characterID = this.characters[characterName].id
 
-        const player = new Player(userID, userAuth, characterID, Game2.G, wsURL)
+        try {
+            // Create the player and connect
+            const player = new Player(userID, userAuth, characterID, Game2.G, this.servers[serverRegion][serverID])
+            await player.connect()
 
-        // TODO: Setup character
+            this.players[characterName] = player
+            return player
+        } catch (e) {
+            return Promise.reject(e)
+        }
+    }
 
-        return player
+    static async startObserver(region: ServerRegion, id: ServerIdentifier): Promise<Observer> {
+        if (!this.user) return Promise.reject("You must login first.")
+
+        try {
+            const observer = new Observer(this.servers[region][id])
+            await observer.connect()
+
+            this.observers[this.servers[region][id].key] = observer
+            return observer
+        } catch (e) {
+            return Promise.reject(e)
+        }
+    }
+
+    static async stopAllCharacters(): Promise<void> {
+        for (const characterName in this.players) this.stopCharacter(characterName)
+    }
+
+    static async stopAllObservers(): Promise<void> {
+        for (const region in this.observers)
+            for (const id in this.observers[region])
+                this.stopObserver(region as ServerRegion, id as ServerIdentifier)
+    }
+
+    public static async stopCharacter(characterName: string): Promise<void> {
+        this.players[characterName].disconnect()
+        delete this.players[characterName]
+    }
+
+    public static async stopObserver(region: ServerRegion, id: ServerIdentifier): Promise<void> {
+        this.observers[region][id].disconnect()
+        delete this.players[region][id]
     }
 
     static async updateGData(): Promise<GData> {
@@ -590,7 +739,6 @@ export class Game2 {
     }
 }
 
-// TODO: compensate condition durations
 export class PingCompensatedPlayer extends Player {
     async connect(): Promise<unknown> {
         const promise = super.connect()
@@ -607,7 +755,7 @@ export class PingCompensatedPlayer extends Player {
         this.nextSkill.set(skill, new Date(next.getTime() - pingCompensation))
     }
 
-    protected parseEntities(data: EntitiesData): void {
+    protected async parseEntities(data: EntitiesData): Promise<void> {
         super.parseEntities(data)
 
         const pingCompensation = Math.min(...this.pings) / 2
@@ -660,7 +808,7 @@ export class PingCompensatedPlayer extends Player {
         }
     }
 
-    public pingLoop(): void {
+    protected pingLoop(): void {
         if (this.socket.connected) {
             this.sendPing()
             this.timeouts.set("pingLoop", setTimeout(async () => { this.pingLoop() }, PING_EVERY_MS))

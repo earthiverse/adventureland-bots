@@ -3,12 +3,13 @@ import { WarriorBot, MageBot, PriestBot } from "./bot.js"
 import { Tools } from "./tools.js"
 import { ServerRegion, ServerIdentifier } from "./definitions/adventureland.js"
 
-const AGGRO_CHAR = "earthWar"
+const AGGRO_CHAR = "earthMag"
+const mages: MageBot[] = []
 
 /**
  * Used to aggro monsters. Equip the weapon you want firehazard on on this character.
  */
-async function startWarrior(auth: string, character: string, user: string, server: ServerRegion, identifier: ServerIdentifier) {
+async function startWarrior(auth: string, character: string, user: string, server: ServerRegion, identifier: ServerIdentifier): Promise<WarriorBot> {
     const game = new Game(server, identifier)
     await game.connect(auth, character, user)
 
@@ -202,12 +203,14 @@ async function startWarrior(auth: string, character: string, user: string, serve
         setTimeout(async () => { tauntLoop() }, Math.max(bot.getCooldown("taunt"), 10))
     }
     tauntLoop()
+
+    return bot
 }
 
 /**
  * Used to aggro monsters. Equip the weapon you want firehazard on on this character.
  */
-async function startMage(auth: string, character: string, user: string, server: ServerRegion, identifier: ServerIdentifier) {
+async function startMage(auth: string, character: string, user: string, server: ServerRegion, identifier: ServerIdentifier): Promise<MageBot> {
     const game = new Game(server, identifier)
     await game.connect(auth, character, user)
 
@@ -354,12 +357,14 @@ async function startMage(auth: string, character: string, user: string, server: 
         setTimeout(async () => { sendItemLoop() }, 1000)
     }
     sendItemLoop()
+
+    return bot
 }
 
 /**
  * Used to attack monsters. Equip this character with a fire staff.
  */
-async function startPriest(auth: string, character: string, user: string, server: ServerRegion, identifier: ServerIdentifier) {
+async function startPriest(auth: string, character: string, user: string, server: ServerRegion, identifier: ServerIdentifier): Promise<PriestBot> {
     const game = new Game(server, identifier)
     await game.connect(auth, character, user)
 
@@ -404,6 +409,9 @@ async function startPriest(auth: string, character: string, user: string, server
                 await bot.heal(game.character.id)
             } else if (targets.length > 0 && game.character.mp >= game.character.mp_cost) {
                 // Attack monsters
+                if (mages.length > 0 && mages[0].getCooldown("energize") == 0) {
+                    await mages[0].energize(game.character.id)
+                }
                 await bot.attack(targets[0])
             }
         } catch (e) {
@@ -523,16 +531,20 @@ async function startPriest(auth: string, character: string, user: string, server
         setTimeout(async () => { sendItemLoop() }, 1000)
     }
     sendItemLoop()
+
+    return bot
 }
 
 async function run() {
     // NOTE: Move characters to scorpions on desertland before starting!
 
-    // Used to taunt & agitate. Put the weapon you want to upgrade on this character.
-    startWarrior("secret", "secret", "secret", "ASIA", "I") //earthWar
     // Used to attack the monsters. Put fire weapons on these characters.
-    startMage("secret", "secret", "secret", "ASIA", "I") //earthMag
-    startMage("secret", "secret", "secret", "ASIA", "I") //earthMag2
+    startPriest("secret", "secret", "secret", "ASIA", "I") //earthPri
+    startPriest("secret", "secret", "secret", "ASIA", "I") //earthPri2
+
+    // Used to taunt & agitate. Put the weapon you want to upgrade on this character.
+    //startWarrior("secret", "secret", "secret", "ASIA", "I") //earthWar
+    mages.push(await startMage("secret", "secret", "secret", "ASIA", "I")) //earthMag
 }
 
 run()
