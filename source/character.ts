@@ -31,9 +31,7 @@ export abstract class Character {
     ]
     protected itemsToSell: ItemLevelInfo = {
         // Default clothing
-        "shoes": 2, "pants": 2, "coat": 2, "helmet": 2, "gloves": 2,
-        // Common & useless stuff
-        "cclaw": 2, "hpamulet": 1, "hpbelt": 1, "ringsj": 1, "vitearring": 1, "vitring": 1,
+        "shoes": 2, "pants": 2, "coat": 2, "helmet": 2, "gloves": 2
     }
     protected itemsToDismantle: ItemLevelInfo = {
     }
@@ -73,15 +71,15 @@ export abstract class Character {
         // Capes
         "angelwings", "bcape", "cape", "ecape", "stealthcape",
         // Shoes
-        /*"eslippers",*/ "hboots", "mrnboots", "mwboots", "shoes1", "wingedboots", "xboots",
+        "eslippers", "hboots", "mrnboots", "mwboots", "shoes1", "wingedboots", "wshoes", "xboots",
         // Pants
-        "hpants", "mrnpants", "mwpants", "pants1", "starkillers", "xpants",
+        "hpants", "mrnpants", "mwpants", "pants1", "starkillers", "wbreeches", "xpants",
         // Armor
-        "cdragon", "coat1", "harmor", "mcape", "mrnarmor", "mwarmor", "tshirt0", "tshirt1", "tshirt2", "tshirt3", "tshirt4", "tshirt6", "tshirt7", "tshirt8", "tshirt88", "tshirt9", "warpvest", "xarmor",
+        "cdragon", "coat1", "harmor", "mcape", "mrnarmor", "mwarmor", "tshirt0", "tshirt1", "tshirt2", "tshirt3", "tshirt4", "tshirt6", "tshirt7", "tshirt8", "tshirt88", "tshirt9", "warpvest", "wattire", "xarmor",
         // Helmets
-        "eears", "fury", "helmet1", "hhelmet", "mrnhat", "mwhelmet", "partyhat", "rednose", "xhelmet",
+        "eears", "fury", "helmet1", "hhelmet", "mrnhat", "mwhelmet", "partyhat", "rednose", "wcap", "xhelmet",
         // Gloves
-        "gloves1", "goldenpowerglove", "handofmidas", "hgloves", "mrngloves", "mwgloves", "poker", "powerglove", "xgloves",
+        "gloves1", "goldenpowerglove", "handofmidas", "hgloves", "mrngloves", "mwgloves", "poker", "powerglove", "wgloves", "xgloves",
         // Good weapons
         "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "firebow", "frostbow", "froststaff", "gbow", "harbringer", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow", "t3bow", "wblade",
         // Things we can exchange / craft with
@@ -95,9 +93,9 @@ export abstract class Character {
         // Potions & consumables
         "bunnyelixir", "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate",
         // High level scrolls
-        "cscroll3", "scroll3", "scroll4",
+        "cscroll3", "scroll3", "scroll4", "forscroll", "luckscroll", "manastealscroll",
         // Misc. Things
-        "bottleofxp", "bugbountybox", "monstertoken", "poison", "snakeoil"
+        "bottleofxp", "bugbountybox", "computer", "monstertoken", "poison", "snakeoil"
     ])
 
     /** Set to true to stop movement */

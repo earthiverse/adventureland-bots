@@ -390,6 +390,9 @@ class Priest extends Character {
             // Weapons
             "pmace",
 
+            // Offhands
+            "lantern", "wbook1",
+
             // Shields
             "mshield", "shield", "sshield", "xshield"
         )

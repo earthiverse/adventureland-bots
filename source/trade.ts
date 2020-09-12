@@ -228,8 +228,8 @@ export async function buyPots(): Promise<void> {
     if (parent.character.gold < G.items["mpot1"].g) return // No money
 
     const itemsToBuy: { [T in ItemName]?: number } = {
-        "mpot1": 9999,
-        "hpot1": 9999
+        "mpot1": 2500,
+        "hpot1": 2500
     }
 
     for (const itemName in itemsToBuy) {

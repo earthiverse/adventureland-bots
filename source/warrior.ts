@@ -281,6 +281,9 @@ class Warrior extends Character {
             // Weapons
             "basher", "bataxe", "candycanesword", "carrotsword", "fireblade", "fsword", "sword", "swordofthedead", "wblade", "woodensword",
 
+            // Offhands
+            "lantern",
+
             // Shields
             "mshield", "shield", "sshield", "xshield"
         )
