@@ -345,7 +345,7 @@ export type NewMapData = {
     in: MapName
     info: any
     m: number
-    map: MapName
+    name: MapName
     x: number
     y: number
 }

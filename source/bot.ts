@@ -678,8 +678,8 @@ class BotBase {
         const currentMap = this.game.character.map
         const warpComplete = new Promise((resolve, reject) => {
             this.game.socket.once("new_map", (data: NewMapData) => {
-                if (currentMap == data.map) resolve()
-                else reject(`We are now in ${data.map}, but we should be in ${currentMap}`)
+                if (currentMap == data.name) resolve()
+                else reject(`We are now in ${data.name}, but we should be in ${currentMap}`)
             })
 
             setTimeout(() => {

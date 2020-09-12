@@ -393,7 +393,7 @@ export class Game {
             this.character.x = data.x
             this.character.y = data.y
             this.character.in = data.in
-            this.character.map = data.map
+            this.character.map = data.name
         })
 
         // TODO: Confirm this works for leave_party(), too.
@@ -593,7 +593,7 @@ export class PingCompensatedGame extends Game {
         }
     }
 
-    public pingLoop(): void {
+    protected pingLoop(): void {
         if (this.active) {
             this.sendPing()
             this.timeouts.set("pingLoop", setTimeout(async () => { this.pingLoop() }, PING_EVERY_MS))
