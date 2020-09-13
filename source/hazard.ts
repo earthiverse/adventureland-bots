@@ -159,9 +159,15 @@ async function startWarrior(auth: string, character: string, user: string, serve
                 const merchant = game.players.get("earthMer")
                 const distance = Tools.distance(game.character, merchant)
                 if (distance < 400) {
-                    for (let i = 4; i < game.character.items.length; i++) {
+                    for (let i = 0; i < game.character.items.length; i++) {
                         const item = game.character.items[i]
-                        if (!item) continue
+                        if (!item
+                            || item.name == "computer"
+                            || item.name == "tracker"
+                            || item.name == "hpot0"
+                            || item.name == "hpot1"
+                            || item.name == "mpot0"
+                            || item.name == "mpot1") continue // Don't send important items
 
                         await bot.sendItem("earthMer", i, item.q)
                         break // Only send one item at a time
@@ -339,9 +345,15 @@ async function startMage(game: Player): Promise<MageBot> {
                 const merchant = game.players.get("earthMer")
                 const distance = Tools.distance(game.character, merchant)
                 if (distance < 400) {
-                    for (let i = 4; i < game.character.items.length; i++) {
+                    for (let i = 0; i < game.character.items.length; i++) {
                         const item = game.character.items[i]
-                        if (!item) continue
+                        if (!item
+                            || item.name == "computer"
+                            || item.name == "tracker"
+                            || item.name == "hpot0"
+                            || item.name == "hpot1"
+                            || item.name == "mpot0"
+                            || item.name == "mpot1") continue // Don't send important items
 
                         await bot.sendItem("earthMer", i, item.q)
                         break // Only send one item at a time
@@ -510,9 +522,15 @@ async function startPriest(game: Player): Promise<PriestBot> {
                 const merchant = game.players.get("earthMer")
                 const distance = Tools.distance(game.character, merchant)
                 if (distance < 400) {
-                    for (let i = 3; i < game.character.items.length; i++) {
+                    for (let i = 0; i < game.character.items.length; i++) {
                         const item = game.character.items[i]
-                        if (!item) continue
+                        if (!item
+                            || item.name == "computer"
+                            || item.name == "tracker"
+                            || item.name == "hpot0"
+                            || item.name == "hpot1"
+                            || item.name == "mpot0"
+                            || item.name == "mpot1") continue // Don't send important items
 
                         await bot.sendItem("earthMer", i, item.q)
                         break // Only send one item at a time
@@ -536,7 +554,7 @@ async function run() {
     const earthMag = Game2.startCharacter("earthMag", "US", "I")
     const earthPri = Game2.startCharacter("earthPri", "US", "I")
     const earthPri2 = Game2.startCharacter("earthPri2", "US", "I")
-    
+
     // Used to attack the monsters. Put fire weapons on these characters.
     startPriest(await earthPri) //earthPri
     startPriest(await earthPri2) //earthPri2
