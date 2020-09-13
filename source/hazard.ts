@@ -2,6 +2,7 @@ import { PingCompensatedGame as Game } from "./game.js"
 import { WarriorBot, MageBot, PriestBot } from "./bot.js"
 import { Tools } from "./tools.js"
 import { ServerRegion, ServerIdentifier } from "./definitions/adventureland.js"
+import { Game2, Player } from "./game2.js"
 
 const AGGRO_CHAR = "earthMag"
 const mages: MageBot[] = []
@@ -210,10 +211,7 @@ async function startWarrior(auth: string, character: string, user: string, serve
 /**
  * Used to aggro monsters. Equip the weapon you want firehazard on on this character.
  */
-async function startMage(auth: string, character: string, user: string, server: ServerRegion, identifier: ServerIdentifier): Promise<MageBot> {
-    const game = new Game(server, identifier)
-    await game.connect(auth, character, user)
-
+async function startMage(game: Player): Promise<MageBot> {
     console.info(`Starting mage (${game.character.id})!`)
     const bot = new MageBot(game)
 
@@ -228,7 +226,7 @@ async function startMage(auth: string, character: string, user: string, server: 
 
     async function buyLoop() {
         try {
-            if (!game.active) return
+            if (game.socket.disconnected) return
 
             if (Tools.hasItem("computer", game.character.items)) {
                 // Buy HP Pots
@@ -248,7 +246,7 @@ async function startMage(auth: string, character: string, user: string, server: 
 
     async function cburstLoop() {
         try {
-            if (!game.active) return
+            if (game.socket.disconnected) return
 
             const targets: [string, number][] = []
             for (const [id, entity] of game.entities) {
@@ -285,7 +283,7 @@ async function startMage(auth: string, character: string, user: string, server: 
 
     async function healLoop() {
         try {
-            if (!game.active) return
+            if (game.socket.disconnected) return
 
             const missingHP = game.character.max_hp - game.character.hp
             const missingMP = game.character.max_mp - game.character.mp
@@ -320,7 +318,7 @@ async function startMage(auth: string, character: string, user: string, server: 
 
     async function lootLoop() {
         try {
-            if (!game.active) return
+            if (game.socket.disconnected) return
 
             for (const id of game.chests.keys()) {
                 game.socket.emit("open_chest", { id: id })
@@ -335,7 +333,7 @@ async function startMage(auth: string, character: string, user: string, server: 
 
     async function sendItemLoop() {
         try {
-            if (!game.active) return
+            if (game.socket.disconnected) return
 
             if (game.players.has("earthMer")) {
                 const merchant = game.players.get("earthMer")
@@ -364,10 +362,7 @@ async function startMage(auth: string, character: string, user: string, server: 
 /**
  * Used to attack monsters. Equip this character with a fire staff.
  */
-async function startPriest(auth: string, character: string, user: string, server: ServerRegion, identifier: ServerIdentifier): Promise<PriestBot> {
-    const game = new Game(server, identifier)
-    await game.connect(auth, character, user)
-
+async function startPriest(game: Player): Promise<PriestBot> {
     console.info(`Starting priest (${game.character.id})!`)
     const bot = new PriestBot(game)
 
@@ -378,7 +373,7 @@ async function startPriest(auth: string, character: string, user: string, server
 
     async function attackLoop() {
         try {
-            if (!game.active) return
+            if (game.socket.disconnected) return
 
             const targets: string[] = []
             for (const [id, entity] of game.entities) {
@@ -424,7 +419,7 @@ async function startPriest(auth: string, character: string, user: string, server
 
     async function buyLoop() {
         try {
-            if (!game.active) return
+            if (game.socket.disconnected) return
 
             if (Tools.hasItem("computer", game.character.items)) {
                 // Buy HP Pots
@@ -444,7 +439,7 @@ async function startPriest(auth: string, character: string, user: string, server
 
     async function healLoop() {
         try {
-            if (!game.active) return
+            if (game.socket.disconnected) return
 
             const missingHP = game.character.max_hp - game.character.hp
             const missingMP = game.character.max_mp - game.character.mp
@@ -479,7 +474,7 @@ async function startPriest(auth: string, character: string, user: string, server
 
     async function lootLoop() {
         try {
-            if (!game.active) return
+            if (game.socket.disconnected) return
 
             for (const id of game.chests.keys()) {
                 game.socket.emit("open_chest", { id: id })
@@ -494,7 +489,7 @@ async function startPriest(auth: string, character: string, user: string, server
 
     async function partyLoop() {
         try {
-            if (!game.active) return
+            if (game.socket.disconnected) return
 
             if (!game.party) {
                 bot.sendPartyRequest(AGGRO_CHAR)
@@ -509,7 +504,7 @@ async function startPriest(auth: string, character: string, user: string, server
 
     async function sendItemLoop() {
         try {
-            if (!game.active) return
+            if (game.socket.disconnected) return
 
             if (game.players.has("earthMer")) {
                 const merchant = game.players.get("earthMer")
@@ -536,15 +531,18 @@ async function startPriest(auth: string, character: string, user: string, server
 }
 
 async function run() {
-    // NOTE: Move characters to scorpions on desertland before starting!
+    await Game2.login("hyprkookeez@gmail.com", "notmyrealpasswordlol")
 
+    const earthMag = Game2.startCharacter("earthMag", "US", "I")
+    const earthPri = Game2.startCharacter("earthPri", "US", "I")
+    const earthPri2 = Game2.startCharacter("earthPri2", "US", "I")
+    
     // Used to attack the monsters. Put fire weapons on these characters.
-    startPriest("secret", "secret", "secret", "ASIA", "I") //earthPri
-    startPriest("secret", "secret", "secret", "ASIA", "I") //earthPri2
+    startPriest(await earthPri) //earthPri
+    startPriest(await earthPri2) //earthPri2
 
     // Used to taunt & agitate. Put the weapon you want to upgrade on this character.
-    //startWarrior("secret", "secret", "secret", "ASIA", "I") //earthWar
-    mages.push(await startMage("secret", "secret", "secret", "ASIA", "I")) //earthMag
+    mages.push(await startMage(await earthMag)) //earthMag
 }
 
 run()

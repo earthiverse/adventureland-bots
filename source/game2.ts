@@ -15,7 +15,7 @@ const MAX_PINGS = 100
 
 connect()
 
-class Observer {
+export class Observer {
     public socket: SocketIOClient.Socket
 
     protected serverRegion: ServerRegion
@@ -98,7 +98,7 @@ class Observer {
     }
 }
 
-class Player extends Observer {
+export class Player extends Observer {
     protected userID: string
     protected userAuth: string
     protected characterID: string
@@ -658,7 +658,7 @@ export class Game2 {
 
         try {
             // Create the player and connect
-            const player = new Player(userID, userAuth, characterID, Game2.G, this.servers[serverRegion][serverID])
+            const player = new PingCompensatedPlayer(userID, userAuth, characterID, Game2.G, this.servers[serverRegion][serverID])
             await player.connect()
 
             this.players[characterName] = player
@@ -811,7 +811,11 @@ export class PingCompensatedPlayer extends Player {
     protected pingLoop(): void {
         if (this.socket.connected) {
             this.sendPing()
-            this.timeouts.set("pingLoop", setTimeout(async () => { this.pingLoop() }, PING_EVERY_MS))
+            if (this.pings.length > MAX_PINGS / 10) {
+                this.timeouts.set("pingLoop", setTimeout(async () => { this.pingLoop() }, PING_EVERY_MS))
+            } else {
+                this.timeouts.set("pingLoop", setTimeout(async () => { this.pingLoop() }, 1000))
+            }
         }
     }
 }

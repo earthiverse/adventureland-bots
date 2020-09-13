@@ -17,7 +17,7 @@ async function startRanger(auth: string, character: string, user: string) {
 
     async function attackLoop() {
         try {
-            if (!bot.game.active) return
+            if (game.socket.disconnected) return
 
             const targets: string[] = []
             // console.log(`# entities: ${bot.game.entities.size}`)
@@ -103,7 +103,7 @@ async function startRanger(auth: string, character: string, user: string) {
 
     async function healLoop() {
         try {
-            if (!bot.game.active) return
+            if (game.socket.disconnected) return
 
             const missingHP = bot.game.character.max_hp - bot.game.character.hp
             const missingMP = bot.game.character.max_mp - bot.game.character.mp
@@ -188,7 +188,7 @@ async function startMage(auth: string, character: string, user: string) {
 
     async function attackLoop() {
         try {
-            if (!bot.game.active) return
+            if (game.socket.disconnected) return
 
             const targets: string[] = []
             for (const [id, entity] of bot.game.entities) {
@@ -235,7 +235,7 @@ async function startMage(auth: string, character: string, user: string) {
 
     async function healLoop() {
         try {
-            if (!bot.game.active) return
+            if (game.socket.disconnected) return
 
             const missingHP = bot.game.character.max_hp - bot.game.character.hp
             const missingMP = bot.game.character.max_mp - bot.game.character.mp

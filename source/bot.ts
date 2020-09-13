@@ -3,6 +3,7 @@ import { CharacterData, ActionData, NewMapData, EvalData, EntityData, GameRespon
 import { SkillName, MonsterName, ItemName, SlotType, ItemInfo } from "./definitions/adventureland"
 import { Tools } from "./tools.js"
 import { Pathfinder } from "./pathfinder.js"
+import { Player } from "./game2.js"
 
 const TIMEOUT = 1000
 
@@ -10,9 +11,9 @@ const TIMEOUT = 1000
  * Implement functions that depend on server events here
  */
 class BotBase {
-    public game: Game
+    public game: Game | Player
 
-    constructor(game: Game) {
+    constructor(game: Game | Player) {
         this.game = game
     }
 
