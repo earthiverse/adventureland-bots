@@ -1,53 +1,48 @@
-import { PingCompensatedGame as Game } from "./game.js"
-import { RangerBot, MageBot } from "./bot.js"
+import { Game } from "./game.js"
 import { Tools } from "./tools.js"
 import { EvalData, GameResponseData } from "./definitions/adventureland-server.js"
 import { SkillName } from "./definitions/adventureland.js"
 
-async function startRanger(auth: string, character: string, user: string) {
-    const game = new Game("US", "II")
-    await game.connect(auth, character, user)
+async function startRanger() {
+    const ranger = await Game.startRanger("earthiverse", "US", "II")
+    console.info(`Starting ranger (${ranger.character.id})!`)
 
-    console.info(`Starting ranger (${character})!`)
-    const bot = new RangerBot(game)
-
-    bot.game.socket.on("disconnect_reason", (data: string) => {
+    ranger.socket.on("disconnect_reason", (data: string) => {
         console.warn(`Disconnecting (${data})`)
-        bot.game.disconnect()
+        ranger.disconnect()
     })
 
-    return bot
+    return ranger
 }
 
-async function startMage(auth: string, character: string, user: string) {
-    const game = new Game("US", "II")
-    await game.connect(auth, character, user)
+async function startMage() {
+    const mage = await Game.startMage("earthMag", "US", "II")
+    console.info(`Starting mage (${mage.character.id})!`)
 
-    console.info(`Starting mage (${character})!`)
-    const bot = new MageBot(game)
-
-    bot.game.socket.on("disconnect_reason", (data: string) => {
+    mage.socket.on("disconnect_reason", (data: string) => {
         console.warn(`Disconnecting (${data})`)
-        bot.game.disconnect()
+        mage.disconnect()
     })
 
-    return bot
+    return mage
 }
 
 async function run() {
-    const ranger = await startRanger("secret", "secret", "secret") //earthiverse
-    const mage = await startMage("secret", "secret", "secret") //earthMag
+    await Game.login("hyprkookeez@gmail.com", "notmyrealpasswordlol")
+
+    const ranger = await startRanger() //earthiverse
+    const mage = await startMage() //earthMag
 
     async function testLoop() {
         try {
             const getTarget = () => {
-                for (const [id, entity] of ranger.game.entities) {
+                for (const [id, entity] of ranger.entities) {
                     if (entity.type != "goo") continue // Only attack goos
-                    if (Tools.distance(ranger.game.character, entity) > ranger.game.character.range + ranger.game.character.xrange) continue // Only attack those in range
+                    if (Tools.distance(ranger.character, entity) > ranger.character.range + ranger.character.xrange) continue // Only attack those in range
 
                     // Don't attack if there's a projectile going towards it
                     let isTargetedbyProjectile = false
-                    for (const projectile of ranger.game.projectiles.values()) {
+                    for (const projectile of ranger.projectiles.values()) {
                         if (projectile.target == id) {
                             isTargetedbyProjectile = true
                             break
@@ -72,13 +67,13 @@ async function run() {
                         evalTime = Date.now()
                     }
                 }
-                ranger.game.socket.removeListener("eval", evalCooldown)
+                ranger.socket.removeListener("eval", evalCooldown)
             }
-            ranger.game.socket.on("eval", evalCooldown)
+            ranger.socket.on("eval", evalCooldown)
             await ranger.attack(getTarget())
 
             // 2. Energize Ranger
-            await mage.energize(ranger.game.character.id)
+            await mage.energize(ranger.character.id)
 
             // 3. Ranger Attack (Fail)
             let gameResponseTime: number
@@ -89,10 +84,10 @@ async function run() {
                     gameResponseTime = Date.now()
                     gameResponseMS = data.ms
                     console.log(data)
-                    ranger.game.socket.removeListener("game_response", gameResponseCooldown)
+                    ranger.socket.removeListener("game_response", gameResponseCooldown)
                 }
             }
-            ranger.game.socket.on("game_response", gameResponseCooldown)
+            ranger.socket.on("game_response", gameResponseCooldown)
             try {
                 await ranger.attack(getTarget())
             } catch(e) {
@@ -116,10 +111,10 @@ async function run() {
 
     async function healLoop() {
         try {
-            const missingHP = mage.game.character.max_hp - mage.game.character.hp
-            const missingMP = mage.game.character.max_mp - mage.game.character.mp
-            const hpRatio = mage.game.character.hp / mage.game.character.max_hp
-            const mpRatio = mage.game.character.mp / mage.game.character.max_mp
+            const missingHP = mage.character.max_hp - mage.character.hp
+            const missingMP = mage.character.max_mp - mage.character.mp
+            const hpRatio = mage.character.hp / mage.character.max_hp
+            const mpRatio = mage.character.mp / mage.character.max_mp
             if (hpRatio < mpRatio) {
                 if (missingHP >= 400 && mage.hasItem("hpot1")) {
                     await mage.useHPPot(await mage.locateItem("hpot1"))

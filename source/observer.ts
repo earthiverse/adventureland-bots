@@ -1,14 +1,14 @@
-import { Game2 } from "./game2.js"
+import { Game } from "./game.js"
 
 async function start() {
-    await Game2.login("email@email.email", "password")
+    await Game.login("email@email.email", "password")
 
-    await Game2.startObserver("ASIA", "I")
-    await Game2.startObserver("US", "I")
-    await Game2.startObserver("US", "II")
-    await Game2.startObserver("US", "III")
-    await Game2.startObserver("EU", "I")
-    await Game2.startObserver("EU", "II")
+    await Game.startObserver("ASIA", "I")
+    await Game.startObserver("US", "I")
+    await Game.startObserver("US", "II")
+    await Game.startObserver("US", "III")
+    await Game.startObserver("EU", "I")
+    await Game.startObserver("EU", "II")
 }
 
 start()

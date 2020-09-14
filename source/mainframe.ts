@@ -1,27 +1,21 @@
-import { PingCompensatedGame as Game } from "./game.js"
-import { Bot } from "./bot.js"
 import neo from "@neopass/wordlist"
 const { wordList } = neo
-import { ServerRegion, ServerIdentifier } from "./definitions/adventureland.js"
+import { Game, Player } from "./game.js"
 
 let words: string[]
 
-async function startMainframeBot(auth: string, character: string, user: string, server: ServerRegion, identifier: ServerIdentifier) {
-    const game = new Game(server, identifier)
-    await game.connect(auth, character, user)
+async function startMainframeBot(bot: Player) {
+    console.info(`Starting MainFrameBot (${bot.character.id})!`)
 
-    console.info(`Starting MainFrameBot (${character})!`)
-    const bot = new Bot(game)
-
-    bot.game.socket.on("disconnect_reason", (data: string) => {
+    bot.socket.on("disconnect_reason", (data: string) => {
         console.warn(`Disconnecting (${data})`)
-        bot.game.disconnect()
+        bot.disconnect()
     })
 
     async function lootLoop() {
         try {
-            for (const id of bot.game.chests.keys()) {
-                bot.game.socket.emit("open_chest", { id: id })
+            for (const id of bot.chests.keys()) {
+                bot.socket.emit("open_chest", { id: id })
             }
         } catch (e) {
             console.error(e)
@@ -32,11 +26,11 @@ async function startMainframeBot(auth: string, character: string, user: string, 
     lootLoop()
 
     async function submitLoop() {
-        if (game.players.size > 0) {
+        if (bot.players.size > 0) {
 
             // Wait for players to go away
             console.log("waiting for players to go away")
-            console.log(game.players.keys())
+            console.log(bot.players.keys())
             setTimeout(async () => { submitLoop() }, 10000)
             return
         }
@@ -45,21 +39,28 @@ async function startMainframeBot(auth: string, character: string, user: string, 
         const mainframeCheck = (data: { owner: string, message: string, id: string }) => {
             console.log(`${data.owner}: ${data.message}`)
             if (data.owner == "mainframe") {
-                bot.game.socket.removeListener("chat_log", mainframeCheck)
+                bot.socket.removeListener("chat_log", mainframeCheck)
                 setTimeout(async () => { submitLoop() }, 100 - (Date.now() - then))
             }
         }
-        bot.game.socket.on("chat_log", mainframeCheck)
+        bot.socket.on("chat_log", mainframeCheck)
         console.log(`give ${word}`)
-        bot.game.socket.emit("eval", { command: `give ${word}` })
+        bot.socket.emit("eval", { command: `give ${word}` })
     }
     submitLoop()
 }
 
 async function run() {
+    await Game.login("hyprkookeez@gmail.com", "thisisnotmyrealpasswordlol")
+
     words = await wordList()
-    // startMainframeBot("secret", "secret", "secret", "ASIA", "I") // earthiverse
-    // startMainframeBot("secret", "secret", "secret", "ASIA", "I") // earthMag
-    startMainframeBot("secret", "secret", "secret", "US", "III") // earthMag2
+
+    const earthiverse = await Game.startCharacter("earthiverse", "ASIA", "I")
+    startMainframeBot(earthiverse)
+    const earthMag = await Game.startCharacter("earthMag", "US", "I")
+    startMainframeBot(earthMag)
+    const earthMag2 = await Game.startCharacter("earthMag2", "US", "II")
+    startMainframeBot(earthMag2)
+
 }
 run()
