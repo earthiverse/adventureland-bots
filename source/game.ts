@@ -7,7 +7,7 @@ import { IUserDocument } from "./database/users/users.types.js"
 import { ServerRegion, ServerIdentifier, GData, SkillName, BankInfo, ConditionName, MapName, ItemInfo, ItemName, SlotType, MonsterName, CharacterType } from "./definitions/adventureland"
 import { Tools } from "./tools.js"
 import { CharacterModel } from "./database/characters/characters.model.js"
-import { Pathfinder } from "./pathfinder"
+import { Pathfinder } from "./pathfinder.js"
 
 // TODO: Move to config file
 const MAX_PINGS = 100
@@ -77,7 +77,7 @@ export class Observer {
         // TODO: Update entities if they're special
     }
 
-    public async connect() {
+    public async connect(): Promise<unknown> {
         console.log("Connecting...")
         const connected = new Promise<unknown>((resolve, reject) => {
             this.socket.once("welcome", (data: WelcomeData) => {
@@ -507,7 +507,7 @@ export class Player extends Observer {
         this.nextSkill.set(skill, next)
     }
 
-    public async connect() {
+    public async connect(): Promise<unknown> {
         const connected = new Promise<unknown>((resolve, reject) => {
             const failCheck = (data: string | { message: string }) => {
                 if (typeof data == "string") {
@@ -669,8 +669,6 @@ export class Player extends Observer {
     // TODO: Add 'notthere' (e.g. calling attack("12345") returns ["notthere", {place: "attack"}])
     // TODO: Check if cooldown is sent after attack
     public attack(id: string): Promise<string> {
-        // if (!this.game.entities.has(id) && !this.game.players.has(id)) return Promise.reject(`No Entity with ID '${id}'`)
-
         const attackStarted = new Promise<string>((resolve, reject) => {
             const deathCheck = (data: DeathData) => {
                 if (data.id == id) {
@@ -981,9 +979,8 @@ export class Player extends Observer {
         this.socket.emit("party", { event: "leave" })
     }
 
-    public move(x: number, y: number): Promise<unknown> {
-        const pathfinder = Pathfinder.getInstance(this.G)
-        const safeTo = pathfinder.getSafeWalkTo(
+    public async move(x: number, y: number): Promise<unknown> {
+        const safeTo = await Pathfinder.getSafeWalkTo(
             { map: this.character.map, x: this.character.x, y: this.character.y },
             { map: this.character.map, x, y })
         if (safeTo.x !== x || safeTo.y !== y) {
@@ -1079,7 +1076,7 @@ export class Player extends Observer {
             setTimeout(() => {
                 this.socket.removeListener("ui", idsCheck)
                 this.socket.removeListener("eval", cooldownCheck)
-                reject(`sendItem timeout (${TIMEOUT}ms)`)
+                reject(`scare timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
             this.socket.on("ui", idsCheck)
             this.socket.on("eval", cooldownCheck)
@@ -1087,6 +1084,11 @@ export class Player extends Observer {
 
         this.socket.emit("skill", { name: "scare" })
         return scared
+    }
+
+    // TODO: See what socket events happen, and see if we can see if the server picked up our request
+    public sendGold(to: string, amount: number) {
+        this.socket.emit("send", { name: to, gold: amount })
     }
 
     public sendItem(to: string, inventoryPos: number, quantity = 1): Promise<unknown> {
@@ -1253,6 +1255,44 @@ export class Player extends Observer {
         return warpComplete
     }
 
+    /**
+     * Returns the number of items that match the given parameters
+     * @param itemName The item to look for
+     * @param inventory Where to look for the item
+     * @param filters Filters to help search for specific properties on items
+     */
+    public countItem(item: ItemName, inventory = this.character.items,
+        args?: {
+            levelGreaterThan?: number,
+            levelLessThan?: number
+        }): number {
+        let count = 0
+        for (const inventoryItem of inventory) {
+            if (!inventoryItem) continue
+            if (inventoryItem.name !== item) continue
+
+            if (args) {
+                if (args.levelGreaterThan) {
+                    if (!inventoryItem.level) continue // This item doesn't have a level
+                    if (inventoryItem.level <= args.levelGreaterThan) continue // This item is a lower level than desired
+                }
+                if (args.levelLessThan) {
+                    if (!inventoryItem.level) continue // This item doesn't have a level
+                    if (inventoryItem.level >= args.levelLessThan) continue // This item is a higher level than desired
+                }
+            }
+
+            // We have the item!
+            if (inventoryItem.q) {
+                count += inventoryItem.q
+            } else {
+                count += 1
+            }
+        }
+
+        return count
+    }
+
     public getCooldown(skill: SkillName): number {
         // Check if this skill is shared with another cooldown
         if (this.G.skills[skill].share) skill = this.G.skills[skill].share
@@ -1333,20 +1373,67 @@ export class Player extends Observer {
      * Returns the index of the item in the given inventory
      * @param itemName The item to look for
      * @param inventory Where to look for the item
+     * @param filters Filters to help search for specific properties on items
      */
-    public locateItem(itemName: ItemName, inventory = this.character.items): Promise<number> {
-        return new Promise((resolve, reject) => {
-            for (let i = 0; i < inventory.length; i++) {
-                const item = inventory[i]
-                if (!item) continue
+    public locateItem(itemName: ItemName, inventory = this.character.items,
+        filters?: {
+            levelGreaterThan?: number,
+            levelLessThan?: number
+        }): number {
+        for (let i = 0; i < inventory.length; i++) {
+            const item = inventory[i]
+            if (!item) continue
 
-                if (item.name == itemName) {
-                    resolve(i)
-                    return
+            if (filters) {
+                if (filters.levelGreaterThan) {
+                    if (!item.level) continue // This item doesn't have a level
+                    if (item.level <= filters.levelGreaterThan) continue // This item is a lower level than desired
+                }
+                if (filters.levelLessThan) {
+                    if (!item.level) continue // This item doesn't have a level
+                    if (item.level >= filters.levelLessThan) continue // This item is a higher level than desired
                 }
             }
-            reject(`Could not locate ${itemName}.`)
-        })
+
+            if (item.name == itemName) {
+                return i
+            }
+        }
+        return undefined
+    }
+
+    /**
+     * Returns a list of indexes of the items in the given inventory
+     * @param itemName The item to look for
+     * @param inventory Where to look for the item
+     * @param filters Filters to help search for specific properties on items
+     */
+    public locateItems(itemName: ItemName, inventory = this.character.items,
+        filters?: {
+            levelGreaterThan?: number,
+            levelLessThan?: number
+        }): number[] {
+        const found: number[] = []
+        for (let i = 0; i < inventory.length; i++) {
+            const item = inventory[i]
+            if (!item) continue
+
+            if (filters) {
+                if (filters.levelGreaterThan) {
+                    if (!item.level) continue // This item doesn't have a level
+                    if (item.level <= filters.levelGreaterThan) continue // This item is a lower level than desired
+                }
+                if (filters.levelLessThan) {
+                    if (!item.level) continue // This item doesn't have a level
+                    if (item.level >= filters.levelLessThan) continue // This item is a higher level than desired
+                }
+            }
+
+            if (item.name == itemName) {
+                found.push(i)
+            }
+        }
+        return found
     }
 }
 
@@ -1756,6 +1843,21 @@ export class Game {
         disconnect()
     }
 
+    static async getGData(): Promise<GData> {
+        if (this.G) return this.G
+
+        const response = await axios.get("http://adventure.land/data.js")
+        if (response.status == 200) {
+            // Update G with the latest data
+            const matches = response.data.match(/var\s+G\s*=\s*(\{.+\});/)
+            this.G = JSON.parse(matches[1]) as GData
+            return this.G
+        } else {
+            console.error(response)
+            console.error("Error fetching http://adventure.land/data.js")
+        }
+    }
+
     static async login(email: string, password: string): Promise<boolean> {
         // See if we already have a userAuth stored in our database
         const user = await UserModel.findOne({ email: email, password: password }).exec()
@@ -1801,7 +1903,7 @@ export class Game {
     static async startCharacter(cName: string, sRegion: ServerRegion, sID: ServerIdentifier, cType?: CharacterType): Promise<PingCompensatedPlayer> {
         if (!this.user) return Promise.reject("You must login first.")
         if (!this.characters) await this.updateServersAndCharacters()
-        if (!this.G) await this.updateGData()
+        if (!this.G) await this.getGData()
 
         const userID = this.user.userID
         const userAuth = this.user.userAuth
@@ -1873,19 +1975,6 @@ export class Game {
     public static async stopObserver(region: ServerRegion, id: ServerIdentifier): Promise<void> {
         this.observers[region][id].disconnect()
         delete this.players[region][id]
-    }
-
-    static async updateGData(): Promise<GData> {
-        const response = await axios.get("http://adventure.land/data.js")
-        if (response.status == 200) {
-            // Update G with the latest data
-            const matches = response.data.match(/var\s+G\s*=\s*(\{.+\});/)
-            this.G = JSON.parse(matches[1]) as GData
-            return this.G
-        } else {
-            console.error(response)
-            console.error("Error fetching http://adventure.land/data.js")
-        }
     }
 
     static async updateServersAndCharacters(): Promise<boolean> {
