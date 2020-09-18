@@ -1,4 +1,4 @@
-import { MapName, ItemName, ItemInfo } from "./definitions/adventureland"
+import { MapName } from "./definitions/adventureland"
 
 export class Tools {
     /**

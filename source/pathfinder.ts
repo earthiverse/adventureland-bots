@@ -28,7 +28,7 @@ export class Pathfinder {
     protected static graph: Graph<NodeData, LinkData> = createGraph({ multigraph: true })
     protected static path = path.nba(Pathfinder.graph, {
         distance(fromNode, toNode, link) {
-            if (link.data && (link.data.type == "blink" || link.data.type == "leave" || link.data.type == "transport")) {
+            if (link.data && (link.data.type == "leave" || link.data.type == "transport")) {
                 // We are using the transporter
                 return Pathfinder.TRANSPORT_COST
             } else if (link.data && link.data.type == "town") {
@@ -340,10 +340,10 @@ export class Pathfinder {
         const leaveLink = this.addNodeToGraph("main", this.G.maps.main.spawns[0][0], this.G.maps.main.spawns[0][1])
         for (const node of walkableNodes) {
             // Create town links
-            if (node.id !== townNode.id) this.addLinkToGraph(node, townNode, { type: "town" })
+            if (node.id !== townNode.id) this.addLinkToGraph(node, townNode, { type: "town", map: map })
 
             // Create leave links
-            if (map == "cyberland" || map == "jail") this.addLinkToGraph(node, leaveLink, { type: "leave" })
+            if (map == "cyberland" || map == "jail") this.addLinkToGraph(node, leaveLink, { type: "leave", map: map })
         }
 
         this.graph.endUpdate()
@@ -401,7 +401,7 @@ export class Pathfinder {
 
         if (from.map == to.map && this.canWalk(from, to)) {
             // Return a straight line to the destination
-            return [{ type: "move", x: to.x, y: to.y }]
+            return [{ type: "move", map: from.map, x: to.x, y: to.y }]
         }
 
         console.log(`Looking for a path from ${fromNode.id} to ${toNode.id}...`)
@@ -409,7 +409,7 @@ export class Pathfinder {
         if (rawPath.length == 0) {
             throw new Error("We did not find a path...")
         }
-        path.push({ type: "move", x: from.x, y: from.y })
+        path.push({ type: "move", map: from.map, x: from.x, y: from.y })
         for (let i = rawPath.length - 1; i > 0; i--) {
             const currentNode = rawPath[i]
             const nextNode = rawPath[i - 1]
@@ -418,14 +418,19 @@ export class Pathfinder {
             // TODO: Move this data to when we generate the graph
             if (link.data) {
                 path.push(link.data)
+                if (link.data.type == "town") {
+                    // Town warps don't always go to the exact location, so sometimes we can't reach the next node.
+                    // So... We will walk to the town node after town warping.
+                    path.push({ type: "move", map: link.data.map, x: this.G.maps[link.data.map].spawns[0][0], y: this.G.maps[link.data.map].spawns[0][1] })
+                }
             } else {
-                path.push({ type: "move", x: nextNode.data.x, y: nextNode.data.y })
+                path.push({ type: "move", map: nextNode.data.map, x: nextNode.data.x, y: nextNode.data.y })
             }
         }
-        path.push({ type: "move", x: to.x, y: to.y })
+        path.push({ type: "move", map: to.map, x: to.x, y: to.y })
 
-        console.log("We found a path!")
-        console.log(path)
+        // console.log("We found a path!")
+        // console.log(path)
         return path
     }
 
@@ -537,6 +542,7 @@ export class Pathfinder {
 
         // Prepare each map
         for (const map of maps) {
+            if (map == "test") continue // Skip the test map to save ourselves some processing.
             this.getGrid(map)
         }
 

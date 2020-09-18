@@ -23,25 +23,21 @@ export type LinkData =
      */
     | {
         type: "town"
-    } |
-    /**
-     * Used by mages to blink to certain locations
-     */
-    {
-        type: "blink"
-
+        map: MapName
     } |
     /**
      * Used when leaving cyberland (TODO: Or jail?)
      */
     {
         type: "leave"
+        map: MapName
     }
     /**
      * Normal movement
      */
     | {
         type: "move"
+        map: MapName
         x: number
         y: number
     }

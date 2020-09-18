@@ -1,8 +1,6 @@
 import { Game } from "./game.js"
 
 async function start() {
-    await Game.login("email@email.email", "password")
-
     await Game.startObserver("ASIA", "I")
     await Game.startObserver("US", "I")
     await Game.startObserver("US", "II")

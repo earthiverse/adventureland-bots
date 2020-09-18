@@ -8,6 +8,6 @@ const UserSchema = new Schema({
     userAuth: { type: String, required: false }
 })
 
-UserSchema.index({ email: 1, password: -1 }, { unique: true })
+UserSchema.index({ email: 1 }, { unique: true })
 
 export default UserSchema

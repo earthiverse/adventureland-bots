@@ -75,6 +75,8 @@ export class Observer {
         }
 
         // TODO: Update entities if they're special
+
+        // TODO: Update NPCs if they walk around
     }
 
     public async connect(): Promise<unknown> {
@@ -103,7 +105,7 @@ export class Player extends Observer {
     protected userID: string
     protected userAuth: string
     protected characterID: string
-    protected lastUpdate: number
+    protected lastPositionUpdate: number
     protected promises: Promise<boolean>[] = []
     protected pingNum = 1
     protected pingMap = new Map<string, number>()
@@ -280,18 +282,18 @@ export class Player extends Observer {
         // })
 
         this.socket.on("start", (data: StartData) => {
-            console.log("socket: start!")
-            console.log(data)
+            // console.log("socket: start!")
+            // console.log(data)
             this.parseCharacter(data)
             this.parseEntities(data.entities)
         })
 
         this.socket.on("welcome", (data: WelcomeData) => {
-            console.log("socket: welcome!")
+            // console.log("socket: welcome!")
             this.server = data
 
             // Send a response that we're ready to go
-            console.log("socket: loaded...")
+            // console.log("socket: loaded...")
             this.socket.emit("loaded", {
                 height: 1080,
                 width: 1920,
@@ -386,71 +388,8 @@ export class Player extends Observer {
             this.entities.clear()
             this.players.clear()
         } else if (this.character) {
-            // Erase all players and entities that are more than 600 units away
-            let toDelete: string[] = []
-            for (const [id, entity] of this.entities) {
-                if (Tools.distance(this.character, entity) < 600) continue
-                toDelete.push(id)
-            }
-            for (const id of toDelete) this.entities.delete(id)
-            toDelete = []
-            for (const [id, player] of this.players) {
-                if (Tools.distance(this.character, player) < 600) continue
-                toDelete.push(id)
-            }
-            for (const id of toDelete) this.players.delete(id)
-
-            // Update positions based on heading and the time since we last updated it.
-            if (this.lastUpdate) {
-                const msSinceLastUpdate = Date.now() - this.lastUpdate
-                for (const entity of this.entities.values()) {
-                    if (!entity.moving) continue
-                    let justUpdated = false
-                    for (const entity2 of data.monsters) {
-                        // Don't update the movements for those that were just updated
-                        if (entity.id == entity2.id) {
-                            justUpdated = true
-                            break
-                        }
-                    }
-                    if (justUpdated) continue
-                    const distanceTravelled = entity.speed * msSinceLastUpdate / 1000
-                    const angle = Math.atan2(entity.going_y - entity.y, entity.going_x - entity.x)
-                    const distanceToGoal = Tools.distance({ x: entity.x, y: entity.y }, { x: entity.going_x, y: entity.going_y })
-                    if (distanceTravelled > distanceToGoal) {
-                        entity.moving = false
-                        entity.x = entity.going_x
-                        entity.y = entity.going_y
-                    } else {
-                        entity.x = entity.x + Math.cos(angle) * distanceTravelled
-                        entity.y = entity.y + Math.sin(angle) * distanceTravelled
-                    }
-                }
-                for (const player of this.players.values()) {
-                    if (!player.moving) continue
-                    let justUpdated = false
-                    for (const entity2 of data.players) {
-                        // Don't update the movements for those that were just updated
-                        if (player.id == entity2.id) {
-                            justUpdated = true
-                            break
-                        }
-                    }
-                    if (justUpdated) continue
-                    const distanceTravelled = player.speed * msSinceLastUpdate / 1000
-                    const angle = Math.atan2(player.going_y - player.y, player.going_x - player.x)
-                    const distanceToGoal = Tools.distance({ x: player.x, y: player.y }, { x: player.going_x, y: player.going_y })
-                    if (distanceTravelled > distanceToGoal) {
-                        player.moving = false
-                        player.x = player.going_x
-                        player.y = player.going_y
-                    } else {
-                        player.x = player.x + Math.cos(angle) * distanceTravelled
-                        player.y = player.y + Math.sin(angle) * distanceTravelled
-                    }
-                }
-            }
-            this.lastUpdate = Date.now()
+            // Update all positions
+            this.updatePositions()
         }
 
         for (const monster of data.monsters) {
@@ -507,6 +446,75 @@ export class Player extends Observer {
         this.nextSkill.set(skill, next)
     }
 
+    protected updatePositions(): void {
+        if (this.lastPositionUpdate) {
+            const msSinceLastUpdate = Date.now() - this.lastPositionUpdate
+
+            // Update entities
+            for (const entity of this.entities.values()) {
+                if (!entity.moving) continue
+                const distanceTravelled = entity.speed * msSinceLastUpdate / 1000
+                const angle = Math.atan2(entity.going_y - entity.y, entity.going_x - entity.x)
+                const distanceToGoal = Tools.distance({ x: entity.x, y: entity.y }, { x: entity.going_x, y: entity.going_y })
+                if (distanceTravelled > distanceToGoal) {
+                    entity.moving = false
+                    entity.x = entity.going_x
+                    entity.y = entity.going_y
+                } else {
+                    entity.x = entity.x + Math.cos(angle) * distanceTravelled
+                    entity.y = entity.y + Math.sin(angle) * distanceTravelled
+                }
+            }
+
+            // Update players
+            for (const player of this.players.values()) {
+                if (!player.moving) continue
+                const distanceTravelled = player.speed * msSinceLastUpdate / 1000
+                const angle = Math.atan2(player.going_y - player.y, player.going_x - player.x)
+                const distanceToGoal = Tools.distance({ x: player.x, y: player.y }, { x: player.going_x, y: player.going_y })
+                if (distanceTravelled > distanceToGoal) {
+                    player.moving = false
+                    player.x = player.going_x
+                    player.y = player.going_y
+                } else {
+                    player.x = player.x + Math.cos(angle) * distanceTravelled
+                    player.y = player.y + Math.sin(angle) * distanceTravelled
+                }
+            }
+
+            // Update character
+            if (this.character.moving) {
+                const distanceTravelled = this.character.speed * msSinceLastUpdate / 1000
+                const angle = Math.atan2(this.character.going_y - this.character.y, this.character.going_x - this.character.x)
+                const distanceToGoal = Tools.distance({ x: this.character.x, y: this.character.y }, { x: this.character.going_x, y: this.character.going_y })
+                if (distanceTravelled > distanceToGoal) {
+                    this.character.moving = false
+                    this.character.x = this.character.going_x
+                    this.character.y = this.character.going_y
+                } else {
+                    this.character.x = this.character.x + Math.cos(angle) * distanceTravelled
+                    this.character.y = this.character.y + Math.sin(angle) * distanceTravelled
+                }
+            }
+        }
+
+        // Erase all players and entities that are more than 600 units away
+        let toDelete: string[] = []
+        for (const [id, entity] of this.entities) {
+            if (Tools.distance(this.character, entity) < 600) continue
+            toDelete.push(id)
+        }
+        for (const id of toDelete) this.entities.delete(id)
+        toDelete = []
+        for (const [id, player] of this.players) {
+            if (Tools.distance(this.character, player) < 600) continue
+            toDelete.push(id)
+        }
+        for (const id of toDelete) this.players.delete(id)
+
+        this.lastPositionUpdate = Date.now()
+    }
+
     public async connect(): Promise<unknown> {
         const connected = new Promise<unknown>((resolve, reject) => {
             const failCheck = (data: string | { message: string }) => {
@@ -534,7 +542,7 @@ export class Player extends Observer {
 
         // When we're loaded, authenticate
         this.socket.once("welcome", () => {
-            console.log("socket: authenticating...")
+            // console.log("socket: authenticating...")
             this.socket.emit("auth", {
                 auth: this.userAuth,
                 character: this.characterID,
@@ -910,35 +918,35 @@ export class Player extends Observer {
 
     public getMonsterHuntQuest(): Promise<unknown> {
         const questGot = new Promise((resolve, reject) => {
-            const questGotCheck = (data: GameResponseData) => {
+            const failCheck = (data: GameResponseData) => {
                 if (data == "ecu_get_closer") {
-                    this.socket.removeListener("game_response", questGotCheck)
-                    this.socket.removeListener("player", questGotCheck2)
+                    this.socket.removeListener("game_response", failCheck)
+                    this.socket.removeListener("player", successCheck)
                     reject("Too far away from Monster Hunt NPC.")
                 } else if (data == "monsterhunt_merchant") {
-                    this.socket.removeListener("game_response", questGotCheck)
-                    this.socket.removeListener("player", questGotCheck2)
+                    this.socket.removeListener("game_response", failCheck)
+                    this.socket.removeListener("player", successCheck)
                     reject("Merchants can't do Monster Hunts.")
                 }
             }
-            const questGotCheck2 = (data: CharacterData) => {
+            const successCheck = (data: CharacterData) => {
                 if (!data.hitchhikers) return
                 for (const hitchhiker of data.hitchhikers) {
                     if (hitchhiker[0] == "game_response" && hitchhiker[1] == "monsterhunt_started") {
-                        this.socket.removeListener("game_response", questGotCheck)
-                        this.socket.removeListener("player", questGotCheck2)
+                        this.socket.removeListener("game_response", failCheck)
+                        this.socket.removeListener("player", successCheck)
                         resolve()
                         return
                     }
                 }
             }
             setTimeout(() => {
-                this.socket.removeListener("game_response", questGotCheck)
-                this.socket.removeListener("player", questGotCheck2)
+                this.socket.removeListener("game_response", failCheck)
+                this.socket.removeListener("player", successCheck)
                 reject(`getMonsterHuntQuest timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
-            this.socket.on("game_response", questGotCheck)
-            this.socket.on("player", questGotCheck2)
+            this.socket.on("game_response", failCheck)
+            this.socket.on("player", successCheck)
         })
 
         this.socket.emit("monsterhunt")
@@ -974,12 +982,34 @@ export class Player extends Observer {
         return pontyItems
     }
 
+    /**
+     * For use on 'cyberland' and 'jail' to leave the map. You will be transported to the spawn on "main".
+     */
+    public leaveMap(): Promise<unknown> {
+        const leaveComplete = new Promise((resolve, reject) => {
+            this.socket.once("new_map", (data: NewMapData) => {
+                if (data.name == "main") resolve()
+                else reject(`We are now in ${data.name}, but we should be in main`)
+            })
+
+            setTimeout(() => {
+                reject(`leaveMap timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+        })
+
+        this.socket.emit("leave")
+        return leaveComplete
+    }
+
     // TODO: Add promises
     public leaveParty() {
         this.socket.emit("party", { event: "leave" })
     }
 
     public async move(x: number, y: number): Promise<unknown> {
+        // Check if we're already there
+        if (this.character.x == x && this.character.y == y) return Promise.resolve()
+
         const safeTo = await Pathfinder.getSafeWalkTo(
             { map: this.character.map, x: this.character.x, y: this.character.y },
             { map: this.character.map, x, y })
@@ -989,18 +1019,41 @@ export class Player extends Observer {
 
         const moveFinished = new Promise((resolve, reject) => {
             const distance = Tools.distance(this.character, { x: safeTo.x, y: safeTo.y })
+            let timeout: NodeJS.Timeout
+
+            const positionCheck = () => {
+                // Force an update of the character position
+                this.updatePositions()
+
+                if (this.character.x == x && this.character.y == y) {
+                    this.socket.removeListener("player", moveFinishedCheck)
+                    resolve()
+                    return
+                } else if (this.character.going_x !== safeTo.x || this.character.going_y !== safeTo.y) {
+                    this.socket.removeListener("player", moveFinishedCheck)
+                    reject(`We are not moving to the correct position. Expected ${safeTo.x},${safeTo.y}, but we are moving to ${this.character.going_x},${this.character.going_y}.`)
+                    return
+                } else {
+                    // Check again later
+                    timeout = setTimeout(positionCheck, 1 + Tools.distance(this.character, { x: safeTo.x, y: safeTo.y }) * 1000 / this.character.speed)
+                }
+            }
+            timeout = setTimeout(positionCheck, 1 + distance * 1000 / this.character.speed)
+
             const moveFinishedCheck = (data: CharacterData) => {
-                // TODO: Improve this to check if we moved again, and if we did, reject()
                 if (data.moving) return
                 if (data.x == safeTo.x && data.y == safeTo.y) {
                     this.socket.removeListener("player", moveFinishedCheck)
+                    clearTimeout(timeout)
                     resolve()
                 }
             }
+
             setTimeout(() => {
                 this.socket.removeListener("player", moveFinishedCheck)
-                reject(`move timeout (${TIMEOUT + distance * 1000 / this.character.speed}ms)`)
-            }, (TIMEOUT + distance * 1000 / this.character.speed))
+                clearTimeout(timeout)
+                reject(`move timeout (${TIMEOUT + 1 + distance * 1000 / this.character.speed}ms)`)
+            }, (TIMEOUT + 1 + distance * 1000 / this.character.speed))
             this.socket.on("player", moveFinishedCheck)
         })
 
@@ -1139,6 +1192,22 @@ export class Player extends Observer {
     // TODO: See what socket events happen, and see if we can see if the server picked up our request
     public sendPartyRequest(id: string) {
         this.socket.emit("party", { event: "request", name: id })
+    }
+
+    public transport(map: MapName, spawn: number): Promise<unknown> {
+        const transportComplete = new Promise((resolve, reject) => {
+            this.socket.once("new_map", (data: NewMapData) => {
+                if (data.name == map) resolve()
+                else reject(`We are now in ${data.name}, but we should be in ${map}`)
+            })
+
+            setTimeout(() => {
+                reject(`transport timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+        })
+
+        this.socket.emit("transport", { to: map, s: spawn })
+        return transportComplete
     }
 
     public unequip(slot: SlotType): Promise<unknown> {
@@ -1482,6 +1551,7 @@ export class PingCompensatedPlayer extends Player {
                 }
             }
         }
+
         for (const player of data.players) {
             // Compensate position
             const entity = this.players.get(player.id)
@@ -1503,6 +1573,34 @@ export class PingCompensatedPlayer extends Player {
                 if (entity.s[condition as ConditionName].ms) {
                     entity.s[condition as ConditionName].ms -= pingCompensation
                 }
+            }
+        }
+    }
+
+    protected parseCharacter(data: CharacterData): void {
+        super.parseCharacter(data)
+
+        const pingCompensation = Math.min(...this.pings) / 2
+
+        // Compensate movement
+        if (this.character.moving) {
+            const distanceTravelled = this.character.speed * pingCompensation / 1000
+            const angle = Math.atan2(this.character.going_y - this.character.y, this.character.going_x - this.character.x)
+            const distanceToGoal = Tools.distance({ x: this.character.x, y: this.character.y }, { x: this.character.going_x, y: this.character.going_y })
+            if (distanceTravelled > distanceToGoal) {
+                this.character.moving = false
+                this.character.x = this.character.going_x
+                this.character.y = this.character.going_y
+            } else {
+                this.character.x = this.character.x + Math.cos(angle) * distanceTravelled
+                this.character.y = this.character.y + Math.sin(angle) * distanceTravelled
+            }
+        }
+
+        // Compensate conditions
+        for (const condition in this.character.s) {
+            if (this.character.s[condition as ConditionName].ms) {
+                this.character.s[condition as ConditionName].ms -= pingCompensation
             }
         }
     }
@@ -1846,11 +1944,13 @@ export class Game {
     static async getGData(): Promise<GData> {
         if (this.G) return this.G
 
+        console.log("Updating 'G' data...")
         const response = await axios.get("http://adventure.land/data.js")
         if (response.status == 200) {
             // Update G with the latest data
             const matches = response.data.match(/var\s+G\s*=\s*(\{.+\});/)
             this.G = JSON.parse(matches[1]) as GData
+            console.log("  Updated 'G' data!")
             return this.G
         } else {
             console.error(response)
@@ -1863,9 +1963,11 @@ export class Game {
         const user = await UserModel.findOne({ email: email, password: password }).exec()
 
         if (user) {
+            console.log("Using authentication from database...")
             this.user = user
         } else {
             // Login and save the auth
+            console.log("Logging in...")
             const login = await axios.post("https://adventure.land/api/signup_or_login", `method=signup_or_login&arguments={"email":"${email}","password":"${password}","only_login":true}`)
             let loginResult
             for (const datum of login.data) {
@@ -1875,13 +1977,14 @@ export class Game {
                 }
             }
             if (loginResult && loginResult.message == "Logged In!") {
+                console.log("  Logged in!")
                 // We successfully logged in
                 // Find the auth cookie and save it
                 for (const cookie of login.headers["set-cookie"]) {
                     const result = /^auth=(.+?);/.exec(cookie)
                     if (result) {
                         // Save our data to the database
-                        this.user = await UserModel.findOneAndUpdate({ email: email, password: password }, { email: email, password: password, userID: result[1].split("-")[0], userAuth: result[1].split("-")[1] }, { upsert: true, new: true, lean: true, useFindAndModify: true }).exec()
+                        this.user = await UserModel.findOneAndUpdate({ email: email }, { password: password, userID: result[1].split("-")[0], userAuth: result[1].split("-")[1] }, { upsert: true, new: true, lean: true, useFindAndModify: true }).exec()
                         console.log(this.user)
                         break
                     }
