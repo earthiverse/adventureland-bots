@@ -140,7 +140,7 @@ export class Pathfinder {
     public static getGrid(map: MapName): Grid {
         // Return the grid we've prepared if we have it.
         if (this.grids[map]) return this.grids[map]
-        if (!this.G) throw new Error("Prepare pathfinding before querying canWalk()!")
+        if (!this.G) throw new Error("Prepare pathfinding before querying getGrid()!")
 
         console.log(`Preparing ${map}...`)
 
@@ -440,9 +440,9 @@ export class Pathfinder {
      * @param from 
      * @param to 
      */
-    public static async getSafeWalkTo(from: IPosition, to: IPosition): Promise<IPosition> {
+    public static getSafeWalkTo(from: IPosition, to: IPosition): IPosition {
         if (from.map != to.map) throw new Error("We can't walk across maps.")
-        if (!this.G) this.G = await Game.getGData()
+        if (!this.G) throw new Error("Prepare pathfinding before querying getSafeWalkTo()!")
 
         const grid = this.getGrid(from.map)
 
@@ -545,6 +545,7 @@ export class Pathfinder {
             if (map == "test") continue // Skip the test map to save ourselves some processing.
             this.getGrid(map)
         }
+        this.getGrid("jail") // Jail is disconnected, prepare it
 
         console.log(`Pathfinding prepared! (${((Date.now() - start) / 1000).toFixed(3)}s)`)
         console.log(`  # Nodes: ${this.graph.getNodeCount()}`)

@@ -1,4 +1,4 @@
-import { NPCType, CharacterType, StatusInfo, SlotInfo, ItemInfo, MapName, MonsterName, ItemName, ServerRegion, ServerIdentifier, BankPackType, BankInfo, SkillName } from "./adventureland"
+import { NPCType, CharacterType, StatusInfo, SlotInfo, ItemInfo, MapName, MonsterName, ItemName, ServerRegion, ServerIdentifier, BankPackType, BankInfo, SkillName, SInfo } from "./adventureland"
 
 export type AchievementProgressData = {
     name: string
@@ -388,15 +388,18 @@ export type PlayerData = {
     frequency: number
     x: number
     y: number
+    map: MapName
+    in: MapName
     going_x: number
     going_y: number
     hp: number
     level: number
     max_hp: number
     max_mp: number
-    move_num: number
-    moving: boolean
+    move_num?: number
+    moving?: boolean
     mp: number
+    mp_cost: number
     npc?: string
     owner: string
     // TODO: Figure out what this is
@@ -410,6 +413,7 @@ export type PlayerData = {
     skin: string
     slots: SlotInfo
     speed: number
+    tp?: boolean
 }
 
 export type QData = {
@@ -453,8 +457,7 @@ export type StartData = CharacterData & {
     base_gold: {
         [T in MonsterName]?: { [T in string]?: number }
     }
-    // TODO: Figure this type out
-    s_info: any
+    s_info: SInfo
     entities: EntitiesData
 }
 

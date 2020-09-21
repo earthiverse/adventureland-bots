@@ -4,7 +4,7 @@ import { AchievementProgressData, CharacterData, ServerData, CharacterListData, 
 import { connect, disconnect } from "./database/database.js"
 import { UserModel } from "./database/users/users.model.js"
 import { IUserDocument } from "./database/users/users.types.js"
-import { ServerRegion, ServerIdentifier, GData, SkillName, BankInfo, ConditionName, MapName, ItemInfo, ItemName, SlotType, MonsterName, CharacterType } from "./definitions/adventureland"
+import { ServerRegion, ServerIdentifier, GData, SkillName, BankInfo, ConditionName, MapName, ItemInfo, ItemName, SlotType, MonsterName, CharacterType, SInfo } from "./definitions/adventureland"
 import { Tools } from "./tools.js"
 import { CharacterModel } from "./database/characters/characters.model.js"
 import { Pathfinder } from "./pathfinder.js"
@@ -124,6 +124,7 @@ export class Player extends Observer {
     public players = new Map<string, PlayerData>()
     public projectiles = new Map<string, ActionData & { date: Date }>()
     public server: WelcomeData
+    public S: SInfo
 
     constructor(userID: string, userAuth: string, characterID: string, g: GData, serverData: ServerData) {
         super(serverData)
@@ -244,6 +245,7 @@ export class Player extends Observer {
             this.character.y = data.y
             this.character.in = data.in
             this.character.map = data.name
+            this.character.m = data.m
         })
 
         // TODO: Confirm this works for leave_party(), too.
@@ -268,13 +270,6 @@ export class Player extends Observer {
 
         this.socket.on("player", (data: CharacterData) => {
             this.parseCharacter(data)
-            if (data.hitchhikers) {
-                for (const hitchhiker of data.hitchhikers) {
-                    if (hitchhiker[0] == "game_response") {
-                        this.parseGameResponse(hitchhiker[1])
-                    }
-                }
-            }
         })
 
         // this.socket.on("q_data", (data: QData) => {
@@ -285,7 +280,8 @@ export class Player extends Observer {
             // console.log("socket: start!")
             // console.log(data)
             this.parseCharacter(data)
-            this.parseEntities(data.entities)
+            if (data.entities) this.parseEntities(data.entities)
+            this.S = data.s_info
         })
 
         this.socket.on("welcome", (data: WelcomeData) => {
@@ -304,80 +300,43 @@ export class Player extends Observer {
     }
 
     protected parseCharacter(data: CharacterData): void {
-        // Update all the character information we can
-        this.character = {
-            hp: data.hp,
-            max_hp: data.max_hp,
-            mp: data.mp,
-            max_mp: data.max_mp,
-            attack: data.attack,
-            frequency: data.frequency,
-            speed: data.speed,
-            range: data.range,
-            armor: data.armor,
-            resistance: data.resistance,
-            level: data.level,
-            rip: data.rip,
-            afk: data.afk,
-            s: data.s,
-            c: data.c,
-            q: data.q,
-            age: data.age,
-            pdps: data.pdps,
-            id: data.id,
-            x: data.x,
-            y: data.y,
-            going_x: data.going_x,
-            going_y: data.going_y,
-            moving: data.moving,
-            cid: data.cid,
-            stand: data.stand,
-            controller: data.controller,
-            skin: data.skin,
-            cx: data.cx,
-            slots: data.slots,
-            ctype: data.ctype,
-            owner: data.owner,
-            int: data.int,
-            str: data.str,
-            dex: data.dex,
-            vit: data.vit,
-            for: data.for,
-            mp_cost: data.mp_cost,
-            max_xp: data.max_xp,
-            goldm: data.goldm,
-            xpm: data.xpm,
-            luckm: data.luckm,
-            map: data.map,
-            in: data.in,
-            isize: data.isize,
-            esize: data.esize,
-            gold: data.gold,
-            cash: data.cash,
-            targets: data.targets,
-            m: data.m,
-            evasion: data.evasion,
-            miss: data.miss,
-            reflection: data.reflection,
-            lifesteal: data.lifesteal,
-            manasteal: data.manasteal,
-            rpiercing: data.rpiercing,
-            apiercing: data.apiercing,
-            crit: data.crit,
-            critdamage: data.critdamage,
-            dreturn: data.dreturn,
-            tax: data.tax,
-            xrange: data.xrange,
-            items: data.items,
-            cc: data.cc,
-            ipass: data.ipass,
-            friends: data.friends,
-            acx: data.acx,
-            xcx: data.xcx
+        // Create the character if we don't have one
+        if (!this.character) {
+            this.character = data
+            delete this.character["base_gold"]
+            delete this.character["entities"]
+            delete this.character["hitchhikers"]
+            delete this.character["info"]
+            delete this.character["s_info"]
+            delete this.character["user"]
+
+            // Add going_to variables
+            this.character.going_x = data.x
+            this.character.going_y = data.y
+            this.character.moving = false
         }
 
-        // Update Bank information if it's available
-        if (data.user) this.bank = data.user
+        // Update all the character information we can
+        for (const datum in data) {
+            if (datum == "hitchhikers") {
+                // Game responses
+                for (const hitchhiker of data.hitchhikers) {
+                    if (hitchhiker[0] == "game_response") {
+                        this.parseGameResponse(hitchhiker[1])
+                    }
+                }
+            } else if (datum == "moving") {
+                // We'll handle moving...
+            } else if (datum == "tp") {
+                // We just teleported, but we don't want to keep the data.
+            } else if (datum == "user") {
+                // Bank information
+                this.bank = data.user
+            } else {
+                // Normal attribute
+                this.character[datum] = data[datum]
+            }
+        }
     }
 
     protected async parseEntities(data: EntitiesData): Promise<void> {
@@ -410,8 +369,12 @@ export class Player extends Observer {
             }
         }
         for (const player of data.players) {
-            if (player.id == this.character?.id) continue // Skip our own character (it gets sent in 'start')
-            this.players.set(player.id, player)
+            if (player.id == this.character?.id) {
+                // Update everything for our own player if we see it
+                for (const datum in player) this.character[datum] = player[datum]
+            } else {
+                this.players.set(player.id, player)
+            }
         }
     }
 
@@ -570,6 +533,28 @@ export class Player extends Observer {
 
         // Cancel all timeouts
         for (const timer of this.timeouts.values()) clearTimeout(timer)
+    }
+
+    /**
+     * This function is a hack to get the server to respond with a player data update. It will respond with two...
+     */
+    public async requestPlayerData(): Promise<PlayerData> {
+        return new Promise((resolve, reject) => {
+            const checkPlayerEvent = (data: PlayerData) => {
+                if (data.s.typing) {
+                    this.socket.removeListener("player", checkPlayerEvent)
+                    resolve(data)
+                }
+            }
+
+            setTimeout(() => {
+                this.socket.removeListener("player", checkPlayerEvent)
+                reject(`requestPlayerData timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.socket.on("player", checkPlayerEvent)
+
+            this.socket.emit("property", { typing: true })
+        })
     }
 
     // TODO: Convert to async, and return a promise<number> with the ping ms time
@@ -1010,51 +995,40 @@ export class Player extends Observer {
         // Check if we're already there
         if (this.character.x == x && this.character.y == y) return Promise.resolve()
 
-        const safeTo = await Pathfinder.getSafeWalkTo(
+        const safeTo = Pathfinder.getSafeWalkTo(
             { map: this.character.map, x: this.character.x, y: this.character.y },
             { map: this.character.map, x, y })
         if (safeTo.x !== x || safeTo.y !== y) {
             console.warn(`move: We can't move to {x: ${x}, y: ${y}} safely. We will move to {x: ${safeTo.x}, y: ${safeTo.y}.}`)
+        } else if (!safeTo) {
+            return Promise.reject(`SafeWalk tells us we can't walk from ${this.character.x},${this.character.y} to ${x},${y}`)
+        } else {
+            console.log("---- SafeTo ----")
+            console.log(safeTo)
         }
 
         const moveFinished = new Promise((resolve, reject) => {
             const distance = Tools.distance(this.character, { x: safeTo.x, y: safeTo.y })
-            let timeout: NodeJS.Timeout
 
-            const positionCheck = () => {
+            setTimeout(() => {
                 // Force an update of the character position
                 this.updatePositions()
 
                 if (this.character.x == x && this.character.y == y) {
-                    this.socket.removeListener("player", moveFinishedCheck)
-                    resolve()
-                    return
-                } else if (this.character.going_x !== safeTo.x || this.character.going_y !== safeTo.y) {
-                    this.socket.removeListener("player", moveFinishedCheck)
-                    reject(`We are not moving to the correct position. Expected ${safeTo.x},${safeTo.y}, but we are moving to ${this.character.going_x},${this.character.going_y}.`)
-                    return
-                } else {
-                    // Check again later
-                    timeout = setTimeout(positionCheck, 1 + Tools.distance(this.character, { x: safeTo.x, y: safeTo.y }) * 1000 / this.character.speed)
-                }
-            }
-            timeout = setTimeout(positionCheck, 1 + distance * 1000 / this.character.speed)
-
-            const moveFinishedCheck = (data: CharacterData) => {
-                if (data.moving) return
-                if (data.x == safeTo.x && data.y == safeTo.y) {
-                    this.socket.removeListener("player", moveFinishedCheck)
                     clearTimeout(timeout)
                     resolve()
                 }
-            }
+            }, 1 + distance * 1000 / this.character.speed)
 
-            setTimeout(() => {
-                this.socket.removeListener("player", moveFinishedCheck)
-                clearTimeout(timeout)
-                reject(`move timeout (${TIMEOUT + 1 + distance * 1000 / this.character.speed}ms)`)
+            const timeout = setTimeout(async () => {
+                const data = await this.requestPlayerData()
+
+                if (data.x == x && data.y == y) {
+                    resolve()
+                } else {
+                    reject(`move timeout (${safeTo.x},${safeTo.y}) (${TIMEOUT + 1 + distance * 1000 / this.character.speed}ms)`)
+                }
             }, (TIMEOUT + 1 + distance * 1000 / this.character.speed))
-            this.socket.on("player", moveFinishedCheck)
         })
 
         this.socket.emit("move", {
@@ -1064,6 +1038,10 @@ export class Player extends Observer {
             going_y: safeTo.y,
             m: this.character.m
         })
+        this.updatePositions()
+        this.character.going_x = safeTo.x
+        this.character.going_y = safeTo.y
+        this.character.moving = true
         return moveFinished
     }
 
@@ -1310,14 +1288,24 @@ export class Player extends Observer {
     public warpToTown(): Promise<unknown> {
         const currentMap = this.character.map
         const warpComplete = new Promise((resolve, reject) => {
-            this.socket.once("new_map", (data: NewMapData) => {
-                if (currentMap == data.name) resolve()
-                else reject(`We are now in ${data.name}, but we should be in ${currentMap}`)
-            })
+            const warpedCheck = (data: PlayerData) => {
+                const distance = Tools.distance(data, { x: this.G.maps[currentMap].spawns[0][0], y: this.G.maps[currentMap].spawns[0][1] })
+                if (currentMap == data.map && distance < 50) {
+                    this.socket.removeListener("player", warpedCheck)
+                    resolve()
+                }
+                else if (distance > 50 && !data.c.town) {
+                    this.socket.removeListener("player", warpedCheck)
+                    reject("warpToTown Failed")
+                }
+            }
+            this.socket.on("player", warpedCheck)
 
             setTimeout(() => {
-                reject(`warpToTown timeout (${TIMEOUT}ms)`)
-            }, TIMEOUT)
+                this.socket.removeListener("player", warpedCheck)
+                reject("warpToTown timeout (5000ms)")
+            }, 5000)
+            this.socket.on("player", warpedCheck)
         })
 
         this.socket.emit("town")

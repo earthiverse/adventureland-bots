@@ -347,6 +347,9 @@ export type StatusInfo = {
       /** The ID of the merchant who cast mluck */
       f: string;
     };
+    typing?: {
+      ms: number
+    }
     monsterhunt?: {
       ms: number;
       /** The server ID where the monster hunt is valid */
@@ -365,6 +368,17 @@ export type StatusInfo = {
       gold: number;
     };
   }
+
+export type SInfo = { [T in MonsterName]?: IPosition & {
+  map: string;
+  live: boolean;
+  hp: number;
+  max_hp: number;
+  /** The character name that the monster is currently attacking */
+  target?: string;
+} } & {
+  valentines?: boolean;
+}
 
 export type PositionReal = IPosition & {
   map: MapName;
