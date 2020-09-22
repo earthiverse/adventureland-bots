@@ -94,18 +94,19 @@ class Ranger extends Character {
         //     "priority": SPECIAL,
         //     "holdAttackWhileMoving": true
         // },
-        // "fireroamer": {
-        //     "coop": ["priest", "warrior"],
-        //     "priority": 0,
-        //     "holdPositionFarm": true,
-        //     "holdAttackWhileMoving": true,
-        //     "farmingPosition": {
-        //         "map": "desertland",
-        //         "x": 150,
-        //         "y": -650
-        //     },
-        //     "equip": ["firebow", "t2quiver", "jacko"]
-        // },
+        "fireroamer": {
+            "coop": ["priest", "warrior"],
+            "priority": 0,
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "attackOnlyWhenAttackingTeammate": true,
+            "farmingPosition": {
+                "map": "desertland",
+                "x": 150,
+                "y": -650
+            },
+            "equip": ["firebow", "t2quiver", "jacko"]
+        },
         "fvampire": {
             "coop": ["warrior", "priest"],
             "priority": 0,

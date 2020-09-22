@@ -1198,7 +1198,8 @@ export abstract class Character {
             if (parent.party_list.includes(id)) continue // It's a member of our party
             if (!is_pvp() && potentialTarget.type !== "monster") continue // Not interested in non-monsters unless it's PvP
             if (!this.targetPriority[potentialTarget.mtype] && potentialTarget.target !== parent.character.id) continue // Not a monster we care about, and it's not attacking us
-            if (!potentialTarget.cooperative && potentialTarget.target && !(parent.party_list.includes(potentialTarget.target) || potentialTarget.target == parent.character.id)) continue // It's attacking player, we can't get credit for it, or loot from it
+            if (!potentialTarget.cooperative && potentialTarget.target && !(parent.party_list.includes(potentialTarget.target) || potentialTarget.target == parent.character.id)) continue // It's attacking a different player, we can't get credit for it, or loot from it
+            if (this.targetPriority[potentialTarget.mtype].attackOnlyWhenAttackingTeammate && !parent.party_list.includes(potentialTarget.target)) continue
 
             // Set the priority based on our targetPriority
             let priority = this.targetPriority[potentialTarget.mtype] ? this.targetPriority[potentialTarget.mtype].priority : 0
@@ -1263,12 +1264,16 @@ export abstract class Character {
         if (s != "attack" && e["1hp"]) return false // We only do one damage, don't use special attacks
 
         if (!is_pvp() && e.type == "monster" && !this.targetPriority[e.mtype]) return false // Holding attacks against things not in our priority list
+        if (!e.cooperative && e.target && !(parent.party_list.includes(e.target) || e.target == parent.character.id)) return false // It's attacking a different player, we can't get credit for it, or loot from it
 
         if (!e.target) {
             // Hold attack
             if (this.holdAttack) return false // Holding all attacks
             if ((smart.moving /*|| this.astar.isMoving()*/ || this.nGraphMove.isMoving()) && (this.movementTarget && this.movementTarget.target && this.movementTarget.target != e.mtype) && this.targetPriority[e.mtype].holdAttackWhileMoving) return false // Holding attacks while moving
             if (this.targetPriority[e.mtype].holdAttackInEntityRange && distanceToEntity <= e.range) return false // Holding attacks in range
+
+            // Only attack if attacking teammate
+            if (this.targetPriority[e.mtype].attackOnlyWhenAttackingTeammate) return false
 
             // Only attack if immobile
             if (this.targetPriority[e.mtype].attackOnlyWhenImmobile && e.s && !(e.s.stunned)) return false

@@ -19,6 +19,12 @@ export interface TargetPriorityInfo {
     /** If true, we will only attack the monster if it is immobile (e.g. bashed). Used to kill tinyp. */
     attackOnlyWhenImmobile?: boolean;
 
+    /** If true, we will only attack the monster if it is targeting a different party member */
+    attackOnlyWhenAttackingTeammate?: boolean;
+
+    /** If true, we will only attack at most one of this type of monster */
+    attackOnlySingleTarget?: boolean
+
     farmingPosition?: PositionReal;
     /* A list of ideal items to equip to bettter deal with these monsters */
     equip?: ItemName[];
