@@ -270,6 +270,12 @@ class Priest extends Character {
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
             "attackOnlyWhenAttackingTeammate": true,
+            "holdPositionFarm": true,
+            "farmingPosition": {
+                "map": "desertland",
+                "x": -600,
+                "y": -200
+            },
             "coop": ["warrior"],
             "equip": ["jacko"]
         },

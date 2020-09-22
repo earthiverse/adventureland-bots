@@ -252,6 +252,12 @@ class Ranger extends Character {
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
             "attackOnlyWhenAttackingTeammate": true,
+            "holdPositionFarm": true,
+            "farmingPosition": {
+                "map": "desertland",
+                "x": -625,
+                "y": -175
+            },
             "coop": ["priest", "warrior"],
             "equip": ["firebow", "t2quiver", "jacko"]
         },

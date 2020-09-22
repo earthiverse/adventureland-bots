@@ -206,8 +206,14 @@ class Warrior extends Character {
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
             "attackOnlySingleTarget": true,
+            "holdPositionFarm": true,
+            "farmingPosition": {
+                "map": "desertland",
+                "x": -625,
+                "y": -200
+            },
             "coop": ["priest"],
-            "equip": ["firebow", "t2quiver", "jacko"]
+            "equip": ["basher", "jacko"]
         },
         "poisio": {
             priority: MEDIUM,
