@@ -44,10 +44,7 @@ class Merchant extends Character {
             "scroll0", "scroll1", "scroll2",
             "stand0",
             "dexscroll", "intscroll", "strscroll",
-            "monstertoken",
-
-            // Temporary -- We're going to make orb of beginnings!
-            "ascale", "pleather", "cscale", "bfur"
+            "monstertoken"
         )
     }
 
