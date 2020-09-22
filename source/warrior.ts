@@ -70,19 +70,19 @@ class Warrior extends Character {
         //     "priority": SPECIAL,
         //     "holdAttackWhileMoving": true
         // },
-        "fireroamer": {
-            "coop": ["priest"],
-            "priority": 0,
-            "holdPositionFarm": true,
-            "holdAttackWhileMoving": true,
-            "attackOnlySingleTarget": true,
-            "farmingPosition": {
-                "map": "desertland",
-                "x": 200,
-                "y": -700
-            },
-            "equip": ["basher", "jacko"]
-        },
+        // "fireroamer": {
+        //     "coop": ["priest"],
+        //     "priority": 0,
+        //     "holdPositionFarm": true,
+        //     "holdAttackWhileMoving": true,
+        //     "attackOnlySingleTarget": true,
+        //     "farmingPosition": {
+        //         "map": "desertland",
+        //         "x": 200,
+        //         "y": -700
+        //     },
+        //     "equip": ["basher", "jacko"]
+        // },
         "fvampire": {
             "coop": ["priest", "ranger"],
             "priority": 0,
@@ -201,20 +201,20 @@ class Warrior extends Character {
             "priority": 1000,
             "equip": ["candycanesword", "woodensword", "jacko"]
         },
-        "plantoid": {
-            "priority": 0,
-            "holdAttackInEntityRange": true,
-            "holdAttackWhileMoving": true,
-            "attackOnlySingleTarget": true,
-            "holdPositionFarm": true,
-            "farmingPosition": {
-                "map": "desertland",
-                "x": -625,
-                "y": -200
-            },
-            "coop": ["priest"],
-            "equip": ["basher", "jacko"]
-        },
+        // "plantoid": {
+        //     "priority": 0,
+        //     "holdAttackInEntityRange": true,
+        //     "holdAttackWhileMoving": true,
+        //     "attackOnlySingleTarget": true,
+        //     "holdPositionFarm": true,
+        //     "farmingPosition": {
+        //         "map": "desertland",
+        //         "x": -625,
+        //         "y": -200
+        //     },
+        //     "coop": ["priest"],
+        //     "equip": ["basher", "jacko"]
+        // },
         "poisio": {
             priority: MEDIUM,
             "equip": ["woodensword", "candycanesword", "orbg"]

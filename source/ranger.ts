@@ -94,19 +94,19 @@ class Ranger extends Character {
         //     "priority": SPECIAL,
         //     "holdAttackWhileMoving": true
         // },
-        "fireroamer": {
-            "coop": ["priest", "warrior"],
-            "priority": 0,
-            "holdPositionFarm": true,
-            "holdAttackWhileMoving": true,
-            "attackOnlyWhenAttackingTeammate": true,
-            "farmingPosition": {
-                "map": "desertland",
-                "x": 150,
-                "y": -650
-            },
-            "equip": ["firebow", "t2quiver", "jacko"]
-        },
+        // "fireroamer": {
+        //     "coop": ["priest", "warrior"],
+        //     "priority": 0,
+        //     "holdPositionFarm": true,
+        //     "holdAttackWhileMoving": true,
+        //     "attackOnlyWhenAttackingTeammate": true,
+        //     "farmingPosition": {
+        //         "map": "desertland",
+        //         "x": 150,
+        //         "y": -650
+        //     },
+        //     "equip": ["firebow", "t2quiver", "jacko"]
+        // },
         "fvampire": {
             "coop": ["warrior", "priest"],
             "priority": 0,
@@ -247,20 +247,20 @@ class Ranger extends Character {
             "priority": 1000,
             "equip": ["bow", "t2quiver", "jacko"]
         },
-        "plantoid": {
-            "priority": 0,
-            "holdAttackInEntityRange": true,
-            "holdAttackWhileMoving": true,
-            "attackOnlyWhenAttackingTeammate": true,
-            "holdPositionFarm": true,
-            "farmingPosition": {
-                "map": "desertland",
-                "x": -625,
-                "y": -175
-            },
-            "coop": ["priest", "warrior"],
-            "equip": ["firebow", "t2quiver", "jacko"]
-        },
+        // "plantoid": {
+        //     "priority": 0,
+        //     "holdAttackInEntityRange": true,
+        //     "holdAttackWhileMoving": true,
+        //     "attackOnlyWhenAttackingTeammate": true,
+        //     "holdPositionFarm": true,
+        //     "farmingPosition": {
+        //         "map": "desertland",
+        //         "x": -625,
+        //         "y": -175
+        //     },
+        //     "coop": ["priest", "warrior"],
+        //     "equip": ["firebow", "t2quiver", "jacko"]
+        // },
         "poisio": {
             "priority": 250,
             "equip": ["hbow", "t2quiver", "orbg"]

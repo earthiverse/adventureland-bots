@@ -110,19 +110,19 @@ class Priest extends Character {
         //     "priority": SPECIAL,
         //     "holdAttackWhileMoving": true
         // },
-        "fireroamer": {
-            "coop": ["warrior"],
-            "priority": 0,
-            "holdPositionFarm": true,
-            "holdAttackWhileMoving": true,
-            "attackOnlyWhenAttackingTeammate": true,
-            "farmingPosition": {
-                "map": "desertland",
-                "x": 100,
-                "y": -650
-            },
-            "equip": ["jacko"]
-        },
+        // "fireroamer": {
+        //     "coop": ["warrior"],
+        //     "priority": 0,
+        //     "holdPositionFarm": true,
+        //     "holdAttackWhileMoving": true,
+        //     "attackOnlyWhenAttackingTeammate": true,
+        //     "farmingPosition": {
+        //         "map": "desertland",
+        //         "x": 100,
+        //         "y": -650
+        //     },
+        //     "equip": ["jacko"]
+        // },
         "frog": {
             "priority": EASY,
             "equip": ["orbg"]
@@ -265,20 +265,20 @@ class Priest extends Character {
             "priority": 1000,
             "equip": ["jacko"]
         },
-        "plantoid": {
-            "priority": DIFFICULT,
-            "holdAttackInEntityRange": true,
-            "holdAttackWhileMoving": true,
-            "attackOnlyWhenAttackingTeammate": true,
-            "holdPositionFarm": true,
-            "farmingPosition": {
-                "map": "desertland",
-                "x": -600,
-                "y": -200
-            },
-            "coop": ["warrior"],
-            "equip": ["jacko"]
-        },
+        // "plantoid": {
+        //     "priority": DIFFICULT,
+        //     "holdAttackInEntityRange": true,
+        //     "holdAttackWhileMoving": true,
+        //     "attackOnlyWhenAttackingTeammate": true,
+        //     "holdPositionFarm": true,
+        //     "farmingPosition": {
+        //         "map": "desertland",
+        //         "x": -600,
+        //         "y": -200
+        //     },
+        //     "coop": ["warrior"],
+        //     "equip": ["jacko"]
+        // },
         "poisio": {
             "priority": EASY,
             "equip": ["orbg"]
