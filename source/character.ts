@@ -458,25 +458,28 @@ export abstract class Character {
                     wantToScare = true
                     break
                 }
-            }
-            if (!isAvailable("scare") // On cooldown
-                || !wantToScare) { // Can't be easily killed
-                setTimeout(async () => { this.scareLoop() }, getCooldownMS("scare"))
-                return
+                if (targets.length > 1) {
+                    for (const target of targets) {
+                        if (this.targetPriority[target.mtype].attackOnlySingleTarget) {
+                            // We have more than one target, but we have a monster we only want to attack as a single target
+                            wantToScare = true
+                            break
+                        }
+                    }
+                }
             }
 
-
-            if (parent.character.slots.orb.name == "jacko") {
-                // We have a jacko equipped
-                await use_skill("scare")
-                reduce_cooldown("scare", Math.min(...parent.pings))
-            } else {
-                // Check if we have a jacko in our inventory
-                const items = findItems("jacko")
-                if (items.length) {
-                    const jackoI = items[0].index
-                    equip(jackoI) // Equip the jacko
-                    await use_skill("scare") // Scare the monsters away
+            if (wantToScare) {
+                if (parent.character.slots.orb.name !== "jacko") {
+                    // Equip the orb, then scare
+                    const jackos = findItems("jacko")
+                    if (jackos.length) {
+                        equip(jackos[0].index) // Equip the jacko
+                        await use_skill("scare") // Scare the monsters away
+                        reduce_cooldown("scare", Math.min(...parent.pings))
+                    }
+                } else if (isAvailable("scare")) {
+                    await use_skill("scare")
                     reduce_cooldown("scare", Math.min(...parent.pings))
                 }
             }
@@ -1265,6 +1268,14 @@ export abstract class Character {
 
         if (!is_pvp() && e.type == "monster" && !this.targetPriority[e.mtype]) return false // Holding attacks against things not in our priority list
         if (!e.cooperative && e.target && !(parent.party_list.includes(e.target) || e.target == parent.character.id)) return false // It's attacking a different player, we can't get credit for it, or loot from it
+
+        if (this.targetPriority[e.mtype].attackOnlySingleTarget) {
+            for (const id in parent.entities) {
+                const e2 = parent.entities[id]
+                if (e2.id == e.id) continue // Same entity as the one we're comparing
+                if (e2.target == parent.character.id) return false // We don't want to attack more than one thing
+            }
+        }
 
         if (!e.target) {
             // Hold attack

@@ -70,18 +70,19 @@ class Warrior extends Character {
         //     "priority": SPECIAL,
         //     "holdAttackWhileMoving": true
         // },
-        // "fireroamer": {
-        //     "coop": ["priest"],
-        //     "priority": 0,
-        //     "holdPositionFarm": true,
-        //     "holdAttackWhileMoving": true,
-        //     "farmingPosition": {
-        //         "map": "desertland",
-        //         "x": 200,
-        //         "y": -700
-        //     },
-        //     "equip": ["basher", "jacko"]
-        // },
+        "fireroamer": {
+            "coop": ["priest"],
+            "priority": 0,
+            "holdPositionFarm": true,
+            "holdAttackWhileMoving": true,
+            "attackOnlySingleTarget": true,
+            "farmingPosition": {
+                "map": "desertland",
+                "x": 200,
+                "y": -700
+            },
+            "equip": ["basher", "jacko"]
+        },
         "fvampire": {
             "coop": ["priest", "ranger"],
             "priority": 0,
@@ -331,25 +332,28 @@ class Warrior extends Character {
                     wantToScare = true
                     break
                 }
-            }
-            if (!isAvailable("scare") // On cooldown
-                || !wantToScare) { // Can't be easily killed
-                setTimeout(async () => { this.scareLoop() }, getCooldownMS("scare"))
-                return
+                if (targets.length > 1) {
+                    for (const target of targets) {
+                        if (this.targetPriority[target.mtype].attackOnlySingleTarget) {
+                            // We have more than one target, but we have a monster we only want to attack as a single target
+                            wantToScare = true
+                            break
+                        }
+                    }
+                }
             }
 
-
-            if (parent.character.slots.orb.name == "jacko") {
-                // We have a jacko equipped
-                await use_skill("scare")
-                reduce_cooldown("scare", Math.min(...parent.pings))
-            } else {
-                // Check if we have a jacko in our inventory
-                const items = findItems("jacko")
-                if (items.length) {
-                    const jackoI = items[0].index
-                    equip(jackoI) // Equip the jacko
-                    await use_skill("scare") // Scare the monsters away
+            if (wantToScare) {
+                if (parent.character.slots.orb.name !== "jacko") {
+                    // Equip the orb, then scare
+                    const jackos = findItems("jacko")
+                    if (jackos.length) {
+                        equip(jackos[0].index) // Equip the jacko
+                        await use_skill("scare") // Scare the monsters away
+                        reduce_cooldown("scare", Math.min(...parent.pings))
+                    }
+                } else if (isAvailable("scare")) {
+                    await use_skill("scare")
                     reduce_cooldown("scare", Math.min(...parent.pings))
                 }
             }
@@ -387,7 +391,7 @@ class Warrior extends Character {
                     const d = distance(parent.character, e)
                     if (d > G.skills["agitate"].range) continue // Out of range
 
-                    if (!this.targetPriority[e.mtype]) {
+                    if (!this.wantToAttack(e)) {
                         // Something we don't want is here
                         inAgitateCount = 10
                         dps = 9999
