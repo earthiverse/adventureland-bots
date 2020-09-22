@@ -451,22 +451,24 @@ export abstract class Character {
                         && distance(targets[0], parent.character) - targets[0].range - (targets[0].speed * 2) /* The enemy can move to attack us before we can teleport away */))) {
                 wantToScare = true
             } else {
-                for (const target of targets) {
-                    if (distance(target, parent.character) > target.range) continue // They're out of range
-                    if (calculateDamageRange(target, parent.character)[1] * 6 * target.frequency <= parent.character.hp) continue // We can tank a few of their shots
-
-                    wantToScare = true
-                    break
-                }
-                if (targets.length > 1) {
+                if (targets.length) {
                     for (const target of targets) {
-                        if (this.targetPriority[target.mtype].attackOnlySingleTarget) {
-                            // We have more than one target, but we have a monster we only want to attack as a single target
-                            wantToScare = true
-                            break
+                        if (distance(target, parent.character) > target.range) continue // They're out of range
+                        if (calculateDamageRange(target, parent.character)[1] * 6 * target.frequency <= parent.character.hp) continue // We can tank a few of their shots
+
+                        wantToScare = true
+                        break
+                    }
+                    if (!wantToScare) {
+                        for (const target of targets) {
+                            if (this.targetPriority[target.mtype].attackOnlySingleTarget) {
+                                // We have more than one target, but we have a monster we only want to attack as a single target
+                                wantToScare = true
+                                break
+                            }
                         }
                     }
-                }
+                } else if (parent.character.s.burned) wantToScare = true
             }
 
             if (wantToScare) {
