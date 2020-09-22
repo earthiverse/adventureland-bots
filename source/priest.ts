@@ -269,6 +269,8 @@ class Priest extends Character {
             "priority": DIFFICULT,
             "holdAttackInEntityRange": true,
             "holdAttackWhileMoving": true,
+            "attackOnlyWhenAttackingTeammate": true,
+            "coop": ["warrior"],
             "equip": ["jacko"]
         },
         "poisio": {

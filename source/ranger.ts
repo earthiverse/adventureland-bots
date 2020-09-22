@@ -247,6 +247,14 @@ class Ranger extends Character {
             "priority": 1000,
             "equip": ["bow", "t2quiver", "jacko"]
         },
+        "plantoid": {
+            "priority": 0,
+            "holdAttackInEntityRange": true,
+            "holdAttackWhileMoving": true,
+            "attackOnlyWhenAttackingTeammate": true,
+            "coop": ["priest", "warrior"],
+            "equip": ["firebow", "t2quiver", "jacko"]
+        },
         "poisio": {
             "priority": 250,
             "equip": ["hbow", "t2quiver", "orbg"]

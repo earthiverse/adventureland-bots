@@ -201,6 +201,14 @@ class Warrior extends Character {
             "priority": 1000,
             "equip": ["candycanesword", "woodensword", "jacko"]
         },
+        "plantoid": {
+            "priority": 0,
+            "holdAttackInEntityRange": true,
+            "holdAttackWhileMoving": true,
+            "attackOnlySingleTarget": true,
+            "coop": ["priest"],
+            "equip": ["firebow", "t2quiver", "jacko"]
+        },
         "poisio": {
             priority: MEDIUM,
             "equip": ["woodensword", "candycanesword", "orbg"]
