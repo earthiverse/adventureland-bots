@@ -384,7 +384,7 @@ export class NGraphMove {
 
                 // Create links to destinations
                 for (const toMap in G.npcs.transporter.places) {
-                    if (toMap == toMap) continue // Don't add links to ourself
+                    if (toMap == map) continue // Don't add links to ourself
                     const spawnID = G.npcs.transporter.places[toMap as MapName]
                     const spawn = G.maps[toMap as MapName].spawns[spawnID]
                     const toNode = this.addNodeToGraph(toMap as MapName, spawn[0], spawn[1])
