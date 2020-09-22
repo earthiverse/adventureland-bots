@@ -999,12 +999,7 @@ export class Player extends Observer {
             { map: this.character.map, x: this.character.x, y: this.character.y },
             { map: this.character.map, x, y })
         if (safeTo.x !== x || safeTo.y !== y) {
-            console.warn(`move: We can't move to {x: ${x}, y: ${y}} safely. We will move to {x: ${safeTo.x}, y: ${safeTo.y}.}`)
-        } else if (!safeTo) {
-            return Promise.reject(`SafeWalk tells us we can't walk from ${this.character.x},${this.character.y} to ${x},${y}`)
-        } else {
-            console.log("---- SafeTo ----")
-            console.log(safeTo)
+            console.warn(`move: We can't move to {x: ${x}, y: ${y}} safely. We will move to {x: ${safeTo.x}, y: ${safeTo.y}}.`)
         }
 
         const moveFinished = new Promise((resolve, reject) => {
@@ -1014,16 +1009,29 @@ export class Player extends Observer {
                 // Force an update of the character position
                 this.updatePositions()
 
-                if (this.character.x == x && this.character.y == y) {
+                if (this.character.x == safeTo.x && this.character.y == safeTo.y) {
                     clearTimeout(timeout)
+                    this.socket.removeListener("player", checkPlayer)
                     resolve()
                 }
             }, 1 + distance * 1000 / this.character.speed)
 
+            const checkPlayer = async (data: PlayerData) => {
+                if (!data.moving || data.going_x != safeTo.x || data.going_y != safeTo.y) {
+                    const newData = await this.requestPlayerData()
+                    if (!newData.moving || newData.going_x != safeTo.x || newData.going_y != safeTo.y) {
+                        clearTimeout(timeout)
+                        reject(`move to {x: ${safeTo.x}, y: ${safeTo.y}} failed`)
+                    }
+                }
+            }
+            this.socket.once("player", checkPlayer)
+
             const timeout = setTimeout(async () => {
                 const data = await this.requestPlayerData()
 
-                if (data.x == x && data.y == y) {
+                this.socket.removeListener("player", checkPlayer)
+                if (data.x == safeTo.x && data.y == safeTo.y) {
                     resolve()
                 } else {
                     reject(`move timeout (${safeTo.x},${safeTo.y}) (${TIMEOUT + 1 + distance * 1000 / this.character.speed}ms)`)
@@ -1117,9 +1125,30 @@ export class Player extends Observer {
         return scared
     }
 
-    // TODO: See what socket events happen, and see if we can see if the server picked up our request
-    public sendGold(to: string, amount: number) {
+    public async sendGold(to: string, amount: number): Promise<number> {
+        if (this.character.gold == 0) return Promise.reject("We have no gold to send.")
+        if (!this.players.has(to)) return Promise.reject(`We can not see ${to} to send gold.`)
+
+        const goldSent: Promise<number> = new Promise((resolve, reject) => {
+            const sentCheck = (data: GameResponseData) => {
+                if (data == "trade_get_closer") {
+                    this.socket.removeListener("game_event", sentCheck)
+                    reject(`We are too far away from ${to} to send gold.`)
+                } else if (typeof data == "object" && data.response == "gold_sent" && data.name == to) {
+                    if (data.gold !== amount) console.warn(`We wanted to send ${to} ${amount} gold, but we sent ${data.gold}.`)
+                    this.socket.removeListener("game_event", sentCheck)
+                    resolve(data.gold)
+                }
+            }
+
+            setTimeout(() => {
+                this.socket.removeListener("game_event", sentCheck)
+                reject(`sendGold timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.socket.on("game_response", sentCheck)
+        })
         this.socket.emit("send", { name: to, gold: amount })
+        return goldSent
     }
 
     public sendItem(to: string, inventoryPos: number, quantity = 1): Promise<unknown> {
