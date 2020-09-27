@@ -363,7 +363,7 @@ export class Pathfinder {
             if (node.id !== townNode.id) this.addLinkToGraph(node, townNode, { type: "town", map: map, x: townNode.data.x, y: townNode.data.y })
 
             // Create leave links
-            if (map == "cyberland" || map == "jail") this.addLinkToGraph(node, leaveLink, { type: "leave", map: map, x: leaveLink.data.x, y: leaveLink.data.y })
+            if (map == "cyberland" || map == "jail") this.addLinkToGraph(node, leaveLink, { type: "leave", map: leaveLink.data.map, x: leaveLink.data.x, y: leaveLink.data.y })
         }
 
         this.graph.endUpdate()

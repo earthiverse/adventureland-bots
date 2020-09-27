@@ -1294,7 +1294,7 @@ export class Player extends Observer {
                 }
             }
 
-            if (!toNode) return Promise.reject(`Could not find a suitable destination for ${to}`)
+            if (!toNode) return Promise.reject(`Could not find a suitable destination for '${to}'`)
         } else if (to.x !== undefined && to.y !== undefined) {
             if (to.map) toNode = to as NodeData
             else toNode = { map: this.character.map, x: to.x, y: to.y }
@@ -1345,9 +1345,9 @@ export class Player extends Observer {
             } catch (e) {
                 console.error(e)
                 if (lastMove == i) break // We had trouble moving
+                lastMove = i
                 i--
             }
-            lastMove = i
         }
 
         return { map: this.character.map, x: this.character.x, y: this.character.y }
@@ -2151,6 +2151,39 @@ export class Warrior extends PingCompensatedPlayer {
             name: "agitate"
         })
         return agitated
+    }
+
+    public charge(): Promise<unknown> {
+        const charged = new Promise((resolve, reject) => {
+            const cooldownCheck = (data: EvalData) => {
+                if (/skill_timeout\s*\(\s*['"]charge['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
+                    this.socket.removeListener("eval", cooldownCheck)
+                    this.socket.removeListener("game_response", failCheck)
+                    resolve()
+                }
+            }
+
+            const failCheck = (data: GameResponseData) => {
+                if (typeof data == "object" && data.response == "cooldown" && data.skill == "charge") {
+                    this.socket.removeListener("eval", cooldownCheck)
+                    this.socket.removeListener("game_response", failCheck)
+                    reject(`Charge failed due to cooldown (ms: ${data.ms}).`)
+                }
+            }
+
+            setTimeout(() => {
+                this.socket.removeListener("eval", cooldownCheck)
+                this.socket.removeListener("game_response", failCheck)
+                reject(`charge timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.socket.on("eval", cooldownCheck)
+            this.socket.on("game_response", failCheck)
+        })
+
+        this.socket.emit("skill", {
+            name: "charge"
+        })
+        return charged
     }
 
     public hardshell(): Promise<unknown> {
