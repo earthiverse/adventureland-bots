@@ -4,6 +4,7 @@ export type GData = {
     [T in MapName]?: number
   } };
   classes: { [T in CharacterType]: {
+    damage_type: DamageType
     /** A list of items that the character can equip using both hands */
     doublehand: { [T in WeaponType]?: {
       /** Modifier on the given stat for equipping this type of item */
@@ -128,19 +129,26 @@ export type GData = {
 // TODO: Get a better name for this.
 // TODO: Get a better naming convention for G data
 export type GMapsNPC = {
-  id: NPCType;
-  name?: string;
-  position: [number, number];
+  id: NPCType
+  name?: string
+  position: [number, number, number?]
+  positions: [number, number, number?]
 }
 
 export type GMonster = {
-  attack: number;
-  damage_type: DamageType;
-  frequency: number;
-  hp: number;
-  range: number;
-  speed: number;
-  xp: number;
+  apiercing?: number
+  attack: number
+  /** If set to true, all players that deal damage to this monster will share the loot */
+  cooperative?: boolean
+  damage_type: DamageType
+  evasion?: number
+  frequency: number
+  hp: number
+  mp: number
+  range: number
+  reflection?: number
+  speed: number
+  xp: number
 }
 
 export type GItem = {
@@ -337,6 +345,12 @@ export type StatusInfo = {
     /** How many ms left before this condition expires */
     ms: number;
   } } & {
+    burned?: {
+      // Burn damage per second
+      intensity: number
+      // The character ID that caused the burn
+      f: string
+    }
     coop?: {
       id: string;
       ms: number;
@@ -1071,6 +1085,7 @@ export type ItemName =
   | "t3bow"
   | "talkingskull"
   | "test"
+  | "test_orb"
   | "test2"
   | "throwingstars"
   | "tracker"

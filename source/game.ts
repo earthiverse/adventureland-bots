@@ -4,10 +4,11 @@ import { AchievementProgressData, CharacterData, ServerData, CharacterListData, 
 import { connect, disconnect } from "./database/database.js"
 import { UserModel } from "./database/users/users.model.js"
 import { IUserDocument } from "./database/users/users.types.js"
-import { ServerRegion, ServerIdentifier, GData, SkillName, BankInfo, ConditionName, MapName, ItemInfo, ItemName, SlotType, MonsterName, CharacterType, SInfo } from "./definitions/adventureland"
+import { ServerRegion, ServerIdentifier, GData, SkillName, BankInfo, ConditionName, MapName, ItemInfo, ItemName, SlotType, MonsterName, CharacterType, SInfo, IPosition, NPCType } from "./definitions/adventureland"
 import { Tools } from "./tools.js"
 import { CharacterModel } from "./database/characters/characters.model.js"
 import { Pathfinder } from "./pathfinder.js"
+import { LinkData, NodeData } from "./definitions/pathfinder"
 
 // TODO: Move to config file
 const MAX_PINGS = 100
@@ -314,6 +315,7 @@ export class Player extends Observer {
             this.character.going_x = data.x
             this.character.going_y = data.y
             this.character.moving = false
+            this.character.damage_type = this.G.classes[data.ctype].damage_type
         }
 
         // Update all the character information we can
@@ -354,11 +356,24 @@ export class Player extends Observer {
         for (const monster of data.monsters) {
             if (!this.entities.has(monster.id)) {
                 // Set soft properties
-                if (monster["max_hp"] === undefined) monster["max_hp"] = this.G.monsters[monster.type]["hp"]
-                if (monster["max_mp"] === undefined) monster["max_mp"] = this.G.monsters[monster.type]["mp"]
-                for (const attribute of ["attack", "hp", "mp", "speed"]) {
-                    if (monster[attribute] === undefined) monster[attribute] = this.G.monsters[monster.type][attribute]
-                }
+                if (monster.level === undefined) monster.level = 1
+                if (monster.max_hp === undefined) monster.max_hp = this.G.monsters[monster.type]["hp"]
+                if (monster.max_mp === undefined) monster.max_mp = this.G.monsters[monster.type]["mp"]
+                if (monster.map === undefined) monster.map = data.map
+
+                if (monster["1hp"] === undefined) monster["1hp"] = this.G.monsters[monster.type]["1hp"]
+                if (monster.apiercing === undefined) monster.apiercing = this.G.monsters[monster.type].apiercing
+                if (monster.attack === undefined) monster.attack = this.G.monsters[monster.type].attack
+                if (monster.cooperative === undefined) monster.cooperative = this.G.monsters[monster.type].cooperative
+                if (monster.damage_type === undefined) monster.damage_type = this.G.monsters[monster.type].damage_type
+                if (monster.evasion === undefined) monster.evasion = this.G.monsters[monster.type].evasion
+                if (monster.frequency === undefined) monster.frequency = this.G.monsters[monster.type].frequency
+                if (monster.hp === undefined) monster.hp = this.G.monsters[monster.type].hp
+                if (monster.mp === undefined) monster.mp = this.G.monsters[monster.type].mp
+                if (monster.range === undefined) monster.range = this.G.monsters[monster.type].range
+                if (monster.reflection === undefined) monster.reflection = this.G.monsters[monster.type].reflection
+                if (monster.speed === undefined) monster.speed = this.G.monsters[monster.type].speed
+                if (monster.xp === undefined) monster.xp = this.G.monsters[monster.type].xp
 
                 // Set everything else
                 this.entities.set(monster.id, monster)
@@ -901,7 +916,14 @@ export class Player extends Observer {
         return exchangeFinished
     }
 
+    // TODO: Add promises and checks
+    public finishMonsterHuntQuest() {
+        this.socket.emit("monsterhunt")
+    }
+
     public getMonsterHuntQuest(): Promise<unknown> {
+        if (this.character.ctype == "merchant") return Promise.reject("Merchants can't do Monster Hunts.")
+
         const questGot = new Promise((resolve, reject) => {
             const failCheck = (data: GameResponseData) => {
                 if (data == "ecu_get_closer") {
@@ -986,14 +1008,14 @@ export class Player extends Observer {
         return leaveComplete
     }
 
-    // TODO: Add promises
+    // TODO: Add checks and promises
     public leaveParty() {
         this.socket.emit("party", { event: "leave" })
     }
 
-    public async move(x: number, y: number): Promise<unknown> {
+    public async move(x: number, y: number): Promise<NodeData> {
         // Check if we're already there
-        if (this.character.x == x && this.character.y == y) return Promise.resolve()
+        if (this.character.x == x && this.character.y == y) return Promise.resolve({ map: this.character.map, y: this.character.y, x: this.character.x })
 
         const safeTo = Pathfinder.getSafeWalkTo(
             { map: this.character.map, x: this.character.x, y: this.character.y },
@@ -1002,7 +1024,7 @@ export class Player extends Observer {
             console.warn(`move: We can't move to {x: ${x}, y: ${y}} safely. We will move to {x: ${safeTo.x}, y: ${safeTo.y}}.`)
         }
 
-        const moveFinished = new Promise((resolve, reject) => {
+        const moveFinished = new Promise<NodeData>((resolve, reject) => {
             const distance = Tools.distance(this.character, { x: safeTo.x, y: safeTo.y })
 
             setTimeout(() => {
@@ -1012,7 +1034,7 @@ export class Player extends Observer {
                 if (this.character.x == safeTo.x && this.character.y == safeTo.y) {
                     clearTimeout(timeout)
                     this.socket.removeListener("player", checkPlayer)
-                    resolve()
+                    resolve({ map: this.character.map, x: this.character.x, y: this.character.y })
                 }
             }, 1 + distance * 1000 / this.character.speed)
 
@@ -1032,7 +1054,7 @@ export class Player extends Observer {
 
                 this.socket.removeListener("player", checkPlayer)
                 if (data.x == safeTo.x && data.y == safeTo.y) {
-                    resolve()
+                    resolve({ map: data.map, x: data.x, y: data.y })
                 } else {
                     reject(`move timeout (${safeTo.x},${safeTo.y}) (${TIMEOUT + 1 + distance * 1000 / this.character.speed}ms)`)
                 }
@@ -1051,6 +1073,11 @@ export class Player extends Observer {
         this.character.going_y = safeTo.y
         this.character.moving = true
         return moveFinished
+    }
+
+    // TODO: Add promises and checks
+    public openChest(id: string) {
+        this.socket.emit("open_chest", { id: id })
     }
 
     public regenHP(): Promise<unknown> {
@@ -1199,6 +1226,136 @@ export class Player extends Observer {
     // TODO: See what socket events happen, and see if we can see if the server picked up our request
     public sendPartyRequest(id: string) {
         this.socket.emit("party", { event: "request", name: id })
+    }
+
+    protected lastSmartMove: number = Date.now()
+    // TODO: Add option to use blink.
+    // TODO: Add option to get within a certain distance of the destination
+    // TODO: Add NPC names
+    /**
+     * A function that moves to, and returns when we move to a given location
+     * @param to Where to move to. If given a string, we will try to navigate to the proper location.
+     */
+    public async smartMove(to: MapName | MonsterName | NPCType | IPosition): Promise<NodeData> {
+        const started = Date.now()
+        this.lastSmartMove = started
+        let toNode: NodeData
+        let path: LinkData[]
+        if (typeof to == "string") {
+            // Check if our destination is a map name
+            for (const mapName in this.G.maps) {
+                if (to !== mapName) continue
+
+                // Set `to` to the `town` spawn on the map
+                const mainSpawn = this.G.maps[to as MapName].spawns[0]
+                toNode = { map: to as MapName, x: mainSpawn[0], y: mainSpawn[1] }
+                break
+            }
+
+            // Check if our destination is a monster type
+            if (!toNode) {
+                for (const mtype in this.G.monsters) {
+                    if (to !== mtype) continue
+
+                    // Set `to` to the closest spawn for these monsters
+                    const locations = this.locateMonsters(mtype as MonsterName)
+                    let closestDistance: number = Number.MAX_VALUE
+                    for (const location of locations) {
+                        const potentialPath = await Pathfinder.getPath(this.character, location)
+                        const distance = Pathfinder.computePathCost(potentialPath)
+                        if (distance < closestDistance) {
+                            path = potentialPath
+                            toNode = path[path.length - 1]
+                            closestDistance = distance
+                        }
+                    }
+                    break
+                }
+            }
+
+            // Check if our destination is an NPC role
+            for (const mapName in this.G.maps) {
+                for (const npc of this.G.maps[mapName as MapName].npcs) {
+                    if (to !== npc.id) continue
+
+                    // Set `to` to the closest NPC
+                    const locations = this.locateNPCs(npc.id)
+                    let closestDistance: number = Number.MAX_VALUE
+                    for (const location of locations) {
+                        const potentialPath = await Pathfinder.getPath(this.character, location)
+                        const distance = Pathfinder.computePathCost(potentialPath)
+                        if (distance < closestDistance) {
+                            path = potentialPath
+                            toNode = path[path.length - 1]
+                            closestDistance = distance
+                        }
+                    }
+                    break
+                }
+            }
+
+            if (!toNode) return Promise.reject(`Could not find a suitable destination for ${to}`)
+        } else if (to.x !== undefined && to.y !== undefined) {
+            if (to.map) toNode = to as NodeData
+            else toNode = { map: this.character.map, x: to.x, y: to.y }
+        } else {
+            return Promise.reject("'to' is unsuitable for smartMove. We need a 'map', an 'x', and a 'y'.")
+        }
+
+        // If we don't have the path yet, get it
+        if (!path) path = await Pathfinder.getPath(this.character, toNode)
+
+        let lastMove = -1
+        for (let i = 0; i < path.length; i++) {
+            let currentMove = path[i]
+
+            // Skip check -- check if we can move to the next node
+            if (currentMove.type == "move") {
+                for (let j = 1; j < path.length; j++) {
+                    const potentialMove = path[j]
+                    if (potentialMove.map !== currentMove.map) break
+
+                    if (potentialMove.type == "move") {
+                        if (Pathfinder.canWalk(this.character, potentialMove)) {
+                            i = j
+                            currentMove = potentialMove
+                        }
+                    }
+                }
+            }
+            if (started < this.lastSmartMove) {
+                if (typeof to == "string") return Promise.reject(`smartMove to ${to} cancelled (new smartMove started)`)
+                else return Promise.reject(`smartMove to ${to.map}:${to.x},${to.y} cancelled (new smartMove started)`)
+            }
+
+            // Perform the next movement
+            try {
+                if (currentMove.type == "leave") {
+                    await this.leaveMap()
+                } else if (currentMove.type == "move") {
+                    if (currentMove.map !== this.character.map) {
+                        return Promise.reject(`We are supposed to be in ${currentMove.map}, but we are in ${this.character.map}`)
+                    }
+                    await this.move(currentMove.x, currentMove.y)
+                } else if (currentMove.type == "town") {
+                    await this.warpToTown()
+                } else if (currentMove.type == "transport") {
+                    await this.transport(currentMove.map, currentMove.spawn)
+                }
+            } catch (e) {
+                console.error(e)
+                if (lastMove == i) break // We had trouble moving
+                i--
+            }
+            lastMove = i
+        }
+
+        return { map: this.character.map, x: this.character.x, y: this.character.y }
+    }
+
+    public stopSmartMove(): void {
+        this.lastSmartMove = Date.now()
+        this.move(this.character.x, this.character.y)
     }
 
     public transport(map: MapName, spawn: number): Promise<unknown> {
@@ -1406,6 +1563,8 @@ export class Player extends Observer {
     }
 
     public getNearestAttackablePlayer(): { player: PlayerData, distance: number } {
+        if (!this.isPVP()) return undefined
+
         let closest: PlayerData
         let closestD = Number.MAX_VALUE
         this.players.forEach((player) => {
@@ -1417,7 +1576,7 @@ export class Player extends Observer {
                 closestD = d
             }
         })
-        if (closest) return ({ player: closest, distance: closestD })
+        if (closest) return { player: closest, distance: closestD }
     }
 
     /**
@@ -1520,6 +1679,51 @@ export class Player extends Observer {
             }
         }
         return found
+    }
+
+    public locateMonsters(mType: MonsterName): NodeData[] {
+        const locations: NodeData[] = []
+        for (const mapName in this.G.maps) {
+            const map = this.G.maps[mapName as MapName]
+            if (map.instance || !map.monsters || map.monsters.length == 0) continue // Map is unreachable, or there are no monsters
+
+            for (const monsterSpawn of map.monsters) {
+                if (monsterSpawn.type != mType) continue
+                if (monsterSpawn.boundary) {
+                    locations.push({ "map": mapName as MapName, "x": (monsterSpawn.boundary[0] + monsterSpawn.boundary[2]) / 2, "y": (monsterSpawn.boundary[1] + monsterSpawn.boundary[3]) / 2 })
+                } else if (monsterSpawn.boundaries) {
+                    for (const boundary of monsterSpawn.boundaries) {
+                        locations.push({ "map": boundary[0], "x": (boundary[1] + boundary[3]) / 2, "y": (boundary[2] + boundary[4]) / 2 })
+                    }
+                }
+            }
+        }
+
+        return locations
+    }
+
+    public locateNPCs(npcType: NPCType): NodeData[] {
+        const locations: NodeData[] = []
+        for (const mapName in this.G.maps) {
+            const map = this.G.maps[mapName as MapName]
+            if (map.instance || !map.npcs || map.npcs.length == 0) continue // Map is unreachable, or there are no NPCs
+
+            for (const npc of map.npcs) {
+                if (npc.id !== npcType) continue
+
+                // TODO: If it's an NPC that moves around, check in the database for the latest location
+
+                if (npc.position) {
+                    locations.push({ map: mapName as MapName, x: npc.position[0], y: npc.position[1] })
+                } else if (npc.positions) {
+                    for (const position of npc.positions) {
+                        locations.push({ map: mapName as MapName, x: position[0], y: position[1] })
+                    }
+                }
+            }
+        }
+
+        return locations
     }
 }
 
@@ -1681,6 +1885,26 @@ export class Mage extends PingCompensatedPlayer {
 }
 
 export class Priest extends PingCompensatedPlayer {
+    public curse(target: string) {
+        const curseStarted = new Promise<string[]>((resolve, reject) => {
+            const cooldownCheck = (data: EvalData) => {
+                if (/skill_timeout\s*\(\s*['"]curse['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
+                    this.socket.removeListener("eval", cooldownCheck)
+                    resolve()
+                }
+            }
+
+            setTimeout(() => {
+                this.socket.removeListener("eval", cooldownCheck)
+                reject(`curse timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.socket.on("eval", cooldownCheck)
+        })
+
+        this.socket.emit("skill", { name: "curse", id: target })
+        return curseStarted
+    }
+
     public heal(id: string): Promise<string> {
         // if (!this.game.entities.has(id) && !this.game.players.has(id)) return Promise.reject(`No Entity with ID '${id}'`)
 
@@ -1740,6 +1964,26 @@ export class Priest extends PingCompensatedPlayer {
         this.socket.emit("heal", { id: id })
         return healStarted
     }
+
+    public partyHeal(): Promise<string[]> {
+        const healStarted = new Promise<string[]>((resolve, reject) => {
+            const cooldownCheck = (data: EvalData) => {
+                if (/skill_timeout\s*\(\s*['"]partyheal['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
+                    this.socket.removeListener("eval", cooldownCheck)
+                    resolve()
+                }
+            }
+
+            setTimeout(() => {
+                this.socket.removeListener("eval", cooldownCheck)
+                reject(`partyHeal timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.socket.on("eval", cooldownCheck)
+        })
+
+        this.socket.emit("skill", { name: "partyheal" })
+        return healStarted
+    }
 }
 
 /** Implement functions that only apply to rangers */
@@ -1779,6 +2023,61 @@ export class Ranger extends PingCompensatedPlayer {
             ids: [target1, target2, target3, target4, target5]
         })
         return attackStarted
+    }
+
+    public huntersMark(target: string): Promise<unknown> {
+        const marked = new Promise((resolve, reject) => {
+            const cooldownCheck = (data: EvalData) => {
+                if (/skill_timeout\s*\(\s*['"]huntersmark['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
+                    this.socket.removeListener("eval", cooldownCheck)
+                    resolve()
+                }
+            }
+
+            setTimeout(() => {
+                this.socket.removeListener("eval", cooldownCheck)
+                reject(`supershot timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.socket.on("eval", cooldownCheck)
+        })
+        this.socket.emit("skill", {
+            name: "huntersmark",
+            id: target
+        })
+        return marked
+    }
+
+    public supershot(target: string): Promise<string> {
+        const supershotStarted = new Promise<string>((resolve, reject) => {
+            let projectile: string
+
+            const attackCheck = (data: ActionData) => {
+                if (data.attacker == this.character.id
+                    && data.type == "supershot"
+                    && data.target == target) {
+                    projectile = data.pid
+                }
+            }
+
+            const cooldownCheck = (data: EvalData) => {
+                if (/skill_timeout\s*\(\s*['"]supershot['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
+                    this.socket.removeListener("action", attackCheck)
+                    this.socket.removeListener("eval", cooldownCheck)
+                    resolve(projectile)
+                }
+            }
+
+            setTimeout(() => {
+                this.socket.removeListener("action", attackCheck)
+                this.socket.removeListener("eval", cooldownCheck)
+                reject(`supershot timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.socket.on("action", attackCheck)
+            this.socket.on("eval", cooldownCheck)
+        })
+
+        this.socket.emit("skill", { name: "supershot", id: target })
+        return supershotStarted
     }
 
     public threeShot(target1: string, target2: string, target3: string): Promise<string[]> {
@@ -1887,6 +2186,40 @@ export class Warrior extends PingCompensatedPlayer {
         return hardshelled
     }
 
+    // TODO: Return ids of those monsters & players that are now stomped
+    public stomp(): Promise<unknown> {
+        const stomped = new Promise((resolve, reject) => {
+            const cooldownCheck = (data: EvalData) => {
+                if (/skill_timeout\s*\(\s*['"]stomp['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
+                    this.socket.removeListener("eval", cooldownCheck)
+                    this.socket.removeListener("game_response", failCheck)
+                    resolve()
+                }
+            }
+
+            const failCheck = (data: GameResponseData) => {
+                if (typeof data == "object" && data.response == "cooldown" && data.skill == "stomp") {
+                    this.socket.removeListener("eval", cooldownCheck)
+                    this.socket.removeListener("game_response", failCheck)
+                    reject(`Stomp failed due to cooldown (ms: ${data.ms}).`)
+                }
+            }
+
+            setTimeout(() => {
+                this.socket.removeListener("eval", cooldownCheck)
+                this.socket.removeListener("game_response", failCheck)
+                reject(`stomp timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.socket.on("eval", cooldownCheck)
+            this.socket.on("game_response", failCheck)
+        })
+
+        this.socket.emit("skill", {
+            name: "stomp"
+        })
+        return stomped
+    }
+
     // TODO: Investigate if cooldown is before or after the "action" event. We are getting lots of "failed due to cooldowns"
     public taunt(target: string): Promise<string> {
         const tauntStarted = new Promise<string>((resolve, reject) => {
@@ -1928,6 +2261,11 @@ export class Warrior extends PingCompensatedPlayer {
 
         this.socket.emit("skill", { name: "taunt", id: target })
         return tauntStarted
+    }
+
+    // TODO: Add promises and checks
+    public warcry() {
+        this.socket.emit("skill", { name: "warcry" })
     }
 }
 

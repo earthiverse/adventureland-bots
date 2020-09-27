@@ -9,13 +9,12 @@ export type NodeData = {
     y: number
 }
 
-export type LinkData =
+export type LinkData = NodeData & (
     /**
      * Used to travel through doors
      */
     {
         type: "transport"
-        map: MapName
         spawn: number
     }
     /**
@@ -23,21 +22,16 @@ export type LinkData =
      */
     | {
         type: "town"
-        map: MapName
     } |
     /**
      * Used when leaving cyberland (TODO: Or jail?)
      */
     {
         type: "leave"
-        map: MapName
     }
     /**
      * Normal movement
      */
     | {
         type: "move"
-        map: MapName
-        x: number
-        y: number
-    }
+    })

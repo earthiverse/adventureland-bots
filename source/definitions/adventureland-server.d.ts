@@ -1,4 +1,4 @@
-import { NPCType, CharacterType, StatusInfo, SlotInfo, ItemInfo, MapName, MonsterName, ItemName, ServerRegion, ServerIdentifier, BankPackType, BankInfo, SkillName, SInfo } from "./adventureland"
+import { NPCType, CharacterType, StatusInfo, SlotInfo, ItemInfo, MapName, MonsterName, ItemName, ServerRegion, ServerIdentifier, BankPackType, BankInfo, SkillName, SInfo, DamageType } from "./adventureland"
 
 export type AchievementProgressData = {
     name: string
@@ -120,6 +120,9 @@ export type CharacterData = {
     hitchhikers?: [string, any][]
     /** Holds bank information when the character is inside the bank */
     user?: BankInfo
+
+    // The following are soft properties. We need to use the values from G.classes for these if there are none available.
+    damage_type?: DamageType
 }
 
 export type CharacterListData = {
@@ -202,25 +205,38 @@ export type EntityData = {
     abs: boolean
     angle: number
     armor: number
-    attack?: number
     cid: number
     frequency: number
     going_x: number
     going_y: number
-    hp?: number
-    level: number
-    max_hp?: number
     move_num: number
     moving: boolean
     resistance: number
     s: StatusInfo
-    speed: number
     /** The ID of the target */
     target?: string
-    xp: number
 
     x: number
     y: number
+
+    // The following are soft properties. We need to use the values from G.monsters for these if there are none available.
+    "1hp"?: boolean
+    apiercing?: number
+    attack?: number
+    cooperative?: boolean
+    damage_type?: DamageType
+    evasion?: number
+    hp?: number
+    level?: number
+    map?: MapName
+    max_hp?: number
+    max_mp?: number
+    mp?: number
+    range?: number
+    reflection?: number
+    rpiercing?: number
+    speed?: number
+    xp?: number
 }
 
 export type EvalData = {

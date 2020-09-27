@@ -133,6 +133,24 @@ export class Pathfinder {
         return true
     }
 
+    public static computePathCost(path: LinkData[]): number {
+        let cost = 0
+        let current: LinkData = path[0]
+        for (let i = 1; i < path.length; i++) {
+            const next = path[i]
+            if (next.type == "move") {
+                cost += Tools.distance(current, next)
+            } else if (next.type == "leave" || next.type == "transport") {
+                cost += this.TRANSPORT_COST
+            } else if (next.type == "town") {
+                cost += this.TOWN_COST
+            }
+
+            current = next
+        }
+        return cost
+    }
+
     /**
      * Generates a grid of walkable pixels that we use for pathfinding.
      * @param map The map to generate the grid for
@@ -290,6 +308,8 @@ export class Pathfinder {
                 this.addLinkToGraph(fromNode, toNode, {
                     type: "transport",
                     map: toMap as MapName,
+                    x: toNode.data.x,
+                    y: toNode.data.y,
                     spawn: spawnID
                 })
             }
@@ -310,7 +330,7 @@ export class Pathfinder {
             // To
             const spawn2 = this.G.maps[door[4]].spawns[door[5]]
             const toDoor = this.addNodeToGraph(door[4], spawn2[0], spawn2[1])
-            this.graph.addLink(fromDoor.id, toDoor.id, { type: "transport", map: door[4], spawn: door[5] })
+            this.graph.addLink(fromDoor.id, toDoor.id, { type: "transport", map: door[4], x: toDoor.data.x, y: toDoor.data.y, spawn: door[5] })
         }
 
         // Add nodes at spawns
@@ -340,10 +360,10 @@ export class Pathfinder {
         const leaveLink = this.addNodeToGraph("main", this.G.maps.main.spawns[0][0], this.G.maps.main.spawns[0][1])
         for (const node of walkableNodes) {
             // Create town links
-            if (node.id !== townNode.id) this.addLinkToGraph(node, townNode, { type: "town", map: map })
+            if (node.id !== townNode.id) this.addLinkToGraph(node, townNode, { type: "town", map: map, x: townNode.data.x, y: townNode.data.y })
 
             // Create leave links
-            if (map == "cyberland" || map == "jail") this.addLinkToGraph(node, leaveLink, { type: "leave", map: map })
+            if (map == "cyberland" || map == "jail") this.addLinkToGraph(node, leaveLink, { type: "leave", map: map, x: leaveLink.data.x, y: leaveLink.data.y })
         }
 
         this.graph.endUpdate()
@@ -401,7 +421,7 @@ export class Pathfinder {
 
         if (from.map == to.map && this.canWalk(from, to)) {
             // Return a straight line to the destination
-            return [{ type: "move", map: from.map, x: to.x, y: to.y }]
+            return [{ type: "move", map: from.map, x: from.x, y: from.y }, { type: "move", map: from.map, x: to.x, y: to.y }]
         }
 
         console.log(`Looking for a path from ${fromNode.id} to ${toNode.id}...`)
