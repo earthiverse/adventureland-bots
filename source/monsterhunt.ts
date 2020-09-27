@@ -266,6 +266,10 @@ async function startRanger(bot: Ranger) {
         return 1000
     }
     const strategy: Strategy = {
+        armadillo: {
+            attack: async () => { return await defaultAttackStrategy("armadillo") },
+            move: async () => { return await holdPositionMoveStrategy({ map: "main", x: 526, y: 1846 }) }
+        },
         bee: {
             attack: async () => { return await defaultAttackStrategy("bee") },
             move: async () => { return await holdPositionMoveStrategy({ map: "main", x: 494, y: 1101 }) },
@@ -278,6 +282,10 @@ async function startRanger(bot: Ranger) {
             equipment: { "mainhand": "hbow" },
             attackWhileIdle: true
         },
+        croc: {
+            attack: async () => { return await defaultAttackStrategy("croc") },
+            move: async () => { return await holdPositionMoveStrategy({ map: "main", x: 801, y: 1710 }) }
+        },
         goo: {
             attack: async () => { return await defaultAttackStrategy("goo") },
             move: async () => { return await holdPositionMoveStrategy({ map: "main", x: -32, y: 787 }) },
@@ -287,8 +295,12 @@ async function startRanger(bot: Ranger) {
         mummy: {
             attack: async () => { return await tankAttackStrategy("mummy", warrior.character.id) },
             move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 250, y: -1129 }) },
-            equipment: { "mainhand": "firebow", "orb": "jacko" },
-            attackWhileIdle: false
+            equipment: { "mainhand": "firebow", "orb": "jacko" }
+        },
+        plantoid: {
+            attack: async () => { return await tankAttackStrategy("plantoid", warrior.character.id) },
+            move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: -750, y: -125 }) },
+            equipment: { "mainhand": "firebow", "orb": "jacko" }
         },
         porcupine: {
             attack: async () => { return await defaultAttackStrategy("porcupine") },
@@ -774,6 +786,10 @@ async function startPriest(bot: Priest) {
         return 1000
     }
     const strategy: Strategy = {
+        armadillo: {
+            attack: async () => { return await defaultAttackStrategy("armadillo") },
+            move: async () => { return await holdPositionMoveStrategy({ map: "main", x: 546, y: 1846 }) }
+        },
         bee: {
             attack: async () => { return await defaultAttackStrategy("bee") },
             move: async () => { return await holdPositionMoveStrategy({ map: "main", x: 152, y: 1487 }) },
@@ -783,6 +799,10 @@ async function startPriest(bot: Priest) {
             attack: async () => { return await defaultAttackStrategy("crab") },
             move: async () => { return await holdPositionMoveStrategy({ map: "main", x: -1182, y: -66 }) },
             attackWhileIdle: true
+        },
+        croc: {
+            attack: async () => { return await defaultAttackStrategy("croc") },
+            move: async () => { return await holdPositionMoveStrategy({ map: "main", x: 821, y: 1710 }) }
         },
         goo: {
             attack: async () => { return await defaultAttackStrategy("goo") },
@@ -794,6 +814,11 @@ async function startPriest(bot: Priest) {
             move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 270, y: -1129 }) },
             equipment: { "orb": "jacko" },
             attackWhileIdle: false
+        },
+        plantoid: {
+            attack: async () => { return await tankAttackStrategy("plantoid", warrior.character.id) },
+            move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: -730, y: -125 }) },
+            equipment: { "mainhand": "firebow", "orb": "jacko" }
         },
         porcupine: {
             attack: async () => { return await defaultAttackStrategy("porcupine") },
@@ -1327,6 +1352,10 @@ async function startWarrior(bot: Warrior) {
             equipment: { "mainhand": "bataxe" },
             attackWhileIdle: true
         },
+        croc: {
+            attack: async () => { return await defaultAttackStrategy("croc") },
+            move: async () => { return await nearbyMonstersMoveStrategy({ map: "main", x: 781, y: 1710 }, "croc") }
+        },
         goo: {
             attack: async () => { return await defaultAttackStrategy("goo") },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "main", x: -52, y: 787 }, "goo") },
@@ -1339,6 +1368,11 @@ async function startWarrior(bot: Warrior) {
             move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 230, y: -1129 }) },
             equipment: { "mainhand": "basher", "orb": "jacko" },
             attackWhileIdle: false
+        },
+        plantoid: {
+            attack: async () => { return await oneTargetAttackStrategy("plantoid") },
+            move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: -770, y: -125 }) },
+            equipment: { "mainhand": "firebow", "orb": "jacko" }
         },
         pppompom: {
             attack: async () => { return oneTargetAttackStrategy("pppompom") },
@@ -1502,6 +1536,18 @@ async function startWarrior(bot: Warrior) {
         setTimeout(async () => { buyLoop() }, 60000)
     }
     buyLoop()
+
+    async function chargeLoop() {
+        try {
+            if (bot.socket.disconnected) return
+            await bot.charge()
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { chargeLoop() }, bot.getCooldown("charge"))
+    }
+    chargeLoop()
 
     async function healLoop() {
         try {
