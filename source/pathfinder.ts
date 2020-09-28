@@ -97,12 +97,12 @@ export class Pathfinder {
                     error -= ddx
                     // three cases (octant == right->right-top for directions below):
                     if (error + errorprev < ddx) {  // bottom square also
-                        if (grid[y - ystep][x] != WALKABLE) return false
+                        if (grid[y - ystep][x] !== WALKABLE) return false
                     } else if (error + errorprev > ddx) {  // left square also
-                        if (grid[y][x - xstep] != WALKABLE) return false
+                        if (grid[y][x - xstep] !== WALKABLE) return false
                     } else {  // corner: bottom and left squares also
-                        if (grid[y - ystep][x] != WALKABLE) return false
-                        if (grid[y][x - xstep] != WALKABLE) return false
+                        if (grid[y - ystep][x] !== WALKABLE) return false
+                        if (grid[y][x - xstep] !== WALKABLE) return false
                     }
                 }
                 if (grid[y][x] !== WALKABLE) return false
@@ -117,12 +117,12 @@ export class Pathfinder {
                     x += xstep
                     error -= ddy
                     if (error + errorprev < ddy) {
-                        if (grid[y][x - xstep] != WALKABLE) return false
+                        if (grid[y][x - xstep] !== WALKABLE) return false
                     } else if (error + errorprev > ddy) {
-                        if (grid[y - ystep][x] != WALKABLE) return false
+                        if (grid[y - ystep][x] !== WALKABLE) return false
                     } else {
-                        if (grid[y][x - xstep] != WALKABLE) return false
-                        if (grid[y - ystep][x] != WALKABLE) return false
+                        if (grid[y][x - xstep] !== WALKABLE) return false
+                        if (grid[y - ystep][x] !== WALKABLE) return false
                     }
                 }
                 if (grid[y][x] !== WALKABLE) return false
@@ -501,15 +501,15 @@ export class Pathfinder {
                     error -= ddx
                     // three cases (octant == right->right-top for directions below):
                     if (error + errorprev < ddx) {  // bottom square also
-                        if (grid[y - ystep][x] != WALKABLE) return { map: from.map, x: x - xstep, y: y - ystep }
+                        if (grid[y - ystep][x] !== WALKABLE) return { map: from.map, x: x - xstep + this.G.geometry[from.map].min_x, y: y - ystep + this.G.geometry[from.map].min_y }
                     } else if (error + errorprev > ddx) {  // left square also
-                        if (grid[y][x - xstep] != WALKABLE) return { map: from.map, x: x - xstep, y: y - ystep }
+                        if (grid[y][x - xstep] !== WALKABLE) return { map: from.map, x: x - xstep + this.G.geometry[from.map].min_x, y: y - ystep + this.G.geometry[from.map].min_y }
                     } else {  // corner: bottom and left squares also
-                        if (grid[y - ystep][x] != WALKABLE) return { map: from.map, x: x - xstep, y: y - ystep }
-                        if (grid[y][x - xstep] != WALKABLE) return { map: from.map, x: x - xstep, y: y - ystep }
+                        if (grid[y - ystep][x] !== WALKABLE) return { map: from.map, x: x - xstep + this.G.geometry[from.map].min_x, y: y - ystep + this.G.geometry[from.map].min_y }
+                        if (grid[y][x - xstep] !== WALKABLE) return { map: from.map, x: x - xstep + this.G.geometry[from.map].min_x, y: y - ystep + this.G.geometry[from.map].min_y }
                     }
                 }
-                if (grid[y][x] !== WALKABLE) return { map: from.map, x: x - xstep, y: y }
+                if (grid[y][x] !== WALKABLE) return { map: from.map, x: x - xstep + this.G.geometry[from.map].min_x, y: y + this.G.geometry[from.map].min_y }
                 errorprev = error
             }
         } else {  // the same as above
@@ -521,15 +521,15 @@ export class Pathfinder {
                     x += xstep
                     error -= ddy
                     if (error + errorprev < ddy) {
-                        if (grid[y][x - xstep] != WALKABLE) return { map: from.map, x: x - xstep, y: y - ystep }
+                        if (grid[y][x - xstep] !== WALKABLE) return { map: from.map, x: x - xstep + this.G.geometry[from.map].min_x, y: y - ystep + this.G.geometry[from.map].min_y }
                     } else if (error + errorprev > ddy) {
-                        if (grid[y - ystep][x] != WALKABLE) return { map: from.map, x: x - xstep, y: y - ystep }
+                        if (grid[y - ystep][x] !== WALKABLE) return { map: from.map, x: x - xstep + this.G.geometry[from.map].min_x, y: y - ystep + this.G.geometry[from.map].min_y }
                     } else {
-                        if (grid[y][x - xstep] != WALKABLE) return { map: from.map, x: x - xstep, y: y - ystep }
-                        if (grid[y - ystep][x] != WALKABLE) return { map: from.map, x: x - xstep, y: y - ystep }
+                        if (grid[y][x - xstep] !== WALKABLE) return { map: from.map, x: x - xstep + this.G.geometry[from.map].min_x, y: y - ystep + this.G.geometry[from.map].min_y }
+                        if (grid[y - ystep][x] !== WALKABLE) return { map: from.map, x: x - xstep + this.G.geometry[from.map].min_x, y: y - ystep + this.G.geometry[from.map].min_y }
                     }
                 }
-                if (grid[y][x] !== WALKABLE) return { map: from.map, x: x, y: y - ystep }
+                if (grid[y][x] !== WALKABLE) return { map: from.map, x: x + this.G.geometry[from.map].min_x, y: y - ystep + this.G.geometry[from.map].min_y }
                 errorprev = error
             }
         }
