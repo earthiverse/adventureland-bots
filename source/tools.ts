@@ -1,5 +1,5 @@
 import { MapName } from "./definitions/adventureland"
-import { CharacterData, EntityData } from "./definitions/adventureland-server"
+import { ActionData, CharacterData, EntityData } from "./definitions/adventureland-server"
 
 export class Tools {
     /**
@@ -50,5 +50,33 @@ export class Tools {
         if (character.damage_type == "physical" && entity.evasion !== undefined) return false
 
         return Tools.calculateDamageRange(character, entity)[0] > entity.hp
+    }
+
+    /**
+     * Returns true if the entity will burn to death without taking any additional damage
+     * TODO: Check if the entity has healing abilities
+     * @param entity The entity to check
+     */
+    public static willBurnToDeath(entity: EntityData): boolean {
+        if (entity.s.burned) {
+            const burnTime = Math.max(0, (entity.s.burned.ms - 500)) / 1000
+            const burnDamage = burnTime * entity.s.burned.intensity
+            if (burnDamage > entity.hp) return true
+        }
+        return false
+    }
+
+    /**
+     * Returns true if the entity will die to the already incoming projectiles
+     * @param entity 
+     * @param projectiles 
+     */
+    public static willDieToProjectiles(entity: EntityData, projectiles: Map<string, ActionData>): boolean {
+        let incomingProjectileDamage = 0
+        for (const projectile of projectiles.values()) {
+            if (projectile.target == entity.id) incomingProjectileDamage += projectile.damage * 0.9
+            if (incomingProjectileDamage > entity.hp) return true
+        }
+        return false
     }
 }

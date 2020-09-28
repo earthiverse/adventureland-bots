@@ -293,6 +293,9 @@ export type GameResponseDataObject = {
     item: ItemName
     q: number
 } | {
+    response: "no_mp"
+    place: "attack"
+} | {
     response: "no_target"
     // TODO: See what else gets returned
 } | {

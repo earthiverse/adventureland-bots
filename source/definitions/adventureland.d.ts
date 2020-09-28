@@ -341,31 +341,27 @@ export type SlotInfo = {
 export type DoorInfo = [number, number, number, number, MapName, number?, number?, string?, string?]
 
 export type StatusInfo = {
-  [T in ConditionName]?: {
+  [T in ConditionName | "typing"]?: {
     /** How many ms left before this condition expires */
     ms: number;
   } } & {
     burned?: {
-      // Burn damage per second
+      // (Unconfirmed) the damage that the burn will do per second.
       intensity: number
       // The character ID that caused the burn
       f: string
     }
     coop?: {
       id: string;
-      ms: number;
       p: number;
     };
     mluck?: {
-      ms: number;
       /** The ID of the merchant who cast mluck */
       f: string;
+      /** A flag to show if the mluck was cast by the user's merchant. If false, it can be mlucked by any merchant. */
+      strong: boolean;
     };
-    typing?: {
-      ms: number
-    }
     monsterhunt?: {
-      ms: number;
       /** The server ID where the monster hunt is valid */
       sn: string;
       /** Number of monsters remaining to kill */
@@ -374,11 +370,9 @@ export type StatusInfo = {
       id: MonsterName;
     };
     citizen0aura?: {
-      ms: number;
       luck: number;
     };
     citizen4aura?: {
-      ms: number;
       gold: number;
     };
   }

@@ -2,7 +2,7 @@ import { EntityData, PlayerData } from "./definitions/adventureland-server.js"
 import { MonsterName, ServerIdentifier, ServerRegion, SlotType } from "./definitions/adventureland.js"
 import { Strategy } from "./definitions/bot.js"
 import { NodeData } from "./definitions/pathfinder.js"
-import { Game, PingCompensatedPlayer, Priest, Ranger, Warrior } from "./game.js"
+import { Game, Merchant, Priest, Ranger, Warrior } from "./game.js"
 import { Pathfinder } from "./pathfinder.js"
 import { Tools } from "./tools.js"
 
@@ -12,8 +12,8 @@ let warrior: Warrior
 let warriorTarget: MonsterName
 let priest: Priest
 let priestTarget: MonsterName
-let merchant: PingCompensatedPlayer
-let merchantTarget: MonsterName
+let merchant: Merchant
+// let merchantTarget: MonsterName
 
 function getMonsterHuntTarget(strategy: Strategy): MonsterName {
     let target: MonsterName
@@ -42,25 +42,16 @@ async function startRanger(bot: Ranger) {
             const targets: EntityData[] = []
             const threeshotTargets: EntityData[] = []
             const fiveshotTargets: EntityData[] = []
-            for (const [id, entity] of bot.entities) {
+            for (const [, entity] of bot.entities) {
                 if (entity.type !== mtype) continue
                 if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                 if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                 // If the target will die to incoming projectiles, ignore it
-                let incomingProjectileDamage = 0
-                for (const projectile of bot.projectiles.values()) {
-                    if (projectile.target == id) incomingProjectileDamage += projectile.damage * 0.9
-                    if (incomingProjectileDamage > entity.hp) break
-                }
-                if (incomingProjectileDamage > entity.hp) continue
+                if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
 
                 // If the target will burn to death, ignore it
-                if (entity.s.burned) {
-                    const burnTime = Math.max(0, (entity.s.burned.ms - 250)) / 1000
-                    const burnDamage = burnTime * entity.s.burned.intensity
-                    if (burnDamage > entity.hp) continue
-                }
+                if (Tools.willBurnToDeath(entity)) continue
 
                 targets.push(entity)
 
@@ -102,7 +93,7 @@ async function startRanger(bot: Ranger) {
             }
         }
 
-        if (bot.getCooldown("supershot") == 0) {
+        if (bot.getCooldown("supershot") == 0 && bot.character.mp > bot.G.skills.supershot.mp) {
             const targets: string[] = []
             for (const [id, entity] of bot.entities) {
                 if (entity.type !== mtype) continue
@@ -110,19 +101,10 @@ async function startRanger(bot: Ranger) {
                 if (Tools.distance(bot.character, entity) > bot.character.range * bot.G.skills.supershot.range_multiplier) continue // Only attack those in range
 
                 // If the target will die to incoming projectiles, ignore it
-                let incomingProjectileDamage = 0
-                for (const projectile of bot.projectiles.values()) {
-                    if (projectile.target == id) incomingProjectileDamage += projectile.damage * 0.9
-                    if (incomingProjectileDamage > entity.hp) break
-                }
-                if (incomingProjectileDamage > entity.hp) continue
+                if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
 
                 // If the target will burn to death, ignore it
-                if (entity.s.burned) {
-                    const burnTime = Math.max(0, (entity.s.burned.ms - 250)) / 1000
-                    const burnDamage = burnTime * entity.s.burned.intensity
-                    if (burnDamage > entity.hp) continue
-                }
+                if (Tools.willBurnToDeath(entity)) continue
 
                 targets.push(id)
 
@@ -154,25 +136,16 @@ async function startRanger(bot: Ranger) {
             const targets: EntityData[] = []
             const threeshotTargets: EntityData[] = []
             const fiveshotTargets: EntityData[] = []
-            for (const [id, entity] of bot.entities) {
+            for (const [, entity] of bot.entities) {
                 if (entity.type !== mtype) continue
                 if (entity.target !== tank) continue // It's not targeting our tank
                 if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                 // If the target will die to incoming projectiles, ignore it
-                let incomingProjectileDamage = 0
-                for (const projectile of bot.projectiles.values()) {
-                    if (projectile.target == id) incomingProjectileDamage += projectile.damage * 0.9
-                    if (incomingProjectileDamage > entity.hp) break
-                }
-                if (incomingProjectileDamage > entity.hp) continue
+                if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
 
                 // If the target will burn to death, ignore it
-                if (entity.s.burned) {
-                    const burnTime = Math.max(0, (entity.s.burned.ms - 250)) / 1000
-                    const burnDamage = burnTime * entity.s.burned.intensity
-                    if (burnDamage > entity.hp) continue
-                }
+                if (Tools.willBurnToDeath(entity)) continue
 
                 targets.push(entity)
 
@@ -226,19 +199,10 @@ async function startRanger(bot: Ranger) {
                 if (Tools.distance(bot.character, entity) > bot.character.range * bot.G.skills.supershot.range_multiplier) continue // Only attack those in range
 
                 // If the target will die to incoming projectiles, ignore it
-                let incomingProjectileDamage = 0
-                for (const projectile of bot.projectiles.values()) {
-                    if (projectile.target == id) incomingProjectileDamage += projectile.damage * 0.9
-                    if (incomingProjectileDamage > entity.hp) break
-                }
-                if (incomingProjectileDamage > entity.hp) continue
+                if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
 
                 // If the target will burn to death, ignore it
-                if (entity.s.burned) {
-                    const burnTime = Math.max(0, (entity.s.burned.ms - 250)) / 1000
-                    const burnDamage = burnTime * entity.s.burned.intensity
-                    if (burnDamage > entity.hp) continue
-                }
+                if (Tools.willBurnToDeath(entity)) continue
 
                 targets.push(id)
 
@@ -344,6 +308,9 @@ async function startRanger(bot: Ranger) {
                 if (monsterHuntTarget) newTarget = monsterHuntTarget
             }
 
+            // Stop the smart move if we have a new target
+            if (newTarget && newTarget !== rangerTarget) bot.stopSmartMove()
+
             rangerTarget = newTarget ? newTarget : "scorpion"
         } catch (e) {
             console.error(e)
@@ -414,19 +381,10 @@ async function startRanger(bot: Ranger) {
                         if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                         // If the target will die to incoming projectiles, ignore it
-                        let incomingProjectileDamage = 0
-                        for (const projectile of bot.projectiles.values()) {
-                            if (projectile.target == id) incomingProjectileDamage += projectile.damage * 0.9
-                            if (incomingProjectileDamage > entity.hp) break
-                        }
-                        if (incomingProjectileDamage > entity.hp) continue
+                        if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
 
                         // If the target will burn to death, ignore it
-                        if (entity.s.burned) {
-                            const burnTime = Math.max(0, (entity.s.burned.ms - 250)) / 1000
-                            const burnDamage = burnTime * entity.s.burned.intensity
-                            if (burnDamage > entity.hp) continue
-                        }
+                        if (Tools.willBurnToDeath(entity)) continue
 
                         targets.push(id)
 
@@ -454,19 +412,10 @@ async function startRanger(bot: Ranger) {
                         if (Tools.distance(bot.character, entity) > bot.character.range * bot.G.skills.supershot.range_multiplier) continue // Only attack those in range
 
                         // If the target will die to incoming projectiles, ignore it
-                        let incomingProjectileDamage = 0
-                        for (const projectile of bot.projectiles.values()) {
-                            if (projectile.target == id) incomingProjectileDamage += projectile.damage * 0.9
-                            if (incomingProjectileDamage > entity.hp) break
-                        }
-                        if (incomingProjectileDamage > entity.hp) continue
+                        if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
 
                         // If the target will burn to death, ignore it
-                        if (entity.s.burned) {
-                            const burnTime = Math.max(0, (entity.s.burned.ms - 250)) / 1000
-                            const burnDamage = burnTime * entity.s.burned.intensity
-                            if (burnDamage > entity.hp) continue
-                        }
+                        if (Tools.willBurnToDeath(entity)) continue
 
                         targets.push(id)
 
@@ -630,7 +579,6 @@ async function startRanger(bot: Ranger) {
 
             // Priority #2: Special monsters
 
-
             if (rangerTarget) {
                 cooldown = await strategy[rangerTarget].move()
             }
@@ -680,25 +628,16 @@ async function startPriest(bot: Priest) {
 
             if (!target) {
                 const targets: EntityData[] = []
-                for (const [id, entity] of bot.entities) {
+                for (const [, entity] of bot.entities) {
                     if (entity.type !== mtype) continue
                     if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                     if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                     // If the target will die to incoming projectiles, ignore it
-                    let incomingProjectileDamage = 0
-                    for (const projectile of bot.projectiles.values()) {
-                        if (projectile.target == id) incomingProjectileDamage += projectile.damage * 0.9
-                        if (incomingProjectileDamage > entity.hp) break
-                    }
-                    if (incomingProjectileDamage > entity.hp) continue
+                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
 
                     // If the target will burn to death, ignore it
-                    if (entity.s.burned) {
-                        const burnTime = Math.max(0, (entity.s.burned.ms - 250)) / 1000
-                        const burnDamage = burnTime * entity.s.burned.intensity
-                        if (burnDamage > entity.hp) continue
-                    }
+                    if (Tools.willBurnToDeath(entity)) continue
 
                     targets.push(entity)
 
@@ -750,7 +689,7 @@ async function startPriest(bot: Priest) {
 
             if (!target) {
                 let target: EntityData
-                for (const [id, entity] of bot.entities) {
+                for (const [, entity] of bot.entities) {
                     if (entity.type !== mtype) continue
                     if (entity.target !== tank) continue // It's not targeting our tank
                     if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
@@ -818,7 +757,7 @@ async function startPriest(bot: Priest) {
         plantoid: {
             attack: async () => { return await tankAttackStrategy("plantoid", warrior.character.id) },
             move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: -730, y: -125 }) },
-            equipment: { "mainhand": "firebow", "orb": "jacko" }
+            equipment: { "orb": "jacko" }
         },
         porcupine: {
             attack: async () => { return await defaultAttackStrategy("porcupine") },
@@ -857,6 +796,9 @@ async function startPriest(bot: Priest) {
                 const monsterHuntTarget = getMonsterHuntTarget(strategy)
                 if (monsterHuntTarget) newTarget = monsterHuntTarget
             }
+
+            // Stop the smart move if we have a new target
+            if (newTarget && newTarget !== priestTarget) bot.stopSmartMove()
 
             priestTarget = newTarget ? newTarget : "scorpion"
         } catch (e) {
@@ -942,19 +884,10 @@ async function startPriest(bot: Priest) {
                             if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                             // If the target will die to incoming projectiles, ignore it
-                            let incomingProjectileDamage = 0
-                            for (const projectile of bot.projectiles.values()) {
-                                if (projectile.target == id) incomingProjectileDamage += projectile.damage * 0.9
-                                if (incomingProjectileDamage > entity.hp) break
-                            }
-                            if (incomingProjectileDamage > entity.hp) continue
+                            if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
 
                             // If the target will burn to death, ignore it
-                            if (entity.s.burned) {
-                                const burnTime = Math.max(0, (entity.s.burned.ms - 250)) / 1000
-                                const burnDamage = burnTime * entity.s.burned.intensity
-                                if (burnDamage > entity.hp) continue
-                            }
+                            if (Tools.willBurnToDeath(entity)) continue
 
                             targets.push(id)
 
@@ -1175,25 +1108,16 @@ async function startWarrior(bot: Warrior) {
         if (bot.getCooldown("attack") == 0) {
             const targets: EntityData[] = []
 
-            for (const [id, entity] of bot.entities) {
+            for (const [, entity] of bot.entities) {
                 if (entity.type !== mtype) continue
                 if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                 if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                 // If the target will die to incoming projectiles, ignore it
-                let incomingProjectileDamage = 0
-                for (const projectile of bot.projectiles.values()) {
-                    if (projectile.target == id) incomingProjectileDamage += projectile.damage * 0.9
-                    if (incomingProjectileDamage > entity.hp) break
-                }
-                if (incomingProjectileDamage > entity.hp) continue
+                if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
 
                 // If the target will burn to death, ignore it
-                if (entity.s.burned) {
-                    const burnTime = Math.max(0, (entity.s.burned.ms - 250)) / 1000
-                    const burnDamage = burnTime * entity.s.burned.intensity
-                    if (burnDamage > entity.hp) continue
-                }
+                if (Tools.willBurnToDeath(entity)) continue
 
                 targets.push(entity)
 
@@ -1273,7 +1197,7 @@ async function startWarrior(bot: Warrior) {
                         target = entity
                     }
                 }
-                if (target) {
+                if (target && target.target !== bot.character.id) {
                     await bot.taunt(target.id)
                 }
             } else if (target) {
@@ -1298,23 +1222,14 @@ async function startWarrior(bot: Warrior) {
     const nearbyMonstersMoveStrategy = async (position: NodeData, mtype: MonsterName) => {
         let closestEntitiy: EntityData
         let closestDistance: number = Number.MAX_VALUE
-        for (const [id, entity] of bot.entities) {
+        for (const [, entity] of bot.entities) {
             if (entity.type !== mtype) continue
 
             // If the target will die to incoming projectiles, ignore it
-            let incomingProjectileDamage = 0
-            for (const projectile of bot.projectiles.values()) {
-                if (projectile.target == id) incomingProjectileDamage += projectile.damage * 0.9
-                if (incomingProjectileDamage > entity.hp) break
-            }
-            if (incomingProjectileDamage > entity.hp) continue
+            if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
 
             // If the target will burn to death, ignore it
-            if (entity.s.burned) {
-                const burnTime = Math.max(0, (entity.s.burned.ms - 250)) / 1000
-                const burnDamage = burnTime * entity.s.burned.intensity
-                if (burnDamage > entity.hp) continue
-            }
+            if (Tools.willBurnToDeath(entity)) continue
 
             const distance = Tools.distance(bot.character, position)
             if (distance < closestDistance) {
@@ -1372,7 +1287,7 @@ async function startWarrior(bot: Warrior) {
         plantoid: {
             attack: async () => { return await oneTargetAttackStrategy("plantoid") },
             move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: -770, y: -125 }) },
-            equipment: { "mainhand": "firebow", "orb": "jacko" }
+            equipment: { "mainhand": "basher", "orb": "jacko" }
         },
         pppompom: {
             attack: async () => { return oneTargetAttackStrategy("pppompom") },
@@ -1411,6 +1326,9 @@ async function startWarrior(bot: Warrior) {
                 const monsterHuntTarget = getMonsterHuntTarget(strategy)
                 if (monsterHuntTarget) newTarget = monsterHuntTarget
             }
+
+            // Stop the smart move if we have a new target
+            if (newTarget && newTarget !== warriorTarget) bot.stopSmartMove()
 
             warriorTarget = newTarget ? newTarget : "scorpion"
         } catch (e) {
@@ -1480,19 +1398,10 @@ async function startWarrior(bot: Warrior) {
                         if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                         // If the target will die to incoming projectiles, ignore it
-                        let incomingProjectileDamage = 0
-                        for (const projectile of bot.projectiles.values()) {
-                            if (projectile.target == id) incomingProjectileDamage += projectile.damage * 0.9
-                            if (incomingProjectileDamage > entity.hp) break
-                        }
-                        if (incomingProjectileDamage > entity.hp) continue
+                        if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
 
                         // If the target will burn to death, ignore it
-                        if (entity.s.burned) {
-                            const burnTime = Math.max(0, (entity.s.burned.ms - 250)) / 1000
-                            const burnDamage = burnTime * entity.s.burned.intensity
-                            if (burnDamage > entity.hp) continue
-                        }
+                        if (Tools.willBurnToDeath(entity)) continue
 
                         targets.push(id)
 
@@ -1710,7 +1619,7 @@ async function startWarrior(bot: Warrior) {
     warcryLoop()
 }
 
-async function startMerchant(bot: PingCompensatedPlayer) {
+async function startMerchant(bot: Merchant) {
     bot.socket.on("request", (data: { name: string }) => {
         bot.acceptPartyRequest(data.name)
     })
@@ -1787,6 +1696,46 @@ async function startMerchant(bot: PingCompensatedPlayer) {
         setTimeout(async () => { lootLoop() }, 1000)
     }
     lootLoop()
+
+    async function mluckLoop() {
+        try {
+            if (bot.socket.disconnected) return
+
+            for (const [, player] of bot.players) {
+                if (Tools.distance(bot.character, player) > bot.G.skills.mluck.range) continue // Too far away to mluck
+
+                if (!player.s.mluck) await bot.mluck(player.id) // Give the mluck
+                else if (!player.s.mluck.strong && player.s.mluck.f !== bot.character.id) await bot.mluck(player.id) // Steal the mluck
+                else if (player.s.mluck.ms < 3.54e+6) await bot.mluck(player.id) // Extend the mluck
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { mluckLoop() }, 250)
+    }
+    mluckLoop()
+
+    async function moveLoop() {
+        try {
+            if (bot.socket.disconnected) return
+
+            // TODO: Check if we are full
+
+            // TODO: Check if our players have lots of items
+
+            // TODO: Check if our players need potions
+
+            // TODO: Check if our players need mluck
+
+            // TODO: Check if others need mluck
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { moveLoop() }, 250)
+    }
+    moveLoop()
 }
 
 async function run(region: ServerRegion, identifier: ServerIdentifier) {
@@ -1795,7 +1744,7 @@ async function run(region: ServerRegion, identifier: ServerIdentifier) {
     ranger = await Game.startRanger("earthiverse", region, identifier)
     warrior = await Game.startWarrior("earthWar", region, identifier)
     priest = await Game.startPriest("earthPri", region, identifier)
-    merchant = await Game.startCharacter("earthMer", region, identifier, "merchant")
+    merchant = await Game.startMerchant("earthMer", region, identifier)
 
     // Disconnect if we have to
     ranger.socket.on("disconnect_reason", (data: string) => {

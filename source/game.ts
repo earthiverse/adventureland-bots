@@ -708,6 +708,11 @@ export class Player extends Observer {
                         this.socket.removeListener("game_response", failCheck)
                         this.socket.removeListener("death", deathCheck)
                         reject(`Attack on ${id} failed due to cooldown (ms: ${data.ms}).`)
+                    } else if (data.response == "no_mp" && data.place == "attack") {
+                        this.socket.removeListener("action", attackCheck)
+                        this.socket.removeListener("game_response", failCheck)
+                        this.socket.removeListener("death", deathCheck)
+                        reject(`Attack on ${id} failed due to insufficient MP.`)
                     }
                 }
             }
@@ -1884,8 +1889,37 @@ export class Mage extends PingCompensatedPlayer {
     }
 }
 
+export class Merchant extends PingCompensatedPlayer {
+    public mluck(target: string): Promise<unknown> {
+        const player = this.players.get(target)
+        if (!player) return Promise.reject(`Could not find ${target} to mluck.`)
+        if (player.s.mluck && player.s.mluck.strong && player.s.mluck.f !== this.character.id) return Promise.reject(`${target} has a strong mluck from ${player.s.mluck.f}.`)
+
+        const mlucked = new Promise((resolve, reject) => {
+            const mluckCheck = (data: EntitiesData) => {
+                for (const player of data.players) {
+                    if (player.id == target
+                        && player.s.mluck
+                        && player.s.mluck.f == this.character.id) {
+                        this.socket.removeListener("entities", mluckCheck)
+                        resolve()
+                    }
+                }
+            }
+
+            setTimeout(() => {
+                this.socket.removeListener("entities", mluckCheck)
+                reject(`mluck timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.socket.on("eval", mluckCheck)
+        })
+        this.socket.emit("skill", { name: "mluck", id: target })
+        return mlucked
+    }
+}
+
 export class Priest extends PingCompensatedPlayer {
-    public curse(target: string) {
+    public curse(target: string): Promise<unknown> {
         const curseStarted = new Promise<string[]>((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]curse['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
@@ -2404,6 +2438,7 @@ export class Game {
             // Create the player and connect
             let player: PingCompensatedPlayer
             if (cType == "mage") player = new Mage(userID, userAuth, characterID, Game.G, this.servers[sRegion][sID])
+            else if (cType == "merchant") player = new Merchant(userID, userAuth, characterID, Game.G, this.servers[sRegion][sID])
             else if (cType == "priest") player = new Priest(userID, userAuth, characterID, Game.G, this.servers[sRegion][sID])
             else if (cType == "ranger") player = new Ranger(userID, userAuth, characterID, Game.G, this.servers[sRegion][sID])
             else if (cType == "warrior") player = new Warrior(userID, userAuth, characterID, Game.G, this.servers[sRegion][sID])
@@ -2420,6 +2455,10 @@ export class Game {
 
     static async startMage(cName: string, sRegion: ServerRegion, sID: ServerIdentifier): Promise<Mage> {
         return await Game.startCharacter(cName, sRegion, sID, "mage") as Mage
+    }
+
+    static async startMerchant(cName: string, sRegion: ServerRegion, sID: ServerIdentifier): Promise<Merchant> {
+        return await Game.startCharacter(cName, sRegion, sID, "merchant") as Merchant
     }
 
     static async startPriest(cName: string, sRegion: ServerRegion, sID: ServerIdentifier): Promise<Priest> {
