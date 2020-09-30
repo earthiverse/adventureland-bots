@@ -371,27 +371,20 @@ export class Pathfinder {
         return grid
     }
 
-    protected static async findClosestNode(map: MapName, x: number, y: number): Promise<Node<NodeData>> {
-        return new Promise((resolve, reject) => {
-            let closest: Node<NodeData>
-            let distance = Number.MAX_VALUE
-            this.graph.forEachNode((node) => {
-                if (node.data.map == map) {
-                    const nodeDistance = Tools.distance({ map, x, y }, node.data)
-                    if (nodeDistance < distance && this.canWalk({ map, x, y }, node.data)) {
-                        closest = node
-                        distance = nodeDistance
-                        if (distance < 1) return // We found one that's really close
-                    }
+    protected static findClosestNode(map: MapName, x: number, y: number): Node<NodeData> {
+        let closest: Node<NodeData>
+        let distance = Number.MAX_VALUE
+        this.graph.forEachNode((node) => {
+            if (node.data.map == map) {
+                const nodeDistance = Tools.distance({ map, x, y }, node.data)
+                if (nodeDistance < distance) {
+                    closest = node
+                    distance = nodeDistance
+                    if (distance < 1) return true // We found one that's really close
                 }
-            })
-            if (closest) {
-                resolve(closest)
-            } else {
-                reject("Could not find a suitable node")
             }
         })
-
+        return closest
     }
 
     public static findClosestSpawn(map: MapName, x: number, y: number): { map: MapName, x: number, y: number, distance: number } {
@@ -413,9 +406,11 @@ export class Pathfinder {
         return closest
     }
 
-    public static async getPath(from: NodeData, to: NodeData): Promise<LinkData[]> {
-        const fromNode = await this.findClosestNode(from.map, from.x, from.y)
-        const toNode = await this.findClosestNode(to.map, to.x, to.y)
+    public static getPath(from: NodeData, to: NodeData): LinkData[] {
+        if (!this.G) throw new Error("Prepare pathfinding before querying getPath()!")
+
+        const fromNode = this.findClosestNode(from.map, from.x, from.y)
+        const toNode = this.findClosestNode(to.map, to.x, to.y)
 
         const path: LinkData[] = []
 
@@ -449,8 +444,7 @@ export class Pathfinder {
         }
         path.push({ type: "move", map: to.map, x: to.x, y: to.y })
 
-        // console.log("We found a path!")
-        // console.log(path)
+        console.log(`Path from ${fromNode.id} to ${toNode.id} found! (${path.length} steps)`)
         return path
     }
 
@@ -473,7 +467,10 @@ export class Pathfinder {
         let dx = Math.trunc(to.x) - Math.trunc(from.x)
         let dy = Math.trunc(to.y) - Math.trunc(from.y)
 
-        if (grid[y][x] !== WALKABLE) throw new Error("We shouldn't be able to be where we currently are.")
+        if (grid[y][x] !== WALKABLE) {
+            console.error(`We shouldn't be able to be where we are in from (${from.map}:${from.x},${from.y}).`)
+            return Pathfinder.findClosestNode(from.map, from.x, from.y).data
+        }
 
         if (dy < 0) {
             ystep = -1

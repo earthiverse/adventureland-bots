@@ -14,5 +14,5 @@ export interface ICharacter {
 
 export interface ICharacterDocument extends ICharacter, Document { }
 
-export type IUserModel = Model<ICharacterDocument>
+export type ICharacterModel = Model<ICharacterDocument>
 // export interface IUserModel extends Model<IUserDocument> { }

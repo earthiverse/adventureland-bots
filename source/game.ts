@@ -9,6 +9,7 @@ import { Tools } from "./tools.js"
 import { CharacterModel } from "./database/characters/characters.model.js"
 import { Pathfinder } from "./pathfinder.js"
 import { LinkData, NodeData } from "./definitions/pathfinder"
+import { EntityModel } from "./database/entities/entities.model.js"
 
 // TODO: Move to config file
 const MAX_PINGS = 100
@@ -64,20 +65,37 @@ export class Observer {
     protected async parseEntities(data: EntitiesData): Promise<void> {
         // Update all the players
         for (const player of data.players) {
-            CharacterModel.findOneAndUpdate({ name: player.id }, {
-                map: this.map,
-                x: player.x,
-                y: player.y,
+            if (player.npc) {
+                // TODO: Update NPCs if they walk around
+            } else {
+                CharacterModel.findOneAndUpdate({ name: player.id }, {
+                    map: data.map,
+                    x: player.x,
+                    y: player.y,
+                    serverRegion: this.serverRegion,
+                    serverIdentifier: this.serverIdentifier,
+                    lastSeen: Date.now(),
+                    s: player.s
+                }, { upsert: true, useFindAndModify: false }).exec()
+            }
+        }
+
+        // Update entities if they're special
+        for (const entity of data.monsters) {
+            if (!(["fvampire", "goldenbat", "greenjr", "jr", "mvampire", "phoenix", "pinkgoo", "snowman"] as MonsterName[]).includes(entity.type)) continue
+
+            EntityModel.findOneAndUpdate({ name: entity.id }, {
+                map: data.map,
+                x: entity.x,
+                y: entity.y,
                 serverRegion: this.serverRegion,
                 serverIdentifier: this.serverIdentifier,
                 lastSeen: Date.now(),
-                s: player.s
-            }, { upsert: true, useFindAndModify: false }).exec()
+                level: entity.level,
+                hp: entity.hp,
+                type: entity.type
+            })
         }
-
-        // TODO: Update entities if they're special
-
-        // TODO: Update NPCs if they walk around
     }
 
     public async connect(): Promise<unknown> {
@@ -242,11 +260,13 @@ export class Player extends Observer {
 
             this.parseEntities(data.entities)
 
-            this.character.x = data.x
-            this.character.y = data.y
-            this.character.in = data.in
-            this.character.map = data.name
-            this.character.m = data.m
+            if (this.character) {
+                this.character.x = data.x
+                this.character.y = data.y
+                this.character.in = data.in
+                this.character.map = data.name
+                this.character.m = data.m
+            }
         })
 
         // TODO: Confirm this works for leave_party(), too.
@@ -442,6 +462,13 @@ export class Player extends Observer {
                     entity.x = entity.x + Math.cos(angle) * distanceTravelled
                     entity.y = entity.y + Math.sin(angle) * distanceTravelled
                 }
+
+                // Update conditions
+                for (const condition in entity.s) {
+                    const newCooldown = entity.s[condition as ConditionName].ms - msSinceLastUpdate
+                    if (newCooldown <= 0) delete entity.s[condition as ConditionName]
+                    else entity.s[condition as ConditionName].ms = newCooldown
+                }
             }
 
             // Update players
@@ -458,6 +485,13 @@ export class Player extends Observer {
                     player.x = player.x + Math.cos(angle) * distanceTravelled
                     player.y = player.y + Math.sin(angle) * distanceTravelled
                 }
+
+                // Update conditions
+                for (const condition in player.s) {
+                    const newCooldown = player.s[condition as ConditionName].ms - msSinceLastUpdate
+                    if (newCooldown <= 0) delete player.s[condition as ConditionName]
+                    else player.s[condition as ConditionName].ms = newCooldown
+                }
             }
 
             // Update character
@@ -473,6 +507,13 @@ export class Player extends Observer {
                     this.character.x = this.character.x + Math.cos(angle) * distanceTravelled
                     this.character.y = this.character.y + Math.sin(angle) * distanceTravelled
                 }
+            }
+
+            // Update conditions
+            for (const condition in this.character.s) {
+                const newCooldown = this.character.s[condition as ConditionName].ms - msSinceLastUpdate
+                if (newCooldown <= 0) delete this.character.s[condition as ConditionName]
+                else this.character.s[condition as ConditionName].ms = newCooldown
             }
         }
 
@@ -794,6 +835,41 @@ export class Player extends Observer {
         return itemReceived
     }
 
+    public canUse(skill: SkillName): boolean {
+        if (this.character.rip) return false // We are dead
+        if (this.getCooldown(skill) > 0) return false // Skill is on cooldown
+        const gInfoSkill = this.G.skills[skill]
+        if (gInfoSkill.mp !== undefined && this.character.mp < gInfoSkill.mp) return false // Not enough MP
+        if (skill == "attack" && this.character.mp < this.character.mp_cost) return false // Not enough MP (attack)
+        if (gInfoSkill.level && this.character.level < gInfoSkill.level) return false // Not a high enough level
+        if (gInfoSkill.wtype) {
+            // The skill requires a certain weapon type
+            if (!this.character.slots.mainhand) return false // We don't have any weapon equipped
+            const gInfoWeapon = this.G.items[this.character.slots.mainhand.name]
+            if (gInfoWeapon.wtype !== gInfoSkill.wtype) return false // We don't have the right weapon type equipped
+        }
+        if (gInfoSkill.slot) {
+            // The skill requires a certain item
+            for (const [slot, item] of gInfoSkill.slot) {
+                if (!this.character.slots[slot]) return false // We don't have anything equipped in one of the slots required
+                if (this.character.slots[slot].name !== item) return false // We don't have the right item equipped in the slot
+            }
+        }
+        if (gInfoSkill.class) {
+            // The skill is only available to certain classes
+            let compatibleClass = false
+            for (const c of gInfoSkill.class) {
+                if (c == this.character.ctype) {
+                    compatibleClass = true // We are compatible!
+                    break
+                }
+            }
+            if (!compatibleClass) return false
+        }
+
+        return true
+    }
+
     // TODO: Return better compound info
     public compound(item1Pos: number, item2Pos: number, item3Pos: number, cscrollPos: number, offeringPos?: number): Promise<boolean> {
         const item1Info = this.character.items[item1Pos]
@@ -851,7 +927,8 @@ export class Player extends Observer {
                 if (equipSlot) {
                     // Check the slot we equipped it to
                     const item = data.slots[equipSlot]
-                    if (item.name == iInfo.name
+                    if (item
+                        && item.name == iInfo.name
                         && item.level == iInfo.level
                         && item.p == iInfo.p) {
                         this.socket.removeListener("player", equipCheck)
@@ -862,7 +939,7 @@ export class Player extends Observer {
                     // Look for the item in all of the slots
                     for (const slot in data.slots) {
                         const item = data.slots[slot as SlotType]
-                        if (item.name == iInfo.name) {
+                        if (item && item.name == iInfo.name) {
                             this.socket.removeListener("player", equipCheck)
                             this.socket.removeListener("disappearing_text", cantEquipCheck)
                             resolve()
@@ -1018,64 +1095,72 @@ export class Player extends Observer {
         this.socket.emit("party", { event: "leave" })
     }
 
-    public async move(x: number, y: number): Promise<NodeData> {
+    public async move(x: number, y: number, safetyCheck = true): Promise<NodeData> {
         // Check if we're already there
         if (this.character.x == x && this.character.y == y) return Promise.resolve({ map: this.character.map, y: this.character.y, x: this.character.x })
 
-        const safeTo = Pathfinder.getSafeWalkTo(
-            { map: this.character.map, x: this.character.x, y: this.character.y },
-            { map: this.character.map, x, y })
-        if (safeTo.x !== x || safeTo.y !== y) {
-            console.warn(`move: We can't move to {x: ${x}, y: ${y}} safely. We will move to {x: ${safeTo.x}, y: ${safeTo.y}}.`)
+        let to: IPosition = { map: this.character.map, x: x, y: y }
+        if (safetyCheck) {
+            to = Pathfinder.getSafeWalkTo(
+                { map: this.character.map, x: this.character.x, y: this.character.y },
+                { map: this.character.map, x, y })
+            if (to.x !== x || to.y !== y) {
+                console.warn(`move: We can't move to {x: ${x}, y: ${y}} safely. We will move to {x: ${to.x}, y: ${to.y}}.`)
+            }
         }
-
         const moveFinished = new Promise<NodeData>((resolve, reject) => {
-            const distance = Tools.distance(this.character, { x: safeTo.x, y: safeTo.y })
-
-            setTimeout(() => {
-                // Force an update of the character position
-                this.updatePositions()
-
-                if (this.character.x == safeTo.x && this.character.y == safeTo.y) {
-                    clearTimeout(timeout)
-                    this.socket.removeListener("player", checkPlayer)
-                    resolve({ map: this.character.map, x: this.character.x, y: this.character.y })
-                }
-            }, 1 + distance * 1000 / this.character.speed)
+            let timeToFinishMove = 1 + Tools.distance(this.character, { x: to.x, y: to.y }) / this.character.speed
 
             const checkPlayer = async (data: PlayerData) => {
-                if (!data.moving || data.going_x != safeTo.x || data.going_y != safeTo.y) {
+                if (!data.moving || data.going_x != to.x || data.going_y != to.y) {
+                    // We *might* not be moving in the right direction. Let's request new data and check.
                     const newData = await this.requestPlayerData()
-                    if (!newData.moving || newData.going_x != safeTo.x || newData.going_y != safeTo.y) {
+                    if (!newData.moving || newData.going_x != to.x || newData.going_y != to.y) {
                         clearTimeout(timeout)
-                        reject(`move to {x: ${safeTo.x}, y: ${safeTo.y}} failed`)
+                        this.socket.removeListener("player", checkPlayer)
+                        reject(`move to ${to.x}, ${to.y} failed`)
                     }
+                } else {
+                    // We're still moving in the right direction
+                    timeToFinishMove = Tools.distance(this.character, { x: data.x, y: data.y }) / data.speed
+                    clearTimeout(timeout)
+                    timeout = setTimeout(checkPosition, timeToFinishMove)
                 }
             }
-            this.socket.once("player", checkPlayer)
 
-            const timeout = setTimeout(async () => {
-                const data = await this.requestPlayerData()
+            const checkPosition = () => {
+                // Force an update of the character position
+                this.updatePositions()
+                timeToFinishMove = 1 + Tools.distance(this.character, { x: to.x, y: to.y }) / this.character.speed
 
-                this.socket.removeListener("player", checkPlayer)
-                if (data.x == safeTo.x && data.y == safeTo.y) {
-                    resolve({ map: data.map, x: data.x, y: data.y })
+                if (this.character.x == to.x && this.character.y == to.y) {
+                    // We are here!
+                    this.socket.removeListener("player", checkPlayer)
+                    resolve(this.character)
+                } else if (this.character.moving && this.character.going_x == to.x && this.character.going_y == to.y) {
+                    // We are still moving in the right direction
+                    timeout = setTimeout(checkPosition, timeToFinishMove)
                 } else {
-                    reject(`move timeout (${safeTo.x},${safeTo.y}) (${TIMEOUT + 1 + distance * 1000 / this.character.speed}ms)`)
+                    // We're not moving in the right direction
+                    this.socket.removeListener("player", checkPlayer)
+                    reject(`move to ${to.x}, ${to.y} failed (we're currently going to ${this.character.going_x}, ${this.character.going_y})`)
                 }
-            }, (TIMEOUT + 1 + distance * 1000 / this.character.speed))
+            }
+            let timeout = setTimeout(checkPosition, timeToFinishMove)
+
+            this.socket.on("player", checkPlayer)
         })
 
         this.socket.emit("move", {
             x: this.character.x,
             y: this.character.y,
-            going_x: safeTo.x,
-            going_y: safeTo.y,
+            going_x: to.x,
+            going_y: to.y,
             m: this.character.m
         })
         this.updatePositions()
-        this.character.going_x = safeTo.x
-        this.character.going_y = safeTo.y
+        this.character.going_x = to.x
+        this.character.going_y = to.y
         this.character.moving = true
         return moveFinished
     }
@@ -1123,6 +1208,11 @@ export class Player extends Observer {
 
         this.socket.emit("use", { item: "mp" })
         return regenReceived
+    }
+
+    // TODO: Improve with promises
+    public respawn(): void {
+        this.socket.emit("respawn")
     }
 
     public scare(): Promise<string[]> {
@@ -1314,23 +1404,22 @@ export class Player extends Observer {
         for (let i = 0; i < path.length; i++) {
             let currentMove = path[i]
 
-            // Skip check -- check if we can move to the next node
-            if (currentMove.type == "move") {
-                for (let j = 1; j < path.length; j++) {
-                    const potentialMove = path[j]
-                    if (potentialMove.map !== currentMove.map) break
-
-                    if (potentialMove.type == "move") {
-                        if (Pathfinder.canWalk(this.character, potentialMove)) {
-                            i = j
-                            currentMove = potentialMove
-                        }
-                    }
-                }
-            }
             if (started < this.lastSmartMove) {
                 if (typeof to == "string") return Promise.reject(`smartMove to ${to} cancelled (new smartMove started)`)
                 else return Promise.reject(`smartMove to ${to.map}:${to.x},${to.y} cancelled (new smartMove started)`)
+            }
+
+            // Skip check -- check if we can move to the next node
+            if (currentMove.type == "move") {
+                for (let j = i + 1; j < path.length; j++) {
+                    const potentialMove = path[j]
+                    if (potentialMove.map !== currentMove.map) break
+
+                    if (potentialMove.type == "move" && Pathfinder.canWalk(this.character, potentialMove)) {
+                        i = j
+                        currentMove = potentialMove
+                    }
+                }
             }
 
             // Perform the next movement
@@ -1341,7 +1430,7 @@ export class Player extends Observer {
                     if (currentMove.map !== this.character.map) {
                         return Promise.reject(`We are supposed to be in ${currentMove.map}, but we are in ${this.character.map}`)
                     }
-                    await this.move(currentMove.x, currentMove.y)
+                    await this.move(currentMove.x, currentMove.y, false)
                 } else if (currentMove.type == "town") {
                     await this.warpToTown()
                 } else if (currentMove.type == "transport") {
@@ -1893,6 +1982,7 @@ export class Merchant extends PingCompensatedPlayer {
     public mluck(target: string): Promise<unknown> {
         const player = this.players.get(target)
         if (!player) return Promise.reject(`Could not find ${target} to mluck.`)
+        if (player.npc) return Promise.reject(`${target} is an NPC. You can't mluck NPCs.`)
         if (player.s.mluck && player.s.mluck.strong && player.s.mluck.f !== this.character.id) return Promise.reject(`${target} has a strong mluck from ${player.s.mluck.f}.`)
 
         const mlucked = new Promise((resolve, reject) => {
@@ -1902,7 +1992,11 @@ export class Merchant extends PingCompensatedPlayer {
                         && player.s.mluck
                         && player.s.mluck.f == this.character.id) {
                         this.socket.removeListener("entities", mluckCheck)
+                        console.log(`we mlucked ${target}!`)
                         resolve()
+                    }
+                    if (player.id == target) {
+                        console.log(player.s.mluck)
                     }
                 }
             }
@@ -1911,7 +2005,7 @@ export class Merchant extends PingCompensatedPlayer {
                 this.socket.removeListener("entities", mluckCheck)
                 reject(`mluck timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
-            this.socket.on("eval", mluckCheck)
+            this.socket.on("entities", mluckCheck)
         })
         this.socket.emit("skill", { name: "mluck", id: target })
         return mlucked
@@ -2218,6 +2312,39 @@ export class Warrior extends PingCompensatedPlayer {
             name: "charge"
         })
         return charged
+    }
+
+    public cleave(): Promise<unknown> {
+        const cleaved = new Promise((resolve, reject) => {
+            const cooldownCheck = (data: EvalData) => {
+                if (/skill_timeout\s*\(\s*['"]cleave['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
+                    this.socket.removeListener("eval", cooldownCheck)
+                    this.socket.removeListener("game_response", failCheck)
+                    resolve()
+                }
+            }
+
+            const failCheck = (data: GameResponseData) => {
+                if (typeof data == "object" && data.response == "cooldown" && data.skill == "cleave") {
+                    this.socket.removeListener("eval", cooldownCheck)
+                    this.socket.removeListener("game_response", failCheck)
+                    reject(`Cleave failed due to cooldown (ms: ${data.ms}).`)
+                }
+            }
+
+            setTimeout(() => {
+                this.socket.removeListener("eval", cooldownCheck)
+                this.socket.removeListener("game_response", failCheck)
+                reject(`cleave timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.socket.on("eval", cooldownCheck)
+            this.socket.on("game_response", failCheck)
+        })
+
+        this.socket.emit("skill", {
+            name: "cleave"
+        })
+        return cleaved
     }
 
     public hardshell(): Promise<unknown> {
