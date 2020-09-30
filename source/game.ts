@@ -2284,6 +2284,9 @@ export class Warrior extends PingCompensatedPlayer {
     public charge(): Promise<unknown> {
         const charged = new Promise((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
+                console.log("TODO: charge() fix regex cooldown ----------")
+                console.log(data)
+                console.log("----------------------------------------")
                 if (/skill_timeout\s*\(\s*['"]charge['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
                     this.socket.removeListener("eval", cooldownCheck)
                     this.socket.removeListener("game_response", failCheck)

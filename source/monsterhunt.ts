@@ -1089,6 +1089,14 @@ async function startPriest(bot: Priest) {
                 }
             }
 
+            // Heal ourselves if we are low HP
+            if (bot.canUse("heal") && bot.character.hp < bot.character.max_hp * 0.8) {
+                await bot.heal(bot.character.id)
+                setTimeout(async () => { attackLoop() }, bot.getCooldown("heal"))
+                return
+            }
+
+
             // Heal party members if they are close
             let targets: string[] = []
             for (const [id, player] of bot.players) {
@@ -1099,9 +1107,9 @@ async function startPriest(bot: Priest) {
                 targets.push(id)
                 break
             }
-            if (targets.length) {
+            if (targets.length && bot.canUse("heal")) {
                 await bot.heal(targets[0])
-                setTimeout(async () => { attackLoop() }, bot.getCooldown("attack"))
+                setTimeout(async () => { attackLoop() }, bot.getCooldown("heal"))
                 return
             }
 
@@ -1115,37 +1123,32 @@ async function startPriest(bot: Priest) {
 
             if (priestTarget && visibleMonsterTypes.has(priestTarget)) {
                 cooldown = await strategy[priestTarget].attack()
-            } else {
-                if (bot.canUse("attack")) {
-                    targets = []
+            } else if (bot.canUse("attack")) {
+                targets = []
+                for (const [id, entity] of bot.entities) {
+                    if (!strategy[entity.type] || !strategy[entity.type].attackWhileIdle) continue
+                    if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                    if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
-                    if (targets.length == 0) {
-                        for (const [id, entity] of bot.entities) {
-                            if (!strategy[entity.type] || !strategy[entity.type].attackWhileIdle) continue
-                            if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
-                            if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
+                    // If the target will die to incoming projectiles, ignore it
+                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
 
-                            // If the target will die to incoming projectiles, ignore it
-                            if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+                    // If the target will burn to death, ignore it
+                    if (Tools.willBurnToDeath(entity)) continue
 
-                            // If the target will burn to death, ignore it
-                            if (Tools.willBurnToDeath(entity)) continue
+                    targets.push(id)
 
-                            targets.push(id)
-
-                            const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0]
-                            if (minimumDamage > entity.hp) {
-                                // Stop looking for another one to attack, since we can kill this one in one hit.
-                                targets[0] = id
-                                break
-                            }
-                        }
-
-                        if (targets.length) {
-                            await bot.attack(targets[0])
-                            cooldown = bot.getCooldown("attack")
-                        }
+                    const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0]
+                    if (minimumDamage > entity.hp) {
+                        // Stop looking for another one to attack, since we can kill this one in one hit.
+                        targets[0] = id
+                        break
                     }
+                }
+
+                if (targets.length) {
+                    await bot.attack(targets[0])
+                    cooldown = bot.getCooldown("attack")
                 }
             }
         } catch (e) {
@@ -1489,6 +1492,9 @@ async function startWarrior(bot: Warrior) {
                     }
                 }
                 if (target && target.target !== bot.character.id) {
+                    if (Tools.distance(bot.character, target) < bot.G.skills.stomp.range && bot.canUse("stomp")) {
+                        await bot.stomp()
+                    }
                     await bot.taunt(target.id)
                 }
             } else if (target) {
