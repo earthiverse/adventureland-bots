@@ -11,6 +11,7 @@ export interface IEntity {
     type: MonsterName
     level?: number
     hp?: number
+    target?: string
     lastSeen?: number
 }
 

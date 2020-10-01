@@ -4,7 +4,7 @@ import { AchievementProgressData, CharacterData, ServerData, CharacterListData, 
 import { connect, disconnect } from "./database/database.js"
 import { UserModel } from "./database/users/users.model.js"
 import { IUserDocument } from "./database/users/users.types.js"
-import { ServerRegion, ServerIdentifier, GData, SkillName, BankInfo, ConditionName, MapName, ItemInfo, ItemName, SlotType, MonsterName, CharacterType, SInfo, IPosition, NPCType } from "./definitions/adventureland"
+import { ServerRegion, ServerIdentifier, GData, SkillName, BankInfo, ConditionName, MapName, ItemInfo, ItemName, SlotType, MonsterName, CharacterType, SInfo, IPosition, NPCType, BankPackType } from "./definitions/adventureland"
 import { Tools } from "./tools.js"
 import { CharacterModel } from "./database/characters/characters.model.js"
 import { Pathfinder } from "./pathfinder.js"
@@ -82,19 +82,22 @@ export class Observer {
 
         // Update entities if they're special
         for (const entity of data.monsters) {
+            // TODO: Add tiny fairy
             if (!(["fvampire", "goldenbat", "greenjr", "jr", "mvampire", "phoenix", "pinkgoo", "snowman"] as MonsterName[]).includes(entity.type)) continue
 
-            EntityModel.findOneAndUpdate({ name: entity.id }, {
+            EntityModel.findOneAndUpdate({ type: entity.type, serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion }, {
                 map: data.map,
+                name: entity.id,
                 x: entity.x,
                 y: entity.y,
+                target: entity.target,
                 serverRegion: this.serverRegion,
                 serverIdentifier: this.serverIdentifier,
                 lastSeen: Date.now(),
-                level: entity.level,
+                level: entity.level ? entity.level : 1,
                 hp: entity.hp,
                 type: entity.type
-            })
+            }, { upsert: true, useFindAndModify: false }).exec()
         }
     }
 
@@ -133,7 +136,7 @@ export class Player extends Observer {
     public G: GData
 
     public achievements = new Map<string, AchievementProgressData>()
-    public bank: BankInfo
+    public bank: BankInfo = { gold: 0 }
     public character: CharacterData
     public chests = new Map<string, ChestData>()
     public entities = new Map<string, EntityData>()
@@ -151,6 +154,14 @@ export class Player extends Observer {
         this.userAuth = userAuth
         this.characterID = characterID
         this.G = g
+
+        this.socket.on("start", (data: StartData) => {
+            // console.log("socket: start!")
+            // console.log(data)
+            this.parseCharacter(data)
+            if (data.entities) this.parseEntities(data.entities)
+            this.S = data.s_info
+        })
 
         this.socket.on("achievement_progress", (data: AchievementProgressData) => {
             this.achievements.set(data.name, data)
@@ -297,14 +308,6 @@ export class Player extends Observer {
 
         // })
 
-        this.socket.on("start", (data: StartData) => {
-            // console.log("socket: start!")
-            // console.log(data)
-            this.parseCharacter(data)
-            if (data.entities) this.parseEntities(data.entities)
-            this.S = data.s_info
-        })
-
         this.socket.on("welcome", (data: WelcomeData) => {
             // console.log("socket: welcome!")
             this.server = data
@@ -321,6 +324,10 @@ export class Player extends Observer {
     }
 
     protected parseCharacter(data: CharacterData): void {
+        this.map = data.map
+        this.x = data.x
+        this.y = data.y
+
         // Create the character if we don't have one
         if (!this.character) {
             this.character = data
@@ -846,7 +853,20 @@ export class Player extends Observer {
             // The skill requires a certain weapon type
             if (!this.character.slots.mainhand) return false // We don't have any weapon equipped
             const gInfoWeapon = this.G.items[this.character.slots.mainhand.name]
-            if (gInfoWeapon.wtype !== gInfoSkill.wtype) return false // We don't have the right weapon type equipped
+            if (typeof gInfoSkill.wtype == "object") {
+                // There's a list of acceptable weapon types
+                let isAcceptableWeapon = false
+                for (const wtype of gInfoSkill.wtype) {
+                    if (gInfoWeapon.wtype == wtype) {
+                        isAcceptableWeapon = true
+                        break
+                    }
+                }
+                if (!isAcceptableWeapon) return false
+            } else {
+                // There's only one acceptable weapon type
+                if (gInfoWeapon.wtype !== gInfoSkill.wtype) return false // We don't have the right weapon type equipped
+            }
         }
         if (gInfoSkill.slot) {
             // The skill requires a certain item
@@ -914,6 +934,106 @@ export class Player extends Observer {
         })
         return compoundComplete
     }
+
+    // TODO: Add promises
+    public depositGold(gold: number): unknown {
+        // TODO: Check if you can be in the basement and deposit gold
+        if (this.character.map !== "bank") return Promise.reject("We need to be in 'bank' to deposit gold.")
+        if (gold <= 0) return Promise.reject("We can't deposit 0 or less gold")
+
+        if (this.character.gold < gold) {
+            gold = this.character.gold
+            console.warn(`We are only going to deposit ${gold} gold.`)
+        }
+        this.socket.emit("bank", { operation: "deposit", amount: gold })
+    }
+
+    // TODO: Add promises
+    public depositItem(inventoryPos: number, bankPack?: Exclude<BankPackType, "gold">, bankSlot = -1): unknown {
+        if (this.character.map !== "bank" && this.character.map !== "bank_b" && this.character.map !== "bank_u") return Promise.reject(`We're not in the bank (we're in '${this.character.map}')`)
+
+        const item = this.character.items[inventoryPos]
+        if (!item) return Promise.reject(`There is no item in inventory slot ${inventoryPos}.`)
+
+        if (bankPack) {
+            // Check if we can access the supplied bankPack
+            const bankPackNum = Number.parseInt(bankPack.substr(5, 2))
+            if ((this.character.map == "bank" && bankPackNum >= 0 && bankPackNum <= 7)
+                || (this.character.map == "bank_b" && bankPackNum >= 8 && bankPackNum <= 23)
+                || (this.character.map == "bank_u" && bankPackNum >= 24 && bankPackNum <= 47)) {
+                return Promise.reject(`We can not access ${bankPack} on ${this.character.map}.`)
+            }
+        } else {
+            // Look for a good bankPack
+            bankSlot = undefined
+            let packFrom: number
+            let packTo: number
+            if (this.character.map == "bank") {
+                packFrom = 0
+                packTo = 7
+            } else if (this.character.map == "bank_b") {
+                packFrom = 8
+                packTo = 23
+            } else if (this.character.map == "bank_u") {
+                packFrom = 24
+                packTo = 47
+            }
+
+            const numStackable = this.G.items[item.name].s
+
+            let emptyPack: Exclude<BankPackType, "gold">
+            let emptySlot: number
+            for (let packNum = packFrom; packNum <= packTo; packNum++) {
+                const packName = `items${packNum}` as Exclude<BankPackType, "gold">
+                const pack = this.bank[packName] as ItemInfo[]
+                if (!pack) continue // We don't have access to this pack
+                for (let slotNum = 0; slotNum < pack.length; slotNum++) {
+                    const slot = pack[slotNum]
+                    if (!slot) {
+                        if (!numStackable) {
+                            // We can't stack the item, and we found a bank slot with nothing in it. Perfect!
+                            bankPack = packName
+                            bankSlot = slotNum
+                            break
+                        } else if (!emptyPack && emptySlot == undefined) {
+                            // We can stack the item, but we don't want to use up a space right away if we can add these to another stack
+                            emptyPack = packName
+                            emptySlot = slotNum
+                        }
+                    } else if (numStackable && slot.name == item.name && (slot.q + item.q <= numStackable)) {
+                        // We found a place to stack our items!
+                        bankPack = packName
+                        bankSlot = -1 // Apparently -1 will figure it out...
+                        break
+                    }
+                }
+
+                if (bankPack && bankSlot !== undefined) break // We found something
+            }
+            if (bankPack == undefined && bankSlot == undefined && emptyPack !== undefined && emptySlot !== undefined) {
+                // We can't stack it on an existing stack, use an empty slot we found
+                bankPack = emptyPack
+                bankSlot = emptySlot
+            }
+        }
+
+        this.socket.emit("bank", { operation: "swap", pack: bankPack, str: bankSlot, })
+    }
+
+    public widthdrawGold(gold: number): unknown {
+        // TODO: Check if you can be in the basement and withdraw gold
+        if (this.character.map !== "bank") return Promise.reject("We need to be in 'bank' to withdraw gold.")
+        if (gold <= 0) return Promise.reject("We can't withdraw 0 or less gold.")
+
+        if (this.bank.gold > gold) {
+            gold = this.bank.gold
+            console.warn(`We are only going to withdraw ${gold} gold.`)
+        }
+
+        this.socket.emit("bank", { operation: "withdraw", amount: gold })
+    }
+
+    // TODO: WithdrawItem
 
     public equip(inventoryPos: number, equipSlot?: SlotType): Promise<unknown> {
         if (!this.character.items[inventoryPos]) return Promise.reject(`No item in inventory slot ${inventoryPos}.`)
@@ -1254,17 +1374,17 @@ export class Player extends Observer {
         const goldSent: Promise<number> = new Promise((resolve, reject) => {
             const sentCheck = (data: GameResponseData) => {
                 if (data == "trade_get_closer") {
-                    this.socket.removeListener("game_event", sentCheck)
+                    this.socket.removeListener("game_response", sentCheck)
                     reject(`We are too far away from ${to} to send gold.`)
                 } else if (typeof data == "object" && data.response == "gold_sent" && data.name == to) {
                     if (data.gold !== amount) console.warn(`We wanted to send ${to} ${amount} gold, but we sent ${data.gold}.`)
-                    this.socket.removeListener("game_event", sentCheck)
+                    this.socket.removeListener("game_response", sentCheck)
                     resolve(data.gold)
                 }
             }
 
             setTimeout(() => {
-                this.socket.removeListener("game_event", sentCheck)
+                this.socket.removeListener("game_response", sentCheck)
                 reject(`sendGold timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
             this.socket.on("game_response", sentCheck)
@@ -1324,17 +1444,17 @@ export class Player extends Observer {
     }
 
     protected lastSmartMove: number = Date.now()
-    // TODO: Add option to use blink.
-    // TODO: Add option to get within a certain distance of the destination
-    // TODO: Add NPC names
     /**
      * A function that moves to, and returns when we move to a given location
      * @param to Where to move to. If given a string, we will try to navigate to the proper location.
      */
-    public async smartMove(to: MapName | MonsterName | NPCType | IPosition): Promise<NodeData> {
+    public async smartMove(to: MapName | MonsterName | NPCType | IPosition, options: { getWithin?: number, useBlink?: boolean } = {
+        getWithin: 0,
+        useBlink: false
+    }): Promise<NodeData> {
         const started = Date.now()
         this.lastSmartMove = started
-        let toNode: NodeData
+        let fixedTo: NodeData
         let path: LinkData[]
         if (typeof to == "string") {
             // Check if our destination is a map name
@@ -1343,12 +1463,12 @@ export class Player extends Observer {
 
                 // Set `to` to the `town` spawn on the map
                 const mainSpawn = this.G.maps[to as MapName].spawns[0]
-                toNode = { map: to as MapName, x: mainSpawn[0], y: mainSpawn[1] }
+                fixedTo = { map: to as MapName, x: mainSpawn[0], y: mainSpawn[1] }
                 break
             }
 
             // Check if our destination is a monster type
-            if (!toNode) {
+            if (!fixedTo) {
                 for (const mtype in this.G.monsters) {
                     if (to !== mtype) continue
 
@@ -1360,7 +1480,7 @@ export class Player extends Observer {
                         const distance = Pathfinder.computePathCost(potentialPath)
                         if (distance < closestDistance) {
                             path = potentialPath
-                            toNode = path[path.length - 1]
+                            fixedTo = path[path.length - 1]
                             closestDistance = distance
                         }
                     }
@@ -1381,7 +1501,7 @@ export class Player extends Observer {
                         const distance = Pathfinder.computePathCost(potentialPath)
                         if (distance < closestDistance) {
                             path = potentialPath
-                            toNode = path[path.length - 1]
+                            fixedTo = path[path.length - 1]
                             closestDistance = distance
                         }
                     }
@@ -1389,16 +1509,16 @@ export class Player extends Observer {
                 }
             }
 
-            if (!toNode) return Promise.reject(`Could not find a suitable destination for '${to}'`)
+            if (!fixedTo) return Promise.reject(`Could not find a suitable destination for '${to}'`)
         } else if (to.x !== undefined && to.y !== undefined) {
-            if (to.map) toNode = to as NodeData
-            else toNode = { map: this.character.map, x: to.x, y: to.y }
+            if (to.map) fixedTo = to as NodeData
+            else fixedTo = { map: this.character.map, x: to.x, y: to.y }
         } else {
             return Promise.reject("'to' is unsuitable for smartMove. We need a 'map', an 'x', and a 'y'.")
         }
 
         // If we don't have the path yet, get it
-        if (!path) path = await Pathfinder.getPath(this.character, toNode)
+        if (!path) path = await Pathfinder.getPath(this.character, fixedTo)
 
         let lastMove = -1
         for (let i = 0; i < path.length; i++) {
@@ -1407,6 +1527,28 @@ export class Player extends Observer {
             if (started < this.lastSmartMove) {
                 if (typeof to == "string") return Promise.reject(`smartMove to ${to} cancelled (new smartMove started)`)
                 else return Promise.reject(`smartMove to ${to.map}:${to.x},${to.y} cancelled (new smartMove started)`)
+            }
+
+            // Check if we can walk to a spot close to the goal if that's OK
+            if (currentMove.type == "move" && this.character.map == fixedTo.map && options.getWithin > 0) {
+                // Calculate distance to
+                const angle = Math.atan2(this.character.y - currentMove.y, this.character.x - currentMove.x)
+                const distance = Tools.distance(currentMove, fixedTo)
+
+                if (distance < options.getWithin) {
+                    break // We're already close enough!
+                }
+
+                const potentialMove: LinkData = {
+                    type: "move",
+                    map: this.character.map,
+                    x: this.character.x + Math.cos(angle) * (distance - options.getWithin),
+                    y: this.character.y + Math.sin(angle) * (distance - options.getWithin)
+                }
+                if (Pathfinder.canWalk(this.character, potentialMove)) {
+                    i = path.length
+                    currentMove = potentialMove
+                }
             }
 
             // Skip check -- check if we can move to the next node
@@ -1418,6 +1560,18 @@ export class Player extends Observer {
                     if (potentialMove.type == "move" && Pathfinder.canWalk(this.character, potentialMove)) {
                         i = j
                         currentMove = potentialMove
+                    }
+                }
+            }
+
+            // Blink skip check
+            if (options.useBlink && this.canUse("blink")) {
+                for (let j = path.length - 1; j > i; j--) {
+                    const potentialMove = path[j]
+                    if (potentialMove.map == currentMove.map) {
+                        await (this as unknown as Mage).blink(potentialMove.x, potentialMove.y)
+                        i = j
+                        break
                     }
                 }
             }
@@ -1933,6 +2087,15 @@ export class PingCompensatedPlayer extends Player {
 }
 
 export class Mage extends PingCompensatedPlayer {
+    // TODO: Add promises
+    public blink(x: number, y: number): void {
+        const blinkTo = { map: this.character.map, x: x, y: y }
+        // TODO: We should have an isWalkable(NodeData) position.
+        if (Pathfinder.canWalk(blinkTo, blinkTo)) {
+            this.socket.emit("skill", { name: "blink", x: x, y: y })
+        }
+    }
+
     /**
      * 
      * @param targets Put in pairs of entity IDs, and how much mp to spend attacking each target. E.g.: [["12345", "100"]]
@@ -2284,9 +2447,6 @@ export class Warrior extends PingCompensatedPlayer {
     public charge(): Promise<unknown> {
         const charged = new Promise((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
-                console.log("TODO: charge() fix regex cooldown ----------")
-                console.log(data)
-                console.log("----------------------------------------")
                 if (/skill_timeout\s*\(\s*['"]charge['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
                     this.socket.removeListener("eval", cooldownCheck)
                     this.socket.removeListener("game_response", failCheck)
@@ -2295,18 +2455,24 @@ export class Warrior extends PingCompensatedPlayer {
             }
 
             const failCheck = (data: GameResponseData) => {
-                if (typeof data == "object" && data.response == "cooldown" && data.skill == "charge") {
-                    this.socket.removeListener("eval", cooldownCheck)
-                    this.socket.removeListener("game_response", failCheck)
-                    reject(`Charge failed due to cooldown (ms: ${data.ms}).`)
+                if (typeof data == "object") {
+                    if (data.response == "cooldown" && data.skill == "charge") {
+                        this.socket.removeListener("eval", cooldownCheck)
+                        this.socket.removeListener("game_response", failCheck)
+                        reject(`Charge failed due to cooldown (ms: ${data.ms}).`)
+                    } else if (data.response == "skill_success" && data.name == "charge") {
+                        this.socket.removeListener("eval", cooldownCheck)
+                        this.socket.removeListener("game_response", failCheck)
+                        resolve()
+                    }
                 }
             }
 
             setTimeout(() => {
                 this.socket.removeListener("eval", cooldownCheck)
                 this.socket.removeListener("game_response", failCheck)
-                reject(`charge timeout (${TIMEOUT}ms)`)
-            }, TIMEOUT)
+                reject(`charge timeout (${2000}ms)`)
+            }, 2000)
             this.socket.on("eval", cooldownCheck)
             this.socket.on("game_response", failCheck)
         })
@@ -2604,8 +2770,6 @@ export class Game {
     }
 
     static async startObserver(region: ServerRegion, id: ServerIdentifier): Promise<Observer> {
-        if (!this.user) return Promise.reject("You must login first.")
-
         try {
             const observer = new Observer(this.servers[region][id])
             await observer.connect()

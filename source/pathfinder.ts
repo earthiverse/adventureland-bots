@@ -330,7 +330,7 @@ export class Pathfinder {
             // To
             const spawn2 = this.G.maps[door[4]].spawns[door[5]]
             const toDoor = this.addNodeToGraph(door[4], spawn2[0], spawn2[1])
-            this.graph.addLink(fromDoor.id, toDoor.id, { type: "transport", map: door[4], x: toDoor.data.x, y: toDoor.data.y, spawn: door[5] })
+            this.graph.addLink(fromDoor.id, toDoor.id, { type: "transport", map: toDoor.data.map, x: toDoor.data.x, y: toDoor.data.y, spawn: door[5] })
         }
 
         // Add nodes at spawns

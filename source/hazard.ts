@@ -126,6 +126,7 @@ async function startAggroMerchat(bot: PingCompensatedPlayer) {
     async function upgradeLoop() {
         try {
             if (bot.socket.disconnected) return
+
             for (const quiverPos of bot.locateItems("quiver", bot.character.items, { levelLessThan: 8 })) {
                 const quiver = bot.character.items[quiverPos]
                 const grades = bot.G.items[quiver.name].grades
@@ -133,9 +134,11 @@ async function startAggroMerchat(bot: PingCompensatedPlayer) {
                     if (quiver.level < grades[grade]) {
                         const scrollType = `scroll${grade}` as ItemName
                         const scrollPos = bot.locateItem(scrollType)
-                        if (scrollPos) {
-                            await bot.upgrade(quiverPos, scrollPos)
+                        if (!scrollPos) {
                             await bot.buy(scrollType, 1)
+                            await bot.upgrade(quiverPos, scrollPos)
+                        } else {
+                            await bot.upgrade(quiverPos, scrollPos)
                         }
                         break
                     }
@@ -286,9 +289,11 @@ async function startAggroRanger(bot: Ranger) {
                     if (quiver.level < grades[grade]) {
                         const scrollType = `scroll${grade}` as ItemName
                         const scrollPos = bot.locateItem(scrollType)
-                        if (scrollPos) {
-                            await bot.upgrade(quiverPos, scrollPos)
+                        if (!scrollPos) {
                             await bot.buy(scrollType, 1)
+                            await bot.upgrade(quiverPos, scrollPos)
+                        } else {
+                            await bot.upgrade(quiverPos, scrollPos)
                         }
                         break
                     }
@@ -505,6 +510,34 @@ async function startAggroWarrior(bot: Warrior) {
         setTimeout(async () => { tauntLoop() }, Math.max(bot.getCooldown("taunt"), 10))
     }
     tauntLoop()
+
+    async function upgradeLoop() {
+        try {
+            if (bot.socket.disconnected) return
+            for (const quiverPos of bot.locateItems("quiver", bot.character.items, { levelLessThan: 8 })) {
+                const quiver = bot.character.items[quiverPos]
+                const grades = bot.G.items[quiver.name].grades
+                for (let grade = 0; grade < grades.length; grade++) {
+                    if (quiver.level < grades[grade]) {
+                        const scrollType = `scroll${grade}` as ItemName
+                        const scrollPos = bot.locateItem(scrollType)
+                        if (!scrollPos) {
+                            await bot.buy(scrollType, 1)
+                            await bot.upgrade(quiverPos, scrollPos)
+                        } else {
+                            await bot.upgrade(quiverPos, scrollPos)
+                        }
+                        break
+                    }
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { upgradeLoop() }, 1000)
+    }
+    upgradeLoop()
 }
 
 /**
@@ -1023,7 +1056,7 @@ async function startSupportPriest(bot: Priest): Promise<void> {
                         break // Only send one item at a time
                     }
                     const extraGold = bot.character.gold - 1000000
-                    if (extraGold > 0) bot.sendGold("earthMer", extraGold)
+                    if (extraGold > 0) await bot.sendGold("earthMer", extraGold)
                 }
             }
         } catch (e) {

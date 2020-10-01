@@ -11,6 +11,7 @@ const EntitySchema = new Schema({
     type: String,
     level: { type: Number, required: false },
     hp: { type: Number, required: false },
+    target: { type: String, required: false },
     lastSeen: { type: Number, required: false }
 })
 

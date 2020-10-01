@@ -94,6 +94,7 @@ export type CharacterData = {
     esize: number
     gold: number
     cash: number
+    /** This number is the number of monsters currently targeting you */
     targets: number
     m: number
     evasion: number
@@ -298,6 +299,9 @@ export type GameResponseDataObject = {
 } | {
     response: "no_target"
     // TODO: See what else gets returned
+} | {
+    response: "skill_success"
+    name: SkillName
 } | {
     response: "too_far"
     place: "attack"
