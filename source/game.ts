@@ -213,7 +213,7 @@ export class Player extends Observer {
             const entity = this.entities.get(data.id)
 
             // If it was a special monster in 'S', delete it from 'S'.
-            if (this.S[entity.type]) delete this.S[entity.type]
+            if (this.S && this.S[entity.type]) delete this.S[entity.type]
 
             this.entities.delete(data.id)
             // TODO: Does this get called for players, too? Players turn in to grave stones...
