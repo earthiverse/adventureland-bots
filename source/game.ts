@@ -27,6 +27,8 @@ export class Observer {
     protected x: number
     protected y: number
 
+    private specialMonsters: MonsterName[] = ["fvampire", "goldenbat", "greenjr", "jr", "mvampire", "phoenix", "pinkgoo", "snowman"]
+
     constructor(serverData: ServerData) {
         this.serverRegion = serverData.region
         this.serverIdentifier = serverData.name
@@ -50,6 +52,14 @@ export class Observer {
             } as LoadedData)
         })
 
+        this.socket.on("death", async (data: DeathData) => {
+            try {
+                await EntityModel.findOneAndDelete({ name: data.id }).exec()
+            } catch (e) {
+                // There probably wasn't an entity with that ID (this will happen a lot)
+            }
+        })
+
         this.socket.on("entities", (data: EntitiesData) => {
             this.parseEntities(data)
         })
@@ -59,6 +69,26 @@ export class Observer {
             this.x = data.x
             this.y = data.y
             this.parseEntities(data.entities)
+        })
+
+        this.socket.on("server_info", (data: SInfo) => {
+            for (const mtype in data) {
+                const info = data[mtype as MonsterName]
+                if (!info.live) continue
+                if (this.specialMonsters.includes(mtype as MonsterName)) {
+                    EntityModel.findOneAndUpdate({ type: mtype as MonsterName, serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion }, {
+                        map: info.map,
+                        x: info.x,
+                        y: info.y,
+                        target: info.target,
+                        serverRegion: this.serverRegion,
+                        serverIdentifier: this.serverIdentifier,
+                        lastSeen: Date.now(),
+                        hp: info.hp,
+                        type: mtype as MonsterName
+                    }, { upsert: true, useFindAndModify: false }).exec()
+                }
+            }
         })
     }
 
@@ -83,7 +113,7 @@ export class Observer {
         // Update entities if they're special
         for (const entity of data.monsters) {
             // TODO: Add tiny fairy
-            if (!(["fvampire", "goldenbat", "greenjr", "jr", "mvampire", "phoenix", "pinkgoo", "snowman"] as MonsterName[]).includes(entity.type)) continue
+            if (!this.specialMonsters.includes(entity.type)) continue
 
             EntityModel.findOneAndUpdate({ type: entity.type, serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion }, {
                 map: data.map,
@@ -180,6 +210,11 @@ export class Player extends Observer {
         })
 
         this.socket.on("death", (data: DeathData) => {
+            const entity = this.entities.get(data.id)
+
+            // If it was a special monster in 'S', delete it from 'S'.
+            if (this.S[entity.type]) delete this.S[entity.type]
+
             this.entities.delete(data.id)
             // TODO: Does this get called for players, too? Players turn in to grave stones...
         })
@@ -308,6 +343,10 @@ export class Player extends Observer {
 
         // })
 
+        this.socket.on("server_info", (data: SInfo) => {
+            this.S = data
+        })
+
         this.socket.on("welcome", (data: WelcomeData) => {
             // console.log("socket: welcome!")
             this.server = data
@@ -349,9 +388,9 @@ export class Player extends Observer {
         for (const datum in data) {
             if (datum == "hitchhikers") {
                 // Game responses
-                for (const hitchhiker of data.hitchhikers) {
-                    if (hitchhiker[0] == "game_response") {
-                        this.parseGameResponse(hitchhiker[1])
+                for (const [event, datum] of data.hitchhikers) {
+                    if (event == "game_response") {
+                        this.parseGameResponse(datum)
                     }
                 }
             } else if (datum == "moving") {
@@ -433,9 +472,11 @@ export class Player extends Observer {
             } else if (data.response == "ex_condition") {
                 // The condition expired
                 delete this.character.s[data.name]
-
-                // TODO: See if "buy_success" is called before our updated character is sent, and if it is, adjust our gold and items.
-
+            } else if (data.response == "skill_success") {
+                const cooldown = this.G.skills[data.name].cooldown
+                if (cooldown) {
+                    this.setNextSkill(data.name, new Date(Date.now() + cooldown))
+                }
             } else {
                 // DEBUG
                 console.info("Game Response Data -----")
@@ -601,9 +642,9 @@ export class Player extends Observer {
     /**
      * This function is a hack to get the server to respond with a player data update. It will respond with two...
      */
-    public async requestPlayerData(): Promise<PlayerData> {
+    public async requestPlayerData(): Promise<CharacterData> {
         return new Promise((resolve, reject) => {
-            const checkPlayerEvent = (data: PlayerData) => {
+            const checkPlayerEvent = (data: CharacterData) => {
                 if (data.s.typing) {
                     this.socket.removeListener("player", checkPlayerEvent)
                     resolve(data)
@@ -634,18 +675,29 @@ export class Player extends Observer {
         return pingID
     }
 
-    // // TODO: Not finished
-    // public acceptMagiport(): Promise<unknown> {
-    //     const acceptedMagiport = new Promise((resolve, reject) => {
+    /**
+     * Accepts a magiport reequest from another character
+     * @param name ID of the character that offered a magiport.
+     */
+    public acceptMagiport(name: string): Promise<NodeData> {
+        const acceptedMagiport = new Promise<NodeData>((resolve, reject) => {
+            const magiportCheck = (data: NewMapData) => {
+                if (data.effect == "magiport") {
+                    this.socket.removeListener("new_map", magiportCheck)
+                    resolve({ map: data.in, x: data.x, y: data.y })
+                }
+            }
 
-    //         setTimeout(() => {
-    //             reject(`acceptMagiport timeout (${TIMEOUT}ms)`)
-    //         }, TIMEOUT)
-    //     })
+            setTimeout(() => {
+                this.socket.removeListener("new_map", magiportCheck)
+                reject(`acceptMagiport timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.socket.on("new_map", magiportCheck)
+        })
 
-    //     parent.socket.emit("magiport", { name: name })
-    //     return acceptedMagiport
-    // }
+        this.socket.emit("magiport", { name: name })
+        return acceptedMagiport
+    }
 
     /**
      * Accepts another character's party invite.
@@ -1231,7 +1283,7 @@ export class Player extends Observer {
         const moveFinished = new Promise<NodeData>((resolve, reject) => {
             let timeToFinishMove = 1 + Tools.distance(this.character, { x: to.x, y: to.y }) / this.character.speed
 
-            const checkPlayer = async (data: PlayerData) => {
+            const checkPlayer = async (data: CharacterData) => {
                 if (!data.moving || data.going_x != to.x || data.going_y != to.y) {
                     // We *might* not be moving in the right direction. Let's request new data and check.
                     const newData = await this.requestPlayerData()
@@ -1722,7 +1774,7 @@ export class Player extends Observer {
     public warpToTown(): Promise<unknown> {
         const currentMap = this.character.map
         const warpComplete = new Promise((resolve, reject) => {
-            const warpedCheck = (data: PlayerData) => {
+            const warpedCheck = (data: CharacterData) => {
                 const distance = Tools.distance(data, { x: this.G.maps[currentMap].spawns[0][0], y: this.G.maps[currentMap].spawns[0][1] })
                 if (currentMap == data.map && distance < 50) {
                     this.socket.removeListener("player", warpedCheck)
@@ -2139,6 +2191,31 @@ export class Mage extends PingCompensatedPlayer {
         this.socket.emit("skill", { name: "energize", id: target })
         return energized
     }
+
+    public magiport(target: string): Promise<unknown> {
+        const magiportOfferSent = new Promise((resolve, reject) => {
+            const magiportCheck = (data: GameResponseData) => {
+                if (typeof data == "object") {
+                    if (data.response == "magiport_failed" && data.id == target) {
+                        this.socket.removeListener("game_response", magiportCheck)
+                        reject(`Magiport for '${target}' failed.`)
+                    } else if (data.response == "magiport_sent" && data.id == target) {
+                        this.socket.removeListener("game_response", magiportCheck)
+                        resolve(`Magiport request sent to ${target}.`)
+                    }
+                }
+            }
+
+            setTimeout(() => {
+                this.socket.removeListener("game_response", magiportCheck)
+                reject(`magiport timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.socket.on("game_response", magiportCheck)
+        })
+
+        this.socket.emit("skill", { name: "magiport", id: target })
+        return magiportOfferSent
+    }
 }
 
 export class Merchant extends PingCompensatedPlayer {
@@ -2446,40 +2523,37 @@ export class Warrior extends PingCompensatedPlayer {
 
     public charge(): Promise<unknown> {
         const charged = new Promise((resolve, reject) => {
-            const cooldownCheck = (data: EvalData) => {
-                if (/skill_timeout\s*\(\s*['"]charge['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
-                    this.socket.removeListener("eval", cooldownCheck)
-                    this.socket.removeListener("game_response", failCheck)
-                    resolve()
+            const successCheck = (data: CharacterData) => {
+                for (const [event, datum] of data.hitchhikers) {
+                    if (event == "skill_success" && datum.response == "skill_success" && datum.name == "charge") {
+                        this.socket.removeListener("player", successCheck)
+                        this.socket.removeListener("game_response", failCheck)
+                        resolve()
+                        return
+                    }
                 }
             }
 
             const failCheck = (data: GameResponseData) => {
                 if (typeof data == "object") {
                     if (data.response == "cooldown" && data.skill == "charge") {
-                        this.socket.removeListener("eval", cooldownCheck)
+                        this.socket.removeListener("player", successCheck)
                         this.socket.removeListener("game_response", failCheck)
                         reject(`Charge failed due to cooldown (ms: ${data.ms}).`)
-                    } else if (data.response == "skill_success" && data.name == "charge") {
-                        this.socket.removeListener("eval", cooldownCheck)
-                        this.socket.removeListener("game_response", failCheck)
-                        resolve()
                     }
                 }
             }
 
             setTimeout(() => {
-                this.socket.removeListener("eval", cooldownCheck)
+                this.socket.removeListener("player", successCheck)
                 this.socket.removeListener("game_response", failCheck)
-                reject(`charge timeout (${2000}ms)`)
-            }, 2000)
-            this.socket.on("eval", cooldownCheck)
+                reject(`charge timeout (${TIMEOUT}}ms)`)
+            }, TIMEOUT)
+            this.socket.on("player", successCheck)
             this.socket.on("game_response", failCheck)
         })
 
-        this.socket.emit("skill", {
-            name: "charge"
-        })
+        this.socket.emit("skill", { name: "charge" })
         return charged
     }
 

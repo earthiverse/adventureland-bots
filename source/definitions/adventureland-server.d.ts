@@ -294,6 +294,14 @@ export type GameResponseDataObject = {
     item: ItemName
     q: number
 } | {
+    response: "magiport_failed"
+    // User ID the magiport offer was sent to
+    id: string
+} | {
+    response: "magiport_sent"
+    // User ID the magiport offer was sent to
+    id: string
+} | {
     response: "no_mp"
     place: "attack"
 } | {
@@ -369,7 +377,7 @@ export type LoadedData = {
 
 export type NewMapData = {
     direction: number
-    effect: number
+    effect: number | "magiport"
     entities: EntitiesData
     in: MapName
     info: any

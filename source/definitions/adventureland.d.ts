@@ -346,9 +346,9 @@ export type StatusInfo = {
     ms: number;
   } } & {
     burned?: {
-      // (Unconfirmed) the damage that the burn will do per second.
+      // Damage that the burn will do per second. Damage is currently split between an attack every 200ms (5 attacks/second).
       intensity: number
-      // The character ID that caused the burn
+      // The character ID that caused the burn (TODO: Is this the initial character? Or the last character to contribute?)
       f: string
     }
     coop?: {

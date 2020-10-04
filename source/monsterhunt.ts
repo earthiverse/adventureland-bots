@@ -1,4 +1,5 @@
 import { CharacterModel } from "./database/characters/characters.model.js"
+import { EntityModel } from "./database/entities/entities.model.js"
 import { EntityData, PlayerData } from "./definitions/adventureland-server.js"
 import { ItemName, MonsterName, ServerIdentifier, ServerRegion, SlotType } from "./definitions/adventureland.js"
 import { Strategy } from "./definitions/bot.js"
@@ -264,8 +265,39 @@ async function startRanger(bot: Ranger) {
     }
     const specialMonsterMoveStrategy = async (mtype: MonsterName) => {
         try {
-            // TODO: Look in database for monster
+            // Look in 'S' for monster
+            if (bot.S[mtype]) {
+                if (Tools.distance(bot.character, bot.S[mtype]) <= bot.character.range) return 100 // We're in range
+                await bot.smartMove(bot.S[mtype])
+                return 100
+            }
 
+            // Look in database for monster
+            for (const [, entity] of bot.entities) {
+                if (entity.type !== mtype) continue
+                if (Tools.distance(bot.character, entity) <= bot.character.range) return 100 // We're in range
+                await bot.smartMove(entity)
+                return 100
+            }
+
+            const specialTarget = await EntityModel.findOne({ serverRegion: region, serverIdentifier: identifier, type: mtype }).lean().exec()
+            if (specialTarget) {
+                await bot.smartMove({ map: specialTarget.map, x: specialTarget.x, y: specialTarget.y })
+            } else {
+                // See if there's a spawn for them. If there is, go check there
+                for (const spawn of bot.locateMonsters(mtype)) {
+                    await bot.smartMove(spawn)
+
+                    // Check if we've found it
+                    let monsterIsNear = false
+                    for (const [, entity] of bot.entities) {
+                        if (entity.type !== mtype) continue
+                        monsterIsNear = true
+                        break
+                    }
+                    if (monsterIsNear) break
+                }
+            }
         } catch (e) {
             console.error(e)
         }
@@ -458,7 +490,23 @@ async function startRanger(bot: Ranger) {
     async function targetLoop(): Promise<void> {
         let newTarget: MonsterName
         try {
-            // TODO: Special 
+            // Check in 'S' for targets
+            for (const info in bot.S) {
+                if (!strategy[info]) continue // No strategy
+                newTarget = info as MonsterName
+            }
+
+            // Check in the database for targetsF
+            const specialTarget = await EntityModel.findOne({ serverRegion: region, serverIdentifier: identifier, lastSeen: { $gt: Date.now() - 60000 } }).lean().exec()
+            if (specialTarget && strategy[specialTarget.type]) {
+                if (bot.G.monsters[specialTarget.type].cooperative) {
+                    // It's cooperative, let's go!
+                    newTarget = specialTarget.type
+                } else if (!specialTarget.target) {
+                    // It's not cooperative, and it's not attacking anything, let's go!
+                    newTarget = specialTarget.type
+                }
+            }
 
             // Priority #2: Monster Hunts
             if (!newTarget) {
@@ -778,8 +826,6 @@ async function startRanger(bot: Ranger) {
                 setTimeout(async () => { moveLoop() }, 500)
                 return
             }
-
-            // Priority #2: Special monsters
 
             if (rangerTarget) {
                 cooldown = await strategy[rangerTarget].move()
