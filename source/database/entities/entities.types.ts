@@ -2,7 +2,6 @@ import { Document, Model } from "mongoose"
 import { ServerRegion, MapName, ServerIdentifier, MonsterName } from "../../definitions/adventureland"
 
 export interface IEntity {
-    name: string
     map: MapName
     x: number
     y: number

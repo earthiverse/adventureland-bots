@@ -1,7 +1,8 @@
+import { ITEMS_TO_BUY, MERCHANT_ITEMS_TO_HOLD, NPC_INTERACTION_DISTANCE } from "./constants.js"
 import { CharacterModel } from "./database/characters/characters.model.js"
 import { EntityModel } from "./database/entities/entities.model.js"
 import { EntityData, PlayerData } from "./definitions/adventureland-server.js"
-import { ItemName, MonsterName, ServerIdentifier, ServerRegion, SlotType } from "./definitions/adventureland.js"
+import { BankPackType, ItemInfo, ItemName, MonsterName, ServerIdentifier, ServerRegion, SlotType } from "./definitions/adventureland.js"
 import { Strategy } from "./definitions/bot.js"
 import { NodeData } from "./definitions/pathfinder.js"
 import { Game, Merchant, Priest, Ranger, Warrior } from "./game.js"
@@ -61,9 +62,12 @@ async function startRanger(bot: Ranger) {
                 targets.push(entity)
 
                 // If we can kill enough monsters in one shot, let's try to do that
+                // If the monster is targeting our friend, let's take advantage of that and attack it with multishot if we can
                 const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0]
                 if (entity.hp < minimumDamage * bot.G.skills["3shot"].damage_multiplier) threeshotTargets.push(entity)
+                else if ([ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) threeshotTargets.push(entity)
                 if (entity.hp < minimumDamage * bot.G.skills["5shot"].damage_multiplier) fiveshotTargets.push(entity)
+                else if ([ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) fiveshotTargets.push(entity)
             }
 
             if (fiveshotTargets.length >= 5 && bot.canUse("5shot")) {
@@ -257,7 +261,7 @@ async function startRanger(bot: Ranger) {
 
         try {
             if (!closestEntitiy && !bot.character.moving) bot.smartMove(position)
-            else if (closestEntitiy) bot.smartMove(closestEntitiy)
+            else if (closestEntitiy && Tools.distance(bot.character, closestEntitiy) > bot.character.range) bot.smartMove(closestEntitiy)
         } catch (e) {
             // console.error(e)
         }
@@ -265,21 +269,22 @@ async function startRanger(bot: Ranger) {
     }
     const specialMonsterMoveStrategy = async (mtype: MonsterName) => {
         try {
+            // Look in nearby entities for monster
+            for (const [, entity] of bot.entities) {
+                if (entity.type !== mtype) continue
+                if (Tools.distance(bot.character, entity) <= bot.character.range) return 250 // We're in range
+                await bot.smartMove(entity)
+                return 250
+            }
+
             // Look in 'S' for monster
             if (bot.S[mtype]) {
-                if (Tools.distance(bot.character, bot.S[mtype]) <= bot.character.range) return 100 // We're in range
+                if (Tools.distance(bot.character, bot.S[mtype]) <= bot.character.range) return 250 // We're in range
                 await bot.smartMove(bot.S[mtype])
-                return 100
+                return 250
             }
 
             // Look in database for monster
-            for (const [, entity] of bot.entities) {
-                if (entity.type !== mtype) continue
-                if (Tools.distance(bot.character, entity) <= bot.character.range) return 100 // We're in range
-                await bot.smartMove(entity)
-                return 100
-            }
-
             const specialTarget = await EntityModel.findOne({ serverRegion: region, serverIdentifier: identifier, type: mtype }).lean().exec()
             if (specialTarget) {
                 await bot.smartMove({ map: specialTarget.map, x: specialTarget.x, y: specialTarget.y })
@@ -383,10 +388,21 @@ async function startRanger(bot: Ranger) {
             move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: 160, y: -675 }) },
             equipment: { mainhand: "firebow", orb: "jacko" }
         },
+        goldenbat: {
+            attack: async () => { return await defaultAttackStrategy("goldenbat") },
+            move: async () => { return await specialMonsterMoveStrategy("goldenbat") },
+            equipment: { mainhand: "crossbow", orb: "orbg" },
+            attackWhileIdle: true
+        },
         goo: {
             attack: async () => { return await defaultAttackStrategy("goo") },
             move: async () => { return await holdPositionMoveStrategy({ map: "main", x: -32, y: 787 }) },
             equipment: { mainhand: "hbow" },
+            attackWhileIdle: true
+        },
+        greenjr: {
+            attack: async () => { return await defaultAttackStrategy("greenjr") },
+            move: async () => { return await specialMonsterMoveStrategy("greenjr") },
             attackWhileIdle: true
         },
         iceroamer: {
@@ -400,7 +416,7 @@ async function startRanger(bot: Ranger) {
             equipment: { mainhand: "hbow", orb: "orbg" }
         },
         mummy: {
-            attack: async () => { return await tankAttackStrategy("mummy", warrior.character.id) },
+            attack: async () => { return await defaultAttackStrategy("mummy") },
             move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 250, y: -1129 }) },
             equipment: { mainhand: "firebow", orb: "jacko" }
         },
@@ -419,7 +435,7 @@ async function startRanger(bot: Ranger) {
         //     move: async () => { return await }
         // },
         plantoid: {
-            attack: async () => { return await tankAttackStrategy("plantoid", warrior.character.id) },
+            attack: async () => { return await defaultAttackStrategy("plantoid") },
             move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: -750, y: -125 }) },
             equipment: { mainhand: "firebow", orb: "jacko" }
         },
@@ -474,6 +490,11 @@ async function startRanger(bot: Ranger) {
             equipment: { mainhand: "crossbow", orb: "orbg" },
             attackWhileIdle: true
         },
+        stoneworm: {
+            attack: async () => { return await defaultAttackStrategy("stoneworm") },
+            move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 677, y: 129 }) },
+            equipment: { mainhand: "crossbow", orb: "jacko" }
+        },
         tortoise: {
             attack: async () => { return await defaultAttackStrategy("tortoise") },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "main", x: -1124, y: 1118 }, "tortoise") },
@@ -490,21 +511,34 @@ async function startRanger(bot: Ranger) {
     async function targetLoop(): Promise<void> {
         let newTarget: MonsterName
         try {
-            // Check in 'S' for targets
-            for (const info in bot.S) {
-                if (!strategy[info]) continue // No strategy
-                newTarget = info as MonsterName
-            }
+            if (bot.socket.disconnected) return
 
-            // Check in the database for targetsF
-            const specialTarget = await EntityModel.findOne({ serverRegion: region, serverIdentifier: identifier, lastSeen: { $gt: Date.now() - 60000 } }).lean().exec()
-            if (specialTarget && strategy[specialTarget.type]) {
-                if (bot.G.monsters[specialTarget.type].cooperative) {
-                    // It's cooperative, let's go!
-                    newTarget = specialTarget.type
-                } else if (!specialTarget.target) {
-                    // It's not cooperative, and it's not attacking anything, let's go!
-                    newTarget = specialTarget.type
+            // Priority #1: Special Monsters
+            for (const mN in bot.S) {
+                if (!strategy[mN as MonsterName]) continue // No strategy
+                newTarget = mN as MonsterName
+                break
+            }
+            if (!newTarget) {
+                const entities = await EntityModel.find({ serverRegion: region, serverIdentifier: identifier, lastSeen: { $gt: Date.now() - 60000 } }).lean().exec()
+                for (const entity of entities) {
+                    if (!strategy[entity.type]) continue // No strategy
+                    newTarget = entity.type
+                    break
+                }
+            }
+            if (!newTarget) {
+                for (const specialTarget of await EntityModel.find({ serverRegion: region, serverIdentifier: identifier, lastSeen: { $gt: Date.now() - 60000 } }).lean().exec()) {
+                    if (strategy[specialTarget.type]) {
+                        if (bot.G.monsters[specialTarget.type].cooperative) {
+                            // It's cooperative, let's go!
+                            newTarget = specialTarget.type
+                        } else if (!specialTarget.target) {
+                            // It's not cooperative, and it's not attacking anything, let's go!
+                            newTarget = specialTarget.type
+                        }
+                    }
+                    break
                 }
             }
 
@@ -537,11 +571,13 @@ async function startRanger(bot: Ranger) {
             }
 
             // Reasons to scare
+            let numTargets = 0
             let numTargetingAndClose = 0
             let noStrategy = false
             let avoidIdle = false
             for (const [, entity] of bot.entities) {
                 if (entity.target == bot.character.id) {
+                    numTargets++
                     if (Tools.distance(bot.character, entity) <= entity.range) numTargetingAndClose++
                     if (!strategy[entity.type]) noStrategy = true
                     else if (warriorTarget !== entity.type && !strategy[entity.type].attackWhileIdle) avoidIdle = true
@@ -550,18 +586,16 @@ async function startRanger(bot: Ranger) {
             if (bot.character.hp < bot.character.max_hp * 0.25 // We are low on HP
                 || (bot.character.s.burned && bot.character.s.burned.intensity > bot.character.max_hp / 10) // We are burned
                 || numTargetingAndClose > 3 // We have a lot of targets
-                || bot.character.c.town // We are teleporting
+                || (numTargets > 0 && bot.character.c.town) // We are teleporting
                 || noStrategy // We don't have a strategy for the given monster
                 || avoidIdle // A monster is attacking us that we aren't targeting, and don't attack while idle
             ) {
-                if (bot.character.targets > 0) {
-                    if (!bot.character.slots.orb || bot.character.slots.orb.name !== "jacko") {
-                        const i = bot.locateItem("jacko")
-                        if (i) await bot.equip(i)
-                    }
-                    if (bot.canUse("scare")) {
-                        await bot.scare()
-                    }
+                if (!bot.character.slots.orb || bot.character.slots.orb.name !== "jacko") {
+                    const i = bot.locateItem("jacko")
+                    if (i) await bot.equip(i)
+                }
+                if (bot.canUse("scare")) {
+                    await bot.scare()
                 }
                 setTimeout(async () => { attackLoop() }, bot.getCooldown("scare"))
                 return
@@ -761,7 +795,7 @@ async function startRanger(bot: Ranger) {
             }
 
             const sendTo = bot.players.get(merchant.character.id)
-            if (sendTo && Tools.distance(bot.character, sendTo) < 400) {
+            if (sendTo && Tools.distance(bot.character, sendTo) < NPC_INTERACTION_DISTANCE) {
                 for (let i = 0; i < bot.character.items.length; i++) {
                     const item = bot.character.items[i]
                     if (!item
@@ -814,15 +848,15 @@ async function startRanger(bot: Ranger) {
             if (!bot.character.s.monsterhunt) {
                 // Move to monsterhunter if there's no MH
                 await bot.smartMove("monsterhunter", { getWithin: 399 })
-                bot.getMonsterHuntQuest()
+                await bot.getMonsterHuntQuest()
                 setTimeout(async () => { moveLoop() }, 500)
                 return
             } else if (bot.character.s.monsterhunt.c == 0) {
                 // Move to monsterhunter if we are finished the quest
                 await bot.smartMove("monsterhunter", { getWithin: 399 })
                 // TODO: Implement finishMonsterHuntQuest()
-                bot.finishMonsterHuntQuest()
-                bot.getMonsterHuntQuest()
+                await bot.finishMonsterHuntQuest()
+                await bot.getMonsterHuntQuest()
                 setTimeout(async () => { moveLoop() }, 500)
                 return
             }
@@ -840,6 +874,16 @@ async function startRanger(bot: Ranger) {
         setTimeout(async () => { moveLoop() }, cooldown)
     }
     moveLoop()
+
+    bot.socket.on("stacked", async () => {
+        console.info(`Scrambling ${bot.character.id} because we're stacked!`)
+
+        const x = -25 + Math.round(50 * Math.random())
+        const y = -25 + Math.round(50 * Math.random())
+        try {
+            await bot.move(bot.character.x + x, bot.character.y + y)
+        } catch (e) { /** Supress errors */ }
+    })
 
     async function partyLoop() {
         try {
@@ -979,11 +1023,52 @@ async function startPriest(bot: Priest) {
 
         try {
             if (!closestEntitiy && !bot.character.moving) bot.smartMove(position)
-            else if (closestEntitiy) bot.smartMove(closestEntitiy)
+            else if (closestEntitiy && Tools.distance(bot.character, closestEntitiy) > bot.character.range) bot.smartMove(closestEntitiy)
         } catch (e) {
             // console.error(e)
         }
         return 250
+    }
+    const specialMonsterMoveStrategy = async (mtype: MonsterName) => {
+        try {
+            // Look in nearby entities for monster
+            for (const [, entity] of bot.entities) {
+                if (entity.type !== mtype) continue
+                if (Tools.distance(bot.character, entity) <= bot.character.range) return 250 // We're in range
+                await bot.smartMove(entity)
+                return 250
+            }
+
+            // Look in 'S' for monster
+            if (bot.S[mtype]) {
+                if (Tools.distance(bot.character, bot.S[mtype]) <= bot.character.range) return 250 // We're in range
+                await bot.smartMove(bot.S[mtype])
+                return 250
+            }
+
+            // Look in database for monster
+            const specialTarget = await EntityModel.findOne({ serverRegion: region, serverIdentifier: identifier, type: mtype }).lean().exec()
+            if (specialTarget) {
+                await bot.smartMove({ map: specialTarget.map, x: specialTarget.x, y: specialTarget.y })
+            } else {
+                // See if there's a spawn for them. If there is, go check there
+                for (const spawn of bot.locateMonsters(mtype)) {
+                    await bot.smartMove(spawn)
+
+                    // Check if we've found it
+                    let monsterIsNear = false
+                    for (const [, entity] of bot.entities) {
+                        if (entity.type !== mtype) continue
+                        monsterIsNear = true
+                        break
+                    }
+                    if (monsterIsNear) break
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        return 100
     }
     const strategy: Strategy = {
         arcticbee: {
@@ -1055,9 +1140,20 @@ async function startPriest(bot: Priest) {
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "main", x: -1124, y: 1118 }, "frog") },
             attackWhileIdle: true
         },
+        goldenbat: {
+            attack: async () => { return await defaultAttackStrategy("goldenbat") },
+            move: async () => { return await specialMonsterMoveStrategy("goldenbat") },
+            equipment: { orb: "orbg" },
+            attackWhileIdle: true
+        },
         goo: {
             attack: async () => { return await defaultAttackStrategy("goo") },
             move: async () => { return await holdPositionMoveStrategy({ map: "main", x: -12, y: 787 }) },
+            attackWhileIdle: true
+        },
+        greenjr: {
+            attack: async () => { return await defaultAttackStrategy("greenjr") },
+            move: async () => { return await specialMonsterMoveStrategy("greenjr") },
             attackWhileIdle: true
         },
         iceroamer: {
@@ -1071,7 +1167,7 @@ async function startPriest(bot: Priest) {
             equipment: { orb: "orbg" }
         },
         mummy: {
-            attack: async () => { return await tankAttackStrategy("mummy", warrior.character.id) },
+            attack: async () => { return await defaultAttackStrategy("mummy") },
             move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 270, y: -1129 }) },
             equipment: { orb: "jacko" }
         },
@@ -1086,7 +1182,7 @@ async function startPriest(bot: Priest) {
             equipment: { orb: "jacko" }
         },
         plantoid: {
-            attack: async () => { return await tankAttackStrategy("plantoid", warrior.character.id) },
+            attack: async () => { return await defaultAttackStrategy("plantoid") },
             move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: -730, y: -125 }) },
             equipment: { orb: "jacko" }
         },
@@ -1099,10 +1195,11 @@ async function startPriest(bot: Priest) {
         porcupine: {
             attack: async () => { return await defaultAttackStrategy("porcupine") },
             move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: -809, y: 135 }) },
+            equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "orbg" },
             attackWhileIdle: true
         },
         pppompom: {
-            attack: async () => { return await tankAttackStrategy("mummy", warrior.character.id) },
+            attack: async () => { return await tankAttackStrategy("pppompom", warrior.character.id) },
             move: async () => { return await holdPositionMoveStrategy({ map: "level2n", x: 120, y: -150 }) },
             equipment: { orb: "jacko" }
         },
@@ -1137,6 +1234,10 @@ async function startPriest(bot: Priest) {
             move: async () => { return await holdPositionMoveStrategy({ map: "main", x: -1155, y: 422 }) },
             attackWhileIdle: true
         },
+        stoneworm: {
+            attack: async () => { return await defaultAttackStrategy("stoneworm") },
+            move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 697, y: 129 }) }
+        },
         tortoise: {
             attack: async () => { return await defaultAttackStrategy("tortoise") },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "main", x: -1104, y: 1118 }, "tortoise") },
@@ -1153,7 +1254,34 @@ async function startPriest(bot: Priest) {
     async function targetLoop(): Promise<void> {
         let newTarget: MonsterName
         try {
-            // TODO: Special 
+            if (bot.socket.disconnected) return
+
+            // Priority #1: Special Monsters
+            for (const mN in bot.S) {
+                if (!strategy[mN as MonsterName]) continue // No strategy
+                newTarget = mN as MonsterName
+                break
+            }
+            if (!newTarget) {
+                const entities = await EntityModel.find({ serverRegion: region, serverIdentifier: identifier, lastSeen: { $gt: Date.now() - 60000 } }).lean().exec()
+                for (const entity of entities) {
+                    if (!strategy[entity.type]) continue // No strategy
+                    newTarget = entity.type
+                }
+            }
+
+            // Check in the database for targets
+            for (const specialTarget of await EntityModel.find({ serverRegion: region, serverIdentifier: identifier, lastSeen: { $gt: Date.now() - 60000 } }).lean().exec()) {
+                if (strategy[specialTarget.type]) {
+                    if (bot.G.monsters[specialTarget.type].cooperative) {
+                        // It's cooperative, let's go!
+                        newTarget = specialTarget.type
+                    } else if (!specialTarget.target) {
+                        // It's not cooperative, and it's not attacking anything, let's go!
+                        newTarget = specialTarget.type
+                    }
+                }
+            }
 
             // Priority #2: Monster Hunts
             if (!newTarget) {
@@ -1184,11 +1312,13 @@ async function startPriest(bot: Priest) {
             }
 
             // Reasons to scare
+            let numTargets = 0
             let numTargetingAndClose = 0
             let noStrategy = false
             let avoidIdle = false
             for (const [, entity] of bot.entities) {
                 if (entity.target == bot.character.id) {
+                    numTargets++
                     if (Tools.distance(bot.character, entity) <= entity.range) numTargetingAndClose++
                     if (!strategy[entity.type]) noStrategy = true
                     else if (warriorTarget !== entity.type && !strategy[entity.type].attackWhileIdle) avoidIdle = true
@@ -1197,18 +1327,16 @@ async function startPriest(bot: Priest) {
             if (bot.character.hp < bot.character.max_hp * 0.25 // We are low on HP
                 || (bot.character.s.burned && bot.character.s.burned.intensity > bot.character.max_hp / 10) // We are burned
                 || numTargetingAndClose > 3 // We have a lot of targets
-                || bot.character.c.town // We are teleporting
+                || (numTargets > 0 && bot.character.c.town) // We are teleporting
                 || noStrategy // We don't have a strategy for the given monster
                 || avoidIdle // A monster is attacking us that we aren't targeting, and don't attack while idle
             ) {
-                if (bot.character.targets > 0) {
-                    if (!bot.character.slots.orb || bot.character.slots.orb.name !== "jacko") {
-                        const i = bot.locateItem("jacko")
-                        if (i) await bot.equip(i)
-                    }
-                    if (bot.canUse("scare")) {
-                        await bot.scare()
-                    }
+                if (!bot.character.slots.orb || bot.character.slots.orb.name !== "jacko") {
+                    const i = bot.locateItem("jacko")
+                    if (i) await bot.equip(i)
+                }
+                if (bot.canUse("scare")) {
+                    await bot.scare()
                 }
                 setTimeout(async () => { attackLoop() }, bot.getCooldown("scare"))
                 return
@@ -1398,7 +1526,7 @@ async function startPriest(bot: Priest) {
             }
 
             const sendTo = bot.players.get(merchant.character.id)
-            if (sendTo && Tools.distance(bot.character, sendTo) < 400) {
+            if (sendTo && Tools.distance(bot.character, sendTo) < NPC_INTERACTION_DISTANCE) {
                 for (let i = 0; i < bot.character.items.length; i++) {
                     const item = bot.character.items[i]
                     if (!item
@@ -1410,7 +1538,10 @@ async function startPriest(bot: Priest) {
                         || item.name == "mpot1"
                         || item.name == "jacko"
                         // Priest items
+                        || item.name == "firestaff"
+                        || item.name == "lantern"
                         || item.name == "orbg"
+                        || item.name == "pmace"
                         || item.name == "shield"
                         || item.name == "wbook1"
                     ) continue // Don't send important items
@@ -1445,15 +1576,15 @@ async function startPriest(bot: Priest) {
             if (!bot.character.s.monsterhunt) {
                 // Move to monsterhunter if there's no MH
                 await bot.smartMove("monsterhunter", { getWithin: 399 })
-                bot.getMonsterHuntQuest()
+                await bot.getMonsterHuntQuest()
                 setTimeout(async () => { moveLoop() }, 500)
                 return
             } else if (bot.character.s.monsterhunt.c == 0) {
                 // Move to monsterhunter if we are finished the quest
                 await bot.smartMove("monsterhunter", { getWithin: 399 })
                 // TODO: Implement finishMonsterHuntQuest()
-                bot.finishMonsterHuntQuest()
-                bot.getMonsterHuntQuest()
+                await bot.finishMonsterHuntQuest()
+                await bot.getMonsterHuntQuest()
                 setTimeout(async () => { moveLoop() }, 500)
                 return
             }
@@ -1472,6 +1603,16 @@ async function startPriest(bot: Priest) {
         setTimeout(async () => { moveLoop() }, cooldown)
     }
     moveLoop()
+
+    bot.socket.on("stacked", async () => {
+        console.info(`Scrambling ${bot.character.id} because we're stacked!`)
+
+        const x = -25 + Math.round(50 * Math.random())
+        const y = -25 + Math.round(50 * Math.random())
+        try {
+            await bot.move(bot.character.x + x, bot.character.y + y)
+        } catch (e) { /** Supress errors */ }
+    })
 
     async function partyHealLoop() {
         try {
@@ -1678,6 +1819,14 @@ async function startWarrior(bot: Warrior) {
 
         return Math.max(10, bot.getCooldown("attack"))
     }
+    const holdPositionMoveStrategy = async (position: NodeData) => {
+        try {
+            if (Tools.distance(bot.character, position) > 0) await bot.smartMove(position)
+        } catch (e) {
+            console.error(e)
+        }
+        return 1000
+    }
     const nearbyMonstersMoveStrategy = async (position: NodeData, mtype: MonsterName) => {
         let closestEntitiy: EntityData
         let closestDistance: number = Number.MAX_VALUE
@@ -1699,19 +1848,52 @@ async function startWarrior(bot: Warrior) {
 
         try {
             if (!closestEntitiy && !bot.character.moving) bot.smartMove(position)
-            else if (closestEntitiy) bot.smartMove(closestEntitiy)
+            else if (closestEntitiy && Tools.distance(bot.character, closestEntitiy) > bot.character.range) bot.smartMove(closestEntitiy)
         } catch (e) {
             // console.error(e)
         }
         return 250
     }
-    const holdPositionMoveStrategy = async (position: NodeData) => {
+    const specialMonsterMoveStrategy = async (mtype: MonsterName) => {
         try {
-            if (Tools.distance(bot.character, position) > 0) await bot.smartMove(position)
+            // Look in nearby entities for monster
+            for (const [, entity] of bot.entities) {
+                if (entity.type !== mtype) continue
+                if (Tools.distance(bot.character, entity) <= bot.character.range) return 250 // We're in range
+                await bot.smartMove(entity)
+                return 250
+            }
+
+            // Look in 'S' for monster
+            if (bot.S[mtype]) {
+                if (Tools.distance(bot.character, bot.S[mtype]) <= bot.character.range) return 250 // We're in range
+                await bot.smartMove(bot.S[mtype])
+                return 250
+            }
+
+            // Look in database for monster
+            const specialTarget = await EntityModel.findOne({ serverRegion: region, serverIdentifier: identifier, type: mtype }).lean().exec()
+            if (specialTarget) {
+                await bot.smartMove({ map: specialTarget.map, x: specialTarget.x, y: specialTarget.y })
+            } else {
+                // See if there's a spawn for them. If there is, go check there
+                for (const spawn of bot.locateMonsters(mtype)) {
+                    await bot.smartMove(spawn)
+
+                    // Check if we've found it
+                    let monsterIsNear = false
+                    for (const [, entity] of bot.entities) {
+                        if (entity.type !== mtype) continue
+                        monsterIsNear = true
+                        break
+                    }
+                    if (monsterIsNear) break
+                }
+            }
         } catch (e) {
             console.error(e)
         }
-        return 1000
+        return 100
     }
     const strategy: Strategy = {
         arcticbee: {
@@ -1771,10 +1953,21 @@ async function startWarrior(bot: Warrior) {
             move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: 140, y: -675 }) },
             equipment: { mainhand: "basher", orb: "jacko" }
         },
+        goldenbat: {
+            attack: async () => { return await defaultAttackStrategy("goldenbat") },
+            move: async () => { return await specialMonsterMoveStrategy("goldenbat") },
+            equipment: { mainhand: "bataxe", orb: "jacko" },
+            attackWhileIdle: true
+        },
         goo: {
             attack: async () => { return await defaultAttackStrategy("goo") },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "main", x: -52, y: 787 }, "goo") },
             equipment: { mainhand: "bataxe", orb: "jacko" },
+            attackWhileIdle: true
+        },
+        greenjr: {
+            attack: async () => { return await defaultAttackStrategy("greenjr") },
+            move: async () => { return await specialMonsterMoveStrategy("greenjr") },
             attackWhileIdle: true
         },
         iceroamer: {
@@ -1789,7 +1982,7 @@ async function startWarrior(bot: Warrior) {
         },
         mummy: {
             attack: async () => { return await defaultAttackStrategy("mummy") },
-            // TODO: Make abuseRageMoveStrategy
+            // TODO: Make abuseRageMoveStrategy where we go to the rage range until we have targets, then move back.
             move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 230, y: -1129 }) },
             equipment: { mainhand: "basher", orb: "jacko" }
         },
@@ -1804,7 +1997,7 @@ async function startWarrior(bot: Warrior) {
             equipment: { mainhand: "bataxe", orb: "jacko" }
         },
         plantoid: {
-            attack: async () => { return await oneTargetAttackStrategy("plantoid") },
+            attack: async () => { return await defaultAttackStrategy("plantoid") },
             move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: -770, y: -125 }) },
             equipment: { mainhand: "basher", orb: "jacko" }
         },
@@ -1866,7 +2059,32 @@ async function startWarrior(bot: Warrior) {
         try {
             if (bot.socket.disconnected) return
 
-            // TODO: Special 
+            // Priority #1: Special Monsters
+            for (const mN in bot.S) {
+                if (!strategy[mN as MonsterName]) continue // No strategy
+                newTarget = mN as MonsterName
+                break
+            }
+            if (!newTarget) {
+                const entities = await EntityModel.find({ serverRegion: region, serverIdentifier: identifier, lastSeen: { $gt: Date.now() - 60000 } }).lean().exec()
+                for (const entity of entities) {
+                    if (!strategy[entity.type]) continue // No strategy
+                    newTarget = entity.type
+                }
+            }
+
+            // Check in the database for targets
+            for (const specialTarget of await EntityModel.find({ serverRegion: region, serverIdentifier: identifier, lastSeen: { $gt: Date.now() - 60000 } }).lean().exec()) {
+                if (strategy[specialTarget.type]) {
+                    if (bot.G.monsters[specialTarget.type].cooperative) {
+                        // It's cooperative, let's go!
+                        newTarget = specialTarget.type
+                    } else if (!specialTarget.target) {
+                        // It's not cooperative, and it's not attacking anything, let's go!
+                        newTarget = specialTarget.type
+                    }
+                }
+            }
 
             // Priority #2: Monster Hunts
             if (!newTarget) {
@@ -1897,11 +2115,13 @@ async function startWarrior(bot: Warrior) {
             }
 
             // Reasons to scare
+            let numTargets = 0
             let numTargetingAndClose = 0
             let noStrategy = false
             let avoidIdle = false
             for (const [, entity] of bot.entities) {
                 if (entity.target == bot.character.id) {
+                    numTargets++
                     if (Tools.distance(bot.character, entity) <= entity.range) numTargetingAndClose++
                     if (!strategy[entity.type]) noStrategy = true
                     else if (warriorTarget !== entity.type && !strategy[entity.type].attackWhileIdle) avoidIdle = true
@@ -1910,18 +2130,16 @@ async function startWarrior(bot: Warrior) {
             if (bot.character.hp < bot.character.max_hp * 0.25 // We are low on HP
                 || (bot.character.s.burned && bot.character.s.burned.intensity > bot.character.max_hp / 10) // We are burned
                 || numTargetingAndClose > 3 // We have a lot of targets
-                || bot.character.c.town // We are teleporting
+                || (numTargets > 0 && bot.character.c.town) // We are teleporting
                 || noStrategy // We don't have a strategy for the given monster
                 || avoidIdle // A monster is attacking us that we aren't targeting, and don't attack while idle
             ) {
-                if (bot.character.targets > 0) {
-                    if (!bot.character.slots.orb || bot.character.slots.orb.name !== "jacko") {
-                        const i = bot.locateItem("jacko")
-                        if (i) await bot.equip(i)
-                    }
-                    if (bot.canUse("scare")) {
-                        await bot.scare()
-                    }
+                if (!bot.character.slots.orb || bot.character.slots.orb.name !== "jacko") {
+                    const i = bot.locateItem("jacko")
+                    if (i) await bot.equip(i)
+                }
+                if (bot.canUse("scare")) {
+                    await bot.scare()
                 }
                 setTimeout(async () => { attackLoop() }, bot.getCooldown("scare"))
                 return
@@ -2101,7 +2319,7 @@ async function startWarrior(bot: Warrior) {
             }
 
             const sendTo = bot.players.get(merchant.character.id)
-            if (sendTo && Tools.distance(bot.character, sendTo) < 400) {
+            if (sendTo && Tools.distance(bot.character, sendTo) < NPC_INTERACTION_DISTANCE) {
                 for (let i = 0; i < bot.character.items.length; i++) {
                     const item = bot.character.items[i]
                     if (!item
@@ -2118,6 +2336,8 @@ async function startWarrior(bot: Warrior) {
                         || item.name == "candycanesword"
                         || item.name == "carrotsword"
                         || item.name == "fireblade"
+                        || item.name == "heartwood"
+                        || item.name == "lantern"
                         || item.name == "orbg"
                         || item.name == "shield"
                         || item.name == "sshield"
@@ -2183,6 +2403,16 @@ async function startWarrior(bot: Warrior) {
     }
     moveLoop()
 
+    bot.socket.on("stacked", async () => {
+        console.info(`Scrambling ${bot.character.id} because we're stacked!`)
+
+        const x = -25 + Math.round(50 * Math.random())
+        const y = -25 + Math.round(50 * Math.random())
+        try {
+            await bot.move(bot.character.x + x, bot.character.y + y)
+        } catch (e) { /** Supress errors */ }
+    })
+
     async function partyLoop() {
         try {
             if (bot.socket.disconnected) return
@@ -2229,10 +2459,26 @@ async function startMerchant(bot: Merchant) {
                 const numMpot1 = bot.countItem("mpot1")
                 if (numMpot1 < 1000) await bot.buy("mpot1", 1000 - numMpot1)
             }
+
+            for (const ponty of bot.locateNPCs("secondhands")) {
+                if (Tools.distance(bot.character, ponty) > NPC_INTERACTION_DISTANCE) continue
+                const pontyItems = await bot.getPontyItems()
+                for (const item of pontyItems) {
+                    if (!item) continue
+
+                    if (
+                        item.p // Buy all shiny/glitched/etc. items
+                        || ITEMS_TO_BUY.includes(item.name) // Buy anything in our buy list
+                    ) {
+                        await bot.buyFromPonty(item)
+                        continue
+                    }
+                }
+            }
         } catch (e) {
             console.error(e)
         }
-        setTimeout(async () => { buyLoop() }, 60000)
+        setTimeout(async () => { buyLoop() }, 10000)
     }
     buyLoop()
 
@@ -2294,6 +2540,8 @@ async function startMerchant(bot: Merchant) {
             if (bot.socket.disconnected) return
 
             if (bot.canUse("mluck")) {
+                if (!bot.character.s.mluck || bot.character.s.mluck.f !== bot.character.id) await bot.mluck(bot.character.id) // mluck ourselves
+
                 for (const [, player] of bot.players) {
                     if (Tools.distance(bot.character, player) > bot.G.skills.mluck.range) continue // Too far away to mluck
                     if (player.npc) continue // It's an NPC, we can't mluck NPCs.
@@ -2335,28 +2583,48 @@ async function startMerchant(bot: Merchant) {
                 if (!item) freeSlots++
             }
             if (freeSlots == 0) {
+                await bot.closeMerchantStand()
                 await bot.smartMove("bank")
+
+                // Deposit excess gold
+                const excessGold = bot.character.gold - 100000000
+                if (excessGold > 0) {
+                    await bot.depositGold(excessGold)
+                }
 
                 // Deposit items
                 for (let i = 0; i < bot.character.items.length; i++) {
                     const item = bot.character.items[i]
                     if (!item) continue
-                    if (!([
-                        // Things we keep on ourselves
-                        "computer", "tracker", "stand0",
-                        // MH Tokens
-                        "monstertoken",
-                        // Scrolls
-                        "cscroll0", "cscroll1", "cscroll2", "cscroll3", "scroll0", "scroll1", "scroll2", "scroll3", "scroll4", "strscroll", "intscroll", "dexscroll",
-                        // Potions
-                        "hpot0", "hpot1", "mpot0", "mpot1"
-                    ] as ItemName[]).includes(item.name)) {
-                        //
+                    if (!MERCHANT_ITEMS_TO_HOLD.includes(item.name)) {
+                        // Deposit it in the bank
                         await bot.depositItem(i)
                     }
                 }
 
-                // TODO: Withdraw items we can upgrade or that we want to sell
+                // Store information about everything in our bank
+                const bankInfo: (ItemInfo & { pack: BankPackType, slot: number })[] = []
+                for (const bp in bot.bank) {
+                    if (bp == "gold") continue
+                    const bankPack = bp as Exclude<BankPackType, "gold">
+                    const pack = bot.bank[bankPack]
+
+                    for (let i = 0; i < pack.length; i++) {
+                        const item = pack[i]
+                        if (!item) continue // No item in this bank slot
+                        if (!bankInfo[item.name]) bankInfo[item.name] = []
+                        bankInfo.push({ ...item, pack: bankPack, slot: i })
+                    }
+                }
+
+                // TODO: Sort 
+
+                for (const iN in bankInfo) {
+                    const itemName = iN as ItemName
+                    const numItems = bankInfo[itemName].length
+
+                    // TODO: Finish
+                }
 
                 setTimeout(async () => { moveLoop() }, 250)
                 return
@@ -2375,7 +2643,8 @@ async function startMerchant(bot: Merchant) {
 
                 // Also check if they need mluck
                 if (full || !friend.character.s.mluck || friend.character.s.mluck.ms < 120000 || friend.character.s.mluck.f !== bot.character.id) {
-                    await bot.smartMove(friend.character, { getWithin: bot.G.skills.mluck.range - 25 })
+                    await bot.closeMerchantStand()
+                    await bot.smartMove(friend.character, { getWithin: bot.G.skills.mluck.range / 2 })
 
                     setTimeout(async () => { moveLoop() }, 250)
                     return
@@ -2383,10 +2652,11 @@ async function startMerchant(bot: Merchant) {
             }
 
             // Find other characters that need mluck and go find them
-            const charactersToMluck = await CharacterModel.find({ serverRegion: region, serverIdentifier: identifier, "s.mluck": undefined, lastSeen: { "$gt": Date.now() - 300000 } }).exec()
+            const charactersToMluck = await CharacterModel.find({ serverRegion: region, serverIdentifier: identifier, lastSeen: { $gt: Date.now() - 60000 }, $or: [{ "s.mluck": undefined }, { "s.mluck.strong": undefined, "s.mluck.f": { "$ne": "earthMer" } }] }).lean().exec()
             for (const character of charactersToMluck) {
                 // Move to them, and we'll automatically mluck them
-                await bot.smartMove(character)
+                await bot.closeMerchantStand()
+                await bot.smartMove(character, { getWithin: bot.G.skills.mluck.range / 2 })
 
                 setTimeout(async () => { moveLoop() }, 250)
                 return
@@ -2394,6 +2664,7 @@ async function startMerchant(bot: Merchant) {
 
             // Hang out in town
             await bot.smartMove("main")
+            await bot.openMerchantStand()
         } catch (e) {
             console.error(e)
         }
@@ -2401,10 +2672,20 @@ async function startMerchant(bot: Merchant) {
         setTimeout(async () => { moveLoop() }, 250)
     }
     moveLoop()
+
+    bot.socket.on("stacked", async () => {
+        console.info(`Scrambling ${bot.character.id} because we're stacked!`)
+
+        const x = -25 + Math.round(50 * Math.random())
+        const y = -25 + Math.round(50 * Math.random())
+        try {
+            await bot.move(bot.character.x + x, bot.character.y + y)
+        } catch (e) { /** Supress errors */ }
+    })
 }
 
 async function run(region: ServerRegion, identifier: ServerIdentifier) {
-    await Promise.all([Game.login("hyprkookeez@gmail.com", "thisisnotmyrealpassword"), Pathfinder.prepare()])
+    await Promise.all([Game.login("hyprkookeez@gmail.com", "notmyrealpassword"), Pathfinder.prepare()])
 
     ranger = await Game.startRanger("earthiverse", region, identifier)
     warrior = await Game.startWarrior("earthWar", region, identifier)
@@ -2412,22 +2693,14 @@ async function run(region: ServerRegion, identifier: ServerIdentifier) {
     merchant = await Game.startMerchant("earthMer", region, identifier)
 
     // Disconnect if we have to
-    ranger.socket.on("disconnect_reason", (data: string) => {
+    const disconnect = (data: string) => {
         console.warn(`Disconnecting (${data})`)
         Game.disconnect()
-    })
-    warrior.socket.on("disconnect_reason", (data: string) => {
-        console.warn(`Disconnecting (${data})`)
-        Game.disconnect()
-    })
-    priest.socket.on("disconnect_reason", (data: string) => {
-        console.warn(`Disconnecting (${data})`)
-        Game.disconnect()
-    })
-    merchant.socket.on("disconnect_reason", (data: string) => {
-        console.warn(`Disconnecting (${data})`)
-        Game.disconnect()
-    })
+    }
+    ranger.socket.on("disconnect", disconnect)
+    warrior.socket.on("disconnect", disconnect)
+    priest.socket.on("disconnect", disconnect)
+    merchant.socket.on("disconnect", disconnect)
 
     // Start the bots!
     startRanger(ranger)

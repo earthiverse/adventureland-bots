@@ -2,7 +2,6 @@ import pkg from "mongoose"
 const { Schema } = pkg
 
 const EntitySchema = new Schema({
-    name: String,
     map: String,
     x: Number,
     y: Number,
@@ -15,7 +14,7 @@ const EntitySchema = new Schema({
     lastSeen: { type: Number, required: false }
 })
 
-EntitySchema.index({ serverRegion: 1, serverIdentifier: 1, name: 1 }, { unique: true })
+EntitySchema.index({ serverRegion: 1, serverIdentifier: 1, type: 1 }, { unique: true })
 EntitySchema.index({ lastSeen: 1 })
 
 export default EntitySchema

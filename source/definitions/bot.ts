@@ -1,4 +1,4 @@
-import { ItemName, MonsterName, SlotType } from "./adventureland"
+import { CharacterType, ItemName, MonsterName, SlotType } from "./adventureland"
 
 export type Strategy = {
     [T in MonsterName]?: {

@@ -311,6 +311,9 @@ export type ItemInfo = {
   } | TitleName;
   /** If set, the item is for sale, or purchase */
   rid?: string;
+  // TODO: Confirm
+  /** If set, the item might drop if we die to another player's attacks (i.e. die to PvP) */
+  v?: boolean
 }
 
 export type SlotInfo = {
@@ -511,6 +514,7 @@ export type MonsterName =
   | "eelemental"
   | "ent"
   | "felemental"
+  | "fieldgen0"
   | "fireroamer"
   | "franky"
   | "frog"
@@ -575,6 +579,7 @@ export type MonsterName =
   | "target_ar900"
   | "target_r500"
   | "target_r750"
+  | "tinyp"
   | "tortoise"
   | "wabbit"
   | "welemental"
@@ -675,6 +680,7 @@ export type ConditionName =
   | "burned"
   | "charging"
   | "charmed"
+  | "dampened"
   | "darkblessing"
   | "easterluck"
   | "eburn"
@@ -888,6 +894,7 @@ export type ItemName =
   | "harmor"
   | "hboots"
   | "hbow"
+  | "heartwood"
   | "helmet"
   | "helmet1"
   | "hgloves"

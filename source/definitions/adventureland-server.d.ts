@@ -71,7 +71,7 @@ export type CharacterData = {
     going_y?: number
     moving: boolean
     cid: number
-    stand: boolean,
+    stand?: boolean | "cstand" | "stand0",
     controller: string
     skin: string
     cx: any
@@ -450,6 +450,7 @@ export type PlayerData = {
     skin: string
     slots: SlotInfo
     speed: number
+    stand?: boolean | "cstand" | "stand0"
     tp?: boolean
 }
 

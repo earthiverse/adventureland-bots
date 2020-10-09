@@ -1,6 +1,7 @@
 import { Tools } from "./tools.js"
 import { Game, Mage, PingCompensatedPlayer, Priest, Ranger, Warrior } from "./game.js"
 import { ItemName } from "./definitions/adventureland.js"
+import { NPC_INTERACTION_DISTANCE } from "./constants.js"
 
 const AGGRO_CHAR = "earthMag"
 const mages: Mage[] = []
@@ -25,7 +26,10 @@ async function startAggroMerchat(bot: PingCompensatedPlayer) {
             for (const [id, entity] of bot.entities) {
                 if (entity.type != "scorpion") continue // Only attack scorpions
                 if (entity.target) continue // Only attack those with no active target
-                if (entity.s.burned) continue // Don't attack monsters that are burning
+
+                // If the target will burn to death, ignore it
+                if (Tools.willBurnToDeath(entity)) continue
+
                 if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                 // Don't attack if there's a projectile going towards it
@@ -174,7 +178,8 @@ async function startAggroRanger(bot: Ranger) {
             for (const [id, entity] of bot.entities) {
                 if (entity.type != "scorpion") continue // Only attack scorpions
                 if (entity.target) continue // Only attack those with no active target
-                if (entity.s.burned) continue // Don't attack monsters that are burning
+                // If the target will burn to death, ignore it
+                if (Tools.willBurnToDeath(entity)) continue
                 if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
                 if (entity.hp != entity.max_hp) continue // Don't attack those with damage
 
@@ -456,7 +461,7 @@ async function startAggroWarrior(bot: Warrior) {
             if (bot.players.has("earthMer")) {
                 const merchant = bot.players.get("earthMer")
                 const distance = Tools.distance(bot.character, merchant)
-                if (distance < 400) {
+                if (distance < NPC_INTERACTION_DISTANCE) {
                     for (let i = 0; i < bot.character.items.length; i++) {
                         const item = bot.character.items[i]
                         if (!item
@@ -583,7 +588,8 @@ async function startAggroMage(bot: Mage) {
             for (const [id, entity] of bot.entities) {
                 if (entity.type != "scorpion") continue // Only attack scorpions
                 if (entity.target) continue // Don't attack them if they are already targeting a player
-                if (entity.s.burned) continue // Don't attack monsters that are burning
+                // If the target will burn to death, ignore it
+                if (Tools.willBurnToDeath(entity)) continue
                 if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                 // Don't attack if there's a projectile going towards it
@@ -671,7 +677,7 @@ async function startAggroMage(bot: Mage) {
             if (bot.players.has("earthMer")) {
                 const merchant = bot.players.get("earthMer")
                 const distance = Tools.distance(bot.character, merchant)
-                if (distance < 400) {
+                if (distance < NPC_INTERACTION_DISTANCE) {
                     for (let i = 0; i < bot.character.items.length; i++) {
                         const item = bot.character.items[i]
                         if (!item
@@ -717,7 +723,8 @@ async function startSupportMage(bot: Mage) {
             for (const [id, entity] of bot.entities) {
                 if (entity.type != "scorpion") continue // Only attack scorpions
                 if (entity.target != AGGRO_CHAR) continue // Only attack those attacking our warrior
-                if (entity.s.burned) continue // Don't attack monsters that are burning
+                // If the target will burn to death, ignore it
+                if (Tools.willBurnToDeath(entity)) continue
                 if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                 // Don't attack if there's a projectile going towards it
@@ -740,7 +747,8 @@ async function startSupportMage(bot: Mage) {
                 for (const [id, entity] of bot.entities) {
                     if (entity.type != "scorpion") continue // Only attack scorpions
                     if (entity.hp == entity.max_hp) continue // Don't attack those with full HP
-                    if (entity.s.burned) continue // Don't attack monsters that are burning
+                    // If the target will burn to death, ignore it
+                    if (Tools.willBurnToDeath(entity)) continue
                     if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                     // Don't attack if there's a projectile going towards it
@@ -860,7 +868,7 @@ async function startSupportMage(bot: Mage) {
             if (bot.players.has("earthMer")) {
                 const merchant = bot.players.get("earthMer")
                 const distance = Tools.distance(bot.character, merchant)
-                if (distance < 400) {
+                if (distance < NPC_INTERACTION_DISTANCE) {
                     for (let i = 0; i < bot.character.items.length; i++) {
                         const item = bot.character.items[i]
                         if (!item
@@ -908,7 +916,8 @@ async function startSupportPriest(bot: Priest): Promise<void> {
             for (const [id, entity] of bot.entities) {
                 if (entity.type != "scorpion") continue // Only attack scorpions
                 if (entity.target != AGGRO_CHAR) continue // Only attack those attacking our warrior
-                if (entity.s.burned) continue // Don't attack monsters that are burning
+                // If the target will burn to death, ignore it
+                if (Tools.willBurnToDeath(entity)) continue
                 if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                 // Don't attack if there's a projectile going towards it
@@ -1041,7 +1050,7 @@ async function startSupportPriest(bot: Priest): Promise<void> {
             if (bot.players.has("earthMer")) {
                 const merchant = bot.players.get("earthMer")
                 const distance = Tools.distance(bot.character, merchant)
-                if (distance < 400) {
+                if (distance < NPC_INTERACTION_DISTANCE) {
                     for (let i = 0; i < bot.character.items.length; i++) {
                         const item = bot.character.items[i]
                         if (!item

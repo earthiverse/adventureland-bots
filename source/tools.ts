@@ -1,7 +1,51 @@
-import { MapName } from "./definitions/adventureland"
+import { ItemInfo, ItemName, MapName } from "./definitions/adventureland"
 import { ActionData, CharacterData, EntityData } from "./definitions/adventureland-server"
+import { Game } from "./game.js"
 
 export class Tools {
+    /**
+     * Returns the *minimum* gold required to obtain the given item.
+     * @param item 
+     */
+    // TODO: Add option to add 
+    public static async calculateCost(item: ItemInfo): Promise<number> {
+        const G = await Game.getGData()
+        const gInfo = G.items[item.name]
+
+        // Base cost
+        let cost = gInfo.g
+
+        // Cost to upgrade using lowest level scroll
+        if (gInfo.compound) {
+            for (let i = 0; i < item.level; i++) {
+                cost *= 3 // Three of the current level items are required
+                let scrollLevel = 0
+                for (const grade of gInfo.grades) {
+                    if (item.level < grade) {
+                        const scrollInfo = G.items[`cscroll${scrollLevel}` as ItemName]
+                        cost += scrollInfo.g
+                        break
+                    }
+                    scrollLevel++
+                }
+            }
+        } else if (gInfo.upgrade) {
+            for (let i = 0; i < item.level; i++) {
+                let scrollLevel = 0
+                for (const grade of gInfo.grades) {
+                    if (item.level < grade) {
+                        const scrollInfo = G.items[`scroll${scrollLevel}` as ItemName]
+                        cost += scrollInfo.g
+                        break
+                    }
+                    scrollLevel++
+                }
+            }
+        }
+
+        return cost
+    }
+
     /**
      * The first element is the minimum damage the attacker could do. The second element is the maximum damage the attacker could do.
      * @param attacker 
@@ -21,6 +65,9 @@ export class Tools {
         }
 
         let baseDamage: number = attacker.attack
+
+        if ((attacker as CharacterData).ctype == "priest") baseDamage *= 0.4 // Priests only do 40% damage
+
         if (attacker.damage_type == "physical") baseDamage *= damage_multiplier(defender.armor - attacker.apiercing)
         else if (attacker.damage_type == "magical") baseDamage *= damage_multiplier(defender.resistance - attacker.rpiercing)
         return [baseDamage * 0.9, baseDamage * 1.1]
