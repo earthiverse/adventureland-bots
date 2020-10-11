@@ -1765,7 +1765,8 @@ export class Player extends Observer {
             try {
                 if (currentMove.type == "leave") {
                     await this.leaveMap()
-                } else if (currentMove.type == "move") {
+                } else if (currentMove.type == "move"
+                    || (currentMove.type == "transport" && Tools.distance(this.character, currentMove) !== 0)) {
                     if (currentMove.map !== this.character.map) {
                         return Promise.reject(`We are supposed to be in ${currentMove.map}, but we are in ${this.character.map}`)
                     }
