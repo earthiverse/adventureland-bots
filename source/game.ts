@@ -1960,7 +1960,7 @@ export class Player extends Observer {
         return warpComplete
     }
 
-    public widthdrawGold(gold: number): unknown {
+    public withdrawGold(gold: number): unknown {
         // TODO: Check if you can be in the basement and withdraw gold
         if (this.character.map !== "bank") return Promise.reject("We need to be in 'bank' to withdraw gold.")
         if (gold <= 0) return Promise.reject("We can't withdraw 0 or less gold.")
