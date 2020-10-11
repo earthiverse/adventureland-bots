@@ -453,12 +453,17 @@ export class Pathfinder {
             throw new Error("We did not find a path...")
         }
         path.push({ type: "move", map: from.map, x: from.x, y: from.y })
+
         for (let i = rawPath.length - 1; i > 0; i--) {
             const currentNode = rawPath[i]
             const nextNode = rawPath[i - 1]
 
             const link = this.graph.getLink(currentNode.id, nextNode.id)
             if (link.data) {
+                if (i == rawPath.length - 1 && link.data.type == "transport") {
+                    // We have to move to the transport first
+                    path.push({ type: "move", map: from.map, x: link.data.x, y: link.data.y })
+                }
                 path.push(link.data)
                 if (link.data.type == "town") {
                     // Town warps don't always go to the exact location, so sometimes we can't reach the next node.
