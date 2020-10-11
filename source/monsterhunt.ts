@@ -224,6 +224,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
 
     bot.socket.on("hit", async (data: HitData) => {
         if (!data.stacked) return
+        if (!data.stacked.includes(bot.character.id)) return // We're not stacked, lol.
 
         console.info(`Scrambling ${bot.character.id} because we're stacked!`)
 
@@ -678,7 +679,8 @@ async function startRanger(bot: Ranger) {
         minimush: {
             attack: async () => { return await defaultAttackStrategy("minimush") },
             move: async () => { return await holdPositionMoveStrategy({ map: "halloween", x: 8, y: 631 }) },
-            equipment: { mainhand: "hbow", orb: "orbg" }
+            equipment: { mainhand: "hbow", orb: "orbg" },
+            attackWhileIdle: true
         },
         mole: {
             attack: async () => { return await tankAttackStrategy("mole", warrior.character.id) },
@@ -1359,7 +1361,8 @@ async function startPriest(bot: Priest) {
         minimush: {
             attack: async () => { return await defaultAttackStrategy("minimush") },
             move: async () => { return await holdPositionMoveStrategy({ map: "halloween", x: 28, y: 631 }) },
-            equipment: { orb: "orbg" }
+            equipment: { orb: "orbg" },
+            attackWhileIdle: true
         },
         mole: {
             attack: async () => { return await tankAttackStrategy("mole", warrior.character.id) },
@@ -2112,7 +2115,8 @@ async function startWarrior(bot: Warrior) {
         minimush: {
             attack: async () => { return await defaultAttackStrategy("minimush") },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "halloween", x: -18, y: 631 }, "minimush") },
-            equipment: { mainhand: "bataxe", orb: "jacko" }
+            equipment: { mainhand: "bataxe", orb: "jacko" },
+            attackWhileIdle: true
         },
         mole: {
             attack: async () => { return await defaultAttackStrategy("mole") },
@@ -2558,8 +2562,8 @@ async function startMerchant(bot: Merchant) {
                 const excessGold = bot.character.gold - 100000000
                 if (excessGold > 0) {
                     await bot.depositGold(excessGold)
-                } else {
-                    await bot.widthdrawGold(-excessGold)
+                } else if (excessGold < 0) {
+                    await bot.withdrawGold(-excessGold)
                 }
 
                 // Deposit items
