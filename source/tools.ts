@@ -73,6 +73,18 @@ export class Tools {
         return [baseDamage * 0.9, baseDamage * 1.1]
     }
 
+    public static async calculateItemGrade(item: ItemInfo): Promise<number> {
+        const G = await Game.getGData()
+        const gInfo = G.items[item.name]
+        if (!gInfo.grades) return
+        let level = 0
+        for (const grade of gInfo.grades) {
+            if (item.level < grade) break
+            level++
+        }
+        return level
+    }
+
     /**
      * Returns the distance between two positions.
      * @param a Position 1

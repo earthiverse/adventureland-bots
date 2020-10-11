@@ -74,12 +74,59 @@ export const ITEMS_TO_BUY: ItemName[] = [
 export const MERCHANT_ITEMS_TO_HOLD: ItemName[] = [
     // Things we keep on ourselves
     "computer", "tracker", "stand0",
+    // Potions
+    "hpot0", "hpot1", "mpot0", "mpot1",
+    // Jacko
+    "jacko",
     // MH Tokens
     "monstertoken",
     // Scrolls
-    "cscroll0", "cscroll1", "cscroll2", "cscroll3", "scroll0", "scroll1", "scroll2", "scroll3", "scroll4", "strscroll", "intscroll", "dexscroll",
+    "cscroll0", "cscroll1", "cscroll2", "cscroll3", "scroll0", "scroll1", "scroll2", "scroll3", "scroll4", "strscroll", "intscroll", "dexscroll"
+]
+
+export const PRIEST_ITEMS_TO_HOLD: ItemName[] = [
+    // Things we keep on ourselves
+    "computer", "tracker", "stand0",
     // Potions
-    "hpot0", "hpot1", "mpot0", "mpot1"
+    "hpot0", "hpot1", "mpot0", "mpot1",
+    // Jacko
+    "jacko",
+    // Weapons
+    "firestaff", "pmace",
+    // Shields
+    "lantern", "shield", "sshield",
+    // Orbs
+    "orbg", "orbofint", "wbook1"
+]
+
+export const RANGER_ITEMS_TO_HOLD: ItemName[] = [
+    // Things we keep on ourselves
+    "computer", "tracker", "stand0",
+    // Potions
+    "hpot0", "hpot1", "mpot0", "mpot1",
+    // Jacko
+    "jacko",
+    // Weapons
+    "bow", "bowofthedead", "crossbow", "firebow", "hbow", "merry", "orbg",
+    // Quivers
+    "quiver", "t2quiver",
+    // Orbs
+    "orbg", "orbofdex"
+]
+
+export const WARRIOR_ITEMS_TO_HOLD: ItemName[] = [
+    // Things we keep on ourselves
+    "computer", "tracker", "stand0",
+    // Potions
+    "hpot0", "hpot1", "mpot0", "mpot1",
+    // Jacko
+    "jacko",
+    // Weapons
+    "basher", "bataxe", "candycanesword", "carrotsword", "fireblade", "heartwood", "swordofthedead", "woodensword",
+    // Shields
+    "lantern", "shield", "sshield",
+    // Orbs
+    "orbg", "orbofstr"
 ]
 
 export const SPECIAL_MONSTERS: MonsterName[] = ["dragold", "fvampire", "franky", "goldenbat", "greenjr", "grinch", "jr", "mrgreen", "mrpumpkin", "mvampire", "phoenix", "pinkgoo", "snowman", "tinyp", "wabbit"]

@@ -84,6 +84,7 @@ export type GData = {
   monsters: { [T in MonsterName]: GMonster };
   npcs: { [T in NPCType]: {
     id: NPCType;
+    items?: ItemName[];
     /** Full name of NPC */
     name: string;
     /** A list of places you can transport to with this NPC. The number is the spawn */

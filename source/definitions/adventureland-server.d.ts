@@ -60,8 +60,20 @@ export type CharacterData = {
     s: StatusInfo
     // TODO: Figure this type out
     c: any
-    // TODO: Figure this type out
-    q: any
+    q: {
+        compound?: {
+            len: number
+            ms: number
+            num: number
+            // NOTE: I don't think this value is used?
+            nums: number[]
+        }
+        upgrade?: {
+            len: number
+            ms: number
+            num: number
+        }
+    }
     age: number
     pdps: number
     id: string
@@ -330,9 +342,15 @@ export type GameResponseDataString =
     | "buy_get_closer"
     /** Too far away from monster hunt npc */
     | "ecu_get_closer"
+    /** We are already exchaning something */
+    | "exchange_existing"
+    /** The given item requires multiple to exchange */
+    | "exchange_notenough"
     /** When a merchant tries to start a monster hunt */
     | "monsterhunt_merchant"
     | "monsterhunt_started"
+    /** When you try to use a skill, but you're not a high enough level */
+    | "no_level"
     /** When you attack or use a skill with "id" set to "null" */
     | "no_target"
     /** When you try to send an item to another character, but they don't have room for it in their inventory */
@@ -341,11 +359,16 @@ export type GameResponseDataString =
     | "skill_too_far"
     | "trade_bspace"
     | "trade_get_closer"
+    /** We are already upgrading something */
     | "upgrade_in_progress"
+    /** We are trying to use a scroll to upgrade something that is a higher grade than the scroll can upgrade */
+    | "upgrade_incompatible_scroll"
 // | string
 
 export type HitData = {
     anim: "arrow_hit" | "miss" | "reflect" | "slash1" | string
+    /** If this is set, we avoided the projectile (by running?) */
+    avoid?: boolean
     damage: number
     lifesteal?: number
     evade?: boolean
@@ -354,7 +377,13 @@ export type HitData = {
     pid?: string
     projectile?: string
     reflect?: boolean
+    /** If set, this was a sneak attack by a rogue */
+    sneak?: boolean
     source?: "attack" | "heal" | string
+    /** If this is set, these IDs are too close to each other and are receiving additional damage on each hit */
+    stacked?: string[]
+    /** If set, the character is stunned with this attack */
+    stun?: boolean
     miss?: boolean
     kill?: boolean
 }
@@ -441,8 +470,20 @@ export type PlayerData = {
     owner: string
     // TODO: Figure out what this is
     pdps: number
-    // TODO: Figure out what this is
-    q: any
+    q: {
+        compound?: {
+            len: number
+            ms: number
+            num: number
+            // NOTE: I don't think this value is used?
+            nums: number[]
+        }
+        upgrade?: {
+            len: number
+            ms: number
+            num: number
+        }
+    }
     range: number
     resistance: number
     rip: boolean

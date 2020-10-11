@@ -14,10 +14,8 @@ export class Pathfinder {
     protected static G: GData
 
     protected static FIRST_MAP: MapName = "main"
-    // TODO: The '50' is an approximation of the character's speed. Is there a way to keep this static
-    // but allow users to set their speed to give more accurate estimates? 
-    protected static TRANSPORT_COST = 25 * 500 / 1000
-    protected static TOWN_COST = 25 * 3000 / 1000
+    protected static TRANSPORT_COST = 50
+    protected static TOWN_COST = 500
 
     protected static grids: Grids = {}
     protected static graph: Graph<NodeData, LinkData> = createGraph({ multigraph: true })

@@ -8,6 +8,7 @@ const EntitySchema = new Schema({
     serverRegion: String,
     serverIdentifier: String,
     type: String,
+    name: { type: String, required: false },
     level: { type: Number, required: false },
     hp: { type: Number, required: false },
     target: { type: String, required: false },

@@ -8,6 +8,7 @@ export interface IEntity {
     serverRegion: ServerRegion
     serverIdentifier: ServerIdentifier
     type: MonsterName
+    name?: string
     level?: number
     hp?: number
     target?: string

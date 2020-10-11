@@ -10,5 +10,7 @@ export type Strategy = {
         equipment?: { [T in SlotType]?: ItemName }
         /** If set to true, we will attack by default whenever we have nothing else to do */
         attackWhileIdle?: boolean
+        /** If set to true, we won't do it unless it's also the priest's target */
+        requirePriest?: boolean
     }
 }

@@ -1,12 +1,12 @@
-import { EntityModel } from "./database/entities/entities.model"
+import { ITEMS_TO_BUY, ITEMS_TO_EXCHANGE, NPC_INTERACTION_DISTANCE } from "./constants.js"
+import { EntityModel } from "./database/entities/entities.model.js"
 import { ServerRegion, ServerIdentifier, MonsterName } from "./definitions/adventureland"
 import { EntityData } from "./definitions/adventureland-server"
-import { NodeData } from "./definitions/pathfinder"
-import { Game, Mage, Merchant } from "./game"
-import { Pathfinder } from "./pathfinder"
-import { Tools } from "./tools"
+import { Game, Mage, Merchant } from "./game.js"
+import { Pathfinder } from "./pathfinder.js"
+import { Tools } from "./tools.js"
 
-const region: ServerRegion = "ASIA"
+const region: ServerRegion = "EU"
 const identifier: ServerIdentifier = "I"
 
 const mages: Mage[] = []
@@ -22,6 +22,69 @@ async function startMage(bot: Mage, n: number) {
             }
         }
     })
+
+    async function buyLoop() {
+        try {
+            if (bot.socket.disconnected) return
+
+            if (bot.hasItem("computer")) {
+                // Buy HP Pots
+                const numHpot1 = bot.countItem("hpot1")
+                if (numHpot1 < 1000) await bot.buy("hpot1", 1000 - numHpot1)
+
+                // Buy MP Pots
+                const numMpot1 = bot.countItem("mpot1")
+                if (numMpot1 < 1000) await bot.buy("mpot1", 1000 - numMpot1)
+            }
+
+            for (const ponty of bot.locateNPCs("secondhands")) {
+                if (Tools.distance(bot.character, ponty) > NPC_INTERACTION_DISTANCE) continue
+                const pontyItems = await bot.getPontyItems()
+                for (const item of pontyItems) {
+                    if (!item) continue
+
+                    if (
+                        item.p // Buy all shiny/glitched/etc. items
+                        || ITEMS_TO_BUY.includes(item.name) // Buy anything in our buy list
+                    ) {
+                        await bot.buyFromPonty(item)
+                        continue
+                    }
+                }
+            }
+
+            // TODO: Look for buyable things on merchant
+        } catch (e) {
+            console.error(e)
+        }
+        setTimeout(async () => { buyLoop() }, 1000)
+    }
+    buyLoop()
+
+    async function exchangeLoop() {
+        try {
+            // TODO: Make bot.canExchange() function and replace the following line with thatF
+            const hasComputer = bot.locateItem("computer") !== undefined
+
+            if (hasComputer) {
+                for (let i = 0; i < bot.character.items.length; i++) {
+                    const item = bot.character.items[i]
+                    if (!item) continue
+                    if (!ITEMS_TO_EXCHANGE.includes(item.name)) continue // Don't want / can't exchange
+
+                    const gInfo = bot.G.items[item.name]
+                    if (gInfo.e !== undefined && item.q < gInfo.e) continue // Don't have enough to exchange
+
+                    await bot.exchange(i)
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { exchangeLoop() }, 250)
+    }
+    exchangeLoop()
 
     async function healLoop() {
         try {
@@ -76,7 +139,6 @@ async function startMage(bot: Mage, n: number) {
     }
     lootLoop()
 
-    let nextLocation: NodeData
     async function moveLoop() {
         try {
             // See if we are close to a phoenix
@@ -102,28 +164,24 @@ async function startMage(bot: Mage, n: number) {
             }
 
             // See if we have spotted a phoenix in our database
-            const target = await EntityModel.findOne({ serverRegion: region, serverIdentifier: identifier, type: "phoenix" }).lean().exec()
+            const target = await EntityModel.findOne({ serverRegion: region, serverIdentifier: identifier, type: "phoenix", lastSeen: { $gt: Date.now() - 30000 } }).lean().exec()
             if (target) {
                 await bot.smartMove(target, { useBlink: true })
             } else {
                 const locations = bot.locateMonsters("phoenix")
                 if (n == 0) {
-                    await bot.smartMove(locations[0]) // western main spawn
+                    await bot.smartMove(locations[2]) // western main spawn
                 } else if (n == 1) {
-                    if (nextLocation == locations[1]) {
+                    if (Tools.distance(bot.character, locations[4]) < 250) {
                         await bot.smartMove(locations[1]) // armadillo main spawn
-                        nextLocation = locations[4]
                     } else {
                         await bot.smartMove(locations[4]) // bat cave spawn
-                        nextLocation = locations[1]
                     }
                 } else if (n == 2) {
-                    if (nextLocation == locations[3]) {
+                    if (Tools.distance(bot.character, locations[0]) < 250) {
                         await bot.smartMove(locations[3]) // minimush halloween spawn
-                        nextLocation = locations[2]
                     } else {
-                        await bot.smartMove(locations[2]) // spider main spawn
-                        nextLocation = location[3]
+                        await bot.smartMove(locations[0]) // spider main spawn
                     }
                 }
             }
@@ -148,21 +206,31 @@ async function startMage(bot: Mage, n: number) {
                     break
                 }
                 if (Tools.distance(bot.character, entity) < bot.character.range &&
-                    (["armadillo", "bat", "bee", "crab", "crabx", "croc", "fieldgen0", "minimush", "poisio", "scorpion", "spider", "squig", "squigtoad"] as MonsterName[]).includes(entity.type)) {
+                    (["armadillo", "bat", "bee", "crab", "crabx", "croc", "fieldgen0", "frog", "minimush", "poisio", "scorpion", "spider", "squig", "squigtoad", "tortoise"] as MonsterName[]).includes(entity.type)) {
                     target = entity
                 }
             }
 
-            await bot.attack(target.id)
+            if (bot.character.c.town) {
+                if (target && target.type == "phoenix") {
+                    bot.stopWarpToTown()
+                } else {
+                    setTimeout(async () => { attackLoop() }, 50)
+                    return
+                }
+            }
+
+            if (target && bot.canUse("attack")) {
+                await bot.attack(target.id)
+            }
         } catch (e) {
             console.error(e)
         }
 
-        setTimeout(async () => { moveLoop() }, 250)
+        setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack")))
     }
     attackLoop()
 }
-
 
 async function startMerchant(bot: Merchant) {
     async function healLoop() {
@@ -220,7 +288,7 @@ async function startMerchant(bot: Merchant) {
 }
 
 async function run(region: ServerRegion, identifier: ServerIdentifier) {
-    await Promise.all([Game.login("hyprkookeez@gmail.com", "notmyrealpassword"), Pathfinder.prepare()])
+    await Promise.all([Game.login("hyprkookeez@gmail.com", "thisisnotmyrealpasswordlol"), Pathfinder.prepare()])
 
     const mage1 = await Game.startMage("earthMag", region, identifier)
     const mage2 = await Game.startMage("earthMag2", region, identifier)

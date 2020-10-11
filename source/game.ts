@@ -1,6 +1,6 @@
 import axios from "axios"
 import socketio from "socket.io-client"
-import { AchievementProgressData, CharacterData, ServerData, CharacterListData, ActionData, ChestOpenedData, DeathData, DisappearData, ChestData, EntitiesData, EvalData, GameResponseData, HitData, NewMapData, PartyData, StartData, WelcomeData, LoadedData, EntityData, PlayerData, AuthData, DisappearingTextData, GameLogData, UIData, UpgradeData } from "./definitions/adventureland-server"
+import { AchievementProgressData, CharacterData, ServerData, CharacterListData, ActionData, ChestOpenedData, DeathData, DisappearData, ChestData, EntitiesData, EvalData, GameResponseData, HitData, NewMapData, PartyData, StartData, WelcomeData, LoadedData, EntityData, PlayerData, AuthData, DisappearingTextData, GameLogData, UIData, UpgradeData, QData } from "./definitions/adventureland-server"
 import { connect, disconnect } from "./database/database.js"
 import { UserModel } from "./database/users/users.model.js"
 import { IUserDocument } from "./database/users/users.types.js"
@@ -100,6 +100,7 @@ export class Observer {
             } else {
                 CharacterModel.updateOne({ name: player.id }, {
                     map: data.map,
+                    name: player.id,
                     x: player.x,
                     y: player.y,
                     serverRegion: this.serverRegion,
@@ -116,6 +117,7 @@ export class Observer {
 
             EntityModel.updateOne({ type: entity.type, serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion }, {
                 map: data.map,
+                name: entity.id,
                 x: entity.x,
                 y: entity.y,
                 target: entity.target,
@@ -337,12 +339,19 @@ export class Player extends Observer {
             this.parseCharacter(data)
         })
 
-        // this.socket.on("q_data", (data: QData) => {
-
-        // })
+        this.socket.on("q_data", (data: QData) => {
+            if (data.q.upgrade) this.character.q.upgrade = data.q.upgrade
+            if (data.q.compound) this.character.q.compound = data.q.compound
+        })
 
         this.socket.on("server_info", (data: SInfo) => {
             this.S = data
+        })
+
+        this.socket.on("upgrade", (data: UpgradeData) => {
+            if (data.type == "compound" && this.character.q.compound) delete this.character.q.compound
+            // else if (data.type == "exchange" && this.character.q.exchange) delete this.character.q.exchange
+            else if (data.type == "upgrade" && this.character.q.upgrade) delete this.character.q.upgrade
         })
 
         this.socket.on("welcome", (data: WelcomeData) => {
@@ -838,10 +847,10 @@ export class Player extends Observer {
     }
 
     // TODO: Return buy info
-    public buy(itemName: ItemName, quantity = 1): Promise<unknown> {
+    public buy(itemName: ItemName, quantity = 1): Promise<number> {
         if (this.character.gold < this.G.items[itemName].gold) return Promise.reject(`Insufficient gold. We have ${this.character.gold}, but the item costs ${this.G.items[itemName].gold}`)
 
-        const itemReceived = new Promise((resolve, reject) => {
+        const itemReceived = new Promise<number>((resolve, reject) => {
             const buyCheck1 = (data: CharacterData) => {
                 if (!data.hitchhikers) return
                 for (const hitchhiker of data.hitchhikers) {
@@ -853,7 +862,7 @@ export class Player extends Observer {
                             && data.q == quantity) {
                             this.socket.removeListener("player", buyCheck1)
                             this.socket.removeListener("game_response", buyCheck2)
-                            resolve()
+                            resolve(data.num)
                         }
                     }
                 }
@@ -928,8 +937,39 @@ export class Player extends Observer {
         this.socket.emit("sbuy", { rid: item.rid })
     }
 
+    public canBuy(item: ItemName): boolean {
+        // Check if we're full of items
+        if (this.isFull()) return false
+
+        const gInfo = this.G.items[item]
+        const buyable = gInfo.buy == true
+        if (!buyable) {
+            // Double check if we can buy from an NPC
+            for (const map in this.G.maps) {
+                for (const npc of this.G.maps[map as MapName].npcs) {
+                    if (this.G.npcs[npc.id].items === undefined) continue
+                    for (const i of this.G.npcs[npc.id].items) {
+                        if (i == item) return true
+                    }
+                }
+            }
+
+            return false
+        }
+
+        // Check if we have enough gold
+        const computerAvailable = this.locateItem("computer") !== undefined
+        const canAfford = this.character.gold >= gInfo.g
+        if (computerAvailable && canAfford) return true
+
+        // TODO: Check if we're near an NPC that sells this item, and if we are, return true
+
+        return false
+    }
+
     public canUse(skill: SkillName): boolean {
         if (this.character.rip) return false // We are dead
+        if (this.character.s.stoned) return false // We are 'stoned' (oneeye condition)
         if (this.getCooldown(skill) > 0) return false // Skill is on cooldown
         const gInfoSkill = this.G.skills[skill]
         if (gInfoSkill.mp !== undefined && this.character.mp < gInfoSkill.mp) return false // Not enough MP
@@ -977,9 +1017,6 @@ export class Player extends Observer {
         if (this.character.s.dampened) {
             if (skill == "blink") return false
         }
-
-        // TODO: If 'stoned' we might be disabled? If so, return false for most skills, yeah?
-        // TODO: Does 'stoned' set this.character.disabled == true ?
 
         return true
     }
@@ -1052,9 +1089,9 @@ export class Player extends Observer {
         if (bankPack) {
             // Check if we can access the supplied bankPack
             const bankPackNum = Number.parseInt(bankPack.substr(5, 2))
-            if ((this.character.map == "bank" && bankPackNum >= 0 && bankPackNum <= 7)
-                || (this.character.map == "bank_b" && bankPackNum >= 8 && bankPackNum <= 23)
-                || (this.character.map == "bank_u" && bankPackNum >= 24 && bankPackNum <= 47)) {
+            if ((this.character.map == "bank" && bankPackNum < 0 && bankPackNum > 7)
+                || (this.character.map == "bank_b" && bankPackNum < 8 && bankPackNum > 23)
+                || (this.character.map == "bank_u" && bankPackNum < 24 && bankPackNum > 47)) {
                 return Promise.reject(`We can not access ${bankPack} on ${this.character.map}.`)
             }
         } else {
@@ -1143,21 +1180,6 @@ export class Player extends Observer {
         return swapped
     }
 
-    public widthdrawGold(gold: number): unknown {
-        // TODO: Check if you can be in the basement and withdraw gold
-        if (this.character.map !== "bank") return Promise.reject("We need to be in 'bank' to withdraw gold.")
-        if (gold <= 0) return Promise.reject("We can't withdraw 0 or less gold.")
-
-        if (this.bank.gold > gold) {
-            gold = this.bank.gold
-            console.warn(`We are only going to withdraw ${gold} gold.`)
-        }
-
-        this.socket.emit("bank", { operation: "withdraw", amount: gold })
-    }
-
-    // TODO: WithdrawItem
-
     public equip(inventoryPos: number, equipSlot?: SlotType): Promise<unknown> {
         if (!this.character.items[inventoryPos]) return Promise.reject(`No item in inventory slot ${inventoryPos}.`)
 
@@ -1226,6 +1248,16 @@ export class Player extends Observer {
                     this.socket.removeListener("upgrade", completeCheck)
                     this.socket.removeListener("game_response", bankCheck)
                     reject("You can't exchange items in the bank.")
+                } else if (typeof data == "string") {
+                    if (data == "exchange_notenough") {
+                        this.socket.removeListener("upgrade", completeCheck)
+                        this.socket.removeListener("game_response", bankCheck)
+                        reject("We don't have enough items to exchange.")
+                    } else if (data == "exchange_existing") {
+                        this.socket.removeListener("upgrade", completeCheck)
+                        this.socket.removeListener("game_response", bankCheck)
+                        reject("We are already exchanging something.")
+                    }
                 }
             }
             setTimeout(() => {
@@ -1328,6 +1360,17 @@ export class Player extends Observer {
 
         this.socket.emit("secondhands")
         return pontyItems
+    }
+
+    /**
+     * Returns true if our inventory is full, false otherwise
+     */
+    public isFull(): boolean {
+        for (let i = this.character.items.length - 1; i >= 0; i--) {
+            const item = this.character.items[i]
+            if (!item) return false
+        }
+        return true
     }
 
     /**
@@ -1659,6 +1702,7 @@ export class Player extends Observer {
         // If we don't have the path yet, get it
         if (!path) path = await Pathfinder.getPath(this.character, fixedTo)
 
+        let lastMove = -1
         for (let i = 0; i < path.length; i++) {
             let currentMove = path[i]
 
@@ -1670,18 +1714,18 @@ export class Player extends Observer {
             // Check if we can walk to a spot close to the goal if that's OK
             if (currentMove.type == "move" && this.character.map == fixedTo.map && options.getWithin > 0) {
                 // Calculate distance to
-                const angle = Math.atan2(currentMove.y - this.character.y, currentMove.x - this.character.x)
                 const distance = Tools.distance(currentMove, fixedTo)
 
                 if (distance < options.getWithin) {
                     break // We're already close enough!
                 }
 
+                const angle = Math.atan2(this.character.y - fixedTo.y, this.character.x - fixedTo.x)
                 const potentialMove: LinkData = {
                     type: "move",
                     map: this.character.map,
-                    x: this.character.x + Math.cos(angle) * (distance - options.getWithin),
-                    y: this.character.y + Math.sin(angle) * (distance - options.getWithin)
+                    x: fixedTo.x + Math.cos(angle) * options.getWithin,
+                    y: fixedTo.y + Math.sin(angle) * options.getWithin
                 }
                 if (Pathfinder.canWalk(this.character, potentialMove)) {
                     i = path.length
@@ -1704,14 +1748,17 @@ export class Player extends Observer {
 
             // Blink skip check
             if (options.useBlink && this.canUse("blink")) {
+                let blinked = false
                 for (let j = path.length - 1; j > i; j--) {
                     const potentialMove = path[j]
                     if (potentialMove.map == currentMove.map) {
                         await (this as unknown as Mage).blink(potentialMove.x, potentialMove.y)
                         i = j
+                        blinked = true
                         break
                     }
                 }
+                if (blinked) continue
             }
 
             // Perform the next movement
@@ -1731,7 +1778,9 @@ export class Player extends Observer {
             } catch (e) {
                 console.error(e)
                 await this.requestPlayerData()
-                break
+                if (lastMove == i) return Promise.reject("We are having some trouble smartMoving...")
+                lastMove = i
+                i--
             }
         }
 
@@ -1741,6 +1790,11 @@ export class Player extends Observer {
     public stopSmartMove(): void {
         this.lastSmartMove = Date.now()
         this.move(this.character.x, this.character.y)
+    }
+
+    // TODO: Add promises
+    public stopWarpToTown(): void {
+        this.socket.emit("stop", { action: "town" })
     }
 
     public transport(map: MapName, spawn: number): Promise<unknown> {
@@ -1759,7 +1813,7 @@ export class Player extends Observer {
         return transportComplete
     }
 
-    public unequip(slot: SlotType): Promise<unknown> {
+    public unequip(slot: SlotType | TradeSlotType): Promise<unknown> {
         if (this.character.slots[slot] === null) return Promise.reject(`Slot ${slot} is empty; nothing to unequip.`)
         if (this.character.slots[slot] === undefined) return Promise.reject(`Slot ${slot} does not exist.`)
 
@@ -1780,32 +1834,47 @@ export class Player extends Observer {
         return unequipped
     }
 
+    // TODO: Add offering support
+    // TODO: Add more checks (G.items[itemName].upgrade)
     public upgrade(itemPos: number, scrollPos: number): Promise<boolean> {
-        if (!this.character.items[itemPos]) return Promise.reject(`There is no item in inventory slot ${itemPos}.`)
-        if (!this.character.items[scrollPos]) return Promise.reject(`There is no scroll in inventory slot ${scrollPos}.`)
+        const itemInfo = this.character.items[itemPos]
+        const scrollInfo = this.character.items[scrollPos]
+        if (!itemInfo) return Promise.reject(`There is no item in inventory slot ${itemPos}.`)
+        if (this.G.items[itemInfo.name].upgrade == undefined) return Promise.reject("This item is not upgradable.")
+        if (!scrollInfo) return Promise.reject(`There is no scroll in inventory slot ${scrollPos}.`)
 
         const upgradeComplete = new Promise<boolean>((resolve, reject) => {
             const completeCheck = (data: UpgradeData) => {
                 if (data.type == "upgrade") {
                     this.socket.removeListener("upgrade", completeCheck)
-                    this.socket.removeListener("game_response", bankCheck)
+                    this.socket.removeListener("game_response", failCheck)
                     resolve(data.success == 1)
                 }
             }
-            const bankCheck = (data: GameResponseData) => {
+            const failCheck = (data: GameResponseData) => {
                 if (typeof data == "object" && data.response == "bank_restrictions" && data.place == "upgrade") {
                     this.socket.removeListener("upgrade", completeCheck)
-                    this.socket.removeListener("game_response", bankCheck)
+                    this.socket.removeListener("game_response", failCheck)
                     reject("You can't upgrade items in the bank.")
+                } else if (typeof data == "string") {
+                    if (data == "upgrade_in_progress") {
+                        this.socket.removeListener("upgrade", completeCheck)
+                        this.socket.removeListener("game_response", failCheck)
+                        reject("We are already upgrading something.")
+                    } else if (data == "upgrade_incompatible_scroll") {
+                        this.socket.removeListener("upgrade", completeCheck)
+                        this.socket.removeListener("game_response", failCheck)
+                        reject(`The scroll we're trying to use (${scrollInfo.name}) isn't a high enough grade to upgrade this item.`)
+                    }
                 }
             }
             setTimeout(() => {
                 this.socket.removeListener("upgrade", completeCheck)
-                this.socket.removeListener("game_response", bankCheck)
+                this.socket.removeListener("game_response", failCheck)
                 reject("upgrade timeout (60000ms)")
             }, 60000)
             this.socket.on("upgrade", completeCheck)
-            this.socket.on("game_response", bankCheck)
+            this.socket.on("game_response", failCheck)
         })
 
         this.socket.emit("upgrade", { item_num: itemPos, scroll_num: scrollPos, clevel: this.character.items[itemPos].level })
@@ -1890,6 +1959,21 @@ export class Player extends Observer {
         this.socket.emit("town")
         return warpComplete
     }
+
+    public widthdrawGold(gold: number): unknown {
+        // TODO: Check if you can be in the basement and withdraw gold
+        if (this.character.map !== "bank") return Promise.reject("We need to be in 'bank' to withdraw gold.")
+        if (gold <= 0) return Promise.reject("We can't withdraw 0 or less gold.")
+
+        if (this.bank.gold > gold) {
+            gold = this.bank.gold
+            console.warn(`We are only going to withdraw ${gold} gold.`)
+        }
+
+        this.socket.emit("bank", { operation: "withdraw", amount: gold })
+    }
+
+    // TODO: WithdrawItem
 
     /**
      * Returns the number of items that match the given parameters
@@ -2005,6 +2089,46 @@ export class Player extends Observer {
     public isPVP(): boolean {
         if (this.G[this.character.map].pvp) return true
         return this.server.pvp
+    }
+
+    public locateDuplicateItems(inventory = this.character.items): { [T in ItemName]?: number[] } {
+        const items: (ItemInfo & { slotNum: number })[] = []
+        for (let i = 0; i < inventory.length; i++) {
+            const item = inventory[i]
+            if (!item) continue
+            items.push({ ...item, slotNum: i })
+        }
+
+        // Sort the data to make it easier to parse the data later
+        items.sort((a, b) => {
+            // Sort alphabetically
+            const n = a.name.localeCompare(b.name)
+            if (n !== 0) return n
+
+            // Sort lowest level first
+            if (a.level !== undefined && b.level !== undefined && a.level !== b.level) return a.level - b.level
+        })
+
+        const duplicates: { [T in ItemName]?: number[] } = {}
+        for (let i = 0; i < items.length - 1; i++) {
+            const item1 = items[i]
+            for (let j = i + 1; j < items.length; j++) {
+                const item2 = items[j]
+
+                if (item1.name === item2.name) {
+                    if (j == i + 1) {
+                        duplicates[item1.name] = [item1.slotNum, item2.slotNum]
+                    } else {
+                        duplicates[item1.name].push(item2.slotNum)
+                    }
+                } else {
+                    i = j - 1
+                    break
+                }
+            }
+        }
+
+        return duplicates
     }
 
     /**
@@ -2339,6 +2463,19 @@ export class Merchant extends PingCompensatedPlayer {
         return closed
     }
 
+    // TODO: Add promises
+    public listForSale(itemPos: number, tradeSlot: TradeSlotType, price: number, quantity = 1): unknown {
+        const itemInfo = this.character.items[itemPos]
+        if (!itemInfo) return Promise.reject(`We do not have an item in slot ${itemPos}`)
+
+        this.socket.emit("equip", {
+            num: itemPos,
+            q: quantity,
+            slot: tradeSlot,
+            price: price
+        })
+    }
+
     public mluck(target: string): Promise<unknown> {
         if (target !== this.character.id) {
             const player = this.players.get(target)
@@ -2354,20 +2491,34 @@ export class Merchant extends PingCompensatedPlayer {
                         && player.s.mluck
                         && player.s.mluck.f == this.character.id) {
                         this.socket.removeListener("entities", mluckCheck)
-                        console.log(`we mlucked ${target}!`)
+                        this.socket.removeListener("game_response", failCheck)
                         resolve()
                     }
-                    if (player.id == target) {
-                        console.log(player.s.mluck)
+                }
+            }
+
+            const failCheck = async (data: GameResponseData) => {
+                if (typeof data == "string") {
+                    if (data == "skill_too_far") {
+                        this.socket.removeListener("entities", mluckCheck)
+                        this.socket.removeListener("game_response", failCheck)
+                        await this.requestPlayerData()
+                        reject(`We are too far from ${target} to mluck.`)
+                    } else if (data == "no_level") {
+                        this.socket.removeListener("entities", mluckCheck)
+                        this.socket.removeListener("game_response", failCheck)
+                        reject("We aren't a high enough level to use mluck.")
                     }
                 }
             }
 
             setTimeout(() => {
                 this.socket.removeListener("entities", mluckCheck)
+                this.socket.removeListener("game_response", failCheck)
                 reject(`mluck timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
             this.socket.on("entities", mluckCheck)
+            this.socket.on("game_response", failCheck)
         })
         this.socket.emit("skill", { name: "mluck", id: target })
         return mlucked
@@ -2674,7 +2825,7 @@ export class Warrior extends PingCompensatedPlayer {
             const successCheck = (data: CharacterData) => {
                 if (!data.hitchhikers) return
                 for (const [event, datum] of data.hitchhikers) {
-                    if (event == "skill_success" && datum.response == "skill_success" && datum.name == "charge") {
+                    if (event == "game_response" && datum.response == "skill_success" && datum.name == "charge") {
                         this.socket.removeListener("player", successCheck)
                         this.socket.removeListener("game_response", failCheck)
                         resolve()
@@ -2743,27 +2894,51 @@ export class Warrior extends PingCompensatedPlayer {
         const hardshelled = new Promise((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]hardshell['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
+                    this.socket.removeListener("player", successCheck)
                     this.socket.removeListener("eval", cooldownCheck)
-                    this.socket.removeListener("game_response", failCheck)
+                    this.socket.removeListener("game_response", responseCheck)
                     resolve()
                 }
             }
 
-            const failCheck = (data: GameResponseData) => {
-                if (typeof data == "object" && data.response == "cooldown" && data.skill == "hardshell") {
-                    this.socket.removeListener("eval", cooldownCheck)
-                    this.socket.removeListener("game_response", failCheck)
-                    reject(`Hardshell failed due to cooldown (ms: ${data.ms}).`)
+            const successCheck = (data: CharacterData) => {
+                if (!data.hitchhikers) return
+                for (const [event, datum] of data.hitchhikers) {
+                    if (event == "game_response" && datum.response == "skill_success" && datum.name == "hardshell") {
+                        this.socket.removeListener("player", successCheck)
+                        this.socket.removeListener("eval", cooldownCheck)
+                        this.socket.removeListener("game_response", responseCheck)
+                        resolve()
+                        return
+                    }
+                }
+            }
+
+            const responseCheck = (data: GameResponseData) => {
+                if (typeof data == "object") {
+                    if (data.response == "cooldown" && data.skill == "hardshell") {
+                        this.socket.removeListener("player", successCheck)
+                        this.socket.removeListener("eval", cooldownCheck)
+                        this.socket.removeListener("game_response", responseCheck)
+                        reject(`Hardshell failed due to cooldown (ms: ${data.ms}).`)
+                    } else if (data.response == "skill_success" && data.name == "hardshell") {
+                        this.socket.removeListener("player", successCheck)
+                        this.socket.removeListener("eval", cooldownCheck)
+                        this.socket.removeListener("game_response", responseCheck)
+                        resolve()
+                    }
                 }
             }
 
             setTimeout(() => {
+                this.socket.removeListener("player", successCheck)
                 this.socket.removeListener("eval", cooldownCheck)
-                this.socket.removeListener("game_response", failCheck)
+                this.socket.removeListener("game_response", responseCheck)
                 reject(`hardshell timeout (${TIMEOUT}ms)`)
             }, TIMEOUT)
+            this.socket.on("player", successCheck)
             this.socket.on("eval", cooldownCheck)
-            this.socket.on("game_response", failCheck)
+            this.socket.on("game_response", responseCheck)
         })
 
         this.socket.emit("skill", {
