@@ -9,7 +9,7 @@ import { Game, Merchant, PingCompensatedPlayer, Priest, Ranger, Warrior } from "
 import { Pathfinder } from "./pathfinder.js"
 import { Tools } from "./tools.js"
 
-const region: ServerRegion = "EU"
+const region: ServerRegion = "US"
 const identifier: ServerIdentifier = "I"
 
 let ranger: Ranger
@@ -641,7 +641,8 @@ async function startRanger(bot: Ranger) {
         fvampire: {
             attack: async () => { return await defaultAttackStrategy("fvampire") },
             move: async () => { return await specialMonsterMoveStrategy("fvampire") },
-            attackWhileIdle: true
+            attackWhileIdle: true,
+            requirePriest: true,
         },
         ghost: {
             attack: async () => { return await defaultAttackStrategy("ghost") },
@@ -808,30 +809,32 @@ async function startRanger(bot: Ranger) {
 
             // Priority #1: Special Monsters
             for (const mN in bot.S) {
-                if (!strategy[mN as MonsterName]) continue // No strategy
-                newTarget = mN as MonsterName
+                const type = mN as MonsterName
+                if (!strategy[type]) continue // No strategy
+                if (strategy[type].requirePriest && priestTarget !== type) continue // Need priest
+                newTarget = type
                 break
             }
             if (!newTarget) {
                 const entities = await EntityModel.find({ serverRegion: region, serverIdentifier: identifier, lastSeen: { $gt: Date.now() - 60000 } }).lean().exec()
                 for (const entity of entities) {
                     if (!strategy[entity.type]) continue // No strategy
+                    if (strategy[entity.type].requirePriest && priestTarget !== entity.type) continue // Need priest
+
                     newTarget = entity.type
-                    break
                 }
             }
-            if (!newTarget) {
-                for (const specialTarget of await EntityModel.find({ serverRegion: region, serverIdentifier: identifier, lastSeen: { $gt: Date.now() - 60000 } }).lean().exec()) {
-                    if (strategy[specialTarget.type]) {
-                        if (bot.G.monsters[specialTarget.type].cooperative) {
-                            // It's cooperative, let's go!
-                            newTarget = specialTarget.type
-                        } else if (!specialTarget.target) {
-                            // It's not cooperative, and it's not attacking anything, let's go!
-                            newTarget = specialTarget.type
-                        }
-                    }
-                    break
+
+            // Check in the database for targets
+            for (const specialTarget of await EntityModel.find({ serverRegion: region, serverIdentifier: identifier, lastSeen: { $gt: Date.now() - 60000 } }).lean().exec()) {
+                if (!strategy[specialTarget.type]) continue
+                if (strategy[specialTarget.type].requirePriest && priestTarget !== specialTarget.type) continue // Need priest
+                if (bot.G.monsters[specialTarget.type].cooperative) {
+                    // It's cooperative, let's go!
+                    newTarget = specialTarget.type
+                } else if (!specialTarget.target) {
+                    // It's not cooperative, and it's not attacking anything, let's go!
+                    newTarget = specialTarget.type
                 }
             }
 
@@ -2071,7 +2074,9 @@ async function startWarrior(bot: Warrior) {
         fvampire: {
             attack: async () => { return await defaultAttackStrategy("fvampire") },
             move: async () => { return await specialMonsterMoveStrategy("fvampire") },
-            attackWhileIdle: true
+            equipment: { mainhand: "basher", orb: "jacko" },
+            attackWhileIdle: true,
+            requirePriest: true
         },
         ghost: {
             attack: async () => { return await defaultAttackStrategy("ghost") },
@@ -2124,6 +2129,7 @@ async function startWarrior(bot: Warrior) {
         mvampire: {
             attack: async () => { return await defaultAttackStrategy("mvampire") },
             move: async () => { return await specialMonsterMoveStrategy("mvampire") },
+            equipment: { mainhand: "basher", orb: "jacko" },
             attackWhileIdle: true
         },
         oneeye: {
@@ -2139,6 +2145,7 @@ async function startWarrior(bot: Warrior) {
         phoenix: {
             attack: async () => { return await defaultAttackStrategy("phoenix") },
             move: async () => { return await specialMonsterMoveStrategy("phoenix") },
+            equipment: { mainhand: "basher", orb: "jacko" },
             attackWhileIdle: true
         },
         plantoid: {
@@ -2224,28 +2231,32 @@ async function startWarrior(bot: Warrior) {
 
             // Priority #1: Special Monsters
             for (const mN in bot.S) {
-                if (!strategy[mN as MonsterName]) continue // No strategy
-                newTarget = mN as MonsterName
+                const type = mN as MonsterName
+                if (!strategy[type]) continue // No strategy
+                if (strategy[type].requirePriest && priestTarget !== type) continue // Need priest
+                newTarget = type
                 break
             }
             if (!newTarget) {
                 const entities = await EntityModel.find({ serverRegion: region, serverIdentifier: identifier, lastSeen: { $gt: Date.now() - 60000 } }).lean().exec()
                 for (const entity of entities) {
                     if (!strategy[entity.type]) continue // No strategy
+                    if (strategy[entity.type].requirePriest && priestTarget !== entity.type) continue // Need priest
+
                     newTarget = entity.type
                 }
             }
 
             // Check in the database for targets
             for (const specialTarget of await EntityModel.find({ serverRegion: region, serverIdentifier: identifier, lastSeen: { $gt: Date.now() - 60000 } }).lean().exec()) {
-                if (strategy[specialTarget.type]) {
-                    if (bot.G.monsters[specialTarget.type].cooperative) {
-                        // It's cooperative, let's go!
-                        newTarget = specialTarget.type
-                    } else if (!specialTarget.target) {
-                        // It's not cooperative, and it's not attacking anything, let's go!
-                        newTarget = specialTarget.type
-                    }
+                if (!strategy[specialTarget.type]) continue
+                if (strategy[specialTarget.type].requirePriest && priestTarget !== specialTarget.type) continue // Need priest
+                if (bot.G.monsters[specialTarget.type].cooperative) {
+                    // It's cooperative, let's go!
+                    newTarget = specialTarget.type
+                } else if (!specialTarget.target) {
+                    // It's not cooperative, and it's not attacking anything, let's go!
+                    newTarget = specialTarget.type
                 }
             }
 
