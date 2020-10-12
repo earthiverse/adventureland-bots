@@ -385,13 +385,15 @@ export class Pathfinder {
 
         // console.log("  Adding town and leave links...")
         const townNode = this.addNodeToGraph(map, this.G.maps[map].spawns[0][0], this.G.maps[map].spawns[0][1])
+        const townLinkData: LinkData = { type: "town", map: map, x: townNode.data.x, y: townNode.data.y }
         const leaveLink = this.addNodeToGraph("main", this.G.maps.main.spawns[0][0], this.G.maps.main.spawns[0][1])
+        const leaveLinkData: LinkData = { type: "leave", map: leaveLink.data.map, x: leaveLink.data.x, y: leaveLink.data.y }
         for (const node of walkableNodes) {
             // Create town links
-            if (node.id !== townNode.id) this.addLinkToGraph(node, townNode, { type: "town", map: map, x: townNode.data.x, y: townNode.data.y })
+            if (node.id !== townNode.id) this.addLinkToGraph(node, townNode, townLinkData)
 
             // Create leave links
-            if (map == "cyberland" || map == "jail") this.addLinkToGraph(node, leaveLink, { type: "leave", map: leaveLink.data.map, x: leaveLink.data.x, y: leaveLink.data.y })
+            if (map == "cyberland" || map == "jail") this.addLinkToGraph(node, leaveLink, leaveLinkData)
         }
 
         this.graph.endUpdate()
@@ -400,19 +402,21 @@ export class Pathfinder {
     }
 
     protected static findClosestNode(map: MapName, x: number, y: number): Node<NodeData> {
-        let closest: Node<NodeData>
-        let distance = Number.MAX_VALUE
+        let closest: { distance: number, node: Node<NodeData> } = { distance: Number.MAX_VALUE, node: undefined }
+        let closestWalkable: { distance: number, node: Node<NodeData> } = { distance: Number.MAX_VALUE, node: undefined }
+        const from = { map, x, y }
         this.graph.forEachNode((node) => {
             if (node.data.map == map) {
-                const nodeDistance = Tools.distance({ map, x, y }, node.data)
-                if (nodeDistance < distance) {
-                    closest = node
-                    distance = nodeDistance
-                    if (distance < 1) return true // We found one that's really close
-                }
+                const distance = Tools.distance(from, node.data)
+                const walkable = this.canWalk(from, node.data)
+
+                if (distance < closest.distance) closest = { distance, node }
+                if (walkable && distance < closestWalkable.distance) closestWalkable = { distance, node }
+                if (distance < 1) return true
             }
         })
-        return closest
+
+        return closestWalkable.node ? closestWalkable.node : closest.node
     }
 
     public static findClosestSpawn(map: MapName, x: number, y: number): { map: MapName, x: number, y: number, distance: number } {

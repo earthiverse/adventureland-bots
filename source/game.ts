@@ -74,8 +74,9 @@ export class Observer {
         this.socket.on("server_info", (data: SInfo) => {
             for (const mtype in data) {
                 const info = data[mtype as MonsterName]
-                if (!info.live) continue
-                if (SPECIAL_MONSTERS.includes(mtype as MonsterName)) {
+                if (!info.live) {
+                    EntityModel.deleteOne({ type: mtype as MonsterName, serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion }).exec()
+                } else if (SPECIAL_MONSTERS.includes(mtype as MonsterName)) {
                     EntityModel.updateOne({ type: mtype as MonsterName, serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion }, {
                         map: info.map,
                         x: info.x,
@@ -946,6 +947,7 @@ export class Player extends Observer {
         if (!buyable) {
             // Double check if we can buy from an NPC
             for (const map in this.G.maps) {
+                if (this.G.maps[map as MapName].ignore) continue
                 for (const npc of this.G.maps[map as MapName].npcs) {
                     if (this.G.npcs[npc.id].items === undefined) continue
                     for (const i of this.G.npcs[npc.id].items) {
@@ -1039,30 +1041,38 @@ export class Player extends Observer {
             const completeCheck = (data: UpgradeData) => {
                 if (data.type == "compound") {
                     this.socket.removeListener("upgrade", completeCheck)
-                    this.socket.removeListener("game_response", bankCheck)
+                    this.socket.removeListener("game_response", failCheck)
                     resolve(data.success == 1)
                 }
             }
-            const bankCheck = (data: GameResponseData) => {
-                if (typeof data == "object" && data.response == "bank_restrictions" && data.place == "compound") {
-                    this.socket.removeListener("upgrade", completeCheck)
-                    this.socket.removeListener("game_response", bankCheck)
-                    reject("You can't compound items in the bank.")
+            const failCheck = (data: GameResponseData) => {
+                if (typeof data == "object") {
+                    if (data.response == "bank_restrictions" && data.place == "compound") {
+                        this.socket.removeListener("upgrade", completeCheck)
+                        this.socket.removeListener("game_response", failCheck)
+                        reject("You can't compound items in the bank.")
+                    }
+                } else if(typeof data == "string") {
+                    if(data == "compound_no_item") {
+                        this.socket.removeListener("upgrade", completeCheck)
+                        this.socket.removeListener("game_response", failCheck)
+                        reject()
+                    }
                 }
             }
             setTimeout(() => {
                 this.socket.removeListener("upgrade", completeCheck)
-                this.socket.removeListener("game_response", bankCheck)
+                this.socket.removeListener("game_response", failCheck)
                 reject("compound timeout (60000ms)")
             }, 60000)
             this.socket.on("upgrade", completeCheck)
-            this.socket.on("game_response", bankCheck)
+            this.socket.on("game_response", failCheck)
         })
 
         this.socket.emit("compound", {
             "items": [item1Pos, item2Pos, item3Pos],
             "scroll_num": cscrollPos,
-            "clevel": 0
+            "clevel": item1Info.level
         })
         return compoundComplete
     }
@@ -1672,6 +1682,7 @@ export class Player extends Observer {
 
             // Check if our destination is an NPC role
             for (const mapName in this.G.maps) {
+                if (this.G.maps[mapName as MapName].ignore) continue
                 for (const npc of this.G.maps[mapName as MapName].npcs) {
                     if (to !== npc.id) continue
 
@@ -1696,6 +1707,7 @@ export class Player extends Observer {
             if (to.map) fixedTo = to as NodeData
             else fixedTo = { map: this.character.map, x: to.x, y: to.y }
         } else {
+            console.log(to)
             return Promise.reject("'to' is unsuitable for smartMove. We need a 'map', an 'x', and a 'y'.")
         }
 
@@ -1765,8 +1777,7 @@ export class Player extends Observer {
             try {
                 if (currentMove.type == "leave") {
                     await this.leaveMap()
-                } else if (currentMove.type == "move"
-                    || (currentMove.type == "transport" && Tools.distance(this.character, currentMove) !== 0)) {
+                } else if (currentMove.type == "move") {
                     if (currentMove.map !== this.character.map) {
                         return Promise.reject(`We are supposed to be in ${currentMove.map}, but we are in ${this.character.map}`)
                     }
@@ -1788,9 +1799,9 @@ export class Player extends Observer {
         return { map: this.character.map, x: this.character.x, y: this.character.y }
     }
 
-    public stopSmartMove(): void {
+    public async stopSmartMove(): Promise<NodeData> {
         this.lastSmartMove = Date.now()
-        this.move(this.character.x, this.character.y)
+        return this.move(this.character.x, this.character.y)
     }
 
     // TODO: Add promises
@@ -1974,7 +1985,41 @@ export class Player extends Observer {
         this.socket.emit("bank", { operation: "withdraw", amount: gold })
     }
 
-    // TODO: WithdrawItem
+    public withdrawItem(bankPack: Exclude<BankPackType, "gold">, bankPos: number, inventoryPos = -1): unknown {
+        const item = this.bank[bankPack][bankPos]
+        if(!item) return Promise.reject(`There is no item in bank ${bankPack}[${bankPos}]`)
+
+        const bankPackNum = Number.parseInt(bankPack.substr(5, 2))
+        if ((this.character.map == "bank" && bankPackNum < 0 && bankPackNum > 7)
+            || (this.character.map == "bank_b" && bankPackNum < 8 && bankPackNum > 23)
+            || (this.character.map == "bank_u" && bankPackNum < 24 && bankPackNum > 47)) {
+            return Promise.reject(`We can not access ${bankPack} on ${this.character.map}.`)
+        }
+
+        const itemCount = this.countItem(item.name)
+
+        const swapped = new Promise((resolve, reject) => {
+            // TODO: Resolve
+            const checkWithdrawal = (data: CharacterData) => {
+                const newCount = this.countItem(item.name, data.items)
+                if (item.q && newCount == (itemCount + item.q)
+                    || !item.q && newCount == (itemCount + 1)) {
+                    this.socket.removeListener("player", checkWithdrawal)
+                    return resolve()
+                }
+            }
+
+            setTimeout(() => {
+                this.socket.removeListener("player", checkWithdrawal)
+                reject(`withdrawItem timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.socket.on("player", checkWithdrawal)
+        })
+
+        console.log({ operation: "swap", pack: bankPack, str: bankPos, inv: inventoryPos })
+        this.socket.emit("bank", { operation: "swap", pack: bankPack, str: bankPos, inv: inventoryPos })
+        return swapped
+    }
 
     /**
      * Returns the number of items that match the given parameters
@@ -1993,11 +2038,11 @@ export class Player extends Observer {
             if (inventoryItem.name !== item) continue
 
             if (args) {
-                if (args.levelGreaterThan) {
+                if (args.levelGreaterThan !== undefined) {
                     if (!inventoryItem.level) continue // This item doesn't have a level
                     if (inventoryItem.level <= args.levelGreaterThan) continue // This item is a lower level than desired
                 }
-                if (args.levelLessThan) {
+                if (args.levelLessThan !== undefined) {
                     if (!inventoryItem.level) continue // This item doesn't have a level
                     if (inventoryItem.level >= args.levelLessThan) continue // This item is a higher level than desired
                 }
@@ -2229,6 +2274,7 @@ export class Player extends Observer {
         const locations: NodeData[] = []
         for (const mapName in this.G.maps) {
             const map = this.G.maps[mapName as MapName]
+            if (map.ignore) continue
             if (map.instance || !map.npcs || map.npcs.length == 0) continue // Map is unreachable, or there are no NPCs
 
             for (const npc of map.npcs) {

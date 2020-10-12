@@ -340,6 +340,8 @@ export type GameResponseDataString =
     | "buy_cost"
     /** When you're too far from Ponty and try to view Ponty's items */
     | "buy_get_closer"
+    /** ??? Maybe if we attempt to compound something with an inventory position that is empty ??? */
+    | "compound_no_item"
     /** Too far away from monster hunt npc */
     | "ecu_get_closer"
     /** We are already exchaning something */

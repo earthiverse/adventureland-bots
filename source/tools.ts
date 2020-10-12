@@ -99,11 +99,16 @@ export class Tools {
     /**
      * Returns true if it's a guaranteed kill
      */
-    public static isGuaranteedKill(character: CharacterData, entity: EntityData): boolean {
+    public static async isGuaranteedKill(character: CharacterData, entity: EntityData): Promise<boolean> {
         if (entity["1hp"]) {
             if (entity.hp == 1) return true
             else return false
         }
+
+        // Check if it can heal
+        const G = await Game.getGData()
+        const gInfo = G.monsters[entity.type]
+        if (gInfo.abilities && gInfo.abilities.self_healing) return false
 
         if (character.damage_type == "magical" && entity.reflection !== undefined) return false
         if (character.damage_type == "physical" && entity.evasion !== undefined) return false

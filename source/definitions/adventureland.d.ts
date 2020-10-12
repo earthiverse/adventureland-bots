@@ -137,6 +137,7 @@ export type GMapsNPC = {
 }
 
 export type GMonster = {
+  abilities?: { [T in SkillName]?: any }
   apiercing?: number
   attack: number
   /** If set to true, all players that deal damage to this monster will share the loot */
