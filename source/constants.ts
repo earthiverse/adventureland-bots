@@ -1,4 +1,5 @@
 import { ItemName, MonsterName } from "./definitions/adventureland"
+import { ItemLevelInfo } from "./definitions/bot"
 
 export const NPC_INTERACTION_DISTANCE = 400
 export const DOOR_REACH_DISTANCE = 40
@@ -54,7 +55,7 @@ export const ITEMS_TO_BUY: ItemName[] = [
     // Gloves
     "gloves1", "goldenpowerglove", "handofmidas", "hgloves", "mrngloves", "mwgloves", "poker", "powerglove", "wgloves", "xgloves",
     // Good weapons
-    "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "firebow", "frostbow", "froststaff", "gbow", "harbringer", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow", "t3bow", "wblade",
+    "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "firebow", "frostbow", "froststaff", "gbow", "harbringer", "heartwood", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow", "t3bow", "wblade",
     // Things we can exchange / craft with
     "ascale", "bfur", "cscale", "electronics", "feather0", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", "networkcard", "platinumingot", "platinumnugget", "pleather", "snakefang",
     // Things to make xbox
@@ -70,6 +71,13 @@ export const ITEMS_TO_BUY: ItemName[] = [
     // Misc. Things
     "bottleofxp", "bugbountybox", "computer", "monstertoken", "poison", "snakeoil"
 ]
+
+export const ITEMS_TO_SELL: ItemLevelInfo = {
+    // Default clothing
+    "shoes": 2, "pants": 2, "coat": 2, "helmet": 2, "gloves": 2,
+    // Halloween
+    "gphelmet": 2, "phelmet": 2
+}
 
 export const MERCHANT_ITEMS_TO_HOLD: ItemName[] = [
     // Things we keep on ourselves

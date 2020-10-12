@@ -1,4 +1,4 @@
-import { ITEMS_TO_BUY, ITEMS_TO_EXCHANGE, MERCHANT_ITEMS_TO_HOLD, NPC_INTERACTION_DISTANCE, PRIEST_ITEMS_TO_HOLD, RANGER_ITEMS_TO_HOLD, SPECIAL_MONSTERS, WARRIOR_ITEMS_TO_HOLD } from "./constants.js"
+import { ITEMS_TO_BUY, ITEMS_TO_EXCHANGE, ITEMS_TO_SELL, MERCHANT_ITEMS_TO_HOLD, NPC_INTERACTION_DISTANCE, PRIEST_ITEMS_TO_HOLD, RANGER_ITEMS_TO_HOLD, SPECIAL_MONSTERS, WARRIOR_ITEMS_TO_HOLD } from "./constants.js"
 import { CharacterModel } from "./database/characters/characters.model.js"
 import { EntityModel } from "./database/entities/entities.model.js"
 import { EntityData, HitData, PlayerData } from "./definitions/adventureland-server.js"
@@ -9,7 +9,7 @@ import { Game, Merchant, PingCompensatedPlayer, Priest, Ranger, Warrior } from "
 import { Pathfinder } from "./pathfinder.js"
 import { Tools } from "./tools.js"
 
-const region: ServerRegion = "ASIA"
+const region: ServerRegion = "US"
 const identifier: ServerIdentifier = "I"
 
 let ranger: Ranger
@@ -304,6 +304,31 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
         setTimeout(async () => { partyLoop() }, 10000)
     }
     partyLoop()
+
+    async function sellLoop() {
+        try {
+            if (bot.socket.disconnected) return
+
+            if (bot.hasItem("computer")) {
+                // Sell things
+                for (let i = 0; i < bot.character.items.length; i++) {
+                    const item = bot.character.items[i]
+                    if (!item) continue // No item in this slot
+                    if (ITEMS_TO_SELL[item.name] == undefined) continue // We don't want to sell this item
+                    if (ITEMS_TO_SELL[item.name] <= item.level) continue // Keep this item, it's a high enough level that we want to keep it
+
+                    const q = bot.character.items[i].q !== undefined ? bot.character.items[i].q : 1
+
+                    await bot.sell(i, q)
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { sellLoop() }, 1000)
+    }
+    sellLoop()
 
     async function upgradeLoop() {
         try {
@@ -955,10 +980,20 @@ async function startRanger(bot: Ranger) {
                     for (const s in strategy[rangerTarget].equipment) {
                         const slot = s as SlotType
                         const itemName = strategy[rangerTarget].equipment[slot]
-                        const wtype = bot.G.items[itemName].wtype
-                        if (bot.G.classes[bot.character.ctype].doublehand[wtype]) {
+                        const wType = bot.G.items[itemName].wtype
+
+                        if (bot.G.classes[bot.character.ctype].doublehand[wType]) {
                             // Check if we have something in our offhand, we need to unequip it.
                             if (bot.character.slots.offhand) await bot.unequip("offhand")
+                        }
+
+                        if (slot == "offhand" && bot.character.slots["mainhand"]) {
+                            const mainhandItem = bot.character.slots["mainhand"].name
+                            const mainhandWType = bot.G.items[mainhandItem].wtype
+                            if (bot.G.classes[bot.character.ctype].doublehand[mainhandWType]) {
+                                // We're equipping an offhand item, but we have a doublehand item equipped in our mainhand.
+                                await bot.unequip("mainhand")
+                            }
                         }
 
                         if (bot.character.slots[slot] && bot.character.slots[slot].name !== itemName) {
@@ -2746,6 +2781,18 @@ async function startMerchant(bot: Merchant) {
                 }
             }
 
+            // MLuck people if there is a server info target
+            for (const mN in bot.S) {
+                const type = mN as MonsterName
+                if (!bot.S[type].live) continue
+                if (!bot.S[type].target) continue
+
+                await bot.smartMove(bot.S[type], { getWithin: 100 })
+
+                setTimeout(async () => { moveLoop() }, 250)
+                return
+            }
+
             // Find other characters that need mluck and go find them
             if (bot.canUse("mluck")) {
                 const charactersToMluck = await CharacterModel.find({ serverRegion: region, serverIdentifier: identifier, lastSeen: { $gt: Date.now() - 60000 }, $or: [{ "s.mluck": undefined }, { "s.mluck.strong": undefined, "s.mluck.f": { "$ne": "earthMer" } }] }).lean().exec()
@@ -2781,7 +2828,7 @@ async function startMerchant(bot: Merchant) {
 
                 const numTokens = bot.character.items[mhTokens].q
 
-                await bot.listForSale(mhTokens, "trade1", 1000000, numTokens)
+                await bot.listForSale(mhTokens, "trade1", 250000, numTokens)
             }
         } catch (e) {
             console.error(e)

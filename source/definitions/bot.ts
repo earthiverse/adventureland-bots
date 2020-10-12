@@ -14,3 +14,8 @@ export type Strategy = {
         requirePriest?: boolean
     }
 }
+
+export type ItemLevelInfo = {
+    /** Items this level and under will be sold */
+    [T in ItemName]?: number
+}

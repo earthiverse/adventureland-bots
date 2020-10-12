@@ -849,7 +849,7 @@ export class Player extends Observer {
 
     // TODO: Return buy info
     public buy(itemName: ItemName, quantity = 1): Promise<number> {
-        if (this.character.gold < this.G.items[itemName].gold) return Promise.reject(`Insufficient gold. We have ${this.character.gold}, but the item costs ${this.G.items[itemName].gold}`)
+        if (this.character.gold < this.G.items[itemName].g) return Promise.reject(`Insufficient gold. We have ${this.character.gold}, but the item costs ${this.G.items[itemName].g}`)
 
         const itemReceived = new Promise<number>((resolve, reject) => {
             const buyCheck1 = (data: CharacterData) => {
@@ -1052,8 +1052,8 @@ export class Player extends Observer {
                         this.socket.removeListener("game_response", failCheck)
                         reject("You can't compound items in the bank.")
                     }
-                } else if(typeof data == "string") {
-                    if(data == "compound_no_item") {
+                } else if (typeof data == "string") {
+                    if (data == "compound_no_item") {
                         this.socket.removeListener("upgrade", completeCheck)
                         this.socket.removeListener("game_response", failCheck)
                         reject()
@@ -1559,6 +1559,11 @@ export class Player extends Observer {
         return scared
     }
 
+    // TODO: Add promises
+    public async sell(itemPos: number, quantity = 1): Promise<void> {
+        this.socket.emit("sell", { num: itemPos, quantity: quantity })
+    }
+
     public async sendGold(to: string, amount: number): Promise<number> {
         if (this.character.gold == 0) return Promise.reject("We have no gold to send.")
         if (!this.players.has(to)) return Promise.reject(`We can not see ${to} to send gold.`)
@@ -1987,7 +1992,7 @@ export class Player extends Observer {
 
     public withdrawItem(bankPack: Exclude<BankPackType, "gold">, bankPos: number, inventoryPos = -1): unknown {
         const item = this.bank[bankPack][bankPos]
-        if(!item) return Promise.reject(`There is no item in bank ${bankPack}[${bankPos}]`)
+        if (!item) return Promise.reject(`There is no item in bank ${bankPack}[${bankPos}]`)
 
         const bankPackNum = Number.parseInt(bankPack.substr(5, 2))
         if ((this.character.map == "bank" && bankPackNum < 0 && bankPackNum > 7)
@@ -2039,11 +2044,11 @@ export class Player extends Observer {
 
             if (args) {
                 if (args.levelGreaterThan !== undefined) {
-                    if (!inventoryItem.level) continue // This item doesn't have a level
+                    if (inventoryItem.level == undefined) continue // This item doesn't have a level
                     if (inventoryItem.level <= args.levelGreaterThan) continue // This item is a lower level than desired
                 }
                 if (args.levelLessThan !== undefined) {
-                    if (!inventoryItem.level) continue // This item doesn't have a level
+                    if (inventoryItem.level == undefined) continue // This item doesn't have a level
                     if (inventoryItem.level >= args.levelLessThan) continue // This item is a higher level than desired
                 }
             }
@@ -2104,15 +2109,30 @@ export class Player extends Observer {
 
     /**
      * Returns a boolean corresponding to whether or not the item is in our inventory.
-     * @param itemName The item to look for
-     * @param inventory Where to look for the item
+     * @param iN The item to look for
+     * @param inv Where to look for the item
      */
-    public hasItem(itemName: ItemName, inventory = this.character.items): boolean {
-        for (let i = 0; i < inventory.length; i++) {
-            const item = inventory[i]
+    public hasItem(iN: ItemName, inv = this.character.items,
+        args?: {
+            levelGreaterThan?: number,
+            levelLessThan?: number
+        }): boolean {
+        for (let i = 0; i < inv.length; i++) {
+            const item = inv[i]
             if (!item) continue
 
-            if (item.name == itemName) return true
+            if (args) {
+                if (args.levelGreaterThan !== undefined) {
+                    if (item.level == undefined) continue // This item doesn't have a level
+                    if (item.level <= args.levelGreaterThan) continue // This item is a lower level than desired
+                }
+                if (args.levelLessThan !== undefined) {
+                    if (item.level == undefined) continue // This item doesn't have a level
+                    if (item.level >= args.levelLessThan) continue // This item is a higher level than desired
+                }
+            }
+
+            if (item.name == iN) return true
         }
         return false
     }
@@ -2179,31 +2199,31 @@ export class Player extends Observer {
 
     /**
      * Returns the index of the item in the given inventory
-     * @param itemName The item to look for
-     * @param inventory Where to look for the item
-     * @param filters Filters to help search for specific properties on items
+     * @param iN The item to look for
+     * @param inv Where to look for the item
+     * @param args Filters to help search for specific properties on items
      */
-    public locateItem(itemName: ItemName, inventory = this.character.items,
-        filters?: {
+    public locateItem(iN: ItemName, inv = this.character.items,
+        args?: {
             levelGreaterThan?: number,
             levelLessThan?: number
         }): number {
-        for (let i = 0; i < inventory.length; i++) {
-            const item = inventory[i]
+        for (let i = 0; i < inv.length; i++) {
+            const item = inv[i]
             if (!item) continue
 
-            if (filters) {
-                if (filters.levelGreaterThan) {
-                    if (!item.level) continue // This item doesn't have a level
-                    if (item.level <= filters.levelGreaterThan) continue // This item is a lower level than desired
+            if (args) {
+                if (args.levelGreaterThan) {
+                    if (item.level == undefined) continue // This item doesn't have a level
+                    if (item.level <= args.levelGreaterThan) continue // This item is a lower level than desired
                 }
-                if (filters.levelLessThan) {
-                    if (!item.level) continue // This item doesn't have a level
-                    if (item.level >= filters.levelLessThan) continue // This item is a higher level than desired
+                if (args.levelLessThan) {
+                    if (item.level == undefined) continue // This item doesn't have a level
+                    if (item.level >= args.levelLessThan) continue // This item is a higher level than desired
                 }
             }
 
-            if (item.name == itemName) {
+            if (item.name == iN) {
                 return i
             }
         }
@@ -2228,11 +2248,11 @@ export class Player extends Observer {
 
             if (filters) {
                 if (filters.levelGreaterThan) {
-                    if (!item.level) continue // This item doesn't have a level
+                    if (item.level == undefined) continue // This item doesn't have a level
                     if (item.level <= filters.levelGreaterThan) continue // This item is a lower level than desired
                 }
                 if (filters.levelLessThan) {
-                    if (!item.level) continue // This item doesn't have a level
+                    if (item.level == undefined) continue // This item doesn't have a level
                     if (item.level >= filters.levelLessThan) continue // This item is a higher level than desired
                 }
             }
