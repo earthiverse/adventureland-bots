@@ -9,8 +9,8 @@ import { Game, Merchant, PingCompensatedPlayer, Priest, Ranger, Warrior } from "
 import { Pathfinder } from "./pathfinder.js"
 import { Tools } from "./tools.js"
 
-const region: ServerRegion = "US"
-const identifier: ServerIdentifier = "I"
+let region: ServerRegion
+let identifier: ServerIdentifier
 
 let ranger: Ranger
 let rangerTarget: MonsterName
@@ -32,7 +32,7 @@ async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promis
 
         return type
     }
-    const entities = await EntityModel.find({ serverRegion: region, serverIdentifier: identifier, lastSeen: { $gt: Date.now() - 60000 } }).sort({ name: 1, _id: 1 }).lean().exec()
+    const entities = await EntityModel.find({ serverRegion: region, serverIdentifier: identifier, lastSeen: { $gt: Date.now() - 60000 } }).sort({ hp: 1 }).lean().exec()
     for (const entity of entities) {
         // Look in database of entities
         if (!strategy[entity.type]) continue // No strategy
@@ -2912,38 +2912,75 @@ async function startMerchant(bot: Merchant) {
 async function run(region: ServerRegion, identifier: ServerIdentifier) {
     await Promise.all([Game.login("hyprkookeez@gmail.com", "thisisnotmyrealpasswordlol"), Pathfinder.prepare()])
 
-    ranger = await Game.startRanger("earthiverse", region, identifier)
-    warrior = await Game.startWarrior("earthWar", region, identifier)
-    priest = await Game.startPriest("earthPri", region, identifier)
-    merchant = await Game.startMerchant("earthMer", region, identifier)
+    // ranger = await Game.startRanger("earthiverse", region, identifier)
+    // warrior = await Game.startWarrior("earthWar", region, identifier)
+    // priest = await Game.startPriest("earthPri", region, identifier)
+    // merchant = await Game.startMerchant("earthMer", region, identifier)
 
-    // Disconnect if we have to
-    const disconnect = (data: string) => {
-        console.warn(`Disconnecting (${data})`)
-        Game.disconnect()
+    // // Disconnect if we have to
+    // const disconnect = (data: string) => {
+    //     console.warn(`Disconnecting (${data})`)
+    //     Game.disconnect()
+    // }
+    // ranger.socket.on("disconnect", disconnect)
+    // warrior.socket.on("disconnect", disconnect)
+    // priest.socket.on("disconnect", disconnect)
+    // merchant.socket.on("disconnect", disconnect)
+    // ranger.socket.on("disconnect_reason", (data: any) => {
+    //     console.warn(data)
+    // })
+    // warrior.socket.on("disconnect_reason", (data: any) => {
+    //     console.warn(data)
+    // })
+    // priest.socket.on("disconnect_reason", (data: any) => {
+    //     console.warn(data)
+    // })
+    // merchant.socket.on("disconnect_reason", (data: any) => {
+    //     console.warn(data)
+    // })
+
+    let lastServerTime = 0
+    const serverLoop = async () => {
+        try {
+            // Don't change servers too fast
+            if (lastServerTime > Date.now() - 60000) {
+                setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerTime - Date.now() - 60000))
+                return
+            }
+
+            // Look for the lowest hp special monster
+            console.log("looking for best monster")
+            const bestMonster = await EntityModel.findOne({ $or: [{ type: "mrpumpkin" }, { type: "mrgreen" }], lastSeen: { $gt: Date.now() - 60000 } }).sort({ hp: 1 }).lean().exec()
+            console.log("")
+            if (bestMonster && bestMonster.serverRegion !== region || bestMonster.serverIdentifier !== identifier) {
+                console.log("wanting to disconnect")
+                await Game.disconnect(false)
+
+                console.log(`Connecting to ${bestMonster.serverRegion}${bestMonster.serverIdentifier}!`)
+
+                region = bestMonster.serverRegion
+                identifier = bestMonster.serverIdentifier
+
+                lastServerTime = Date.now()
+
+                ranger = await Game.startRanger("earthiverse", region, identifier)
+                warrior = await Game.startWarrior("earthWar", region, identifier)
+                priest = await Game.startPriest("earthPri", region, identifier)
+                merchant = await Game.startMerchant("earthMer", region, identifier)
+
+                // Start the bots!
+                startRanger(ranger)
+                startWarrior(warrior)
+                startPriest(priest)
+                startMerchant(merchant)
+                for (const bot of [ranger, warrior, priest, merchant]) generalBotStuff(bot)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { serverLoop() }, 1000)
     }
-    ranger.socket.on("disconnect", disconnect)
-    warrior.socket.on("disconnect", disconnect)
-    priest.socket.on("disconnect", disconnect)
-    merchant.socket.on("disconnect", disconnect)
-    ranger.socket.on("disconnect_reason", (data: any) => {
-        console.warn(data)
-    })
-    warrior.socket.on("disconnect_reason", (data: any) => {
-        console.warn(data)
-    })
-    priest.socket.on("disconnect_reason", (data: any) => {
-        console.warn(data)
-    })
-    merchant.socket.on("disconnect_reason", (data: any) => {
-        console.warn(data)
-    })
-
-    // Start the bots!
-    startRanger(ranger)
-    startWarrior(warrior)
-    startPriest(priest)
-    startMerchant(merchant)
-    for (const bot of [ranger, warrior, priest, merchant]) generalBotStuff(bot)
+    serverLoop()
 }
 run(region, identifier)

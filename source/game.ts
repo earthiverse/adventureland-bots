@@ -3165,15 +3165,15 @@ export class Game {
         // Private to force static methods
     }
 
-    public static async disconnect(): Promise<void> {
+    public static async disconnect(mongo = true): Promise<void> {
         // Stop all characters
-        this.stopAllCharacters()
+        await this.stopAllCharacters()
 
         // Stop all observers
-        this.stopAllObservers()
+        await this.stopAllObservers()
 
-        // Disconnect from the databasee
-        disconnect()
+        // Disconnect from the database
+        if (mongo) disconnect()
     }
 
     static async getGData(): Promise<GData> {
@@ -3310,11 +3310,11 @@ export class Game {
     static async stopAllObservers(): Promise<void> {
         for (const region in this.observers)
             for (const id in this.observers[region])
-                this.stopObserver(region as ServerRegion, id as ServerIdentifier)
+                await this.stopObserver(region as ServerRegion, id as ServerIdentifier)
     }
 
     public static async stopCharacter(characterName: string): Promise<void> {
-        this.players[characterName].disconnect()
+        await this.players[characterName].disconnect()
         delete this.players[characterName]
     }
 
