@@ -335,6 +335,7 @@ export type GameResponseDataObject = {
 }
 
 export type GameResponseDataString =
+    | "bank_restrictions"
     | "buy_cant_npc"
     | "buy_cant_space"
     | "buy_cost"

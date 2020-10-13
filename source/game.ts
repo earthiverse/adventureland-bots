@@ -785,6 +785,8 @@ export class Player extends Observer {
     // TODO: Add 'notthere' (e.g. calling attack("12345") returns ["notthere", {place: "attack"}])
     // TODO: Check if cooldown is sent after attack
     public attack(id: string): Promise<string> {
+        if (this.character.mp_cost > this.character.mp) return Promise.reject("Not enough MP to attack")
+
         const attackStarted = new Promise<string>((resolve, reject) => {
             const deathCheck = (data: DeathData) => {
                 if (data.id == id) {
@@ -1716,6 +1718,9 @@ export class Player extends Observer {
             return Promise.reject("'to' is unsuitable for smartMove. We need a 'map', an 'x', and a 'y'.")
         }
 
+        // Check if we're already close enough
+        if (options && options.getWithin !== undefined && Tools.distance(this.character, fixedTo) <= options.getWithin) return Promise.resolve(this.character)
+
         // If we don't have the path yet, get it
         if (!path) path = await Pathfinder.getPath(this.character, fixedTo)
 
@@ -1852,8 +1857,9 @@ export class Player extends Observer {
     }
 
     // TODO: Add offering support
-    // TODO: Add more checks (G.items[itemName].upgrade)
     public upgrade(itemPos: number, scrollPos: number): Promise<boolean> {
+        if (this.character.map.startsWith("bank")) return Promise.reject("We can't upgrade things in the bank.")
+
         const itemInfo = this.character.items[itemPos]
         const scrollInfo = this.character.items[scrollPos]
         if (!itemInfo) return Promise.reject(`There is no item in inventory slot ${itemPos}.`)
@@ -1874,7 +1880,11 @@ export class Player extends Observer {
                     this.socket.removeListener("game_response", failCheck)
                     reject("You can't upgrade items in the bank.")
                 } else if (typeof data == "string") {
-                    if (data == "upgrade_in_progress") {
+                    if (data == "bank_restrictions") {
+                        this.socket.removeListener("upgrade", completeCheck)
+                        this.socket.removeListener("game_response", failCheck)
+                        reject("We can't upgrade things in the bank.")
+                    } else if (data == "upgrade_in_progress") {
                         this.socket.removeListener("upgrade", completeCheck)
                         this.socket.removeListener("game_response", failCheck)
                         reject("We are already upgrading something.")
@@ -2206,7 +2216,8 @@ export class Player extends Observer {
     public locateItem(iN: ItemName, inv = this.character.items,
         args?: {
             levelGreaterThan?: number,
-            levelLessThan?: number
+            levelLessThan?: number,
+            locateHighestLevel?: number
         }): number {
         for (let i = 0; i < inv.length; i++) {
             const item = inv[i]
@@ -2781,8 +2792,45 @@ export class Ranger extends PingCompensatedPlayer {
         return marked
     }
 
-    public supershot(target: string): Promise<string> {
-        const supershotStarted = new Promise<string>((resolve, reject) => {
+    public piercingShot(target: string): Promise<string> {
+        if (this.G.skills.piercingshot.mp > this.character.mp) return Promise.reject("Not enough MP to use piercingShot")
+
+        const piercingShotStarted = new Promise<string>((resolve, reject) => {
+            let projectile: string
+
+            const attackCheck = (data: ActionData) => {
+                if (data.attacker == this.character.id
+                    && data.type == "piercingshot"
+                    && data.target == target) {
+                    projectile = data.pid
+                }
+            }
+
+            const cooldownCheck = (data: EvalData) => {
+                if (/skill_timeout\s*\(\s*['"]piercingshot['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
+                    this.socket.removeListener("action", attackCheck)
+                    this.socket.removeListener("eval", cooldownCheck)
+                    resolve(projectile)
+                }
+            }
+
+            setTimeout(() => {
+                this.socket.removeListener("action", attackCheck)
+                this.socket.removeListener("eval", cooldownCheck)
+                reject(`piercingshot timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.socket.on("action", attackCheck)
+            this.socket.on("eval", cooldownCheck)
+        })
+
+        this.socket.emit("skill", { name: "piercingshot", id: target })
+        return piercingShotStarted
+    }
+
+    public superShot(target: string): Promise<string> {
+        if (this.G.skills.supershot.mp > this.character.mp) return Promise.reject("Not enough MP to use superShot")
+
+        const superShotStarted = new Promise<string>((resolve, reject) => {
             let projectile: string
 
             const attackCheck = (data: ActionData) => {
@@ -2811,7 +2859,7 @@ export class Ranger extends PingCompensatedPlayer {
         })
 
         this.socket.emit("skill", { name: "supershot", id: target })
-        return supershotStarted
+        return superShotStarted
     }
 
     public threeShot(target1: string, target2: string, target3: string): Promise<string[]> {
@@ -2925,6 +2973,8 @@ export class Warrior extends PingCompensatedPlayer {
     }
 
     public cleave(): Promise<unknown> {
+        if (this.G.skills.cleave.mp > this.character.mp) return Promise.reject("Not enough MP to use cleave")
+
         const cleaved = new Promise((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]cleave['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {

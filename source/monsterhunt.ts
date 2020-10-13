@@ -10,7 +10,7 @@ import { Pathfinder } from "./pathfinder.js"
 import { Tools } from "./tools.js"
 
 const region: ServerRegion = "US"
-const identifier: ServerIdentifier = "I"
+const identifier: ServerIdentifier = "II"
 
 let ranger: Ranger
 let rangerTarget: MonsterName
@@ -360,11 +360,15 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                 const grade = await Tools.calculateItemGrade(itemInfo)
                 const scrollName = `scroll${grade}` as ItemName
                 let scrollPos = bot.locateItem(scrollName)
-                if (scrollPos == undefined && !bot.canBuy(scrollName)) continue // We can't buy a scroll for whatever reason :(
-                else if (scrollPos == undefined) scrollPos = await bot.buy(scrollName)
+                try {
+                    if (scrollPos == undefined && !bot.canBuy(scrollName)) continue // We can't buy a scroll for whatever reason :(
+                    else if (scrollPos == undefined) scrollPos = await bot.buy(scrollName)
 
-                // Upgrade!
-                await bot.upgrade(itemPos, scrollPos)
+                    // Upgrade!
+                    await bot.upgrade(itemPos, scrollPos)
+                } catch (e) {
+                    console.error(e)
+                }
             }
         } catch (e) {
             console.error(e)
@@ -406,7 +410,6 @@ async function startRanger(bot: Ranger) {
             }
 
             if (fiveshotTargets.length >= 5 && bot.canUse("5shot")) {
-                await bot.fiveShot(fiveshotTargets[0].id, fiveshotTargets[1].id, fiveshotTargets[2].id, fiveshotTargets[3].id, fiveshotTargets[4].id)
                 // Remove from other characters if we're going to kill it
                 for (const target of [fiveshotTargets[0], fiveshotTargets[1], fiveshotTargets[2], fiveshotTargets[3], fiveshotTargets[4]]) {
                     if (await Tools.isGuaranteedKill(bot.character, target)) {
@@ -415,8 +418,9 @@ async function startRanger(bot: Ranger) {
                         }
                     }
                 }
+
+                await bot.fiveShot(fiveshotTargets[0].id, fiveshotTargets[1].id, fiveshotTargets[2].id, fiveshotTargets[3].id, fiveshotTargets[4].id)
             } else if (threeshotTargets.length >= 3 && bot.canUse("3shot")) {
-                await bot.threeShot(threeshotTargets[0].id, threeshotTargets[1].id, threeshotTargets[2].id)
                 // Remove from other characters if we're going to kill it
                 for (const target of [threeshotTargets[0], threeshotTargets[1], threeshotTargets[2]]) {
                     if (await Tools.isGuaranteedKill(bot.character, target)) {
@@ -425,14 +429,25 @@ async function startRanger(bot: Ranger) {
                         }
                     }
                 }
+
+                await bot.threeShot(threeshotTargets[0].id, threeshotTargets[1].id, threeshotTargets[2].id)
             } else if (targets.length) {
-                // TODO: If we can do more damage with a `piercingshot`, do it.
-                await bot.attack(targets[0].id)
-                // Remove from other characters if we're going to kill it
                 if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
+                    // Remove from other characters if we're going to kill it
                     for (const bot of [ranger, priest, warrior, merchant]) {
                         bot.entities.delete(targets[0].id)
                     }
+                }
+
+                // If we can do more damage with piercingshot, use that
+                const gInfo = bot.G.skills.piercingshot
+                const piercingShotEntity = { ...targets[0] }
+                piercingShotEntity.armor -= gInfo.apiercing
+                if (bot.canUse("piercingshot")
+                    && Tools.calculateDamageRange(bot.character, piercingShotEntity)[0] * gInfo.damage_multiplier > Tools.calculateDamageRange(bot.character, targets[0])[0]) {
+                    await bot.piercingShot(targets[0].id)
+                } else {
+                    await bot.attack(targets[0].id)
                 }
             }
         }
@@ -461,7 +476,7 @@ async function startRanger(bot: Ranger) {
             }
 
             if (targets.length) {
-                await bot.supershot(targets[0])
+                await bot.superShot(targets[0])
             }
         }
 
@@ -502,7 +517,6 @@ async function startRanger(bot: Ranger) {
             }
 
             if (fiveshotTargets.length >= 5 && bot.canUse("5shot")) {
-                await bot.fiveShot(fiveshotTargets[0].id, fiveshotTargets[1].id, fiveshotTargets[2].id, fiveshotTargets[3].id, fiveshotTargets[4].id)
                 // Remove from other characters if we're going to kill it
                 for (const target of [fiveshotTargets[0], fiveshotTargets[1], fiveshotTargets[2], fiveshotTargets[3], fiveshotTargets[4]]) {
                     if (await Tools.isGuaranteedKill(bot.character, target)) {
@@ -511,8 +525,8 @@ async function startRanger(bot: Ranger) {
                         }
                     }
                 }
+                await bot.fiveShot(fiveshotTargets[0].id, fiveshotTargets[1].id, fiveshotTargets[2].id, fiveshotTargets[3].id, fiveshotTargets[4].id)
             } else if (threeshotTargets.length >= 3 && bot.canUse("3shot")) {
-                await bot.threeShot(threeshotTargets[0].id, threeshotTargets[1].id, threeshotTargets[2].id)
                 // Remove from other characters if we're going to kill it
                 for (const target of [threeshotTargets[0], threeshotTargets[1], threeshotTargets[2]]) {
                     if (await Tools.isGuaranteedKill(bot.character, target)) {
@@ -521,18 +535,28 @@ async function startRanger(bot: Ranger) {
                         }
                     }
                 }
+                await bot.threeShot(threeshotTargets[0].id, threeshotTargets[1].id, threeshotTargets[2].id)
             } else if (targets.length) {
                 if (bot.canUse("huntersmark")) {
                     await bot.huntersMark(targets[0].id)
                 }
 
-                // TODO: If we can do more damage with a `piercingshot`, do it.
-                await bot.attack(targets[0].id)
                 // Remove from other characters if we're going to kill it
                 if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
                     for (const bot of [ranger, priest, warrior, merchant]) {
                         bot.entities.delete(targets[0].id)
                     }
+                }
+
+                // If we can do more damage with a piercingshot, use that
+                const gInfo = bot.G.skills.piercingshot
+                const piercingShotEntity = { ...targets[0] }
+                piercingShotEntity.armor -= gInfo.apiercing
+                if (bot.canUse("piercingshot")
+                    && Tools.calculateDamageRange(bot.character, piercingShotEntity)[0] * gInfo.damage_multiplier > Tools.calculateDamageRange(bot.character, targets[0])[0]) {
+                    await bot.piercingShot(targets[0].id)
+                } else {
+                    await bot.attack(targets[0].id)
                 }
             }
         }
@@ -561,7 +585,7 @@ async function startRanger(bot: Ranger) {
             }
 
             if (targets.length) {
-                await bot.supershot(targets[0])
+                await bot.superShot(targets[0])
             }
         }
 
@@ -790,6 +814,7 @@ async function startRanger(bot: Ranger) {
         mvampire: {
             attack: async () => { return await defaultAttackStrategy("mvampire") },
             move: async () => { return await specialMonsterMoveStrategy("mvampire") },
+            equipment: { mainhand: "firebow", orb: "jacko" },
             attackWhileIdle: true
         },
         oneeye: {
@@ -800,11 +825,13 @@ async function startRanger(bot: Ranger) {
         osnake: {
             attack: async () => { return await defaultAttackStrategy("osnake") },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "halloween", x: -589, y: -335 }, "osnake") },
-            equipment: { mainhand: "hbow", orb: "jacko" }
+            equipment: { mainhand: "hbow", orb: "jacko" },
+            attackWhileIdle: true
         },
         phoenix: {
             attack: async () => { return await defaultAttackStrategy("phoenix") },
             move: async () => { return await specialMonsterMoveStrategy("phoenix") },
+            equipment: { mainhand: "firebow", orb: "jacko" },
             attackWhileIdle: true
         },
         plantoid: {
@@ -996,7 +1023,8 @@ async function startRanger(bot: Ranger) {
                             }
                         }
 
-                        if (bot.character.slots[slot] && bot.character.slots[slot].name !== itemName) {
+                        if (!bot.character.slots[slot]
+                            || (bot.character.slots[slot] && bot.character.slots[slot].name !== itemName)) {
                             const i = bot.locateItem(itemName)
                             if (i) await bot.equip(i, slot)
                         }
@@ -1064,7 +1092,7 @@ async function startRanger(bot: Ranger) {
                     }
 
                     if (targets.length) {
-                        await bot.supershot(targets[0])
+                        await bot.superShot(targets[0])
                     }
                 }
             }
@@ -1138,14 +1166,14 @@ async function startRanger(bot: Ranger) {
 
             const sendTo = bot.players.get(merchant.character.id)
             if (sendTo && Tools.distance(bot.character, sendTo) < NPC_INTERACTION_DISTANCE) {
+                const extraGold = bot.character.gold - 1000000
+                if (extraGold > 0) await bot.sendGold(merchant.character.id, extraGold)
                 for (let i = 0; i < bot.character.items.length; i++) {
                     const item = bot.character.items[i]
                     if (!item || RANGER_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
 
                     await bot.sendItem(merchant.character.id, i, item.q)
                 }
-                const extraGold = bot.character.gold - 1000000
-                if (extraGold > 0) await bot.sendGold(merchant.character.id, extraGold)
             }
         } catch (e) {
             console.error(e)
@@ -1197,13 +1225,13 @@ async function startPriest(bot: Priest) {
                 }
 
                 if (targets.length) {
-                    await bot.attack(targets[0].id)
                     // Remove from other characters if we're going to kill it
                     if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
                         for (const bot of [ranger, priest, warrior, merchant]) {
                             bot.entities.delete(targets[0].id)
                         }
                     }
+                    await bot.attack(targets[0].id)
                 }
             }
         }
@@ -1237,13 +1265,14 @@ async function startPriest(bot: Priest) {
                     bot.curse(target.id)
                 }
 
-                await bot.attack(target.id)
                 // Remove from other characters if we're going to kill it
                 if (await Tools.isGuaranteedKill(bot.character, target)) {
                     for (const bot of [ranger, priest, warrior, merchant]) {
                         bot.entities.delete(target.id)
                     }
                 }
+
+                await bot.attack(target.id)
             }
         }
 
@@ -1470,7 +1499,8 @@ async function startPriest(bot: Priest) {
         osnake: {
             attack: async () => { return await defaultAttackStrategy("osnake") },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "halloween", x: -488, y: -708 }, "osnake") },
-            equipment: { orb: "jacko" }
+            equipment: { orb: "jacko" },
+            attackWhileIdle: true
         },
         phoenix: {
             attack: async () => { return await defaultAttackStrategy("phoenix") },
@@ -1636,7 +1666,17 @@ async function startPriest(bot: Priest) {
                             if (bot.character.slots.offhand) await bot.unequip("offhand")
                         }
 
-                        if (bot.character.slots[slot] && bot.character.slots[slot].name !== itemName) {
+                        if (slot == "offhand" && bot.character.slots["mainhand"]) {
+                            const mainhandItem = bot.character.slots["mainhand"].name
+                            const mainhandWType = bot.G.items[mainhandItem].wtype
+                            if (bot.G.classes[bot.character.ctype].doublehand[mainhandWType]) {
+                                // We're equipping an offhand item, but we have a doublehand item equipped in our mainhand.
+                                await bot.unequip("mainhand")
+                            }
+                        }
+
+                        if (!bot.character.slots[slot]
+                            || (bot.character.slots[slot] && bot.character.slots[slot].name !== itemName)) {
                             const i = bot.locateItem(itemName)
                             if (i) await bot.equip(i, slot)
                         }
@@ -1736,14 +1776,14 @@ async function startPriest(bot: Priest) {
 
             const sendTo = bot.players.get(merchant.character.id)
             if (sendTo && Tools.distance(bot.character, sendTo) < NPC_INTERACTION_DISTANCE) {
+                const extraGold = bot.character.gold - 1000000
+                if (extraGold > 0) await bot.sendGold(merchant.character.id, extraGold)
                 for (let i = 0; i < bot.character.items.length; i++) {
                     const item = bot.character.items[i]
                     if (!item || PRIEST_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
 
                     await bot.sendItem(merchant.character.id, i, item.q)
                 }
-                const extraGold = bot.character.gold - 1000000
-                if (extraGold > 0) await bot.sendGold(merchant.character.id, extraGold)
             }
         } catch (e) {
             console.error(e)
@@ -1854,13 +1894,14 @@ async function startWarrior(bot: Warrior) {
             }
 
             if (targets.length) {
-                await bot.attack(targets[0].id)
                 // Remove from other characters if we're going to kill it
                 if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
                     for (const bot of [ranger, priest, warrior, merchant]) {
                         bot.entities.delete(targets[0].id)
                     }
                 }
+
+                await bot.attack(targets[0].id)
             }
             if (targets.length == 0) {
                 let numInAgitateRange = 0
@@ -1989,16 +2030,19 @@ async function startWarrior(bot: Warrior) {
                 if (bot.G.monsters[target.type].damage_type == "physical" && bot.canUse("hardshell")) {
                     await bot.hardshell()
                 }
+
                 if (bot.canUse("stomp")) {
                     await bot.stomp()
                 }
-                await bot.attack(target.id)
+
                 // Remove from other characters if we're going to kill it
                 if (await Tools.isGuaranteedKill(bot.character, target)) {
                     for (const bot of [ranger, priest, warrior, merchant]) {
                         bot.entities.delete(target.id)
                     }
                 }
+
+                await bot.attack(target.id)
             }
         }
 
@@ -2241,7 +2285,8 @@ async function startWarrior(bot: Warrior) {
         osnake: {
             attack: async () => { return await defaultAttackStrategy("osnake") },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "halloween", x: 347, y: -747 }, "osnake") },
-            equipment: { mainhand: "bataxe", orb: "jacko" }
+            equipment: { mainhand: "bataxe", orb: "jacko" },
+            attackWhileIdle: true
         },
         phoenix: {
             attack: async () => { return await defaultAttackStrategy("phoenix") },
@@ -2404,8 +2449,17 @@ async function startWarrior(bot: Warrior) {
                             if (bot.character.slots.offhand) await bot.unequip("offhand")
                         }
 
-                        if (bot.character.slots[slot] && bot.character.slots[slot].name !== itemName) {
-                            console.log(`we want to equip ${itemName}`)
+                        if (slot == "offhand" && bot.character.slots["mainhand"]) {
+                            const mainhandItem = bot.character.slots["mainhand"].name
+                            const mainhandWType = bot.G.items[mainhandItem].wtype
+                            if (bot.G.classes[bot.character.ctype].doublehand[mainhandWType]) {
+                                // We're equipping an offhand item, but we have a doublehand item equipped in our mainhand.
+                                await bot.unequip("mainhand")
+                            }
+                        }
+
+                        if (!bot.character.slots[slot]
+                            || (bot.character.slots[slot] && bot.character.slots[slot].name !== itemName)) {
                             const i = bot.locateItem(itemName)
                             if (i) await bot.equip(i, slot)
                         }
@@ -2491,14 +2545,14 @@ async function startWarrior(bot: Warrior) {
 
             const sendTo = bot.players.get(merchant.character.id)
             if (sendTo && Tools.distance(bot.character, sendTo) < NPC_INTERACTION_DISTANCE) {
+                const extraGold = bot.character.gold - 1000000
+                if (extraGold > 0) await bot.sendGold(merchant.character.id, extraGold)
                 for (let i = 0; i < bot.character.items.length; i++) {
                     const item = bot.character.items[i]
                     if (!item || WARRIOR_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
 
                     await bot.sendItem(merchant.character.id, i, item.q)
                 }
-                const extraGold = bot.character.gold - 1000000
-                if (extraGold > 0) await bot.sendGold(merchant.character.id, extraGold)
             }
         } catch (e) {
             console.error(e)
@@ -2787,6 +2841,7 @@ async function startMerchant(bot: Merchant) {
                 if (!bot.S[type].live) continue
                 if (!bot.S[type].target) continue
 
+                await bot.closeMerchantStand()
                 await bot.smartMove(bot.S[type], { getWithin: 100 })
 
                 setTimeout(async () => { moveLoop() }, 250)
