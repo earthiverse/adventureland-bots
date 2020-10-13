@@ -462,6 +462,7 @@ export class Pathfinder {
             const currentNode = rawPath[i]
             const nextNode = rawPath[i - 1]
 
+            // TODO: Get links, and determine the faster link? This will help solve the walk to spawn issue on winterland.
             const link = this.graph.getLink(currentNode.id, nextNode.id)
             if (link.data) {
                 if (i == rawPath.length - 1 && link.data.type == "transport") {

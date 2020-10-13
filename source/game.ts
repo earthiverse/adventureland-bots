@@ -2283,6 +2283,8 @@ export class Player extends Observer {
         else if (mType == "snowman") mType = "arcticbee"
 
         for (const mapName in this.G.maps) {
+            if (this.G.maps[mapName as MapName].ignore) continue
+
             const map = this.G.maps[mapName as MapName]
             if (map.instance || !map.monsters || map.monsters.length == 0) continue // Map is unreachable, or there are no monsters
 

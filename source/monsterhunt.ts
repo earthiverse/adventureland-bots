@@ -10,7 +10,7 @@ import { Pathfinder } from "./pathfinder.js"
 import { Tools } from "./tools.js"
 
 const region: ServerRegion = "US"
-const identifier: ServerIdentifier = "II"
+const identifier: ServerIdentifier = "I"
 
 let ranger: Ranger
 let rangerTarget: MonsterName
@@ -2675,6 +2675,7 @@ async function startMerchant(bot: Merchant) {
     mluckLoop()
 
     let lastBankTime = Number.MIN_VALUE
+    let lastSpecialCheckTime = Number.MIN_VALUE
     async function moveLoop() {
         try {
             if (bot.socket.disconnected) return
@@ -2811,6 +2812,20 @@ async function startMerchant(bot: Merchant) {
 
                 setTimeout(async () => { moveLoop() }, 250)
                 return
+            }
+
+            if (lastSpecialCheckTime < Date.now() - 900000) {
+                const locations: NodeData[] = []
+                locations.push(...bot.locateMonsters("mvampire"))
+                locations.push(...bot.locateMonsters("fvampire"))
+                locations.push(...bot.locateMonsters("greenjr"))
+                locations.push(...bot.locateMonsters("jr"))
+
+                for (const location of locations) {
+                    console.log(location)
+                    await bot.smartMove(location)
+                    lastSpecialCheckTime = Date.now()
+                }
             }
 
             // Move to our friends if they have lots of items (they'll send them over)
