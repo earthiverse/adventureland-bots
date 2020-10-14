@@ -146,8 +146,8 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                 if (gInfo.compound == undefined) continue // Not compoundable
                 const itemPoss = duplicates[itemName]
                 const itemInfo = bot.character.items[itemPoss[0]]
-                if (itemInfo.level >= 4) continue // We don't want to upgrade past level 8 automatically.
-                if (ITEMS_TO_SELL[itemName] && itemInfo.level !== undefined && itemInfo.level >= ITEMS_TO_SELL[itemName]) continue // Don't upgrade items we want to sell
+                if (itemInfo.level >= 4) continue // We don't want to compound past level 4 automatically.
+                if (ITEMS_TO_SELL[itemName]) continue // Don't compound items we want to sell
 
                 // Figure out the scroll we need to upgrade
                 const grade = await Tools.calculateItemGrade(itemInfo)
@@ -325,7 +325,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                 const itemPos = duplicates[itemName][0]
                 const itemInfo = bot.character.items[itemPos]
                 if (itemInfo.level >= 8) continue // We don't want to upgrade past level 8 automatically.
-                if (ITEMS_TO_SELL[itemName] && itemInfo.level !== undefined && itemInfo.level >= ITEMS_TO_SELL[itemName]) continue // Don't upgrade items we want to sell
+                if (ITEMS_TO_SELL[itemName]) continue // Don't upgrade items we want to sell
 
                 // Figure out the scroll we need to upgrade
                 const grade = await Tools.calculateItemGrade(itemInfo)
