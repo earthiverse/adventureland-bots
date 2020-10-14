@@ -2943,15 +2943,14 @@ async function run(region: ServerRegion, identifier: ServerIdentifier) {
     const serverLoop = async () => {
         try {
             // Don't change servers too fast
-            if (lastServerTime > Date.now() - 60000) {
-                setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerTime - Date.now() - 60000))
+            if (lastServerTime > Date.now() - 30000) {
+                setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerTime - Date.now() - 30000))
                 return
             }
 
             // Look for the lowest hp special monster
-            console.log("looking for best monster")
             const bestMonster = await EntityModel.findOne({ $or: [{ type: "mrpumpkin" }, { type: "mrgreen" }], lastSeen: { $gt: Date.now() - 60000 } }).sort({ hp: 1 }).lean().exec()
-            console.log("")
+            console.log(bestMonster)
             if (bestMonster && bestMonster.serverRegion !== region || bestMonster.serverIdentifier !== identifier) {
                 console.log("wanting to disconnect")
                 await Game.disconnect(false)

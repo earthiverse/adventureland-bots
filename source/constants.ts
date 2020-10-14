@@ -41,19 +41,19 @@ export const ITEMS_TO_BUY: ItemName[] = [
     // Orbs
     "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull",
     // Shields
-    "t2quiver", "lantern", "mshield", "quiver", "sshield", "xshield",
+    "t2quiver", "lantern", "mshield", /*"quiver",*/ "sshield", "xshield",
     // Capes
     "angelwings", "bcape", "cape", "ecape", "stealthcape",
     // Shoes
-    "eslippers", "hboots", "mrnboots", "mwboots", "shoes1", "wingedboots", "wshoes", "xboots",
+    "eslippers", "hboots", "mrnboots", "mwboots", "shoes1", "wingedboots", /*"wshoes",*/ "xboots",
     // Pants
-    "hpants", "mrnpants", "mwpants", "pants1", "starkillers", "wbreeches", "xpants",
+    "hpants", "mrnpants", "mwpants", "pants1", "starkillers", /*"wbreeches",*/ "xpants",
     // Armor
-    "cdragon", "coat1", "harmor", "mcape", "mrnarmor", "mwarmor", "tshirt0", "tshirt1", "tshirt2", "tshirt3", "tshirt4", "tshirt6", "tshirt7", "tshirt8", "tshirt88", "tshirt9", "warpvest", "wattire", "xarmor",
+    "cdragon", "coat1", "harmor", "mcape", "mrnarmor", "mwarmor", "tshirt0", "tshirt1", "tshirt2", "tshirt3", "tshirt4", "tshirt6", "tshirt7", "tshirt8", "tshirt88", "tshirt9", "warpvest", /*"wattire",*/ "xarmor",
     // Helmets
-    "eears", "fury", "helmet1", "hhelmet", "mrnhat", "mwhelmet", "partyhat", "rednose", "wcap", "xhelmet",
+    "eears", "fury", "helmet1", "hhelmet", "mrnhat", "mwhelmet", "partyhat", "rednose", /*"wcap",*/ "xhelmet",
     // Gloves
-    "gloves1", "goldenpowerglove", "handofmidas", "hgloves", "mrngloves", "mwgloves", "poker", "powerglove", "wgloves", "xgloves",
+    "gloves1", "goldenpowerglove", "handofmidas", "hgloves", "mrngloves", "mwgloves", "poker", "powerglove", /*"wgloves",*/ "xgloves",
     // Good weapons
     "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "firebow", "frostbow", "froststaff", "gbow", "harbringer", "heartwood", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow", "t3bow", "wblade",
     // Things we can exchange / craft with
