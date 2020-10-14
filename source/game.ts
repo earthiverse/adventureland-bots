@@ -1043,32 +1043,58 @@ export class Player extends Observer {
             const completeCheck = (data: UpgradeData) => {
                 if (data.type == "compound") {
                     this.socket.removeListener("upgrade", completeCheck)
-                    this.socket.removeListener("game_response", failCheck)
+                    this.socket.removeListener("game_response", gameResponseCheck)
+                    this.socket.removeListener("player", playerCheck)
                     resolve(data.success == 1)
                 }
             }
-            const failCheck = (data: GameResponseData) => {
+
+            const playerCheck = (data: CharacterData) => {
+                if (!data.hitchhikers) return
+                for (const [event, datum] of data.hitchhikers) {
+                    if (event == "game_response" && datum.response == "compound_fail") {
+                        this.socket.removeListener("upgrade", completeCheck)
+                        this.socket.removeListener("game_response", gameResponseCheck)
+                        this.socket.removeListener("player", playerCheck)
+                        resolve(false)
+                        return
+                    } else if (event == "game_response" && datum.response == "compound_success") {
+                        this.socket.removeListener("upgrade", completeCheck)
+                        this.socket.removeListener("game_response", gameResponseCheck)
+                        this.socket.removeListener("player", playerCheck)
+                        resolve(true)
+                        return
+                    }
+                }
+            }
+
+            const gameResponseCheck = (data: GameResponseData) => {
                 if (typeof data == "object") {
                     if (data.response == "bank_restrictions" && data.place == "compound") {
                         this.socket.removeListener("upgrade", completeCheck)
-                        this.socket.removeListener("game_response", failCheck)
+                        this.socket.removeListener("game_response", gameResponseCheck)
+                        this.socket.removeListener("player", playerCheck)
                         reject("You can't compound items in the bank.")
                     }
                 } else if (typeof data == "string") {
                     if (data == "compound_no_item") {
                         this.socket.removeListener("upgrade", completeCheck)
-                        this.socket.removeListener("game_response", failCheck)
+                        this.socket.removeListener("game_response", gameResponseCheck)
+                        this.socket.removeListener("player", playerCheck)
                         reject()
                     }
                 }
             }
+            
             setTimeout(() => {
                 this.socket.removeListener("upgrade", completeCheck)
-                this.socket.removeListener("game_response", failCheck)
+                this.socket.removeListener("game_response", gameResponseCheck)
+                this.socket.removeListener("player", playerCheck)
                 reject("compound timeout (60000ms)")
             }, 60000)
             this.socket.on("upgrade", completeCheck)
-            this.socket.on("game_response", failCheck)
+            this.socket.on("game_response", gameResponseCheck)
+            this.socket.on("player", playerCheck)
         })
 
         this.socket.emit("compound", {
@@ -1688,24 +1714,26 @@ export class Player extends Observer {
             }
 
             // Check if our destination is an NPC role
-            for (const mapName in this.G.maps) {
-                if (this.G.maps[mapName as MapName].ignore) continue
-                for (const npc of this.G.maps[mapName as MapName].npcs) {
-                    if (to !== npc.id) continue
+            if (!fixedTo) {
+                for (const mapName in this.G.maps) {
+                    if (this.G.maps[mapName as MapName].ignore) continue
+                    for (const npc of this.G.maps[mapName as MapName].npcs) {
+                        if (to !== npc.id) continue
 
-                    // Set `to` to the closest NPC
-                    const locations = this.locateNPCs(npc.id)
-                    let closestDistance: number = Number.MAX_VALUE
-                    for (const location of locations) {
-                        const potentialPath = await Pathfinder.getPath(this.character, location)
-                        const distance = Pathfinder.computePathCost(potentialPath)
-                        if (distance < closestDistance) {
-                            path = potentialPath
-                            fixedTo = path[path.length - 1]
-                            closestDistance = distance
+                        // Set `to` to the closest NPC
+                        const locations = this.locateNPCs(npc.id)
+                        let closestDistance: number = Number.MAX_VALUE
+                        for (const location of locations) {
+                            const potentialPath = await Pathfinder.getPath(this.character, location)
+                            const distance = Pathfinder.computePathCost(potentialPath)
+                            if (distance < closestDistance) {
+                                path = potentialPath
+                                fixedTo = path[path.length - 1]
+                                closestDistance = distance
+                            }
                         }
+                        break
                     }
-                    break
                 }
             }
 
@@ -1870,38 +1898,75 @@ export class Player extends Observer {
             const completeCheck = (data: UpgradeData) => {
                 if (data.type == "upgrade") {
                     this.socket.removeListener("upgrade", completeCheck)
-                    this.socket.removeListener("game_response", failCheck)
+                    this.socket.removeListener("game_response", gameResponseCheck)
+                    this.socket.removeListener("player", playerCheck)
                     resolve(data.success == 1)
                 }
             }
-            const failCheck = (data: GameResponseData) => {
+
+            const playerCheck = (data: CharacterData) => {
+                if (!data.hitchhikers) return
+                for (const [event, datum] of data.hitchhikers) {
+                    if (event == "game_response" && datum.response == "upgrade_fail" && datum.num == itemPos) {
+                        this.socket.removeListener("upgrade", completeCheck)
+                        this.socket.removeListener("game_response", gameResponseCheck)
+                        this.socket.removeListener("player", playerCheck)
+                        resolve(false)
+                        return
+                    } else if (event == "game_response" && datum.response == "upgrade_success" && datum.num == itemPos) {
+                        this.socket.removeListener("upgrade", completeCheck)
+                        this.socket.removeListener("game_response", gameResponseCheck)
+                        this.socket.removeListener("player", playerCheck)
+                        resolve(true)
+                        return
+                    }
+                }
+            }
+
+            const gameResponseCheck = (data: GameResponseData) => {
                 if (typeof data == "object" && data.response == "bank_restrictions" && data.place == "upgrade") {
                     this.socket.removeListener("upgrade", completeCheck)
-                    this.socket.removeListener("game_response", failCheck)
+                    this.socket.removeListener("game_response", gameResponseCheck)
+                    this.socket.removeListener("player", playerCheck)
                     reject("You can't upgrade items in the bank.")
                 } else if (typeof data == "string") {
                     if (data == "bank_restrictions") {
                         this.socket.removeListener("upgrade", completeCheck)
-                        this.socket.removeListener("game_response", failCheck)
+                        this.socket.removeListener("game_response", gameResponseCheck)
+                        this.socket.removeListener("player", playerCheck)
                         reject("We can't upgrade things in the bank.")
                     } else if (data == "upgrade_in_progress") {
                         this.socket.removeListener("upgrade", completeCheck)
-                        this.socket.removeListener("game_response", failCheck)
+                        this.socket.removeListener("game_response", gameResponseCheck)
+                        this.socket.removeListener("player", playerCheck)
                         reject("We are already upgrading something.")
                     } else if (data == "upgrade_incompatible_scroll") {
                         this.socket.removeListener("upgrade", completeCheck)
-                        this.socket.removeListener("game_response", failCheck)
+                        this.socket.removeListener("game_response", gameResponseCheck)
+                        this.socket.removeListener("player", playerCheck)
                         reject(`The scroll we're trying to use (${scrollInfo.name}) isn't a high enough grade to upgrade this item.`)
+                    } else if (data == "upgrade_success") {
+                        this.socket.removeListener("upgrade", completeCheck)
+                        this.socket.removeListener("game_response", gameResponseCheck)
+                        this.socket.removeListener("player", playerCheck)
+                        resolve(true)
+                    } else if (data == "upgrade_fail") {
+                        this.socket.removeListener("upgrade", completeCheck)
+                        this.socket.removeListener("game_response", gameResponseCheck)
+                        this.socket.removeListener("player", playerCheck)
+                        resolve(false)
                     }
                 }
             }
             setTimeout(() => {
                 this.socket.removeListener("upgrade", completeCheck)
-                this.socket.removeListener("game_response", failCheck)
+                this.socket.removeListener("game_response", gameResponseCheck)
+                this.socket.removeListener("player", playerCheck)
                 reject("upgrade timeout (60000ms)")
             }, 60000)
             this.socket.on("upgrade", completeCheck)
-            this.socket.on("game_response", failCheck)
+            this.socket.on("game_response", gameResponseCheck)
+            this.socket.on("player", playerCheck)
         })
 
         this.socket.emit("upgrade", { item_num: itemPos, scroll_num: scrollPos, clevel: this.character.items[itemPos].level })

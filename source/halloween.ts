@@ -9,9 +9,6 @@ import { Game, Merchant, PingCompensatedPlayer, Priest, Ranger, Warrior } from "
 import { Pathfinder } from "./pathfinder.js"
 import { Tools } from "./tools.js"
 
-let region: ServerRegion
-let identifier: ServerIdentifier
-
 let ranger: Ranger
 let rangerTarget: MonsterName
 let warrior: Warrior
@@ -23,21 +20,13 @@ let merchant: Merchant
 
 async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promise<MonsterName> {
     // Priority #1: Special Monsters
-    for (const mN in bot.S) {
-        // Look in server info
-        const type = mN as MonsterName
-        if (!bot.S[type].live) continue // Not live
-        if (!strategy[type]) continue // No strategy
-        if (strategy[type].requirePriest && priestTarget !== type) continue // Need priest
-
-        return type
-    }
-    const entities = await EntityModel.find({ serverRegion: region, serverIdentifier: identifier, lastSeen: { $gt: Date.now() - 60000 } }).sort({ hp: 1 }).lean().exec()
+    const entities = await EntityModel.find({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 } }).sort({ hp: 1 }).lean().exec()
     for (const entity of entities) {
         // Look in database of entities
         if (!strategy[entity.type]) continue // No strategy
+        if (entity.type !== "mrgreen" && entity.type !== "mrpumpkin") continue // Skip phoenixes
         if (strategy[entity.type].requirePriest && priestTarget !== entity.type) continue // Need priest
-        if (!bot.G.monsters[entity.type].cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+        if (bot.G.monsters[entity.type].cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
 
         return entity.type
     }
@@ -248,13 +237,13 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
 
             for (const [id, chest] of bot.chests) {
                 if (Tools.distance(bot.character, chest) > 800) continue
-                bot.openChest(id)
+                await bot.openChest(id)
             }
         } catch (e) {
             console.error(e)
         }
 
-        setTimeout(async () => { lootLoop() }, 1000)
+        setTimeout(async () => { lootLoop() }, 500)
     }
     lootLoop()
 
@@ -371,7 +360,7 @@ async function startRanger(bot: Ranger) {
             const fiveshotTargets: EntityData[] = []
             for (const [, entity] of bot.entities) {
                 if (entity.type !== mtype) continue
-                if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                 if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                 // If the target will die to incoming projectiles, ignore it
@@ -438,7 +427,7 @@ async function startRanger(bot: Ranger) {
             const targets: string[] = []
             for (const [id, entity] of bot.entities) {
                 if (entity.type !== mtype) continue
-                if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                 if (Tools.distance(bot.character, entity) > bot.character.range * bot.G.skills.supershot.range_multiplier) continue // Only attack those in range
 
                 // If the target will die to incoming projectiles, ignore it
@@ -483,7 +472,7 @@ async function startRanger(bot: Ranger) {
                 if (entity.type !== mtype) continue
                 if (entity.target !== tank) continue // It's not targeting our tank
                 if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
-                if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
 
                 // If the target will die to incoming projectiles, ignore it
                 if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
@@ -550,7 +539,7 @@ async function startRanger(bot: Ranger) {
                 if (entity.type !== mtype) continue
                 if (entity.target != tank) continue // It's not targeting our tank
                 if (Tools.distance(bot.character, entity) > bot.character.range * bot.G.skills.supershot.range_multiplier) continue // Only attack those in range
-                if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
 
                 // If the target will die to incoming projectiles, ignore it
                 if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
@@ -588,7 +577,7 @@ async function startRanger(bot: Ranger) {
         let closestDistance: number = Number.MAX_VALUE
         for (const [, entity] of bot.entities) {
             if (entity.type !== mtype) continue
-            if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+            if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
 
             // If the target will die to incoming projectiles, ignore it
             if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
@@ -617,7 +606,7 @@ async function startRanger(bot: Ranger) {
             // Look in nearby entities for monster
             for (const [, entity] of bot.entities) {
                 if (entity.type !== mtype) continue
-                if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                 if (Tools.distance(bot.character, entity) <= bot.character.range) return 250 // We're in range
                 await bot.smartMove(entity, { getWithin: bot.character.range - 10 })
                 return 250
@@ -631,7 +620,7 @@ async function startRanger(bot: Ranger) {
             }
 
             // Look in database for monster
-            const specialTarget = await EntityModel.findOne({ serverRegion: region, serverIdentifier: identifier, type: mtype }).lean().exec()
+            const specialTarget = await EntityModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, type: mtype }).lean().exec()
             if (specialTarget) {
                 await bot.smartMove(specialTarget, { getWithin: bot.character.range - 10 })
             } else {
@@ -985,7 +974,7 @@ async function startRanger(bot: Ranger) {
             const inRangeMonsterTypes: Set<MonsterName> = new Set()
             for (const entity of bot.entities.values()) {
 
-                if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                 visibleMonsterTypes.add(entity.type)
                 if (Tools.distance(bot.character, entity) < bot.character.range) inRangeMonsterTypes.add(entity.type)
             }
@@ -1029,7 +1018,7 @@ async function startRanger(bot: Ranger) {
                     const fiveshotTargets: string[] = []
                     for (const [id, entity] of bot.entities) {
                         if (!strategy[entity.type] || !strategy[entity.type].attackWhileIdle) continue
-                        if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                        if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                         if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                         // If the target will die to incoming projectiles, ignore it
@@ -1060,7 +1049,7 @@ async function startRanger(bot: Ranger) {
                     const targets: string[] = []
                     for (const [id, entity] of bot.entities) {
                         if (!strategy[entity.type] || !strategy[entity.type].attackWhileIdle) continue
-                        if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                        if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                         if (Tools.distance(bot.character, entity) > bot.character.range * bot.G.skills.supershot.range_multiplier) continue // Only attack those in range
 
                         // If the target will die to incoming projectiles, ignore it
@@ -1176,7 +1165,7 @@ async function startPriest(bot: Priest) {
                 const targets: EntityData[] = []
                 for (const [, entity] of bot.entities) {
                     if (entity.type !== mtype) continue
-                    if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                    if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                     if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                     // If the target will die to incoming projectiles, ignore it
@@ -1226,7 +1215,7 @@ async function startPriest(bot: Priest) {
                 if (entity.type !== mtype) continue
                 if (entity.target !== tank) continue // It's not targeting our tank
                 if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
-                if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
 
                 target = entity
                 break
@@ -1263,7 +1252,7 @@ async function startPriest(bot: Priest) {
         let closestDistance: number = Number.MAX_VALUE
         for (const [, entity] of bot.entities) {
             if (entity.type !== mtype) continue
-            if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+            if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
 
             // If the target will die to incoming projectiles, ignore it
             if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
@@ -1292,7 +1281,7 @@ async function startPriest(bot: Priest) {
             // Look in nearby entities for monster
             for (const [, entity] of bot.entities) {
                 if (entity.type !== mtype) continue
-                if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                 if (Tools.distance(bot.character, entity) <= bot.character.range) return 250 // We're in range
                 await bot.smartMove(entity, { getWithin: bot.character.range - 10 })
                 return 250
@@ -1306,7 +1295,7 @@ async function startPriest(bot: Priest) {
             }
 
             // Look in database for monster
-            const specialTarget = await EntityModel.findOne({ serverRegion: region, serverIdentifier: identifier, type: mtype }).lean().exec()
+            const specialTarget = await EntityModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, type: mtype }).lean().exec()
             if (specialTarget) {
                 await bot.smartMove(specialTarget, { getWithin: bot.character.range - 10 })
             } else {
@@ -1690,8 +1679,8 @@ async function startPriest(bot: Priest) {
             const visibleMonsterTypes: Set<MonsterName> = new Set()
             const inRangeMonsterTypes: Set<MonsterName> = new Set()
             for (const entity of bot.entities.values()) {
-                
-                if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+
+                if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                 visibleMonsterTypes.add(entity.type)
                 if (Tools.distance(bot.character, entity) < bot.character.range) inRangeMonsterTypes.add(entity.type)
             }
@@ -1702,7 +1691,7 @@ async function startPriest(bot: Priest) {
                 targets = []
                 for (const [id, entity] of bot.entities) {
                     if (!strategy[entity.type] || !strategy[entity.type].attackWhileIdle) continue
-                    if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                    if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                     if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                     // If the target will die to incoming projectiles, ignore it
@@ -1832,7 +1821,7 @@ async function startWarrior(bot: Warrior) {
 
             for (const [, entity] of bot.entities) {
                 if (entity.type !== mtype) continue
-                if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                 const distance = Tools.distance(bot.character, entity)
                 if (distance > bot.character.range) continue // Only attack those in range
 
@@ -1868,7 +1857,7 @@ async function startWarrior(bot: Warrior) {
                 for (const [, entity] of bot.entities) {
                     const d = Tools.distance(bot.character, entity)
                     if (entity.target == bot.character.id) continue // It's coming towards us already
-                    if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                    if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                     if (d > bot.G.skills.agitate.range && d > bot.G.skills.taunt.range) continue
                     if (d <= bot.G.skills.agitate.range) {
                         if (entity.type !== mtype) numInAgitateRange = Number.MIN_SAFE_INTEGER // We don't want to agitate if there are other monsters nearby
@@ -1888,7 +1877,7 @@ async function startWarrior(bot: Warrior) {
         if (bot.canUse("stomp")) {
             for (const [, entity] of bot.entities) {
                 if (entity.type !== mtype) continue
-                if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                 if (Tools.distance(bot.character, entity) > bot.G.skills.stomp.range) continue // Only stomp those in range
 
                 // If the target will die to incoming projectiles, ignore it
@@ -1907,7 +1896,7 @@ async function startWarrior(bot: Warrior) {
             const targets: EntityData[] = []
             for (const [, entity] of bot.entities) {
                 if (entity.type !== mtype) continue
-                if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                 if (Tools.distance(bot.character, entity) > bot.G.skills.cleave.range) continue // Only attack those in range
 
                 // If the target will die to incoming projectiles, ignore it
@@ -1942,7 +1931,7 @@ async function startWarrior(bot: Warrior) {
 
             for (const [, entity] of bot.entities) {
                 if (entity.type !== mtype) continue
-                if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                 if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                 if (entity.target == bot.character.id) {
@@ -1962,7 +1951,7 @@ async function startWarrior(bot: Warrior) {
                 // See if one is in taunt distance
                 for (const [, entity] of bot.entities) {
                     if (entity.type !== mtype) continue
-                    if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                    if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                     if (Tools.distance(bot.character, entity) > bot.G.skills.taunt.range) continue // Only taunt those in range
 
                     if (entity.target == bot.character.id) {
@@ -2013,7 +2002,7 @@ async function startWarrior(bot: Warrior) {
         for (const [, entity] of bot.entities) {
             if (entity.type !== mtype) continue
             if (entity.range > bot.character.range) continue
-            if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+            if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
 
             target = entity
         }
@@ -2041,7 +2030,7 @@ async function startWarrior(bot: Warrior) {
         let closestDistance: number = Number.MAX_VALUE
         for (const [, entity] of bot.entities) {
             if (entity.type !== mtype) continue
-            if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+            if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
 
             // If the target will die to incoming projectiles, ignore it
             if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
@@ -2070,7 +2059,7 @@ async function startWarrior(bot: Warrior) {
             // Look in nearby entities for monster
             for (const [, entity] of bot.entities) {
                 if (entity.type !== mtype) continue
-                if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                 if (Tools.distance(bot.character, entity) <= bot.character.range) return 250 // We're in range
                 await bot.smartMove(entity, { getWithin: bot.character.range - 10 })
                 return 250
@@ -2084,7 +2073,7 @@ async function startWarrior(bot: Warrior) {
             }
 
             // Look in database for monster
-            const specialTarget = await EntityModel.findOne({ serverRegion: region, serverIdentifier: identifier, type: mtype }).lean().exec()
+            const specialTarget = await EntityModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, type: mtype }).lean().exec()
             if (specialTarget) {
                 await bot.smartMove(specialTarget, { getWithin: bot.character.range - 10 })
             } else {
@@ -2209,7 +2198,7 @@ async function startWarrior(bot: Warrior) {
         minimush: {
             attack: async () => { return await defaultAttackStrategy("minimush") },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "halloween", x: -18, y: 631 }, "minimush") },
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "jacko" },
             attackWhileIdle: true
         },
         mole: {
@@ -2434,7 +2423,7 @@ async function startWarrior(bot: Warrior) {
             const visibleMonsterTypes: Set<MonsterName> = new Set()
             const inRangeMonsterTypes: Set<MonsterName> = new Set()
             for (const entity of bot.entities.values()) {
-                if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                 visibleMonsterTypes.add(entity.type)
                 if (Tools.distance(bot.character, entity) < bot.character.range) inRangeMonsterTypes.add(entity.type)
             }
@@ -2446,7 +2435,7 @@ async function startWarrior(bot: Warrior) {
                     const targets: string[] = []
                     for (const [id, entity] of bot.entities) {
                         if (!strategy[entity.type] || !strategy[entity.type].attackWhileIdle) continue
-                        if (!entity.cooperative && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                        if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                         if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                         // If the target will die to incoming projectiles, ignore it
@@ -2601,14 +2590,11 @@ async function startMerchant(bot: Merchant) {
                     if (player.npc) continue // It's an NPC, we can't mluck NPCs.
 
                     if (!player.s.mluck) {
-                        console.log(`mlucking ${player.id} (give)`)
                         await bot.mluck(player.id) // Give the mluck 
                     } else if (!player.s.mluck.strong && player.s.mluck.f !== bot.character.id) {
-                        console.log(`mlucking ${player.id} (steal)`)
                         await bot.mluck(player.id) // Steal the mluck
                     } else if ((!player.s.mluck.strong && player.s.mluck.ms < (bot.G.conditions.mluck.duration - 60000))
                         || (player.s.mluck.strong && player.s.mluck.f == bot.character.id && player.s.mluck.ms < (bot.G.conditions.mluck.duration - 60000))) {
-                        console.log(`mlucking ${player.id} (extend)`)
                         await bot.mluck(player.id) // Extend the mluck
                     }
                 }
@@ -2621,7 +2607,7 @@ async function startMerchant(bot: Merchant) {
     }
     mluckLoop()
 
-    let lastSpecialCheckTime = Number.MIN_VALUE
+    let lastBankVisit = 0
     async function moveLoop() {
         try {
             if (bot.socket.disconnected) return
@@ -2638,9 +2624,11 @@ async function startMerchant(bot: Merchant) {
             for (const item of bot.character.items) {
                 if (!item) freeSlots++
             }
-            if (freeSlots == 0) {
+            if (freeSlots == 0 || lastBankVisit == 0) {
                 await bot.closeMerchantStand()
                 await bot.smartMove("goldnpc")
+
+                lastBankVisit = Date.now()
 
                 // Deposit excess gold
                 const excessGold = bot.character.gold - 100000000
@@ -2687,11 +2675,11 @@ async function startMerchant(bot: Merchant) {
                         // Withdraw upgradable items
                         if (freeSpaces < 3) break // Not enough space in inventory
 
-                        const pack1 = `items${Math.floor((1 + d[0]) / 42)}` as Exclude<BankPackType, "gold">
+                        const pack1 = `items${Math.floor((d[0]) / 42)}` as Exclude<BankPackType, "gold">
                         const slot1 = d[0] % 42
                         let withdrew = false
                         for (let i = 1; i < d.length - 1 && freeSpaces > 2; i++) {
-                            const pack2 = `items${Math.floor((1 + d[i]) / 42)}` as Exclude<BankPackType, "gold">
+                            const pack2 = `items${Math.floor((d[i]) / 42)}` as Exclude<BankPackType, "gold">
                             const slot2 = d[i] % 42
                             const item2 = bot.bank[pack2][slot2]
 
@@ -2719,13 +2707,13 @@ async function startMerchant(bot: Merchant) {
                         if (d.length < 3) continue // Not enough to compound
 
                         for (let i = 0; i < d.length - 2 && freeSpaces > 4; i++) {
-                            const pack1 = `items${Math.floor((1 + d[i]) / 42)}` as Exclude<BankPackType, "gold">
+                            const pack1 = `items${Math.floor((d[i]) / 42)}` as Exclude<BankPackType, "gold">
                             const slot1 = d[i] % 42
                             const item1 = bot.bank[pack1][slot1]
-                            const pack2 = `items${Math.floor((1 + d[i + 1]) / 42)}` as Exclude<BankPackType, "gold">
+                            const pack2 = `items${Math.floor((d[i + 1]) / 42)}` as Exclude<BankPackType, "gold">
                             const slot2 = d[i + 1] % 42
                             const item2 = bot.bank[pack2][slot2]
-                            const pack3 = `items${Math.floor((1 + d[i + 2]) / 42)}` as Exclude<BankPackType, "gold">
+                            const pack3 = `items${Math.floor((d[i + 2]) / 42)}` as Exclude<BankPackType, "gold">
                             const slot3 = d[i + 2] % 42
                             const item3 = bot.bank[pack3][slot3]
 
@@ -2755,20 +2743,6 @@ async function startMerchant(bot: Merchant) {
 
                 setTimeout(async () => { moveLoop() }, 250)
                 return
-            }
-
-            if (lastSpecialCheckTime < Date.now() - 900000) {
-                const locations: NodeData[] = []
-                locations.push(...bot.locateMonsters("mvampire"))
-                locations.push(...bot.locateMonsters("fvampire"))
-                locations.push(...bot.locateMonsters("greenjr"))
-                locations.push(...bot.locateMonsters("jr"))
-
-                for (const location of locations) {
-                    console.log(location)
-                    await bot.smartMove(location)
-                    lastSpecialCheckTime = Date.now()
-                }
             }
 
             // Move to our friends if they have lots of items (they'll send them over)
@@ -2808,7 +2782,7 @@ async function startMerchant(bot: Merchant) {
 
             // Find other characters that need mluck and go find them
             if (bot.canUse("mluck")) {
-                const charactersToMluck = await CharacterModel.find({ serverRegion: region, serverIdentifier: identifier, lastSeen: { $gt: Date.now() - 60000 }, $or: [{ "s.mluck": undefined }, { "s.mluck.strong": undefined, "s.mluck.f": { "$ne": "earthMer" } }] }).lean().exec()
+                const charactersToMluck = await CharacterModel.find({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 }, $or: [{ "s.mluck": undefined }, { "s.mluck.strong": undefined, "s.mluck.f": { "$ne": "earthMer" } }] }).lean().exec()
                 for (const character of charactersToMluck) {
                     // Move to them, and we'll automatically mluck them
                     await bot.closeMerchantStand()
@@ -2832,7 +2806,7 @@ async function startMerchant(bot: Merchant) {
     moveLoop()
 }
 
-async function run(region: ServerRegion, identifier: ServerIdentifier) {
+async function run() {
     await Promise.all([Game.login("hyprkookeez@gmail.com", "thisisnotmyrealpasswordlol"), Pathfinder.prepare()])
 
     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
@@ -2841,14 +2815,13 @@ async function run(region: ServerRegion, identifier: ServerIdentifier) {
     const serverLoop = async () => {
         try {
             // Don't change servers too fast
-            if (lastServerTime > Date.now() - 30000) {
-                setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerTime - Date.now() - 30000))
+            if (lastServerTime > Date.now() - 60000) {
+                setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerTime - Date.now() - 60000))
                 return
             }
 
             // Look for the lowest hp special monster
             let bestMonster = await EntityModel.findOne({ $or: [{ type: "mrpumpkin" }, { type: "mrgreen" }], lastSeen: { $gt: Date.now() - 60000 } }).sort({ hp: 1 }).lean().exec()
-            console.log(bestMonster)
             if (!bestMonster) {
                 bestMonster = {
                     type: null,
@@ -2861,13 +2834,19 @@ async function run(region: ServerRegion, identifier: ServerIdentifier) {
                 }
             }
 
-            if (bestMonster && bestMonster.serverRegion !== region || bestMonster.serverIdentifier !== identifier) {
-                console.log(`Disconnecting from ${region} ${identifier}`)
+            let region: ServerRegion
+            if (ranger) region = ranger.server.region
+            let identifier: ServerIdentifier
+            if (ranger) identifier = ranger.server.name
 
-                await ranger.disconnect()
-                await warrior.disconnect()
-                await priest.disconnect()
-                await merchant.disconnect()
+            if (bestMonster && bestMonster.serverRegion !== region || bestMonster.serverIdentifier !== identifier) {
+                if (region) console.log(`Disconnecting from ${region} ${identifier}`)
+
+                await sleep(5000)
+                if (ranger) await ranger.disconnect()
+                if (warrior) await warrior.disconnect()
+                if (priest) await priest.disconnect()
+                if (merchant) await merchant.disconnect()
                 await sleep(5000)
 
                 console.log(`Connecting to ${bestMonster.serverRegion}${bestMonster.serverIdentifier}!`)
@@ -2897,4 +2876,4 @@ async function run(region: ServerRegion, identifier: ServerIdentifier) {
     }
     serverLoop()
 }
-run(region, identifier)
+run()

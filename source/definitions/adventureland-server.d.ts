@@ -366,6 +366,10 @@ export type GameResponseDataString =
     | "upgrade_in_progress"
     /** We are trying to use a scroll to upgrade something that is a higher grade than the scroll can upgrade */
     | "upgrade_incompatible_scroll"
+    /* Failed upgrading (to chance) */
+    | "upgrade_fail"
+    /* Successfully upgraded */
+    | "upgrade_success"
 // | string
 
 export type HitData = {
