@@ -97,7 +97,7 @@ export class Observer {
                 }
                 for (const status of statuses) {
                     try {
-                        axios.post("https://aldata.info/api/serverstatus", status, {
+                        await axios.post("https://aldata.info/api/serverstatus", status, {
                             headers: {
                                 "content-type": "application/json"
                             }
