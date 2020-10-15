@@ -72,6 +72,27 @@ export class Observer {
         })
 
         this.socket.on("server_info", (data: SInfo) => {
+            // Help out super in his data gathering
+            const statuses: any[] = []
+            for (const mtype in data) {
+                const info = data[mtype]
+                if (typeof info == "object") {
+                    statuses.push({
+                        ...data[mtype],
+                        eventname: mtype,
+                        server_region: this.serverRegion,
+                        server_identifier: this.serverIdentifier
+                    })
+                }
+            }
+            for (const status of statuses) {
+                axios.post("https://aldata.info/api/serverstatus", status, {
+                    headers: {
+                        "content-type": "application/json"
+                    }
+                })
+            }
+
             for (const mtype in data) {
                 const info = data[mtype as MonsterName]
                 if (!info.live) {
@@ -1085,7 +1106,7 @@ export class Player extends Observer {
                     }
                 }
             }
-            
+
             setTimeout(() => {
                 this.socket.removeListener("upgrade", completeCheck)
                 this.socket.removeListener("game_response", gameResponseCheck)
