@@ -153,6 +153,10 @@ export class Observer {
         for (const entity of data.monsters) {
             if (!SPECIAL_MONSTERS.includes(entity.type)) continue
 
+            if (entity.hp == undefined) {
+                entity.hp = this.G.monsters[entity.type].hp
+            }
+
             EntityModel.updateOne({ type: entity.type, serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion }, {
                 map: data.map,
                 name: entity.id,
