@@ -111,6 +111,9 @@ export class Observer {
                 if (!info.live) {
                     EntityModel.deleteOne({ type: mtype as MonsterName, serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion }).exec()
                 } else if (SPECIAL_MONSTERS.includes(mtype as MonsterName)) {
+                    // Update Soft Properties
+                    if (info.hp == undefined) info.hp = this.G.monsters[mtype as MonsterName].hp
+
                     EntityModel.updateOne({ type: mtype as MonsterName, serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion }, {
                         map: info.map,
                         x: info.x,
