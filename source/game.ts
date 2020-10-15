@@ -22,15 +22,18 @@ connect()
 export class Observer {
     public socket: SocketIOClient.Socket
 
+    public G: GData
+
     protected serverRegion: ServerRegion
     protected serverIdentifier: ServerIdentifier
     protected map: MapName
     protected x: number
     protected y: number
 
-    constructor(serverData: ServerData, reconnect = false) {
+    constructor(serverData: ServerData, g: GData, reconnect = false) {
         this.serverRegion = serverData.region
         this.serverIdentifier = serverData.name
+        this.G = g
 
         this.socket = socketio(`ws://${serverData.addr}:${serverData.port}`, {
             autoConnect: false,
@@ -71,11 +74,15 @@ export class Observer {
             this.parseEntities(data.entities)
         })
 
-        this.socket.on("server_info", (data: SInfo) => {
+        this.socket.on("server_info", async (data: SInfo) => {
             // Help out super in his data gathering
             const statuses: any[] = []
             for (const mtype in data) {
                 const info = data[mtype]
+                if (info.live && info.hp == undefined) {
+                    info.hp = this.G.monsters[mtype as MonsterName].hp
+                    info.max_hp = this.G.monsters[mtype as MonsterName].hp
+                }
                 if (typeof info == "object") {
                     statuses.push({
                         ...data[mtype],
@@ -185,8 +192,6 @@ export class Player extends Observer {
     protected pingMap = new Map<string, number>()
     protected timeouts = new Map<string, ReturnType<typeof setTimeout>>()
 
-    public G: GData
-
     public achievements = new Map<string, AchievementProgressData>()
     public bank: BankInfo = { gold: 0 }
     public character: CharacterData
@@ -201,11 +206,10 @@ export class Player extends Observer {
     public S: SInfo
 
     constructor(userID: string, userAuth: string, characterID: string, g: GData, serverData: ServerData) {
-        super(serverData)
+        super(serverData, g)
         this.userID = userID
         this.userAuth = userAuth
         this.characterID = characterID
-        this.G = g
 
         this.socket.on("start", (data: StartData) => {
             // console.log("socket: start!")
@@ -367,6 +371,16 @@ export class Player extends Observer {
         })
 
         this.socket.on("server_info", (data: SInfo) => {
+            // Add Soft properties
+            for (const mtype in data) {
+                if (typeof data[mtype] !== "object") continue
+                const mN = mtype as MonsterName
+                if (data[mN].live && data[mN].hp == undefined) {
+                    data[mN].hp = this.G.monsters[mN].hp
+                    data[mN].max_hp = this.G.monsters[mN].hp
+                }
+            }
+
             this.S = data
         })
 
@@ -3379,7 +3393,8 @@ export class Game {
 
     static async startObserver(region: ServerRegion, id: ServerIdentifier): Promise<Observer> {
         try {
-            const observer = new Observer(this.servers[region][id], true)
+            const g = await Game.getGData()
+            const observer = new Observer(this.servers[region][id], g, true)
             await observer.connect()
 
             this.observers[this.servers[region][id].key] = observer
