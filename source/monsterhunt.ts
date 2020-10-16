@@ -2962,17 +2962,21 @@ async function run(region: ServerRegion, identifier: ServerIdentifier) {
 
                 lastServerTime = Date.now()
 
-                ranger = await Game.startRanger("earthiverse", region, identifier)
-                warrior = await Game.startWarrior("earthWar", region, identifier)
-                priest = await Game.startPriest("earthPri", region, identifier)
-                merchant = await Game.startMerchant("earthMer", region, identifier)
+                try {
+                    ranger = await Game.startRanger("earthiverse", region, identifier)
+                    warrior = await Game.startWarrior("earthWar", region, identifier)
+                    priest = await Game.startPriest("earthPri", region, identifier)
+                    merchant = await Game.startMerchant("earthMer", region, identifier)
 
-                // Start the bots!
-                startRanger(ranger)
-                startWarrior(warrior)
-                startPriest(priest)
-                startMerchant(merchant)
-                for (const bot of [ranger, warrior, priest, merchant]) generalBotStuff(bot)
+                    // Start the bots!
+                    startRanger(ranger)
+                    startWarrior(warrior)
+                    startPriest(priest)
+                    startMerchant(merchant)
+                    for (const bot of [ranger, warrior, priest, merchant]) generalBotStuff(bot)
+                } catch (e) {
+                    await Game.disconnect(false)
+                }
             }
         } catch (e) {
             console.error(e)

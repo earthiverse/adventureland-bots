@@ -495,6 +495,7 @@ export class Pathfinder {
         path.push({ type: "move", map: to.map, x: to.x, y: to.y })
 
         console.log(`Path from ${fromNode.id} to ${toNode.id} found! (${path.length} steps)`)
+        console.log(path)
         return path
     }
 

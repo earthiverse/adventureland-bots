@@ -10,7 +10,7 @@ import { CharacterModel } from "./database/characters/characters.model.js"
 import { Pathfinder } from "./pathfinder.js"
 import { LinkData, NodeData } from "./definitions/pathfinder"
 import { EntityModel } from "./database/entities/entities.model.js"
-import { NPC_INTERACTION_DISTANCE, SPECIAL_MONSTERS } from "./constants.js"
+import { NPC_INTERACTION_DISTANCE, SPECIAL_MONSTERS, USE_BJARNY_MAGIPORT } from "./constants.js"
 
 // TODO: Move to config file
 const MAX_PINGS = 100
@@ -1653,6 +1653,11 @@ export class Player extends Observer {
         this.socket.emit("sell", { num: itemPos, quantity: quantity })
     }
 
+    // TODO: Add promises
+    public async sendCM(to: string[], message: unknown): Promise<void> {
+        this.socket.emit("cm", { to: to, message: JSON.stringify(message) })
+    }
+
     public async sendGold(to: string, amount: number): Promise<number> {
         if (this.character.gold == 0) return Promise.reject("We have no gold to send.")
         if (!this.players.has(to)) return Promise.reject(`We can not see ${to} to send gold.`)
@@ -1813,6 +1818,15 @@ export class Player extends Observer {
         // If we don't have the path yet, get it
         if (!path) path = await Pathfinder.getPath(this.character, fixedTo)
 
+        // If Bjarny is close to our goal ask for a magiport!
+        if (USE_BJARNY_MAGIPORT && !this.players.has("Bjarny")) {
+            const bjarny = await CharacterModel.findOne({ name: "Bjarny", serverIdentifier: this.server.name, serverRegion: this.server.region, lastSeen: { $gt: Date.now() - 15000 } }).lean().exec()
+            if (bjarny && Tools.distance(this.character, fixedTo) > Tools.distance(fixedTo, bjarny)) {
+                console.log("WE ARE ASKING BJARNY FOR A MAGIPORT!")
+                await this.sendCM(["Bjarny"], "magiport")
+            }
+        }
+
         let lastMove = -1
         for (let i = 0; i < path.length; i++) {
             let currentMove = path[i]
@@ -1822,15 +1836,12 @@ export class Player extends Observer {
                 else return Promise.reject(`smartMove to ${to.map}:${to.x},${to.y} cancelled (new smartMove started)`)
             }
 
+            if (Tools.distance(this.character, fixedTo) < options.getWithin) {
+                break // We're already close enough!
+            }
+
             // Check if we can walk to a spot close to the goal if that's OK
             if (currentMove.type == "move" && this.character.map == fixedTo.map && options.getWithin > 0) {
-                // Calculate distance to
-                const distance = Tools.distance(currentMove, fixedTo)
-
-                if (distance < options.getWithin) {
-                    break // We're already close enough!
-                }
-
                 const angle = Math.atan2(this.character.y - fixedTo.y, this.character.x - fixedTo.x)
                 const potentialMove: LinkData = {
                     type: "move",
@@ -1839,6 +1850,7 @@ export class Player extends Observer {
                     y: fixedTo.y + Math.sin(angle) * options.getWithin
                 }
                 if (Pathfinder.canWalk(this.character, potentialMove)) {
+                    // console.log("walk close success!")
                     i = path.length
                     currentMove = potentialMove
                 }
@@ -1851,6 +1863,7 @@ export class Player extends Observer {
                     if (potentialMove.map !== currentMove.map) break
 
                     if (potentialMove.type == "move" && Pathfinder.canWalk(this.character, potentialMove)) {
+                        console.log("skip check success!")
                         i = j
                         currentMove = potentialMove
                     }

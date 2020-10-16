@@ -36,6 +36,13 @@ async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promis
 }
 
 async function generalBotStuff(bot: PingCompensatedPlayer) {
+    bot.socket.on("magiport", async (data: { name: string }) => {
+        if (["Bjarny", "earthMag"].includes(data.name)) {
+            await bot.acceptMagiport(data.name)
+            return
+        }
+    })
+
     async function buyLoop() {
         try {
             if (bot.socket.disconnected) return
@@ -166,6 +173,23 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
         setTimeout(async () => { compoundLoop() }, 250)
     }
     compoundLoop()
+
+    async function elixirLoop() {
+        try {
+            if (bot.socket.disconnected) return
+
+            if (!bot.character.slots.elixir) {
+                let luckElixir = bot.locateItem("elixirluck")
+                if (luckElixir == undefined && bot.character.gold >= bot.G.items.elixirluck.g && !bot.isFull()) luckElixir = await bot.buy("elixirluck")
+                if (luckElixir !== undefined) await bot.equip(luckElixir)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { elixirLoop() }, 1000)
+    }
+    elixirLoop()
 
     // async function exchangeLoop() {
     //     try {
@@ -2842,6 +2866,7 @@ async function run() {
 
             if (bestMonster && bestMonster.serverRegion !== region || bestMonster.serverIdentifier !== identifier) {
                 if (region) console.log(`Disconnecting from ${region} ${identifier}`)
+                await sleep(2500)
                 await Game.disconnect(false)
                 await sleep(5000)
 
