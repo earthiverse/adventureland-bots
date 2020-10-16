@@ -57,7 +57,7 @@ export class Observer {
 
         this.socket.on("death", async (data: DeathData) => {
             try {
-                await EntityModel.findOneAndDelete({ name: data.id }).exec()
+                await EntityModel.deleteOne({ name: data.id }).exec()
             } catch (e) {
                 // There probably wasn't an entity with that ID (this will happen a lot)
             }
@@ -105,7 +105,8 @@ export class Observer {
                     } catch (e) { /* Supress Errors */ }
                 }
             }
-
+        })
+        this.socket.on("server_info", async (data: SInfo) => {
             for (const mtype in data) {
                 const info = data[mtype as MonsterName]
                 if (!info.live) {
@@ -114,6 +115,7 @@ export class Observer {
                     // Update Soft Properties
                     if (info.hp == undefined) info.hp = this.G.monsters[mtype as MonsterName].hp
 
+                    // console.log(`updating ${mtype} on ${this.serverRegion}${this.serverIdentifier} with server_info`)
                     EntityModel.updateOne({ type: mtype as MonsterName, serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion }, {
                         map: info.map,
                         x: info.x,
@@ -132,6 +134,7 @@ export class Observer {
 
     protected async parseEntities(data: EntitiesData): Promise<void> {
         // Update all the players
+        // TODO: Can we optimize this to update many?
         for (const player of data.players) {
             if (player.npc) {
                 // TODO: Update NPCs if they walk around
@@ -150,6 +153,7 @@ export class Observer {
         }
 
         // Update entities if they're special
+        // TODO: Can we optimize this to update many?
         for (const entity of data.monsters) {
             if (!SPECIAL_MONSTERS.includes(entity.type)) continue
 
@@ -157,7 +161,9 @@ export class Observer {
                 entity.hp = this.G.monsters[entity.type].hp
             }
 
-            EntityModel.updateOne({ type: entity.type, serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion }, {
+            // console.log(`updating ${entity.type} on ${this.serverRegion}${this.serverIdentifier} with entity info`)
+
+            await EntityModel.updateOne({ type: entity.type, serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion }, {
                 map: data.map,
                 name: entity.id,
                 x: entity.x,
@@ -174,7 +180,7 @@ export class Observer {
     }
 
     public async connect(): Promise<unknown> {
-        console.log("Connecting...")
+        console.log(`Connecting to ${this.serverRegion}${this.serverIdentifier}...`)
         const connected = new Promise<unknown>((resolve, reject) => {
             this.socket.on("welcome", (data: WelcomeData) => {
                 if (data.region !== this.serverRegion || data.name !== this.serverIdentifier) {
@@ -190,7 +196,6 @@ export class Observer {
         })
 
         this.socket.open()
-
         return connected
     }
 }
@@ -263,6 +268,7 @@ export class Player extends Observer {
         })
 
         this.socket.on("disconnect", () => {
+            // console.log("We are disconnecting!?")
             // NOTE: We will try to automatically reconnect
             // this.disconnect()
         })
@@ -406,6 +412,12 @@ export class Player extends Observer {
         this.socket.on("welcome", (data: WelcomeData) => {
             // console.log("socket: welcome!")
             this.server = data
+
+            // This serves as a doublecheck.
+            if (this.serverRegion !== data.region) console.error(`REGIONS DO NOT MATCH!? ${this.serverRegion} VS. ${data.region}`)
+            if (this.serverIdentifier !== data.name) console.error(`IDENTIFIERS DO NOT MATCH!? ${this.serverIdentifier} VS. ${data.name}`)
+            this.serverRegion = data.region
+            this.serverIdentifier = data.name
 
             // Send a response that we're ready to go
             // console.log("socket: loaded...")
@@ -690,6 +702,7 @@ export class Player extends Observer {
 
         // Close the socket
         this.socket.close()
+        this.socket.removeAllListeners()
 
         // Cancel all timeouts
         for (const timer of this.timeouts.values()) clearTimeout(timer)
@@ -3418,7 +3431,7 @@ export class Game {
     }
 
     static async stopAllCharacters(): Promise<void> {
-        for (const characterName in this.players) this.stopCharacter(characterName)
+        for (const characterName in this.players) await this.stopCharacter(characterName)
     }
 
     static async stopAllObservers(): Promise<void> {
@@ -3434,7 +3447,8 @@ export class Game {
 
     public static async stopObserver(region: ServerRegion, id: ServerIdentifier): Promise<void> {
         this.observers[this.servers[region][id].key].socket.close()
-        delete this.players[region][id]
+        this.observers[this.servers[region][id].key].socket.removeAllListeners()
+        delete this.observers[region][id]
     }
 
     static async updateServersAndCharacters(): Promise<boolean> {

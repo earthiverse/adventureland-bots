@@ -2631,11 +2631,12 @@ async function startMerchant(bot: Merchant) {
                 lastBankVisit = Date.now()
 
                 // Deposit excess gold
-                const excessGold = bot.character.gold - 100000000
+                const goldToKeep = 100000000
+                const excessGold = bot.character.gold - goldToKeep
                 if (excessGold > 0) {
                     await bot.depositGold(excessGold)
                 } else if (excessGold < 0) {
-                    await bot.withdrawGold(-excessGold)
+                    await bot.withdrawGold(goldToKeep - excessGold)
                 }
 
                 // Deposit items
@@ -2821,7 +2822,7 @@ async function run() {
             }
 
             // Look for the lowest hp special monster
-            let bestMonster = await EntityModel.findOne({ $or: [{ type: "mrpumpkin" }, { type: "mrgreen" }], lastSeen: { $gt: Date.now() - 60000 } }).sort({ hp: 1 }).lean().exec()
+            let bestMonster = await EntityModel.findOne({ $or: [{ type: "mrpumpkin" }, { type: "mrgreen" }], lastSeen: { $gt: Date.now() - 15000 } }).sort({ hp: 1 }).lean().exec()
             if (!bestMonster) {
                 bestMonster = {
                     type: null,
@@ -2841,12 +2842,7 @@ async function run() {
 
             if (bestMonster && bestMonster.serverRegion !== region || bestMonster.serverIdentifier !== identifier) {
                 if (region) console.log(`Disconnecting from ${region} ${identifier}`)
-
-                await sleep(5000)
-                if (ranger) await ranger.disconnect()
-                if (warrior) await warrior.disconnect()
-                if (priest) await priest.disconnect()
-                if (merchant) await merchant.disconnect()
+                await Game.disconnect(false)
                 await sleep(5000)
 
                 console.log(`Connecting to ${bestMonster.serverRegion}${bestMonster.serverIdentifier}!`)
@@ -2856,17 +2852,22 @@ async function run() {
 
                 lastServerTime = Date.now()
 
-                ranger = await Game.startRanger("earthiverse", region, identifier)
-                warrior = await Game.startWarrior("earthWar", region, identifier)
-                priest = await Game.startPriest("earthPri", region, identifier)
-                merchant = await Game.startMerchant("earthMer", region, identifier)
+                try {
+                    ranger = await Game.startRanger("earthiverse", region, identifier)
+                    warrior = await Game.startWarrior("earthWar", region, identifier)
+                    priest = await Game.startPriest("earthPri", region, identifier)
+                    merchant = await Game.startMerchant("earthMer", region, identifier)
 
-                // Start the bots!
-                startRanger(ranger)
-                startWarrior(warrior)
-                startPriest(priest)
-                startMerchant(merchant)
-                for (const bot of [ranger, warrior, priest, merchant]) generalBotStuff(bot)
+                    // Start the bots!
+                    startRanger(ranger)
+                    startWarrior(warrior)
+                    startPriest(priest)
+                    startMerchant(merchant)
+                    for (const bot of [ranger, warrior, priest, merchant]) generalBotStuff(bot)
+                } catch (e) {
+                    await Game.disconnect()
+                    console.error(e)
+                }
             }
         } catch (e) {
             console.error(e)
