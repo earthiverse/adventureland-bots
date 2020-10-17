@@ -458,6 +458,7 @@ async function startRanger(bot: Ranger) {
                 if (entity.type !== mtype) continue
                 if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                 if (Tools.distance(bot.character, entity) > bot.character.range * bot.G.skills.supershot.range_multiplier) continue // Only attack those in range
+                if (entity.immune) continue // Entity won't take damage from supershot
 
                 // If the target will die to incoming projectiles, ignore it
                 if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
@@ -569,6 +570,7 @@ async function startRanger(bot: Ranger) {
                 if (entity.target != tank) continue // It's not targeting our tank
                 if (Tools.distance(bot.character, entity) > bot.character.range * bot.G.skills.supershot.range_multiplier) continue // Only attack those in range
                 if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                if (entity.immune) continue // Entity won't take damage from supershot
 
                 // If the target will die to incoming projectiles, ignore it
                 if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
@@ -1079,6 +1081,7 @@ async function startRanger(bot: Ranger) {
                         if (!strategy[entity.type] || !strategy[entity.type].attackWhileIdle) continue
                         if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                         if (Tools.distance(bot.character, entity) > bot.character.range * bot.G.skills.supershot.range_multiplier) continue // Only attack those in range
+                        if (entity.immune) continue // Entity won't take damage from supershot
 
                         // If the target will die to incoming projectiles, ignore it
                         if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue

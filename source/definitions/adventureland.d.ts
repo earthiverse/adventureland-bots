@@ -146,6 +146,7 @@ export type GMonster = {
   evasion?: number
   frequency: number
   hp: number
+  immune?: boolean
   mp: number
   range: number
   reflection?: number

@@ -240,6 +240,7 @@ export type EntityData = {
     damage_type?: DamageType
     evasion?: number
     hp?: number
+    immune?: boolean
     level?: number
     map?: MapName
     max_hp?: number

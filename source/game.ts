@@ -521,6 +521,7 @@ export class Player extends Observer {
                 if (monster.evasion === undefined) monster.evasion = this.G.monsters[monster.type].evasion
                 if (monster.frequency === undefined) monster.frequency = this.G.monsters[monster.type].frequency
                 if (monster.hp === undefined) monster.hp = this.G.monsters[monster.type].hp
+                if (monster.immune === undefined) monster.immune = this.G.monsters[monster.type].immune
                 if (monster.mp === undefined) monster.mp = this.G.monsters[monster.type].mp
                 if (monster.range === undefined) monster.range = this.G.monsters[monster.type].range
                 if (monster.reflection === undefined) monster.reflection = this.G.monsters[monster.type].reflection
