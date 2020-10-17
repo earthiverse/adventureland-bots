@@ -30,6 +30,8 @@ export const ITEMS_TO_EXCHANGE: ItemName[] = [
     "armorbox", "bugbountybox", "gift0", "gift1", "mysterybox", "weaponbox", "xbox"
 ]
 export const ITEMS_TO_BUY: ItemName[] = [
+    // Exchangeables
+    ...ITEMS_TO_EXCHANGE,
     // Belts
     "dexbelt", "intbelt", "strbelt",
     // Rings

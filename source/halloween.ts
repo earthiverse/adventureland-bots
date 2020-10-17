@@ -2797,6 +2797,7 @@ async function startMerchant(bot: Merchant) {
                 const type = mN as MonsterName
                 if (!bot.S[type].live) continue
                 if (!bot.S[type].target) continue
+                if (bot.S[type].hp > bot.S[type].max_hp * 0.5) continue // High HP
 
                 await bot.closeMerchantStand()
                 await bot.smartMove(bot.S[type], { getWithin: 100 })
@@ -2820,7 +2821,7 @@ async function startMerchant(bot: Merchant) {
             }
 
             // Hang out in town
-            await bot.smartMove("main")
+            await bot.smartMove("secondhands", { getWithin: 100 })
             await bot.openMerchantStand()
         } catch (e) {
             console.error(e)

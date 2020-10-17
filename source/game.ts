@@ -1031,32 +1031,37 @@ export class Player extends Observer {
     }
 
     public canBuy(item: ItemName): boolean {
-        // Check if we're full of items
-        if (this.isFull()) return false
+        if (this.isFull()) return false // We are full
 
         const gInfo = this.G.items[item]
-        const buyable = gInfo.buy == true
-        if (!buyable) {
+        if (this.character.gold < gInfo.g) return false // We can't afford it
+
+        const computerAvailable = this.locateItem("computer") !== undefined
+
+        let buyable = gInfo.buy
+        let close = false
+        if (buyable === undefined) {
             // Double check if we can buy from an NPC
             for (const map in this.G.maps) {
+                if (buyable !== undefined) break
+                if (!computerAvailable && map !== this.character.map) continue // We aren't close, and we don't have a computer, so don't check this map
                 if (this.G.maps[map as MapName].ignore) continue
                 for (const npc of this.G.maps[map as MapName].npcs) {
+                    if (buyable !== undefined) break
                     if (this.G.npcs[npc.id].items === undefined) continue
                     for (const i of this.G.npcs[npc.id].items) {
-                        if (i == item) return true
+                        if (i == item) {
+                            buyable = true
+                            if (Tools.distance(this.character, { map: map as MapName, x: npc.position[0], y: npc.position[1] }) < NPC_INTERACTION_DISTANCE) close = true
+                            break
+                        }
                     }
                 }
             }
-
-            return false
         }
+        if (!buyable) return false
 
-        // Check if we have enough gold
-        const computerAvailable = this.locateItem("computer") !== undefined
-        const canAfford = this.character.gold >= gInfo.g
-        if (computerAvailable && canAfford) return true
-
-        // TODO: Check if we're near an NPC that sells this item, and if we are, return true
+        if (computerAvailable || close) return true
 
         return false
     }
