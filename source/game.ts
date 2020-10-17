@@ -11,6 +11,7 @@ import { Pathfinder } from "./pathfinder.js"
 import { LinkData, NodeData } from "./definitions/pathfinder"
 import { EntityModel } from "./database/entities/entities.model.js"
 import { NPC_INTERACTION_DISTANCE, SPECIAL_MONSTERS, USE_BJARNY_MAGIPORT } from "./constants.js"
+import { DeathModel } from "./database/deaths/deaths.model.js"
 
 // TODO: Move to config file
 const MAX_PINGS = 100
@@ -316,6 +317,23 @@ export class Player extends Observer {
             this.disconnect()
         })
 
+        this.socket.on("game_log", (data: { message: string, color: string }) => {
+            const result = /^Slain by (.+)$/.exec(data.message)
+            if (result) {
+                DeathModel.insertMany([{
+                    name: this.character.id,
+                    cause: result[1],
+                    map: this.character.map,
+                    x: this.character.x,
+                    y: this.character.y,
+                    serverRegion: this.server.region,
+                    serverIdentifier: this.server.name,
+                    time: Date.now()
+                }])
+
+            }
+        })
+
         this.socket.on("game_response", (data: GameResponseData) => {
             this.parseGameResponse(data)
         })
@@ -537,6 +555,17 @@ export class Player extends Observer {
                     const cooldown = data.ms
                     this.setNextSkill(skill, new Date(Date.now() + Math.ceil(cooldown)))
                 }
+            } else if (data.response == "defeated_by_a_monster") {
+                DeathModel.insertMany([{
+                    name: this.character.id,
+                    cause: data.monster,
+                    map: this.character.map,
+                    x: this.character.x,
+                    y: this.character.y,
+                    serverRegion: this.server.region,
+                    serverIdentifier: this.server.name,
+                    time: Date.now()
+                }])
             } else if (data.response == "ex_condition") {
                 // The condition expired
                 delete this.character.s[data.name]
@@ -966,7 +995,7 @@ export class Player extends Observer {
     }
 
     // TODO: Add promises
-    public buyFromMerchant(id: string, slot: TradeSlotType, rid: string, quantity = 1): unknown {
+    public buyFromMerchant(id: string, slot: TradeSlotType, rid: string, quantity = 1): Promise<unknown> {
         if (quantity <= 0) return Promise.reject(`We can not buy a quantity of ${quantity}.`)
         const merchant = this.players.get(id)
         if (!merchant) return Promise.reject(`We can not see ${id} nearby.`)
@@ -1574,7 +1603,7 @@ export class Player extends Observer {
     public regenHP(): Promise<unknown> {
         const regenReceived = new Promise((resolve, reject) => {
             const regenCheck = (data: EvalData) => {
-                if (data.code.includes("pot_timeout")) {
+                if (data.code && data.code.includes("pot_timeout")) {
                     this.socket.removeListener("eval", regenCheck)
                     resolve()
                 }
@@ -1595,7 +1624,7 @@ export class Player extends Observer {
 
         const regenReceived = new Promise((resolve, reject) => {
             const regenCheck = (data: EvalData) => {
-                if (data.code.includes("pot_timeout")) {
+                if (data.code && data.code.includes("pot_timeout")) {
                     this.socket.removeListener("eval", regenCheck)
                     resolve()
                 }
@@ -2053,7 +2082,7 @@ export class Player extends Observer {
 
         const healReceived = new Promise((resolve, reject) => {
             const healCheck = (data: EvalData) => {
-                if (data.code.includes("pot_timeout")) {
+                if (data.code && data.code.includes("pot_timeout")) {
                     this.socket.removeListener("eval", healCheck)
                     resolve()
                 }
@@ -2075,7 +2104,7 @@ export class Player extends Observer {
 
         const healReceived = new Promise((resolve, reject) => {
             const healCheck = (data: EvalData) => {
-                if (data.code.includes("pot_timeout")) {
+                if (data.code && data.code.includes("pot_timeout")) {
                     this.socket.removeListener("eval", healCheck)
                     resolve()
                 }
@@ -2089,6 +2118,10 @@ export class Player extends Observer {
 
         this.socket.emit("equip", { num: itemPos })
         return healReceived
+    }
+
+    public warpToJail(): Promise<NodeData> {
+        return this.move(Number.MAX_VALUE, Number.MAX_VALUE, false)
     }
 
     public warpToTown(): Promise<NodeData> {

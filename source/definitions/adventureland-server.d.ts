@@ -286,6 +286,10 @@ export type GameResponseDataObject = {
     id: string
     ms: number
 } | {
+    response: "defeated_by_a_monster"
+    xp: number
+    monster: MonsterName
+} | {
     response: "disabled"
     place: "attack"
 } |

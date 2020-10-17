@@ -20,11 +20,10 @@ let merchant: Merchant
 
 async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promise<MonsterName> {
     // Priority #1: Special Monsters
-    const entities = await EntityModel.find({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 } }).sort({ hp: 1 }).lean().exec()
+    const entities = await EntityModel.find({ $or: [{ type: "mrpumpkin" }, { type: "mrgreen" }], serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 } }).sort({ hp: 1 }).lean().exec()
     for (const entity of entities) {
         // Look in database of entities
         if (!strategy[entity.type]) continue // No strategy
-        if (entity.type !== "mrgreen" && entity.type !== "mrpumpkin") continue // Skip phoenixes
         if (strategy[entity.type].requirePriest && priestTarget !== entity.type) continue // Need priest
         if (bot.G.monsters[entity.type].cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
 
@@ -73,15 +72,18 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                 }
             }
 
-            // TODO: Look for buyable things on merchants
+            // Look for buyable things on merchants
             for (const [, player] of bot.players) {
                 if (!player.stand) continue // Not selling anything
                 if (Tools.distance(bot.character, player) > NPC_INTERACTION_DISTANCE) continue // Too far away
 
-                for (const slot in player.slots) {
-                    const item = player.slots[slot as TradeSlotType]
+                for (const s in player.slots) {
+                    const slot = s as TradeSlotType
+                    const item = player.slots[slot]
                     if (!item) continue // Nothing in the slot
                     if (!item.rid) continue // Not a trade item
+
+                    const q = item.q === undefined ? 1 : item.q
 
                     // Join new giveaways
                     if (item.giveaway && bot.character.ctype == "merchant" && item.list && item.list.includes(bot.character.id)) {
@@ -91,8 +93,10 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
 
                     // Buy if we can resell to NPC for more money
                     const gInfo = bot.G.items[item.name]
-                    if (item.price < gInfo.g) {
-                        // Item is lower price than G.
+                    if ((item.price < gInfo.g * 0.6) // Item is lower price than G.
+                        || ITEMS_TO_BUY.includes(item.name) && item.price <= gInfo.g // Item is the same, or lower price than the NPC would sell for, and we want it.
+                    ) {
+                        await bot.buyFromMerchant(player.id, slot, item.rid, q)
                     }
                 }
             }
@@ -308,6 +312,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                 for (let i = 0; i < bot.character.items.length; i++) {
                     const item = bot.character.items[i]
                     if (!item) continue // No item in this slot
+                    if (item.p) continue // This item is special in some way
                     if (ITEMS_TO_SELL[item.name] == undefined) continue // We don't want to sell this item
                     if (ITEMS_TO_SELL[item.name] <= item.level) continue // Keep this item, it's a high enough level that we want to keep it
 
@@ -997,7 +1002,6 @@ async function startRanger(bot: Ranger) {
             const visibleMonsterTypes: Set<MonsterName> = new Set()
             const inRangeMonsterTypes: Set<MonsterName> = new Set()
             for (const entity of bot.entities.values()) {
-
                 if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                 visibleMonsterTypes.add(entity.type)
                 if (Tools.distance(bot.character, entity) < bot.character.range) inRangeMonsterTypes.add(entity.type)
@@ -1232,8 +1236,6 @@ async function startPriest(bot: Priest) {
         }
 
         if (bot.canUse("attack")) {
-            // Heal party members if they are close
-
             let target: EntityData
             for (const [, entity] of bot.entities) {
                 if (entity.type !== mtype) continue
@@ -1703,7 +1705,6 @@ async function startPriest(bot: Priest) {
             const visibleMonsterTypes: Set<MonsterName> = new Set()
             const inRangeMonsterTypes: Set<MonsterName> = new Set()
             for (const entity of bot.entities.values()) {
-
                 if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                 visibleMonsterTypes.add(entity.type)
                 if (Tools.distance(bot.character, entity) < bot.character.range) inRangeMonsterTypes.add(entity.type)
@@ -2655,12 +2656,11 @@ async function startMerchant(bot: Merchant) {
                 lastBankVisit = Date.now()
 
                 // Deposit excess gold
-                const goldToKeep = 100000000
-                const excessGold = bot.character.gold - goldToKeep
+                const excessGold = bot.character.gold - 10000000
                 if (excessGold > 0) {
                     await bot.depositGold(excessGold)
                 } else if (excessGold < 0) {
-                    await bot.withdrawGold(goldToKeep - excessGold)
+                    await bot.withdrawGold(-excessGold)
                 }
 
                 // Deposit items
@@ -2846,7 +2846,7 @@ async function run() {
             }
 
             // Look for the lowest hp special monster
-            let bestMonster = await EntityModel.findOne({ $or: [{ type: "mrpumpkin" }, { type: "mrgreen" }], lastSeen: { $gt: Date.now() - 15000 } }).sort({ hp: 1 }).lean().exec()
+            let bestMonster = await EntityModel.findOne({ $or: [{ type: "mrpumpkin" }, { type: "mrgreen" }], hp: { $gt: 1000000 }, lastSeen: { $gt: Date.now() - 15000 } }).sort({ hp: 1 }).lean().exec()
             if (!bestMonster) {
                 bestMonster = {
                     type: null,
