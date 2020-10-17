@@ -1,3 +1,7 @@
+**NOTE: This code is very much a work in progress. Things will quickly change, and your code will likely break between changes.**
+
+-----
+
 This is the latest code I use to run my bots in [AdventureLand](https://adventure.land). It's 99% custom code that seems *much* more efficient than running the code in-game, or using the game's "official" CLI.
 
 This code is **NOT** a 1-to-1 drop in, like [ALBot](https://github.com/NexusNull/ALBot) aims to be. Your code **WILL NOT** run as-is if you try to run it using this project.
