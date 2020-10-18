@@ -1921,6 +1921,27 @@ export class Player extends Observer {
                 if (blinked) continue
             }
 
+            // TODO: We should probably add a check that we won't move further away if this goes off
+            //       before this is actually implemented.
+            // // If we're going to be using town "soon", ready it up!
+            // let time = 0
+            // for (let j = i + 1; j < path.length; j++) {
+            //     const lastMove = path[j - 1]
+            //     const nextMove = path[j]
+            //     if (nextMove.type == "move") {
+            //         time += 2 * Tools.distance(lastMove, nextMove) / this.character.speed
+            //     } else if (nextMove.type == "transport" || nextMove.type == "leave") {
+            //         time += Math.min(...this.pings)
+            //     } else if (nextMove.type == "town") {
+            //         if (time < 2000) {
+            //             console.log(`We're prematurely warping to town to save ${3000 - time}ms!`)
+            //             this.warpToTown() // Prematurely warp to town!
+            //             break
+            //         }
+            //     }
+            //     if (time > 2000) break
+            // }
+
             // Perform the next movement
             try {
                 if (currentMove.type == "leave") {
@@ -2787,8 +2808,12 @@ export class Merchant extends PingCompensatedPlayer {
         if (this.character.stand) return Promise.resolve() // It's already open
 
         // Find the stand
-        const stand = this.locateItem("stand0")
-        if (!stand) return Promise.reject("Could not find merchant stand ('stand0') in inventory.")
+        let stand = this.locateItem("stand0")
+        if (stand === undefined) {
+            // No stand, do we have a computer?
+            stand = this.locateItem("computer")
+            if (stand === undefined) return Promise.reject("Could not find merchant stand ('stand0') or computer in inventory.")
+        }
 
         const opened = new Promise((resolve, reject) => {
             const checkStand = (data: CharacterData) => {

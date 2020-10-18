@@ -1180,7 +1180,7 @@ async function startPriest(bot: Priest) {
     const defaultAttackStrategy = async (mtype: MonsterName): Promise<number> => {
         if (bot.canUse("attack")) {
             // Heal party members if they are close
-            let target: PlayerData
+            let target: PlayerData | EntityData
             for (const [id, player] of bot.players) {
                 if (![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(id)) continue // Don't heal other players
                 if (player.hp > player.max_hp * 0.8) continue // Lots of health, no need to heal
@@ -1223,6 +1223,12 @@ async function startPriest(bot: Priest) {
                             bot.entities.delete(targets[0].id)
                         }
                     }
+
+                    if (bot.canUse("curse")
+                        && !(target as EntityData).immune) {
+                        bot.curse(target.id)
+                    }
+
                     await bot.attack(targets[0].id)
                 }
             }
@@ -1252,7 +1258,8 @@ async function startPriest(bot: Priest) {
             }
 
             if (target) {
-                if (bot.canUse("curse")) {
+                if (bot.canUse("curse")
+                    && !(target as EntityData).immune) {
                     bot.curse(target.id)
                 }
 
