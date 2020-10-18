@@ -2866,8 +2866,8 @@ async function run() {
                     map: null,
                     x: null,
                     y: null,
-                    serverRegion: "ASIA",
-                    serverIdentifier: "I"
+                    serverRegion: ranger === undefined ? "ASIA" : ranger.server.region,
+                    serverIdentifier: ranger === undefined ? "I" : ranger.server.name
                 }
             }
 
