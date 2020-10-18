@@ -1854,7 +1854,7 @@ export class Player extends Observer {
         if (!path) path = await Pathfinder.getPath(this.character, fixedTo)
 
         // If Bjarny is close to our goal ask for a magiport!
-        if (USE_BJARNY_MAGIPORT && !this.players.has("Bjarny")) {
+        if (USE_BJARNY_MAGIPORT && !this.players.has("Bjarny") && this.server.name !== "PVP") {
             const bjarny = await CharacterModel.findOne({ name: "Bjarny", serverIdentifier: this.server.name, serverRegion: this.server.region, lastSeen: { $gt: Date.now() - 15000 } }).lean().exec()
             if (bjarny && Tools.distance(this.character, fixedTo) > Tools.distance(fixedTo, bjarny)) {
                 console.log("WE ARE ASKING BJARNY FOR A MAGIPORT!")
