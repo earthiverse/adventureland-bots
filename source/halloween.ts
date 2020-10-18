@@ -37,6 +37,7 @@ async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promis
 async function generalBotStuff(bot: PingCompensatedPlayer) {
     bot.socket.on("magiport", async (data: { name: string }) => {
         if (["Bjarny", "earthMag"].includes(data.name)) {
+            if (bot.character.c.town) await bot.stopWarpToTown()
             await bot.acceptMagiport(data.name)
             return
         }
@@ -93,7 +94,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
 
                     // Buy if we can resell to NPC for more money
                     const gInfo = bot.G.items[item.name]
-                    if ((item.price < gInfo.g * 0.6) // Item is lower price than G.
+                    if ((item.price < gInfo.g * 0.6) // Item is lower price than G, which means we could sell it to an NPC straight away and make a profit...
                         || ITEMS_TO_BUY.includes(item.name) && item.price <= gInfo.g // Item is the same, or lower price than the NPC would sell for, and we want it.
                     ) {
                         await bot.buyFromMerchant(player.id, slot, item.rid, q)

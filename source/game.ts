@@ -1896,6 +1896,7 @@ export class Player extends Observer {
                 for (let j = i + 1; j < path.length; j++) {
                     const potentialMove = path[j]
                     if (potentialMove.map !== currentMove.map) break
+                    if (potentialMove.type == "town") break
 
                     if (potentialMove.type == "move" && Pathfinder.canWalk(this.character, potentialMove)) {
                         console.log("skip check success!")

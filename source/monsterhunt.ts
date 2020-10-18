@@ -60,6 +60,7 @@ async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promis
 async function generalBotStuff(bot: PingCompensatedPlayer) {
     bot.socket.on("magiport", async (data: { name: string }) => {
         if (["Bjarny", "earthMag"].includes(data.name)) {
+            if (bot.character.c.town) await bot.stopWarpToTown()
             await bot.acceptMagiport(data.name)
             return
         }
