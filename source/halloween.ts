@@ -1216,7 +1216,7 @@ async function startPriest(bot: Priest) {
                     }
                 }
 
-                if (targets.length) {
+                if (targets.length > 0) {
                     // Remove from other characters if we're going to kill it
                     if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
                         for (const bot of [ranger, priest, warrior, merchant]) {
@@ -1225,8 +1225,8 @@ async function startPriest(bot: Priest) {
                     }
 
                     if (bot.canUse("curse")
-                        && !(target as EntityData).immune) {
-                        bot.curse(target.id)
+                        && !(targets[0] as EntityData).immune) {
+                        bot.curse(targets[0].id)
                     }
 
                     await bot.attack(targets[0].id)
