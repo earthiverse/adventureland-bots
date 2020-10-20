@@ -106,6 +106,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                     const item = player.slots[slot]
                     if (!item) continue // Nothing in the slot
                     if (!item.rid) continue // Not a trade item
+                    if (item.b) continue // They are buying, not selling
 
                     const q = item.q === undefined ? 1 : item.q
 
