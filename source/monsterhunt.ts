@@ -708,6 +708,35 @@ async function startRanger(bot: Ranger) {
         }
         return 100
     }
+    const kiteMoveStrategy = async (mtype: MonsterName) => {
+        try {
+            // Check if we have a target
+            let target: EntityData
+            for (const [, entity] of bot.entities) {
+                if (entity.target == bot.character.id) {
+                    target = entity
+                    break
+                }
+            }
+
+            const edgeDistance = Math.sqrt((bot.character.range ** 2) / 2)
+            if (!target) {
+                await bot.smartMove(mtype, { getWithin: edgeDistance })
+            } else {
+                if (target.going_x == bot.character.x && target.going_y == bot.character.y) {
+                    // It's moving to our current position, move 90 degrees
+                    // TODO: get angle
+                    // TODO: add 90 degrees to angle
+                    // TODO: move edgeDistance in that direction
+                }
+            }
+            // Move to closest monster if we don't have a target
+
+        } catch (e) {
+            console.error(e)
+        }
+        return 100
+    }
     const strategy: Strategy = {
         arcticbee: {
             attack: async () => { return await defaultAttackStrategy("arcticbee") },
@@ -1085,8 +1114,8 @@ async function startRanger(bot: Ranger) {
 
                         // If we can kill enough monsters in one shot, let's try to do that
                         const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0]
-                        if (entity.hp < minimumDamage * bot.G.skills["3shot"].damage_multiplier) threeshotTargets.push(id)
-                        if (entity.hp < minimumDamage * bot.G.skills["5shot"].damage_multiplier) fiveshotTargets.push(id)
+                        if (!entity.immune && entity.hp < minimumDamage * bot.G.skills["3shot"].damage_multiplier) threeshotTargets.push(id)
+                        if (!entity.immune && entity.hp < minimumDamage * bot.G.skills["5shot"].damage_multiplier) fiveshotTargets.push(id)
                     }
 
                     if (fiveshotTargets.length >= 5 && bot.canUse("5shot")) {
@@ -1184,13 +1213,7 @@ async function startRanger(bot: Ranger) {
         try {
             if (bot.socket.disconnected) return
 
-            let merchantHasSpace = false
-            for (const item of merchant.character.items) {
-                if (!item) {
-                    merchantHasSpace = true
-                    break
-                }
-            }
+            const merchantHasSpace = merchant.character.esize < merchant.character.isize
             if (!merchantHasSpace) {
                 setTimeout(async () => { sendItemLoop() }, 10000)
                 return
@@ -1796,13 +1819,7 @@ async function startPriest(bot: Priest) {
         try {
             if (bot.socket.disconnected) return
 
-            let merchantHasSpace = false
-            for (const item of merchant.character.items) {
-                if (!item) {
-                    merchantHasSpace = true
-                    break
-                }
-            }
+            const merchantHasSpace = merchant.character.esize < merchant.character.isize
             if (!merchantHasSpace) {
                 setTimeout(async () => { sendItemLoop() }, 10000)
                 return
@@ -2570,13 +2587,7 @@ async function startWarrior(bot: Warrior) {
         try {
             if (bot.socket.disconnected) return
 
-            let merchantHasSpace = false
-            for (const item of merchant.character.items) {
-                if (!item) {
-                    merchantHasSpace = true
-                    break
-                }
-            }
+            const merchantHasSpace = merchant.character.esize < merchant.character.isize
             if (!merchantHasSpace) {
                 setTimeout(async () => { sendItemLoop() }, 10000)
                 return
@@ -2764,10 +2775,7 @@ async function startMerchant(bot: Merchant) {
                         bankInfo.push(item)
                     }
                 }
-                let freeSpaces = 0
-                for (const item of bot.character.items) {
-                    if (!item) freeSpaces++
-                }
+                let freeSpaces = bot.character.isize - bot.character.esize
                 const duplicates = bot.locateDuplicateItems(bankInfo)
 
                 // Withdraw compoundable & upgradable things

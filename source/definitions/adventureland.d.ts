@@ -30,6 +30,14 @@ export type GData = {
   } & {
       [T in StatType]?: number
     } };
+  craft: { [T in ItemName]?: {
+    /** These are the items that are required to craft the given item
+     *  [quantity, item name, item level] */
+    items: [number, ItemName, number?][]
+    /** The cost to craft this item */
+    cost: number
+    quest?: NPCRole
+  } }
   dismantle: { [T in ItemName]?: {
     /** The cost of dismantling the item */
     cost: number;

@@ -102,7 +102,9 @@ export type CharacterData = {
     luckm: number
     map: MapName
     in: string
+    /** The size of the character's inventory */
     isize: number
+    /** The number of items in the character's inventory */
     esize: number
     gold: number
     cash: number

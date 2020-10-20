@@ -1113,9 +1113,16 @@ export class Player extends Observer {
             if (!compatibleClass) return false
         }
 
-        // Special circumstances
+        // Special circumstance -- we can't use blink if we're being dampened
         if (this.character.s.dampened) {
             if (skill == "blink") return false
+        }
+
+        // Special circumstance -- merchants can't attack unless they have a dartgun
+        if (this.character.ctype == "merchant" && skill == "attack") {
+            if (!this.character.slots.mainhand) return false // No weapon
+            if (this.character.slots.mainhand.name !== "dartgun") return false // Wrong weapon
+            if (this.character.gold < 100) return false // Not enough gold to shoot
         }
 
         return true
@@ -1199,6 +1206,34 @@ export class Player extends Observer {
             "clevel": item1Info.level
         })
         return compoundComplete
+    }
+
+    // TODO: Add promises
+    // TODO: Unverified. Might not work.
+    public craft(item: ItemName): Promise<unknown> {
+        const gInfo = this.G.craft[item]
+        if (!gInfo) return Promise.reject(`Can not find a recipe for ${item}.`)
+        if (gInfo.cost > this.character.gold) return Promise.reject(`We don't have enough gold to craft ${item}.`)
+
+        const itemPositions: number[] = []
+        for (let i = 0; i < gInfo.items.length; i++) {
+            const lookQ = gInfo.items[i][0]
+            const lookName = gInfo.items[i][1]
+            const lookLevel = gInfo.items[i][2]
+
+            const searchArgs = {
+                quantityGreaterThan: lookQ > 1 ? lookQ : undefined,
+                level: lookLevel
+            }
+
+            const itemPos = this.locateItem(lookName, this.character.items, searchArgs)
+            if (itemPos == undefined) return Promise.reject(`We don't have ${lookQ} ${lookName} to craft ${item}.`)
+
+            itemPositions.push(itemPos)
+        }
+
+        this.socket.emit("craft", { items: itemPositions })
+        return
     }
 
     // TODO: Add promises
@@ -1500,11 +1535,7 @@ export class Player extends Observer {
      * Returns true if our inventory is full, false otherwise
      */
     public isFull(): boolean {
-        for (let i = this.character.items.length - 1; i >= 0; i--) {
-            const item = this.character.items[i]
-            if (!item) return false
-        }
-        return true
+        return this.character.esize >= this.character.isize
     }
 
     /**
@@ -2415,28 +2446,36 @@ export class Player extends Observer {
      */
     public locateItem(iN: ItemName, inv = this.character.items,
         args?: {
+            level?: number,
             levelGreaterThan?: number,
             levelLessThan?: number,
-            locateHighestLevel?: number
+            locateHighestLevel?: number,
+            quantityGreaterThan?: number
         }): number {
         for (let i = 0; i < inv.length; i++) {
             const item = inv[i]
             if (!item) continue
+            if (item.name !== iN) continue
 
             if (args) {
-                if (args.levelGreaterThan) {
+                if (args.level !== undefined) {
+                    if (item.level !== args.level) continue // The item's level doesn't match
+                }
+                if (args.levelGreaterThan !== undefined) {
                     if (item.level == undefined) continue // This item doesn't have a level
                     if (item.level <= args.levelGreaterThan) continue // This item is a lower level than desired
                 }
-                if (args.levelLessThan) {
+                if (args.levelLessThan !== undefined) {
                     if (item.level == undefined) continue // This item doesn't have a level
                     if (item.level >= args.levelLessThan) continue // This item is a higher level than desired
                 }
+                if (args.quantityGreaterThan !== undefined) {
+                    if (item.q == undefined) continue // This item doesn't have a quantity
+                    if (item.q <= args.quantityGreaterThan) continue // There isn't enough items in this stack
+                }
             }
 
-            if (item.name == iN) {
-                return i
-            }
+            return i
         }
         return undefined
     }

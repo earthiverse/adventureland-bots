@@ -182,6 +182,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
     async function elixirLoop() {
         try {
             if (bot.socket.disconnected) return
+            if (bot.character.ctype == "merchant") return // Don't buy or equip an elixir if we're a merchant.
 
             if (!bot.character.slots.elixir) {
                 let luckElixir = bot.locateItem("elixirluck")
@@ -1144,13 +1145,7 @@ async function startRanger(bot: Ranger) {
         try {
             if (bot.socket.disconnected) return
 
-            let merchantHasSpace = false
-            for (const item of merchant.character.items) {
-                if (!item) {
-                    merchantHasSpace = true
-                    break
-                }
-            }
+            const merchantHasSpace = merchant.character.esize < merchant.character.isize
             if (!merchantHasSpace) {
                 setTimeout(async () => { sendItemLoop() }, 10000)
                 return
@@ -1763,13 +1758,7 @@ async function startPriest(bot: Priest) {
         try {
             if (bot.socket.disconnected) return
 
-            let merchantHasSpace = false
-            for (const item of merchant.character.items) {
-                if (!item) {
-                    merchantHasSpace = true
-                    break
-                }
-            }
+            const merchantHasSpace = merchant.character.esize < merchant.character.isize
             if (!merchantHasSpace) {
                 setTimeout(async () => { sendItemLoop() }, 10000)
                 return
@@ -2520,13 +2509,7 @@ async function startWarrior(bot: Warrior) {
         try {
             if (bot.socket.disconnected) return
 
-            let merchantHasSpace = false
-            for (const item of merchant.character.items) {
-                if (!item) {
-                    merchantHasSpace = true
-                    break
-                }
-            }
+            const merchantHasSpace = merchant.character.esize < merchant.character.isize
             if (!merchantHasSpace) {
                 setTimeout(async () => { sendItemLoop() }, 10000)
                 return
@@ -2601,10 +2584,23 @@ async function startMerchant(bot: Merchant) {
         try {
             if (bot.socket.disconnected) return
 
-            if (bot.character.targets > 0) {
-                if (bot.canUse("scare")) {
-                    await bot.scare()
-                }
+            if (bot.character.targets > 0 && bot.canUse("scare")) await bot.scare()
+
+            let target: EntityData
+            for (const [, entity] of bot.entities) {
+                if (entity.target == undefined) continue // We don't want to be the first to attack
+                if (!(["hen", "rooster", "mrgreen", "mrpumpkin"] as MonsterName[]).includes(entity.type)) continue // We only want to target these for Halloween
+                if (Tools.distance(bot.character, entity) > bot.character.range) continue // We're too far away to attack
+
+                target = entity
+                break
+            }
+
+            if (target // We can see a monster we want to attack
+                && bot.canUse("attack")
+                && (!bot.character.s.coop || bot.character.s.coop.id !== target.id) // We don't have a coop target, or the target is not right
+            ) {
+                await bot.attack(target.id)
             }
         } catch (e) {
             console.error(e)
@@ -2696,10 +2692,7 @@ async function startMerchant(bot: Merchant) {
                         bankInfo.push(item)
                     }
                 }
-                let freeSpaces = 0
-                for (const item of bot.character.items) {
-                    if (!item) freeSpaces++
-                }
+                let freeSpaces = bot.character.isize - bot.character.esize
                 const duplicates = bot.locateDuplicateItems(bankInfo)
 
                 // Withdraw compoundable & upgradable things
