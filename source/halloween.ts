@@ -94,9 +94,9 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                     }
 
                     // Buy if we can resell to NPC for more money
-                    const gInfo = bot.G.items[item.name]
-                    if ((item.price < gInfo.g * 0.6) // Item is lower price than G, which means we could sell it to an NPC straight away and make a profit...
-                        || ITEMS_TO_BUY.includes(item.name) && item.price <= gInfo.g // Item is the same, or lower price than the NPC would sell for, and we want it.
+                    const cost = await Tools.calculateCost(item)
+                    if ((item.price < cost * 0.6) // Item is lower price than G, which means we could sell it to an NPC straight away and make a profit...
+                        || ITEMS_TO_BUY.includes(item.name) && item.price <= cost // Item is the same, or lower price than the NPC would sell for, and we want it.
                     ) {
                         await bot.buyFromMerchant(player.id, slot, item.rid, q)
                     }
