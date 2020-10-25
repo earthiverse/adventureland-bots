@@ -2708,7 +2708,7 @@ async function startMerchant(bot: Merchant) {
                         const pack1 = `items${Math.floor((d[0]) / 42)}` as Exclude<BankPackType, "gold">
                         const slot1 = d[0] % 42
                         let withdrew = false
-                        for (let i = 1; i < d.length - 1 && freeSpaces > 2; i++) {
+                        for (let i = 1; i < d.length && freeSpaces > 2; i++) {
                             const pack2 = `items${Math.floor((d[i]) / 42)}` as Exclude<BankPackType, "gold">
                             const slot2 = d[i] % 42
                             const item2 = bot.bank[pack2][slot2]
