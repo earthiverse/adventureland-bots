@@ -266,15 +266,15 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
         try {
             if (bot.socket.disconnected) return
 
-            for (const [id, chest] of bot.chests) {
+            for (const [, chest] of bot.chests) {
                 if (Tools.distance(bot.character, chest) > 800) continue
-                await bot.openChest(id)
+                await bot.openChest(chest.id)
             }
         } catch (e) {
             console.error(e)
         }
 
-        setTimeout(async () => { lootLoop() }, 500)
+        setTimeout(async () => { lootLoop() }, 250)
     }
     lootLoop()
 

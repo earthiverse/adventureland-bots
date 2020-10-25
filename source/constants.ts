@@ -59,7 +59,7 @@ export const ITEMS_TO_BUY: ItemName[] = [
     // Good weapons
     "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "firebow", "frostbow", "froststaff", "gbow", "harbringer", "heartwood", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow", "t3bow", "wblade",
     // Things we can exchange / craft with
-    "ascale", "bfur", "cscale", "electronics", "feather0", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", "networkcard", "platinumingot", "platinumnugget", "pleather", "snakefang",
+    "ascale", "bfur", "cscale", "electronics", "feather0", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", /*"networkcard",*/ "platinumingot", "platinumnugget", "pleather", "snakefang",
     // Things to make xbox
     "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8",
     // Things to make easter basket
@@ -71,7 +71,7 @@ export const ITEMS_TO_BUY: ItemName[] = [
     // High level scrolls
     "cscroll3", "scroll3", "scroll4", "forscroll", "luckscroll", "manastealscroll",
     // Misc. Things
-    "bottleofxp", "bugbountybox", "computer", "monstertoken", "poison", "snakeoil"
+    "bottleofxp", "bugbountybox", "computer", "cxjar", "monstertoken", "poison", "snakeoil"
 ]
 
 export const ITEMS_TO_SELL: ItemLevelInfo = {

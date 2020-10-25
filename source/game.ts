@@ -1002,6 +1002,11 @@ export class Player extends Observer {
         if (!merchant) return Promise.reject(`We can not see ${id} nearby.`)
         if (Tools.distance(this.character, merchant) > NPC_INTERACTION_DISTANCE) return Promise.reject(`We are too far away from ${id} to buy from.`)
 
+        const item = merchant.slots[slot]
+        if (!item) return Promise.reject(`We could not find an item in slot ${slot} on ${id}.`)
+        if (item.b) return Promise.reject("The item is not for sale, this merchant is *buying* that item.")
+        if (item.rid !== rid) return Promise.reject(`The RIDs do not match (item: ${item.rid}, supplied: ${rid})`)
+
         if (!merchant.slots[slot].q && quantity != 1) {
             console.warn("We are only going to buy 1, as there is only 1 available.")
             quantity = 1
@@ -1019,7 +1024,7 @@ export class Player extends Observer {
             quantity = buyableQuantity
         }
 
-        this.socket.emit("trade_buy", { slot: slot, id: id, rid: rid, q: quantity })
+        this.socket.emit("trade_buy", { slot: slot, id: id, rid: rid, q: quantity.toString() })
     }
 
     // TODO: Add promises
@@ -1632,9 +1637,22 @@ export class Player extends Observer {
         return moveFinished
     }
 
-    // TODO: Add promises and checks
-    public openChest(id: string) {
+    public openChest(id: string): Promise<ChestOpenedData> {
+        const chestOpened = new Promise<ChestOpenedData>((resolve, reject) => {
+            const openCheck = (data: ChestOpenedData) => {
+                if (data.id == id) {
+                    this.socket.removeListener("chest_opened", openCheck)
+                    resolve(data)
+                }
+            }
+            setTimeout(() => {
+                this.socket.removeListener("chest_opened", openCheck)
+                reject(`openChest timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.socket.on("chest_opened", openCheck)
+        })
         this.socket.emit("open_chest", { id: id })
+        return chestOpened
     }
 
     public regenHP(): Promise<unknown> {
@@ -2414,6 +2432,11 @@ export class Player extends Observer {
 
             // Sort lowest level first
             if (a.level !== undefined && b.level !== undefined && a.level !== b.level) return a.level - b.level
+
+            // Sort 'p' items first
+            if (a.p !== undefined && b.p === undefined) return -1
+
+            return 0
         })
 
         const duplicates: { [T in ItemName]?: number[] } = {}
