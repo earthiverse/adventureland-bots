@@ -1,5 +1,10 @@
-import { Tools } from "./tools.js"
-import { Game, Mage, PingCompensatedPlayer, Priest, Ranger, Warrior } from "./game.js"
+import { Tools } from "./Tools.js"
+import { Game } from "./Game.js"
+import { Warrior } from "./Warrior.js"
+import { Priest } from "./Priest.js"
+import { Mage } from "./Mage.js"
+import { PingCompensatedPlayer } from "./PingCompensatedPlayer.js"
+import { Ranger } from "./Ranger.js"
 import { ItemName } from "./definitions/adventureland.js"
 import { NPC_INTERACTION_DISTANCE } from "./constants.js"
 

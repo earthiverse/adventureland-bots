@@ -1,6 +1,6 @@
 import { ItemInfo, ItemName, MapName } from "./definitions/adventureland"
 import { ActionData, CharacterData, EntityData } from "./definitions/adventureland-server"
-import { Game } from "./game.js"
+import { Game } from "./Game.js"
 
 export class Tools {
     /**

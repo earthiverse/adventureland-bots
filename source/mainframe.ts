@@ -1,6 +1,7 @@
 import neo from "@neopass/wordlist"
 const { wordList } = neo
-import { Game, Player } from "./game.js"
+import { Game } from "./Game.js"
+import { Player } from "./Player.js"
 
 let words: string[]
 

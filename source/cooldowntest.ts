@@ -1,5 +1,5 @@
-import { Game } from "./game.js"
-import { Tools } from "./tools.js"
+import { Game } from "./Game.js"
+import { Tools } from "./Tools.js"
 import { EvalData, GameResponseData } from "./definitions/adventureland-server.js"
 import { SkillName } from "./definitions/adventureland.js"
 

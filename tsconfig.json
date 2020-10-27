@@ -6,6 +6,7 @@
             "DOM"
         ],
         "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
         "target": "ES2020",
         "moduleResolution": "node",
         "noImplicitAny": false,

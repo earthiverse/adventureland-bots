@@ -2,9 +2,11 @@ import { ITEMS_TO_BUY, ITEMS_TO_EXCHANGE, NPC_INTERACTION_DISTANCE } from "./con
 import { EntityModel } from "./database/entities/entities.model.js"
 import { ServerRegion, ServerIdentifier, MonsterName } from "./definitions/adventureland"
 import { EntityData } from "./definitions/adventureland-server"
-import { Game, Mage, Merchant } from "./game.js"
+import { Game } from "./Game.js"
+import { Merchant } from "./Merchant.js"
+import { Mage } from "./Mage.js"
 import { Pathfinder } from "./pathfinder.js"
-import { Tools } from "./tools.js"
+import { Tools } from "./Tools.js"
 
 const region: ServerRegion = "EU"
 const identifier: ServerIdentifier = "I"

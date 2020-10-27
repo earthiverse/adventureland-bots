@@ -1,9 +1,11 @@
 import { MERCHANT_ITEMS_TO_HOLD } from "./constants.js"
 import { CharacterModel } from "./database/characters/characters.model.js"
 import { ServerIdentifier, ServerRegion } from "./definitions/adventureland.js"
-import { Game, Merchant, PingCompensatedPlayer } from "./game.js"
+import { Game } from "./Game.js"
+import { Merchant } from "./Merchant.js"
+import { PingCompensatedPlayer } from "./PingCompensatedPlayer.js"
 import { Pathfinder } from "./pathfinder.js"
-import { Tools } from "./tools.js"
+import { Tools } from "./Tools.js"
 
 const region: ServerRegion = "US"
 const identifier: ServerIdentifier = "I"

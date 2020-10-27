@@ -3,8 +3,8 @@ import path from "ngraph.path"
 import { BASE, DOOR_REACH_DISTANCE, TRANSPORTER_REACH_DISTANCE } from "./constants.js"
 import { GData, MapName, IPosition, DoorInfo, GMapsNPC } from "./definitions/adventureland"
 import { Grids, Grid, LinkData, NodeData } from "./definitions/pathfinder"
-import { Game } from "./game.js"
-import { Tools } from "./tools.js"
+import { Game } from "./Game.js"
+import { Tools } from "./Tools.js"
 
 const UNKNOWN = 1
 const UNWALKABLE = 2

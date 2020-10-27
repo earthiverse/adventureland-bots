@@ -5,9 +5,14 @@ import { EntityData, HitData, PlayerData } from "./definitions/adventureland-ser
 import { BankPackType, ItemInfo, ItemName, MonsterName, ServerIdentifier, ServerRegion, SlotType, TradeSlotType } from "./definitions/adventureland.js"
 import { Strategy } from "./definitions/bot.js"
 import { NodeData } from "./definitions/pathfinder.js"
-import { Game, Merchant, PingCompensatedPlayer, Priest, Ranger, Warrior } from "./game.js"
+import { Game } from "./Game.js"
+import { Warrior } from "./Warrior.js"
+import { Priest } from "./Priest.js"
+import { Merchant } from "./Merchant.js"
+import { PingCompensatedPlayer } from "./PingCompensatedPlayer.js"
+import { Ranger } from "./Ranger.js"
 import { Pathfinder } from "./pathfinder.js"
-import { Tools } from "./tools.js"
+import { Tools } from "./Tools.js"
 
 let ranger: Ranger
 let rangerTarget: MonsterName
