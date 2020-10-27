@@ -51,7 +51,7 @@ async function startMainframeBot(bot: Player) {
 }
 
 async function run() {
-    await Game.login("hyprkookeez@gmail.com", "thisisnotmyrealpasswordlol")
+    await Game.loginJSONFile("../credentials.json")
 
     words = await wordList()
 

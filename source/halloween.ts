@@ -2838,7 +2838,7 @@ async function startMerchant(bot: Merchant) {
 }
 
 async function run() {
-    await Promise.all([Game.login("hyprkookeez@gmail.com", "thisisnotmyrealpasswordlol"), Pathfinder.prepare()])
+    await Promise.all([Game.loginJSONFile("../credentials.json"), Pathfinder.prepare()])
 
     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 

@@ -150,7 +150,7 @@ async function moveLoop(bot: Merchant) {
 }
 
 async function run() {
-    await Promise.all([Game.login("hyprkookeez@gmail.com", "thisisnotmyrealpasswordlol"), Pathfinder.prepare()])
+    await Promise.all([Game.loginJSONFile("../credentials.json"), Pathfinder.prepare()])
     Game.startObserver(region, identifier)
     Game.startObserver(region, identifier)
     Game.startObserver(region, identifier)

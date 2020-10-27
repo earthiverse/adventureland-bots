@@ -288,7 +288,7 @@ async function startMerchant(bot: Merchant) {
 }
 
 async function run(region: ServerRegion, identifier: ServerIdentifier) {
-    await Promise.all([Game.login("hyprkookeez@gmail.com", "thisisnotmyrealpasswordlol"), Pathfinder.prepare()])
+    await Promise.all([Game.loginJSONFile("../credentials.json"), Pathfinder.prepare()])
 
     const mage1 = await Game.startMage("earthMag", region, identifier)
     const mage2 = await Game.startMage("earthMag2", region, identifier)

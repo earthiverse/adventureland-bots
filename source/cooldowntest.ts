@@ -28,7 +28,7 @@ async function startMage() {
 }
 
 async function run() {
-    await Game.login("hyprkookeez@gmail.com", "thisisnotmyrealpasswordlol")
+    await Game.loginJSONFile("../credentials.json")
 
     const ranger = await startRanger() //earthiverse
     const mage = await startMage() //earthMag

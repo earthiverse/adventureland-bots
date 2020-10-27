@@ -1078,7 +1078,7 @@ async function startSupportPriest(bot: Priest): Promise<void> {
 }
 
 async function run() {
-    await Game.login("hyprkookeez@gmail.com", "thisisnotmyrealpasswordlol")
+    await Game.loginJSONFile("../credentials.json")
 
     const earthMag = await Game.startMage("earthMag", "US", "I")
     const earthPri = await Game.startPriest("earthPri", "US", "I")

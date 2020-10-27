@@ -1,7 +1,7 @@
 import { Game } from "./game.js"
 
 async function start() {
-    await Game.login("hyprkookeez@gmail.com", "thisisnotmyrealpasswordlol")
+    await Game.loginJSONFile("../credentials.json")
 
     await Game.startObserver("ASIA", "I")
     await Game.startObserver("US", "I")

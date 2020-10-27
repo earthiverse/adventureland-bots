@@ -1,4 +1,5 @@
 import axios from "axios"
+import fs from "fs"
 import socketio from "socket.io-client"
 import { AchievementProgressData, CharacterData, ServerData, CharacterListData, ActionData, ChestOpenedData, DeathData, DisappearData, ChestData, EntitiesData, EvalData, GameResponseData, HitData, NewMapData, PartyData, StartData, WelcomeData, LoadedData, EntityData, PlayerData, AuthData, DisappearingTextData, GameLogData, UIData, UpgradeData, QData } from "./definitions/adventureland-server"
 import { connect, disconnect } from "./database/database.js"
@@ -3502,6 +3503,11 @@ export class Game {
         }
 
         return this.updateServersAndCharacters()
+    }
+
+    static async loginJSONFile(path: string): Promise<boolean> {
+        const data: { email: string, password: string } = JSON.parse(fs.readFileSync(path, "utf8"))
+        return this.login(data.email, data.password)
     }
 
     static async startCharacter(cName: string, sRegion: ServerRegion, sID: ServerIdentifier, cType?: CharacterType): Promise<PingCompensatedPlayer> {
