@@ -15,8 +15,8 @@ This code is **NOT** a 1-to-1 drop in, like [ALBot](https://github.com/NexusNull
 # Installation
 1. Download the code (.zip, or clone the repository)
 2. Run `npm install`.
-3. Run `tsc build`.
-4. Edit the code as necessary (change the login and password & the usernames)
+3. Edit the code as necessary (change the login and password & the usernames)
+4. Run `tsc build`.
 5. Run `node build/monsterhunter.js`, or whatever.
 
 # Hints
