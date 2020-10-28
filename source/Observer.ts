@@ -4,7 +4,8 @@ import { ServerData, DeathData, EntitiesData, NewMapData, WelcomeData, LoadedDat
 import { ServerRegion, ServerIdentifier, GData, MapName, MonsterName, SInfo } from "./definitions/adventureland"
 import { CharacterModel } from "./database/characters/characters.model.js"
 import { EntityModel } from "./database/entities/entities.model.js"
-import { SPECIAL_MONSTERS } from "./constants.js"
+import { SEND_ALDATA_INFO, SPECIAL_MONSTERS } from "./constants.js"
+import { NPCModel } from "./database/npcs/npcs.model"
 
 
 export class Observer {
@@ -62,38 +63,40 @@ export class Observer {
             this.parseEntities(data.entities)
         })
 
-        let lastUpdate = Number.MIN_VALUE
-        this.socket.on("server_info", async (data: SInfo) => {
-            // Help out super in his data gathering
-            if (Date.now() > lastUpdate - 10000) {
-                lastUpdate = Date.now()
-                const statuses: any[] = []
-                for (const mtype in data) {
-                    const info = data[mtype]
-                    if (info.live && info.hp == undefined) {
-                        info.hp = this.G.monsters[mtype as MonsterName].hp
-                        info.max_hp = this.G.monsters[mtype as MonsterName].hp
+        if (SEND_ALDATA_INFO) {
+            let lastUpdate = Number.MIN_VALUE
+            this.socket.on("server_info", async (data: SInfo) => {
+                // Help out super in his data gathering
+                if (Date.now() > lastUpdate - 10000) {
+                    lastUpdate = Date.now()
+                    const statuses: any[] = []
+                    for (const mtype in data) {
+                        const info = data[mtype]
+                        if (info.live && info.hp == undefined) {
+                            info.hp = this.G.monsters[mtype as MonsterName].hp
+                            info.max_hp = this.G.monsters[mtype as MonsterName].hp
+                        }
+                        if (typeof info == "object") {
+                            statuses.push({
+                                ...data[mtype],
+                                eventname: mtype,
+                                server_region: this.serverRegion,
+                                server_identifier: this.serverIdentifier
+                            })
+                        }
                     }
-                    if (typeof info == "object") {
-                        statuses.push({
-                            ...data[mtype],
-                            eventname: mtype,
-                            server_region: this.serverRegion,
-                            server_identifier: this.serverIdentifier
-                        })
+                    for (const status of statuses) {
+                        try {
+                            await axios.post("https://aldata.info/api/serverstatus", status, {
+                                headers: {
+                                    "content-type": "application/json"
+                                }
+                            })
+                        } catch (e) { /* Supress Errors */ }
                     }
                 }
-                for (const status of statuses) {
-                    try {
-                        await axios.post("https://aldata.info/api/serverstatus", status, {
-                            headers: {
-                                "content-type": "application/json"
-                            }
-                        })
-                    } catch (e) { /* Supress Errors */ }
-                }
-            }
-        })
+            })
+        }
         this.socket.on("server_info", async (data: SInfo) => {
             for (const mtype in data) {
                 const info = data[mtype as MonsterName]
@@ -126,7 +129,15 @@ export class Observer {
         // TODO: Can we optimize this to update many?
         for (const player of data.players) {
             if (player.npc) {
-                // TODO: Update NPCs if they walk around
+                NPCModel.updateOne({ name: player.id, serverRegion: this.serverRegion, serverIdentifier: this.serverIdentifier }, {
+                    map: data.map,
+                    name: player.id,
+                    x: player.x,
+                    y: player.y,
+                    serverRegion: this.serverRegion,
+                    serverIdentifier: this.serverIdentifier,
+                    lastSeen: Date.now()
+                }, { upsert: true, useFindAndModify: false }).exec()
             } else {
                 CharacterModel.updateOne({ name: player.id }, {
                     map: data.map,
@@ -147,11 +158,9 @@ export class Observer {
             if (!SPECIAL_MONSTERS.includes(entity.type))
                 continue
 
-            if (entity.hp == undefined) {
+            if (entity.hp == undefined)
                 entity.hp = this.G.monsters[entity.type].hp
-            }
 
-            // console.log(`updating ${entity.type} on ${this.serverRegion}${this.serverIdentifier} with entity info`)
             await EntityModel.updateOne({ type: entity.type, serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion }, {
                 map: data.map,
                 name: entity.id,
