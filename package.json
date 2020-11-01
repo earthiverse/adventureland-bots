@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
-    "alclient": "^0.1.6",
+    "alclient": "^0.1.7",
     "mongoose": "^5.10.11"
   },
   "devDependencies": {
