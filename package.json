@@ -5,24 +5,10 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
-    "@neopass/wordlist": "^0.5.2",
-    "cheerio": "^1.0.0-rc.3",
-    "dotenv": "^8.2.0",
-    "mongoose": "^5.10.11",
-    "ngraph.graph": "^19.1.0",
-    "ngraph.path": "^1.3.1",
-    "socket.io": "^2.3.0",
-    "socket.io-client": "^2.3.1"
+    "alclient": "^0.1.6",
+    "mongoose": "^5.10.11"
   },
   "devDependencies": {
-    "@types/cheerio": "^0.22.22",
-    "@types/mongoose": "^5.7.36",
-    "@types/socket.io": "^2.1.11",
-    "@types/socket.io-client": "^1.4.34",
-    "@typescript-eslint/eslint-plugin": "^4.6.0",
-    "@typescript-eslint/parser": "^4.6.0",
-    "axios": "^0.21.0",
-    "eslint": "^7.12.1",
     "typescript": "^4.0.5"
   },
   "scripts": {

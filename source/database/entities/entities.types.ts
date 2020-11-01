@@ -1,5 +1,5 @@
+import { MapName, ServerRegion, ServerIdentifier, MonsterName } from "alclient/build/definitions/adventureland"
 import { Document, Model } from "mongoose"
-import { ServerRegion, MapName, ServerIdentifier, MonsterName } from "../../definitions/adventureland"
 
 export interface IEntity {
     map: MapName
