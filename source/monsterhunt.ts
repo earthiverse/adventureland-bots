@@ -71,7 +71,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
         }
     })
 
-    const pontyLocations = bot.locateNPCs("secondhands")
+    // const pontyLocations = bot.locateNPCs("secondhands")
     async function buyLoop() {
         try {
             if (bot.socket.disconnected) return
@@ -86,21 +86,22 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                 if (numMpot1 < 1000) await bot.buy("mpot1", 1000 - numMpot1)
             }
 
-            for (const ponty of pontyLocations) {
-                if (Tools.distance(bot.character, ponty) > NPC_INTERACTION_DISTANCE) continue
-                const pontyItems = await bot.getPontyItems()
-                for (const item of pontyItems) {
-                    if (!item) continue
+            // // Buy things from Ponty
+            // for (const ponty of pontyLocations) {
+            //     if (Tools.distance(bot.character, ponty) > NPC_INTERACTION_DISTANCE) continue
+            //     const pontyItems = await bot.getPontyItems()
+            //     for (const item of pontyItems) {
+            //         if (!item) continue
 
-                    if (
-                        item.p // Buy all shiny/glitched/etc. items
-                        || ITEMS_TO_BUY.includes(item.name) // Buy anything in our buy list
-                    ) {
-                        await bot.buyFromPonty(item)
-                        continue
-                    }
-                }
-            }
+            //         if (
+            //             item.p // Buy all shiny/glitched/etc. items
+            //             || ITEMS_TO_BUY.includes(item.name) // Buy anything in our buy list
+            //         ) {
+            //             await bot.buyFromPonty(item)
+            //             continue
+            //         }
+            //     }
+            // }
 
             // Look for buyable things on merchants
             for (const [, player] of bot.players) {

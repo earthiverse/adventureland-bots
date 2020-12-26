@@ -29,6 +29,9 @@ export type GData = {
     buff: boolean;
     /** The length the condition lasts in ms */
     duration: number;
+    /** If true, the condition can't be 'debuffed' */
+    persistent?: boolean;
+    technical?: boolean;
   } & {
       [T in StatType]?: number
     } };
@@ -713,6 +716,14 @@ export type TradeSlotType =
   | "trade14"
   | "trade15"
   | "trade16"
+  | "trade17"
+  | "trade18"
+  | "trade19"
+  | "trade20"
+  | "trade21"
+  | "trade22"
+  | "trade23"
+  | "trade24"
 
 export type ConditionName =
   | "authfail"

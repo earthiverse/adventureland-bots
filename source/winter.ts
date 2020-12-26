@@ -2004,7 +2004,7 @@ async function startWarrior(bot: Warrior) {
                 }
                 if (inTauntRange.length == 0 && numInAgitateRange > 0 && bot.canUse("agitate")) {
                     await bot.agitate()
-                } else if (inTauntRange.length > 0 && bot.canUse("taunt")) {
+                } else if (inTauntRange.length > 0 && !inTauntRange[0].immune && bot.canUse("taunt")) {
                     await bot.taunt(inTauntRange[0].id)
                 }
             }
@@ -2090,6 +2090,7 @@ async function startWarrior(bot: Warrior) {
                     if (entity.type !== mtype) continue
                     if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                     if (Tools.distance(bot.character, entity) > bot.G.skills.taunt.range) continue // Only taunt those in range
+                    if (entity.immune) continue // We can't taunt immune entities
 
                     if (entity.target == bot.character.id) {
                         target = entity
@@ -2205,7 +2206,7 @@ async function startWarrior(bot: Warrior) {
                     }
                 }
             }
-            
+
             // Look in nearby entities for monster
             for (const [, entity] of bot.entities) {
                 if (entity.type !== mtype) continue
