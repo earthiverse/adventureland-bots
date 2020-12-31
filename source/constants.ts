@@ -159,7 +159,7 @@ export const WARRIOR_ITEMS_TO_HOLD: ItemName[] = [
     "orbg", "orbofstr", "test_orb"
 ]
 
-export const SPECIAL_MONSTERS: MonsterName[] = ["dragold", "fvampire", "franky", "goldenbat", "greenjr", "grinch", "jr", "mrgreen", "mrpumpkin", "mvampire", "phoenix", "pinkgoo", "snowman", "tinyp", "wabbit"]
+export const SPECIAL_MONSTERS: MonsterName[] = ["dragold", "fvampire", "franky", "goldenbat", "greenjr", "grinch", "jr", "mrgreen", "mrpumpkin", "mvampire", "phoenix", "pinkgoo", "skeletor", "snowman", "tinyp", "wabbit"]
 
 export const USE_BJARNY_MAGIPORT = true
 
