@@ -2081,6 +2081,7 @@ async function startWarrior(bot: Warrior) {
                     const d = Tools.distance(bot.character, entity)
                     if (entity.target == bot.character.id) continue // It's coming towards us already
                     if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                    if (entity.immune) continue // Can't be taunted
                     if (d > bot.G.skills.agitate.range && d > bot.G.skills.taunt.range) continue
                     if (d <= bot.G.skills.agitate.range) {
                         if (entity.type !== mtype) numInAgitateRange = Number.MIN_SAFE_INTEGER // We don't want to agitate if there are other monsters nearby
@@ -2177,6 +2178,7 @@ async function startWarrior(bot: Warrior) {
                     if (entity.type !== mtype) continue
                     if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                     if (Tools.distance(bot.character, entity) > bot.G.skills.taunt.range) continue // Only taunt those in range
+                    if (entity.immune) continue // Can't' be taunted
 
                     if (entity.target == bot.character.id) {
                         target = entity
