@@ -1093,8 +1093,11 @@ async function startRanger(bot: Ranger) {
                     if (bot.party && bot.party.list && bot.party.list.includes(enemy.id)) continue // We're friends
 
                     if (bot.canUse("huntersmark")) await bot.huntersMark(enemy.id)
+                    if (bot.canUse("attack")) await bot.attack(enemy.id)
                     if (bot.canUse("supershot")) await bot.superShot(enemy.id)
-                    await bot.attack(enemy.id)
+
+                    setTimeout(async () => { attackLoop() }, cooldown)
+                    return
                 }
 
                 if (bot.canUse("supershot")) {
@@ -1801,7 +1804,10 @@ async function startPriest(bot: Priest) {
                     if (bot.party && bot.party.list && bot.party.list.includes(enemy.id)) continue // We're friends
 
                     if (bot.canUse("curse")) await bot.curse(enemy.id)
-                    await bot.attack(enemy.id)
+                    if (bot.canUse("attack")) await bot.attack(enemy.id)
+
+                    setTimeout(async () => { attackLoop() }, cooldown)
+                    return
                 }
             }
 
@@ -2636,7 +2642,10 @@ async function startWarrior(bot: Warrior) {
                     if (bot.party && bot.party.list && bot.party.list.includes(enemy.id)) continue // We're friends
 
                     if (bot.canUse("stomp")) await bot.stomp()
-                    await bot.attack(enemy.id)
+                    if (bot.canUse("attack")) await bot.attack(enemy.id)
+
+                    setTimeout(async () => { attackLoop() }, cooldown)
+                    return
                 }
             }
 
