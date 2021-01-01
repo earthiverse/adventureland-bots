@@ -3102,7 +3102,7 @@ async function startMerchant(bot: Merchant) {
 
                 // Check if friend is full, or needs mluck
                 if (friend.isFull() || (bot.canUse("mluck") && (!friend.character.s.mluck || friend.character.s.mluck.ms < 120000 || friend.character.s.mluck.f !== bot.character.id))) {
-                    if (Tools.distance(bot.character, friend.character) > NPC_INTERACTION_DISTANCE) {
+                    if (Tools.distance(bot.character, friend.character) > this.G.skill.mluck.range) {
                         await bot.closeMerchantStand()
                         console.log(`[merchant] We are moving to ${friend.character.id}!`)
                         await bot.smartMove(friend.character, { getWithin: bot.G.skills.mluck.range / 2 })
