@@ -18,8 +18,8 @@ export class Mage extends PingCompensatedPlayer {
      *
      * @param targets Put in pairs of entity IDs, and how much mp to spend attacking each target. E.g.: [["12345", "100"]]
      */
-    public cburst(targets: [string, number][]): Promise<unknown> {
-        const cbursted = new Promise((resolve, reject) => {
+    public cburst(targets: [string, number][]): Promise<void> {
+        const cbursted = new Promise<void>((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]cburst['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
                     this.socket.removeListener("eval", cooldownCheck)
@@ -38,8 +38,8 @@ export class Mage extends PingCompensatedPlayer {
         return cbursted
     }
 
-    public energize(target: string): Promise<unknown> {
-        const energized = new Promise((resolve, reject) => {
+    public energize(target: string): Promise<void> {
+        const energized = new Promise<void>((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]energize['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
                     this.socket.removeListener("eval", cooldownCheck)
@@ -58,8 +58,8 @@ export class Mage extends PingCompensatedPlayer {
         return energized
     }
 
-    public magiport(target: string): Promise<unknown> {
-        const magiportOfferSent = new Promise((resolve, reject) => {
+    public magiport(target: string): Promise<string> {
+        const magiportOfferSent = new Promise<string>((resolve, reject) => {
             const magiportCheck = (data: GameResponseData) => {
                 if (typeof data == "object") {
                     if (data.response == "magiport_failed" && data.id == target) {
@@ -67,7 +67,7 @@ export class Mage extends PingCompensatedPlayer {
                         reject(`Magiport for '${target}' failed.`)
                     } else if (data.response == "magiport_sent" && data.id == target) {
                         this.socket.removeListener("game_response", magiportCheck)
-                        resolve(`Magiport request sent to ${target}.`)
+                        resolve(target)
                     }
                 }
             }

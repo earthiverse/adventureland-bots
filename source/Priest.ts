@@ -4,7 +4,7 @@ import { TIMEOUT } from "./Game.js"
 
 
 export class Priest extends PingCompensatedPlayer {
-    public curse(target: string): Promise<unknown> {
+    public curse(target: string): Promise<void> {
         const curseStarted = new Promise((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]curse['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
@@ -24,7 +24,7 @@ export class Priest extends PingCompensatedPlayer {
         return curseStarted
     }
 
-    public darkBlessing(): Promise<unknown> {
+    public darkBlessing(): Promise<void> {
         const darkBlessed = new Promise((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]darkblessing['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {

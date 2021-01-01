@@ -6,7 +6,7 @@ import { MAX_PINGS, PING_EVERY_MS } from "./Game.js"
 
 
 export class PingCompensatedPlayer extends Player {
-    async connect(): Promise<unknown> {
+    async connect(): Promise<void> {
         const promise = super.connect()
         return promise.then(async () => { this.pingLoop() })
     }

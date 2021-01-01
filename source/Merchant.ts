@@ -5,7 +5,7 @@ import { TIMEOUT } from "./Game.js"
 
 
 export class Merchant extends PingCompensatedPlayer {
-    public closeMerchantStand(): Promise<unknown> {
+    public closeMerchantStand(): Promise<void> {
         if (!this.character.stand)
             return Promise.resolve() // It's already closed
 
@@ -42,7 +42,7 @@ export class Merchant extends PingCompensatedPlayer {
         })
     }
 
-    public mluck(target: string): Promise<unknown> {
+    public mluck(target: string): Promise<void> {
         if (target !== this.character.id) {
             const player = this.players.get(target)
             if (!player)
@@ -93,7 +93,7 @@ export class Merchant extends PingCompensatedPlayer {
         return mlucked
     }
 
-    public openMerchantStand(): Promise<unknown> {
+    public openMerchantStand(): Promise<void> {
         if (this.character.stand)
             return Promise.resolve() // It's already open
 

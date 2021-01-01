@@ -26,7 +26,7 @@ export class Rogue extends PingCompensatedPlayer {
     }
 
     // NOTE: UNTESTED
-    public mentalBurst(target: string): Promise<unknown> {
+    public mentalBurst(target: string): Promise<void> {
         const marked = new Promise((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]mentalburst['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
@@ -49,7 +49,7 @@ export class Rogue extends PingCompensatedPlayer {
     }
 
     // NOTE: UNTESTED
-    public poisonCoat(): Promise<unknown> {
+    public poisonCoat(): Promise<void> {
         const poisonCoated = new Promise((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]pcoat['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
@@ -71,7 +71,7 @@ export class Rogue extends PingCompensatedPlayer {
     }
 
     // NOTE: UNTESTED
-    public quickPunch(target: string): Promise<unknown> {
+    public quickPunch(target: string): Promise<void> {
         const marked = new Promise((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]quickpunch['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
@@ -94,7 +94,7 @@ export class Rogue extends PingCompensatedPlayer {
     }
 
     // NOTE: UNTESTED
-    public quickStab(target: string): Promise<unknown> {
+    public quickStab(target: string): Promise<void> {
         const marked = new Promise((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]quickstab['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
@@ -118,7 +118,7 @@ export class Rogue extends PingCompensatedPlayer {
 
     // NOTE: UNTESTED
     // TODO: Improve to check if we applied it on the given character
-    public rspeed(target: string): Promise<unknown> {
+    public rspeed(target: string): Promise<void> {
         const marked = new Promise((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]rspeed['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
@@ -141,7 +141,7 @@ export class Rogue extends PingCompensatedPlayer {
     }
 
     // NOTE: UNTESTED
-    public shadowStrike(shadowstone = this.locateItem("shadowstone")): Promise<unknown> {
+    public shadowStrike(shadowstone = this.locateItem("shadowstone")): Promise<void> {
         if (shadowstone === undefined) return Promise.reject("We need a shadowstone in order to shadowstrike.")
 
         const shadowStriked = new Promise((resolve, reject) => {

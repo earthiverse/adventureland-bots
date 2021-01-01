@@ -5,7 +5,7 @@ import { TIMEOUT } from "./Game.js"
 
 export class Warrior extends PingCompensatedPlayer {
     // TODO: Investigate why the cooldown check doesn't work.
-    public agitate(): Promise<unknown> {
+    public agitate(): Promise<void> {
         const agitated = new Promise((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]agitate['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
@@ -38,7 +38,7 @@ export class Warrior extends PingCompensatedPlayer {
         return agitated
     }
 
-    public charge(): Promise<unknown> {
+    public charge(): Promise<void> {
         const charged = new Promise((resolve, reject) => {
             const successCheck = (data: CharacterData) => {
                 if (!data.hitchhikers)
@@ -76,7 +76,7 @@ export class Warrior extends PingCompensatedPlayer {
         return charged
     }
 
-    public cleave(): Promise<unknown> {
+    public cleave(): Promise<void> {
         if (this.G.skills.cleave.mp > this.character.mp)
             return Promise.reject("Not enough MP to use cleave")
 
@@ -112,7 +112,7 @@ export class Warrior extends PingCompensatedPlayer {
         return cleaved
     }
 
-    public hardshell(): Promise<unknown> {
+    public hardshell(): Promise<void> {
         const hardshelled = new Promise((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]hardshell['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
@@ -171,7 +171,7 @@ export class Warrior extends PingCompensatedPlayer {
     }
 
     // TODO: Return ids of those monsters & players that are now stomped
-    public stomp(): Promise<unknown> {
+    public stomp(): Promise<void> {
         const stomped = new Promise((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]stomp['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
@@ -247,7 +247,7 @@ export class Warrior extends PingCompensatedPlayer {
         return tauntStarted
     }
 
-    public warcry(): Promise<unknown> {
+    public warcry(): Promise<void> {
         const warcried = new Promise((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]warcry['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {

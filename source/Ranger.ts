@@ -40,7 +40,7 @@ export class Ranger extends PingCompensatedPlayer {
         return attackStarted
     }
 
-    public huntersMark(target: string): Promise<unknown> {
+    public huntersMark(target: string): Promise<void> {
         const marked = new Promise((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]huntersmark['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {

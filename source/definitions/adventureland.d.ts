@@ -159,6 +159,8 @@ export type GMonster = {
   abilities?: { [T in SkillName]?: any }
   apiercing?: number
   attack: number
+  /** If set, the monster will run this fast when it is targeting a player */
+  charge?: number
   /** If set to true, all players that deal damage to this monster will share the loot */
   cooperative?: boolean
   damage_type: DamageType
