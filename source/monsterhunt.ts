@@ -1090,6 +1090,7 @@ async function startRanger(bot: Ranger) {
             if (bot.isPVP()) {
                 for (const enemy of bot.players.values()) {
                     if (Tools.distance(bot.character, enemy) > bot.character.range) continue // We're too far to attack them
+                    if (bot.party && bot.party.list && bot.party.list.includes(enemy.id)) continue // We're friends
 
                     if (bot.canUse("huntersmark")) await bot.huntersMark(enemy.id)
                     if (bot.canUse("supershot")) await bot.superShot(enemy.id)
@@ -1797,6 +1798,7 @@ async function startPriest(bot: Priest) {
             if (bot.isPVP()) {
                 for (const enemy of bot.players.values()) {
                     if (Tools.distance(bot.character, enemy) > bot.character.range) continue // We're too far to attack them
+                    if (bot.party && bot.party.list && bot.party.list.includes(enemy.id)) continue // We're friends
 
                     if (bot.canUse("curse")) await bot.curse(enemy.id)
                     await bot.attack(enemy.id)
@@ -2631,6 +2633,7 @@ async function startWarrior(bot: Warrior) {
             if (bot.isPVP()) {
                 for (const enemy of bot.players.values()) {
                     if (Tools.distance(bot.character, enemy) > bot.character.range) continue // We're too far to attack them
+                    if (bot.party && bot.party.list && bot.party.list.includes(enemy.id)) continue // We're friends
 
                     if (bot.canUse("stomp")) await bot.stomp()
                     await bot.attack(enemy.id)
