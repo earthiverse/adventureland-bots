@@ -2447,7 +2447,7 @@ export class Player extends Observer {
      * Returns a boolean corresponding to whether or not we can attack other players
      */
     public isPVP(): boolean {
-        if (this.G[this.character.map].pvp)
+        if (this.character.map && this.G.maps[this.character.map].pvp)
             return true
         return this.server.pvp
     }

@@ -79,6 +79,8 @@ export type GData = {
     mount: boolean;
     no_bounds?: boolean;
     npcs: GMapsNPC[];
+    /** If set to true, the map is PvP in ALL servers */
+    pvp?: boolean;
     on_death: number;
     ref: {
       [id: string]: IPosition & {
