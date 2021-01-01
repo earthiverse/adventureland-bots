@@ -1087,6 +1087,25 @@ async function startRanger(bot: Ranger) {
                 return
             }
 
+            if (bot.isPVP()) {
+                for (const enemy of bot.players.values()) {
+                    if (Tools.distance(bot.character, enemy) > bot.character.range) continue // We're too far to attack them
+
+                    if (bot.canUse("huntersmark")) await bot.huntersMark(enemy.id)
+                    if (bot.canUse("supershot")) await bot.superShot(enemy.id)
+                    await bot.attack(enemy.id)
+                }
+
+                if (bot.canUse("supershot")) {
+                    for (const enemy of bot.players.values()) {
+                        if (Tools.distance(bot.character, enemy) > bot.character.range * bot.G.skills.supershot.range_multiplier) continue // We're too far to attack them
+
+                        await bot.superShot(enemy.id)
+                        break
+                    }
+                }
+            }
+
             // Reasons to scare
             let numTargets = 0
             let numTargetingAndClose = 0
@@ -1775,6 +1794,14 @@ async function startPriest(bot: Priest) {
                 return
             }
 
+            if (bot.isPVP()) {
+                for (const enemy of bot.players.values()) {
+                    if (Tools.distance(bot.character, enemy) > bot.character.range) continue // We're too far to attack them
+
+                    if (bot.canUse("curse")) await bot.curse(enemy.id)
+                    await bot.attack(enemy.id)
+                }
+            }
 
             // Reasons to scare
             let numTargets = 0
@@ -2599,6 +2626,15 @@ async function startWarrior(bot: Warrior) {
             if (bot.character.rip) {
                 setTimeout(async () => { attackLoop() }, 1000)
                 return
+            }
+
+            if (bot.isPVP()) {
+                for (const enemy of bot.players.values()) {
+                    if (Tools.distance(bot.character, enemy) > bot.character.range) continue // We're too far to attack them
+
+                    if (bot.canUse("stomp")) await bot.stomp()
+                    await bot.attack(enemy.id)
+                }
             }
 
             // Reasons to scare
