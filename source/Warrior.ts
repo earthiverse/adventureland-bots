@@ -6,7 +6,7 @@ import { TIMEOUT } from "./Game.js"
 export class Warrior extends PingCompensatedPlayer {
     // TODO: Investigate why the cooldown check doesn't work.
     public agitate(): Promise<void> {
-        const agitated = new Promise((resolve, reject) => {
+        const agitated = new Promise<void>((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]agitate['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
                     this.socket.removeListener("eval", cooldownCheck)
@@ -39,7 +39,7 @@ export class Warrior extends PingCompensatedPlayer {
     }
 
     public charge(): Promise<void> {
-        const charged = new Promise((resolve, reject) => {
+        const charged = new Promise<void>((resolve, reject) => {
             const successCheck = (data: CharacterData) => {
                 if (!data.hitchhikers)
                     return
@@ -80,7 +80,7 @@ export class Warrior extends PingCompensatedPlayer {
         if (this.G.skills.cleave.mp > this.character.mp)
             return Promise.reject("Not enough MP to use cleave")
 
-        const cleaved = new Promise((resolve, reject) => {
+        const cleaved = new Promise<void>((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]cleave['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
                     this.socket.removeListener("eval", cooldownCheck)
@@ -113,7 +113,7 @@ export class Warrior extends PingCompensatedPlayer {
     }
 
     public hardshell(): Promise<void> {
-        const hardshelled = new Promise((resolve, reject) => {
+        const hardshelled = new Promise<void>((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]hardshell['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
                     this.socket.removeListener("player", successCheck)
@@ -172,7 +172,7 @@ export class Warrior extends PingCompensatedPlayer {
 
     // TODO: Return ids of those monsters & players that are now stomped
     public stomp(): Promise<void> {
-        const stomped = new Promise((resolve, reject) => {
+        const stomped = new Promise<void>((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]stomp['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
                     this.socket.removeListener("eval", cooldownCheck)
@@ -248,7 +248,7 @@ export class Warrior extends PingCompensatedPlayer {
     }
 
     public warcry(): Promise<void> {
-        const warcried = new Promise((resolve, reject) => {
+        const warcried = new Promise<void>((resolve, reject) => {
             const cooldownCheck = (data: EvalData) => {
                 if (/skill_timeout\s*\(\s*['"]warcry['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
                     this.socket.removeListener("eval", cooldownCheck)

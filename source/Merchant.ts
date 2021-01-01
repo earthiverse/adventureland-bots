@@ -9,7 +9,7 @@ export class Merchant extends PingCompensatedPlayer {
         if (!this.character.stand)
             return Promise.resolve() // It's already closed
 
-        const closed = new Promise((resolve, reject) => {
+        const closed = new Promise<void>((resolve, reject) => {
             const checkStand = (data: CharacterData) => {
                 if (!data.stand) {
                     this.socket.removeListener("player", checkStand)
@@ -53,7 +53,7 @@ export class Merchant extends PingCompensatedPlayer {
                 return Promise.reject(`${target} has a strong mluck from ${player.s.mluck.f}.`)
         }
 
-        const mlucked = new Promise((resolve, reject) => {
+        const mlucked = new Promise<void>((resolve, reject) => {
             const mluckCheck = (data: EntitiesData) => {
                 for (const player of data.players) {
                     if (player.id == target
@@ -107,7 +107,7 @@ export class Merchant extends PingCompensatedPlayer {
                 return Promise.reject("Could not find merchant stand ('stand0') or computer in inventory.")
         }
 
-        const opened = new Promise((resolve, reject) => {
+        const opened = new Promise<void>((resolve, reject) => {
             const checkStand = (data: CharacterData) => {
                 if (data.stand) {
                     this.socket.removeListener("player", checkStand)
