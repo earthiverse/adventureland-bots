@@ -3050,20 +3050,13 @@ async function startMerchant(bot: Merchant) {
             for (const friend of [priest, ranger, warrior]) {
                 if (!friend) continue
 
-                // Check if our friend is full
-                let full = true
-                for (const item of friend.character.items) {
-                    if (!item) {
-                        full = false
-                        break
+                // Check if friend is full, or needs mluck
+                if (friend.isFull() || (bot.canUse("mluck") && (!friend.character.s.mluck || friend.character.s.mluck.ms < 120000 || friend.character.s.mluck.f !== bot.character.id))) {
+                    if (Tools.distance(bot.character, friend.character) > NPC_INTERACTION_DISTANCE) {
+                        await bot.closeMerchantStand()
+                        console.log(`[merchant] We are moving to ${friend.character.id}!`)
+                        await bot.smartMove(friend.character, { getWithin: bot.G.skills.mluck.range / 2 })
                     }
-                }
-
-                // Also check if they need mluck
-                if (full || (bot.canUse("mluck") && (!friend.character.s.mluck || friend.character.s.mluck.ms < 120000 || friend.character.s.mluck.f !== bot.character.id))) {
-                    await bot.closeMerchantStand()
-                    console.log(`[merchant] We are moving to ${friend.character.id}!`)
-                    await bot.smartMove(friend.character, { getWithin: bot.G.skills.mluck.range / 2 })
 
                     setTimeout(async () => { moveLoop() }, 250)
                     return
@@ -3076,8 +3069,10 @@ async function startMerchant(bot: Merchant) {
                 if (!bot.S[type].live) continue
                 if (!bot.S[type].target) continue
 
-                await bot.closeMerchantStand()
-                await bot.smartMove(bot.S[type], { getWithin: 100 })
+                if (Tools.distance(bot.character, bot.S[type]) > 100) {
+                    await bot.closeMerchantStand()
+                    await bot.smartMove(bot.S[type], { getWithin: 100 })
+                }
 
                 setTimeout(async () => { moveLoop() }, 250)
                 return
@@ -3088,9 +3083,11 @@ async function startMerchant(bot: Merchant) {
                 const charactersToMluck = await CharacterModel.find({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 }, $or: [{ "s.mluck": undefined }, { "s.mluck.strong": undefined, "s.mluck.f": { "$ne": bot.character.id } }] }).lean().exec()
                 for (const character of charactersToMluck) {
                     // Move to them, and we'll automatically mluck them
-                    await bot.closeMerchantStand()
-                    console.log(`[merchant] We are moving to ${character.name} to mluck them!`)
-                    await bot.smartMove(character, { getWithin: bot.G.skills.mluck.range / 2 })
+                    if (Tools.distance(bot.character, character) > bot.G.skills.mluck.range) {
+                        await bot.closeMerchantStand()
+                        console.log(`[merchant] We are moving to ${character.name} to mluck them!`)
+                        await bot.smartMove(character, { getWithin: bot.G.skills.mluck.range / 2 })
+                    }
 
                     setTimeout(async () => { moveLoop() }, 250)
                     return
