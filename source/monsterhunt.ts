@@ -1096,7 +1096,7 @@ async function startRanger(bot: Ranger) {
                     if (bot.canUse("attack")) await bot.attack(enemy.id)
                     if (bot.canUse("supershot")) await bot.superShot(enemy.id)
 
-                    setTimeout(async () => { attackLoop() }, cooldown)
+                    setTimeout(async () => { attackLoop() }, bot.getCooldown("attack"))
                     return
                 }
 
@@ -1806,7 +1806,7 @@ async function startPriest(bot: Priest) {
                     if (bot.canUse("curse")) await bot.curse(enemy.id)
                     if (bot.canUse("attack")) await bot.attack(enemy.id)
 
-                    setTimeout(async () => { attackLoop() }, cooldown)
+                    setTimeout(async () => { attackLoop() }, bot.getCooldown("attack"))
                     return
                 }
             }
@@ -2644,7 +2644,7 @@ async function startWarrior(bot: Warrior) {
                     if (bot.canUse("stomp")) await bot.stomp()
                     if (bot.canUse("attack")) await bot.attack(enemy.id)
 
-                    setTimeout(async () => { attackLoop() }, cooldown)
+                    setTimeout(async () => { attackLoop() }, bot.getCooldown("attack"))
                     return
                 }
             }
