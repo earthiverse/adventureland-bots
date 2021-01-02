@@ -1798,19 +1798,6 @@ async function startPriest(bot: Priest) {
                 return
             }
 
-            if (bot.isPVP()) {
-                for (const enemy of bot.players.values()) {
-                    if (Tools.distance(bot.character, enemy) > bot.character.range) continue // We're too far to attack them
-                    if (bot.party && bot.party.list && bot.party.list.includes(enemy.id)) continue // We're friends
-
-                    if (bot.canUse("curse")) await bot.curse(enemy.id)
-                    if (bot.canUse("attack")) await bot.attack(enemy.id)
-
-                    setTimeout(async () => { attackLoop() }, bot.getCooldown("attack"))
-                    return
-                }
-            }
-
             // Reasons to scare
             let numTargets = 0
             let numTargetingAndClose = 0
@@ -1893,6 +1880,19 @@ async function startPriest(bot: Priest) {
                 await bot.heal(targets[0])
                 setTimeout(async () => { attackLoop() }, bot.getCooldown("heal"))
                 return
+            }
+
+            if (bot.isPVP()) {
+                for (const enemy of bot.players.values()) {
+                    if (Tools.distance(bot.character, enemy) > bot.character.range) continue // We're too far to attack them
+                    if (bot.party && bot.party.list && bot.party.list.includes(enemy.id)) continue // We're friends
+
+                    if (bot.canUse("curse")) await bot.curse(enemy.id)
+                    if (bot.canUse("attack")) await bot.attack(enemy.id)
+
+                    setTimeout(async () => { attackLoop() }, bot.getCooldown("attack"))
+                    return
+                }
             }
 
             if (bot.character.c.town) {
