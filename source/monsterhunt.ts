@@ -1103,6 +1103,7 @@ async function startRanger(bot: Ranger) {
                 if (bot.canUse("supershot")) {
                     for (const enemy of bot.players.values()) {
                         if (Tools.distance(bot.character, enemy) > bot.character.range * bot.G.skills.supershot.range_multiplier) continue // We're too far to attack them
+                        if (bot.party && bot.party.list && bot.party.list.includes(enemy.id)) continue // We're friends
 
                         await bot.superShot(enemy.id)
                         break
