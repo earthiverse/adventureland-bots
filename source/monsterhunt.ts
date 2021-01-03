@@ -1091,6 +1091,7 @@ async function startRanger(bot: Ranger) {
                 for (const enemy of bot.players.values()) {
                     if (Tools.distance(bot.character, enemy) > bot.character.range) continue // We're too far to attack them
                     if (bot.party && bot.party.list && bot.party.list.includes(enemy.id)) continue // We're friends
+                    if (enemy.rip) continue // Enemy is dead
 
                     if (bot.canUse("huntersmark")) await bot.huntersMark(enemy.id)
                     if (bot.canUse("attack")) await bot.attack(enemy.id)
@@ -1104,6 +1105,7 @@ async function startRanger(bot: Ranger) {
                     for (const enemy of bot.players.values()) {
                         if (Tools.distance(bot.character, enemy) > bot.character.range * bot.G.skills.supershot.range_multiplier) continue // We're too far to attack them
                         if (bot.party && bot.party.list && bot.party.list.includes(enemy.id)) continue // We're friends
+                        if (enemy.rip) continue // Enemy is dead
 
                         await bot.superShot(enemy.id)
                         break
@@ -1887,6 +1889,7 @@ async function startPriest(bot: Priest) {
                 for (const enemy of bot.players.values()) {
                     if (Tools.distance(bot.character, enemy) > bot.character.range) continue // We're too far to attack them
                     if (bot.party && bot.party.list && bot.party.list.includes(enemy.id)) continue // We're friends
+                    if (enemy.rip) continue // Enemy is dead
 
                     if (bot.canUse("curse")) await bot.curse(enemy.id)
                     if (bot.canUse("attack")) await bot.attack(enemy.id)
@@ -2641,6 +2644,7 @@ async function startWarrior(bot: Warrior) {
                 for (const enemy of bot.players.values()) {
                     if (Tools.distance(bot.character, enemy) > bot.character.range) continue // We're too far to attack them
                     if (bot.party && bot.party.list && bot.party.list.includes(enemy.id)) continue // We're friends
+                    if (enemy.rip) continue // Enemy is dead
 
                     if (bot.canUse("stomp")) await bot.stomp()
                     if (bot.canUse("attack")) await bot.attack(enemy.id)
