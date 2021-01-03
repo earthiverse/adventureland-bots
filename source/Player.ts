@@ -97,6 +97,10 @@ export class Player extends Observer {
                     player.x = location[0]
                     player.y = location[1]
                     this.players.set(data.id, player)
+                } else {
+                    // NOTE: Temporary debug
+                    console.log("DEBUG: disappear with no data.to")
+                    console.log(data)
                 }
             } else if (data.reason == undefined) {
                 // This probably meant that the entity
@@ -1048,6 +1052,11 @@ export class Player extends Observer {
                 // There's only one acceptable weapon type
                 if (gInfoWeapon.wtype !== gInfoSkill.wtype)
                     return false // We don't have the right weapon type equipped
+            }
+        }
+        if (gInfoSkill.inventory) {
+            for (const item of gInfoSkill.inventory) {
+                if (!this.hasItem(item)) return false // We don't have the required item in our inventory
             }
         }
         if (gInfoSkill.slot) {

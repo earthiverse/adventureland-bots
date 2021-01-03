@@ -120,6 +120,8 @@ export type GData = {
     damage_multiplier?: number;
     /** If true, we can't use this skill in a safe zone */
     hostile?: boolean;
+    /** Items that this we need to use the skill */
+    inventory?: ItemName[];
     level?: number;
     /** Can we use this skill on monsters? */
     monster?: boolean;

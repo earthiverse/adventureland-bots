@@ -890,6 +890,11 @@ async function startRanger(bot: Ranger) {
             move: async () => { return await specialMonsterMoveStrategy("greenjr") },
             attackWhileIdle: true
         },
+        hen: {
+            attack: async () => { return await defaultAttackStrategy("hen") },
+            move: async () => { return await holdPositionMoveStrategy({ map: "main", x: -61.5, y: -282 }) },
+            attackWhileIdle: true
+        },
         iceroamer: {
             attack: async () => { return await defaultAttackStrategy("iceroamer") },
             move: async () => { return await holdPositionMoveStrategy({ map: "winterland", x: 1512, y: 104 }) },
@@ -988,6 +993,11 @@ async function startRanger(bot: Ranger) {
             attack: async () => { return await defaultAttackStrategy("rat") },
             move: async () => { return holdPositionMoveStrategy({ map: "mansion", x: 100, y: -225 }) },
             equipment: { mainhand: "crossbow" },
+            attackWhileIdle: true
+        },
+        rooster: {
+            attack: async () => { return await defaultAttackStrategy("rooster") },
+            move: async () => { return await holdPositionMoveStrategy({ map: "main", x: -61.5, y: -282 }) },
             attackWhileIdle: true
         },
         scorpion: {
@@ -1623,6 +1633,11 @@ async function startPriest(bot: Priest) {
             move: async () => { return await specialMonsterMoveStrategy("greenjr") },
             attackWhileIdle: true
         },
+        hen: {
+            attack: async () => { return await defaultAttackStrategy("hen") },
+            move: async () => { return await holdPositionMoveStrategy({ map: "main", x: -61.5, y: -282 }) },
+            attackWhileIdle: true
+        },
         iceroamer: {
             attack: async () => { return await defaultAttackStrategy("iceroamer") },
             move: async () => { return await holdPositionMoveStrategy({ map: "winterland", x: 1492, y: 104 }) },
@@ -1710,6 +1725,11 @@ async function startPriest(bot: Priest) {
         rat: {
             attack: async () => { return await defaultAttackStrategy("rat") },
             move: async () => { return holdPositionMoveStrategy({ map: "mansion", x: -224, y: -313 }) },
+            attackWhileIdle: true
+        },
+        rooster: {
+            attack: async () => { return await defaultAttackStrategy("rooster") },
+            move: async () => { return await holdPositionMoveStrategy({ map: "main", x: -61.5, y: -282 }) },
             attackWhileIdle: true
         },
         scorpion: {
@@ -2459,6 +2479,11 @@ async function startWarrior(bot: Warrior) {
             move: async () => { return await specialMonsterMoveStrategy("greenjr") },
             attackWhileIdle: true
         },
+        hen: {
+            attack: async () => { return await defaultAttackStrategy("hen") },
+            move: async () => { return await holdPositionMoveStrategy({ map: "main", x: -61.5, y: -282 }) },
+            attackWhileIdle: true
+        },
         iceroamer: {
             attack: async () => { return await defaultAttackStrategy("iceroamer") },
             move: async () => { return await holdPositionMoveStrategy({ map: "winterland", x: 1532, y: 104 }) },
@@ -2546,6 +2571,11 @@ async function startWarrior(bot: Warrior) {
             attack: async () => { return await defaultAttackStrategy("rat") },
             move: async () => { return nearbyMonstersMoveStrategy({ map: "mansion", x: 0, y: -21 }, "rat") },
             equipment: { mainhand: "bataxe", orb: "jacko" },
+            attackWhileIdle: true
+        },
+        rooster: {
+            attack: async () => { return await defaultAttackStrategy("rooster") },
+            move: async () => { return await holdPositionMoveStrategy({ map: "main", x: -61.5, y: -282 }) },
             attackWhileIdle: true
         },
         scorpion: {
@@ -2890,6 +2920,21 @@ async function startMerchant(bot: Merchant) {
             if (bot.character.targets > 0) {
                 if (bot.canUse("scare")) {
                     await bot.scare()
+                }
+            }
+
+            if (bot.canUse("attack")) {
+                let target: EntityData
+                for (const [, entity] of bot.entities) {
+                    if (!(["hen", "rooster"] as MonsterName[]).includes(entity.type)) continue // We only want to target these for Halloween
+                    if (Tools.distance(bot.character, entity) > bot.character.range) continue // We're too far away to attack
+
+                    target = entity
+                    break
+                }
+
+                if (target) {
+                    await bot.attack(target.id)
                 }
             }
         } catch (e) {
