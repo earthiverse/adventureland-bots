@@ -92,7 +92,7 @@ export class Player extends Observer {
             } else if (data.reason == "transport" && (typeof data.s == "number" || typeof data.s == "undefined")) {
                 // Only players can transport
                 const player = this.players.get(data.id)
-                if (player) {
+                if (player && data.to) {
                     const location = this.G.maps[data.to].spawns[data.s == undefined ? 0 : data.s]
                     player.x = location[0]
                     player.y = location[1]
