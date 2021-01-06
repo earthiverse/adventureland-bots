@@ -97,7 +97,7 @@ export class Player extends Observer {
                     player.x = location[0]
                     player.y = location[1]
                     this.players.set(data.id, player)
-                } else {
+                } else if (data.id !== this.character.id) {
                     // NOTE: Temporary debug
                     console.log("DEBUG: disappear with no data.to")
                     console.log(data)
