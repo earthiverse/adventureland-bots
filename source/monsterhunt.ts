@@ -249,34 +249,35 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
     }
     eventLoop()
 
-    // async function exchangeLoop() {
-    //     try {
-    //         if (bot.socket.disconnected) return
+    async function exchangeLoop() {
+        try {
+            if (bot.socket.disconnected) return
 
-    //         // TODO: Make bot.canExchange() function and replace the following line with that
-    //         const hasComputer = bot.locateItem("computer") !== undefined
+            // TODO: Make bot.canExchange() function and replace the following line with that
+            const hasComputer = bot.locateItem("computer") !== undefined
 
-    //         if (hasComputer) {
-    //             for (let i = 0; i < bot.character.items.length; i++) {
-    //                 if (bot.character.esize <= 1) break // We are full
+            if (hasComputer
+                && bot.character.gold > 50000000) {
+                for (let i = 0; i < bot.character.items.length; i++) {
+                    if (bot.character.esize <= 1) break // We are full
 
-    //                 const item = bot.character.items[i]
-    //                 if (!item) continue
-    //                 if (!ITEMS_TO_EXCHANGE.includes(item.name)) continue // Don't want / can't exchange
+                    const item = bot.character.items[i]
+                    if (!item) continue
+                    if (!ITEMS_TO_EXCHANGE.includes(item.name)) continue // Don't want / can't exchange
 
-    //                 const gInfo = bot.G.items[item.name]
-    //                 if (gInfo.e !== undefined && item.q < gInfo.e) continue // Don't have enough to exchange
+                    const gInfo = bot.G.items[item.name]
+                    if (gInfo.e !== undefined && item.q < gInfo.e) continue // Don't have enough to exchange
 
-    //                 await bot.exchange(i)
-    //             }
-    //         }
-    //     } catch (e) {
-    //         console.error(e)
-    //     }
+                    await bot.exchange(i)
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
 
-    //     setTimeout(async () => { exchangeLoop() }, 250)
-    // }
-    // exchangeLoop()
+        setTimeout(async () => { exchangeLoop() }, 250)
+    }
+    exchangeLoop()
 
     async function healLoop() {
         try {
@@ -2975,7 +2976,7 @@ async function startMerchant(bot: Merchant) {
     mluckLoop()
 
     let lastBankVisit = Number.MIN_VALUE
-    // let lastSpecialCheckTime = Number.MIN_VALUE
+    let lastSpecialCheckTime = Number.MIN_VALUE
     async function moveLoop() {
         try {
             if (bot.socket.disconnected) return
@@ -3130,21 +3131,21 @@ async function startMerchant(bot: Merchant) {
             // TODO: Check for special monsters if there's another user with a monsterhunt for a special monster
             // {"s.monsterhunt.ms": {$gt: 1.74e6}, lastSeen: {$gt: Date.now() - 60000}}
 
-            // // Check for special monsters every 15 minutes
-            // if (lastSpecialCheckTime < Date.now() - 900000) {
-            //     await bot.closeMerchantStand()
-            //     const locations: NodeData[] = []
-            //     locations.push(...bot.locateMonsters("mvampire")) // Also checks goldenbat
-            //     locations.push(...bot.locateMonsters("fvampire"))
-            //     locations.push(...bot.locateMonsters("greenjr"))
-            //     locations.push(...bot.locateMonsters("jr"))
+            // Check for special monsters every 15 minutes
+            if (lastSpecialCheckTime < Date.now() - 900000) {
+                await bot.closeMerchantStand()
+                const locations: NodeData[] = []
+                locations.push(...bot.locateMonsters("mvampire")) // Also checks goldenbat
+                locations.push(...bot.locateMonsters("fvampire"))
+                locations.push(...bot.locateMonsters("greenjr"))
+                locations.push(...bot.locateMonsters("jr"))
 
-            //     for (const location of locations) {
-            //         console.log(location)
-            //         await bot.smartMove(location)
-            //         lastSpecialCheckTime = Date.now()
-            //     }
-            // }
+                for (const location of locations) {
+                    console.log(location)
+                    await bot.smartMove(location)
+                    lastSpecialCheckTime = Date.now()
+                }
+            }
 
             // Move to our friends if they have lots of items (they'll send them over)
             for (const friend of [priest, ranger, warrior]) {
