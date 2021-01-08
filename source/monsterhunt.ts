@@ -283,39 +283,42 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
         try {
             if (bot.socket.disconnected) return
 
-            const missingHP = bot.character.max_hp - bot.character.hp
-            const missingMP = bot.character.max_mp - bot.character.mp
-            const hpRatio = bot.character.hp / bot.character.max_hp
-            const mpRatio = bot.character.mp / bot.character.max_mp
-            const hpot1 = bot.locateItem("hpot1")
-            const hpot0 = bot.locateItem("hpot0")
-            const mpot1 = bot.locateItem("mpot1")
-            const mpot0 = bot.locateItem("mpot0")
-            if (hpRatio < mpRatio) {
-                if (missingHP >= 400 && hpot1 !== undefined) {
-                    await bot.useHPPot(hpot1)
-                } else if (missingHP >= 200 && hpot0 !== undefined) {
-                    await bot.useHPPot(hpot0)
-                } else {
-                    await bot.regenHP()
-                }
-            } else if (mpRatio < hpRatio) {
-                if (missingMP >= 500 && mpot1 !== undefined) {
-                    await bot.useMPPot(mpot1)
-                } else if (missingMP >= 300 && mpot0 !== undefined) {
-                    await bot.useMPPot(mpot0)
-                } else {
-                    await bot.regenMP()
-                }
-            } else if (hpRatio < 1) {
-                if (missingHP >= 400 && hpot1 !== undefined) {
-                    await bot.useHPPot(hpot1)
-                } else if (missingHP >= 200 && hpot0 !== undefined) {
-                    await bot.useHPPot(hpot0)
-                } else {
-                    await bot.regenHP()
+            if (!bot.character.rip) {
+                const missingHP = bot.character.max_hp - bot.character.hp
+                const missingMP = bot.character.max_mp - bot.character.mp
+                const hpRatio = bot.character.hp / bot.character.max_hp
+                const mpRatio = bot.character.mp / bot.character.max_mp
+                const hpot1 = bot.locateItem("hpot1")
+                const hpot0 = bot.locateItem("hpot0")
+                const mpot1 = bot.locateItem("mpot1")
+                const mpot0 = bot.locateItem("mpot0")
+                if (hpRatio < mpRatio) {
+                    if (missingHP >= 400 && hpot1 !== undefined) {
+                        await bot.useHPPot(hpot1)
+                    } else if (missingHP >= 200 && hpot0 !== undefined) {
+                        await bot.useHPPot(hpot0)
+                    } else {
+                        await bot.regenHP()
+                    }
+                } else if (mpRatio < hpRatio) {
+                    if (missingMP >= 500 && mpot1 !== undefined) {
+                        await bot.useMPPot(mpot1)
+                    } else if (missingMP >= 300 && mpot0 !== undefined) {
+                        await bot.useMPPot(mpot0)
+                    } else {
+                        await bot.regenMP()
+                    }
+                } else if (hpRatio < 1) {
+                    if (missingHP >= 400 && hpot1 !== undefined) {
+                        await bot.useHPPot(hpot1)
+                    } else if (missingHP >= 200 && hpot0 !== undefined) {
+                        await bot.useHPPot(hpot0)
+                    } else {
+                        await bot.regenHP()
+                    }
                 }
             }
+
         } catch (e) {
             console.error(e)
         }
