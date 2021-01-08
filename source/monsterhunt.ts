@@ -1639,7 +1639,7 @@ async function startPriest(bot: Priest) {
         },
         hen: {
             attack: async () => { return await defaultAttackStrategy("hen") },
-            move: async () => { return await holdPositionMoveStrategy({ map: "main", x: -61.5, y: -282 }) },
+            move: async () => { return await holdPositionMoveStrategy({ map: "main", x: -41.5, y: -282 }) },
             attackWhileIdle: true
         },
         iceroamer: {
@@ -1733,7 +1733,7 @@ async function startPriest(bot: Priest) {
         },
         rooster: {
             attack: async () => { return await defaultAttackStrategy("rooster") },
-            move: async () => { return await holdPositionMoveStrategy({ map: "main", x: -61.5, y: -282 }) },
+            move: async () => { return await holdPositionMoveStrategy({ map: "main", x: -41.5, y: -282 }) },
             attackWhileIdle: true
         },
         scorpion: {
@@ -1964,7 +1964,7 @@ async function startPriest(bot: Priest) {
                     }
                 }
 
-                if (bot.canUse("scare") && targets.length) {
+                if (targets.length) {
                     await bot.attack(targets[0])
                     cooldown = bot.getCooldown("attack")
                 }
@@ -2487,7 +2487,7 @@ async function startWarrior(bot: Warrior) {
         },
         hen: {
             attack: async () => { return await defaultAttackStrategy("hen") },
-            move: async () => { return await holdPositionMoveStrategy({ map: "main", x: -61.5, y: -282 }) },
+            move: async () => { return await holdPositionMoveStrategy({ map: "main", x: -81.5, y: -282 }) },
             attackWhileIdle: true
         },
         iceroamer: {
@@ -2581,7 +2581,7 @@ async function startWarrior(bot: Warrior) {
         },
         rooster: {
             attack: async () => { return await defaultAttackStrategy("rooster") },
-            move: async () => { return await holdPositionMoveStrategy({ map: "main", x: -61.5, y: -282 }) },
+            move: async () => { return await holdPositionMoveStrategy({ map: "main", x: -81.5, y: -282 }) },
             attackWhileIdle: true
         },
         scorpion: {
