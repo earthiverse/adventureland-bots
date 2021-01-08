@@ -1202,67 +1202,67 @@ async function startRanger(bot: Ranger) {
 
             if (rangerTarget && visibleMonsterTypes.has(rangerTarget)) {
                 cooldown = await strategy[rangerTarget].attack()
-            } else {
-                if (bot.canUse("attack")) {
-                    const targets: string[] = []
-                    const threeshotTargets: string[] = []
-                    const fiveshotTargets: string[] = []
-                    for (const [id, entity] of bot.entities) {
-                        if (!strategy[entity.type] || !strategy[entity.type].attackWhileIdle) continue
-                        if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
-                        if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
+            }
 
-                        // If the target will die to incoming projectiles, ignore it
-                        if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+            if (bot.canUse("attack")) {
+                const targets: string[] = []
+                const threeshotTargets: string[] = []
+                const fiveshotTargets: string[] = []
+                for (const [id, entity] of bot.entities) {
+                    if (!strategy[entity.type] || !strategy[entity.type].attackWhileIdle) continue
+                    if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                    if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
-                        // If the target will burn to death, ignore it
-                        if (Tools.willBurnToDeath(entity)) continue
+                    // If the target will die to incoming projectiles, ignore it
+                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
 
-                        targets.push(id)
+                    // If the target will burn to death, ignore it
+                    if (Tools.willBurnToDeath(entity)) continue
 
-                        // If we can kill enough monsters in one shot, let's try to do that
-                        const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0]
-                        if (!entity.immune && entity.hp < minimumDamage * bot.G.skills["3shot"].damage_multiplier) threeshotTargets.push(id)
-                        if (!entity.immune && entity.hp < minimumDamage * bot.G.skills["5shot"].damage_multiplier) fiveshotTargets.push(id)
-                    }
+                    targets.push(id)
 
-                    if (fiveshotTargets.length >= 5 && bot.canUse("5shot")) {
-                        await bot.fiveShot(fiveshotTargets[0], fiveshotTargets[1], fiveshotTargets[2], fiveshotTargets[3], fiveshotTargets[4])
-                    } else if (threeshotTargets.length >= 3 && bot.canUse("3shot")) {
-                        await bot.threeShot(threeshotTargets[0], threeshotTargets[1], threeshotTargets[2])
-                    } else if (targets.length) {
-                        // TODO: If we can do more damage with a `piercingshot`, do it.
-                        await bot.attack(targets[0])
+                    // If we can kill enough monsters in one shot, let's try to do that
+                    const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0]
+                    if (!entity.immune && entity.hp < minimumDamage * bot.G.skills["3shot"].damage_multiplier) threeshotTargets.push(id)
+                    if (!entity.immune && entity.hp < minimumDamage * bot.G.skills["5shot"].damage_multiplier) fiveshotTargets.push(id)
+                }
+
+                if (fiveshotTargets.length >= 5 && bot.canUse("5shot")) {
+                    await bot.fiveShot(fiveshotTargets[0], fiveshotTargets[1], fiveshotTargets[2], fiveshotTargets[3], fiveshotTargets[4])
+                } else if (threeshotTargets.length >= 3 && bot.canUse("3shot")) {
+                    await bot.threeShot(threeshotTargets[0], threeshotTargets[1], threeshotTargets[2])
+                } else if (targets.length) {
+                    // TODO: If we can do more damage with a `piercingshot`, do it.
+                    await bot.attack(targets[0])
+                }
+            }
+
+            if (bot.canUse("supershot")) {
+                const targets: string[] = []
+                for (const [id, entity] of bot.entities) {
+                    if (!strategy[entity.type] || !strategy[entity.type].attackWhileIdle) continue
+                    if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                    if (Tools.distance(bot.character, entity) > bot.character.range * bot.G.skills.supershot.range_multiplier) continue // Only attack those in range
+                    if (entity.immune) continue // Entity won't take damage from supershot
+
+                    // If the target will die to incoming projectiles, ignore it
+                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+
+                    // If the target will burn to death, ignore it
+                    if (Tools.willBurnToDeath(entity)) continue
+
+                    targets.push(id)
+
+                    const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0] * bot.G.skills.supershot.damage_multiplier
+                    if (minimumDamage > entity.hp) {
+                        // Stop looking for another one to attack, since we can kill this one in one hit.
+                        targets[0] = id
+                        break
                     }
                 }
 
-                if (bot.canUse("supershot")) {
-                    const targets: string[] = []
-                    for (const [id, entity] of bot.entities) {
-                        if (!strategy[entity.type] || !strategy[entity.type].attackWhileIdle) continue
-                        if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
-                        if (Tools.distance(bot.character, entity) > bot.character.range * bot.G.skills.supershot.range_multiplier) continue // Only attack those in range
-                        if (entity.immune) continue // Entity won't take damage from supershot
-
-                        // If the target will die to incoming projectiles, ignore it
-                        if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
-
-                        // If the target will burn to death, ignore it
-                        if (Tools.willBurnToDeath(entity)) continue
-
-                        targets.push(id)
-
-                        const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0] * bot.G.skills.supershot.damage_multiplier
-                        if (minimumDamage > entity.hp) {
-                            // Stop looking for another one to attack, since we can kill this one in one hit.
-                            targets[0] = id
-                            break
-                        }
-                    }
-
-                    if (targets.length) {
-                        await bot.superShot(targets[0])
-                    }
+                if (targets.length) {
+                    await bot.superShot(targets[0])
                 }
             }
         } catch (e) {
@@ -1936,7 +1936,9 @@ async function startPriest(bot: Priest) {
 
             if (priestTarget && visibleMonsterTypes.has(priestTarget)) {
                 cooldown = await strategy[priestTarget].attack()
-            } else if (bot.canUse("attack")) {
+            }
+
+            if (bot.canUse("attack")) {
                 targets = []
                 for (const [id, entity] of bot.entities) {
                     if (!strategy[entity.type] || !strategy[entity.type].attackWhileIdle) continue
@@ -2762,33 +2764,56 @@ async function startWarrior(bot: Warrior) {
 
             if (warriorTarget && visibleMonsterTypes.has(warriorTarget)) {
                 cooldown = await strategy[warriorTarget].attack()
-            } else {
-                if (bot.canUse("attack")) {
-                    const targets: string[] = []
-                    for (const [id, entity] of bot.entities) {
-                        if (!strategy[entity.type] || !strategy[entity.type].attackWhileIdle) continue
-                        if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
-                        if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
+            }
 
-                        // If the target will die to incoming projectiles, ignore it
-                        if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+            if (bot.canUse("attack")) {
+                const targets: string[] = []
+                for (const [id, entity] of bot.entities) {
+                    if (!strategy[entity.type] || !strategy[entity.type].attackWhileIdle) continue
+                    if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                    if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
-                        // If the target will burn to death, ignore it
-                        if (Tools.willBurnToDeath(entity)) continue
+                    // If the target will die to incoming projectiles, ignore it
+                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
 
-                        targets.push(id)
+                    // If the target will burn to death, ignore it
+                    if (Tools.willBurnToDeath(entity)) continue
 
-                        const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0]
-                        if (minimumDamage > entity.hp) {
-                            // Stop looking for another one to attack, since we can kill this one in one hit.
-                            targets[0] = id
-                            break
-                        }
+                    targets.push(id)
+
+                    const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0]
+                    if (minimumDamage > entity.hp) {
+                        // Stop looking for another one to attack, since we can kill this one in one hit.
+                        targets[0] = id
+                        break
                     }
+                }
 
-                    if (targets.length) {
-                        await bot.attack(targets[0])
-                    }
+                if (targets.length) {
+                    await bot.attack(targets[0])
+                }
+            }
+
+            // Cleave things
+            if (bot.canUse("cleave")) {
+                const targets: EntityData[] = []
+                for (const [, entity] of bot.entities) {
+                    if (!strategy[entity.type] || !strategy[entity.type].attackWhileIdle) continue
+                    if (entity.immune) continue // Can't do damage to immune enemies with cleave
+                    if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+                    if (Tools.distance(bot.character, entity) > bot.G.skills.cleave.range) continue // Only attack those in range
+
+                    // If the target will die to incoming projectiles, ignore it
+                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+
+                    // If the target will burn to death, ignore it
+                    if (Tools.willBurnToDeath(entity)) continue
+
+                    targets.push(entity)
+                }
+
+                if (targets.length) {
+                    await bot.cleave()
                 }
             }
         } catch (e) {
@@ -3135,6 +3160,7 @@ async function startMerchant(bot: Merchant) {
             if (lastSpecialCheckTime < Date.now() - 900000) {
                 await bot.closeMerchantStand()
                 const locations: NodeData[] = []
+                locations.push(...bot.locateMonsters("skeletor"))
                 locations.push(...bot.locateMonsters("mvampire")) // Also checks goldenbat
                 locations.push(...bot.locateMonsters("fvampire"))
                 locations.push(...bot.locateMonsters("greenjr"))
