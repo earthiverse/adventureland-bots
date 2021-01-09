@@ -86,6 +86,15 @@ export class Tools {
     }
 
     /**
+     * Returns the direction between two positions.
+     * @param a Position 1
+     * @param b Position 2
+     */
+    public static direction(a: { x: number, y: number, map?: MapName }, b: { x: number, y: number, map?: MapName }): number {
+        return Math.atan2(b.x - a.x, b.y - a.y)
+    }
+
+    /**
      * Returns the distance between two positions.
      * @param a Position 1
      * @param b Position 2
