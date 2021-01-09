@@ -1,7 +1,7 @@
 import { ITEMS_TO_BUY, ITEMS_TO_EXCHANGE, ITEMS_TO_SELL, MERCHANT_ITEMS_TO_HOLD, NPC_INTERACTION_DISTANCE, PRIEST_ITEMS_TO_HOLD, RANGER_ITEMS_TO_HOLD, SPECIAL_MONSTERS, WARRIOR_ITEMS_TO_HOLD } from "./constants.js"
 import { CharacterModel } from "./database/characters/characters.model.js"
 import { EntityModel } from "./database/entities/entities.model.js"
-import { CharacterData, EntityData, HitData, PlayerData } from "./definitions/adventureland-server.js"
+import { EntityData, HitData, PlayerData } from "./definitions/adventureland-server.js"
 import { BankPackType, ItemInfo, ItemName, MonsterName, ServerIdentifier, ServerRegion, SlotType, TradeSlotType } from "./definitions/adventureland.js"
 import { Strategy } from "./definitions/bot.js"
 import { NodeData } from "./definitions/pathfinder.js"
@@ -2337,29 +2337,8 @@ async function startWarrior(bot: Warrior) {
         }
 
         try {
-            const distance = Tools.distance(bot.character, closestEntitiy)
             if (!closestEntitiy && !bot.character.moving) await bot.smartMove(position)
-            else if (closestEntitiy && distance > bot.character.range) {
-                // NOTE: The following code is from https://stackoverflow.com/questions/37250215/intersection-of-two-moving-objects-with-latitude-longitude-coordinates
-                const direction = Tools.direction(bot.character, closestEntitiy)
-                const entityDirection = Tools.direction(closestEntitiy, { x: closestEntitiy.going_x, y: closestEntitiy.going_y })
-                const alpha = Math.PI + direction - entityDirection
-
-                const a = Math.pow(bot.character.speed, 2) - Math.pow(closestEntitiy.speed, 2)
-                const b = 2 * distance * closestEntitiy.speed * Math.cos(alpha)
-                const c = - Math.pow(distance, 2)
-                const disc = Math.pow(b, 2) - 4 * a * c
-                if (disc < 0) {
-                    // Target will reach destination before we can
-                    await bot.smartMove(closestEntitiy)
-                } else {
-                    const time = (Math.sqrt(disc) - b) / (2 * a)
-                    const x = closestEntitiy.x + closestEntitiy.speed * time * Math.cos(entityDirection)
-                    const y = closestEntitiy.y + closestEntitiy.speed * time * Math.sin(entityDirection)
-                    await bot.smartMove({ x, y })
-                }
-
-            }
+            else if (closestEntitiy && Tools.distance(bot.character, closestEntitiy) > bot.character.range) await bot.smartMove(closestEntitiy)
         } catch (e) {
             // console.error(e)
             bot.stopSmartMove()
