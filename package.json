@@ -5,11 +5,11 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
-    "alclient": "^0.1.7",
-    "mongoose": "^5.10.11"
+    "alclient": "^0.2.0",
+    "mongoose": "^5.11.11"
   },
   "devDependencies": {
-    "typescript": "^4.0.5"
+    "typescript": "^4.1.3"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
