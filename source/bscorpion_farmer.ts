@@ -28,33 +28,41 @@ async function startRanger(ranger: AL.Ranger) {
     const bscorpionSpawn = ranger.locateMonster("bscorpion")[0]
     async function moveLoop() {
         try {
-            if (AL.Pathfinder.canWalk(ranger.character, bscorpionSpawn)) {
+            if (AL.Pathfinder.canWalk(ranger, bscorpionSpawn)) {
                 const forces: { strength: number, angle: number }[] = []
 
                 // Force #1: Towards the center of the bscorpion spawn
-                const spawnStrength = (AL.Tools.distance(ranger.character, bscorpionSpawn) - (ranger.character.range / 2))
-                const spawnAngle = Math.atan2(bscorpionSpawn.y - ranger.character.y, bscorpionSpawn.x - ranger.character.x)
+                const spawnStrength = (AL.Tools.distance(ranger, bscorpionSpawn) - (ranger.range / 2))
+                const spawnAngle = Math.atan2(bscorpionSpawn.y - ranger.y, bscorpionSpawn.x - ranger.x)
                 forces.push({ strength: spawnStrength, angle: spawnAngle })
 
-                // Force #2: Perpendicular to  the center of the bscorpion spawn (so we move in a circle)
-                const circleStrength = ranger.character.speed
-                const circleAngle = spawnAngle + Math.PI / 4
+                // Force #2: Perpendicular to the center of the bscorpion spawn (so we move in a circle)
+                const circleStrength = ranger.speed / 4
+                const circleAngle = spawnAngle + Math.PI / 2
                 forces.push({ strength: circleStrength, angle: circleAngle })
 
                 // Force #3: Away from the bscorpion
+                const nearest = ranger.getNearestMonster("bscorpion")
+                if (nearest) {
+                    const bscorpion = nearest.monster
+                    if (bscorpion && bscorpion.isAttackingUs(ranger)) {
+                        const bscorpionStrength = nearest.distance - bscorpion.range
+                        const bscorpionAngle = Math.atan2(bscorpion.y - ranger.y, bscorpion.x - ranger.x)
+                    }
+                }
 
                 // Add up all the forces and move
-                let newX = ranger.character.x
-                let newY = ranger.character.y
+                let newX = ranger.x
+                let newY = ranger.y
                 for (const force of forces) {
                     newX += Math.cos(force.angle) * force.strength
                     newY += Math.sin(force.angle) * force.strength
                 }
-                await ranger.move(newX, newY)
+                ranger.move(newX, newY).catch(() => { })
                 console.log(forces)
             } else {
                 // Move to the bscorpion spawn
-                await ranger.smartMove(bscorpionSpawn, { getWithin: ranger.character.range / 2 })
+                await ranger.smartMove(bscorpionSpawn, { getWithin: ranger.range / 2 })
             }
         } catch (e) {
             console.error(e)
@@ -120,16 +128,16 @@ async function run() {
     ranger = await rangerP
 
     const reconnect = async (character: AL.PingCompensatedCharacter) => {
-        console.log(`Reconnecting ${character.character.id}...`)
-        character.disconnect()
-        character.connect()
-        character.socket.on("disconnect", () => { reconnect(character) })
+        console.log(`Reconnecting ${character.id}...`)
+        await character.disconnect()
+        await character.connect()
+        character.socket.on("disconnect", async () => { await reconnect(character) })
     }
 
-    merchant.socket.on("disconnect", () => { reconnect(merchant) })
-    priest.socket.on("disconnect", () => { reconnect(priest) })
-    mage.socket.on("disconnect", () => { reconnect(mage) })
-    ranger.socket.on("disconnect", () => { reconnect(ranger) })
+    merchant.socket.on("disconnect", async () => { await reconnect(merchant) })
+    priest.socket.on("disconnect", async () => { await reconnect(priest) })
+    mage.socket.on("disconnect", async () => { await reconnect(mage) })
+    ranger.socket.on("disconnect", async () => { await reconnect(ranger) })
 
     startMerchant(merchant)
     startPriest(priest)
