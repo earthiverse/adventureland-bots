@@ -5,7 +5,9 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
-    "alclient": "^0.2.7"
+    "@typescript-eslint/parser": "^4.13.0",
+    "alclient": "^0.3.0",
+    "eslint": "^7.17.0"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.13.0",

@@ -58,6 +58,9 @@ async function startRanger(ranger: AL.Ranger) {
                     newX += Math.cos(force.angle) * force.strength
                     newY += Math.sin(force.angle) * force.strength
                 }
+
+                // We want to continuously move, so we don't mind the empty function
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
                 ranger.move(newX, newY).catch(() => { })
                 console.log(forces)
             } else {
@@ -118,27 +121,29 @@ async function run() {
 
     // Start all characters
     console.log("Connecting...")
-    let merchantP = AL.Game.startMerchant(merchantName, region, identifier)
-    let priestP = AL.Game.startPriest(priestName, region, identifier)
-    let mageP = AL.Game.startMage(mageName, region, identifier)
-    let rangerP = AL.Game.startRanger(rangerName, region, identifier)
+    const merchantP = AL.Game.startMerchant(merchantName, region, identifier)
+    const priestP = AL.Game.startPriest(priestName, region, identifier)
+    const mageP = AL.Game.startMage(mageName, region, identifier)
+    const rangerP = AL.Game.startRanger(rangerName, region, identifier)
     merchant = await merchantP
     priest = await priestP
     mage = await mageP
     ranger = await rangerP
 
+    // Set up functionality to reconnect if we disconnect
+    // TODO: Add a delay
     const reconnect = async (character: AL.PingCompensatedCharacter) => {
         console.log(`Reconnecting ${character.id}...`)
         await character.disconnect()
         await character.connect()
         character.socket.on("disconnect", async () => { await reconnect(character) })
     }
-
     merchant.socket.on("disconnect", async () => { await reconnect(merchant) })
     priest.socket.on("disconnect", async () => { await reconnect(priest) })
     mage.socket.on("disconnect", async () => { await reconnect(mage) })
     ranger.socket.on("disconnect", async () => { await reconnect(ranger) })
 
+    // Start the characters
     startMerchant(merchant)
     startPriest(priest)
     startMage(mage)
