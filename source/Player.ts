@@ -2246,6 +2246,14 @@ export class Player extends Observer {
             }
 
             setTimeout(() => {
+                if (!startedWarp) {
+                    this.socket.removeListener("player", failCheck)
+                    this.socket.removeListener("new_map", warpedCheck2)
+                    reject("warpToTown timeout (1000ms)")
+                }
+            }, 1000)
+
+            setTimeout(() => {
                 this.socket.removeListener("player", failCheck)
                 this.socket.removeListener("new_map", warpedCheck2)
                 reject("warpToTown timeout (5000ms)")
