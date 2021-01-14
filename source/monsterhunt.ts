@@ -3179,7 +3179,7 @@ async function startMerchant(bot: Merchant) {
 
                 for (const location of locations) {
                     console.log(location)
-                    await bot.smartMove(location)
+                    await bot.smartMove(location, { getWithin: 400 })
                     lastSpecialCheckTime = Date.now()
                 }
             }
