@@ -1398,6 +1398,14 @@ async function startPriest(bot: Priest) {
                 }
 
                 if (targets.length > 0) {
+
+                    // Used to farm essences of life from ghosts
+                    if (targets[0].type == "ghost" && !targets[0]["farmed_essence"]) {
+                        await bot.heal(targets[0].id)
+                        targets[0]["farmed_essence"] = true
+                        return Math.max(10, bot.getCooldown("heal"))
+                    }
+
                     // Remove from other characters if we're going to kill it
                     if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
                         for (const bot of [ranger, priest, warrior, merchant]) {
