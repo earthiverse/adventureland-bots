@@ -558,8 +558,6 @@ async function startRanger(bot: Ranger) {
         return Math.max(10, Math.min(bot.getCooldown("attack"), bot.getCooldown("supershot")))
     }
     const tankAttackStrategy = async (mtype: MonsterName, tank: string) => {
-        if (!bot.players.has(priest.character.id)) return 250 // Priest isn't here
-
         // If we have a target scare it away
         for (const [, entity] of bot.entities) {
             if (entity.target == bot.character.id) {
