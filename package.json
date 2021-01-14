@@ -6,7 +6,7 @@
   "type": "module",
   "dependencies": {
     "@typescript-eslint/parser": "^4.13.0",
-    "alclient": "^0.3.0",
+    "alclient": "^0.3.1",
     "eslint": "^7.17.0"
   },
   "devDependencies": {
