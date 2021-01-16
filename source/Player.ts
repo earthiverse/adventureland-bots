@@ -1018,6 +1018,17 @@ export class Player extends Observer {
         return false
     }
 
+    public canCraft(itemToCraft: ItemName): boolean {
+        if (!this.G.craft[itemToCraft]) return false // Item is not craftable
+        if (this.G.craft[itemToCraft].cost > this.character.gold) return false // We don't have enough money
+        for (const [requiredQuantity, requiredItem, requiredItemLevel] of this.G.craft[itemToCraft].items) {
+            if (!this.hasItem(requiredItem, this.character.items, { level: requiredItemLevel, quantityGreaterThan: requiredQuantity - 1 })) return false // We don't have this required item
+        }
+        if (this.G.maps[this.character.map].mount) return false // Can't craft things in the bank
+
+        return true
+    }
+
     public canUse(skill: SkillName): boolean {
         if (this.character.rip)
             return false // We are dead
@@ -1390,8 +1401,8 @@ export class Player extends Observer {
     }
 
     public exchange(inventoryPos: number): Promise<boolean> {
-        if (!this.character.items[inventoryPos])
-            return Promise.reject(`No item in inventory slot ${inventoryPos}.`)
+        if (!this.character.items[inventoryPos]) return Promise.reject(`No item in inventory slot ${inventoryPos}.`)
+        if (this.G.maps[this.character.map].mount) return Promise.reject("We can't exchange things in the bank.")
 
         const exchangeFinished = new Promise<boolean>((resolve, reject) => {
             const completeCheck = (data: UpgradeData) => {
@@ -2414,6 +2425,16 @@ export class Player extends Observer {
             return { player: closest, distance: closestD }
     }
 
+    public hasPvPMarkedItem(inv = this.character.items): boolean {
+        for (let i = 0; i < inv.length; i++) {
+            const item = inv[i]
+            if (!item) continue
+
+            if (item.v) return true
+        }
+        return false
+    }
+
     /**
      * Returns a boolean corresponding to whether or not the item is in our inventory.
      * @param iN The item to look for
@@ -2421,33 +2442,13 @@ export class Player extends Observer {
      */
     public hasItem(iN: ItemName, inv = this.character.items,
         args?: {
+            level?: number;
             levelGreaterThan?: number;
             levelLessThan?: number;
+            locateHighestLevel?: number;
+            quantityGreaterThan?: number;
         }): boolean {
-        for (let i = 0; i < inv.length; i++) {
-            const item = inv[i]
-            if (!item)
-                continue
-
-            if (args) {
-                if (args.levelGreaterThan !== undefined) {
-                    if (item.level == undefined)
-                        continue // This item doesn't have a level
-                    if (item.level <= args.levelGreaterThan)
-                        continue // This item is a lower level than desired
-                }
-                if (args.levelLessThan !== undefined) {
-                    if (item.level == undefined)
-                        continue // This item doesn't have a level
-                    if (item.level >= args.levelLessThan)
-                        continue // This item is a higher level than desired
-                }
-            }
-
-            if (item.name == iN)
-                return true
-        }
-        return false
+        return this.locateItem(iN, inv, args) !== undefined
     }
 
     /**
