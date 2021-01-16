@@ -110,8 +110,6 @@ export const MERCHANT_ITEMS_TO_HOLD: ItemName[] = [
     "luckbooster", "goldbooster", "xpbooster",
     // Potions
     "hpot0", "hpot1", "mpot0", "mpot1",
-    // Jacko
-    "jacko",
     // MH Tokens
     "monstertoken",
     // Scrolls

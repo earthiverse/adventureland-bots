@@ -389,6 +389,10 @@ export type StatusInfo = {
       id: string;
       p: number;
     };
+    /** Used for ghosts. If you heal a ghost, then kill it, you get a (chance to get?) essenceoflife. */
+    healed?: {
+      ms: number
+    }
     mluck?: {
       /** The ID of the merchant who cast mluck */
       f: string;

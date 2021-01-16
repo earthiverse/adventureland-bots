@@ -1149,6 +1149,7 @@ async function startRanger(bot: Ranger) {
             if (bot.character.hp < bot.character.max_hp * 0.25 // We are low on HP
                 || (bot.character.s.burned && bot.character.s.burned.intensity > bot.character.max_hp / 10) // We are burned
                 || numTargetingAndClose > 3 // We have a lot of targets
+                || bot.character.targets > 4 // We are being slowed down considerably
                 || (numTargets > 0 && bot.character.c.town) // We are teleporting
                 || noStrategy // We don't have a strategy for the given monster
                 || avoidIdle // A monster is attacking us that we aren't targeting, and don't attack while idle
@@ -1402,11 +1403,9 @@ async function startPriest(bot: Priest) {
                 }
 
                 if (targets.length > 0) {
-
-                    // Used to farm essences of life from ghosts
-                    if (targets[0].type == "ghost" && !targets[0]["farmed_essence"]) {
+                    // Farm essenceoflife from ghosts
+                    if (targets[0].type == "ghost" && !targets[0].s && !targets[0].s.healed) {
                         await bot.heal(targets[0].id)
-                        targets[0]["farmed_essence"] = true
                         return Math.max(10, bot.getCooldown("heal"))
                     }
 
@@ -1876,6 +1875,7 @@ async function startPriest(bot: Priest) {
             if (bot.character.hp < bot.character.max_hp * 0.25 // We are low on HP
                 || (bot.character.s.burned && bot.character.s.burned.intensity > bot.character.max_hp / 10) // We are burned
                 || numTargetingAndClose > 3 // We have a lot of targets
+                || bot.character.targets > 4 // We are being slowed down considerably
                 || (numTargets > 0 && bot.character.c.town) // We are teleporting
                 || noStrategy // We don't have a strategy for the given monster
                 || avoidIdle // A monster is attacking us that we aren't targeting, and don't attack while idle
