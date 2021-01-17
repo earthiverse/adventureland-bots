@@ -4,7 +4,7 @@ import { Tools } from "./Tools.js"
 import { CharacterModel } from "./database/characters/characters.model.js"
 import { Pathfinder } from "./Pathfinder.js"
 import { LinkData, NodeData } from "./definitions/pathfinder"
-import { NPC_INTERACTION_DISTANCE, USE_BJARNY_MAGIPORT } from "./constants.js"
+import { NPC_INTERACTION_DISTANCE, USE_BJARNY_MAGIPORT, UPDATE_POSITIONS_EVERY_MS } from "./constants.js"
 import { DeathModel } from "./database/deaths/deaths.model.js"
 import { Observer } from "./Observer.js"
 import { MAX_PINGS, TIMEOUT } from "./Game.js"
@@ -369,6 +369,28 @@ export class Player extends Observer {
             } else {
                 // Normal attribute
                 this.character[datum] = data[datum]
+            }
+        }
+
+        this.updateLoop()
+    }
+
+    protected updateLoop(): void {
+        if (this.socket.connected) {
+            if (this.lastPositionUpdate) {
+                const msSinceLastUpdate = Date.now() - this.lastPositionUpdate
+                if (msSinceLastUpdate > UPDATE_POSITIONS_EVERY_MS) {
+                    // Update now
+                    this.updatePositions()
+                    this.timeouts.set("updateLoop", setTimeout(async () => { this.updateLoop() }, UPDATE_POSITIONS_EVERY_MS))
+                } else {
+                    // Update in a bit
+                    this.timeouts.set("updateLoop", setTimeout(async () => { this.updateLoop() }, UPDATE_POSITIONS_EVERY_MS - msSinceLastUpdate))
+                }
+            } else {
+                // Update now
+                this.updatePositions()
+                this.timeouts.set("updateLoop", setTimeout(async () => { this.updateLoop() }, UPDATE_POSITIONS_EVERY_MS))
             }
         }
     }
@@ -2041,6 +2063,9 @@ export class Player extends Observer {
 
     public async stopSmartMove(): Promise<NodeData> {
         this.lastSmartMove = Date.now()
+        if (this.character?.c?.town) {
+            this.stopWarpToTown()
+        }
         return this.move(this.character.x, this.character.y)
     }
 

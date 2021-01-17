@@ -5,6 +5,8 @@ export const NPC_INTERACTION_DISTANCE = 400
 export const DOOR_REACH_DISTANCE = 40
 export const TRANSPORTER_REACH_DISTANCE = 75
 
+export const UPDATE_POSITIONS_EVERY_MS = 25
+
 export const BASE = {
     h: 8,
     v: 7,
