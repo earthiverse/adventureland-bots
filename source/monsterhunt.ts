@@ -697,6 +697,9 @@ async function startRanger(bot: Ranger) {
 
         try {
             if (!closestEntitiy && !bot.character.moving) await bot.smartMove(position)
+            // We will get a lot of errors without catching, because we'll be dropping a lot of movements 
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            else if (closestEntitiy && Pathfinder.canWalk(bot.character, closestEntitiy)) bot.move(closestEntitiy.x, closestEntitiy.y).catch(() => { })
             else if (closestEntitiy && Tools.distance(bot.character, closestEntitiy) > bot.character.range) await bot.smartMove(closestEntitiy, { getWithin: bot.character.range - closestEntitiy.speed })
         } catch (e) {
             // console.error(e)
@@ -1498,6 +1501,9 @@ async function startPriest(bot: Priest) {
 
         try {
             if (!closestEntitiy && !bot.character.moving) await bot.smartMove(position)
+            // We will get a lot of errors without catching, because we'll be dropping a lot of movements 
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            else if (closestEntitiy && Pathfinder.canWalk(bot.character, closestEntitiy)) bot.move(closestEntitiy.x, closestEntitiy.y).catch(() => { })
             else if (closestEntitiy && Tools.distance(bot.character, closestEntitiy) > bot.character.range) await bot.smartMove(closestEntitiy, { getWithin: bot.character.range - closestEntitiy.speed })
         } catch (e) {
             // console.error(e)
@@ -2371,6 +2377,9 @@ async function startWarrior(bot: Warrior) {
 
         try {
             if (!closestEntitiy && !bot.character.moving) await bot.smartMove(position)
+            // We will get a lot of errors without catching, because we'll be dropping a lot of movements 
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            else if (closestEntitiy && Pathfinder.canWalk(bot.character, closestEntitiy)) bot.move(closestEntitiy.x, closestEntitiy.y).catch(() => { })
             else if (closestEntitiy && Tools.distance(bot.character, closestEntitiy) > bot.character.range) await bot.smartMove(closestEntitiy)
         } catch (e) {
             // console.error(e)
@@ -3244,7 +3253,7 @@ async function startMerchant(bot: Merchant) {
                 if (!friend) continue
 
                 // Check if friend is full, or needs mluck
-                if (friend.isFull() || (bot.canUse("mluck") && (!friend.character.s.mluck || friend.character.s.mluck.ms < 120000 || friend.character.s.mluck.f !== bot.character.id))) {
+                if (friend.character.esize < 10 || (bot.canUse("mluck") && (!friend.character.s.mluck || friend.character.s.mluck.ms < 120000 || friend.character.s.mluck.f !== bot.character.id))) {
                     if (Tools.distance(bot.character, friend.character) > bot.G.skills.mluck.range) {
                         await bot.closeMerchantStand()
                         console.log(`[merchant] We are moving to ${friend.character.id}!`)
