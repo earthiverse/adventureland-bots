@@ -1239,7 +1239,8 @@ export class Player extends Observer {
         if (gInfo.cost > this.character.gold)
             return Promise.reject(`We don't have enough gold to craft ${item}.`)
 
-        const itemPositions: number[] = []
+        const itemPositions: [number, number][] = []
+        let i = 0
         for (const [requiredQuantity, requiredItem, requiredItemLevel] of this.G.craft[item].items) {
             const isItemUpgradable = this.G.items[requiredItem].upgrade !== undefined || this.G.items[requiredItem].compound !== undefined
 
@@ -1252,7 +1253,7 @@ export class Player extends Observer {
             if (itemPos == undefined)
                 return Promise.reject(`We don't have ${requiredQuantity} ${requiredItem} to craft ${item}.`)
 
-            itemPositions.push(itemPos)
+            itemPositions.push([i++, itemPos])
         }
 
         this.socket.emit("craft", { items: itemPositions })
