@@ -3016,11 +3016,17 @@ async function startMerchant(bot: Merchant) {
             if (bot.socket.disconnected) return
 
             // Prevent the bank filling up with a lot of smokes
-            if (bot.canCraft("pouchbow")) {
+            if (bot.character.gold > 25000000 && bot.canCraft("pouchbow")) {
+                console.log("we can craft a pouchbow!")
+                console.log("crafting pouchbow")
                 await bot.craft("pouchbow")
-            } else if (bot.character.gold > 25000000) {
-                if (bot.hasItem("smoke")) {
-                    if (!bot.isFull() && !bot.hasItem("bow", bot.character.items, { level: 1 })) await bot.buy("bow")
+            } else if (bot.character.gold > 25000000 && bot.hasItem("smoke")) {
+                console.log("we need to buy a bow")
+                if (!bot.isFull() && !bot.hasItem("bow", bot.character.items, { level: 1 })) {
+                    console.log("buying bow")
+                    await bot.buy("bow")
+                    console.log("crafting pouchbow")
+                    await bot.craft("pouchbow")
                 }
             }
         } catch (e) {
