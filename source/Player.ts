@@ -72,6 +72,9 @@ export class Player extends Observer {
             this.updatePositions()
             this.character.x = data.x
             this.character.y = data.y
+            this.character.going_x = data.x
+            this.character.going_y = data.y
+            this.character.moving = false
         })
 
         this.socket.on("death", (data: DeathData) => {
