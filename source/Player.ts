@@ -386,7 +386,7 @@ export class Player extends Observer {
             if (msSinceLastUpdate > UPDATE_POSITIONS_EVERY_MS) {
                 // Update now
                 this.updatePositions()
-                h.set("updateLoop", setTimeout(async () => { this.updateLoop() }, UPDATE_POSITIONS_EVERY_MS))
+                this.timeouts.set("updateLoop", setTimeout(async () => { this.updateLoop() }, UPDATE_POSITIONS_EVERY_MS))
             } else {
                 // Update in a bit
                 this.timeouts.set("updateLoop", setTimeout(async () => { this.updateLoop() }, UPDATE_POSITIONS_EVERY_MS - msSinceLastUpdate))
