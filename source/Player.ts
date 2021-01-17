@@ -1047,16 +1047,13 @@ export class Player extends Observer {
         if (!this.G.craft[itemToCraft]) return false // Item is not craftable
         if (this.G.craft[itemToCraft].cost > this.character.gold) return false // We don't have enough money
         for (const [requiredQuantity, requiredItem, requiredItemLevel] of this.G.craft[itemToCraft].items) {
-            const upgradable = this.G.items[requiredItem].upgrade !== undefined || this.G.items[requiredItem].compound !== undefined
-            if (upgradable) {
-                if (requiredItemLevel == undefined) {
-                    if (this.hasItem(requiredItem, this.character.items, { level: 0, quantityGreaterThan: requiredQuantity - 1 })) continue
-                } else {
-                    if (this.hasItem(requiredItem, this.character.items, { level: requiredItemLevel, quantityGreaterThan: requiredQuantity - 1 })) continue
-                }
-            } else {
-                if (this.hasItem(requiredItem, this.character.items, { quantityGreaterThan: requiredQuantity - 1 })) continue
+            const isItemUpgradable = this.G.items[requiredItem].upgrade !== undefined || this.G.items[requiredItem].compound !== undefined
+            const searchArgs = {
+                quantityGreaterThan: requiredQuantity > 1 ? requiredQuantity : undefined,
+                level: isItemUpgradable ? requiredItemLevel !== undefined ? requiredItemLevel : undefined : undefined
             }
+
+            if (this.hasItem(requiredItem, this.character.items, searchArgs)) continue
             return false
         }
         if (this.G.maps[this.character.map].mount) return false // Can't craft things in the bank
@@ -1243,19 +1240,17 @@ export class Player extends Observer {
             return Promise.reject(`We don't have enough gold to craft ${item}.`)
 
         const itemPositions: number[] = []
-        for (let i = 0; i < gInfo.items.length; i++) {
-            const lookQ = gInfo.items[i][0]
-            const lookName = gInfo.items[i][1]
-            const lookLevel = gInfo.items[i][2]
+        for (const [requiredQuantity, requiredItem, requiredItemLevel] of this.G.craft[item].items) {
+            const isItemUpgradable = this.G.items[requiredItem].upgrade !== undefined || this.G.items[requiredItem].compound !== undefined
 
             const searchArgs = {
-                quantityGreaterThan: lookQ > 1 ? lookQ : undefined,
-                level: lookLevel
+                quantityGreaterThan: requiredQuantity > 1 ? requiredQuantity : undefined,
+                level: isItemUpgradable ? requiredItemLevel !== undefined ? requiredItemLevel : undefined : undefined
             }
 
-            const itemPos = this.locateItem(lookName, this.character.items, searchArgs)
+            const itemPos = this.locateItem(requiredItem, this.character.items, searchArgs)
             if (itemPos == undefined)
-                return Promise.reject(`We don't have ${lookQ} ${lookName} to craft ${item}.`)
+                return Promise.reject(`We don't have ${requiredQuantity} ${requiredItem} to craft ${item}.`)
 
             itemPositions.push(itemPos)
         }
