@@ -1047,7 +1047,9 @@ export class Player extends Observer {
         if (!this.G.craft[itemToCraft]) return false // Item is not craftable
         if (this.G.craft[itemToCraft].cost > this.character.gold) return false // We don't have enough money
         for (const [requiredQuantity, requiredItem, requiredItemLevel] of this.G.craft[itemToCraft].items) {
-            if (!this.hasItem(requiredItem, this.character.items, { level: requiredItemLevel, quantityGreaterThan: requiredQuantity - 1 })) return false // We don't have this required item
+            if (requiredItemLevel == undefined && this.hasItem(requiredItem, this.character.items, { quantityGreaterThan: requiredQuantity - 1 })) continue
+            else if (this.hasItem(requiredItem, this.character.items, { level: requiredItemLevel, quantityGreaterThan: requiredQuantity - 1 })) continue
+            return false
         }
         if (this.G.maps[this.character.map].mount) return false // Can't craft things in the bank
 
