@@ -1050,7 +1050,7 @@ export class Player extends Observer {
             const isItemUpgradable = this.G.items[requiredItem].upgrade !== undefined || this.G.items[requiredItem].compound !== undefined
             const searchArgs = {
                 quantityGreaterThan: requiredQuantity > 1 ? requiredQuantity : undefined,
-                level: isItemUpgradable ? requiredItemLevel !== undefined ? requiredItemLevel : undefined : undefined
+                level: isItemUpgradable ? requiredItemLevel == undefined ? 0 : requiredItemLevel : undefined
             }
 
             if (this.hasItem(requiredItem, this.character.items, searchArgs)) continue
@@ -1246,7 +1246,7 @@ export class Player extends Observer {
 
             const searchArgs = {
                 quantityGreaterThan: requiredQuantity > 1 ? requiredQuantity : undefined,
-                level: isItemUpgradable ? requiredItemLevel !== undefined ? requiredItemLevel : undefined : undefined
+                level: isItemUpgradable ? requiredItemLevel == undefined ? 0 : requiredItemLevel : undefined
             }
 
             const itemPos = this.locateItem(requiredItem, this.character.items, searchArgs)
