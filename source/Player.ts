@@ -379,22 +379,22 @@ export class Player extends Observer {
     }
 
     protected updateLoop(): void {
-        if (this.socket.connected) {
-            if (this.lastPositionUpdate) {
-                const msSinceLastUpdate = Date.now() - this.lastPositionUpdate
-                if (msSinceLastUpdate > UPDATE_POSITIONS_EVERY_MS) {
-                    // Update now
-                    this.updatePositions()
-                    this.timeouts.set("updateLoop", setTimeout(async () => { this.updateLoop() }, UPDATE_POSITIONS_EVERY_MS))
-                } else {
-                    // Update in a bit
-                    this.timeouts.set("updateLoop", setTimeout(async () => { this.updateLoop() }, UPDATE_POSITIONS_EVERY_MS - msSinceLastUpdate))
-                }
-            } else {
+        if (this.socket.disconnected) return
+
+        if (this.lastPositionUpdate) {
+            const msSinceLastUpdate = Date.now() - this.lastPositionUpdate
+            if (msSinceLastUpdate > UPDATE_POSITIONS_EVERY_MS) {
                 // Update now
                 this.updatePositions()
-                this.timeouts.set("updateLoop", setTimeout(async () => { this.updateLoop() }, UPDATE_POSITIONS_EVERY_MS))
+                h.set("updateLoop", setTimeout(async () => { this.updateLoop() }, UPDATE_POSITIONS_EVERY_MS))
+            } else {
+                // Update in a bit
+                this.timeouts.set("updateLoop", setTimeout(async () => { this.updateLoop() }, UPDATE_POSITIONS_EVERY_MS - msSinceLastUpdate))
             }
+        } else {
+            // Update now
+            this.updatePositions()
+            this.timeouts.set("updateLoop", setTimeout(async () => { this.updateLoop() }, UPDATE_POSITIONS_EVERY_MS))
         }
     }
 
