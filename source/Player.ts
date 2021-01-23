@@ -440,6 +440,8 @@ export class Player extends Observer {
                     monster.hp = this.G.monsters[monster.type].hp
                 if (monster.immune === undefined)
                     monster.immune = this.G.monsters[monster.type].immune
+                if (monster.lifesteal === undefined)
+                    monster.lifesteal = this.G.monsters[monster.type].lifesteal
                 if (monster.mp === undefined)
                     monster.mp = this.G.monsters[monster.type].mp
                 if (monster.range === undefined)

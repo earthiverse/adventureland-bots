@@ -117,6 +117,7 @@ export class Tools {
         // Check if it can heal
         const G = await Game.getGData()
         const gInfo = G.monsters[entity.type]
+        if (gInfo.lifesteal !== undefined) return false
         if (gInfo.abilities && gInfo.abilities.self_healing) return false
 
         if (character.damage_type == "magical" && entity.reflection !== undefined) return false
@@ -132,6 +133,7 @@ export class Tools {
      */
     public static willBurnToDeath(entity: EntityData): boolean {
         if (entity["1hp"]) return false
+        if (entity.lifesteal !== undefined) return false
         if (entity.s.burned) {
             const burnTime = Math.max(0, (entity.s.burned.ms - 500)) / 1000
             const burnDamage = burnTime * entity.s.burned.intensity

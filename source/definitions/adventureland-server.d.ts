@@ -247,6 +247,7 @@ export type EntityData = {
     hp?: number
     immune?: boolean
     level?: number
+    lifesteal?: number
     map?: MapName
     max_hp?: number
     max_mp?: number

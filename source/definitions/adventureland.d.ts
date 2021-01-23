@@ -172,7 +172,8 @@ export type GMonster = {
   global?: boolean
   hp: number
   immune?: boolean
-  /** TODO: Confirm || boosts the amount of XP obtained when you kill this monster? */
+  lifesteal?: number
+  /** Increases the amount of gold dropped */
   lucrativeness?: number
   mp: number
   range: number
