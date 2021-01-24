@@ -213,33 +213,33 @@ async function baseLoops(bot: AL.PingCompensatedCharacter) {
     }
     elixirLoop()
 
-    async function exchangeLoop() {
-        try {
-            // TODO: Make bot.canExchange() function and replace the following line with that
-            const hasComputer = bot.locateItem("computer") !== undefined
+    // async function exchangeLoop() {
+    //     try {
+    //         // TODO: Make bot.canExchange() function and replace the following line with that
+    //         const hasComputer = bot.locateItem("computer") !== undefined
 
-            if (hasComputer
-                && bot.gold > 50000000) {
-                for (let i = 0; i < bot.items.length; i++) {
-                    if (bot.esize <= 1) break // We are full
+    //         if (hasComputer
+    //             && bot.gold > 50000000) {
+    //             for (let i = 0; i < bot.items.length; i++) {
+    //                 if (bot.esize <= 1) break // We are full
 
-                    const item = bot.items[i]
-                    if (!item) continue
-                    if (!ITEMS_TO_EXCHANGE.includes(item.name)) continue // Don't want / can't exchange
+    //                 const item = bot.items[i]
+    //                 if (!item) continue
+    //                 if (!ITEMS_TO_EXCHANGE.includes(item.name)) continue // Don't want / can't exchange
 
-                    const gInfo = bot.G.items[item.name]
-                    if (gInfo.e !== undefined && item.q < gInfo.e) continue // Don't have enough to exchange
+    //                 const gInfo = bot.G.items[item.name]
+    //                 if (gInfo.e !== undefined && item.q < gInfo.e) continue // Don't have enough to exchange
 
-                    await bot.exchange(i)
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
+    //                 await bot.exchange(i)
+    //             }
+    //         }
+    //     } catch (e) {
+    //         console.error(e)
+    //     }
 
-        setTimeout(async () => { exchangeLoop() }, 250)
-    }
-    exchangeLoop()
+    //     setTimeout(async () => { exchangeLoop() }, 250)
+    // }
+    // exchangeLoop()
 
     async function healLoop() {
         try {
