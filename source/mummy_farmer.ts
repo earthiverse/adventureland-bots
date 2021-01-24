@@ -30,6 +30,51 @@ const ITEMS_TO_EXCHANGE: AL.ItemName[] = [
     "armorbox", "bugbountybox", "gift0", "gift1", "mysterybox", "weaponbox", "xbox"
 ]
 
+const ITEMS_TO_BUY: AL.ItemName[] = [
+    // Exchangeables
+    ...ITEMS_TO_EXCHANGE,
+    // Belts
+    "dexbelt", "intbelt", "strbelt",
+    // Rings
+    "ctristone", "dexring", "intring", "ringofluck", "strring", "suckerpunch", "tristone",
+    // Earrings
+    "dexearring", "intearring", "lostearring", "strearring",
+    // Amulets
+    "amuletofm", "dexamulet", "intamulet", "snring", "stramulet", "t2dexamulet", "t2intamulet", "t2stramulet",
+    // Orbs
+    "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull",
+    // Shields
+    "t2quiver", "lantern", "mshield", /*"quiver",*/ "sshield", "xshield",
+    // Capes
+    "angelwings", "bcape", "cape", "ecape", "stealthcape",
+    // Shoes
+    "eslippers", "hboots", "mrnboots", "mwboots", "shoes1", "wingedboots", /*"wshoes",*/ "xboots",
+    // Pants
+    "hpants", "mrnpants", "mwpants", "pants1", "starkillers", /*"wbreeches",*/ "xpants",
+    // Armor
+    "cdragon", "coat1", "harmor", "mcape", "mrnarmor", "mwarmor", "tshirt0", "tshirt1", "tshirt2", "tshirt3", "tshirt4", "tshirt6", "tshirt7", "tshirt8", "tshirt88", "tshirt9", "warpvest", /*"wattire",*/ "xarmor",
+    // Helmets
+    "eears", "fury", "helmet1", "hhelmet", "mrnhat", "mwhelmet", "partyhat", "rednose", /*"wcap",*/ "xhelmet",
+    // Gloves
+    "gloves1", "goldenpowerglove", "handofmidas", "hgloves", "mrngloves", "mwgloves", "poker", "powerglove", /*"wgloves",*/ "xgloves",
+    // Good weapons
+    "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "firebow", "frostbow", "froststaff", "gbow", "harbringer", "heartwood", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow", "t3bow", "wblade",
+    // Things we can exchange / craft with
+    "ascale", "bfur", "cscale", "electronics", "feather0", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", /*"networkcard",*/ "platinumingot", "platinumnugget", "pleather", "snakefang",
+    // Things to make xbox
+    "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8",
+    // Things to make easter basket
+    "egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8",
+    // Essences
+    "essenceofether", "essenceoffire", "essenceoffrost", "essenceoflife", "essenceofnature",
+    // Potions & consumables
+    "bunnyelixir", "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate",
+    // High level scrolls
+    "cscroll3", "scroll3", "scroll4", "forscroll", "luckscroll", "manastealscroll",
+    // Misc. Things
+    "bottleofxp", "bugbountybox", "computer", "cxjar", "monstertoken", "poison", "snakeoil"
+]
+
 const ITEMS_TO_SELL: {
     /** Items this level and under will be sold */
     [T in AL.ItemName]?: number
@@ -124,6 +169,57 @@ async function baseLoops(bot: AL.PingCompensatedCharacter) {
         // Prioritize targets with higher hp
         return b.hp - a.hp
     }
+
+    async function buyLoop() {
+        try {
+            if (bot.socket.disconnected) return
+
+            if (bot.canBuy("hpot1")) {
+                // Buy HP Pots
+                const numHpot1 = bot.countItem("hpot1")
+                if (numHpot1 < 1000) await bot.buy("hpot1", 1000 - numHpot1)
+
+                // Buy MP Pots
+                const numMpot1 = bot.countItem("mpot1")
+                if (numMpot1 < 1000) await bot.buy("mpot1", 1000 - numMpot1)
+            }
+
+            // Look for buyable things on merchants
+            for (const [, player] of bot.players) {
+                if (!player.stand) continue // Not selling anything
+                if (AL.Tools.distance(bot, player) > AL.Constants.NPC_INTERACTION_DISTANCE) continue // Too far away
+
+                for (const s in player.slots) {
+                    const slot = s as AL.TradeSlotType
+                    const item = player.slots[slot]
+                    if (!item) continue // Nothing in the slot
+                    if (!item.rid) continue // Not a trade item
+                    if (item.b) continue // They are buying, not selling
+
+                    const q = item.q === undefined ? 1 : item.q
+
+                    // Join new giveaways
+                    if (item.giveaway && bot.ctype == "merchant" && (!item.list || !item.list.includes(bot.id))) {
+                        // TODO: Move this to a function
+                        bot.socket.emit("join_giveaway", { slot: slot, id: player.id, rid: item.rid })
+                        continue
+                    }
+
+                    // Buy if we can resell to NPC for more money
+                    const cost = bot.calculateItemCost(item)
+                    if ((item.price < cost * 0.6) // Item is lower price than G, which means we could sell it to an NPC straight away and make a profit...
+                        || ITEMS_TO_BUY.includes(item.name) && item.price <= cost // Item is the same, or lower price than the NPC would sell for, and we want it.
+                    ) {
+                        await bot.buyFromMerchant(player.id, slot, item.rid, q)
+                    }
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        setTimeout(async () => { buyLoop() }, 1000)
+    }
+    buyLoop()
 
     async function compoundLoop() {
         try {
@@ -932,6 +1028,7 @@ async function startMerchant(bot: AL.Merchant) {
             }
 
             await bot.smartMove({ map: mummySafe.map, x: mummySafe.x, y: mummySafe.y + 20 })
+            bot.openMerchantStand()
         } catch (e) {
             console.error(e)
         }
