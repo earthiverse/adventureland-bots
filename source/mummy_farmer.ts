@@ -1054,7 +1054,6 @@ async function run() {
     const reconnect = async (bot: AL.PingCompensatedCharacter) => {
         console.log(`Reconnecting ${bot.id}...`)
         try {
-            await bot.disconnect()
             await new Promise(resolve => setTimeout(resolve, 5000))
             await bot.connect()
         } catch (e) {
