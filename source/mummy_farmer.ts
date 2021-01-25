@@ -172,8 +172,6 @@ async function baseLoops(bot: AL.PingCompensatedCharacter) {
 
     async function buyLoop() {
         try {
-            if (bot.socket.disconnected) return
-
             if (bot.canBuy("hpot1")) {
                 // Buy HP Pots
                 const numHpot1 = bot.countItem("hpot1")
@@ -223,8 +221,6 @@ async function baseLoops(bot: AL.PingCompensatedCharacter) {
 
     async function compoundLoop() {
         try {
-            if (bot.socket.disconnected) return
-
             if (bot.q.compound) {
                 // We are upgrading, we have to wait
                 setTimeout(async () => { compoundLoop() }, bot.q.compound.ms)
@@ -1063,6 +1059,8 @@ async function run() {
             await bot.connect()
         } catch (e) {
             console.error(e)
+            await new Promise(resolve => setTimeout(resolve, 5000))
+            reconnect(bot)
         }
     }
     merchant.socket.on("disconnect", async () => { await reconnect(merchant) })
