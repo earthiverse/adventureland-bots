@@ -1050,12 +1050,13 @@ async function run() {
     priest = await priestP
 
     // Set up functionality to reconnect if we disconnect
-    // TODO: Add a delay
     const reconnect = async (bot: AL.PingCompensatedCharacter) => {
         console.log(`Reconnecting ${bot.id}...`)
         try {
+            await bot.disconnect()
             await new Promise(resolve => setTimeout(resolve, 5000))
             await bot.connect()
+            bot.socket.on("disconnect", async () => { await reconnect(bot) })
         } catch (e) {
             console.error(e)
             await new Promise(resolve => setTimeout(resolve, 5000))
