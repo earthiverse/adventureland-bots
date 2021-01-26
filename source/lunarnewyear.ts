@@ -69,8 +69,8 @@ async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promis
     }
     if (monsterHuntTarget) return monsterHuntTarget
 
-    // Priority #3: Scorpions, because why not
-    return "scorpion"
+    // Priority #3: Bats, because they're close to Dragold.
+    return "bat"
 }
 
 async function generalBotStuff(bot: PingCompensatedPlayer) {
@@ -1884,6 +1884,25 @@ async function startPriest(bot: Priest) {
                 return
             }
 
+            // Heal ourselves if we are low HP
+            if (bot.canUse("heal") && bot.character.hp < bot.character.max_hp * 0.8) {
+                await bot.heal(bot.character.id)
+            }
+
+            // Heal party members if they are close
+            let targets: string[] = []
+            for (const [id, player] of bot.players) {
+                if (![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(id)) continue // Don't heal other players
+                if (player.hp > player.max_hp * 0.8) continue // Lots of health, no need to heal
+                if (Tools.distance(bot.character, player) > bot.character.range) continue // Too far away to heal
+
+                targets.push(id)
+                break
+            }
+            if (targets.length && bot.canUse("heal")) {
+                await bot.heal(targets[0])
+            }
+
             // Reasons to scare
             let numTargets = 0
             let numTargetingAndClose = 0
@@ -1944,29 +1963,6 @@ async function startPriest(bot: Priest) {
                         }
                     }
                 }
-            }
-
-            // Heal ourselves if we are low HP
-            if (bot.canUse("heal") && bot.character.hp < bot.character.max_hp * 0.8) {
-                await bot.heal(bot.character.id)
-                setTimeout(async () => { attackLoop() }, bot.getCooldown("heal"))
-                return
-            }
-
-            // Heal party members if they are close
-            let targets: string[] = []
-            for (const [id, player] of bot.players) {
-                if (![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(id)) continue // Don't heal other players
-                if (player.hp > player.max_hp * 0.8) continue // Lots of health, no need to heal
-                if (Tools.distance(bot.character, player) > bot.character.range) continue // Too far away to heal
-
-                targets.push(id)
-                break
-            }
-            if (targets.length && bot.canUse("heal")) {
-                await bot.heal(targets[0])
-                setTimeout(async () => { attackLoop() }, bot.getCooldown("heal"))
-                return
             }
 
             if (bot.isPVP()) {
