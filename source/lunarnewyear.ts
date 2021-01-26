@@ -27,6 +27,17 @@ let merchant: Merchant
 // let merchantTarget: MonsterName
 
 async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promise<MonsterName> {
+    // Priority #0: Dragold
+    const dragolds = await EntityModel.find({ $or: [{ type: "dragold" }], serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 } }).sort({ hp: 1 }).lean().exec()
+    for (const entity of dragolds) {
+        // Look in database of entities
+        if (!strategy[entity.type]) continue // No strategy
+        if (strategy[entity.type].requirePriest && bot.character.ctype !== "priest" && priestTarget !== entity.type) continue // Need priest
+        if (bot.G.monsters[entity.type].cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+
+        return entity.type
+    }
+
     // Priority #1: Special Monsters
     const entities = await EntityModel.find({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 } }).sort({ hp: 1 }).lean().exec()
     for (const entity of entities) {
