@@ -3411,36 +3411,42 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
 
         let lastServerChangeTime = Date.now()
         const serverLoop = async () => {
-            // Don't change servers too fast
-            if (lastServerChangeTime > Date.now() - 60000) {
-                setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime - Date.now() - 60000))
-                return
-            }
-
-            // Look for the lowest hp Dragold
-            let bestMonster = await EntityModel.findOne({ $or: [{ type: "dragold" }], lastSeen: { $gt: Date.now() - 30000 }, serverIdentifier: { $ne: "PVP" } }).sort({ hp: 1 }).lean().exec()
-            if (!bestMonster) {
-                bestMonster = {
-                    type: null,
-                    _id: null,
-                    map: null,
-                    x: null,
-                    y: null,
-                    serverRegion: ranger === undefined ? "US" : ranger.server.region,
-                    serverIdentifier: ranger === undefined ? "II" : ranger.server.name
+            try {
+                // Don't change servers too fast
+                if (lastServerChangeTime > Date.now() - 60000) {
+                    setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime - Date.now() - 60000))
+                    return
                 }
+
+                // Look for the lowest hp Dragold
+                let bestMonster = await EntityModel.findOne({ $or: [{ type: "dragold" }], lastSeen: { $gt: Date.now() - 30000 }, serverIdentifier: { $ne: "PVP" } }).sort({ hp: 1 }).lean().exec()
+                if (!bestMonster) {
+                    bestMonster = {
+                        type: null,
+                        _id: null,
+                        map: null,
+                        x: null,
+                        y: null,
+                        serverRegion: ranger === undefined ? "US" : ranger.server.region,
+                        serverIdentifier: ranger === undefined ? "II" : ranger.server.name
+                    }
+                }
+
+                if (bestMonster.serverRegion !== REGION || bestMonster.serverIdentifier !== IDENTIFIER) {
+                    console.log(`Changing from ${REGION} ${IDENTIFIER} to ${bestMonster.serverRegion} ${bestMonster.serverIdentifier}...`)
+                    REGION = bestMonster.serverRegion
+                    IDENTIFIER = bestMonster.serverIdentifier
+
+                    await sleep(5000)
+                    await Game.disconnect(false)
+                    await sleep(5000)
+                    lastServerChangeTime = Date.now()
+                }
+            } catch (e) {
+                console.error(e)
             }
 
-            if (bestMonster.serverRegion !== REGION || bestMonster.serverIdentifier !== IDENTIFIER) {
-                console.log(`Changing from ${REGION} ${IDENTIFIER} to ${bestMonster.serverRegion} ${bestMonster.serverIdentifier}...`)
-                REGION = bestMonster.serverRegion
-                IDENTIFIER = bestMonster.serverIdentifier
-
-                await sleep(5000)
-                await Game.disconnect(false)
-                await sleep(5000)
-                lastServerChangeTime = Date.now()
-            }
+            setTimeout(async () => { serverLoop() }, 1000)
         }
         serverLoop()
 
