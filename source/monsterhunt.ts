@@ -862,6 +862,11 @@ async function startRanger(bot: Ranger) {
             equipment: { mainhand: "crossbow", orb: "test_orb" },
             attackWhileIdle: true
         },
+        dragold: {
+            attack: async () => { return await defaultAttackStrategy("dragold") },
+            move: async () => { return await specialMonsterMoveStrategy("dragold") },
+            equipment: { mainhand: "firebow", orb: "test_orb" }
+        },
         fireroamer: {
             attack: async () => { return await tankAttackStrategy("fireroamer", warrior.character.id) },
             move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: 160, y: -675 }) },
@@ -1624,6 +1629,11 @@ async function startPriest(bot: Priest) {
             equipment: { orb: "test_orb" },
             attackWhileIdle: true
         },
+        dragold: {
+            attack: async () => { return await defaultAttackStrategy("dragold") },
+            move: async () => { return await specialMonsterMoveStrategy("dragold") },
+            equipment: { orb: "test_orb" }
+        },
         fireroamer: {
             attack: async () => { return await tankAttackStrategy("fireroamer", warrior.character.id) },
             move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: 180, y: -675 }) },
@@ -1661,7 +1671,7 @@ async function startPriest(bot: Priest) {
         greenjr: {
             attack: async () => { return await defaultAttackStrategy("greenjr") },
             move: async () => { return await specialMonsterMoveStrategy("greenjr") },
-            equipment: { orb: "jacko" },
+            equipment: { orb: "test_orb" },
             attackWhileIdle: true
         },
         hen: {
@@ -1678,7 +1688,7 @@ async function startPriest(bot: Priest) {
         jr: {
             attack: async () => { return await defaultAttackStrategy("jr") },
             move: async () => { return await specialMonsterMoveStrategy("jr") },
-            equipment: { orb: "jacko" },
+            equipment: { orb: "test_orb" },
             attackWhileIdle: true
         },
         minimush: {
@@ -1700,17 +1710,17 @@ async function startPriest(bot: Priest) {
         mrgreen: {
             attack: async () => { return await defaultAttackStrategy("mrgreen") },
             move: async () => { return await specialMonsterMoveStrategy("mrgreen") },
-            equipment: { orb: "jacko" }
+            equipment: { orb: "test_orb" }
         },
         mrpumpkin: {
             attack: async () => { return await defaultAttackStrategy("mrpumpkin") },
             move: async () => { return await specialMonsterMoveStrategy("mrpumpkin") },
-            equipment: { orb: "jacko" }
+            equipment: { orb: "test_orb" }
         },
         mvampire: {
             attack: async () => { return await defaultAttackStrategy("mvampire") },
             move: async () => { return await specialMonsterMoveStrategy("mvampire") },
-            equipment: { orb: "jacko" },
+            equipment: { orb: "test_orb" },
             attackWhileIdle: true
         },
         oneeye: {
@@ -2490,6 +2500,11 @@ async function startWarrior(bot: Warrior) {
             equipment: { mainhand: "bataxe", orb: "test_orb" },
             attackWhileIdle: true
         },
+        dragold: {
+            attack: async () => { return await defaultAttackStrategy("dragold") },
+            move: async () => { return await specialMonsterMoveStrategy("dragold") },
+            equipment: { mainhand: "basher", orb: "test_orb" },
+        },
         fireroamer: {
             attack: async () => { return await oneTargetAttackStrategy("fireroamer") },
             move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: 140, y: -675 }) },
@@ -3236,7 +3251,7 @@ async function startMerchant(bot: Merchant) {
                 await bot.closeMerchantStand()
                 const locations: NodeData[] = []
                 //locations.push(...bot.locateMonsters("skeletor"))
-                locations.push(...bot.locateMonsters("mvampire")) // Also checks goldenbat
+                locations.push(...bot.locateMonsters("mvampire")) // Also checks goldenbat and dragold
                 locations.push(...bot.locateMonsters("fvampire"))
                 locations.push(...bot.locateMonsters("greenjr"))
                 locations.push(...bot.locateMonsters("jr"))
