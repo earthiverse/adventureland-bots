@@ -1356,8 +1356,8 @@ async function startRanger(bot: Ranger) {
         try {
             if (bot.socket.disconnected) return
 
-            if (!merchant || merchant.isFull()) {
-                setTimeout(async () => { sendItemLoop() }, 10000)
+            if (!merchant) {
+                setTimeout(async () => { sendItemLoop() }, 1000)
                 return
             }
 
@@ -1369,7 +1369,19 @@ async function startRanger(bot: Ranger) {
                     const item = bot.character.items[i]
                     if (!item || RANGER_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
 
-                    await bot.sendItem(merchant.character.id, i, item.q)
+                    if (merchant.isFull()) {
+                        // Can we stack it in the merchant's inventory?
+                        if (item.q !== undefined) continue // Item is not stackable
+                        const merchantItems = merchant.locateItems(item.name)
+                        for (const itemPos of merchantItems) {
+                            const merchantItem = merchant.character.items[itemPos]
+                            // Send as many as we can
+                            await bot.sendItem(merchant.character.id, i, bot.G.items[item.name].s - merchantItem.q)
+                        }
+                    } else {
+                        // The merchant has space, send it over.
+                        await bot.sendItem(merchant.character.id, i, item.q)
+                    }
                 }
             }
         } catch (e) {
@@ -2050,7 +2062,19 @@ async function startPriest(bot: Priest) {
                     const item = bot.character.items[i]
                     if (!item || PRIEST_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
 
-                    await bot.sendItem(merchant.character.id, i, item.q)
+                    if (merchant.isFull()) {
+                        // Can we stack it in the merchant's inventory?
+                        if (item.q !== undefined) continue // Item is not stackable
+                        const merchantItems = merchant.locateItems(item.name)
+                        for (const itemPos of merchantItems) {
+                            const merchantItem = merchant.character.items[itemPos]
+                            // Send as many as we can
+                            await bot.sendItem(merchant.character.id, i, bot.G.items[item.name].s - merchantItem.q)
+                        }
+                    } else {
+                        // The merchant has space, send it over.
+                        await bot.sendItem(merchant.character.id, i, item.q)
+                    }
                 }
             }
         } catch (e) {
@@ -2925,7 +2949,19 @@ async function startWarrior(bot: Warrior) {
                     const item = bot.character.items[i]
                     if (!item || WARRIOR_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
 
-                    await bot.sendItem(merchant.character.id, i, item.q)
+                    if (merchant.isFull()) {
+                        // Can we stack it in the merchant's inventory?
+                        if (item.q !== undefined) continue // Item is not stackable
+                        const merchantItems = merchant.locateItems(item.name)
+                        for (const itemPos of merchantItems) {
+                            const merchantItem = merchant.character.items[itemPos]
+                            // Send as many as we can
+                            await bot.sendItem(merchant.character.id, i, bot.G.items[item.name].s - merchantItem.q)
+                        }
+                    } else {
+                        // The merchant has space, send it over.
+                        await bot.sendItem(merchant.character.id, i, item.q)
+                    }
                 }
             }
         } catch (e) {
