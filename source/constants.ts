@@ -20,7 +20,7 @@ export const BASE = {
 
 export const ITEMS_TO_EXCHANGE: ItemName[] = [
     // General exchangables
-    "5bucks", "gem0", /*"gem1",*/ // i want to craft a charmer, so i need gem1s
+    "5bucks", "gem0", "gem1",
     // Seashells for potions
     "seashell",
     // Leather for capes
@@ -29,8 +29,8 @@ export const ITEMS_TO_EXCHANGE: ItemName[] = [
     "candycane", "mistletoe", "ornament",
     // Halloween
     "candy0", "candy1",
-    // Chinese New Year's
-    "redenvelopev3",
+    // Lunar New Year's
+    "greenenvelope", "redenvelope", "redenvelopev2", "redenvelopev3",
     // Easter
     "basketofeggs",
     // Boxes
