@@ -128,7 +128,7 @@ export const PRIEST_ITEMS_TO_HOLD: ItemName[] = [
     // Jacko
     "jacko",
     // Weapons
-    "firestaff", "pmace",
+    "firestaff", "lmace", "pmace",
     // Shields
     "lantern", "shield", "sshield",
     // Orbs

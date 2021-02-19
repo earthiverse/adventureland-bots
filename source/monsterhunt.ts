@@ -1210,7 +1210,7 @@ async function startRanger(bot: Ranger) {
                         if (!bot.character.slots[slot]
                             || (bot.character.slots[slot] && bot.character.slots[slot].name !== itemName)) {
                             const i = bot.locateItem(itemName)
-                            if (i) await bot.equip(i, slot)
+                            if (i !== undefined) await bot.equip(i, slot)
                         }
                     }
                 }
@@ -1929,7 +1929,7 @@ async function startPriest(bot: Priest) {
                         if (!bot.character.slots[slot]
                             || (bot.character.slots[slot] && bot.character.slots[slot].name !== itemName)) {
                             const i = bot.locateItem(itemName)
-                            if (i) await bot.equip(i, slot)
+                            if (i !== undefined) await bot.equip(i, slot)
                         }
                     }
                 }
@@ -2811,7 +2811,7 @@ async function startWarrior(bot: Warrior) {
                         if (!bot.character.slots[slot]
                             || (bot.character.slots[slot] && bot.character.slots[slot].name !== itemName)) {
                             const i = bot.locateItem(itemName)
-                            if (i) await bot.equip(i, slot)
+                            if (i !== undefined) await bot.equip(i, slot)
                         }
                     }
                 }
