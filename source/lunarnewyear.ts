@@ -265,13 +265,13 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
             if (bot.socket.disconnected) return
 
             // TODO: Make bot.canExchange() function and replace the following line with that
+            // TODO: Add a check to see if we are currently exchanging to that function
             const hasComputer = bot.locateItem("computer") !== undefined
 
             if (hasComputer
-                && bot.character.gold > 50000000) {
+                && bot.character.gold > 50000000 /* We have a lot of gold to upgrade things */
+                && bot.character.esize > 15 /* Our inventory has space */) {
                 for (let i = 0; i < bot.character.items.length; i++) {
-                    if (bot.character.esize <= 1) break // We are full
-
                     const item = bot.character.items[i]
                     if (!item) continue
                     if (!ITEMS_TO_EXCHANGE.includes(item.name)) continue // Don't want / can't exchange

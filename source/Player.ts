@@ -1465,8 +1465,8 @@ export class Player extends Observer {
             setTimeout(() => {
                 this.socket.removeListener("upgrade", completeCheck)
                 this.socket.removeListener("game_response", bankCheck)
-                reject(`exchange timeout (${TIMEOUT}ms)`)
-            }, TIMEOUT)
+                reject(`exchange timeout (60000ms)`)
+            }, 60000)
             this.socket.on("game_response", bankCheck)
             this.socket.on("upgrade", completeCheck)
         })
