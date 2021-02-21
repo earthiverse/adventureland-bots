@@ -1412,7 +1412,7 @@ async function startPriest(bot: Priest) {
 
                 if (targets.length > 0) {
                     // Farm essenceoflife from ghosts
-                    if (targets[0].type == "ghost" && targets[0]?.s?.healed) {
+                    if (targets[0].type == "ghost" && !targets[0]?.s?.healed) {
                         await bot.heal(targets[0].id)
                         return bot.getCooldown("heal")
                     }
