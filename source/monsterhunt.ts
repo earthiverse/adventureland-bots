@@ -35,6 +35,9 @@ async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promis
         if (strategy[entity.type].requirePriest && bot.character.ctype !== "priest" && priestTarget !== entity.type) continue // Need priest
         if (bot.G.monsters[entity.type].cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
 
+        // NOTE: TEMPORARY DUE TO BUGS
+        if (entity.type == "tinyp") continue
+
         return entity.type
     }
 
@@ -1085,6 +1088,12 @@ async function startRanger(bot: Ranger) {
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "winterland", x: -169, y: -2026 }, "wolfie") },
             equipment: { mainhand: "firebow", orb: "jacko" },
             requirePriest: true
+        },
+        xscorpion: {
+            attack: async () => { return await tankAttackStrategy("xscorpion", warrior.character.id) },
+            move: async () => { return await holdPositionMoveStrategy({ map: "halloween", x: -325, y: 775 }) },
+            equipment: { mainhand: "firebow", orb: "jacko" },
+            requirePriest: true
         }
     }
 
@@ -1345,8 +1354,8 @@ async function startRanger(bot: Ranger) {
         try {
             if (bot.socket.disconnected) return
 
-            if (!merchant || merchant.isFull()) {
-                setTimeout(async () => { sendItemLoop() }, 10000)
+            if (!merchant) {
+                setTimeout(async () => { sendItemLoop() }, 1000)
                 return
             }
 
@@ -1358,7 +1367,19 @@ async function startRanger(bot: Ranger) {
                     const item = bot.character.items[i]
                     if (!item || RANGER_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
 
-                    await bot.sendItem(merchant.character.id, i, item.q)
+                    if (merchant.isFull()) {
+                        // Can we stack it in the merchant's inventory?
+                        if (item.q !== undefined) continue // Item is not stackable
+                        const merchantItems = merchant.locateItems(item.name)
+                        for (const itemPos of merchantItems) {
+                            const merchantItem = merchant.character.items[itemPos]
+                            // Send as many as we can
+                            await bot.sendItem(merchant.character.id, i, bot.G.items[item.name].s - merchantItem.q)
+                        }
+                    } else {
+                        // The merchant has space, send it over.
+                        await bot.sendItem(merchant.character.id, i, item.q)
+                    }
                 }
             }
         } catch (e) {
@@ -1845,6 +1866,11 @@ async function startPriest(bot: Priest) {
             attack: async () => { return await defaultAttackStrategy("wolfie") },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "winterland", x: -149, y: -2026 }, "wolfie") },
             equipment: { orb: "jacko" }
+        },
+        xscorpion: {
+            attack: async () => { return await tankAttackStrategy("xscorpion", warrior.character.id) },
+            move: async () => { return await holdPositionMoveStrategy({ map: "halloween", x: -325, y: 725 }) },
+            equipment: { orb: "jacko" }
         }
     }
 
@@ -1871,6 +1897,25 @@ async function startPriest(bot: Priest) {
             if (bot.character.rip) {
                 setTimeout(async () => { attackLoop() }, 1000)
                 return
+            }
+
+            // Heal ourselves if we are low HP
+            if (bot.canUse("heal") && bot.character.hp < bot.character.max_hp * 0.8) {
+                await bot.heal(bot.character.id)
+            }
+
+            // Heal party members if they are close
+            let targets: string[] = []
+            for (const [id, player] of bot.players) {
+                if (![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(id)) continue // Don't heal other players
+                if (player.hp > player.max_hp * 0.8) continue // Lots of health, no need to heal
+                if (Tools.distance(bot.character, player) > bot.character.range) continue // Too far away to heal
+
+                targets.push(id)
+                break
+            }
+            if (targets.length && bot.canUse("heal")) {
+                await bot.heal(targets[0])
             }
 
             // Reasons to scare
@@ -1933,29 +1978,6 @@ async function startPriest(bot: Priest) {
                         }
                     }
                 }
-            }
-
-            // Heal ourselves if we are low HP
-            if (bot.canUse("heal") && bot.character.hp < bot.character.max_hp * 0.8) {
-                await bot.heal(bot.character.id)
-                setTimeout(async () => { attackLoop() }, bot.getCooldown("heal"))
-                return
-            }
-
-            // Heal party members if they are close
-            let targets: string[] = []
-            for (const [id, player] of bot.players) {
-                if (![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(id)) continue // Don't heal other players
-                if (player.hp > player.max_hp * 0.8) continue // Lots of health, no need to heal
-                if (Tools.distance(bot.character, player) > bot.character.range) continue // Too far away to heal
-
-                targets.push(id)
-                break
-            }
-            if (targets.length && bot.canUse("heal")) {
-                await bot.heal(targets[0])
-                setTimeout(async () => { attackLoop() }, bot.getCooldown("heal"))
-                return
             }
 
             if (bot.isPVP()) {
@@ -2030,8 +2052,8 @@ async function startPriest(bot: Priest) {
         try {
             if (bot.socket.disconnected) return
 
-            if (!merchant || merchant.isFull()) {
-                setTimeout(async () => { sendItemLoop() }, 10000)
+            if (!merchant) {
+                setTimeout(async () => { sendItemLoop() }, 1000)
                 return
             }
 
@@ -2043,7 +2065,19 @@ async function startPriest(bot: Priest) {
                     const item = bot.character.items[i]
                     if (!item || PRIEST_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
 
-                    await bot.sendItem(merchant.character.id, i, item.q)
+                    if (merchant.isFull()) {
+                        // Can we stack it in the merchant's inventory?
+                        if (item.q !== undefined) continue // Item is not stackable
+                        const merchantItems = merchant.locateItems(item.name)
+                        for (const itemPos of merchantItems) {
+                            const merchantItem = merchant.character.items[itemPos]
+                            // Send as many as we can
+                            await bot.sendItem(merchant.character.id, i, bot.G.items[item.name].s - merchantItem.q)
+                        }
+                    } else {
+                        // The merchant has space, send it over.
+                        await bot.sendItem(merchant.character.id, i, item.q)
+                    }
                 }
             }
         } catch (e) {
@@ -2709,6 +2743,12 @@ async function startWarrior(bot: Warrior) {
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "winterland", x: -189, y: -2026 }, "wolfie") },
             equipment: { mainhand: "basher", orb: "jacko" },
             requirePriest: true
+        },
+        xscorpion: {
+            attack: async () => { return await oneTargetAttackStrategy("xscorpion") },
+            move: async () => { return await holdPositionMoveStrategy({ map: "halloween", x: -325, y: 750 }) },
+            equipment: { mainhand: "basher", orb: "jacko" },
+            requirePriest: true
         }
     }
 
@@ -2905,7 +2945,7 @@ async function startWarrior(bot: Warrior) {
         try {
             if (bot.socket.disconnected) return
 
-            if (!merchant || merchant.isFull()) {
+            if (!merchant) {
                 setTimeout(async () => { sendItemLoop() }, 10000)
                 return
             }
@@ -2918,7 +2958,19 @@ async function startWarrior(bot: Warrior) {
                     const item = bot.character.items[i]
                     if (!item || WARRIOR_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
 
-                    await bot.sendItem(merchant.character.id, i, item.q)
+                    if (merchant.isFull()) {
+                        // Can we stack it in the merchant's inventory?
+                        if (item.q !== undefined) continue // Item is not stackable
+                        const merchantItems = merchant.locateItems(item.name)
+                        for (const itemPos of merchantItems) {
+                            const merchantItem = merchant.character.items[itemPos]
+                            // Send as many as we can
+                            await bot.sendItem(merchant.character.id, i, bot.G.items[item.name].s - merchantItem.q)
+                        }
+                    } else {
+                        // The merchant has space, send it over.
+                        await bot.sendItem(merchant.character.id, i, item.q)
+                    }
                 }
             }
         } catch (e) {
