@@ -145,7 +145,7 @@ export const RANGER_ITEMS_TO_HOLD: ItemName[] = [
     // Jacko
     "jacko",
     // Weapons
-    "bow", "bowofthedead", "crossbow", "firebow", "gbow", "hbow", "merry", "orbg", "t2bow", "t3bow", "weaver",
+    "bow", "bowofthedead", "crossbow", "firebow", "gbow", "hbow", "merry", "pouchbow", "t2bow", "t3bow", "weaver",
     // Quivers
     "quiver", "t2quiver",
     // Orbs

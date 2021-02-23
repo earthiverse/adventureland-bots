@@ -1,4 +1,4 @@
-import { CharacterData, EntitiesData, GameResponseData } from "./definitions/adventureland-server"
+import { CharacterData, EntitiesData, GameResponseData, UIData } from "./definitions/adventureland-server"
 import { TradeSlotType } from "./definitions/adventureland"
 import { PingCompensatedPlayer } from "./PingCompensatedPlayer.js"
 import { TIMEOUT } from "./Game.js"
@@ -124,5 +124,25 @@ export class Merchant extends PingCompensatedPlayer {
 
         this.socket.emit("merchant", { num: stand })
         return opened
+    }
+
+    public massProduction(): Promise<void> {
+        const massProductioned = new Promise<void>((resolve, reject) => {
+            const productedCheck = (data: UIData) => {
+                if (data.type == "massproduction" && data.name == this.character.id) {
+                    this.socket.removeListener("ui", productedCheck)
+                    resolve()
+                }
+            }
+
+            setTimeout(() => {
+                this.socket.removeListener("ui", productedCheck)
+                reject(`massProduction timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.socket.on("ui", productedCheck)
+        })
+
+        this.socket.emit("skill", { name: "massproduction" })
+        return massProductioned
     }
 }

@@ -560,6 +560,9 @@ export type StartData = CharacterData & {
 }
 
 export type UIData = {
+    type: "massproduction"
+    name: string
+} | {
     type: "mluck"
     from: string
     to: string

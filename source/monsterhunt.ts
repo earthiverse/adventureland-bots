@@ -205,6 +205,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                 else if (cscrollPos == undefined) cscrollPos = await bot.buy(cscrollName)
 
                 // Compound!
+                if (!bot.character.s.massproduction && bot.canUse("massproduction")) (bot as Merchant).massProduction()
                 await bot.compound(itemPoss[0], itemPoss[1], itemPoss[2], cscrollPos)
             }
         } catch (e) {
@@ -441,6 +442,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                     else if (scrollPos == undefined) scrollPos = await bot.buy(scrollName)
 
                     // Upgrade!
+                    if (!bot.character.s.massproduction && bot.canUse("massproduction")) (bot as Merchant).massProduction()
                     await bot.upgrade(itemPos, scrollPos)
                 } catch (e) {
                     console.error(e)
