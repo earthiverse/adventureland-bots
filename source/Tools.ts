@@ -78,7 +78,7 @@ export class Tools {
         const gInfo = G.items[item.name]
         if (!gInfo.grades) return
         let grade = 0
-        while (item.level < gInfo.grades[grade]) {
+        while (item.level <= gInfo.grades[grade]) {
             grade++
         }
         return grade
