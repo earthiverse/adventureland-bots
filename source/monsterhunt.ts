@@ -195,7 +195,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                 const level0Grade = gInfo.grades.lastIndexOf(0) + 1
                 const itemPoss = duplicates[itemName]
                 const itemInfo = bot.character.items[itemPoss[0]]
-                if (itemInfo.level >= 4 - (level0Grade * 2)) continue // We don't want to compound higher level items automatically.
+                if (itemInfo.level >= 4 - level0Grade) continue // We don't want to compound higher level items automatically.
                 if (ITEMS_TO_SELL[itemName] && !itemInfo.p && itemInfo.level < ITEMS_TO_SELL[itemName]) continue // Don't compound items we want to sell unless they're special
 
                 // Figure out the scroll we need to upgrade
