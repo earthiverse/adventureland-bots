@@ -1227,6 +1227,7 @@ async function startRanger(bot: Ranger) {
 
             if (bot.getCooldown("scare") > 0) {
                 setTimeout(async () => { attackLoop() }, Math.min(bot.getCooldown("scare"), Math.max(bot.getCooldown("attack"), 10)))
+                return
             }
 
             if (rangerTarget && visibleMonsterTypes.has(rangerTarget)) {
@@ -2003,6 +2004,7 @@ async function startPriest(bot: Priest) {
 
             if (bot.getCooldown("scare") > 0) {
                 setTimeout(async () => { attackLoop() }, Math.min(bot.getCooldown("scare"), Math.max(bot.getCooldown("attack"), 10)))
+                return
             }
 
             // TODO: Change visibleMonsterTypes to a Map which contains the closest one
@@ -2863,6 +2865,7 @@ async function startWarrior(bot: Warrior) {
 
             if (bot.getCooldown("scare") > 0) {
                 setTimeout(async () => { attackLoop() }, Math.min(bot.getCooldown("scare"), Math.max(bot.getCooldown("attack"), 10)))
+                return
             }
 
             // TODO: Change visibleMonsterTypes to a Map which contains the closest one
