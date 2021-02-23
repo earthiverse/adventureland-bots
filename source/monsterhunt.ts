@@ -44,19 +44,20 @@ async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promis
     // Priority #2: Monster Hunt Target
     let monsterHuntTarget: MonsterName
     let timeRemaining: number = Number.MAX_VALUE
-    for (const bot of [ranger, warrior, priest]) {
-        if (!bot.character.s.monsterhunt) continue // Character does not have a monster hunt
-        if (bot.character.s.monsterhunt.sn !== `${region} ${identifier}`) continue // We're not on the right server for this monster hunt
-        if (bot.character.s.monsterhunt.c == 0) continue // Character is finished the monster hunt
-        if (!strategy[bot.character.s.monsterhunt.id]) continue // We don't have a strategy for the monster
-        if (strategy[bot.character.s.monsterhunt.id].requirePriest && bot.character.ctype !== "priest" && priestTarget !== bot.character.s.monsterhunt.id) continue // We need a priest, but the priest is busy with something else
+    for (const bot2 of [ranger, warrior, priest]) {
+        if (!bot2.character.s.monsterhunt) continue // Character does not have a monster hunt
+        if (bot2.character.s.monsterhunt.sn !== `${region} ${identifier}`) continue // We're not on the right server for this monster hunt
+        if (bot2.character.s.monsterhunt.c == 0) continue // Character is finished the monster hunt
+        if (!strategy[bot2.character.s.monsterhunt.id]) continue // We don't have a strategy for the monster
+        if (strategy[bot2.character.s.monsterhunt.id].requirePriest && bot.character.ctype !== "priest" && priestTarget !== bot2.character.s.monsterhunt.id) continue // We need a priest, but the priest is busy with something else
 
         // If there are special monsters, do those first
-        if (SPECIAL_MONSTERS.includes(bot.character.s.monsterhunt.id)) return bot.character.s.monsterhunt.id
+        if (SPECIAL_MONSTERS.includes(bot2.character.s.monsterhunt.id)) return bot2.character.s.monsterhunt.id
 
-        if (bot.character.s.monsterhunt.ms < timeRemaining) {
-            monsterHuntTarget = bot.character.s.monsterhunt.id
-            timeRemaining = bot.character.s.monsterhunt.ms
+        // Do the monsterhunt that will expire first
+        if (bot2.character.s.monsterhunt.ms < timeRemaining) {
+            monsterHuntTarget = bot2.character.s.monsterhunt.id
+            timeRemaining = bot2.character.s.monsterhunt.ms
         }
     }
     if (monsterHuntTarget) return monsterHuntTarget
