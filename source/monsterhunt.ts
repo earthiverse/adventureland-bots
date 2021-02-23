@@ -191,9 +191,10 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                 const itemName = iN as ItemName
                 const gInfo = bot.G.items[itemName]
                 if (gInfo.compound == undefined) continue // Not compoundable
+                const level0Grade = gInfo.grades.lastIndexOf(0) + 1
                 const itemPoss = duplicates[itemName]
                 const itemInfo = bot.character.items[itemPoss[0]]
-                if (itemInfo.level >= 4) continue // We don't want to compound past level 4 automatically.
+                if (itemInfo.level >= 4 - (level0Grade * 2)) continue // We don't want to compound higher level items automatically.
                 if (ITEMS_TO_SELL[itemName] && !itemInfo.p && itemInfo.level < ITEMS_TO_SELL[itemName]) continue // Don't compound items we want to sell unless they're special
 
                 // Figure out the scroll we need to upgrade
@@ -425,9 +426,10 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                 const itemName = iN as ItemName
                 const gInfo = bot.G.items[itemName]
                 if (gInfo.upgrade == undefined) continue // Not upgradable
+                const level0Grade = gInfo.grades.lastIndexOf(0) + 1
                 const itemPos = duplicates[itemName][0]
                 const itemInfo = bot.character.items[itemPos]
-                if (itemInfo.level >= 8) continue // We don't want to upgrade past level 8 automatically.
+                if (itemInfo.level >= 9 - level0Grade) continue // We don't want to upgrade harder to get items too much.
                 if (ITEMS_TO_SELL[itemName] && !itemInfo.p && itemInfo.level < ITEMS_TO_SELL[itemName]) continue // Don't upgrade items we want to sell unless it's special
 
                 // Figure out the scroll we need to upgrade
@@ -1177,12 +1179,10 @@ async function startRanger(bot: Ranger) {
                     if (i) await bot.equip(i)
                 }
                 if (bot.canUse("scare")) await bot.scare()
-                setTimeout(async () => { attackLoop() }, bot.getCooldown("scare"))
-                return
             }
 
             if (bot.character.c.town) {
-                setTimeout(async () => { attackLoop() }, bot.character.c.town.ms)
+                setTimeout(async () => { attackLoop() }, 10)
                 return
             }
 
@@ -1223,6 +1223,10 @@ async function startRanger(bot: Ranger) {
                         }
                     }
                 }
+            }
+
+            if (bot.getCooldown("scare") > 0) {
+                setTimeout(async () => { attackLoop() }, Math.min(bot.getCooldown("scare"), Math.max(bot.getCooldown("attack"), 10)))
             }
 
             if (rangerTarget && visibleMonsterTypes.has(rangerTarget)) {
@@ -1947,8 +1951,6 @@ async function startPriest(bot: Priest) {
                     if (i) await bot.equip(i)
                 }
                 if (bot.canUse("scare")) await bot.scare()
-                setTimeout(async () => { attackLoop() }, bot.getCooldown("scare"))
-                return
             }
 
             if (priestTarget) {
@@ -1995,8 +1997,12 @@ async function startPriest(bot: Priest) {
             }
 
             if (bot.character.c.town) {
-                setTimeout(async () => { attackLoop() }, bot.character.c.town.ms)
+                setTimeout(async () => { attackLoop() }, 10)
                 return
+            }
+
+            if (bot.getCooldown("scare") > 0) {
+                setTimeout(async () => { attackLoop() }, Math.min(bot.getCooldown("scare"), Math.max(bot.getCooldown("attack"), 10)))
             }
 
             // TODO: Change visibleMonsterTypes to a Map which contains the closest one
@@ -2819,12 +2825,10 @@ async function startWarrior(bot: Warrior) {
                     if (i) await bot.equip(i)
                 }
                 if (bot.canUse("scare")) await bot.scare()
-                setTimeout(async () => { attackLoop() }, bot.getCooldown("scare"))
-                return
             }
 
             if (bot.character.c.town) {
-                setTimeout(async () => { attackLoop() }, bot.character.c.town.ms)
+                setTimeout(async () => { attackLoop() }, 10)
                 return
             }
 
@@ -2855,6 +2859,10 @@ async function startWarrior(bot: Warrior) {
                         }
                     }
                 }
+            }
+
+            if (bot.getCooldown("scare") > 0) {
+                setTimeout(async () => { attackLoop() }, Math.min(bot.getCooldown("scare"), Math.max(bot.getCooldown("attack"), 10)))
             }
 
             // TODO: Change visibleMonsterTypes to a Map which contains the closest one
@@ -3059,10 +3067,13 @@ async function startMerchant(bot: Merchant) {
         try {
             if (bot.socket.disconnected) return
 
-            if (bot.character.targets > 0) {
-                if (bot.canUse("scare")) {
-                    await bot.scare()
-                }
+            if (bot.character.targets > 0 && bot.canUse("scare")) {
+                await bot.scare()
+            }
+
+            if (bot.character.c.town) {
+                setTimeout(async () => { attackLoop() }, 10)
+                return
             }
 
             if (bot.canUse("attack")) {

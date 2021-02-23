@@ -77,12 +77,11 @@ export class Tools {
         const G = await Game.getGData()
         const gInfo = G.items[item.name]
         if (!gInfo.grades) return
-        let level = 0
-        for (const grade of gInfo.grades) {
-            if (item.level < grade) break
-            level++
+        let grade = 0
+        while (item.level < gInfo.grades[grade]) {
+            grade++
         }
-        return level
+        return grade
     }
 
     /**
