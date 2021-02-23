@@ -3232,8 +3232,9 @@ async function startMerchant(bot: Merchant) {
                             const pack2 = `items${Math.floor((d[i]) / 42)}` as Exclude<BankPackType, "gold">
                             const slot2 = d[i] % 42
                             const item2 = bot.bank[pack2][slot2]
+                            const level0Grade = gInfo.grades.lastIndexOf(0) + 1
 
-                            if (item2.level >= 8) continue // We don't want to upgrade high level items automatically
+                            if (item2.level >= 9 - level0Grade) continue // We don't want to upgrade high level items automatically
 
                             try {
                                 await bot.withdrawItem(pack2, slot2)
@@ -3267,7 +3268,8 @@ async function startMerchant(bot: Merchant) {
                             const slot3 = d[i + 2] % 42
                             const item3 = bot.bank[pack3][slot3]
 
-                            if (item1.level >= 4) continue // We don't want to comopound high level items automaticaclly
+                            const level0Grade = gInfo.grades.lastIndexOf(0) + 1
+                            if (item1.level >= 4 - level0Grade) continue // We don't want to comopound high level items automaticaclly
                             if (item1.level !== item2.level) continue
                             if (item1.level !== item3.level) continue
 
