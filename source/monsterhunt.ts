@@ -35,9 +35,6 @@ async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promis
         if (strategy[entity.type].requirePriest && bot.character.ctype !== "priest" && priestTarget !== entity.type) continue // Need priest
         if (bot.G.monsters[entity.type].cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
 
-        // NOTE: TEMPORARY DUE TO BUGS
-        if (entity.type == "tinyp") continue
-
         return entity.type
     }
 
