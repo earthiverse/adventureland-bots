@@ -558,6 +558,7 @@ export type MonsterName =
   | "crab"
   | "crabx"
   | "croc"
+  | "cutebee"
   | "d_wiz"
   | "dknight2"
   | "dragold"

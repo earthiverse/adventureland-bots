@@ -1465,7 +1465,7 @@ export class Player extends Observer {
             setTimeout(() => {
                 this.socket.removeListener("upgrade", completeCheck)
                 this.socket.removeListener("game_response", bankCheck)
-                reject(`exchange timeout (60000ms)`)
+                reject("exchange timeout (60000ms)")
             }, 60000)
             this.socket.on("game_response", bankCheck)
             this.socket.on("upgrade", completeCheck)
@@ -2516,8 +2516,7 @@ export class Player extends Observer {
         const items: (ItemInfo & { slotNum: number; })[] = []
         for (let i = 0; i < inventory.length; i++) {
             const item = inventory[i]
-            if (!item)
-                continue
+            if (!item) continue
             items.push({ ...item, slotNum: i })
         }
 
