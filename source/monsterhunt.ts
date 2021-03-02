@@ -891,8 +891,7 @@ async function startRanger(bot: Ranger) {
         franky: {
             attack: async () => { return await defaultAttackStrategy(["nerfedmummy", "franky"]) },
             move: async () => { return await specialMonsterMoveStrategy("franky") },
-            equipment: { mainhand: "crossbow", orb: "jacko" },
-            attackWhileIdle: true
+            equipment: { mainhand: "crossbow", orb: "jacko" }
         },
         fvampire: {
             attack: async () => { return await defaultAttackStrategy(["fvampire"]) },
@@ -975,6 +974,12 @@ async function startRanger(bot: Ranger) {
             attack: async () => { return await defaultAttackStrategy(["mvampire"]) },
             move: async () => { return await specialMonsterMoveStrategy("mvampire") },
             equipment: { mainhand: "firebow", orb: "jacko" },
+            attackWhileIdle: true
+        },
+        nerfedmummy: {
+            attack: async () => { return await defaultAttackStrategy(["nerfedmummy"]) },
+            move: async () => { return await specialMonsterMoveStrategy("franky") },
+            equipment: { mainhand: "crossbow", orb: "jacko" },
             attackWhileIdle: true
         },
         oneeye: {
@@ -1690,8 +1695,7 @@ async function startPriest(bot: Priest) {
         franky: {
             attack: async () => { return await defaultAttackStrategy(["nerfedmummy", "franky"]) },
             move: async () => { return await specialMonsterMoveStrategy("franky") },
-            equipment: { orb: "jacko" },
-            attackWhileIdle: true
+            equipment: { orb: "jacko" }
         },
         frog: {
             attack: async () => { return await defaultAttackStrategy(["frog"]) },
@@ -1775,6 +1779,12 @@ async function startPriest(bot: Priest) {
             attack: async () => { return await defaultAttackStrategy(["mvampire"]) },
             move: async () => { return await specialMonsterMoveStrategy("mvampire") },
             equipment: { orb: "test_orb" },
+            attackWhileIdle: true
+        },
+        nerfedmummy: {
+            attack: async () => { return await defaultAttackStrategy(["nerfedmummy"]) },
+            move: async () => { return await specialMonsterMoveStrategy("franky") },
+            equipment: { orb: "jacko" },
             attackWhileIdle: true
         },
         oneeye: {
@@ -2590,8 +2600,7 @@ async function startWarrior(bot: Warrior) {
         franky: {
             attack: async () => { return await defaultAttackStrategy(["nerfedmummy", "franky"]) },
             move: async () => { return await specialMonsterMoveStrategy("franky") },
-            equipment: { mainhand: "basher", orb: "jacko" },
-            attackWhileIdle: true
+            equipment: { mainhand: "basher", orb: "jacko" }
         },
         fvampire: {
             attack: async () => { return await defaultAttackStrategy(["fvampire"]) },
@@ -2677,6 +2686,12 @@ async function startWarrior(bot: Warrior) {
             attack: async () => { return await defaultAttackStrategy(["mvampire"]) },
             move: async () => { return await specialMonsterMoveStrategy("mvampire") },
             equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "jacko" },
+            attackWhileIdle: true
+        },
+        nerfedmummy: {
+            attack: async () => { return await defaultAttackStrategy(["nerfedmummy"]) },
+            move: async () => { return await specialMonsterMoveStrategy("franky") },
+            equipment: { mainhand: "basher", orb: "jacko" },
             attackWhileIdle: true
         },
         oneeye: {
