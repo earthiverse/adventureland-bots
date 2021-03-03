@@ -13,6 +13,7 @@ import { PingCompensatedPlayer } from "./PingCompensatedPlayer.js"
 import { Ranger } from "./Ranger.js"
 import { Pathfinder } from "./Pathfinder.js"
 import { Tools } from "./Tools.js"
+import { IEntity } from "./database/entities/entities.types.js"
 
 const region: ServerRegion = "US"
 const identifier: ServerIdentifier = "I"
@@ -27,9 +28,23 @@ let merchant: Merchant
 // let merchantTarget: MonsterName
 
 async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promise<MonsterName> {
-    // Priority #1: Special Monsters
-    const entities = await EntityModel.find({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 } }).sort({ hp: 1 }).lean().exec()
-    for (const entity of entities) {
+    // Priority #1: Special co-op monsters that take a team effort
+    const coop: MonsterName[] = [
+        "dragold", "grinch", "mrgreen", "mrpumpkin", "franky",
+    ]
+    const coopEntities: IEntity[] = await EntityModel.aggregate([
+        {
+            $match: {
+                type: { $in: coop },
+                target: { $ne: undefined }, // We only want to do these if others are doing them, too.
+                serverRegion: bot.server.region,
+                serverIdentifier: bot.server.name,
+                lastSeen: { $gt: Date.now() - 60000 }
+            }
+        },
+        { $addFields: { __order: { $indexOfArray: [coop, "$type"] } } },
+        { $sort: { "__order": 1 } }]).exec()
+    for (const entity of coopEntities) {
         // Look in database of entities
         if (!strategy[entity.type]) continue // No strategy
         if (strategy[entity.type].requirePriest && bot.character.ctype !== "priest" && priestTarget !== entity.type) continue // Need priest
@@ -38,7 +53,37 @@ async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promis
         return entity.type
     }
 
-    // Priority #2: Monster Hunt Target
+    // Priority #2: Special monsters that we can defeat by ourselves
+    const solo: MonsterName[] = [
+        "goldenbat",
+        // Very Rare Monsters
+        "tinyp", "cutebee",
+        // Event Monsters
+        "pinkgoo", "wabbit",
+        // Rare Monsters
+        "greenjr", "jr", "skeletor", "mvampire", "fvampire", "snowman"
+    ]
+    const soloEntities: IEntity[] = await EntityModel.aggregate([
+        {
+            $match: {
+                type: { $in: solo },
+                serverRegion: bot.server.region,
+                serverIdentifier: bot.server.name,
+                lastSeen: { $gt: Date.now() - 60000 }
+            }
+        },
+        { $addFields: { __order: { $indexOfArray: [solo, "$type"] } } },
+        { $sort: { "__order": 1 } }]).exec()
+    for (const entity of soloEntities) {
+        // Look in database of entities
+        if (!strategy[entity.type]) continue // No strategy
+        if (strategy[entity.type].requirePriest && bot.character.ctype !== "priest" && priestTarget !== entity.type) continue // Need priest
+        if (bot.G.monsters[entity.type].cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+
+        return entity.type
+    }
+
+    // Priority #3: Monster Hunt Target
     let monsterHuntTarget: MonsterName
     let timeRemaining: number = Number.MAX_VALUE
     for (const bot2 of [ranger, warrior, priest]) {
@@ -59,7 +104,7 @@ async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promis
     }
     if (monsterHuntTarget) return monsterHuntTarget
 
-    // Priority #3: Scorpions, because why not
+    // Priority #4: Scorpions, because why not
     return "scorpion"
 }
 
@@ -753,45 +798,6 @@ async function startRanger(bot: Ranger) {
                     if (monsterIsNear) break
                 }
             }
-        } catch (e) {
-            console.error(e)
-        }
-        return 100
-    }
-    const waypointMoveStrategy = async (positions: NodeData[]) => {
-        try {
-            for (const position of positions) {
-                await bot.smartMove(position)
-            }
-        } catch (e) {
-            console.error(e)
-        }
-        return 100
-    }
-    const kiteMoveStrategy = async (mtype: MonsterName) => {
-        try {
-            // Check if we have a target
-            let target: EntityData
-            for (const [, entity] of bot.entities) {
-                if (entity.target == bot.character.id) {
-                    target = entity
-                    break
-                }
-            }
-
-            const edgeDistance = Math.sqrt((bot.character.range ** 2) / 2)
-            if (!target) {
-                await bot.smartMove(mtype, { getWithin: edgeDistance })
-            } else {
-                if (target.going_x == bot.character.x && target.going_y == bot.character.y) {
-                    // It's moving to our current position, move 90 degrees
-                    // TODO: get angle
-                    // TODO: add 90 degrees to angle
-                    // TODO: move edgeDistance in that direction
-                }
-            }
-            // Move to closest monster if we don't have a target
-
         } catch (e) {
             console.error(e)
         }
