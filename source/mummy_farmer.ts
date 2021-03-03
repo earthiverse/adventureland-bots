@@ -603,7 +603,7 @@ async function startRanger(bot: AL.Ranger) {
             //     bot.move(mummyUnsafe.x - 20, mummyUnsafe.y).then(() => { })
             // } else {
             // We need to delevel mummies safely
-            bot.move(mummySafe.x - 20, mummySafe.y).then(() => { })
+            bot.move(mummySafe.x - 20, mummySafe.y).catch(() => { }).then(() => { })
             // }
         } catch (e) {
             console.error(e)
@@ -754,10 +754,10 @@ async function startWarrior(bot: AL.Warrior) {
 
             if (nearbyMummyLevel == 1) {
                 // All mummies are probably level 1.
-                bot.move(mummyUnsafe.x, mummyUnsafe.y).then(() => { })
+                bot.move(mummyUnsafe.x, mummyUnsafe.y).catch(() => { }).then(() => { })
             } else {
                 // We need to delevel mummies safely
-                bot.move(mummySafe.x, mummySafe.y).then(() => { })
+                bot.move(mummySafe.x, mummySafe.y).catch(() => { }).then(() => { })
             }
         } catch (e) {
             console.error(e)
@@ -897,7 +897,7 @@ async function startPriest(bot: AL.Priest) {
             //     bot.move(mummyUnsafe.x + 20, mummySafe.y).then(() => { })
             // } else {
             // We need to delevel mummies safely
-            bot.move(mummySafe.x + 20, mummySafe.y).then(() => { })
+            bot.move(mummySafe.x + 20, mummySafe.y).catch(() => { }).then(() => { })
             // }
         } catch (e) {
             console.error(e)
