@@ -3550,6 +3550,7 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
                         $match: {
                             type: { $in: coop },
                             target: { $ne: undefined }, // We only want to do these if others are doing them, too.
+                            serverIdentifier: { $nin: ["PVP"] },
                             lastSeen: { $gt: Date.now() - 60000 }
                         }
                     },
@@ -3591,6 +3592,7 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
                     {
                         $match: {
                             type: { $in: solo },
+                            serverIdentifier: { $nin: ["PVP"] },
                             lastSeen: { $gt: Date.now() - 60000 }
                         }
                     },
