@@ -3533,9 +3533,15 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
                     setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime - Date.now() - 60000))
                     return
                 }
+                if (!ranger) {
+                    // We haven't logged in yet?
+                    setTimeout(async () => { serverLoop() }, 1000)
+                    return
+                }
 
                 const currentRegion = ranger.server.region
                 const currentIdentifier = ranger.server.name
+                const G = ranger.G
 
                 // Priority #1: Special co-op monsters that take a team effort
                 const coop: MonsterName[] = [
@@ -3595,8 +3601,9 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
                     { $addFields: { __order: { $indexOfArray: [solo, "$type"] } } },
                     { $sort: { "__order": 1, "hp": 1 } }]).exec()
                 for (const entity of soloEntities) {
-                    if (currentRegion == entity.serverRegion && currentIdentifier == entity.serverIdentifier) {
-                        // We're already on the correct server
+                    if ((currentRegion == entity.serverRegion && currentIdentifier == entity.serverIdentifier) // We're already on the correct server
+                        || (!G.monsters[entity.type].cooperative && entity.target)) // The target isn't cooperative, and someone is already attacking it
+                    {
                         setTimeout(async () => { serverLoop() }, 1000)
                         return
                     }
