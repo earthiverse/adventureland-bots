@@ -1348,7 +1348,7 @@ async function startRanger(bot: Ranger) {
             }
 
             // Priority #1: Turn in / get Monster Hunt quest
-            if (!bot.character.s.monsterhunt) {
+            if (!bot.character.s.monsterhunt && bot.server.name == DEFAULT_IDENTIFIER && bot.server.region == DEFAULT_REGION) {
                 // Move to monsterhunter if there's no MH
                 await bot.smartMove("monsterhunter", { getWithin: 399 })
                 await bot.getMonsterHuntQuest()
@@ -2158,12 +2158,11 @@ async function startPriest(bot: Priest) {
             }
 
             // Priority #1: Turn in / get Monster Hunt quest
-            if (!bot.character.s.monsterhunt) {
+            if (!bot.character.s.monsterhunt && bot.server.name == DEFAULT_IDENTIFIER && bot.server.region == DEFAULT_REGION) {
                 // Move to monsterhunter if there's no MH
                 await bot.smartMove("monsterhunter", { getWithin: 399 })
                 await bot.leaveParty()
                 await bot.getMonsterHuntQuest()
-                if (merchant) await bot.sendPartyRequest(merchant.character.id)
                 setTimeout(async () => { moveLoop() }, 500)
                 return
             } else if (bot.character.s.monsterhunt.c == 0) {
@@ -2172,7 +2171,6 @@ async function startPriest(bot: Priest) {
                 await bot.finishMonsterHuntQuest()
                 await bot.leaveParty()
                 await bot.getMonsterHuntQuest()
-                if (merchant) await bot.sendPartyRequest(merchant.character.id)
                 setTimeout(async () => { moveLoop() }, 500)
                 return
             }
@@ -3071,12 +3069,11 @@ async function startWarrior(bot: Warrior) {
             }
 
             // Priority #1: Turn in / get Monster Hunt quest
-            if (!bot.character.s.monsterhunt) {
+            if (!bot.character.s.monsterhunt && bot.server.name == DEFAULT_IDENTIFIER && bot.server.region == DEFAULT_REGION) {
                 // Move to monsterhunter if there's no MH
                 await bot.smartMove("monsterhunter", { getWithin: 399 })
                 await bot.leaveParty()
                 await bot.getMonsterHuntQuest()
-                if (merchant) await bot.sendPartyRequest(merchant.character.id)
                 setTimeout(async () => { moveLoop() }, 500)
                 return
             } else if (bot.character.s.monsterhunt.c == 0) {
@@ -3085,7 +3082,6 @@ async function startWarrior(bot: Warrior) {
                 await bot.finishMonsterHuntQuest()
                 await bot.leaveParty()
                 await bot.getMonsterHuntQuest()
-                if (merchant) await bot.sendPartyRequest(merchant.character.id)
                 setTimeout(async () => { moveLoop() }, 500)
                 return
             }
@@ -3386,7 +3382,7 @@ async function startMerchant(bot: Merchant) {
                 //locations.push(...bot.locateMonsters("skeletor"))
                 locations.push(...bot.locateMonsters("mvampire")) // Also checks goldenbat and dragold
                 locations.push(...bot.locateMonsters("fvampire"))
-                locations.push(...bot.locateMonsters("greenjr"))
+                locations.push(...bot.locateMonsters("greenjr")) // Mostly checks tinyp, too
                 locations.push(...bot.locateMonsters("jr"))
 
                 for (const location of locations) {

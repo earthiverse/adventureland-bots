@@ -100,6 +100,7 @@ export class Tools {
      * @param b Position 2
      */
     public static distance(a: { x: number, y: number, map?: MapName }, b: { x: number, y: number, map?: MapName }): number {
+        if (a === undefined || a === null || b === undefined || b === null) return Number.MAX_VALUE
         if ((a.map && b.map) && (a.map !== b.map)) return Number.MAX_VALUE
 
         return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2)
