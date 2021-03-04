@@ -15,8 +15,10 @@ import { Pathfinder } from "./Pathfinder.js"
 import { Tools } from "./Tools.js"
 import { IEntity } from "./database/entities/entities.types.js"
 
-const region: ServerRegion = "US"
-const identifier: ServerIdentifier = "I"
+const DEFAULT_REGION: ServerRegion = "US"
+const DEFAULT_IDENTIFIER: ServerIdentifier = "II"
+let region: ServerRegion = DEFAULT_REGION
+let identifier: ServerIdentifier = DEFAULT_IDENTIFIER
 
 let ranger: Ranger
 let rangerTarget: MonsterName
@@ -26,6 +28,8 @@ let priest: Priest
 let priestTarget: MonsterName
 let merchant: Merchant
 // let merchantTarget: MonsterName
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
 async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promise<MonsterName> {
     // Priority #1: Special co-op monsters that take a team effort
@@ -88,7 +92,7 @@ async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promis
     let timeRemaining: number = Number.MAX_VALUE
     for (const bot2 of [ranger, warrior, priest]) {
         if (!bot2.character.s.monsterhunt) continue // Character does not have a monster hunt
-        if (bot2.character.s.monsterhunt.sn !== `${region} ${identifier}`) continue // We're not on the right server for this monster hunt
+        if (bot2.character.s.monsterhunt.sn !== `${bot.server.region} ${bot.server.name}`) continue // We're not on the right server for this monster hunt
         if (bot2.character.s.monsterhunt.c == 0) continue // Character is finished the monster hunt
         if (!strategy[bot2.character.s.monsterhunt.id]) continue // We don't have a strategy for the monster
         if (strategy[bot2.character.s.monsterhunt.id].requirePriest && bot.character.ctype !== "priest" && priestTarget !== bot2.character.s.monsterhunt.id) continue // We need a priest, but the priest is busy with something else
@@ -1471,14 +1475,14 @@ async function startPriest(bot: Priest) {
                     }
 
                     // Remove from other characters if we're going to kill it
-                    if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
+                    const isGuaranteedKill = await Tools.isGuaranteedKill(bot.character, targets[0])
+                    if (isGuaranteedKill) {
                         for (const bot of [ranger, priest, warrior, merchant]) {
                             bot.entities.delete(targets[0].id)
                         }
-                    }
-
-                    if (bot.canUse("curse")
+                    } else if (bot.canUse("curse")
                         && !(targets[0] as EntityData).immune) {
+                        // Curse if we can't kill it right away
                         bot.curse(targets[0].id)
                     }
 
@@ -3525,12 +3529,125 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
             }
         }
 
+        let lastServerChangeTime = Date.now()
+        const serverLoop = async () => {
+            try {
+                // Don't change servers too fast
+                if (lastServerChangeTime > Date.now() - 60000) {
+                    setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime - Date.now() - 60000))
+                    return
+                }
+
+                const currentRegion = ranger.server.region
+                const currentIdentifier = ranger.server.name
+
+                // Priority #1: Special co-op monsters that take a team effort
+                const coop: MonsterName[] = [
+                    "dragold", "grinch", "mrgreen", "mrpumpkin", "franky",
+                ]
+                const coopEntities: IEntity[] = await EntityModel.aggregate([
+                    {
+                        $match: {
+                            type: { $in: coop },
+                            target: { $ne: undefined }, // We only want to do these if others are doing them, too.
+                            lastSeen: { $gt: Date.now() - 60000 }
+                        }
+                    },
+                    { $addFields: { __order: { $indexOfArray: [coop, "$type"] } } },
+                    { $sort: { "__order": 1, "hp": 1 } }]).exec()
+                for (const entity of coopEntities) {
+                    if (currentRegion == entity.serverRegion && currentIdentifier == entity.serverIdentifier) {
+                        // We're already on the correct server
+                        setTimeout(async () => { serverLoop() }, 1000)
+                        return
+                    }
+
+                    // Change servers to attack this entity
+                    region = entity.serverRegion
+                    identifier = entity.serverIdentifier
+                    console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${region} ${identifier}`)
+
+                    // Loot all of our remaining chests
+                    for (const [, chest] of ranger.chests) await ranger.openChest(chest.id)
+
+                    await Game.disconnect(false)
+                    await sleep(5000)
+                    lastServerChangeTime = Date.now()
+                    setTimeout(async () => { serverLoop() }, 1000)
+                    return
+                }
+
+                // Priority #2: Special monsters that we can defeat by ourselves
+                const solo: MonsterName[] = [
+                    "goldenbat",
+                    // Very Rare Monsters
+                    "tinyp", "cutebee",
+                    // Event Monsters
+                    "pinkgoo", "wabbit",
+                    // Rare Monsters
+                    "greenjr", "jr", "skeletor", "mvampire", "fvampire", "snowman"
+                ]
+                const soloEntities: IEntity[] = await EntityModel.aggregate([
+                    {
+                        $match: {
+                            type: { $in: solo },
+                            lastSeen: { $gt: Date.now() - 60000 }
+                        }
+                    },
+                    { $addFields: { __order: { $indexOfArray: [solo, "$type"] } } },
+                    { $sort: { "__order": 1, "hp": 1 } }]).exec()
+                for (const entity of soloEntities) {
+                    if (currentRegion == entity.serverRegion && currentIdentifier == entity.serverIdentifier) {
+                        // We're already on the correct server
+                        setTimeout(async () => { serverLoop() }, 1000)
+                        return
+                    }
+
+                    // Change servers to attack this entity
+                    region = entity.serverRegion
+                    identifier = entity.serverIdentifier
+                    console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${region} ${identifier}`)
+
+                    // Loot all of our remaining chests
+                    for (const [, chest] of ranger.chests) await ranger.openChest(chest.id)
+
+                    await Game.disconnect(false)
+                    await sleep(5000)
+                    lastServerChangeTime = Date.now()
+                    setTimeout(async () => { serverLoop() }, 1000)
+                    return
+                }
+
+                // Priority #3: Default Server
+                if (currentRegion !== DEFAULT_REGION || currentIdentifier !== DEFAULT_IDENTIFIER) {
+                    // Change servers to attack this entity
+                    region = DEFAULT_REGION
+                    identifier = DEFAULT_IDENTIFIER
+                    console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${region} ${identifier}`)
+
+                    // Loot all of our remaining chests
+                    for (const [, chest] of ranger.chests) await ranger.openChest(chest.id)
+
+                    await Game.disconnect(false)
+                    await sleep(5000)
+                    lastServerChangeTime = Date.now()
+                    setTimeout(async () => { serverLoop() }, 1000)
+                    return
+                }
+            } catch (e) {
+                console.error(e)
+            }
+
+            setTimeout(async () => { serverLoop() }, 1000)
+        }
+        serverLoop()
+
         await loopRanger()
         await loopWarrior()
         await loopPriest()
         await loopMerchant()
     } catch (e) {
-        await Game.disconnect(false)
+        await Game.disconnect()
     }
 }
 run("earthiverse", "earthWar", "earthPri", "earthMer")

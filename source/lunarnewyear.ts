@@ -3487,7 +3487,7 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
         await loopPriest()
         await loopMerchant()
     } catch (e) {
-        await Game.disconnect(false)
+        await Game.disconnect()
     }
 }
 run("earthiverse", "earthWar", "earthPri", "earthMer")
