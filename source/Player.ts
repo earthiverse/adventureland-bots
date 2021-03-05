@@ -100,7 +100,7 @@ export class Player extends Observer {
                     player.x = location[0]
                     player.y = location[1]
                     this.players.set(data.id, player)
-                } else if (data.id !== this.character?.id) {
+                } else if (data.id !== this.characterID) {
                     // NOTE: Temporary debug
                     console.log("DEBUG: disappear with no data.to")
                     console.log(data)
@@ -195,7 +195,7 @@ export class Player extends Observer {
             const result = /^Slain by (.+)$/.exec(data.message)
             if (result) {
                 DeathModel.insertMany([{
-                    name: this.character.id,
+                    name: this.characterID,
                     cause: result[1],
                     map: this.character.map,
                     x: this.character.x,
@@ -463,7 +463,7 @@ export class Player extends Observer {
             }
         }
         for (const player of data.players) {
-            if (player.id == this.character?.id) {
+            if (player.id == this.characterID) {
                 // Update everything for our own player if we see it
                 for (const datum in player)
                     this.character[datum] = player[datum]
@@ -485,7 +485,7 @@ export class Player extends Observer {
                 }
             } else if (data.response == "defeated_by_a_monster") {
                 DeathModel.insertMany([{
-                    name: this.character.id,
+                    name: this.characterID,
                     cause: data.monster,
                     map: this.character.map,
                     x: this.character.x,
@@ -578,27 +578,29 @@ export class Player extends Observer {
             }
 
             // Update character
-            if (this.character?.moving) {
-                const distanceTravelled = this.character.speed * msSinceLastUpdate / 1000
-                const angle = Math.atan2(this.character.going_y - this.character.y, this.character.going_x - this.character.x)
-                const distanceToGoal = Tools.distance({ x: this.character.x, y: this.character.y }, { x: this.character.going_x, y: this.character.going_y })
-                if (distanceTravelled > distanceToGoal) {
-                    this.character.moving = false
-                    this.character.x = this.character.going_x
-                    this.character.y = this.character.going_y
-                } else {
-                    this.character.x = this.character.x + Math.cos(angle) * distanceTravelled
-                    this.character.y = this.character.y + Math.sin(angle) * distanceTravelled
+            if (this.character) {
+                if (this.character.moving) {
+                    const distanceTravelled = this.character.speed * msSinceLastUpdate / 1000
+                    const angle = Math.atan2(this.character.going_y - this.character.y, this.character.going_x - this.character.x)
+                    const distanceToGoal = Tools.distance({ x: this.character.x, y: this.character.y }, { x: this.character.going_x, y: this.character.going_y })
+                    if (distanceTravelled > distanceToGoal) {
+                        this.character.moving = false
+                        this.character.x = this.character.going_x
+                        this.character.y = this.character.going_y
+                    } else {
+                        this.character.x = this.character.x + Math.cos(angle) * distanceTravelled
+                        this.character.y = this.character.y + Math.sin(angle) * distanceTravelled
+                    }
                 }
-            }
 
-            // Update conditions
-            for (const condition in this?.character.s) {
-                const newCooldown = this.character.s[condition as ConditionName].ms - msSinceLastUpdate
-                if (newCooldown <= 0)
-                    delete this.character.s[condition as ConditionName]
-                else
-                    this.character.s[condition as ConditionName].ms = newCooldown
+                // Update conditions
+                for (const condition in this.character.s) {
+                    const newCooldown = this.character.s[condition as ConditionName].ms - msSinceLastUpdate
+                    if (newCooldown <= 0)
+                        delete this.character.s[condition as ConditionName]
+                    else
+                        this.character.s[condition as ConditionName].ms = newCooldown
+                }
             }
         }
 
@@ -674,7 +676,8 @@ export class Player extends Observer {
     public async disconnect(): Promise<void> {
         if (this.socket.disconnected)
             return
-        console.warn(`Disconnecting ${this.character.id}!`)
+
+        console.warn(`Disconnecting ${this.characterID}!`)
 
         // Close the socket
         this.socket.close()
@@ -756,7 +759,7 @@ export class Player extends Observer {
     public acceptPartyInvite(id: string): Promise<PartyData> {
         const acceptedInvite = new Promise<PartyData>((resolve, reject) => {
             const partyCheck = (data: PartyData) => {
-                if (data.list.includes(this.character.id)
+                if (data.list.includes(this.characterID)
                     && data.list.includes(id)) {
                     this.socket.removeListener("party_update", partyCheck)
                     this.socket.removeListener("game_log", unableCheck)
@@ -775,7 +778,7 @@ export class Player extends Observer {
                     this.socket.removeListener("game_log", unableCheck)
                     reject(data)
                 } else if (data == "Already partying") {
-                    if (this.party.list.includes(this.character.id)
+                    if (this.party.list.includes(this.characterID)
                         && this.party.list.includes(id)) {
                         // NOTE: We resolve the promise even if we have already accepted it if we're in the correct party.
                         this.socket.removeListener("party_update", partyCheck)
@@ -806,7 +809,7 @@ export class Player extends Observer {
     public acceptPartyRequest(id: string): Promise<PartyData> {
         const acceptedRequest = new Promise<PartyData>((resolve, reject) => {
             const partyCheck = (data: PartyData) => {
-                if (data.list.includes(this.character.id)
+                if (data.list.includes(this.characterID)
                     && data.list.includes(id)) {
                     this.socket.removeListener("party_update", partyCheck)
                     resolve(data)
@@ -870,7 +873,7 @@ export class Player extends Observer {
                 }
             }
             const attackCheck = (data: ActionData) => {
-                if (data.attacker == this.character.id && data.target == id && data.type == "attack") {
+                if (data.attacker == this.characterID && data.target == id && data.type == "attack") {
                     this.socket.removeListener("action", attackCheck)
                     this.socket.removeListener("game_response", failCheck)
                     this.socket.removeListener("death", deathCheck)
@@ -1414,7 +1417,7 @@ export class Player extends Observer {
                 }
             }
             const cantEquipCheck = (data: DisappearingTextData) => {
-                if (data.id == this.character.id && data.message == "CAN'T EQUIP") {
+                if (data.id == this.characterID && data.message == "CAN'T EQUIP") {
                     this.socket.removeListener("player", equipCheck)
                     this.socket.removeListener("disappearing_text", cantEquipCheck)
                     reject(`Can't equip '${inventoryPos}' (${iInfo.name})`)
@@ -2074,7 +2077,7 @@ export class Player extends Observer {
 
     public async stopSmartMove(): Promise<NodeData> {
         this.lastSmartMove = Date.now()
-        if (this.character?.c?.town) {
+        if (this.character && this.character.c.town) {
             this.stopWarpToTown()
         }
         return this.move(this.character.x, this.character.y)

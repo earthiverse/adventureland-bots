@@ -208,7 +208,7 @@ export class Warrior extends PingCompensatedPlayer {
     public taunt(target: string): Promise<string> {
         const tauntStarted = new Promise<string>((resolve, reject) => {
             const tauntCheck = (data: ActionData) => {
-                if (data.attacker == this.character.id
+                if (data.attacker == this.characterID
                     && data.type == "taunt"
                     && data.target == target) {
                     resolve(data.pid)

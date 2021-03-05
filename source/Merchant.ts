@@ -43,13 +43,13 @@ export class Merchant extends PingCompensatedPlayer {
     }
 
     public mluck(target: string): Promise<void> {
-        if (target !== this.character.id) {
+        if (target !== this.characterID) {
             const player = this.players.get(target)
             if (!player)
                 return Promise.reject(`Could not find ${target} to mluck.`)
             if (player.npc)
                 return Promise.reject(`${target} is an NPC. You can't mluck NPCs.`)
-            if (player.s.mluck && player.s.mluck.strong && player.s.mluck.f !== this.character.id)
+            if (player.s.mluck && player.s.mluck.strong && player.s.mluck.f !== this.characterID)
                 return Promise.reject(`${target} has a strong mluck from ${player.s.mluck.f}.`)
         }
 
@@ -58,7 +58,7 @@ export class Merchant extends PingCompensatedPlayer {
                 for (const player of data.players) {
                     if (player.id == target
                         && player.s.mluck
-                        && player.s.mluck.f == this.character.id) {
+                        && player.s.mluck.f == this.characterID) {
                         this.socket.removeListener("entities", mluckCheck)
                         this.socket.removeListener("game_response", failCheck)
                         resolve()
@@ -129,7 +129,7 @@ export class Merchant extends PingCompensatedPlayer {
     public massProduction(): Promise<void> {
         const massProductioned = new Promise<void>((resolve, reject) => {
             const productedCheck = (data: UIData) => {
-                if (data.type == "massproduction" && data.name == this.character.id) {
+                if (data.type == "massproduction" && data.name == this.characterID) {
                     this.socket.removeListener("ui", productedCheck)
                     resolve()
                 }
