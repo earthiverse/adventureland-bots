@@ -1409,7 +1409,7 @@ async function startRanger(bot: Ranger) {
                         for (const itemPos of merchant.locateItems(item.name)) {
                             const merchantItem = merchant.character.items[itemPos]
                             // Send as many as we can
-                            await bot.sendItem(merchant.character.id, i, bot.G.items[item.name].s - merchantItem.q)
+                            await bot.sendItem(merchant.character.id, i, Math.max(item.q, bot.G.items[item.name].s - merchantItem.q))
                         }
                     } else {
                         // The merchant has space, send it over.
@@ -1424,11 +1424,13 @@ async function startRanger(bot: Ranger) {
                     if (Tools.distance(bot.character, sendTo.character) > NPC_INTERACTION_DISTANCE) continue // Too far away to send items
                     for (let i = 0; i < bot.character.items.length; i++) {
                         const item = bot.character.items[i]
+                        if (!item || RANGER_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
+
                         if (item.q == undefined) continue // Item is not stackable
                         for (const itemPos of sendTo.locateItems(item.name)) {
                             const sendToItem = sendTo.character.items[itemPos]
                             // Send as many as we can
-                            await bot.sendItem(sendTo.character.id, i, bot.G.items[item.name].s - sendToItem.q)
+                            await bot.sendItem(sendTo.character.id, i, Math.max(item.q, bot.G.items[item.name].s - sendToItem.q))
                         }
                     }
                 }
@@ -2142,7 +2144,7 @@ async function startPriest(bot: Priest) {
                         for (const itemPos of merchant.locateItems(item.name)) {
                             const merchantItem = merchant.character.items[itemPos]
                             // Send as many as we can
-                            await bot.sendItem(merchant.character.id, i, bot.G.items[item.name].s - merchantItem.q)
+                            await bot.sendItem(merchant.character.id, i, Math.max(item.q, bot.G.items[item.name].s - merchantItem.q))
                         }
                     } else {
                         // The merchant has space, send it over.
@@ -2157,11 +2159,12 @@ async function startPriest(bot: Priest) {
                     if (Tools.distance(bot.character, sendTo.character) > NPC_INTERACTION_DISTANCE) continue // Too far away to send items
                     for (let i = 0; i < bot.character.items.length; i++) {
                         const item = bot.character.items[i]
+                        if (!item || PRIEST_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
                         if (item.q == undefined) continue // Item is not stackable
                         for (const itemPos of sendTo.locateItems(item.name)) {
                             const sendToItem = sendTo.character.items[itemPos]
                             // Send as many as we can
-                            await bot.sendItem(sendTo.character.id, i, bot.G.items[item.name].s - sendToItem.q)
+                            await bot.sendItem(sendTo.character.id, i, Math.max(item.q, bot.G.items[item.name].s - sendToItem.q))
                         }
                     }
                 }
@@ -3068,7 +3071,7 @@ async function startWarrior(bot: Warrior) {
                         for (const itemPos of merchant.locateItems(item.name)) {
                             const merchantItem = merchant.character.items[itemPos]
                             // Send as many as we can
-                            await bot.sendItem(merchant.character.id, i, bot.G.items[item.name].s - merchantItem.q)
+                            await bot.sendItem(merchant.character.id, i, Math.max(item.q, bot.G.items[item.name].s - merchantItem.q))
                         }
                     } else {
                         // The merchant has space, send it over.
@@ -3083,11 +3086,12 @@ async function startWarrior(bot: Warrior) {
                     if (Tools.distance(bot.character, sendTo.character) > NPC_INTERACTION_DISTANCE) continue // Too far away to send items
                     for (let i = 0; i < bot.character.items.length; i++) {
                         const item = bot.character.items[i]
+                        if (!item || WARRIOR_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
                         if (item.q == undefined) continue // Item is not stackable
                         for (const itemPos of sendTo.locateItems(item.name)) {
                             const sendToItem = sendTo.character.items[itemPos]
                             // Send as many as we can
-                            await bot.sendItem(sendTo.character.id, i, bot.G.items[item.name].s - sendToItem.q)
+                            await bot.sendItem(sendTo.character.id, i, Math.max(item.q, bot.G.items[item.name].s - sendToItem.q))
                         }
                     }
                 }
@@ -3357,7 +3361,7 @@ async function startMerchant(bot: Merchant) {
                         }
                     } else if (gInfo.compound) {
                         // Withdraw compoundable items
-                        if (freeSpaces < 4) break // Not enough space in inventory
+                        if (freeSpaces < 5) break // Not enough space in inventory
                         if (d.length < 3) continue // Not enough to compound
 
                         for (let i = 0; i < d.length - 2 && freeSpaces > 4; i++) {
