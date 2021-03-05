@@ -1150,7 +1150,7 @@ async function startRanger(bot: Ranger) {
         try {
             if (bot.socket.disconnected) return
 
-            if (bot.character.rip) {
+            if (!bot.character || bot.character.rip) {
                 setTimeout(async () => { attackLoop() }, 1000)
                 return
             }
