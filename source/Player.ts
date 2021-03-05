@@ -674,7 +674,7 @@ export class Player extends Observer {
     public async disconnect(): Promise<void> {
         if (this.socket.disconnected)
             return
-        console.warn("Disconnecting!")
+        console.warn(`Disconnecting ${this.character.id}!`)
 
         // Close the socket
         this.socket.close()
