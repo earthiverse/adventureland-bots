@@ -3590,10 +3590,12 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
                     setTimeout(async () => { serverLoop() }, 1000)
                     return
                 }
+                if (SPECIAL_MONSTERS.includes(rangerTarget)) continue // We're currently attacking something special, don't change servers.
 
                 const currentRegion = ranger.server.region
                 const currentIdentifier = ranger.server.name
                 const G = ranger.G
+
 
                 // Priority #1: Special co-op monsters that take a team effort
                 const coop: MonsterName[] = [
@@ -3623,7 +3625,9 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
                     console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${region} ${identifier}`)
 
                     // Loot all of our remaining chests
+                    await sleep(1000)
                     for (const [, chest] of ranger.chests) await ranger.openChest(chest.id)
+                    await sleep(1000)
 
                     await Game.disconnect(false)
                     await sleep(5000)
@@ -3666,7 +3670,9 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
                     console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${region} ${identifier}`)
 
                     // Loot all of our remaining chests
+                    await sleep(1000)
                     for (const [, chest] of ranger.chests) await ranger.openChest(chest.id)
+                    await sleep(1000)
 
                     await Game.disconnect(false)
                     await sleep(5000)
@@ -3683,7 +3689,9 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
                     console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${region} ${identifier}`)
 
                     // Loot all of our remaining chests
+                    await sleep(1000)
                     for (const [, chest] of ranger.chests) await ranger.openChest(chest.id)
+                    await sleep(1000)
 
                     await Game.disconnect(false)
                     await sleep(5000)
