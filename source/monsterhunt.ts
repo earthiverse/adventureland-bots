@@ -1354,7 +1354,7 @@ async function startRanger(bot: Ranger) {
                 await bot.getMonsterHuntQuest()
                 setTimeout(async () => { moveLoop() }, 500)
                 return
-            } else if (bot.character.s.monsterhunt.c == 0) {
+            } else if (bot.character.s.monsterhunt && bot.character.s.monsterhunt.c == 0) {
                 // Move to monsterhunter if we are finished the quest
                 await bot.smartMove("monsterhunter", { getWithin: 399 })
                 await bot.finishMonsterHuntQuest()
@@ -2195,7 +2195,7 @@ async function startPriest(bot: Priest) {
                 await bot.getMonsterHuntQuest()
                 setTimeout(async () => { moveLoop() }, 500)
                 return
-            } else if (bot.character.s.monsterhunt.c == 0) {
+            } else if (bot.character.s.monsterhunt && bot.character.s.monsterhunt.c == 0) {
                 // Move to monsterhunter if we are finished the quest
                 await bot.smartMove("monsterhunter", { getWithin: 399 })
                 await bot.finishMonsterHuntQuest()
@@ -3121,7 +3121,7 @@ async function startWarrior(bot: Warrior) {
                 await bot.getMonsterHuntQuest()
                 setTimeout(async () => { moveLoop() }, 500)
                 return
-            } else if (bot.character.s.monsterhunt.c == 0) {
+            } else if (bot.character.s.monsterhunt && bot.character.s.monsterhunt.c == 0) {
                 // Move to monsterhunter if we are finished the quest
                 await bot.smartMove("monsterhunter", { getWithin: 399 })
                 await bot.finishMonsterHuntQuest()
