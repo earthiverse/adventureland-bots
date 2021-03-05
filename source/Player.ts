@@ -100,7 +100,7 @@ export class Player extends Observer {
                     player.x = location[0]
                     player.y = location[1]
                     this.players.set(data.id, player)
-                } else if (data.id !== this.character.id) {
+                } else if (data.id !== this.character?.id) {
                     // NOTE: Temporary debug
                     console.log("DEBUG: disappear with no data.to")
                     console.log(data)
@@ -578,7 +578,7 @@ export class Player extends Observer {
             }
 
             // Update character
-            if (this.character.moving) {
+            if (this.character?.moving) {
                 const distanceTravelled = this.character.speed * msSinceLastUpdate / 1000
                 const angle = Math.atan2(this.character.going_y - this.character.y, this.character.going_x - this.character.x)
                 const distanceToGoal = Tools.distance({ x: this.character.x, y: this.character.y }, { x: this.character.going_x, y: this.character.going_y })
@@ -593,7 +593,7 @@ export class Player extends Observer {
             }
 
             // Update conditions
-            for (const condition in this.character.s) {
+            for (const condition in this?.character.s) {
                 const newCooldown = this.character.s[condition as ConditionName].ms - msSinceLastUpdate
                 if (newCooldown <= 0)
                     delete this.character.s[condition as ConditionName]
