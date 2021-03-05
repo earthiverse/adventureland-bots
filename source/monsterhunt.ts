@@ -1158,6 +1158,7 @@ async function startRanger(bot: Ranger) {
             if (bot.isPVP()) {
                 for (const enemy of bot.players.values()) {
                     if (Tools.distance(bot.character, enemy) > bot.character.range) continue // We're too far to attack them
+                    if (bot.character.owner == enemy.owner) continue // We're friends
                     if (bot.party && bot.party.list && bot.party.list.includes(enemy.id)) continue // We're friends
                     if (enemy.rip) continue // Enemy is dead
 
@@ -2051,6 +2052,7 @@ async function startPriest(bot: Priest) {
             if (bot.isPVP()) {
                 for (const enemy of bot.players.values()) {
                     if (Tools.distance(bot.character, enemy) > bot.character.range) continue // We're too far to attack them
+                    if (bot.character.owner == enemy.owner) continue // We're friends
                     if (bot.party && bot.party.list && bot.party.list.includes(enemy.id)) continue // We're friends
                     if (enemy.rip) continue // Enemy is dead
 
@@ -2152,7 +2154,7 @@ async function startPriest(bot: Priest) {
                     }
                 }
             }
-            
+
             if (bot.isFull()) {
                 // See if we can stack any of our items on other players
                 for (const sendTo of [ranger, warrior]) {
@@ -2884,6 +2886,7 @@ async function startWarrior(bot: Warrior) {
             if (bot.isPVP()) {
                 for (const enemy of bot.players.values()) {
                     if (Tools.distance(bot.character, enemy) > bot.character.range) continue // We're too far to attack them
+                    if (bot.character.owner == enemy.owner) continue // We're friends
                     if (bot.party && bot.party.list && bot.party.list.includes(enemy.id)) continue // We're friends
                     if (enemy.rip) continue // Enemy is dead
 
@@ -3079,7 +3082,7 @@ async function startWarrior(bot: Warrior) {
                     }
                 }
             }
-            
+
             if (bot.isFull()) {
                 // See if we can stack any of our items on other players
                 for (const sendTo of [priest, ranger]) {
