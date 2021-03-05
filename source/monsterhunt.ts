@@ -43,7 +43,7 @@ async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promis
                 target: { $ne: undefined }, // We only want to do these if others are doing them, too.
                 serverRegion: bot.server.region,
                 serverIdentifier: bot.server.name,
-                lastSeen: { $gt: Date.now() - 60000 }
+                lastSeen: { $gt: Date.now() - 120000 }
             }
         },
         { $addFields: { __order: { $indexOfArray: [coop, "$type"] } } },
@@ -73,7 +73,7 @@ async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promis
                 type: { $in: solo },
                 serverRegion: bot.server.region,
                 serverIdentifier: bot.server.name,
-                lastSeen: { $gt: Date.now() - 60000 }
+                lastSeen: { $gt: Date.now() - 120000 }
             }
         },
         { $addFields: { __order: { $indexOfArray: [solo, "$type"] } } },
@@ -3471,7 +3471,7 @@ async function startMerchant(bot: Merchant) {
 
             // Find other characters that need mluck and go find them
             if (bot.canUse("mluck")) {
-                const charactersToMluck = await CharacterModel.find({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 }, $or: [{ "s.mluck": undefined }, { "s.mluck.strong": undefined, "s.mluck.f": { "$ne": bot.character.id } }] }).lean().exec()
+                const charactersToMluck = await CharacterModel.find({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, $or: [{ "s.mluck": undefined }, { "s.mluck.strong": undefined, "s.mluck.f": { "$ne": bot.character.id } }] }).lean().exec()
                 for (const character of charactersToMluck) {
                     // Move to them, and we'll automatically mluck them
                     if (Tools.distance(bot.character, character) > bot.G.skills.mluck.range) {
@@ -3574,8 +3574,8 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
         const serverLoop = async () => {
             try {
                 // Don't change servers too fast
-                if (lastServerChangeTime > Date.now() - 60000) {
-                    setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime - Date.now() - 60000))
+                if (lastServerChangeTime > Date.now() - 120000) {
+                    setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime - Date.now() - 120000))
                     return
                 }
                 if (!ranger) {
@@ -3598,7 +3598,7 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
                             type: { $in: coop },
                             target: { $ne: undefined }, // We only want to do these if others are doing them, too.
                             serverIdentifier: { $nin: ["PVP"] },
-                            lastSeen: { $gt: Date.now() - 60000 }
+                            lastSeen: { $gt: Date.now() - 120000 }
                         }
                     },
                     { $addFields: { __order: { $indexOfArray: [coop, "$type"] } } },
@@ -3640,7 +3640,7 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
                         $match: {
                             type: { $in: solo },
                             serverIdentifier: { $nin: ["PVP"] },
-                            lastSeen: { $gt: Date.now() - 60000 }
+                            lastSeen: { $gt: Date.now() - 120000 }
                         }
                     },
                     { $addFields: { __order: { $indexOfArray: [solo, "$type"] } } },
