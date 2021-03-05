@@ -165,7 +165,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                     if (!item.rid) continue // Not a trade item
                     if (item.b) continue // They are buying, not selling
 
-                    const q = item.q === undefined ? 1 : item.q
+                    const q = item.q == undefined ? 1 : item.q
 
                     // Join new giveaways
                     if (item.giveaway && bot.character.ctype == "merchant" && (!item.list || !item.list.includes(bot.character.id))) {
@@ -1405,9 +1405,8 @@ async function startRanger(bot: Ranger) {
 
                     if (merchant.isFull()) {
                         // Can we stack it in the merchant's inventory?
-                        if (item.q !== undefined) continue // Item is not stackable
-                        const merchantItems = merchant.locateItems(item.name)
-                        for (const itemPos of merchantItems) {
+                        if (item.q == undefined) continue // Item is not stackable
+                        for (const itemPos of merchant.locateItems(item.name)) {
                             const merchantItem = merchant.character.items[itemPos]
                             // Send as many as we can
                             await bot.sendItem(merchant.character.id, i, bot.G.items[item.name].s - merchantItem.q)
@@ -1415,6 +1414,22 @@ async function startRanger(bot: Ranger) {
                     } else {
                         // The merchant has space, send it over.
                         await bot.sendItem(merchant.character.id, i, item.q)
+                    }
+                }
+            }
+
+            if (bot.isFull()) {
+                // See if we can stack any of our items on other players
+                for (const sendTo of [priest, warrior]) {
+                    if (Tools.distance(bot.character, sendTo.character) > NPC_INTERACTION_DISTANCE) continue // Too far away to send items
+                    for (let i = 0; i < bot.character.items.length; i++) {
+                        const item = bot.character.items[i]
+                        if (item.q == undefined) continue // Item is not stackable
+                        for (const itemPos of sendTo.locateItems(item.name)) {
+                            const sendToItem = sendTo.character.items[itemPos]
+                            // Send as many as we can
+                            await bot.sendItem(sendTo.character.id, i, bot.G.items[item.name].s - sendToItem.q)
+                        }
                     }
                 }
             }
@@ -2123,9 +2138,8 @@ async function startPriest(bot: Priest) {
 
                     if (merchant.isFull()) {
                         // Can we stack it in the merchant's inventory?
-                        if (item.q !== undefined) continue // Item is not stackable
-                        const merchantItems = merchant.locateItems(item.name)
-                        for (const itemPos of merchantItems) {
+                        if (item.q == undefined) continue // Item is not stackable
+                        for (const itemPos of merchant.locateItems(item.name)) {
                             const merchantItem = merchant.character.items[itemPos]
                             // Send as many as we can
                             await bot.sendItem(merchant.character.id, i, bot.G.items[item.name].s - merchantItem.q)
@@ -2133,6 +2147,22 @@ async function startPriest(bot: Priest) {
                     } else {
                         // The merchant has space, send it over.
                         await bot.sendItem(merchant.character.id, i, item.q)
+                    }
+                }
+            }
+            
+            if (bot.isFull()) {
+                // See if we can stack any of our items on other players
+                for (const sendTo of [ranger, warrior]) {
+                    if (Tools.distance(bot.character, sendTo.character) > NPC_INTERACTION_DISTANCE) continue // Too far away to send items
+                    for (let i = 0; i < bot.character.items.length; i++) {
+                        const item = bot.character.items[i]
+                        if (item.q == undefined) continue // Item is not stackable
+                        for (const itemPos of sendTo.locateItems(item.name)) {
+                            const sendToItem = sendTo.character.items[itemPos]
+                            // Send as many as we can
+                            await bot.sendItem(sendTo.character.id, i, bot.G.items[item.name].s - sendToItem.q)
+                        }
                     }
                 }
             }
@@ -3034,9 +3064,8 @@ async function startWarrior(bot: Warrior) {
 
                     if (merchant.isFull()) {
                         // Can we stack it in the merchant's inventory?
-                        if (item.q !== undefined) continue // Item is not stackable
-                        const merchantItems = merchant.locateItems(item.name)
-                        for (const itemPos of merchantItems) {
+                        if (item.q == undefined) continue // Item is not stackable
+                        for (const itemPos of merchant.locateItems(item.name)) {
                             const merchantItem = merchant.character.items[itemPos]
                             // Send as many as we can
                             await bot.sendItem(merchant.character.id, i, bot.G.items[item.name].s - merchantItem.q)
@@ -3044,6 +3073,22 @@ async function startWarrior(bot: Warrior) {
                     } else {
                         // The merchant has space, send it over.
                         await bot.sendItem(merchant.character.id, i, item.q)
+                    }
+                }
+            }
+            
+            if (bot.isFull()) {
+                // See if we can stack any of our items on other players
+                for (const sendTo of [priest, ranger]) {
+                    if (Tools.distance(bot.character, sendTo.character) > NPC_INTERACTION_DISTANCE) continue // Too far away to send items
+                    for (let i = 0; i < bot.character.items.length; i++) {
+                        const item = bot.character.items[i]
+                        if (item.q == undefined) continue // Item is not stackable
+                        for (const itemPos of sendTo.locateItems(item.name)) {
+                            const sendToItem = sendTo.character.items[itemPos]
+                            // Send as many as we can
+                            await bot.sendItem(sendTo.character.id, i, bot.G.items[item.name].s - sendToItem.q)
+                        }
                     }
                 }
             }
