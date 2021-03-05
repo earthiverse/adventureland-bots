@@ -1965,7 +1965,7 @@ async function startPriest(bot: Priest) {
         try {
             if (bot.socket.disconnected) return
 
-            if (bot.character.rip) {
+            if (!bot.character || bot.character.rip) {
                 setTimeout(async () => { attackLoop() }, 1000)
                 return
             }
@@ -2878,7 +2878,7 @@ async function startWarrior(bot: Warrior) {
         try {
             if (bot.socket.disconnected) return
 
-            if (bot.character.rip) {
+            if (!bot.character || bot.character.rip) {
                 setTimeout(async () => { attackLoop() }, 1000)
                 return
             }
@@ -3183,6 +3183,11 @@ async function startMerchant(bot: Merchant) {
         try {
             if (bot.socket.disconnected) return
 
+            if (!bot.character || bot.character.rip) {
+                setTimeout(async () => { attackLoop() }, 1000)
+                return
+            }
+            
             if (bot.character.targets > 0 && bot.canUse("scare")) {
                 await bot.scare()
             }
