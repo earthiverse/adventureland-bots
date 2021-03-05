@@ -81,7 +81,7 @@ export class Priest extends PingCompensatedPlayer {
                 }
             }
             const attackCheck = (data: ActionData) => {
-                if (data.attacker == this.characterID && data.target == id && data.type == "heal") {
+                if (data.attacker == this?.character?.id && data.target == id && data.type == "heal") {
                     this.socket.removeListener("action", attackCheck)
                     this.socket.removeListener("game_response", failCheck)
                     this.socket.removeListener("death", deathCheck)

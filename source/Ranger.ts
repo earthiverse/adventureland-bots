@@ -8,7 +8,7 @@ export class Ranger extends PingCompensatedPlayer {
             const projectiles: string[] = []
 
             const attackCheck = (data: ActionData) => {
-                if (data.attacker == this.characterID
+                if (data.attacker == this?.character?.id
                     && data.type == "5shot"
                     && (data.target == target1 || data.target == target2 || data.target == target3 || data.target == target4 || data.target == target5)) {
                     projectiles.push(data.pid)
@@ -70,7 +70,7 @@ export class Ranger extends PingCompensatedPlayer {
             let projectile: string
 
             const attackCheck = (data: ActionData) => {
-                if (data.attacker == this.characterID
+                if (data.attacker == this?.character?.id
                     && data.type == "piercingshot"
                     && data.target == target) {
                     projectile = data.pid
@@ -106,7 +106,7 @@ export class Ranger extends PingCompensatedPlayer {
             let projectile: string
 
             const attackCheck = (data: ActionData) => {
-                if (data.attacker == this.characterID
+                if (data.attacker == this?.character?.id
                     && data.type == "supershot"
                     && data.target == target) {
                     projectile = data.pid
@@ -139,7 +139,7 @@ export class Ranger extends PingCompensatedPlayer {
             const projectiles: string[] = []
 
             const attackCheck = (data: ActionData) => {
-                if (data.attacker == this.characterID
+                if (data.attacker == this?.character?.id
                     && data.type == "3shot"
                     && (data.target == target1 || data.target == target2 || data.target == target3)) {
                     projectiles.push(data.pid)

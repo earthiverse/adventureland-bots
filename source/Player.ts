@@ -100,10 +100,6 @@ export class Player extends Observer {
                     player.x = location[0]
                     player.y = location[1]
                     this.players.set(data.id, player)
-                } else if (data.id !== this.characterID) {
-                    // NOTE: Temporary debug
-                    console.log("DEBUG: disappear with no data.to")
-                    console.log(data)
                 }
             } else if (data.reason == undefined) {
                 // This probably meant that the entity
@@ -193,9 +189,9 @@ export class Player extends Observer {
 
         this.socket.on("game_log", (data: { message: string; color: string; }) => {
             const result = /^Slain by (.+)$/.exec(data.message)
-            if (result) {
+            if (result && this.character) {
                 DeathModel.insertMany([{
-                    name: this.characterID,
+                    name: this.character.id,
                     cause: result[1],
                     map: this.character.map,
                     x: this.character.x,
@@ -463,7 +459,7 @@ export class Player extends Observer {
             }
         }
         for (const player of data.players) {
-            if (player.id == this.characterID) {
+            if (player.id == this?.character?.id) {
                 // Update everything for our own player if we see it
                 for (const datum in player)
                     this.character[datum] = player[datum]
@@ -483,9 +479,9 @@ export class Player extends Observer {
                     const cooldown = data.ms
                     this.setNextSkill(skill, new Date(Date.now() + Math.ceil(cooldown)))
                 }
-            } else if (data.response == "defeated_by_a_monster") {
+            } else if (this.character && data.response == "defeated_by_a_monster") {
                 DeathModel.insertMany([{
-                    name: this.characterID,
+                    name: this.character.id,
                     cause: data.monster,
                     map: this.character.map,
                     x: this.character.x,
@@ -677,7 +673,7 @@ export class Player extends Observer {
         if (this.socket.disconnected)
             return
 
-        console.warn(`Disconnecting ${this.characterID}!`)
+        console.warn(`Disconnecting ${this?.character?.id}!`)
 
         // Close the socket
         this.socket.close()
@@ -759,7 +755,7 @@ export class Player extends Observer {
     public acceptPartyInvite(id: string): Promise<PartyData> {
         const acceptedInvite = new Promise<PartyData>((resolve, reject) => {
             const partyCheck = (data: PartyData) => {
-                if (data.list.includes(this.characterID)
+                if (data.list.includes(this?.character?.id)
                     && data.list.includes(id)) {
                     this.socket.removeListener("party_update", partyCheck)
                     this.socket.removeListener("game_log", unableCheck)
@@ -778,7 +774,7 @@ export class Player extends Observer {
                     this.socket.removeListener("game_log", unableCheck)
                     reject(data)
                 } else if (data == "Already partying") {
-                    if (this.party.list.includes(this.characterID)
+                    if (this.party.list.includes(this?.character?.id)
                         && this.party.list.includes(id)) {
                         // NOTE: We resolve the promise even if we have already accepted it if we're in the correct party.
                         this.socket.removeListener("party_update", partyCheck)
@@ -809,7 +805,7 @@ export class Player extends Observer {
     public acceptPartyRequest(id: string): Promise<PartyData> {
         const acceptedRequest = new Promise<PartyData>((resolve, reject) => {
             const partyCheck = (data: PartyData) => {
-                if (data.list.includes(this.characterID)
+                if (data.list.includes(this?.character?.id)
                     && data.list.includes(id)) {
                     this.socket.removeListener("party_update", partyCheck)
                     resolve(data)
@@ -873,7 +869,7 @@ export class Player extends Observer {
                 }
             }
             const attackCheck = (data: ActionData) => {
-                if (data.attacker == this.characterID && data.target == id && data.type == "attack") {
+                if (data.attacker == this?.character?.id && data.target == id && data.type == "attack") {
                     this.socket.removeListener("action", attackCheck)
                     this.socket.removeListener("game_response", failCheck)
                     this.socket.removeListener("death", deathCheck)
@@ -1417,7 +1413,7 @@ export class Player extends Observer {
                 }
             }
             const cantEquipCheck = (data: DisappearingTextData) => {
-                if (data.id == this.characterID && data.message == "CAN'T EQUIP") {
+                if (data.id == this?.character?.id && data.message == "CAN'T EQUIP") {
                     this.socket.removeListener("player", equipCheck)
                     this.socket.removeListener("disappearing_text", cantEquipCheck)
                     reject(`Can't equip '${inventoryPos}' (${iInfo.name})`)
