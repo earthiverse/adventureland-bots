@@ -36,6 +36,7 @@ async function start() {
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
                 await bot.smartMove({ map: "arena", x: 379.5, y: -671.5 }).catch(() => { })
                 await bot.regenHP()
+                await sleep(1000)
                 await Game.stopCharacter(character)
             } catch (e) {
                 console.log(e)
@@ -56,6 +57,7 @@ async function start() {
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
                 await bot.smartMove({ map: "cave", x: -190.5, y: -1176.5 }).catch(() => { })
                 await bot.regenHP()
+                await sleep(1000)
                 await Game.stopCharacter(character)
             } catch (e) {
                 console.log(e)
@@ -76,6 +78,7 @@ async function start() {
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
                 await bot.smartMove({ map: "cave", x: 1244, y: -22.5 }).catch(() => { })
                 await bot.regenHP()
+                await sleep(1000)
                 await Game.stopCharacter(character)
             } catch (e) {
                 console.log(e)
@@ -96,6 +99,7 @@ async function start() {
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
                 await bot.smartMove({ map: "halloween", x: -405.5, y: -1642.5 }).catch(() => { })
                 await bot.regenHP()
+                await sleep(1000)
                 await Game.stopCharacter(character)
             } catch (e) {
                 console.log(e)
@@ -116,6 +120,7 @@ async function start() {
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
                 await bot.smartMove({ map: "halloween", x: -569, y: -511.5 }).catch(() => { })
                 await bot.regenHP()
+                await sleep(1000)
                 await Game.stopCharacter(character)
             } catch (e) {
                 console.log(e)
@@ -136,6 +141,7 @@ async function start() {
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
                 await bot.smartMove({ map: "spookytown", x: -783.5, y: -301 }).catch(() => { })
                 await bot.regenHP()
+                await sleep(1000)
                 await Game.stopCharacter(character)
             } catch (e) {
                 console.log(e)
