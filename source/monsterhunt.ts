@@ -2654,8 +2654,8 @@ async function startWarrior(bot: Warrior) {
         },
         ghost: {
             attack: async () => { return await defaultAttackStrategy(["ghost"]) },
-            move: async () => { return holdPositionMoveStrategy({ map: "halloween", x: 236, y: -1224 }) },
-            equipment: { mainhand: "bataxe", orb: "test_orb" },
+            move: async () => { return nearbyMonstersMoveStrategy({ map: "halloween", x: 236, y: -1224 }, "ghost") },
+            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
             attackWhileIdle: true,
             requirePriest: true
         },
@@ -3187,7 +3187,7 @@ async function startMerchant(bot: Merchant) {
                 setTimeout(async () => { attackLoop() }, 1000)
                 return
             }
-            
+
             if (bot.character.targets > 0 && bot.canUse("scare")) {
                 await bot.scare()
             }

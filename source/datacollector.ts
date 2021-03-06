@@ -34,9 +34,7 @@ async function start() {
                 console.log(`Checking for skeletor on ${region} ${identifier}...`)
                 const bot = await Game.startCharacter(character, region, identifier)
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
-                await bot.smartMove({ map: "arena", x: 379.5, y: -671.5 }).catch(() => { })
-                await bot.regenHP()
-                await sleep(1000)
+                await Promise.all([bot.smartMove({ map: "arena", x: 379.5, y: -671.5 }).catch(() => { }), bot.regenHP()])
                 await Game.stopCharacter(character)
             } catch (e) {
                 console.log(e)
@@ -55,9 +53,7 @@ async function start() {
                 console.log(`Checking for mvampire (1) on ${region} ${identifier}...`)
                 const bot = await Game.startCharacter(character, region, identifier)
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
-                await bot.smartMove({ map: "cave", x: -190.5, y: -1176.5 }).catch(() => { })
-                await bot.regenHP()
-                await sleep(1000)
+                await Promise.all([bot.smartMove({ map: "cave", x: -190.5, y: -1176.5 }).catch(() => { }), bot.regenHP()])
                 await Game.stopCharacter(character)
             } catch (e) {
                 console.log(e)
@@ -76,9 +72,7 @@ async function start() {
                 console.log(`Checking for mvampire (2) on ${region} ${identifier}...`)
                 const bot = await Game.startCharacter(character, region, identifier)
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
-                await bot.smartMove({ map: "cave", x: 1244, y: -22.5 }).catch(() => { })
-                await bot.regenHP()
-                await sleep(1000)
+                await Promise.all([bot.smartMove({ map: "cave", x: 1244, y: -22.5 }).catch(() => { }), bot.regenHP()])
                 await Game.stopCharacter(character)
             } catch (e) {
                 console.log(e)
@@ -97,9 +91,7 @@ async function start() {
                 console.log(`Checking for fvampire on ${region} ${identifier}...`)
                 const bot = await Game.startCharacter(character, region, identifier)
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
-                await bot.smartMove({ map: "halloween", x: -405.5, y: -1642.5 }).catch(() => { })
-                await bot.regenHP()
-                await sleep(1000)
+                await Promise.all([bot.smartMove({ map: "halloween", x: -405.5, y: -1642.5 }).catch(() => { }), bot.regenHP()])
                 await Game.stopCharacter(character)
             } catch (e) {
                 console.log(e)
@@ -118,9 +110,7 @@ async function start() {
                 console.log(`Checking for greenjr on ${region} ${identifier}...`)
                 const bot = await Game.startCharacter(character, region, identifier)
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
-                await bot.smartMove({ map: "halloween", x: -569, y: -511.5 }).catch(() => { })
-                await bot.regenHP()
-                await sleep(1000)
+                await Promise.all([bot.smartMove({ map: "halloween", x: -569, y: -511.5 }).catch(() => { }), bot.regenHP()])
                 await Game.stopCharacter(character)
             } catch (e) {
                 console.log(e)
@@ -139,9 +129,7 @@ async function start() {
                 console.log(`Checking for jr on ${region} ${identifier}...`)
                 const bot = await Game.startCharacter(character, region, identifier)
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
-                await bot.smartMove({ map: "spookytown", x: -783.5, y: -301 }).catch(() => { })
-                await bot.regenHP()
-                await sleep(1000)
+                await Promise.all([bot.smartMove({ map: "spookytown", x: -783.5, y: -301 }).catch(() => { }), bot.regenHP()])
                 await Game.stopCharacter(character)
             } catch (e) {
                 console.log(e)
