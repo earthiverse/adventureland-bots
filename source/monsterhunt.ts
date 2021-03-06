@@ -108,8 +108,8 @@ async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promis
     }
     if (monsterHuntTarget) return monsterHuntTarget
 
-    // Priority #4: Scorpions, because why not
-    return "scorpion"
+    // Priority #4: Ghosts, because I feel like `halloween` has a lot of special monsters.
+    return "ghost"
 }
 
 async function generalBotStuff(bot: PingCompensatedPlayer) {

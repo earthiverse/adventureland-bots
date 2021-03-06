@@ -8,7 +8,7 @@ import { Ranger } from "./Ranger.js"
 import { ItemName } from "./definitions/adventureland.js"
 import { NPC_INTERACTION_DISTANCE } from "./constants.js"
 
-const AGGRO_CHAR = "earthMag"
+const AGGRO_CHAR = "earthWar"
 const mages: Mage[] = []
 
 async function startAggroMerchat(bot: PingCompensatedPlayer) {
@@ -1085,16 +1085,16 @@ async function startSupportPriest(bot: Priest): Promise<void> {
 async function run() {
     await Game.loginJSONFile("../credentials.json")
 
-    const earthMag = await Game.startMage("earthMag", "US", "I")
-    const earthPri = await Game.startPriest("earthPri", "US", "I")
-    const earthPri2 = await Game.startPriest("earthPri2", "US", "I")
+    const earthWar = await Game.startWarrior("earthWar", "US", "II")
+    const earthPri = await Game.startPriest("earthPri", "US", "II")
+    const earthPri2 = await Game.startPriest("earthPri2", "US", "II")
 
     // Used to attack the monsters. Put fire weapons on these characters.
     startSupportPriest(earthPri) //earthPri
     startSupportPriest(earthPri2) //earthPri2
 
     // Used to taunt & agitate. Put the weapon you want to upgrade on this character.
-    startAggroMage(earthMag)
+    startAggroWarrior(earthWar)
 }
 
 run()
