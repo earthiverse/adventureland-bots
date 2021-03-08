@@ -853,7 +853,7 @@ async function startRanger(bot: Ranger) {
         },
         booboo: {
             attack: async () => { return await defaultAttackStrategy(["booboo"]) },
-            move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 265, y: -625 }) },
+            move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 265, y: -645 }) },
             equipment: { mainhand: "crossbow", orb: "jacko" },
             requirePriest: true
         },
@@ -1677,7 +1677,7 @@ async function startPriest(bot: Priest) {
         },
         booboo: {
             attack: async () => { return await defaultAttackStrategy(["booboo"]) },
-            move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 285, y: -625 }) },
+            move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 265, y: -605 }) },
             equipment: { orb: "jacko" },
         },
         cgoo: {
@@ -2601,7 +2601,7 @@ async function startWarrior(bot: Warrior) {
         },
         booboo: {
             attack: async () => { return await oneTargetAttackStrategy("booboo") },
-            move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 245, y: -625 }) },
+            move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 265, y: -625 }) },
             equipment: { mainhand: "basher", orb: "jacko" },
             requirePriest: true
         },
