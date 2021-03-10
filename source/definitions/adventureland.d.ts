@@ -197,6 +197,8 @@ export type GItem = {
   grades?: [number, number];
   /** The full name of the item */
   name: string;
+  /** A divider for how much the item is bought for. If the multiplier is '10', divide the 'g' by 10 to get the amount of money you would receive by selling the item. */
+  markup?: number;
   id: ItemName;
   // TODO: Add a type for quests
   /** Indicates the "quest" that this item is needed to complete */
@@ -863,6 +865,7 @@ export type ItemName =
   | "ctristone"
   | "cupid"
   | "cxjar"
+  | "cyber"
   | "dagger"
   | "daggerofthedead"
   | "darktristone"

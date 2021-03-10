@@ -60,7 +60,7 @@ export const ITEMS_TO_BUY: ItemName[] = [
     // Armor
     "cdragon", "coat1", "harmor", "mcape", "mrnarmor", "mwarmor", "tshirt0", "tshirt1", "tshirt2", "tshirt3", "tshirt4", "tshirt6", "tshirt7", "tshirt8", "tshirt88", "tshirt9", "warpvest", /*"wattire",*/ "xarmor",
     // Helmets
-    "eears", "fury", "helmet1", "hhelmet", "mrnhat", "mwhelmet", "partyhat", "rednose", /*"wcap",*/ "xhelmet",
+    "cyber", "eears", "fury", "helmet1", "hhelmet", "mrnhat", "mwhelmet", "partyhat", "rednose", /*"wcap",*/ "xhelmet",
     // Gloves
     "gloves1", "goldenpowerglove", "handofmidas", "hgloves", "mrngloves", "mwgloves", "poker", "powerglove", /*"wgloves",*/ "xgloves",
     // Good weapons
@@ -72,7 +72,7 @@ export const ITEMS_TO_BUY: ItemName[] = [
     // Things to make easter basket
     "egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8",
     // Essences
-    "essenceofether", "essenceoffire", "essenceoffrost", "essenceoflife", "essenceofnature",
+    "essenceofether", "essenceoffire", "essenceoffrost", "essenceofgreed", "essenceoflife", "essenceofnature",
     // Potions & consumables
     "bunnyelixir", "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate",
     // High level scrolls
@@ -84,8 +84,14 @@ export const ITEMS_TO_BUY: ItemName[] = [
 export const ITEMS_TO_SELL: ItemLevelInfo = {
     // Default clothing
     "shoes": 2, "pants": 2, "coat": 2, "helmet": 2, "gloves": 2,
-    // Halloween
-    "gphelmet": 2, "phelmet": 2
+    // Wanderers attire
+    "wshoes": 2, "wbreeches": 2, "wattire": 2, "wcap": 2, "wgloves": 2,
+    // Candy
+    "gphelmet": 2, "lantern": 2, "maceofthedead": 2, "phelmet": 2,
+    // Candy Canes
+    "xmace": 2,
+    // Franky
+    "frankypants": 2,
 }
 
 export const MAGE_ITEMS_TO_HOLD: ItemName[] = [

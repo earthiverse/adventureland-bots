@@ -15,6 +15,9 @@ export class Tools {
         // Base cost
         let cost = gInfo.g
 
+        // Adjust for markup
+        if (gInfo.markup !== undefined) cost = cost / gInfo.markup
+
         // Cost to upgrade using lowest level scroll
         if (gInfo.compound) {
             for (let i = 0; i < item.level; i++) {
