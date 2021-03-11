@@ -15,6 +15,9 @@ export class Tools {
         // Base cost
         let cost = gInfo.g
 
+        // Adjust for gifts
+        if (item.gift) cost = 1
+
         // Adjust for markup
         if (gInfo.markup !== undefined) cost = cost / gInfo.markup
 
@@ -153,7 +156,7 @@ export class Tools {
      * @param projectiles 
      */
     public static willDieToProjectiles(entity: EntityData, projectiles: Map<string, ActionData>): boolean {
-        if (entity["1hp"] || entity.evasion || entity.reflection) return false
+        if (entity["1hp"] || entity.evasion || entity.reflection || entity.avoidance) return false
         let incomingProjectileDamage = 0
         for (const projectile of projectiles.values()) {
             if (projectile.target == entity.id) incomingProjectileDamage += projectile.damage * 0.9

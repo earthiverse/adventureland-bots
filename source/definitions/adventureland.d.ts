@@ -178,6 +178,7 @@ export type GMonster = {
   mp: number
   range: number
   reflection?: number
+  avoidance?: number
   speed: number
   xp: number
 }
@@ -345,6 +346,8 @@ export type ItemInfo = {
   } | TitleName;
   /** If set, the item is for sale, or purchase */
   rid?: string;
+  /** If set, the item was gifted to the player (probably an item that all players start with) */
+  gift?: boolean
   // TODO: Confirm
   /** If set, the item might drop if we die to another player's attacks (i.e. die to PvP) */
   v?: boolean

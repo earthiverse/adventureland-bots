@@ -240,6 +240,7 @@ export type EntityData = {
     "1hp"?: boolean
     apiercing?: number
     attack?: number
+    avoidance?: number
     charge?: number
     cooperative?: boolean
     damage_type?: DamageType
