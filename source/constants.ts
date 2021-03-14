@@ -121,7 +121,10 @@ export const MERCHANT_ITEMS_TO_HOLD: ItemName[] = [
     // MH Tokens
     "monstertoken",
     // Scrolls
-    "cscroll0", "cscroll1", "cscroll2", "cscroll3", "scroll0", "scroll1", "scroll2", "scroll3", "scroll4", "strscroll", "intscroll", "dexscroll"
+    "cscroll0", "cscroll1", "cscroll2", "cscroll3", "scroll0", "scroll1", "scroll2", "scroll3", "scroll4", "strscroll", "intscroll", "dexscroll",
+
+    // TEMP: For crafting pouchbows
+    "smoke"
 ]
 
 export const PRIEST_ITEMS_TO_HOLD: ItemName[] = [
