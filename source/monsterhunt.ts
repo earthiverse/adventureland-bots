@@ -3230,7 +3230,7 @@ async function startMerchant(bot: Merchant) {
                 await bot.craft("pouchbow")
             } else if (bot.character.gold > 25000000 && bot.hasItem("smoke")) {
                 console.log("we need to buy a bow")
-                if (!bot.isFull() && !bot.hasItem("bow", bot.character.items, { level: 0 })) {
+                if (bot.character.esize > 1 && !bot.hasItem("bow", bot.character.items, { level: 0 })) {
                     console.log("buying bow")
                     await bot.buy("bow")
                     console.log("crafting pouchbow")
