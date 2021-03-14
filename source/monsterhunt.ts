@@ -17,8 +17,8 @@ import { IEntity } from "./database/entities/entities.types.js"
 
 const DEFAULT_REGION: ServerRegion = "US"
 const DEFAULT_IDENTIFIER: ServerIdentifier = "II"
-let region: ServerRegion = DEFAULT_REGION
-let identifier: ServerIdentifier = DEFAULT_IDENTIFIER
+const region: ServerRegion = DEFAULT_REGION
+const identifier: ServerIdentifier = DEFAULT_IDENTIFIER
 
 let ranger: Ranger
 let rangerTarget: MonsterName
@@ -3508,25 +3508,25 @@ async function startMerchant(bot: Merchant) {
     }
     moveLoop()
 
-    async function tradeLoop() {
-        try {
-            if (bot.socket.disconnected) return
+    // async function tradeLoop() {
+    //     try {
+    //         if (bot.socket.disconnected) return
 
-            const mhTokens = bot.locateItem("monstertoken")
-            if (mhTokens !== undefined && bot.character.stand) {
-                if (bot.character.slots.trade1) await bot.unequip("trade1")
+    //         const mhTokens = bot.locateItem("monstertoken")
+    //         if (mhTokens !== undefined && bot.character.stand) {
+    //             if (bot.character.slots.trade1) await bot.unequip("trade1")
 
-                const numTokens = bot.character.items[mhTokens].q
+    //             const numTokens = bot.character.items[mhTokens].q
 
-                await bot.listForSale(mhTokens, "trade1", 250000, numTokens)
-            }
-        } catch (e) {
-            console.error(e)
-        }
+    //             await bot.listForSale(mhTokens, "trade1", 250000, numTokens)
+    //         }
+    //     } catch (e) {
+    //         console.error(e)
+    //     }
 
-        setTimeout(async () => { tradeLoop() }, 250)
-    }
-    tradeLoop()
+    //     setTimeout(async () => { tradeLoop() }, 250)
+    // }
+    // tradeLoop()
 }
 
 async function run(rangerName: string, warriorName: string, priestName: string, merchantName: string) {
@@ -3582,139 +3582,139 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
             }
         }
 
-        let lastServerChangeTime = Date.now()
-        const serverLoop = async () => {
-            try {
-                if (lastServerChangeTime > Date.now() - 120000) {
-                    // Don't change servers too fast
-                    setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime - Date.now() - 120000))
-                    return
-                }
-                if (!ranger) {
-                    // We haven't logged in yet?
-                    setTimeout(async () => { serverLoop() }, 1000)
-                    return
-                }
-                if (SPECIAL_MONSTERS.includes(rangerTarget)) {
-                    // We're currently attacking something special, don't change servers.
-                    setTimeout(async () => { serverLoop() }, 1000)
-                    return
-                }
+        // let lastServerChangeTime = Date.now()
+        // const serverLoop = async () => {
+        //     try {
+        //         if (lastServerChangeTime > Date.now() - 120000) {
+        //             // Don't change servers too fast
+        //             setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime - Date.now() - 120000))
+        //             return
+        //         }
+        //         if (!ranger) {
+        //             // We haven't logged in yet?
+        //             setTimeout(async () => { serverLoop() }, 1000)
+        //             return
+        //         }
+        //         if (SPECIAL_MONSTERS.includes(rangerTarget)) {
+        //             // We're currently attacking something special, don't change servers.
+        //             setTimeout(async () => { serverLoop() }, 1000)
+        //             return
+        //         }
 
-                const currentRegion = ranger.server.region
-                const currentIdentifier = ranger.server.name
-                const G = ranger.G
+        //         const currentRegion = ranger.server.region
+        //         const currentIdentifier = ranger.server.name
+        //         const G = ranger.G
 
 
-                // Priority #1: Special co-op monsters that take a team effort
-                const coop: MonsterName[] = [
-                    "dragold", "grinch", "mrgreen", "mrpumpkin", "franky",
-                ]
-                const coopEntities: IEntity[] = await EntityModel.aggregate([
-                    {
-                        $match: {
-                            type: { $in: coop },
-                            target: { $ne: undefined }, // We only want to do these if others are doing them, too.
-                            serverIdentifier: { $nin: ["PVP"] },
-                            lastSeen: { $gt: Date.now() - 30000 }
-                        }
-                    },
-                    { $addFields: { __order: { $indexOfArray: [coop, "$type"] } } },
-                    { $sort: { "__order": 1, "hp": 1 } }]).exec()
-                for (const entity of coopEntities) {
-                    if (currentRegion == entity.serverRegion && currentIdentifier == entity.serverIdentifier) {
-                        // We're already on the correct server
-                        setTimeout(async () => { serverLoop() }, 1000)
-                        return
-                    }
+        //         // Priority #1: Special co-op monsters that take a team effort
+        //         const coop: MonsterName[] = [
+        //             "dragold", "grinch", "mrgreen", "mrpumpkin", "franky",
+        //         ]
+        //         const coopEntities: IEntity[] = await EntityModel.aggregate([
+        //             {
+        //                 $match: {
+        //                     type: { $in: coop },
+        //                     target: { $ne: undefined }, // We only want to do these if others are doing them, too.
+        //                     serverIdentifier: { $nin: ["PVP"] },
+        //                     lastSeen: { $gt: Date.now() - 30000 }
+        //                 }
+        //             },
+        //             { $addFields: { __order: { $indexOfArray: [coop, "$type"] } } },
+        //             { $sort: { "__order": 1, "hp": 1 } }]).exec()
+        //         for (const entity of coopEntities) {
+        //             if (currentRegion == entity.serverRegion && currentIdentifier == entity.serverIdentifier) {
+        //                 // We're already on the correct server
+        //                 setTimeout(async () => { serverLoop() }, 1000)
+        //                 return
+        //             }
 
-                    // Change servers to attack this entity
-                    region = entity.serverRegion
-                    identifier = entity.serverIdentifier
-                    console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${region} ${identifier}`)
+        //             // Change servers to attack this entity
+        //             region = entity.serverRegion
+        //             identifier = entity.serverIdentifier
+        //             console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${region} ${identifier}`)
 
-                    // Loot all of our remaining chests
-                    await sleep(1000)
-                    for (const [, chest] of ranger.chests) await ranger.openChest(chest.id)
-                    await sleep(1000)
+        //             // Loot all of our remaining chests
+        //             await sleep(1000)
+        //             for (const [, chest] of ranger.chests) await ranger.openChest(chest.id)
+        //             await sleep(1000)
 
-                    await Game.disconnect(false)
-                    await sleep(5000)
-                    lastServerChangeTime = Date.now()
-                    setTimeout(async () => { serverLoop() }, 1000)
-                    return
-                }
+        //             await Game.disconnect(false)
+        //             await sleep(5000)
+        //             lastServerChangeTime = Date.now()
+        //             setTimeout(async () => { serverLoop() }, 1000)
+        //             return
+        //         }
 
-                // Priority #2: Special monsters that we can defeat by ourselves
-                const solo: MonsterName[] = [
-                    "goldenbat",
-                    // Very Rare Monsters
-                    "tinyp", "cutebee",
-                    // Event Monsters
-                    "pinkgoo", "wabbit",
-                    // Rare Monsters
-                    "greenjr", "jr", "skeletor", "mvampire", "fvampire", "snowman"
-                ]
-                const soloEntities: IEntity[] = await EntityModel.aggregate([
-                    {
-                        $match: {
-                            type: { $in: solo },
-                            serverIdentifier: { $nin: ["PVP"] },
-                            lastSeen: { $gt: Date.now() - 30000 }
-                        }
-                    },
-                    { $addFields: { __order: { $indexOfArray: [solo, "$type"] } } },
-                    { $sort: { "__order": 1, "hp": 1 } }]).exec()
-                for (const entity of soloEntities) {
-                    if ((currentRegion == entity.serverRegion && currentIdentifier == entity.serverIdentifier) // We're already on the correct server
-                        || (!G.monsters[entity.type].cooperative && entity.target)) // The target isn't cooperative, and someone is already attacking it
-                    {
-                        setTimeout(async () => { serverLoop() }, 1000)
-                        return
-                    }
+        //         // Priority #2: Special monsters that we can defeat by ourselves
+        //         const solo: MonsterName[] = [
+        //             "goldenbat",
+        //             // Very Rare Monsters
+        //             "tinyp", "cutebee",
+        //             // Event Monsters
+        //             "pinkgoo", "wabbit",
+        //             // Rare Monsters
+        //             "greenjr", "jr", "skeletor", "mvampire", "fvampire", "snowman"
+        //         ]
+        //         const soloEntities: IEntity[] = await EntityModel.aggregate([
+        //             {
+        //                 $match: {
+        //                     type: { $in: solo },
+        //                     serverIdentifier: { $nin: ["PVP"] },
+        //                     lastSeen: { $gt: Date.now() - 30000 }
+        //                 }
+        //             },
+        //             { $addFields: { __order: { $indexOfArray: [solo, "$type"] } } },
+        //             { $sort: { "__order": 1, "hp": 1 } }]).exec()
+        //         for (const entity of soloEntities) {
+        //             if ((currentRegion == entity.serverRegion && currentIdentifier == entity.serverIdentifier) // We're already on the correct server
+        //                 || (!G.monsters[entity.type].cooperative && entity.target)) // The target isn't cooperative, and someone is already attacking it
+        //             {
+        //                 setTimeout(async () => { serverLoop() }, 1000)
+        //                 return
+        //             }
 
-                    // Change servers to attack this entity
-                    region = entity.serverRegion
-                    identifier = entity.serverIdentifier
-                    console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${region} ${identifier}`)
+        //             // Change servers to attack this entity
+        //             region = entity.serverRegion
+        //             identifier = entity.serverIdentifier
+        //             console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${region} ${identifier}`)
 
-                    // Loot all of our remaining chests
-                    await sleep(1000)
-                    for (const [, chest] of ranger.chests) await ranger.openChest(chest.id)
-                    await sleep(1000)
+        //             // Loot all of our remaining chests
+        //             await sleep(1000)
+        //             for (const [, chest] of ranger.chests) await ranger.openChest(chest.id)
+        //             await sleep(1000)
 
-                    await Game.disconnect(false)
-                    await sleep(5000)
-                    lastServerChangeTime = Date.now()
-                    setTimeout(async () => { serverLoop() }, 1000)
-                    return
-                }
+        //             await Game.disconnect(false)
+        //             await sleep(5000)
+        //             lastServerChangeTime = Date.now()
+        //             setTimeout(async () => { serverLoop() }, 1000)
+        //             return
+        //         }
 
-                // Priority #3: Default Server
-                if (currentRegion !== DEFAULT_REGION || currentIdentifier !== DEFAULT_IDENTIFIER) {
-                    // Change servers to attack this entity
-                    region = DEFAULT_REGION
-                    identifier = DEFAULT_IDENTIFIER
-                    console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${region} ${identifier}`)
+        //         // Priority #3: Default Server
+        //         if (currentRegion !== DEFAULT_REGION || currentIdentifier !== DEFAULT_IDENTIFIER) {
+        //             // Change servers to attack this entity
+        //             region = DEFAULT_REGION
+        //             identifier = DEFAULT_IDENTIFIER
+        //             console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${region} ${identifier}`)
 
-                    // Loot all of our remaining chests
-                    await sleep(1000)
-                    for (const [, chest] of ranger.chests) await ranger.openChest(chest.id)
-                    await sleep(1000)
+        //             // Loot all of our remaining chests
+        //             await sleep(1000)
+        //             for (const [, chest] of ranger.chests) await ranger.openChest(chest.id)
+        //             await sleep(1000)
 
-                    await Game.disconnect(false)
-                    await sleep(5000)
-                    lastServerChangeTime = Date.now()
-                    setTimeout(async () => { serverLoop() }, 1000)
-                    return
-                }
-            } catch (e) {
-                console.error(e)
-            }
+        //             await Game.disconnect(false)
+        //             await sleep(5000)
+        //             lastServerChangeTime = Date.now()
+        //             setTimeout(async () => { serverLoop() }, 1000)
+        //             return
+        //         }
+        //     } catch (e) {
+        //         console.error(e)
+        //     }
 
-            setTimeout(async () => { serverLoop() }, 1000)
-        }
-        serverLoop()
+        //     setTimeout(async () => { serverLoop() }, 1000)
+        // }
+        // serverLoop()
 
         await loopRanger()
         await loopWarrior()
