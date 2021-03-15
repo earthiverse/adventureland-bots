@@ -3508,25 +3508,25 @@ async function startMerchant(bot: Merchant) {
     }
     moveLoop()
 
-    // async function tradeLoop() {
-    //     try {
-    //         if (bot.socket.disconnected) return
+    async function tradeLoop() {
+        try {
+            if (bot.socket.disconnected) return
 
-    //         const mhTokens = bot.locateItem("monstertoken")
-    //         if (mhTokens !== undefined && bot.character.stand) {
-    //             if (bot.character.slots.trade1) await bot.unequip("trade1")
+            const mhTokens = bot.locateItem("monstertoken")
+            if (mhTokens !== undefined && bot.character.stand) {
+                if (bot.character.slots.trade1) await bot.unequip("trade1")
 
-    //             const numTokens = bot.character.items[mhTokens].q
+                const numTokens = bot.character.items[mhTokens].q
 
-    //             await bot.listForSale(mhTokens, "trade1", 250000, numTokens)
-    //         }
-    //     } catch (e) {
-    //         console.error(e)
-    //     }
+                await bot.listForSale(mhTokens, "trade1", 250000, numTokens)
+            }
+        } catch (e) {
+            console.error(e)
+        }
 
-    //     setTimeout(async () => { tradeLoop() }, 250)
-    // }
-    // tradeLoop()
+        setTimeout(async () => { tradeLoop() }, 250)
+    }
+    tradeLoop()
 }
 
 async function run(rangerName: string, warriorName: string, priestName: string, merchantName: string) {
