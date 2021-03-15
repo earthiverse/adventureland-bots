@@ -1199,8 +1199,7 @@ async function startRanger(bot: Ranger) {
             }
             if (bot.character.hp < bot.character.max_hp * 0.25 // We are low on HP
                 || (bot.character.s.burned && bot.character.s.burned.intensity > bot.character.max_hp / 10) // We are burned
-                || numTargetingAndClose > 3 // We have a lot of targets
-                || bot.character.targets > 4 // We are being slowed down considerably
+                || bot.character.fear > 0 // We are scared
                 || (numTargets > 0 && bot.character.c.town) // We are teleporting
                 || noStrategy // We don't have a strategy for the given monster
                 || avoidIdle // A monster is attacking us that we aren't targeting, and don't attack while idle
@@ -2006,8 +2005,7 @@ async function startPriest(bot: Priest) {
             }
             if (bot.character.hp < bot.character.max_hp * 0.25 // We are low on HP
                 || (bot.character.s.burned && bot.character.s.burned.intensity > bot.character.max_hp / 10) // We are burned
-                || numTargetingAndClose > 3 // We have a lot of targets
-                || bot.character.targets > 4 // We are being slowed down considerably
+                || bot.character.fear > 0 // We are scared
                 || (numTargets > 0 && bot.character.c.town) // We are teleporting
                 || noStrategy // We don't have a strategy for the given monster
                 || avoidIdle // A monster is attacking us that we aren't targeting, and don't attack while idle
@@ -2915,7 +2913,7 @@ async function startWarrior(bot: Warrior) {
             }
             if (bot.character.hp < bot.character.max_hp * 0.25 // We are low on HP
                 || (bot.character.s.burned && bot.character.s.burned.intensity > bot.character.max_hp / 10) // We are burned
-                || numTargetingAndClose > 3 // We have a lot of targets
+                || bot.character.fear > 0 // We are scared
                 || (numTargets > 0 && bot.character.c.town) // We are teleporting
                 || noStrategy // We don't have a strategy for the given monster
                 || avoidIdle // A monster is attacking us that we aren't targeting, and don't attack while idle

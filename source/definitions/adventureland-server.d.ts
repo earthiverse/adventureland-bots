@@ -49,6 +49,10 @@ export type CharacterData = {
     mp: number
     max_mp: number
     attack: number
+    fear: number
+    courage: number
+    mcourage: number
+    pcourage: number
     frequency: number
     speed: number
     range: number
