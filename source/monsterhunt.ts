@@ -533,7 +533,7 @@ async function startRanger(bot: Ranger) {
                 if (entity.hp < minimumDamage * bot.G.skills["5shot"].damage_multiplier || entity.target) fiveshotTargets.push(entity)
             }
 
-            if (fiveshotTargets.length >= (5 - bot.character.courage) && targets.length >= 5 && bot.canUse("5shot")) {
+            if (fiveshotTargets.length >= (5 - bot.character.courage - bot.character.targets) && targets.length >= 5 && bot.canUse("5shot")) {
                 while (fiveshotTargets.length < 5) {
                     // Fill up the remaining spots with our other targets
                     for (const target of targets) {
@@ -561,7 +561,7 @@ async function startRanger(bot: Ranger) {
                 }
 
                 await bot.fiveShot(fiveshotTargets[0].id, fiveshotTargets[1].id, fiveshotTargets[2].id, fiveshotTargets[3].id, fiveshotTargets[4].id)
-            } else if (threeshotTargets.length >= (3 - bot.character.courage) && targets.length >= 3 && bot.canUse("3shot")) {
+            } else if (threeshotTargets.length >= (3 - bot.character.courage - bot.character.targets) && targets.length >= 3 && bot.canUse("3shot")) {
                 while (threeshotTargets.length < 5) {
                     // Fill up the remaining spots with our other targets
                     for (const target of targets) {
