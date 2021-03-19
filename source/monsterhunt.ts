@@ -61,7 +61,7 @@ async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promis
     const solo: MonsterName[] = [
         "goldenbat",
         // Very Rare Monsters
-        "tinyp", "cutebee",
+        "tinyp", /*"cutebee",*/
         // Event Monsters
         "pinkgoo", "wabbit",
         // Rare Monsters
@@ -529,13 +529,28 @@ async function startRanger(bot: Ranger) {
                 // If the monster is targeting our friend, let's take advantage of that and attack it with multishot if we can
                 if (entity.immune) continue // We can't target it with a skill shot, so don't try
                 const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0]
-                if (entity.hp < minimumDamage * bot.G.skills["3shot"].damage_multiplier) threeshotTargets.push(entity)
-                else if ([ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) threeshotTargets.push(entity)
-                if (entity.hp < minimumDamage * bot.G.skills["5shot"].damage_multiplier) fiveshotTargets.push(entity)
-                else if ([ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) fiveshotTargets.push(entity)
+                if (entity.hp < minimumDamage * bot.G.skills["3shot"].damage_multiplier || entity.target) threeshotTargets.push(entity)
+                if (entity.hp < minimumDamage * bot.G.skills["5shot"].damage_multiplier || entity.target) fiveshotTargets.push(entity)
             }
 
-            if (fiveshotTargets.length >= 5 && bot.canUse("5shot")) {
+            if (fiveshotTargets.length >= (5 - bot.character.courage) && targets.length >= 5 && bot.canUse("5shot")) {
+                while (fiveshotTargets.length < 5) {
+                    // Fill up the remaining spots with our other targets
+                    for (const target of targets) {
+                        let isInFiveShot = false
+                        for (const fiveShotTarget of fiveshotTargets) {
+                            if (fiveShotTarget.id == target.id) {
+                                isInFiveShot = true
+                                break
+                            }
+                        }
+                        if (!isInFiveShot) {
+                            // We found an additional target
+                            fiveshotTargets.push(target)
+                            break
+                        }
+                    }
+                }
                 // Remove from other characters if we're going to kill it
                 for (const target of [fiveshotTargets[0], fiveshotTargets[1], fiveshotTargets[2], fiveshotTargets[3], fiveshotTargets[4]]) {
                     if (await Tools.isGuaranteedKill(bot.character, target)) {
@@ -546,7 +561,24 @@ async function startRanger(bot: Ranger) {
                 }
 
                 await bot.fiveShot(fiveshotTargets[0].id, fiveshotTargets[1].id, fiveshotTargets[2].id, fiveshotTargets[3].id, fiveshotTargets[4].id)
-            } else if (threeshotTargets.length >= 3 && bot.canUse("3shot")) {
+            } else if (threeshotTargets.length >= (3 - bot.character.courage) && targets.length >= 3 && bot.canUse("3shot")) {
+                while (threeshotTargets.length < 5) {
+                    // Fill up the remaining spots with our other targets
+                    for (const target of targets) {
+                        let isInThreeShot = false
+                        for (const fiveShotTarget of threeshotTargets) {
+                            if (fiveShotTarget.id == target.id) {
+                                isInThreeShot = true
+                                break
+                            }
+                        }
+                        if (!isInThreeShot) {
+                            // We found an additional target
+                            threeshotTargets.push(target)
+                            break
+                        }
+                    }
+                }
                 // Remove from other characters if we're going to kill it
                 for (const target of [threeshotTargets[0], threeshotTargets[1], threeshotTargets[2]]) {
                     if (await Tools.isGuaranteedKill(bot.character, target)) {
@@ -884,7 +916,7 @@ async function startRanger(bot: Ranger) {
         cutebee: {
             attack: async () => { return await defaultAttackStrategy(["cutebee"]) },
             move: async () => { return await specialMonsterMoveStrategy("cutebee") },
-            equipment: { mainhand: "crossbow", orb: "test_orb" },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
             attackWhileIdle: true
         },
         dragold: {
@@ -2624,7 +2656,7 @@ async function startWarrior(bot: Warrior) {
         cutebee: {
             attack: async () => { return await defaultAttackStrategy(["cutebee"]) },
             move: async () => { return await specialMonsterMoveStrategy("cutebee") },
-            equipment: { mainhand: "bataxe", orb: "test_orb" },
+            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
             attackWhileIdle: true
         },
         dragold: {
@@ -2802,7 +2834,21 @@ async function startWarrior(bot: Warrior) {
             attackWhileIdle: true
         },
         snowman: {
-            attack: async () => { return await defaultAttackStrategy(["snowman"]) },
+            attack: async () => {
+                // Agitate bees to farm them while attacking the snowman
+                let shouldAgitate = false
+                for (const [, entity] of bot.entities) {
+                    if (Tools.distance(bot.character, entity) > bot.G.skills.agitate.range) continue // Out of range
+                    if (entity.type !== "snowman" && entity.type !== "arcticbee") {
+                        // Something else is here.
+                        shouldAgitate = false
+                        break
+                    }
+                    if (!entity.target) shouldAgitate = true
+                }
+                if (shouldAgitate && bot.canUse("agitate")) bot.agitate()
+                return await defaultAttackStrategy(["snowman"])
+            },
             move: async () => { return await specialMonsterMoveStrategy("snowman") },
             equipment: { mainhand: "bataxe", orb: "test_orb" },
             attackWhileIdle: true
