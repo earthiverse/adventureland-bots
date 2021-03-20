@@ -534,21 +534,18 @@ async function startRanger(bot: Ranger) {
             }
 
             if (fiveshotTargets.length >= (5 - bot.character.courage + bot.character.targets) && targets.length >= 5 && bot.canUse("5shot")) {
-                while (fiveshotTargets.length < 5) {
-                    // Fill up the remaining spots with our other targets
-                    for (const target of targets) {
-                        let isInFiveShot = false
-                        for (const fiveShotTarget of fiveshotTargets) {
-                            if (fiveShotTarget.id == target.id) {
-                                isInFiveShot = true
-                                break
-                            }
-                        }
-                        if (!isInFiveShot) {
-                            // We found an additional target
-                            fiveshotTargets.push(target)
+                for (const target of targets) {
+                    if (fiveshotTargets.length >= 5) break
+                    let isInFiveShot = false
+                    for (const fiveShotTarget of fiveshotTargets) {
+                        if (fiveShotTarget.id == target.id) {
+                            isInFiveShot = true
                             break
                         }
+                    }
+                    if (!isInFiveShot) {
+                        // We found an additional target
+                        fiveshotTargets.push(target)
                     }
                 }
                 // Remove from other characters if we're going to kill it
@@ -562,21 +559,18 @@ async function startRanger(bot: Ranger) {
 
                 await bot.fiveShot(fiveshotTargets[0].id, fiveshotTargets[1].id, fiveshotTargets[2].id, fiveshotTargets[3].id, fiveshotTargets[4].id)
             } else if (threeshotTargets.length >= (3 - bot.character.courage + bot.character.targets) && targets.length >= 3 && bot.canUse("3shot")) {
-                while (threeshotTargets.length < 5) {
-                    // Fill up the remaining spots with our other targets
-                    for (const target of targets) {
-                        let isInThreeShot = false
-                        for (const fiveShotTarget of threeshotTargets) {
-                            if (fiveShotTarget.id == target.id) {
-                                isInThreeShot = true
-                                break
-                            }
-                        }
-                        if (!isInThreeShot) {
-                            // We found an additional target
-                            threeshotTargets.push(target)
+                for (const target of targets) {
+                    if (threeshotTargets.length >= 3) break
+                    let isInThreeShot = false
+                    for (const fiveShotTarget of threeshotTargets) {
+                        if (fiveShotTarget.id == target.id) {
+                            isInThreeShot = true
                             break
                         }
+                    }
+                    if (!isInThreeShot) {
+                        // We found an additional target
+                        threeshotTargets.push(target)
                     }
                 }
                 // Remove from other characters if we're going to kill it
