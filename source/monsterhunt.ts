@@ -783,7 +783,7 @@ async function startRanger(bot: Ranger) {
             if (!closestEntitiy && !bot.character.moving) await bot.smartMove(position)
             // We will get a lot of errors without catching, because we'll be dropping a lot of movements 
             // eslint-disable-next-line @typescript-eslint/no-empty-function
-            else if (closestEntitiy && Pathfinder.canWalk(bot.character, closestEntitiy)) bot.move(closestEntitiy.x, closestEntitiy.y).catch(() => { })
+            else if (closestEntitiy && Pathfinder.canWalk(bot.character, closestEntitiy)) bot.smartMove(closestEntitiy, { getWithin: bot.character.range - closestEntitiy.speed }).catch(() => { })
             else if (closestEntitiy && Tools.distance(bot.character, closestEntitiy) > bot.character.range) await bot.smartMove(closestEntitiy, { getWithin: bot.character.range - closestEntitiy.speed })
         } catch (e) {
             // console.error(e)
@@ -1608,7 +1608,7 @@ async function startPriest(bot: Priest) {
             if (!closestEntitiy && !bot.character.moving) await bot.smartMove(position)
             // We will get a lot of errors without catching, because we'll be dropping a lot of movements 
             // eslint-disable-next-line @typescript-eslint/no-empty-function
-            else if (closestEntitiy && Pathfinder.canWalk(bot.character, closestEntitiy)) bot.move(closestEntitiy.x, closestEntitiy.y).catch(() => { })
+            else if (closestEntitiy && Pathfinder.canWalk(bot.character, closestEntitiy)) bot.smartMove(closestEntitiy, { getWithin: bot.character.range - closestEntitiy.speed }).catch(() => { })
             else if (closestEntitiy && Tools.distance(bot.character, closestEntitiy) > bot.character.range) await bot.smartMove(closestEntitiy, { getWithin: bot.character.range - closestEntitiy.speed })
         } catch (e) {
             // console.error(e)
