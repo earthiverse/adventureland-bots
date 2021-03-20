@@ -136,6 +136,8 @@ export const PRIEST_ITEMS_TO_HOLD: ItemName[] = [
     "hpot0", "hpot1", "mpot0", "mpot1",
     // Jacko
     "jacko",
+    // Cybernetic Implants
+    "cyber",
     // Weapons
     "firestaff", "lmace", "pmace",
     // Shields
@@ -153,6 +155,8 @@ export const RANGER_ITEMS_TO_HOLD: ItemName[] = [
     "hpot0", "hpot1", "mpot0", "mpot1",
     // Jacko
     "jacko",
+    // Cybernetic Implants
+    "cyber",
     // Weapons
     "bow", "bowofthedead", "crossbow", "firebow", "gbow", "hbow", "merry", "pouchbow", "t2bow", "t3bow", "weaver",
     // Quivers
@@ -170,6 +174,8 @@ export const WARRIOR_ITEMS_TO_HOLD: ItemName[] = [
     "hpot0", "hpot1", "mpot0", "mpot1",
     // Jacko
     "jacko",
+    // Cybernetic Implants
+    "cyber",
     // Weapons
     "basher", "bataxe", "candycanesword", "carrotsword", "fireblade", "heartwood", "swordofthedead", "woodensword",
     // Shields
