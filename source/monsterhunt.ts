@@ -2768,7 +2768,21 @@ async function startWarrior(bot: Warrior) {
             requirePriest: true
         },
         osnake: {
-            attack: async () => { return await defaultAttackStrategy(["osnake"]) },
+            attack: async () => {
+                // Agitate snakes to farm them while attacking the osnakes
+                let shouldAgitate = false
+                for (const [, entity] of bot.entities) {
+                    if (Tools.distance(bot.character, entity) > bot.G.skills.agitate.range) continue // Out of range
+                    if (entity.type !== "osnake" && entity.type !== "snake") {
+                        // Something else is here.
+                        shouldAgitate = false
+                        break
+                    }
+                    if (!entity.target) shouldAgitate = true
+                }
+                if (shouldAgitate && bot.canUse("agitate")) bot.agitate()
+                return await defaultAttackStrategy(["osnake"])
+            },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "halloween", x: 347, y: -747 }, "osnake") },
             equipment: { mainhand: "bataxe", orb: "test_orb" },
             attackWhileIdle: true
