@@ -42,27 +42,27 @@ export const ITEMS_TO_BUY: ItemName[] = [
     // Belts
     "dexbelt", "intbelt", "strbelt",
     // Rings
-    "ctristone", "dexring", "intring", "ringofluck", "strring", "suckerpunch", "tristone",
+    "cring", "ctristone", "dexring", "goldring", "intring", "ringofluck", "strring", "suckerpunch", "trigger", "tristone", "vring",
     // Earrings
-    "dexearring", "intearring", "lostearring", "strearring",
+    "cearring", "dexearring", "intearring", "lostearring", "strearring",
     // Amulets
     "amuletofm", "dexamulet", "intamulet", "snring", "stramulet", "t2dexamulet", "t2intamulet", "t2stramulet",
     // Orbs
     "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull",
     // Shields
-    "t2quiver", "lantern", "mshield", /*"quiver",*/ "sshield", "xshield",
+    "t2quiver", "lantern", "mshield", "quiver", "sshield", "xshield",
     // Capes
-    "angelwings", "bcape", "cape", "ecape", "stealthcape",
+    "angelwings", "bcape", "cape", "ecape", "stealthcape", "vcape",
     // Shoes
-    "eslippers", "hboots", "mrnboots", "mwboots", "shoes1", "wingedboots", /*"wshoes",*/ "xboots",
+    "eslippers", "hboots", "mrnboots", "mwboots", "shoes1", "vboots", "wingedboots", "wshoes", "xboots",
     // Pants
-    "hpants", "mrnpants", "mwpants", "pants1", "starkillers", /*"wbreeches",*/ "xpants",
+    "frankypants", "hpants", "mrnpants", "mwpants", "pants1", "starkillers", "wbreeches", "xpants",
     // Armor
-    "cdragon", "coat1", "harmor", "mcape", "mrnarmor", "mwarmor", "tshirt0", "tshirt1", "tshirt2", "tshirt3", "tshirt4", "tshirt6", "tshirt7", "tshirt8", "tshirt88", "tshirt9", "warpvest", /*"wattire",*/ "xarmor",
+    "cdragon", "coat1", "harmor", "mcape", "mrnarmor", "mwarmor", "tshirt0", "tshirt1", "tshirt2", "tshirt3", "tshirt4", "tshirt6", "tshirt7", "tshirt8", "tshirt88", "tshirt9", "vattire", "warpvest", /*"wattire",*/ "xarmor",
     // Helmets
-    "cyber", "eears", "fury", "helmet1", "hhelmet", "mrnhat", "mwhelmet", "partyhat", "rednose", /*"wcap",*/ "xhelmet",
+    "cyber", "eears", "fury", "helmet1", "hhelmet", "mchat", "mmhat", "mphat", "mrnhat", "mwhelmet", "oxhelmet", "partyhat", "rednose", "wcap", "xhelmet",
     // Gloves
-    "gloves1", "goldenpowerglove", "handofmidas", "hgloves", "mrngloves", "mwgloves", "poker", "powerglove", /*"wgloves",*/ "xgloves",
+    "gloves1", "goldenpowerglove", "handofmidas", "hgloves", "mpxgloves", "mrngloves", "mwgloves", "poker", "powerglove", "vgloves", "wgloves", "xgloves",
     // Good weapons
     "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "firebow", "frostbow", "froststaff", "gbow", "harbringer", "heartwood", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow", "t3bow", "wblade",
     // Things we can exchange / craft with
@@ -74,7 +74,7 @@ export const ITEMS_TO_BUY: ItemName[] = [
     // Essences
     "essenceofether", "essenceoffire", "essenceoffrost", "essenceofgreed", "essenceoflife", "essenceofnature",
     // Potions & consumables
-    "bunnyelixir", "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate",
+    "bunnyelixir", "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate", "vblood",
     // High level scrolls
     "cscroll3", "scroll3", "scroll4", "forscroll", "luckscroll", "manastealscroll",
     // Misc. Things
@@ -90,8 +90,6 @@ export const ITEMS_TO_SELL: ItemLevelInfo = {
     "gphelmet": 2, "lantern": 2, "maceofthedead": 2, "phelmet": 2,
     // Candy Canes
     "xmace": 2,
-    // Franky
-    "frankypants": 2,
 }
 
 export const MAGE_ITEMS_TO_HOLD: ItemName[] = [

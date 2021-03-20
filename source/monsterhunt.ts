@@ -345,7 +345,9 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                 const mpot1 = bot.locateItem("mpot1")
                 const mpot0 = bot.locateItem("mpot0")
                 if (hpRatio < mpRatio) {
-                    if (missingHP >= 400 && hpot1 !== undefined) {
+                    if (bot.character.c.town) {
+                        await bot.regenHP()
+                    } else if (missingHP >= 400 && hpot1 !== undefined) {
                         await bot.useHPPot(hpot1)
                     } else if (missingHP >= 200 && hpot0 !== undefined) {
                         await bot.useHPPot(hpot0)
@@ -353,7 +355,9 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                         await bot.regenHP()
                     }
                 } else if (mpRatio < hpRatio) {
-                    if (missingMP >= 500 && mpot1 !== undefined) {
+                    if (bot.character.c.town) {
+                        await bot.regenHP()
+                    } else if (missingMP >= 500 && mpot1 !== undefined) {
                         await bot.useMPPot(mpot1)
                     } else if (missingMP >= 300 && mpot0 !== undefined) {
                         await bot.useMPPot(mpot0)
@@ -361,7 +365,9 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                         await bot.regenMP()
                     }
                 } else if (hpRatio < 1) {
-                    if (missingHP >= 400 && hpot1 !== undefined) {
+                    if (bot.character.c.town) {
+                        await bot.regenHP()
+                    } else if (missingHP >= 400 && hpot1 !== undefined) {
                         await bot.useHPPot(hpot1)
                     } else if (missingHP >= 200 && hpot0 !== undefined) {
                         await bot.useHPPot(hpot0)
@@ -926,7 +932,16 @@ async function startRanger(bot: Ranger) {
         },
         franky: {
             attack: async () => { return await defaultAttackStrategy(["nerfedmummy", "franky"]) },
-            move: async () => { return await specialMonsterMoveStrategy("franky") },
+            move: async () => {
+                const nearest = bot.getNearestMonster("franky")
+                if (nearest.monster && nearest.distance > 25) {
+                    // Move close to Franky because other characters might help blast away mummies
+                    await bot.smartMove(nearest.monster, { getWithin: 25 })
+                    return 250
+                } else {
+                    return await specialMonsterMoveStrategy("franky")
+                }
+            },
             equipment: { mainhand: "crossbow", orb: "jacko" }
         },
         fvampire: {
@@ -1747,7 +1762,16 @@ async function startPriest(bot: Priest) {
         },
         franky: {
             attack: async () => { return await defaultAttackStrategy(["nerfedmummy", "franky"]) },
-            move: async () => { return await specialMonsterMoveStrategy("franky") },
+            move: async () => {
+                const nearest = bot.getNearestMonster("franky")
+                if (nearest.monster && nearest.distance > 25) {
+                    // Move close to Franky because other characters might help blast away mummies
+                    await bot.smartMove(nearest.monster, { getWithin: 25 })
+                    return 250
+                } else {
+                    return await specialMonsterMoveStrategy("franky")
+                }
+            },
             equipment: { orb: "jacko" }
         },
         frog: {
