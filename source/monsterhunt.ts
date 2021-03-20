@@ -1071,7 +1071,7 @@ async function startRanger(bot: Ranger) {
         },
         pppompom: {
             attack: async () => { return await tankAttackStrategy("pppompom", warrior.character.id) },
-            move: async () => { return await holdPositionMoveStrategy({ map: "level2n", x: 100, y: -150 }) },
+            move: async () => { return await holdPositionMoveStrategy({ map: "level2n", x: 120, y: -170 }) },
             equipment: { mainhand: "firebow", orb: "jacko" },
             requirePriest: true
         },
@@ -1900,7 +1900,7 @@ async function startPriest(bot: Priest) {
         },
         pppompom: {
             attack: async () => { return await tankAttackStrategy("pppompom", warrior.character.id) },
-            move: async () => { return await holdPositionMoveStrategy({ map: "level2n", x: 120, y: -150 }) },
+            move: async () => { return await holdPositionMoveStrategy({ map: "level2n", x: 120, y: -130 }) },
             equipment: { orb: "jacko" }
         },
         prat: {
@@ -2832,7 +2832,7 @@ async function startWarrior(bot: Warrior) {
         },
         pppompom: {
             attack: async () => { return oneTargetAttackStrategy("pppompom") },
-            move: async () => { return await holdPositionMoveStrategy({ map: "level2n", x: 80, y: -150 }) },
+            move: async () => { return await holdPositionMoveStrategy({ map: "level2n", x: 120, y: -150 }) },
             equipment: { mainhand: "basher", orb: "jacko" },
             requirePriest: true
         },
