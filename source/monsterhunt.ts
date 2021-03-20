@@ -2773,12 +2773,13 @@ async function startWarrior(bot: Warrior) {
                 let shouldAgitate = false
                 for (const [, entity] of bot.entities) {
                     if (Tools.distance(bot.character, entity) > bot.G.skills.agitate.range) continue // Out of range
+                    if (entity.target) continue // It's already targeting something
                     if (entity.type !== "osnake" && entity.type !== "snake") {
                         // Something else is here.
                         shouldAgitate = false
                         break
                     }
-                    if (!entity.target) shouldAgitate = true
+                    shouldAgitate = true
                 }
                 if (shouldAgitate && bot.canUse("agitate")) bot.agitate()
                 return await defaultAttackStrategy(["osnake"])

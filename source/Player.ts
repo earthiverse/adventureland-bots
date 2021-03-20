@@ -2074,14 +2074,33 @@ export class Player extends Observer {
     public async stopSmartMove(): Promise<NodeData> {
         this.lastSmartMove = Date.now()
         if (this.character && this.character.c.town) {
-            this.stopWarpToTown()
+            await this.stopWarpToTown()
         }
         return this.move(this.character.x, this.character.y)
     }
 
-    // TODO: Add promises
-    public stopWarpToTown(): void {
-        this.socket.emit("stop", { action: "town" })
+    public async stopWarpToTown(): Promise<void> {
+        if (!this.character.c.town) return Promise.resolve()
+        const stopped = new Promise<void>((resolve, reject) => {
+            const checkStopped = (data: CharacterData) => {
+                if (!data.c.town) {
+                    this.socket.removeListener("player", checkStopped)
+                    resolve()
+                }
+            }
+
+            setTimeout(() => {
+                this.socket.removeListener("player", checkStopped)
+                if (this.character.c.town) {
+                    reject("stopWarpToTown timeout (1000ms)")
+                } else {
+                    resolve()
+                }
+            }, 1000)
+
+            this.socket.on("player", checkStopped)
+        })
+        return stopped
     }
 
     public transport(map: MapName, spawn: number): Promise<void> {
