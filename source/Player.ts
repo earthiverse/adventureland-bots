@@ -2290,6 +2290,7 @@ export class Player extends Observer {
 
     public warpToTown(): Promise<NodeData> {
         let startedWarp = false
+        if (this.character.c.town) startedWarp = true // We're already warping!?
         const warpComplete = new Promise<NodeData>((resolve, reject) => {
             const failCheck = (data: CharacterData) => {
                 if (!startedWarp && data.c.town && data.c.town.ms == 3000) {
