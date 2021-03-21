@@ -1258,15 +1258,6 @@ async function startRanger(bot: Ranger) {
                 return
             }
 
-            // TODO: Change visibleMonsterTypes to a Map which contains the closest one
-            const visibleMonsterTypes: Set<MonsterName> = new Set()
-            const inRangeMonsterTypes: Set<MonsterName> = new Set()
-            for (const entity of bot.entities.values()) {
-                if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
-                visibleMonsterTypes.add(entity.type)
-                if (Tools.distance(bot.character, entity) < bot.character.range) inRangeMonsterTypes.add(entity.type)
-            }
-
             if (rangerTarget) {
                 if (strategy[rangerTarget].equipment) {
                     for (const s in strategy[rangerTarget].equipment) {
@@ -1302,7 +1293,7 @@ async function startRanger(bot: Ranger) {
                 return
             }
 
-            if (rangerTarget && visibleMonsterTypes.has(rangerTarget)) {
+            if (rangerTarget && strategy[rangerTarget]) {
                 cooldown = await strategy[rangerTarget].attack()
             }
 
@@ -2122,16 +2113,7 @@ async function startPriest(bot: Priest) {
                 return
             }
 
-            // TODO: Change visibleMonsterTypes to a Map which contains the closest one
-            const visibleMonsterTypes: Set<MonsterName> = new Set()
-            const inRangeMonsterTypes: Set<MonsterName> = new Set()
-            for (const entity of bot.entities.values()) {
-                if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
-                visibleMonsterTypes.add(entity.type)
-                if (Tools.distance(bot.character, entity) < bot.character.range) inRangeMonsterTypes.add(entity.type)
-            }
-
-            if (priestTarget && visibleMonsterTypes.has(priestTarget)) {
+            if (priestTarget && strategy[priestTarget]) {
                 cooldown = await strategy[priestTarget].attack()
             }
 
@@ -3044,16 +3026,7 @@ async function startWarrior(bot: Warrior) {
                 return
             }
 
-            // TODO: Change visibleMonsterTypes to a Map which contains the closest one
-            const visibleMonsterTypes: Set<MonsterName> = new Set()
-            const inRangeMonsterTypes: Set<MonsterName> = new Set()
-            for (const entity of bot.entities.values()) {
-                if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
-                visibleMonsterTypes.add(entity.type)
-                if (Tools.distance(bot.character, entity) < bot.character.range) inRangeMonsterTypes.add(entity.type)
-            }
-
-            if (warriorTarget && visibleMonsterTypes.has(warriorTarget)) {
+            if (warriorTarget && strategy[warriorTarget]) {
                 cooldown = await strategy[warriorTarget].attack()
             }
 
