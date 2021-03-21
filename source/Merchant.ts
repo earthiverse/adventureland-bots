@@ -113,7 +113,6 @@ export class Merchant extends PingCompensatedPlayer {
         if (this.character.stand)
             return Promise.resolve() // It's already open
 
-
         // Find the stand
         let stand = this.locateItem("stand0")
         if (stand === undefined) {

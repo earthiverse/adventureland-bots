@@ -92,9 +92,12 @@ export const ITEMS_TO_SELL: ItemLevelInfo = {
     "xmace": 2,
 }
 
+export const PLAYER_GOLD_TO_HOLD = 5000000
+export const MERCHANT_GOLD_TO_HOLD = 100000000
+
 export const MAGE_ITEMS_TO_HOLD: ItemName[] = [
     // Things we keep on ourselves
-    "computer", "tracker", "stand0",
+    "computer", "tracker", "stand0", "xptome",
     // Boosters
     "luckbooster", "goldbooster", "xpbooster",
     // Potions
@@ -111,7 +114,7 @@ export const MAGE_ITEMS_TO_HOLD: ItemName[] = [
 
 export const MERCHANT_ITEMS_TO_HOLD: ItemName[] = [
     // Things we keep on ourselves
-    "computer", "tracker", "stand0",
+    "computer", "tracker", "stand0", "xptome",
     // Boosters
     "luckbooster", "goldbooster", "xpbooster",
     // Potions
@@ -127,7 +130,7 @@ export const MERCHANT_ITEMS_TO_HOLD: ItemName[] = [
 
 export const PRIEST_ITEMS_TO_HOLD: ItemName[] = [
     // Things we keep on ourselves
-    "computer", "tracker", "stand0",
+    "computer", "tracker", "stand0", "xptome",
     // Boosters
     "luckbooster", "goldbooster", "xpbooster",
     // Potions
@@ -146,7 +149,7 @@ export const PRIEST_ITEMS_TO_HOLD: ItemName[] = [
 
 export const RANGER_ITEMS_TO_HOLD: ItemName[] = [
     // Things we keep on ourselves
-    "computer", "tracker", "stand0",
+    "computer", "tracker", "stand0", "xptome",
     // Boosters
     "luckbooster", "goldbooster", "xpbooster",
     // Potions
@@ -165,7 +168,7 @@ export const RANGER_ITEMS_TO_HOLD: ItemName[] = [
 
 export const WARRIOR_ITEMS_TO_HOLD: ItemName[] = [
     // Things we keep on ourselves
-    "computer", "tracker", "stand0",
+    "computer", "tracker", "stand0", "xptome",
     // Boosters
     "luckbooster", "goldbooster", "xpbooster",
     // Potions

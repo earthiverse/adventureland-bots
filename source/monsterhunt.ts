@@ -1,4 +1,4 @@
-import { ITEMS_TO_BUY, ITEMS_TO_EXCHANGE, ITEMS_TO_SELL, MERCHANT_ITEMS_TO_HOLD, NPC_INTERACTION_DISTANCE, PRIEST_ITEMS_TO_HOLD, RANGER_ITEMS_TO_HOLD, SPECIAL_MONSTERS, WARRIOR_ITEMS_TO_HOLD } from "./constants.js"
+import { PLAYER_GOLD_TO_HOLD, ITEMS_TO_BUY, ITEMS_TO_EXCHANGE, ITEMS_TO_SELL, MERCHANT_ITEMS_TO_HOLD, NPC_INTERACTION_DISTANCE, PRIEST_ITEMS_TO_HOLD, RANGER_ITEMS_TO_HOLD, SPECIAL_MONSTERS, WARRIOR_ITEMS_TO_HOLD, MERCHANT_GOLD_TO_HOLD } from "./constants.js"
 import { CharacterModel } from "./database/characters/characters.model.js"
 import { EntityModel } from "./database/entities/entities.model.js"
 import { EntityData, HitData, PlayerData } from "./definitions/adventureland-server.js"
@@ -134,6 +134,11 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                 // Buy MP Pots
                 const numMpot1 = bot.countItem("mpot1")
                 if (numMpot1 < 1000) await bot.buy("mpot1", 1000 - numMpot1)
+            }
+
+            if (bot.canBuy("xptome")) {
+                const numXPTome = bot.countItem("xptome")
+                if (numXPTome == 0) await bot.buy("xptome", 1)
             }
 
             // // Buy things from Ponty
@@ -934,7 +939,7 @@ async function startRanger(bot: Ranger) {
             attack: async () => { return await defaultAttackStrategy(["nerfedmummy", "franky"]) },
             move: async () => {
                 const nearest = bot.getNearestMonster("franky")
-                if (nearest.monster && nearest.distance > 25) {
+                if (nearest?.monster && nearest.distance > 25) {
                     // Move close to Franky because other characters might help blast away mummies
                     await bot.smartMove(nearest.monster, { getWithin: 25 })
                     return 250
@@ -1429,7 +1434,7 @@ async function startRanger(bot: Ranger) {
 
             const sendTo = bot.players.get(merchant.character.id)
             if (sendTo && Tools.distance(bot.character, sendTo) < NPC_INTERACTION_DISTANCE) {
-                const extraGold = bot.character.gold - 1000000
+                const extraGold = bot.character.gold - PLAYER_GOLD_TO_HOLD
                 if (extraGold > 0) await bot.sendGold(merchant.character.id, extraGold)
                 for (let i = 0; i < bot.character.items.length; i++) {
                     const item = bot.character.items[i]
@@ -1755,7 +1760,7 @@ async function startPriest(bot: Priest) {
             attack: async () => { return await defaultAttackStrategy(["nerfedmummy", "franky"]) },
             move: async () => {
                 const nearest = bot.getNearestMonster("franky")
-                if (nearest.monster && nearest.distance > 25) {
+                if (nearest?.monster && nearest.distance > 25) {
                     // Move close to Franky because other characters might help blast away mummies
                     await bot.smartMove(nearest.monster, { getWithin: 25 })
                     return 250
@@ -2164,7 +2169,7 @@ async function startPriest(bot: Priest) {
 
             const sendTo = bot.players.get(merchant.character.id)
             if (sendTo && Tools.distance(bot.character, sendTo) < NPC_INTERACTION_DISTANCE) {
-                const extraGold = bot.character.gold - 1000000
+                const extraGold = bot.character.gold - PLAYER_GOLD_TO_HOLD
                 if (extraGold > 0) await bot.sendGold(merchant.character.id, extraGold)
                 for (let i = 0; i < bot.character.items.length; i++) {
                     const item = bot.character.items[i]
@@ -2685,9 +2690,7 @@ async function startWarrior(bot: Warrior) {
         ghost: {
             attack: async () => { return await defaultAttackStrategy(["ghost"]) },
             move: async () => { return nearbyMonstersMoveStrategy({ map: "halloween", x: 236, y: -1224 }, "ghost") },
-            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
-            attackWhileIdle: true,
-            requirePriest: true
+            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" }
         },
         goldenbat: {
             attack: async () => { return await defaultAttackStrategy(["goldenbat"]) },
@@ -2780,7 +2783,7 @@ async function startWarrior(bot: Warrior) {
                 for (const [, entity] of bot.entities) {
                     if (Tools.distance(bot.character, entity) > bot.G.skills.agitate.range) continue // Out of range
                     if (entity.target) continue // It's already targeting something
-                    if (entity.type !== "osnake" && entity.type !== "snake") {
+                    if (entity.type !== "osnake" && !strategy[entity.type].attackWhileIdle) {
                         // Something else is here.
                         shouldAgitate = false
                         break
@@ -2854,12 +2857,13 @@ async function startWarrior(bot: Warrior) {
                 let shouldAgitate = false
                 for (const [, entity] of bot.entities) {
                     if (Tools.distance(bot.character, entity) > bot.G.skills.agitate.range) continue // Out of range
-                    if (entity.type !== "snowman" && entity.type !== "arcticbee") {
+                    if (entity.target) continue // It's already targeting something
+                    if (entity.type !== "snowman" && !strategy[entity.type].attackWhileIdle) {
                         // Something else is here.
                         shouldAgitate = false
                         break
                     }
-                    if (!entity.target) shouldAgitate = true
+                    shouldAgitate = true
                 }
                 if (shouldAgitate && bot.canUse("agitate")) bot.agitate()
                 return await defaultAttackStrategy(["snowman"])
@@ -2881,7 +2885,22 @@ async function startWarrior(bot: Warrior) {
             attackWhileIdle: true
         },
         squigtoad: {
-            attack: async () => { return await defaultAttackStrategy(["squigtoad"]) },
+            attack: async () => {
+                // Agitate squigs to farm them while attacking the squigtoads
+                let shouldAgitate = false
+                for (const [, entity] of bot.entities) {
+                    if (Tools.distance(bot.character, entity) > bot.G.skills.agitate.range) continue // Out of range
+                    if (entity.target) continue // It's already targeting something
+                    if (entity.type !== "squigtoad" && !strategy[entity.type].attackWhileIdle) {
+                        // Something else is here.
+                        shouldAgitate = false
+                        break
+                    }
+                    shouldAgitate = true
+                }
+                if (shouldAgitate && bot.canUse("agitate")) bot.agitate()
+                return await defaultAttackStrategy(["squigtoad"])
+            },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "main", x: -1195, y: 422 }, "squigtoad") },
             equipment: { mainhand: "bataxe", orb: "test_orb" },
             attackWhileIdle: true
@@ -3112,7 +3131,7 @@ async function startWarrior(bot: Warrior) {
 
             const sendTo = bot.players.get(merchant.character.id)
             if (sendTo && Tools.distance(bot.character, sendTo) < NPC_INTERACTION_DISTANCE) {
-                const extraGold = bot.character.gold - 1000000
+                const extraGold = bot.character.gold - PLAYER_GOLD_TO_HOLD
                 if (extraGold > 0) await bot.sendGold(merchant.character.id, extraGold)
                 for (let i = 0; i < bot.character.items.length; i++) {
                     const item = bot.character.items[i]
@@ -3349,7 +3368,7 @@ async function startMerchant(bot: Merchant) {
                 lastBankVisit = Date.now()
 
                 // Deposit excess gold
-                const excessGold = bot.character.gold - 100000000
+                const excessGold = bot.character.gold - MERCHANT_GOLD_TO_HOLD
                 if (excessGold > 0) {
                     await bot.depositGold(excessGold)
                 } else if (excessGold < 0) {
