@@ -1263,6 +1263,11 @@ async function startRanger(bot: Ranger) {
                 return
             }
 
+            if (bot.getCooldown("scare") > 0) {
+                setTimeout(async () => { attackLoop() }, Math.min(bot.getCooldown("scare"), Math.max(bot.getCooldown("attack"), 10)))
+                return
+            }
+
             if (rangerTarget) {
                 if (strategy[rangerTarget].equipment) {
                     for (const s in strategy[rangerTarget].equipment) {
@@ -1291,11 +1296,6 @@ async function startRanger(bot: Ranger) {
                         }
                     }
                 }
-            }
-
-            if (bot.getCooldown("scare") > 0) {
-                setTimeout(async () => { attackLoop() }, Math.min(bot.getCooldown("scare"), Math.max(bot.getCooldown("attack"), 10)))
-                return
             }
 
             if (rangerTarget && strategy[rangerTarget]) {
@@ -2064,6 +2064,31 @@ async function startPriest(bot: Priest) {
                 if (bot.canUse("scare")) await bot.scare()
             }
 
+            if (bot.isPVP()) {
+                for (const enemy of bot.players.values()) {
+                    if (Tools.distance(bot.character, enemy) > bot.character.range) continue // We're too far to attack them
+                    if (bot.character.owner == enemy.owner) continue // We're friends
+                    if (bot.party && bot.party.list && bot.party.list.includes(enemy.id)) continue // We're friends
+                    if (enemy.rip) continue // Enemy is dead
+
+                    if (bot.canUse("curse")) await bot.curse(enemy.id)
+                    if (bot.canUse("attack")) await bot.attack(enemy.id)
+
+                    setTimeout(async () => { attackLoop() }, bot.getCooldown("attack"))
+                    return
+                }
+            }
+
+            if (bot.character.c.town) {
+                setTimeout(async () => { attackLoop() }, 10)
+                return
+            }
+
+            if (bot.getCooldown("scare") > 0) {
+                setTimeout(async () => { attackLoop() }, Math.min(bot.getCooldown("scare"), Math.max(bot.getCooldown("attack"), 10)))
+                return
+            }
+
             if (priestTarget) {
                 if (strategy[priestTarget].equipment) {
                     for (const s in strategy[priestTarget].equipment) {
@@ -2091,31 +2116,6 @@ async function startPriest(bot: Priest) {
                         }
                     }
                 }
-            }
-
-            if (bot.isPVP()) {
-                for (const enemy of bot.players.values()) {
-                    if (Tools.distance(bot.character, enemy) > bot.character.range) continue // We're too far to attack them
-                    if (bot.character.owner == enemy.owner) continue // We're friends
-                    if (bot.party && bot.party.list && bot.party.list.includes(enemy.id)) continue // We're friends
-                    if (enemy.rip) continue // Enemy is dead
-
-                    if (bot.canUse("curse")) await bot.curse(enemy.id)
-                    if (bot.canUse("attack")) await bot.attack(enemy.id)
-
-                    setTimeout(async () => { attackLoop() }, bot.getCooldown("attack"))
-                    return
-                }
-            }
-
-            if (bot.character.c.town) {
-                setTimeout(async () => { attackLoop() }, 10)
-                return
-            }
-
-            if (bot.getCooldown("scare") > 0) {
-                setTimeout(async () => { attackLoop() }, Math.min(bot.getCooldown("scare"), Math.max(bot.getCooldown("attack"), 10)))
-                return
             }
 
             if (priestTarget && strategy[priestTarget]) {
@@ -3011,6 +3011,11 @@ async function startWarrior(bot: Warrior) {
                 return
             }
 
+            if (bot.getCooldown("scare") > 0) {
+                setTimeout(async () => { attackLoop() }, Math.min(bot.getCooldown("scare"), Math.max(bot.getCooldown("attack"), 10)))
+                return
+            }
+            
             if (warriorTarget) {
                 if (strategy[warriorTarget].equipment) {
                     for (const s in strategy[warriorTarget].equipment) {
@@ -3038,11 +3043,6 @@ async function startWarrior(bot: Warrior) {
                         }
                     }
                 }
-            }
-
-            if (bot.getCooldown("scare") > 0) {
-                setTimeout(async () => { attackLoop() }, Math.min(bot.getCooldown("scare"), Math.max(bot.getCooldown("attack"), 10)))
-                return
             }
 
             if (warriorTarget && strategy[warriorTarget]) {
