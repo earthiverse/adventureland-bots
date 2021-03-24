@@ -3719,8 +3719,8 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
                     "goldenbat",
                     // // Very Rare Monsters
                     // "tinyp", "cutebee",
-                    // // Event Monsters
-                    // "pinkgoo", "wabbit",
+                    // Event Monsters
+                    "pinkgoo", "wabbit",
                     // // Rare Monsters
                     // "greenjr", "jr", "skeletor", "mvampire", "fvampire", "snowman"
                 ]
