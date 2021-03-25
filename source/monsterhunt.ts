@@ -1156,6 +1156,12 @@ async function startRanger(bot: Ranger) {
             equipment: { mainhand: "crossbow", orb: "test_orb" },
             attackWhileIdle: true
         },
+        wabbit: {
+            attack: async () => { return await defaultAttackStrategy(["wabbit"]) },
+            move: async () => { return await specialMonsterMoveStrategy("wabbit") },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
+            attackWhileIdle: true
+        },
         wolf: {
             attack: async () => { return await defaultAttackStrategy(["wolf"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "winterland", x: 400, y: -2525 }) },
@@ -1970,6 +1976,12 @@ async function startPriest(bot: Priest) {
         tortoise: {
             attack: async () => { return await defaultAttackStrategy(["tortoise"]) },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "main", x: -1104, y: 1118 }, "tortoise") },
+            equipment: { orb: "test_orb" },
+            attackWhileIdle: true
+        },
+        wabbit: {
+            attack: async () => { return await defaultAttackStrategy(["wabbit"]) },
+            move: async () => { return await specialMonsterMoveStrategy("wabbit") },
             equipment: { orb: "test_orb" },
             attackWhileIdle: true
         },
@@ -2914,6 +2926,12 @@ async function startWarrior(bot: Warrior) {
             attack: async () => { return await defaultAttackStrategy(["tortoise"]) },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "main", x: -1144, y: 1118 }, "tortoise") },
             equipment: { mainhand: "bataxe", orb: "test_orb" },
+            attackWhileIdle: true
+        },
+        wabbit: {
+            attack: async () => { return await defaultAttackStrategy(["wabbit"]) },
+            move: async () => { return await specialMonsterMoveStrategy("wabbit") },
+            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
             attackWhileIdle: true
         },
         wolf: {
