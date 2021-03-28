@@ -3747,9 +3747,8 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
 
                 // Priority #2: Special monsters that we can defeat by ourselves
                 const solo: MonsterName[] = [
-                    "goldenbat",
-                    // // Very Rare Monsters
-                    // "tinyp", "cutebee",
+                    // Very Rare Monsters
+                    "goldenbat", "tinyp", "cutebee",
                     // Event Monsters
                     "pinkgoo", "wabbit",
                     // // Rare Monsters
