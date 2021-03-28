@@ -1432,42 +1432,48 @@ export class Player extends Observer {
         return equipFinished
     }
 
-    public exchange(inventoryPos: number): Promise<boolean> {
+    // TODO: Improve to return item information
+    public exchange(inventoryPos: number): Promise<void> {
         if (!this.character.items[inventoryPos]) return Promise.reject(`No item in inventory slot ${inventoryPos}.`)
         if (this.G.maps[this.character.map].mount) return Promise.reject("We can't exchange things in the bank.")
-
-        const exchangeFinished = new Promise<boolean>((resolve, reject) => {
-            const completeCheck = (data: UpgradeData) => {
-                if (data.type == "exchange") {
-                    this.socket.removeListener("upgrade", completeCheck)
+        let startedExchange = false
+        if (this.character.q.exchange) startedExchange = true
+        const exchangeFinished = new Promise<void>((resolve, reject) => {
+            const completeCheck = (data: CharacterData) => {
+                if (!startedExchange && data.q.exchange.len == data.q.exchange.ms) {
+                    startedExchange = true
+                    return
+                }
+                if (startedExchange && !data.q.exchange) {
+                    this.socket.removeListener("player", completeCheck)
                     this.socket.removeListener("game_response", bankCheck)
-                    resolve(data.success == 1)
+                    resolve()
                 }
             }
             const bankCheck = (data: GameResponseData) => {
                 if (typeof data == "object" && data.response == "bank_restrictions" && data.place == "upgrade") {
-                    this.socket.removeListener("upgrade", completeCheck)
+                    this.socket.removeListener("player", completeCheck)
                     this.socket.removeListener("game_response", bankCheck)
                     reject("You can't exchange items in the bank.")
                 } else if (typeof data == "string") {
                     if (data == "exchange_notenough") {
-                        this.socket.removeListener("upgrade", completeCheck)
+                        this.socket.removeListener("player", completeCheck)
                         this.socket.removeListener("game_response", bankCheck)
                         reject("We don't have enough items to exchange.")
                     } else if (data == "exchange_existing") {
-                        this.socket.removeListener("upgrade", completeCheck)
+                        this.socket.removeListener("player", completeCheck)
                         this.socket.removeListener("game_response", bankCheck)
                         reject("We are already exchanging something.")
                     }
                 }
             }
             setTimeout(() => {
-                this.socket.removeListener("upgrade", completeCheck)
+                this.socket.removeListener("player", completeCheck)
                 this.socket.removeListener("game_response", bankCheck)
                 reject("exchange timeout (60000ms)")
             }, 60000)
             this.socket.on("game_response", bankCheck)
-            this.socket.on("upgrade", completeCheck)
+            this.socket.on("player", completeCheck)
         })
 
         this.socket.emit("exchange", { item_num: inventoryPos, q: this.character.items[inventoryPos]?.q })

@@ -77,6 +77,11 @@ export type CharacterData = {
             ms: number
             num: number
         }
+        exchange?: {
+            len: number
+            ms: number
+            // TODO: add more variables
+        }
     }
     age: number
     pdps: number
