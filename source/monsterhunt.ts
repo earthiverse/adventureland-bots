@@ -3394,7 +3394,8 @@ async function startMerchant(bot: Merchant) {
                 for (let i = 0; i < bot.character.items.length; i++) {
                     const item = bot.character.items[i]
                     if (!item) continue
-                    if (!MERCHANT_ITEMS_TO_HOLD.includes(item.name)) {
+                    if (!MERCHANT_ITEMS_TO_HOLD.includes(item.name) /* We don't want to hold on to it */
+                        || item.v) /* Item is PvP marked */ {
                         // Deposit it in the bank
                         try {
                             await bot.depositItem(i)
@@ -3506,6 +3507,21 @@ async function startMerchant(bot: Merchant) {
                     const pack = `items${Math.floor(i / 42)}` as Exclude<BankPackType, "gold">
                     const slot = i % 42
                     await bot.withdrawItem(pack, slot)
+                    freeSpaces--
+                }
+
+                // Withdraw things we want to hold
+                // TODO: improve to stack items that are stackable
+                for (let i = 0; i < bankItems.length && freeSpaces > 2; i++) {
+                    const item = bankItems[i]
+                    if (!item) continue // No item
+
+                    if (!MERCHANT_ITEMS_TO_HOLD.includes(item.name)) continue // We don't want to hold this item
+                    if (bot.hasItem(item.name)) continue // We are already holding one of these items
+
+                    const pack = `items${Math.floor(i / 42)}` as Exclude<BankPackType, "gold">
+                    const slot = i % 42
+                    bot.withdrawItem(pack, slot)
                     freeSpaces--
                 }
 
