@@ -2947,7 +2947,7 @@ async function startWarrior(bot: Warrior) {
                 }
                 return await specialMonsterMoveStrategy("wabbit")
             },
-            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
+            equipment: { mainhand: "bataxe", orb: "test_orb" },
             attackWhileIdle: true
         },
         wolf: {
