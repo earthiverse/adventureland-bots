@@ -299,7 +299,6 @@ export class Player extends Observer {
             if (data.type == "compound" && this.character.q.compound)
                 delete this.character.q.compound
 
-            // else if (data.type == "exchange" && this.character.q.exchange) delete this.character.q.exchange
             else if (data.type == "upgrade" && this.character.q.upgrade)
                 delete this.character.q.upgrade
         })
@@ -1440,7 +1439,7 @@ export class Player extends Observer {
         if (this.character.q.exchange) startedExchange = true
         const exchangeFinished = new Promise<void>((resolve, reject) => {
             const completeCheck = (data: CharacterData) => {
-                if (!startedExchange && data.q.exchange.len == data.q.exchange.ms) {
+                if (!startedExchange && data.q.exchange?.len == data.q.exchange?.ms) {
                     startedExchange = true
                     return
                 }
