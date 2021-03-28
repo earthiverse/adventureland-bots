@@ -654,6 +654,7 @@ async function startRanger(bot: Ranger) {
         // If we have a target scare it away
         for (const [, entity] of bot.entities) {
             if (entity.target == bot.character.id) {
+                if (strategy[entity.type].attackWhileIdle) continue // We can attack these while idle, it's okay.
                 if (bot.canUse("scare")) await bot.scare()
                 return bot.getCooldown("scare") // Don't attack until we have scare available again
             }
@@ -1557,6 +1558,7 @@ async function startPriest(bot: Priest) {
         // If we have a target scare it away
         for (const [, entity] of bot.entities) {
             if (entity.target == bot.character.id) {
+                if (strategy[entity.type].attackWhileIdle) continue // We can attack these while idle, it's okay.
                 if (bot.canUse("scare")) await bot.scare()
                 return bot.getCooldown("scare") // Don't attack until we have scare available again
             }
