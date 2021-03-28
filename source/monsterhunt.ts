@@ -2672,7 +2672,14 @@ async function startWarrior(bot: Warrior) {
         },
         cutebee: {
             attack: async () => { return await defaultAttackStrategy(["cutebee"]) },
-            move: async () => { return await specialMonsterMoveStrategy("cutebee") },
+            move: async () => {
+                const cutebee = bot.getNearestMonster("cutebee")
+                if (cutebee && !cutebee.monster.target) {
+                    await bot.smartMove({ x: cutebee.monster.going_x, y: cutebee.monster.going_y })
+                    return 250
+                }
+                return await specialMonsterMoveStrategy("cutebee")
+            },
             equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
             attackWhileIdle: true
         },
@@ -2930,7 +2937,14 @@ async function startWarrior(bot: Warrior) {
         },
         wabbit: {
             attack: async () => { return await defaultAttackStrategy(["wabbit"]) },
-            move: async () => { return await specialMonsterMoveStrategy("wabbit") },
+            move: async () => {
+                const wabbit = bot.getNearestMonster("wabbit")
+                if (wabbit && !wabbit.monster.target) {
+                    await bot.smartMove({ x: wabbit.monster.going_x, y: wabbit.monster.going_y })
+                    return 250
+                }
+                return await specialMonsterMoveStrategy("wabbit")
+            },
             equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
             attackWhileIdle: true
         },

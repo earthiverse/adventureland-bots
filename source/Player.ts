@@ -2457,8 +2457,7 @@ export class Player extends Observer {
                 closestD = d
             }
         })
-        if (closest)
-            return { monster: closest, distance: closestD }
+        if (closest) return { monster: closest, distance: closestD }
     }
 
     public getNearestAttackablePlayer(): { player: PlayerData; distance: number; } {
