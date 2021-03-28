@@ -125,7 +125,10 @@ export const MERCHANT_ITEMS_TO_HOLD: ItemName[] = [
     "cscroll0", "cscroll1", "cscroll2", "cscroll3", "scroll0", "scroll1", "scroll2", "scroll3", "scroll4", "strscroll", "intscroll", "dexscroll",
 
     // TEMP: For crafting pouchbows
-    "smoke"
+    "smoke",
+
+    // TEMP: For crafting eggbaskets
+    "egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8"
 ]
 
 export const PRIEST_ITEMS_TO_HOLD: ItemName[] = [

@@ -3033,7 +3033,7 @@ async function startWarrior(bot: Warrior) {
                 setTimeout(async () => { attackLoop() }, Math.min(bot.getCooldown("scare"), Math.max(bot.getCooldown("attack"), 10)))
                 return
             }
-            
+
             if (warriorTarget) {
                 if (strategy[warriorTarget].equipment) {
                     for (const s in strategy[warriorTarget].equipment) {
@@ -3310,19 +3310,16 @@ async function startMerchant(bot: Merchant) {
         try {
             if (bot.socket.disconnected) return
 
-            // Prevent the bank filling up with a lot of smokes
-            if (bot.character.gold > 25000000 && bot.canCraft("pouchbow")) {
-                console.log("we can craft a pouchbow!")
-                console.log("crafting pouchbow")
-                await bot.craft("pouchbow")
-            } else if (bot.character.gold > 25000000 && bot.hasItem("smoke")) {
-                console.log("we need to buy a bow")
-                if (bot.character.esize > 1 && !bot.hasItem("bow", bot.character.items, { level: 0 })) {
-                    console.log("buying bow")
+            if (bot.character.esize > 5) {
+                // We have enough empy slots
+                if (bot.canCraft("pouchbow")) await bot.craft("pouchbow")
+                if (bot.hasItem("smoke") && bot.canBuy("bow")) {
+                    // We have smoke, and we can buy the bow, let's do that and make a pouchbow
                     await bot.buy("bow")
-                    console.log("crafting pouchbow")
                     await bot.craft("pouchbow")
                 }
+
+                if (bot.canCraft("basketofeggs")) await bot.craft("basketofeggs")
             }
         } catch (e) {
             console.error(e)

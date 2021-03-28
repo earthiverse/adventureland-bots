@@ -429,7 +429,11 @@ export type SInfo = { [T in MonsterName]?: IPosition & {
   /** The character name that the monster is currently attacking */
   target?: string;
 } } & {
+  /** Easter Event */
+  egghunt?: boolean;
+  /** Christmas Event */
   holidayseason?: boolean;
+  /** Valentines Event */
   valentines?: boolean;
 }
 
