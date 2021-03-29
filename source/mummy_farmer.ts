@@ -587,7 +587,7 @@ async function startRanger(bot: AL.Ranger) {
                 return
             }
 
-            if (!AL.Pathfinder.canWalk(bot, mummySafe)) {
+            if (!AL.Pathfinder.canWalkPath(bot, mummySafe)) {
                 await bot.smartMove(mummySafe)
             }
 
@@ -741,7 +741,7 @@ async function startWarrior(bot: AL.Warrior) {
                 return
             }
 
-            if (!AL.Pathfinder.canWalk(bot, mummySafe)) {
+            if (!AL.Pathfinder.canWalkPath(bot, mummySafe)) {
                 await bot.smartMove(mummySafe)
             }
 
@@ -881,7 +881,7 @@ async function startPriest(bot: AL.Priest) {
                 return
             }
 
-            if (!AL.Pathfinder.canWalk(bot, mummySafe)) {
+            if (!AL.Pathfinder.canWalkPath(bot, mummySafe)) {
                 await bot.smartMove(mummySafe)
             }
 

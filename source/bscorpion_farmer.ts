@@ -28,7 +28,7 @@ async function startRanger(ranger: AL.Ranger) {
     const bscorpionSpawn = ranger.locateMonster("bscorpion")[0]
     async function moveLoop() {
         try {
-            if (AL.Pathfinder.canWalk(ranger, bscorpionSpawn)) {
+            if (AL.Pathfinder.canWalkPath(ranger, bscorpionSpawn)) {
                 const forces: { strength: number, angle: number }[] = []
 
                 // Force #1: Towards the center of the bscorpion spawn

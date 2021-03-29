@@ -5,13 +5,13 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
-    "@typescript-eslint/parser": "^4.13.0",
-    "alclient": "^0.3.10",
-    "eslint": "^7.17.0"
+    "@typescript-eslint/parser": "^4.19.0",
+    "alclient": "^0.3.14",
+    "eslint": "^7.23.0"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^4.13.0",
-    "typescript": "^4.1.3"
+    "@typescript-eslint/eslint-plugin": "^4.19.0",
+    "typescript": "^4.2.3"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
