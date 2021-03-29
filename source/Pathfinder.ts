@@ -460,7 +460,7 @@ export class Pathfinder {
         if (rawPath.length == 0) {
             throw new Error("We did not find a path...")
         }
-        path.push({ type: "move", map: from.map, x: from.x, y: from.y })
+        path.push({ type: "move", map: fromNode.data.map, x: fromNode.data.x, y: fromNode.data.y })
 
         for (let i = rawPath.length - 1; i > 0; i--) {
             const currentNode = rawPath[i]
@@ -469,10 +469,6 @@ export class Pathfinder {
             // TODO: Get links, and determine the faster link? This will help solve the walk to spawn issue on winterland.
             const link = this.graph.getLink(currentNode.id, nextNode.id)
             if (link.data) {
-                if (i == rawPath.length - 1 && link.data.type == "transport") {
-                    // We have to move to the transport first
-                    path.push({ type: "move", map: from.map, x: link.data.x, y: link.data.y })
-                }
                 path.push(link.data)
                 if (link.data.type == "town") {
                     // Town warps don't always go to the exact location, so sometimes we can't reach the next node.
@@ -498,6 +494,21 @@ export class Pathfinder {
         }
         path.push({ type: "move", map: to.map, x: to.x, y: to.y })
 
+        // Clean the path
+        for (let i = 0; i < path.length - 1; i++) {
+            const current = path[i]
+            const next = path[i + 1]
+
+            // If anything is different, continue
+            if (current.type !== next.type) continue
+            if (current.map !== next.map) continue
+            if (current.x !== next.x) continue
+            if (current.y !== next.y) continue
+
+            // The two nodes are the same, remove one
+            path.splice(i, 1)
+        }
+        
         console.log(`Path from ${fromNode.id} to ${toNode.id} found! (${path.length} steps)`)
         console.log(path)
         return path
