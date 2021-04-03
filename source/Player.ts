@@ -423,6 +423,8 @@ export class Player extends Observer {
                     monster.apiercing = this.G.monsters[monster.type].apiercing
                 if (monster.attack === undefined)
                     monster.attack = this.G.monsters[monster.type].attack
+                if (monster.avoidance === undefined)
+                    monster.avoidance = this.G.monsters[monster.type].avoidance
                 if (monster.cooperative === undefined)
                     monster.cooperative = this.G.monsters[monster.type].cooperative
                 if (monster.damage_type === undefined)
