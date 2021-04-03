@@ -3345,6 +3345,19 @@ async function startMerchant(bot: Merchant) {
     }
     craftLoop()
 
+    async function emoteLoop() {
+        try {
+            if (bot.socket.disconnected) return
+
+            bot.socket.emit("emotion", { name: "drop_egg" })
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { emoteLoop() }, 2000 + Math.min(...bot.pings))
+    }
+    emoteLoop()
+
     async function mluckLoop() {
         try {
             if (bot.socket.disconnected) return
