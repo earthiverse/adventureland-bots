@@ -1783,6 +1783,11 @@ export class Player extends Observer {
         this.socket.emit("cm", { to: to, message: JSON.stringify(message) })
     }
 
+    // TODO: Add promises
+    public async sendFriendRequest(name: string): Promise<void> {
+        this.socket.emit("friend", { event: "request", name: name })
+    }
+
     public async sendGold(to: string, amount: number): Promise<number> {
         if (this.character.gold == 0)
             return Promise.reject("We have no gold to send.")
