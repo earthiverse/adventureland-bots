@@ -1,19 +1,25 @@
 import AL from "alclient"
 import { NodeData } from "alclient/build/definitions/pathfinder"
+import { performance } from "perf_hooks"
 
 function moveDebug(from: NodeData, to: NodeData) {
     console.log(`Finding path from (${from.map},${from.x},${from.y}) to (${to.map},${to.x},${to.y})`)
-    const start = Date.now()
+    const start = performance.now()
     const closestSpawn = AL.Pathfinder.findClosestSpawn(from.map, from.x, from.y)
     const closestNodeFrom = AL.Pathfinder.findClosestNode(from.map, from.x, from.y)
     const closestNodeTo = AL.Pathfinder.findClosestNode(to.map, to.x, to.y)
+    const start2 = performance.now()
     const path = AL.Pathfinder.getPath(from, to)
-    const finish = Date.now()
+    const finish = performance.now()
 
-    console.log(`Computed the following path in ${finish - start}ms`)
+    console.log(`Computed the following in ${finish - start}ms (path only: ${finish - start2}ms)`)
+    console.log("Closest spawn:")
     console.log(closestSpawn)
+    console.log("Closest node (from):")
     console.log(closestNodeFrom.data)
+    console.log("Closest node (to):")
     console.log(closestNodeTo.data)
+    console.log("Path:")
     console.log(path)
     console.log("--------------------------------------------------------------------------------")
     return path
@@ -43,4 +49,20 @@ AL.Game.loginJSONFile("../credentials.json").then(async () => {
     console.log(AL.Pathfinder.canWalkPath(path[0], path[1]))
 
     path = moveDebug({ map: "winter_cave", x: 0, y: -50 }, { map: "main", x: -55, y: -472 })
+
+    path = moveDebug({ map: "jail", x: 0, y: 0 }, { map: "spookytown", x: 369, y: 250.5 })
+
+    path = moveDebug({map: "main", x: 0, y: 0 }, {map: "main", x: 10, y: 10})
+
+    // crab to crabx
+    path = moveDebug({map: "main", x: -1202.5, y: -66}, {map: "main", x: -984, y: 1762})
+
+    // main to crabx
+    path = moveDebug({map: "main", x: 0, y: 0}, {map: "main", x: -984, y: 1762})
+
+    // crabx to main
+    path = moveDebug({map: "main", x: -984, y: 1762}, {map: "main", x: 0, y: 0})
+
+    // scorpion to crabx
+    path = moveDebug({map: "main", x: 1577.5, y: -168}, {map: "main", x: -984, y: 1762})
 })
