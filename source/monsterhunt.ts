@@ -3795,7 +3795,7 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
                     // Event Monsters
                     "pinkgoo", "wabbit",
                     // // Rare Monsters
-                    // "greenjr", "jr", "skeletor", "mvampire", "fvampire", "snowman"
+                    "greenjr", "jr", "skeletor", "mvampire", "fvampire", "snowman"
                 ]
                 const soloEntities: IEntity[] = await EntityModel.aggregate([
                     {
