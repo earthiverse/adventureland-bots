@@ -2452,6 +2452,8 @@ async function startWarrior(bot: Warrior) {
                 if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                 if (Tools.distance(bot.character, entity) > bot.G.skills.cleave.range) continue // Only attack those in range
 
+                if (!strategy[entity.type]) { targets.length = 0; break } // We don't have a strategy for this monster, which means we don't want to attack this.
+
                 // If the target will die to incoming projectiles, ignore it
                 if (Tools.willDieToProjectiles(entity, bot)) continue
 
