@@ -445,7 +445,7 @@ async function botMovement(bot: PingCompensatedPlayer, target: MonsterName) {
                 if (entity.cooperative !== true && entity.target && bot.character.id !== entity.target) continue // It's targeting someone else
 
                 // If the target will die to incoming projectiles, ignore it
-                if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+                if (Tools.willDieToProjectiles(entity, bot)) continue
 
                 // If the target will burn to death, ignore it
                 if (Tools.willBurnToDeath(entity)) continue
@@ -498,7 +498,7 @@ async function startRogue(bot: Rogue) {
                     if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                     // If the target will die to incoming projectiles, ignore it
-                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+                    if (Tools.willDieToProjectiles(entity, bot)) continue
 
                     // If the target will burn to death, ignore it
                     if (Tools.willBurnToDeath(entity)) continue
@@ -544,7 +544,7 @@ async function startRogue(bot: Rogue) {
                     if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                     // If the target will die to incoming projectiles, ignore it
-                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+                    if (Tools.willDieToProjectiles(entity, bot)) continue
 
                     // If the target will burn to death, ignore it
                     if (Tools.willBurnToDeath(entity)) continue
@@ -571,7 +571,7 @@ async function startRogue(bot: Rogue) {
                     if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                     // If the target will die to incoming projectiles, ignore it
-                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+                    if (Tools.willDieToProjectiles(entity, bot)) continue
 
                     // If the target will burn to death, ignore it
                     if (Tools.willBurnToDeath(entity)) continue
@@ -680,7 +680,7 @@ async function startPaladin(bot: PingCompensatedPlayer) {
                     if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                     // If the target will die to incoming projectiles, ignore it
-                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+                    if (Tools.willDieToProjectiles(entity, bot)) continue
 
                     // If the target will burn to death, ignore it
                     if (Tools.willBurnToDeath(entity)) continue

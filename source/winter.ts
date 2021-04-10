@@ -442,7 +442,7 @@ async function startRanger(bot: Ranger) {
                 if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                 // If the target will die to incoming projectiles, ignore it
-                if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+                if (Tools.willDieToProjectiles(entity, bot)) continue
 
                 // If the target will burn to death, ignore it
                 if (Tools.willBurnToDeath(entity)) continue
@@ -513,7 +513,7 @@ async function startRanger(bot: Ranger) {
                 if (entity.immune) continue // Entity won't take damage from supershot
 
                 // If the target will die to incoming projectiles, ignore it
-                if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+                if (Tools.willDieToProjectiles(entity, bot)) continue
 
                 // If the target will burn to death, ignore it
                 if (Tools.willBurnToDeath(entity)) continue
@@ -557,7 +557,7 @@ async function startRanger(bot: Ranger) {
                 if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
 
                 // If the target will die to incoming projectiles, ignore it
-                if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+                if (Tools.willDieToProjectiles(entity, bot)) continue
 
                 // If the target will burn to death, ignore it
                 if (Tools.willBurnToDeath(entity)) continue
@@ -625,7 +625,7 @@ async function startRanger(bot: Ranger) {
                 if (entity.immune) continue // Entity won't take damage from supershot
 
                 // If the target will die to incoming projectiles, ignore it
-                if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+                if (Tools.willDieToProjectiles(entity, bot)) continue
 
                 // If the target will burn to death, ignore it
                 if (Tools.willBurnToDeath(entity)) continue
@@ -663,7 +663,7 @@ async function startRanger(bot: Ranger) {
             if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
 
             // If the target will die to incoming projectiles, ignore it
-            if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+            if (Tools.willDieToProjectiles(entity, bot)) continue
 
             // If the target will burn to death, ignore it
             if (Tools.willBurnToDeath(entity)) continue
@@ -1129,7 +1129,7 @@ async function startRanger(bot: Ranger) {
                         if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                         // If the target will die to incoming projectiles, ignore it
-                        if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+                        if (Tools.willDieToProjectiles(entity, bot)) continue
 
                         // If the target will burn to death, ignore it
                         if (Tools.willBurnToDeath(entity)) continue
@@ -1161,7 +1161,7 @@ async function startRanger(bot: Ranger) {
                         if (entity.immune) continue // Entity won't take damage from supershot
 
                         // If the target will die to incoming projectiles, ignore it
-                        if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+                        if (Tools.willDieToProjectiles(entity, bot)) continue
 
                         // If the target will burn to death, ignore it
                         if (Tools.willBurnToDeath(entity)) continue
@@ -1278,7 +1278,7 @@ async function startPriest(bot: Priest) {
                     if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                     // If the target will die to incoming projectiles, ignore it
-                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+                    if (Tools.willDieToProjectiles(entity, bot)) continue
 
                     // If the target will burn to death, ignore it
                     if (Tools.willBurnToDeath(entity)) continue
@@ -1369,7 +1369,7 @@ async function startPriest(bot: Priest) {
             if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
 
             // If the target will die to incoming projectiles, ignore it
-            if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+            if (Tools.willDieToProjectiles(entity, bot)) continue
 
             // If the target will burn to death, ignore it
             if (Tools.willBurnToDeath(entity)) continue
@@ -1832,7 +1832,7 @@ async function startPriest(bot: Priest) {
                     if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                     // If the target will die to incoming projectiles, ignore it
-                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+                    if (Tools.willDieToProjectiles(entity, bot)) continue
 
                     // If the target will burn to death, ignore it
                     if (Tools.willBurnToDeath(entity)) continue
@@ -1963,7 +1963,7 @@ async function startWarrior(bot: Warrior) {
                 if (distance > bot.character.range) continue // Only attack those in range
 
                 // If the target will die to incoming projectiles, ignore it
-                if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+                if (Tools.willDieToProjectiles(entity, bot)) continue
 
                 // If the target will burn to death, ignore it
                 if (Tools.willBurnToDeath(entity)) continue
@@ -2018,7 +2018,7 @@ async function startWarrior(bot: Warrior) {
                 if (Tools.distance(bot.character, entity) > bot.G.skills.stomp.range) continue // Only stomp those in range
 
                 // If the target will die to incoming projectiles, ignore it
-                if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+                if (Tools.willDieToProjectiles(entity, bot)) continue
 
                 // If the target will burn to death, ignore it
                 if (Tools.willBurnToDeath(entity)) continue
@@ -2037,7 +2037,7 @@ async function startWarrior(bot: Warrior) {
                 if (Tools.distance(bot.character, entity) > bot.G.skills.cleave.range) continue // Only attack those in range
 
                 // If the target will die to incoming projectiles, ignore it
-                if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+                if (Tools.willDieToProjectiles(entity, bot)) continue
 
                 // If the target will burn to death, ignore it
                 if (Tools.willBurnToDeath(entity)) continue
@@ -2171,7 +2171,7 @@ async function startWarrior(bot: Warrior) {
             if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
 
             // If the target will die to incoming projectiles, ignore it
-            if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+            if (Tools.willDieToProjectiles(entity, bot)) continue
 
             // If the target will burn to death, ignore it
             if (Tools.willBurnToDeath(entity)) continue
@@ -2602,7 +2602,7 @@ async function startWarrior(bot: Warrior) {
                         if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
                         // If the target will die to incoming projectiles, ignore it
-                        if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+                        if (Tools.willDieToProjectiles(entity, bot)) continue
 
                         // If the target will burn to death, ignore it
                         if (Tools.willBurnToDeath(entity)) continue

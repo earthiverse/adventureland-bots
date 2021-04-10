@@ -1,6 +1,7 @@
 import { ItemInfo, ItemName, MapName } from "./definitions/adventureland"
 import { ActionData, CharacterData, EntityData } from "./definitions/adventureland-server"
 import { Game } from "./Game.js"
+import { Player } from "./Player"
 
 export class Tools {
     /**
@@ -151,15 +152,19 @@ export class Tools {
 
     /**
      * Returns true if the entity will die to the already incoming projectiles
-     * TODO: Improve to check for damage types for reflection and evasion
+     *
      * @param entity 
      * @param projectiles 
      */
-    public static willDieToProjectiles(entity: EntityData, projectiles: Map<string, ActionData>): boolean {
+    public static willDieToProjectiles(entity: EntityData, bot: Player): boolean {
         if (entity["1hp"] || entity.evasion || entity.reflection || entity.avoidance) return false
         let incomingProjectileDamage = 0
-        for (const projectile of projectiles.values()) {
-            if (projectile.target == entity.id) incomingProjectileDamage += projectile.damage * 0.9
+        for (const [, projectile] of bot.projectiles) {
+            if (projectile.target == entity.id) {
+                if (bot.players.get(projectile.attacker)?.ctype == "priest") incomingProjectileDamage += projectile.damage * 0.4 * 0.9
+                else incomingProjectileDamage += projectile.damage * 0.9
+            }
+
             if (incomingProjectileDamage > entity.hp) return true
         }
         return false
