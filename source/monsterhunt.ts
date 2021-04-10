@@ -2322,7 +2322,7 @@ async function startPriest(bot: Priest) {
             // Heal our own bots (we can do this effectively cross-map!)
             if (bot.canUse("partyheal")) {
                 for (const bot of [priest, ranger, warrior, merchant]) {
-                    if (!bot || !bot.party || !bot.party.list || !bot.party.list.includes(priest.character.id)) continue // Our priest isn't in the party!?
+                    if (!bot?.party?.list?.includes(priest.character.id)) continue // Our priest isn't in the party!?
                     if (bot.character.rip) continue // Party member is already dead
                     if (bot.character.hp < bot.character.max_hp * 0.5) {
                         // Someone in our party has low HP
@@ -2335,7 +2335,7 @@ async function startPriest(bot: Priest) {
             // Heal other players (we can only do this effectively nearby)
             if (bot.canUse("partyheal")) {
                 for (const [, player] of bot.players) {
-                    if (!bot.party.list.includes(player.party)) continue // They aren't in our party
+                    if (!bot?.party?.list.includes(player.party)) continue // They aren't in our party
                     if (player.rip) continue // Party member is already dead
                     if (player.hp < player.max_hp * 0.5) {
                         // Someone in our party has low HP
