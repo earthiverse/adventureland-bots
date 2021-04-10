@@ -867,7 +867,7 @@ async function startRanger(bot: Ranger) {
         bbpompom: {
             attack: async () => { return await defaultAttackStrategy(["bbpompom"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "winter_cave", x: 51, y: -164 }) },
-            equipment: { mainhand: "crossbow", orb: "jacko" }
+            equipment: { mainhand: "crossbow", orb: "test_orb" }
         },
         bee: {
             attack: async () => { return await defaultAttackStrategy(["bee"]) },
@@ -878,27 +878,27 @@ async function startRanger(bot: Ranger) {
         bigbird: {
             attack: async () => { return await defaultAttackStrategy(["bigbird"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "main", x: 1343, y: 248 }) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
             attackWhileIdle: false,
             requirePriest: true
         },
         boar: {
             attack: async () => { return await defaultAttackStrategy(["boar"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "winterland", x: 20, y: -1109 }) },
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: { mainhand: "crossbow", orb: "test_orb" },
             attackWhileIdle: true,
             requirePriest: true
         },
         booboo: {
             attack: async () => { return await defaultAttackStrategy(["booboo"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 265, y: -645 }) },
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: { mainhand: "crossbow", orb: "test_orb" },
             requirePriest: true
         },
         cgoo: {
             attack: async () => { return await defaultAttackStrategy(["cgoo"]) },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "arena", x: 0, y: -500 }, "cgoo") },
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: { mainhand: "crossbow", orb: "test_orb" },
             attackWhileIdle: true
         },
         crab: {
@@ -910,7 +910,7 @@ async function startRanger(bot: Ranger) {
         crabx: {
             attack: async () => { return await defaultAttackStrategy(["crabx"]) },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "main", x: -984, y: 1762 }, "crabx") },
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: { mainhand: "crossbow", orb: "test_orb" },
             attackWhileIdle: true
         },
         croc: {
@@ -933,7 +933,7 @@ async function startRanger(bot: Ranger) {
         fireroamer: {
             attack: async () => { return await tankAttackStrategy("fireroamer", warrior.character.id) },
             move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: 160, y: -675 }) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
             requirePriest: true
         },
         franky: {
@@ -948,19 +948,19 @@ async function startRanger(bot: Ranger) {
                     return await specialMonsterMoveStrategy("franky")
                 }
             },
-            equipment: { mainhand: "crossbow", orb: "jacko" }
+            equipment: { mainhand: "crossbow", orb: "test_orb" }
         },
         fvampire: {
             attack: async () => { return await defaultAttackStrategy(["fvampire"]) },
             move: async () => { return await specialMonsterMoveStrategy("fvampire") },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
             attackWhileIdle: true,
             requirePriest: true
         },
         ghost: {
             attack: async () => { return await defaultAttackStrategy(["ghost"]) },
             move: async () => { return holdPositionMoveStrategy({ map: "halloween", x: 256, y: -1224 }) },
-            equipment: { mainhand: "firebow", orb: "jacko" }
+            equipment: { mainhand: "firebow", orb: "test_orb" }
         },
         goldenbat: {
             attack: async () => { return await defaultAttackStrategy(["goldenbat"]) },
@@ -977,7 +977,7 @@ async function startRanger(bot: Ranger) {
         greenjr: {
             attack: async () => { return await defaultAttackStrategy(["greenjr"]) },
             move: async () => { return await specialMonsterMoveStrategy("greenjr") },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
             attackWhileIdle: true
         },
         hen: {
@@ -994,7 +994,7 @@ async function startRanger(bot: Ranger) {
         jr: {
             attack: async () => { return await defaultAttackStrategy(["jr"]) },
             move: async () => { return await specialMonsterMoveStrategy("jr") },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
             attackWhileIdle: true
         },
         minimush: {
@@ -1006,43 +1006,43 @@ async function startRanger(bot: Ranger) {
         mole: {
             attack: async () => { return await tankAttackStrategy("mole", warrior.character.id) },
             move: async () => { return await holdPositionMoveStrategy({ map: "tunnel", x: -15, y: -329 }) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
             requirePriest: true
         },
         mummy: {
             attack: async () => { return await defaultAttackStrategy(["mummy"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 250, y: -1129 }) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
             requirePriest: true
         },
         mrgreen: {
             attack: async () => { return await defaultAttackStrategy(["mrgreen"]) },
             move: async () => { return await specialMonsterMoveStrategy("mrgreen") },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
             requirePriest: true
         },
         mrpumpkin: {
             attack: async () => { return await defaultAttackStrategy(["mrpumpkin"]) },
             move: async () => { return await specialMonsterMoveStrategy("mrpumpkin") },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
             requirePriest: true
         },
         mvampire: {
             attack: async () => { return await defaultAttackStrategy(["mvampire"]) },
             move: async () => { return await specialMonsterMoveStrategy("mvampire") },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
             attackWhileIdle: true
         },
         nerfedmummy: {
             attack: async () => { return await defaultAttackStrategy(["nerfedmummy"]) },
             move: async () => { return await specialMonsterMoveStrategy("franky") },
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: { mainhand: "crossbow", orb: "test_orb" },
             attackWhileIdle: true
         },
         oneeye: {
             attack: async () => { return await tankAttackStrategy("oneeye", warrior.character.id) },
             move: async () => { return await holdPositionMoveStrategy({ map: "level2w", x: -175, y: 0 }) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
             requirePriest: true
         },
         osnake: {
@@ -1060,7 +1060,7 @@ async function startRanger(bot: Ranger) {
         plantoid: {
             attack: async () => { return await defaultAttackStrategy(["plantoid"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: -750, y: -125 }) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
             requirePriest: true
         },
         poisio: {
@@ -1078,13 +1078,13 @@ async function startRanger(bot: Ranger) {
         pppompom: {
             attack: async () => { return await tankAttackStrategy("pppompom", warrior.character.id) },
             move: async () => { return await holdPositionMoveStrategy({ map: "level2n", x: 120, y: -170 }) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
             requirePriest: true
         },
         prat: {
             attack: async () => { return await defaultAttackStrategy(["prat"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "level1", x: -280, y: 541 }) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
             requirePriest: true
         },
         rat: {
@@ -1108,7 +1108,7 @@ async function startRanger(bot: Ranger) {
         skeletor: {
             attack: async () => { return await tankAttackStrategy("skeletor", warrior.character.id) },
             move: async () => { return await holdPositionMoveStrategy({ map: "arena", x: 380, y: -575 }) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
             requirePriest: true
         },
         snake: {
@@ -1166,19 +1166,19 @@ async function startRanger(bot: Ranger) {
         wolf: {
             attack: async () => { return await defaultAttackStrategy(["wolf"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "winterland", x: 400, y: -2525 }) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
             requirePriest: true
         },
         wolfie: {
             attack: async () => { return await defaultAttackStrategy(["wolfie"]) },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "winterland", x: -169, y: -2026 }, "wolfie") },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
             requirePriest: true
         },
         xscorpion: {
             attack: async () => { return await tankAttackStrategy("xscorpion", warrior.character.id) },
             move: async () => { return await holdPositionMoveStrategy({ map: "halloween", x: -325, y: 775 }) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
             requirePriest: true
         }
     }
@@ -1699,7 +1699,7 @@ async function startPriest(bot: Priest) {
         bbpompom: {
             attack: async () => { return await defaultAttackStrategy(["bbpompom"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "winter_cave", x: 71, y: -164 }) },
-            equipment: { orb: "jacko" }
+            equipment: { orb: "test_orb" }
         },
         bee: {
             attack: async () => { return await defaultAttackStrategy(["bee"]) },
@@ -1710,24 +1710,24 @@ async function startPriest(bot: Priest) {
         bigbird: {
             attack: async () => { return await defaultAttackStrategy(["bigbird"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "main", x: 1363, y: 248 }) },
-            equipment: { orb: "jacko" },
+            equipment: { orb: "test_orb" },
             attackWhileIdle: false
         },
         boar: {
             attack: async () => { return await defaultAttackStrategy(["boar"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "winterland", x: 40, y: -1109 }) },
-            equipment: { orb: "jacko" },
+            equipment: { orb: "test_orb" },
             attackWhileIdle: true
         },
         booboo: {
             attack: async () => { return await defaultAttackStrategy(["booboo"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 265, y: -605 }) },
-            equipment: { orb: "jacko" },
+            equipment: { orb: "test_orb" },
         },
         cgoo: {
             attack: async () => { return await defaultAttackStrategy(["cgoo"]) },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "arena", x: 650, y: -500 }, "cgoo") },
-            equipment: { orb: "jacko" },
+            equipment: { orb: "test_orb" },
             attackWhileIdle: true
         },
         crab: {
@@ -1762,7 +1762,7 @@ async function startPriest(bot: Priest) {
         fireroamer: {
             attack: async () => { return await tankAttackStrategy("fireroamer", warrior.character.id) },
             move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: 180, y: -675 }) },
-            equipment: { orb: "jacko" }
+            equipment: { orb: "test_orb" }
         },
         franky: {
             attack: async () => { return await defaultAttackStrategy(["nerfedmummy", "franky"]) },
@@ -1776,7 +1776,7 @@ async function startPriest(bot: Priest) {
                     return await specialMonsterMoveStrategy("franky")
                 }
             },
-            equipment: { orb: "jacko" }
+            equipment: { orb: "test_orb" }
         },
         frog: {
             attack: async () => { return await defaultAttackStrategy(["frog"]) },
@@ -1787,13 +1787,13 @@ async function startPriest(bot: Priest) {
         fvampire: {
             attack: async () => { return await defaultAttackStrategy(["fvampire"]) },
             move: async () => { return await specialMonsterMoveStrategy("fvampire") },
-            equipment: { orb: "jacko" },
+            equipment: { orb: "test_orb" },
             attackWhileIdle: true
         },
         ghost: {
             attack: async () => { return await defaultAttackStrategy(["ghost"]) },
             move: async () => { return holdPositionMoveStrategy({ map: "halloween", x: 276, y: -1224 }) },
-            equipment: { orb: "jacko" }
+            equipment: { orb: "test_orb" }
         },
         goldenbat: {
             attack: async () => { return await defaultAttackStrategy(["goldenbat"]) },
@@ -1839,12 +1839,12 @@ async function startPriest(bot: Priest) {
         mole: {
             attack: async () => { return await tankAttackStrategy("mole", warrior.character.id) },
             move: async () => { return await holdPositionMoveStrategy({ map: "tunnel", x: -35, y: -329 }) },
-            equipment: { orb: "jacko" }
+            equipment: { orb: "test_orb" }
         },
         mummy: {
             attack: async () => { return await defaultAttackStrategy(["mummy"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 270, y: -1129 }) },
-            equipment: { orb: "jacko" }
+            equipment: { orb: "test_orb" }
         },
         mrgreen: {
             attack: async () => { return await defaultAttackStrategy(["mrgreen"]) },
@@ -1865,18 +1865,18 @@ async function startPriest(bot: Priest) {
         nerfedmummy: {
             attack: async () => { return await defaultAttackStrategy(["nerfedmummy"]) },
             move: async () => { return await specialMonsterMoveStrategy("franky") },
-            equipment: { orb: "jacko" },
+            equipment: { orb: "test_orb" },
             attackWhileIdle: true
         },
         oneeye: {
             attack: async () => { return await tankAttackStrategy("oneeye", warrior.character.id) },
             move: async () => { return await holdPositionMoveStrategy({ map: "level2w", x: -155, y: 0 }) },
-            equipment: { orb: "jacko" }
+            equipment: { orb: "test_orb" }
         },
         osnake: {
             attack: async () => { return await defaultAttackStrategy(["osnake"]) },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "halloween", x: -488, y: -708 }, "osnake") },
-            equipment: { orb: "jacko" },
+            equipment: { orb: "test_orb" },
             attackWhileIdle: true
         },
         phoenix: {
@@ -1888,7 +1888,7 @@ async function startPriest(bot: Priest) {
         plantoid: {
             attack: async () => { return await defaultAttackStrategy(["plantoid"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: -730, y: -125 }) },
-            equipment: { orb: "jacko" }
+            equipment: { orb: "test_orb" }
         },
         poisio: {
             attack: async () => { return await defaultAttackStrategy(["poisio"]) },
@@ -1905,12 +1905,12 @@ async function startPriest(bot: Priest) {
         pppompom: {
             attack: async () => { return await tankAttackStrategy("pppompom", warrior.character.id) },
             move: async () => { return await holdPositionMoveStrategy({ map: "level2n", x: 120, y: -130 }) },
-            equipment: { orb: "jacko" }
+            equipment: { orb: "test_orb" }
         },
         prat: {
             attack: async () => { return await defaultAttackStrategy(["prat"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "level1", x: -296, y: 557 }) },
-            equipment: { orb: "jacko" },
+            equipment: { orb: "test_orb" },
         },
         rat: {
             attack: async () => { return await defaultAttackStrategy(["rat"]) },
@@ -1933,7 +1933,7 @@ async function startPriest(bot: Priest) {
         skeletor: {
             attack: async () => { return await tankAttackStrategy("skeletor", warrior.character.id) },
             move: async () => { return await holdPositionMoveStrategy({ map: "arena", x: 400, y: -575 }) },
-            equipment: { orb: "jacko" }
+            equipment: { orb: "test_orb" }
         },
         snake: {
             attack: async () => { return await defaultAttackStrategy(["snake"]) },
@@ -1968,7 +1968,7 @@ async function startPriest(bot: Priest) {
         stoneworm: {
             attack: async () => { return await defaultAttackStrategy(["stoneworm"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 697, y: 129 }) },
-            equipment: { orb: "jacko" },
+            equipment: { orb: "test_orb" },
         },
         tinyp: {
             attack: async () => { return await tankAttackStrategy("tinyp", warrior.character.id) },
@@ -1990,17 +1990,17 @@ async function startPriest(bot: Priest) {
         wolf: {
             attack: async () => { return await defaultAttackStrategy(["wolf"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "winterland", x: 420, y: -2525 }) },
-            equipment: { orb: "jacko" },
+            equipment: { orb: "test_orb" },
         },
         wolfie: {
             attack: async () => { return await defaultAttackStrategy(["wolfie"]) },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "winterland", x: -149, y: -2026 }, "wolfie") },
-            equipment: { orb: "jacko" }
+            equipment: { orb: "test_orb" }
         },
         xscorpion: {
             attack: async () => { return await tankAttackStrategy("xscorpion", warrior.character.id) },
             move: async () => { return await holdPositionMoveStrategy({ map: "halloween", x: -325, y: 725 }) },
-            equipment: { orb: "jacko" }
+            equipment: { orb: "test_orb" }
         }
     }
 
@@ -2671,7 +2671,7 @@ async function startWarrior(bot: Warrior) {
         bbpompom: {
             attack: async () => { return await defaultAttackStrategy(["bbpompom"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "winter_cave", x: 31, y: -164 }) },
-            equipment: { mainhand: "basher", orb: "jacko" }
+            equipment: { mainhand: "basher", orb: "test_orb" }
         },
         bee: {
             attack: async () => { return await defaultAttackStrategy(["bee"]) },
@@ -2682,20 +2682,20 @@ async function startWarrior(bot: Warrior) {
         bigbird: {
             attack: async () => { return await defaultAttackStrategy(["bigbird"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "main", x: 1323, y: 248 }) },
-            equipment: { mainhand: "basher", orb: "jacko" },
+            equipment: { mainhand: "basher", orb: "test_orb" },
             requirePriest: true,
             attackWhileIdle: false
         },
         boar: {
             attack: async () => { return await defaultAttackStrategy(["boar"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "winterland", x: 0, y: -1109 }) },
-            equipment: { mainhand: "basher", orb: "jacko" },
+            equipment: { mainhand: "basher", orb: "test_orb" },
             attackWhileIdle: true
         },
         booboo: {
             attack: async () => { return await oneTargetAttackStrategy("booboo") },
             move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 265, y: -625 }) },
-            equipment: { mainhand: "basher", orb: "jacko" },
+            equipment: { mainhand: "basher", orb: "test_orb" },
             requirePriest: true
         },
         cgoo: {
@@ -2708,7 +2708,7 @@ async function startWarrior(bot: Warrior) {
                     return await nearbyMonstersMoveStrategy({ map: "arena", x: 151.6, y: 40.82 }, "cgoo")
                 }
             },
-            equipment: { mainhand: "basher", orb: "jacko" }
+            equipment: { mainhand: "basher", orb: "test_orb" }
         },
         crab: {
             attack: async () => { return await defaultAttackStrategy(["crab"]) },
@@ -2755,12 +2755,12 @@ async function startWarrior(bot: Warrior) {
         franky: {
             attack: async () => { return await defaultAttackStrategy(["nerfedmummy", "franky"]) },
             move: async () => { return await specialMonsterMoveStrategy("franky") },
-            equipment: { mainhand: "basher", orb: "jacko" }
+            equipment: { mainhand: "basher", orb: "test_orb" }
         },
         fvampire: {
             attack: async () => { return await defaultAttackStrategy(["fvampire"]) },
             move: async () => { return await specialMonsterMoveStrategy("fvampire") },
-            equipment: { mainhand: "basher", orb: "jacko" },
+            equipment: { mainhand: "basher", orb: "test_orb" },
             attackWhileIdle: true,
             requirePriest: true
         },
@@ -2784,7 +2784,7 @@ async function startWarrior(bot: Warrior) {
         greenjr: {
             attack: async () => { return await defaultAttackStrategy(["greenjr"]) },
             move: async () => { return await specialMonsterMoveStrategy("greenjr") },
-            equipment: { mainhand: "basher", orb: "jacko" },
+            equipment: { mainhand: "basher", orb: "test_orb" },
             attackWhileIdle: true
         },
         hen: {
@@ -2803,12 +2803,12 @@ async function startWarrior(bot: Warrior) {
                     return await nearbyMonstersMoveStrategy({ map: "winterland", x: 1532, y: 104 }, "iceroamer")
                 }
             },
-            equipment: { mainhand: "basher", orb: "test_orb" }
+            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" }
         },
         jr: {
             attack: async () => { return await defaultAttackStrategy(["jr"]) },
             move: async () => { return await specialMonsterMoveStrategy("jr") },
-            equipment: { mainhand: "basher", orb: "jacko" },
+            equipment: { mainhand: "basher", orb: "test_orb" },
             attackWhileIdle: true
         },
         minimush: {
@@ -2820,44 +2820,44 @@ async function startWarrior(bot: Warrior) {
         mole: {
             attack: async () => { return await defaultAttackStrategy(["mole"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "tunnel", x: 5, y: -329 }) },
-            equipment: { mainhand: "basher", orb: "jacko" },
+            equipment: { mainhand: "basher", orb: "test_orb" },
             requirePriest: true
         },
         mummy: {
             attack: async () => { return await defaultAttackStrategy(["mummy"]) },
             // TODO: Make abuseRageMoveStrategy where we go to the rage range until we have targets, then move back.
             move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 230, y: -1129 }) },
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: { mainhand: "bataxe", orb: "test_orb" },
             requirePriest: true
         },
         mrgreen: {
             attack: async () => { return await defaultAttackStrategy(["mrgreen"]) },
             move: async () => { return await specialMonsterMoveStrategy("mrgreen") },
-            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "jacko" },
+            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
             requirePriest: true
         },
         mrpumpkin: {
             attack: async () => { return await defaultAttackStrategy(["mrpumpkin"]) },
             move: async () => { return await specialMonsterMoveStrategy("mrpumpkin") },
-            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "jacko" },
+            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
             requirePriest: true
         },
         mvampire: {
             attack: async () => { return await defaultAttackStrategy(["mvampire"]) },
             move: async () => { return await specialMonsterMoveStrategy("mvampire") },
-            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "jacko" },
+            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
             attackWhileIdle: true
         },
         nerfedmummy: {
             attack: async () => { return await defaultAttackStrategy(["nerfedmummy"]) },
             move: async () => { return await specialMonsterMoveStrategy("franky") },
-            equipment: { mainhand: "basher", orb: "jacko" },
+            equipment: { mainhand: "basher", orb: "test_orb" },
             attackWhileIdle: true
         },
         oneeye: {
             attack: async () => { return await oneTargetAttackStrategy("oneeye") },
             move: async () => { return await holdPositionMoveStrategy({ map: "level2w", x: -195, y: 0 }) },
-            equipment: { mainhand: "basher", orb: "jacko" },
+            equipment: { mainhand: "basher", orb: "test_orb" },
             requirePriest: true
         },
         osnake: {
@@ -2890,7 +2890,7 @@ async function startWarrior(bot: Warrior) {
         plantoid: {
             attack: async () => { return await oneTargetAttackStrategy("plantoid") },
             move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: -770, y: -125 }) },
-            equipment: { mainhand: "basher", orb: "jacko" },
+            equipment: { mainhand: "basher", orb: "test_orb" },
             requirePriest: true
         },
         poisio: {
@@ -2902,7 +2902,7 @@ async function startWarrior(bot: Warrior) {
         pppompom: {
             attack: async () => { return oneTargetAttackStrategy("pppompom") },
             move: async () => { return await holdPositionMoveStrategy({ map: "level2n", x: 120, y: -150 }) },
-            equipment: { mainhand: "basher", orb: "jacko" },
+            equipment: { mainhand: "basher", orb: "test_orb" },
             requirePriest: true
         },
         rat: {
@@ -2926,7 +2926,7 @@ async function startWarrior(bot: Warrior) {
         skeletor: {
             attack: async () => { return await oneTargetAttackStrategy("skeletor") },
             move: async () => { return await holdPositionMoveStrategy({ map: "arena", x: 360, y: -575 }) },
-            equipment: { mainhand: "basher", orb: "jacko" },
+            equipment: { mainhand: "basher", orb: "test_orb" },
             requirePriest: true
         },
         snake: {
@@ -3028,19 +3028,19 @@ async function startWarrior(bot: Warrior) {
         wolf: {
             attack: async () => { return await oneTargetAttackStrategy("wolf") },
             move: async () => { return await holdPositionMoveStrategy({ map: "winterland", x: 380, y: -2525 }) },
-            equipment: { mainhand: "basher", orb: "jacko" },
+            equipment: { mainhand: "basher", orb: "test_orb" },
             requirePriest: true
         },
         wolfie: {
             attack: async () => { return await defaultAttackStrategy(["wolfie"]) },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "winterland", x: -189, y: -2026 }, "wolfie") },
-            equipment: { mainhand: "basher", orb: "jacko" },
+            equipment: { mainhand: "basher", orb: "test_orb" },
             requirePriest: true
         },
         xscorpion: {
             attack: async () => { return await oneTargetAttackStrategy("xscorpion") },
             move: async () => { return await holdPositionMoveStrategy({ map: "halloween", x: -325, y: 750 }) },
-            equipment: { mainhand: "basher", orb: "jacko" },
+            equipment: { mainhand: "basher", orb: "test_orb" },
             requirePriest: true
         }
     }
