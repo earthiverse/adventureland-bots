@@ -2708,6 +2708,7 @@ async function startWarrior(bot: Warrior) {
                     return await nearbyMonstersMoveStrategy({ map: "arena", x: 151.6, y: 40.82 }, "cgoo")
                 }
             },
+            equipment: { mainhand: "basher", orb: "jacko" }
         },
         crab: {
             attack: async () => { return await defaultAttackStrategy(["crab"]) },
