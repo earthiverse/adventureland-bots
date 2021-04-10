@@ -2335,7 +2335,7 @@ async function startPriest(bot: Priest) {
             // Heal other players (we can only do this effectively nearby)
             if (bot.canUse("partyheal")) {
                 for (const [, player] of bot.players) {
-                    if (!bot?.party?.list.includes(player.party)) continue // They aren't in our party
+                    if (!bot?.party?.list?.includes(player.party)) continue // They aren't in our party
                     if (player.rip) continue // Party member is already dead
                     if (player.hp < player.max_hp * 0.5) {
                         // Someone in our party has low HP
@@ -2696,6 +2696,17 @@ async function startWarrior(bot: Warrior) {
             equipment: { mainhand: "basher", orb: "jacko" },
             requirePriest: true
         },
+        cgoo: {
+            attack: async () => { return await defaultAttackStrategy(["cgoo"]) },
+            move: async () => {
+                if (bot.character.hp < bot.character.max_hp * 0.5) {
+                    await bot.smartMove(priest.character, { getWithin: priest.character.range })
+                    return 1000
+                } else {
+                    return await nearbyMonstersMoveStrategy({ map: "arena", x: 151.6, y: 40.82 }, "cgoo")
+                }
+            },
+        },
         crab: {
             attack: async () => { return await defaultAttackStrategy(["crab"]) },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "main", x: -1222, y: -66 }, "crab") },
@@ -2781,7 +2792,14 @@ async function startWarrior(bot: Warrior) {
         },
         iceroamer: {
             attack: async () => { return await defaultAttackStrategy(["iceroamer"]) },
-            move: async () => { return await holdPositionMoveStrategy({ map: "winterland", x: 1532, y: 104 }) },
+            move: async () => {
+                if (bot.character.hp < bot.character.max_hp * 0.5) {
+                    await bot.smartMove(priest.character, { getWithin: priest.character.range })
+                    return 1000
+                } else {
+                    return await nearbyMonstersMoveStrategy({ map: "winterland", x: 1532, y: 104 }, "iceroamer")
+                }
+            },
             equipment: { mainhand: "basher", orb: "test_orb" }
         },
         jr: {
@@ -2967,6 +2985,18 @@ async function startWarrior(bot: Warrior) {
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "main", x: -1195, y: 422 }, "squigtoad") },
             equipment: { mainhand: "bataxe", orb: "test_orb" },
             attackWhileIdle: true
+        },
+        stoneworm: {
+            attack: async () => { return await defaultAttackStrategy(["stoneworm"]) },
+            move: async () => {
+                if (bot.character.hp < bot.character.max_hp * 0.5) {
+                    await bot.smartMove(priest.character, { getWithin: priest.character.range })
+                    return 1000
+                } else {
+                    return await nearbyMonstersMoveStrategy({ map: "spookytown", x: 717, y: 129 }, "stoneworm")
+                }
+            },
+            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" }
         },
         tinyp: {
             attack: async () => { return await stompThenAttackStrategy("tinyp") },
