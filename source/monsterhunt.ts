@@ -2025,6 +2025,8 @@ async function startPriest(bot: Priest) {
 
             for (const friend of [warrior, ranger]) {
                 if (Tools.distance(bot.character, friend.character) <= bot.G.skills.absorb.range
+                    && friend.character.targets > 1
+                    && bot.getCooldown("scare") == 0
                     && bot.canUse("absorb")) {
                     let numMagicalTargets = 0
                     for (const [, entity] of friend.entities) {
