@@ -2023,20 +2023,22 @@ async function startPriest(bot: Priest) {
         try {
             if (bot.socket.disconnected) return
 
-            if (Tools.distance(bot.character, warrior.character) <= bot.G.skills.absorb.range
-                && bot.canUse("absorb")) {
-                let numMagicalTargets = 0
-                for (const [, entity] of warrior.entities) {
-                    if (entity.target !== warrior.character.id) continue
-                    if (entity.damage_type !== "magical") continue
-                    if (Tools.willBurnToDeath(entity)) continue
-                    if (Tools.willDieToProjectiles(entity, warrior)) continue
+            for (const friend of [warrior, ranger]) {
+                if (Tools.distance(bot.character, friend.character) <= bot.G.skills.absorb.range
+                    && bot.canUse("absorb")) {
+                    let numMagicalTargets = 0
+                    for (const [, entity] of friend.entities) {
+                        if (entity.target !== friend.character.id) continue
+                        if (entity.damage_type !== "magical") continue
+                        if (Tools.willBurnToDeath(entity)) continue
+                        if (Tools.willDieToProjectiles(entity, warrior)) continue
 
-                    numMagicalTargets++
-                }
+                        numMagicalTargets++
+                    }
 
-                if (numMagicalTargets > 0 && bot.character.targets + numMagicalTargets <= bot.character.mcourage) {
-                    bot.absorbSins(warrior.character.id)
+                    if (numMagicalTargets > 0 && bot.character.targets + numMagicalTargets <= bot.character.mcourage) {
+                        bot.absorbSins(warrior.character.id)
+                    }
                 }
             }
         } catch (e) {
