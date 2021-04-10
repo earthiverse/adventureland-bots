@@ -2670,8 +2670,15 @@ async function startWarrior(bot: Warrior) {
         },
         bbpompom: {
             attack: async () => { return await defaultAttackStrategy(["bbpompom"]) },
-            move: async () => { return await holdPositionMoveStrategy({ map: "winter_cave", x: 31, y: -164 }) },
-            equipment: { mainhand: "basher", orb: "test_orb" }
+            move: async () => {
+                if (bot.character.hp < bot.character.max_hp * 0.5) {
+                    await bot.smartMove(priest.character, { getWithin: priest.character.range })
+                    return 1000
+                } else {
+                    return await nearbyMonstersMoveStrategy({ map: "winter_cave", x: 31, y: -164 }, "bbpompom")
+                }
+            },
+            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" }
         },
         bee: {
             attack: async () => { return await defaultAttackStrategy(["bee"]) },
