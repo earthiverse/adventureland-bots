@@ -1,13 +1,13 @@
 import AL, { MonsterName } from "alclient"
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
-const targetMonster: MonsterName = "goo"
+const targetMonster: MonsterName = "snake"
 
 async function run() {
     await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Pathfinder.prepare()])
     const warrior = await AL.Game.startWarrior("earthWar2", "ASIA", "I")
 
-    console.log(warrior.locateMonster("goo"))
+    console.log(warrior.locateMonster(targetMonster))
 
     /**
      * Open chests from the monsters we kill
@@ -58,16 +58,20 @@ async function run() {
     async function moveLoop() {
         while (true) {
             try {
-                console.log(`Finding nearest ${targetMonster} to move to`)
-                const nearestTarget = warrior.getNearestMonster(targetMonster)
-                if (!nearestTarget) {
-                    // Move to goo spawn
-                    console.log(`Moing to ${targetMonster}s`)
-                    await warrior.smartMove(targetMonster).catch(() => { /* Empty to suppress messages */ })
-                } else if (nearestTarget.distance > warrior.range) {
-                    console.log(`Moving to nearest ${targetMonster}`)
-                    warrior.smartMove(nearestTarget.monster).catch(() => { /* Empty to suppress messages */ })
-                }
+                // console.log(`Finding nearest ${targetMonster} to move to`)
+                // const nearestTarget = warrior.getNearestMonster(targetMonster)
+                // if (!nearestTarget) {
+                //     // Move to goo spawn
+                //     console.log(`Moing to ${targetMonster}s`)
+                //     await warrior.smartMove(targetMonster).catch(() => { /* Empty to suppress messages */ })
+                // } else if (nearestTarget.distance > warrior.range) {
+                //     console.log(`Moving to nearest ${targetMonster}`)
+                //     warrior.smartMove(nearestTarget.monster).catch(() => { /* Empty to suppress messages */ })
+                // }
+                await warrior.smartMove(targetMonster)
+                await warrior.smartMove("main")
+                await warrior.smartMove(targetMonster)
+                await warrior.smartMove("main", { avoidTownWarps: true })
             } catch (e) {
                 console.error(e)
             }
