@@ -170,6 +170,7 @@ export type GMonster = {
   frequency: number
   /** If true, when the monster dies, the chest will drop on the player's location, not where the monster died */
   global?: boolean
+  humanoid?: boolean
   hp: number
   immune?: boolean
   lifesteal?: number

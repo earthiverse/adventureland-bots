@@ -255,6 +255,7 @@ export type EntityData = {
     damage_type?: DamageType
     evasion?: number
     hp?: number
+    humanoid?: boolean
     immune?: boolean
     level?: number
     lifesteal?: number

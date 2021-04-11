@@ -1,6 +1,6 @@
 import { MapName } from "./adventureland"
 
-export type Grid = number[][]
+export type Grid = Uint8Array
 export type Grids = { [T in MapName]?: Grid }
 
 export type NodeData = {
