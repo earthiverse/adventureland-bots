@@ -3724,7 +3724,10 @@ async function startMerchant(bot: Merchant) {
                         await bot.unequip("mainhand")
                         await bot.equip(bot.locateItem("rod"))
                     }
-                } else if (bot.locateItem("dartgun")) wasEquippedMainhand = { name: "dartgun" }
+                } else {
+                    if (bot.locateItem("dartgun")) wasEquippedMainhand = { name: "dartgun" }
+                    await bot.equip(bot.locateItem("rod"))
+                }
                 await bot.smartMove({ map: "main", x: -1368, y: 0 })
                 await bot.fish()
                 if (bot.character.slots.mainhand) await bot.unequip("mainhand")
