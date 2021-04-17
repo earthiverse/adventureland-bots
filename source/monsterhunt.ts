@@ -3486,6 +3486,10 @@ async function startMerchant(bot: Merchant) {
                 return
             }
 
+            // Equip our good items if we got 'em
+            if (bot.hasItem("dartgun")) await bot.equip(bot.locateItem("dartgun"))
+            if (bot.hasItem("wbook1", bot.character.items, { level: 1 })) await bot.equip(bot.locateItem("dartgun", bot.character.items, { level: 1 }))
+
             // If we are full, let's go to the bank
             let freeSlots = 0
             for (const item of bot.character.items) {
