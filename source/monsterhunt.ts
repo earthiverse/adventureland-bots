@@ -3719,7 +3719,6 @@ async function startMerchant(bot: Merchant) {
             // Go fishing if we can
             if (bot.getCooldown("fishing") == 0 /* Fishing is available */
                 && (bot.hasItem("rod") || bot.isEquipped("rod")) /* We have a rod */) {
-                await bot.smartMove({ map: "main", x: 0, y: 0 })
                 const wasEquippedMainhand = bot.character.slots.mainhand
                 const wasEquippedOffhand = bot.character.slots.offhand
                 if (wasEquippedOffhand) await bot.unequip("offhand")
@@ -3727,9 +3726,9 @@ async function startMerchant(bot: Merchant) {
                     await bot.unequip("mainhand")
                     await bot.equip(bot.locateItem("rod"))
                 }
-                await bot.smartMove({ map: "main", x: -1368, y: -13 })
+                await bot.smartMove({ map: "main", x: -1368, y: 0 })
                 await bot.fish()
-                await bot.unequip("mainhand")
+                if (bot.character.slots.mainhand) await bot.unequip("mainhand")
                 if (wasEquippedOffhand) await bot.equip(bot.locateItem(wasEquippedOffhand.name))
                 if (wasEquippedMainhand) await bot.equip(bot.locateItem(wasEquippedMainhand.name))
             }
