@@ -3744,7 +3744,7 @@ async function startMerchant(bot: Merchant) {
     tradeLoop()
 }
 
-async function run(rangerName: string, warriorName: string, priestName: string, merchantName: string) {
+async function run(rangerName: string, warriorName: string, priestName: string, merchantNames: string[]) {
     await Promise.all([Game.loginJSONFile("../credentials.json"), Pathfinder.prepare()])
 
     try {
@@ -3786,13 +3786,21 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
         }
         const loopMerchant = async () => {
             try {
-                await Game.stopCharacter(merchantName)
-                merchant = await Game.startMerchant(merchantName, region, identifier)
+                for(const merchantName of merchantNames) {
+                    await Game.stopCharacter(merchantName)
+                }
+                if(region == DEFAULT_REGION && identifier == DEFAULT_IDENTIFIER) {
+                    // Use the first merchant for our default (so we keep fishing)
+                    merchant = await Game.startMerchant(merchantNames[0], region, identifier)
+                } else {
+                    // Use the second merchant for others
+                    merchant = await Game.startMerchant(merchantNames[1], region, identifier)
+                }
                 merchant.socket.on("disconnect", async () => { await loopMerchant() })
                 startMerchant(merchant)
                 generalBotStuff(merchant)
             } catch (e) {
-                await Game.stopCharacter(merchantName)
+                await Game.stopCharacter(merchantNames[0])
                 setTimeout(async () => { await loopMerchant() }, 1000)
             }
         }
@@ -3938,4 +3946,4 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
         await Game.disconnect()
     }
 }
-run("earthiverse", "earthWar", "earthPri", "earthMer")
+run("earthiverse", "earthWar", "earthPri", ["earthMer", "earthMer2"])
