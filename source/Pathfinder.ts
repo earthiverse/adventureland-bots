@@ -492,19 +492,43 @@ export class Pathfinder {
         }
         path.push({ type: "move", map: to.map, x: to.x, y: to.y })
 
-        // Clean the path
-        for (let i = 0; i < path.length - 1; i++) {
-            const current = path[i]
-            const next = path[i + 1]
+        // // Clean the path
+        // for (let i = 0; i < path.length - 1; i++) {
+        //     const current = path[i]
+        //     const next = path[i + 1]
 
-            // If anything is different, continue
-            if (current.type !== next.type) continue
-            if (current.map !== next.map) continue
-            if (current.x !== next.x) continue
-            if (current.y !== next.y) continue
+        //     // If anything is different, continue
+        //     if (current.type !== next.type) continue
+        //     if (current.map !== next.map) continue
+        //     if (current.x !== next.x) continue
+        //     if (current.y !== next.y) continue
 
-            // The two nodes are the same, remove one
-            path.splice(i, 1)
+        //     // The two nodes are the same, remove one
+        //     path.splice(i, 1)
+        // }
+
+        // Optimize the path (front)
+        for (let i = 2; i < path.length; i++) {
+            const first = path[0]
+            const skipCheck = path[i]
+
+            if (skipCheck.type !== "move") break // Can only optimize moves
+            if (Pathfinder.canWalk(first, skipCheck)) {
+                // We can skip something!
+                path.splice(1, i - 1)
+                i-- // Check if we can skip again
+            }
+        }
+        // Optimize the path (back)
+        for (let i = path.length - 2; i > 0; i--) {
+            const last = path[path.length - 1]
+            const skipCheck = path[i]
+            if (skipCheck.type !== "move") break // Can only optimize moves
+            if (Pathfinder.canWalk(skipCheck, last)) {
+                // We can skip something!
+                path.splice(i, (path.length - 1) - i)
+                i++ // Check if we can skip again
+            }
         }
 
         console.log(`Path from ${fromNode.id} to ${toNode.id} found! (${path.length} steps)`)
@@ -606,8 +630,6 @@ export class Pathfinder {
 
         console.log("Preparing pathfinding...")
         const start = Date.now()
-
-        // TODO: Grab pathfinding information from the database
 
         for (let i = 0; i < maps.length; i++) {
             const map = maps[i]
