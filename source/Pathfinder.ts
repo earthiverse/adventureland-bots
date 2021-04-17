@@ -520,13 +520,13 @@ export class Pathfinder {
             }
         }
         // Optimize the path (back)
-        for (let i = path.length - 2; i > 0; i--) {
+        for (let i = path.length - 3; i > 0; i--) {
             const last = path[path.length - 1]
             const skipCheck = path[i]
             if (skipCheck.type !== "move") break // Can only optimize moves
             if (Pathfinder.canWalk(skipCheck, last)) {
                 // We can skip something!
-                path.splice(i, (path.length - 1) - i)
+                path.splice(i, (path.length - 2) - i)
                 i++ // Check if we can skip again
             }
         }
