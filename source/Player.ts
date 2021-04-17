@@ -437,7 +437,7 @@ export class Player extends Observer {
                     monster.frequency = this.G.monsters[monster.type].frequency
                 if (monster.hp === undefined)
                     monster.hp = this.G.monsters[monster.type].hp
-                if(monster.humanoid === undefined)
+                if (monster.humanoid === undefined)
                     monster.humanoid = this.G.monsters[monster.type].humanoid
                 if (monster.immune === undefined)
                     monster.immune = this.G.monsters[monster.type].immune
@@ -1386,8 +1386,7 @@ export class Player extends Observer {
     }
 
     public equip(inventoryPos: number, equipSlot?: SlotType): Promise<void> {
-        if (!this.character.items[inventoryPos])
-            return Promise.reject(`No item in inventory slot ${inventoryPos}.`)
+        if (!this.character.items[inventoryPos]) return Promise.reject(`No item in inventory slot ${inventoryPos}.`)
 
         const iInfo = this.character.items[inventoryPos]
         // const gInfo = this.game.G.items[iInfo.name]

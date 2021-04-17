@@ -3717,22 +3717,23 @@ async function startMerchant(bot: Merchant) {
                 && (bot.hasItem("rod") || bot.isEquipped("rod")) /* We have a rod */) {
                 let wasEquippedMainhand = bot.character.slots.mainhand
                 let wasEquippedOffhand = bot.character.slots.offhand
-                if (wasEquippedOffhand) await bot.unequip("offhand")
-                else if (bot.locateItem("wbook1")) wasEquippedOffhand = { name: "wbook1" }
+                if (wasEquippedOffhand) await bot.unequip("offhand") // rod is a 2-handed weapon, so we need to unequip our offhand if we have something equipped
+                else if (bot.hasItem("wbook1")) wasEquippedOffhand = { name: "wbook1" } // We want to equip a wbook1 by default if we have one after we go fishing
                 if (wasEquippedMainhand) {
                     if (wasEquippedMainhand.name !== "rod") {
+                        // We didn't have a rod equipped before, let's equip one now
                         await bot.unequip("mainhand")
                         await bot.equip(bot.locateItem("rod"))
                     }
                 } else {
-                    if (bot.locateItem("dartgun")) wasEquippedMainhand = { name: "dartgun" }
-                    await bot.equip(bot.locateItem("rod"))
+                    // We didn't have anything equipped before
+                    if (bot.hasItem("dartgun")) wasEquippedMainhand = { name: "dartgun" } // We want to equip a dartgun by default if we have one after we go fishing
+                    await bot.equip(bot.locateItem("rod")) // Equip the rod
                 }
-                await bot.smartMove({ map: "main", x: -1368, y: 0 })
+                await bot.smartMove({ map: "main", x: -1368, y: 0 }) // Move to fishing sppot
                 await bot.fish()
-                if (bot.character.slots.mainhand) await bot.unequip("mainhand")
-                if (wasEquippedOffhand) await bot.equip(bot.locateItem(wasEquippedOffhand.name))
                 if (wasEquippedMainhand) await bot.equip(bot.locateItem(wasEquippedMainhand.name))
+                if (wasEquippedOffhand) await bot.equip(bot.locateItem(wasEquippedOffhand.name))
             }
 
             // Hang out in town
