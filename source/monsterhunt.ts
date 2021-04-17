@@ -3486,10 +3486,6 @@ async function startMerchant(bot: Merchant) {
                 return
             }
 
-            // Equip our good items if we got 'em
-            if (bot.hasItem("dartgun")) await bot.equip(bot.locateItem("dartgun"))
-            if (bot.hasItem("wbook1", bot.character.items, { level: 1 })) await bot.equip(bot.locateItem("dartgun", bot.character.items, { level: 1 }))
-
             // If we are full, let's go to the bank
             let freeSlots = 0
             for (const item of bot.character.items) {
@@ -3719,13 +3715,16 @@ async function startMerchant(bot: Merchant) {
             // Go fishing if we can
             if (bot.getCooldown("fishing") == 0 /* Fishing is available */
                 && (bot.hasItem("rod") || bot.isEquipped("rod")) /* We have a rod */) {
-                const wasEquippedMainhand = bot.character.slots.mainhand
-                const wasEquippedOffhand = bot.character.slots.offhand
+                let wasEquippedMainhand = bot.character.slots.mainhand
+                let wasEquippedOffhand = bot.character.slots.offhand
                 if (wasEquippedOffhand) await bot.unequip("offhand")
-                if (wasEquippedMainhand?.name !== "rod") {
-                    await bot.unequip("mainhand")
-                    await bot.equip(bot.locateItem("rod"))
-                }
+                else if (bot.locateItem("wbook1")) wasEquippedOffhand = { name: "wbook1" }
+                if (wasEquippedMainhand) {
+                    if (wasEquippedMainhand.name !== "rod") {
+                        await bot.unequip("mainhand")
+                        await bot.equip(bot.locateItem("rod"))
+                    }
+                } else if (bot.locateItem("dartgun")) wasEquippedMainhand = { name: "dartgun" }
                 await bot.smartMove({ map: "main", x: -1368, y: 0 })
                 await bot.fish()
                 if (bot.character.slots.mainhand) await bot.unequip("mainhand")
