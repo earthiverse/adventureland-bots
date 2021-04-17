@@ -3712,6 +3712,24 @@ async function startMerchant(bot: Merchant) {
                 }
             }
 
+            // Go fishing if we can
+            if (bot.getCooldown("fishing") == 0 /* Fishing is available */
+                && (bot.hasItem("rod") || bot.isEquipped("rod")) /* We have a rod */) {
+                await bot.smartMove({ map: "main", x: 0, y: 0 })
+                const wasEquippedMainhand = bot.character.slots.mainhand
+                const wasEquippedOffhand = bot.character.slots.offhand
+                if (wasEquippedOffhand) await bot.unequip("offhand")
+                if (wasEquippedMainhand?.name !== "rod") {
+                    await bot.unequip("mainhand")
+                    await bot.equip(bot.locateItem("rod"))
+                }
+                await bot.smartMove({ map: "main", x: -1368, y: -13 })
+                await bot.fish()
+                await bot.unequip("mainhand")
+                if (wasEquippedOffhand) await bot.equip(bot.locateItem(wasEquippedOffhand.name))
+                if (wasEquippedMainhand) await bot.equip(bot.locateItem(wasEquippedMainhand.name))
+            }
+
             // Hang out in town
             await bot.smartMove("main")
             await bot.openMerchantStand()
@@ -3786,10 +3804,10 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
         }
         const loopMerchant = async () => {
             try {
-                for(const merchantName of merchantNames) {
+                for (const merchantName of merchantNames) {
                     await Game.stopCharacter(merchantName)
                 }
-                if(region == DEFAULT_REGION && identifier == DEFAULT_IDENTIFIER) {
+                if (region == DEFAULT_REGION && identifier == DEFAULT_IDENTIFIER) {
                     // Use the first merchant for our default (so we keep fishing)
                     merchant = await Game.startMerchant(merchantNames[0], region, identifier)
                 } else {

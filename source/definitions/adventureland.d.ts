@@ -795,6 +795,9 @@ export type ConditionName =
   | "xpower"
   | "xshotted"
 
+export type EmotionName =
+  | "drop_egg"
+
 export type ItemName =
   | "5bucks"
   | "ale"
@@ -1543,6 +1546,7 @@ export type SkillName =
   | "energize"
   | "entangle"
   | "esc"
+  | "fishing"
   | "gm"
   | "hardshell"
   | "heal"

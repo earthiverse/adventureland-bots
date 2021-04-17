@@ -345,6 +345,8 @@ export class Player extends Observer {
             this.character.going_x = data.x
             this.character.going_y = data.y
             this.character.moving = false
+
+            // Add damage type
             this.character.damage_type = this.G.classes[data.ctype].damage_type
         }
 
