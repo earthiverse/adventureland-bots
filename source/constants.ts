@@ -125,6 +125,8 @@ export const MERCHANT_ITEMS_TO_HOLD: ItemName[] = [
     "cscroll0", "cscroll1", "cscroll2", "cscroll3", "scroll0", "scroll1", "scroll2", "scroll3", "scroll4", "strscroll", "intscroll", "dexscroll",
     // Fishing Rod
     "rod",
+    // Main Items
+    "dartgun", "wbook1",
 
     // TEMP: For crafting pouchbows
     "smoke",
