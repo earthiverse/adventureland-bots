@@ -214,9 +214,11 @@ async function startRanger(ranger: AL.Ranger) {
             const nearby = ranger.getNearestMonster("bscorpion")?.monster
             if (nearby
                 && [rogue.id, ranger.id, priest.id].includes(nearby.target)
-                && ranger.canUse("attack")
                 && AL.Tools.distance(ranger, nearby) <= ranger.range) {
-                await ranger.basicAttack(nearby.id)
+                if (ranger.canUse("huntersmark")) await ranger.huntersMark(nearby.id)
+                if (ranger.canUse("piercingshot")) await ranger.piercingShot(nearby.id)
+                else if (ranger.canUse("attack")) await ranger.basicAttack(nearby.id)
+                if (ranger.canUse("supershot")) await ranger.superShot(nearby.id)
             }
         } catch (e) {
             console.error(e)
@@ -244,7 +246,7 @@ async function startPriest(priest: AL.Priest) {
                     for (const [, player] of priest.players) {
                         if (player.hp > player.max_hp * 0.8) continue // Lots of HP
                         if (AL.Tools.distance(priest, player) > priest.range) continue // Too far away
-    
+
                         await priest.heal(player.id)
                         break
                     }
@@ -253,10 +255,11 @@ async function startPriest(priest: AL.Priest) {
 
             const nearby = priest.getNearestMonster("bscorpion")?.monster
             if (nearby
-                && priest.canUse("attack")
                 && (!nearby.target || [rogue.id, ranger.id, priest.id].includes(nearby.target))
                 && AL.Tools.distance(priest, nearby) <= priest.range) {
-                await priest.basicAttack(nearby.id)
+                if (priest.canUse("curse")) await priest.curse(nearby.id)
+                if (priest.canUse("darkblessing")) await priest.darkBlessing()
+                if (priest.canUse("attack")) await priest.basicAttack(nearby.id)
             }
         } catch (e) {
             console.error(e)
@@ -280,9 +283,10 @@ async function startRogue(rogue: AL.Rogue) {
             const nearby = rogue.getNearestMonster("bscorpion")?.monster
             if (nearby
                 && [rogue.id, ranger.id, priest.id].includes(nearby.target)
-                && rogue.canUse("attack")
                 && AL.Tools.distance(rogue, nearby) <= rogue.range) {
-                await rogue.basicAttack(nearby.id)
+                if (rogue.canUse("attack")) await rogue.basicAttack(nearby.id)
+                if (rogue.canUse("quickstab")) await rogue.quickStab(nearby.id)
+                if (rogue.canUse("quickpunch")) await rogue.quickPunch(nearby.id)
             }
         } catch (e) {
             console.error(e)
