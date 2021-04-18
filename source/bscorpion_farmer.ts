@@ -303,9 +303,18 @@ async function startRogue(rogue: AL.Rogue) {
                 return
             }
 
+
             if (rogue.canUse("rspeed")) {
-                for (const [, player] of rogue.players) {
-                    if (!player.s.rspeed || player.s.rspeed.ms < 60000) {
+
+                if (!rogue.s.rspeed || rogue.s.rspeed.ms <= 60000) {
+                    // Apply it to ourselves
+                    await rogue.rspeed(rogue.id)
+                } else {
+                    // Apply it to others
+                    for (const [, player] of rogue.players) {
+                        if (!player.s.rspeed || player.s.rspeed.ms > 60000) continue // Already has rspeed
+                        if (AL.Tools.distance(rogue, player) > rogue.G.skills.rspeed.range) continue // Too far away
+
                         await rogue.rspeed(player.id)
                     }
                 }
