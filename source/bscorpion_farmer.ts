@@ -17,10 +17,39 @@ const RADIUS = 125
 const MOVE_TIME_MS = 500
 
 async function startShared(bot: AL.Character) {
+    async function buyLoop() {
+        try {
+            if (bot.socket.disconnected) {
+                setTimeout(async () => { buyLoop() }, 10)
+                return
+            }
+
+            if (bot.canBuy("hpot1")) {
+                // Buy HP Pots
+                const numHpot1 = bot.countItem("hpot1")
+                if (numHpot1 < 1000) await bot.buy("hpot1", 1000 - numHpot1)
+
+                // Buy MP Pots
+                const numMpot1 = bot.countItem("mpot1")
+                if (numMpot1 < 1000) await bot.buy("mpot1", 1000 - numMpot1)
+            }
+
+            if (bot.canBuy("xptome")) {
+                // Buy XP Tome
+                const numXPTome = bot.countItem("xptome")
+                if (numXPTome == 0) await bot.buy("xptome", 1)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        setTimeout(async () => { buyLoop() }, 1000)
+    }
+    buyLoop()
+
     async function healLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { moveLoop() }, 10)
+                setTimeout(async () => { healLoop() }, 10)
                 return
             }
 
@@ -76,7 +105,10 @@ async function startShared(bot: AL.Character) {
 
     async function lootLoop() {
         try {
-            if (bot.socket.disconnected) return
+            if (bot.socket.disconnected) {
+                setTimeout(async () => { lootLoop() }, 10)
+                return
+            }
 
             for (const [, chest] of bot.chests) {
                 if (AL.Tools.distance(bot, chest) > 800) continue
@@ -201,6 +233,27 @@ async function startShared(bot: AL.Character) {
         }
         moveLoop()
     }
+
+    async function partyLoop() {
+        try {
+            if (bot.socket.disconnected) {
+                setTimeout(async () => { moveLoop() }, 10)
+                return
+            }
+
+            if (!bot.party || !bot.partyData.list) {
+                bot.sendPartyRequest(merchant.id)
+            } else if (bot.partyData.list[0] !== merchant.id) {
+                bot.leaveParty()
+                bot.sendPartyRequest(merchant.id)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { partyLoop() }, 10000)
+    }
+    partyLoop()
 }
 
 async function startRanger(ranger: AL.Ranger) {
@@ -269,6 +322,26 @@ async function startPriest(priest: AL.Priest) {
     }
     attackLoop()
 
+    async function elixirLoop() {
+        try {
+            if (priest.socket.disconnected) {
+                setTimeout(async () => { elixirLoop() }, 10)
+                return
+            }
+
+            if (!priest.slots.elixir) {
+                let luckElixir = priest.locateItem("elixirluck")
+                if (luckElixir == undefined && priest.canBuy("elixirluck")) luckElixir = await priest.buy("elixirluck")
+                if (luckElixir !== undefined) await priest.equip(luckElixir)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { elixirLoop() }, 250)
+    }
+    elixirLoop()
+
     // TODO: if the scorpion is aggro on a friend, take the aggro from them
 }
 
@@ -329,6 +402,12 @@ async function startRogue(rogue: AL.Rogue) {
 }
 
 async function startMerchant(merchant: AL.Merchant) {
+    merchant.socket.on("request", (data: { name: string }) => {
+        if ([ranger.id, priest.id, rogue.id].includes(data.name)) {
+            merchant.acceptPartyRequest(data.name)
+        }
+    })
+
     async function healLoop() {
         try {
             if (merchant.socket.disconnected) {
