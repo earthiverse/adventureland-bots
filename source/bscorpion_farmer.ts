@@ -389,6 +389,7 @@ async function startMerchant(merchant: AL.Merchant) {
     async function moveLoop() {
         try {
             await merchant.smartMove("main")
+            await merchant.openMerchantStand()
         } catch (e) {
             console.error(e)
         }
