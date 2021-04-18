@@ -85,7 +85,10 @@ async function startShared(bot: AL.Character) {
 
     async function compoundLoop() {
         try {
-            if (bot.socket.disconnected) return
+            if (bot.socket.disconnected) {
+                setTimeout(async () => { compoundLoop() }, 10)
+                return
+            }
 
             if (bot.q.compound) {
                 // We are upgrading, we have to wait
@@ -364,9 +367,24 @@ async function startShared(bot: AL.Character) {
     }
     partyLoop()
     
+    async function connectLoop() {
+        if (bot.socket.disconnected) {
+            console.log(`${bot.id} is disconnected. Reconnecting!`)
+            bot.socket.connect()
+            setTimeout(async () => { connectLoop() }, 60000)
+            return
+        }
+
+        setTimeout(async () => { connectLoop() }, 1000)
+    }
+    connectLoop()
+    
     async function sellLoop() {
         try {
-            if (bot.socket.disconnected) return
+            if (bot.socket.disconnected) {
+                setTimeout(async () => { sellLoop() }, 10)
+                return
+            }
 
             if (bot.hasItem("computer")) {
                 // Sell things
@@ -392,7 +410,10 @@ async function startShared(bot: AL.Character) {
 
     async function upgradeLoop() {
         try {
-            if (bot.socket.disconnected) return
+            if (bot.socket.disconnected) {
+                setTimeout(async () => { upgradeLoop() }, 10)
+                return
+            }
 
             if (bot.q.upgrade) {
                 // We are upgrading, we have to wait
@@ -596,7 +617,10 @@ async function startMerchant(merchant: AL.Merchant) {
 
     async function mluckLoop() {
         try {
-            if (merchant.socket.disconnected) return
+            if (merchant.socket.disconnected) {
+                setTimeout(async () => { mluckLoop() }, 10)
+                return
+            }
 
             if (merchant.canUse("mluck")) {
                 if (!merchant.s.mluck || merchant.s.mluck.f !== merchant.id) await merchant.mluck(merchant.id) // mluck ourselves
@@ -626,7 +650,10 @@ async function startMerchant(merchant: AL.Merchant) {
     let lastBankVisit = Number.MIN_VALUE
     async function moveLoop() {
         try {
-            if (merchant.socket.disconnected) return
+            if (merchant.socket.disconnected) {
+                setTimeout(async () => { moveLoop() }, 10)
+                return
+            }
 
             // If we are dead, respawn
             if (merchant.rip) {
@@ -858,19 +885,6 @@ async function run() {
     ranger = await rangerP
     priest = await priestP
     rogue = await rogueP
-
-    // Set up functionality to reconnect if we disconnect
-    // TODO: Add a delay
-    const reconnect = async (character: AL.PingCompensatedCharacter) => {
-        console.log(`Reconnecting ${character.id}...`)
-        await character.disconnect()
-        await character.connect()
-        character.socket.on("disconnect", async () => { await reconnect(character) })
-    }
-    merchant.socket.on("disconnect", async () => { await reconnect(merchant) })
-    ranger.socket.on("disconnect", async () => { await reconnect(ranger) })
-    priest.socket.on("disconnect", async () => { await reconnect(priest) })
-    rogue.socket.on("disconnect", async () => { await reconnect(rogue) })
 
     // Start the characters
     startShared(merchant)
