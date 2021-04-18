@@ -507,18 +507,19 @@ export class Pathfinder {
             path.splice(i, 1)
         }
 
-        // // Optimize the path (front)
-        // for (let i = 2; i < path.length; i++) {
-        //     const first = path[0]
-        //     const skipCheck = path[i]
+        // Optimize the path (front)
+        const first = path[0]
+        for (let i = 2; i < path.length; i++) {
+            const skipCheck = path[i]
 
-        //     if (skipCheck.type !== "move") break // Can only optimize moves
-        //     if (Pathfinder.canWalk(first, skipCheck)) {
-        //         // We can skip something!
-        //         path.splice(1, i - 1)
-        //         i-- // Check if we can skip again
-        //     }
-        // }
+            if (skipCheck.type !== "move") break // Can only optimize moves
+            if (Pathfinder.canWalk(first, skipCheck)) {
+                // We can skip something!
+                path.splice(1, i - 1)
+                i = 1
+            }
+        }
+
         // // Optimize the path (back)
         // for (let i = path.length - 3; i > 0; i--) {
         //     const last = path[path.length - 1]
