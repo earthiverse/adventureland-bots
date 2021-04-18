@@ -255,10 +255,9 @@ async function startShared(bot: AL.Character) {
                         // There's a bscorpion and it has a target
                         bot.move(bscorpion.x, bscorpion.y).catch(() => { /* Ignore errors */ })
                     } else if (bscorpion) {
-                        // There's no bscorpion, or it has no target
-
+                        // It has no target
                         const angleFromSpawnToBscorpionGoing = Math.atan2(bscorpion.going_y - bscorpionSpawn.y, bscorpion.going_x - bscorpionSpawn.x)
-                        const endGoalAngle = angleFromSpawnToBscorpionGoing + Math.PI // Our goal is 180 degrees opposite
+                        const endGoalAngle = angleFromSpawnToBscorpionGoing + Math.PI / 2 // Our goal is 90 degrees
                         const endGoal = { x: bscorpionSpawn.x + RADIUS * Math.cos(endGoalAngle), y: bscorpionSpawn.y + RADIUS * Math.sin(endGoalAngle) }
 
                         const moveDistance = bot.speed * MOVE_TIME_MS / 1000
@@ -310,7 +309,7 @@ async function startShared(bot: AL.Character) {
                     if (bscorpion) {
                         // There's a bscorpion nearby
                         const angleFromSpawnToBscorpionGoing = Math.atan2(bscorpion.going_y - bscorpionSpawn.y, bscorpion.going_x - bscorpionSpawn.x)
-                        const endGoalAngle = angleFromSpawnToBscorpionGoing + Math.PI // Our goal is 180 degrees opposite
+                        const endGoalAngle = angleFromSpawnToBscorpionGoing + Math.PI / 2 // Our goal is 90 degrees
                         const endGoal = { x: bscorpionSpawn.x + RADIUS * Math.cos(endGoalAngle), y: bscorpionSpawn.y + RADIUS * Math.sin(endGoalAngle) }
 
                         const moveDistance = bot.speed * MOVE_TIME_MS / 1000
