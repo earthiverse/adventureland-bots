@@ -39,6 +39,19 @@ const MERCHANT_ITEMS_TO_HOLD: AL.ItemName[] = [
     // TEMP: For crafting eggbaskets
     "egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8"
 ]
+const ITEMS_TO_SELL: {
+    /** Items this level and under will be sold */
+    [T in AL.ItemName]?: number
+} = {
+    // Default clothing
+    "shoes": 2, "pants": 2, "coat": 2, "helmet": 2, "gloves": 2,
+    // Wanderers attire
+    "wshoes": 2, "wbreeches": 2, "wattire": 2, "wcap": 2, "wgloves": 2,
+    // Candy
+    "gphelmet": 2, "lantern": 2, "maceofthedead": 2, "phelmet": 2,
+    // Candy Canes
+    "xmace": 2,
+}
 
 async function startShared(bot: AL.Character) {
     async function buyLoop() {
@@ -69,6 +82,79 @@ async function startShared(bot: AL.Character) {
         setTimeout(async () => { buyLoop() }, 1000)
     }
     buyLoop()
+
+    async function compoundLoop() {
+        try {
+            if (bot.socket.disconnected) return
+
+            if (bot.q.compound) {
+                // We are upgrading, we have to wait
+                setTimeout(async () => { compoundLoop() }, bot.q.compound.ms)
+                return
+            }
+            if (bot.map.startsWith("bank")) {
+                // We are in the bank, we have to wait
+                setTimeout(async () => { compoundLoop() }, 1000)
+                return
+            }
+
+            const duplicates = bot.locateDuplicateItems()
+            for (const iN in duplicates) {
+                const itemName = iN as AL.ItemName
+                const numDuplicates = duplicates[iN].length
+
+                // Check if there's enough to compound
+                if (numDuplicates < 3) {
+                    delete duplicates[itemName]
+                    continue
+                }
+
+                // Check if there's three with the same level. If there is, set the array to those three
+                let found = false
+                for (let i = 0; i < numDuplicates - 2; i++) {
+                    const item1 = bot.items[duplicates[itemName][i]]
+                    const item2 = bot.items[duplicates[itemName][i + 1]]
+                    const item3 = bot.items[duplicates[itemName][i + 2]]
+
+                    if (item1.level == item2.level && item1.level == item3.level) {
+                        duplicates[itemName] = duplicates[itemName].splice(i, 3)
+                        found = true
+                        break
+                    }
+                }
+                if (!found) delete duplicates[itemName]
+            }
+
+            // At this point, 'duplicates' only contains arrays of 3 items.
+            for (const iN in duplicates) {
+                // Check if item is upgradable, or if we want to upgrade it
+                const itemName = iN as AL.ItemName
+                const gInfo = bot.G.items[itemName]
+                if (gInfo.compound == undefined) continue // Not compoundable
+                const level0Grade = gInfo.grades.lastIndexOf(0) + 1
+                const itemPoss = duplicates[itemName]
+                const itemInfo = bot.items[itemPoss[0]]
+                if (itemInfo.level >= 4 - level0Grade) continue // We don't want to compound higher level items automatically.
+                if (ITEMS_TO_SELL[itemName] && !itemInfo.p && itemInfo.level < ITEMS_TO_SELL[itemName]) continue // Don't compound items we want to sell unless they're special
+
+                // Figure out the scroll we need to upgrade
+                const grade = await bot.calculateItemGrade(itemInfo)
+                const cscrollName = `cscroll${grade}` as AL.ItemName
+                let cscrollPos = bot.locateItem(cscrollName)
+                if (cscrollPos == undefined && !bot.canBuy(cscrollName)) continue // We can't buy a scroll for whatever reason :(
+                else if (cscrollPos == undefined) cscrollPos = await bot.buy(cscrollName)
+
+                // Compound!
+                if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as AL.Merchant).massProduction()
+                await bot.compound(itemPoss[0], itemPoss[1], itemPoss[2], cscrollPos)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { compoundLoop() }, 250)
+    }
+    compoundLoop()
 
     async function healLoop() {
         try {
@@ -278,6 +364,83 @@ async function startShared(bot: AL.Character) {
         setTimeout(async () => { partyLoop() }, 10000)
     }
     partyLoop()
+    
+    async function sellLoop() {
+        try {
+            if (bot.socket.disconnected) return
+
+            if (bot.hasItem("computer")) {
+                // Sell things
+                for (let i = 0; i < bot.items.length; i++) {
+                    const item = bot.items[i]
+                    if (!item) continue // No item in this slot
+                    if (item.p) continue // This item is special in some way
+                    if (ITEMS_TO_SELL[item.name] == undefined) continue // We don't want to sell this item
+                    if (ITEMS_TO_SELL[item.name] <= item.level) continue // Keep this item, it's a high enough level that we want to keep it
+
+                    const q = bot.items[i].q !== undefined ? bot.items[i].q : 1
+
+                    await bot.sell(i, q)
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { sellLoop() }, 1000)
+    }
+    sellLoop()
+
+    async function upgradeLoop() {
+        try {
+            if (bot.socket.disconnected) return
+
+            if (bot.q.upgrade) {
+                // We are upgrading, we have to wait
+                setTimeout(async () => { upgradeLoop() }, bot.q.upgrade.ms)
+                return
+            }
+            if (bot.map.startsWith("bank")) {
+                // We are in the bank, we have to wait
+                setTimeout(async () => { upgradeLoop() }, 1000)
+                return
+            }
+
+            // Find items that we have two (or more) of, and upgrade them if we can
+            const duplicates = bot.locateDuplicateItems()
+            for (const iN in duplicates) {
+                // Check if item is upgradable, or if we want to upgrade it
+                const itemName = iN as AL.ItemName
+                const gInfo = bot.G.items[itemName]
+                if (gInfo.upgrade == undefined) continue // Not upgradable
+                const level0Grade = gInfo.grades.lastIndexOf(0) + 1
+                const itemPos = duplicates[itemName][0]
+                const itemInfo = bot.items[itemPos]
+                if (itemInfo.level >= 9 - level0Grade) continue // We don't want to upgrade harder to get items too much.
+                if (ITEMS_TO_SELL[itemName] && !itemInfo.p && itemInfo.level < ITEMS_TO_SELL[itemName]) continue // Don't upgrade items we want to sell unless it's special
+
+                // Figure out the scroll we need to upgrade
+                const grade = await bot.calculateItemGrade(itemInfo)
+                const scrollName = `scroll${grade}` as AL.ItemName
+                let scrollPos = bot.locateItem(scrollName)
+                try {
+                    if (scrollPos == undefined && !bot.canBuy(scrollName)) continue // We can't buy a scroll for whatever reason :(
+                    else if (scrollPos == undefined) scrollPos = await bot.buy(scrollName)
+
+                    // Upgrade!
+                    if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as AL.Merchant).massProduction()
+                    await bot.upgrade(itemPos, scrollPos)
+                } catch (e) {
+                    console.error(e)
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { upgradeLoop() }, 250)
+    }
+    upgradeLoop()
 }
 
 async function startRanger(ranger: AL.Ranger) {
@@ -632,7 +795,7 @@ async function startMerchant(merchant: AL.Merchant) {
             // mluck our friends
             if (merchant.canUse("mluck")) {
                 for (const friend of [ranger, priest, rogue]) {
-                    if(!friend.s.mluck || !friend.s.mluck.strong || friend.s.mluck.ms < 120000) {
+                    if (!friend.s.mluck || !friend.s.mluck.strong || friend.s.mluck.ms < 120000) {
                         // Move to them, and we'll automatically mluck them
                         if (AL.Tools.distance(merchant, friend) > merchant.G.skills.mluck.range) {
                             await merchant.closeMerchantStand()
