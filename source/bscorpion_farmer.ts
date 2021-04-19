@@ -624,7 +624,7 @@ async function startWarrior(warrior: AL.Warrior) {
             if (nearby
                 && [warrior?.id, rogue?.id, ranger?.id, priest?.id].includes(nearby.target)
                 && AL.Tools.distance(warrior, nearby) <= warrior.range) {
-                if (warrior.canUse("attack")) await rogue.basicAttack(nearby.id)
+                if (warrior.canUse("attack")) await warrior.basicAttack(nearby.id)
             }
         } catch (e) {
             console.error(e)
