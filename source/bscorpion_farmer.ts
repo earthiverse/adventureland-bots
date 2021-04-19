@@ -281,7 +281,7 @@ async function startShared(bot: AL.Character) {
                         bot.move(endGoal.x, endGoal.y).catch(() => { /* Ignore Errors */ })
                     } else {
                         // There isn't a bscorpion nearby
-                        const angleFromSpawnToBot = Math.atan2(rogue.y - bscorpionSpawn.y, rogue.x - bscorpionSpawn.x)
+                        const angleFromSpawnToBot = Math.atan2(bot.y - bscorpionSpawn.y, bot.x - bscorpionSpawn.x)
                         const endGoal = { x: bscorpionSpawn.x + RADIUS * Math.cos(angleFromSpawnToBot), y: bscorpionSpawn.y + RADIUS * Math.sin(angleFromSpawnToBot) }
                         bot.move(endGoal.x, endGoal.y)
                     }
