@@ -17,7 +17,8 @@ let rogue: AL.Rogue
 let warrior: AL.Warrior
 
 const RADIUS = 125
-const MOVE_TIME_MS = 500
+const ANGLE = Math.PI / 3
+const MOVE_TIME_MS = 250
 const MERCHANT_GOLD_TO_HOLD = 100_000_000
 const MERCHANT_ITEMS_TO_HOLD: AL.ItemName[] = [
     // Things we keep on ourselves
@@ -262,7 +263,7 @@ async function startShared(bot: AL.Character) {
                     } else if (bscorpion) {
                         // It has no target
                         const angleFromSpawnToBscorpionGoing = Math.atan2(bscorpion.going_y - bscorpionSpawn.y, bscorpion.going_x - bscorpionSpawn.x)
-                        const endGoalAngle = angleFromSpawnToBscorpionGoing + Math.PI / 2 // Our goal is 90 degrees
+                        const endGoalAngle = angleFromSpawnToBscorpionGoing + ANGLE // Our goal is 90 degrees
                         const endGoal = { x: bscorpionSpawn.x + RADIUS * Math.cos(endGoalAngle), y: bscorpionSpawn.y + RADIUS * Math.sin(endGoalAngle) }
 
                         // const moveDistance = bot.speed * MOVE_TIME_MS / 1000
@@ -315,7 +316,7 @@ async function startShared(bot: AL.Character) {
                     if (bscorpion) {
                         // There's a bscorpion nearby
                         const angleFromSpawnToBscorpionGoing = Math.atan2(bscorpion.going_y - bscorpionSpawn.y, bscorpion.going_x - bscorpionSpawn.x)
-                        const endGoalAngle = angleFromSpawnToBscorpionGoing + Math.PI / 2 // Our goal is 90 degrees
+                        const endGoalAngle = angleFromSpawnToBscorpionGoing + ANGLE // Our goal is 90 degrees
                         const endGoal = { x: bscorpionSpawn.x + RADIUS * Math.cos(endGoalAngle), y: bscorpionSpawn.y + RADIUS * Math.sin(endGoalAngle) }
 
                         // const moveDistance = bot.speed * MOVE_TIME_MS / 1000
