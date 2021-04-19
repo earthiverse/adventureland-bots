@@ -502,6 +502,16 @@ async function startPriest(priest: AL.Priest) {
                 return
             }
 
+            const nearby = priest.getNearestMonster("bscorpion")?.monster
+            
+            if(nearby && nearby.hp < 50000 && priest.slots.mainhand.name !== "lmace") {
+                // Equip lunar mace for the extra luck when it's low HP
+                priest.equip(priest.locateItem("lmace"))
+            } else if(priest.slots.mainhand.name !== "firestaff") {
+                // Equip the fire staff for extra burn change when it's high hp
+                priest.equip(priest.locateItem("firestaff"))
+            }
+
             if (priest.canUse("heal")) {
                 if (priest.hp < priest.max_hp * 0.8) {
                     // Heal ourself
@@ -518,7 +528,6 @@ async function startPriest(priest: AL.Priest) {
                 }
             }
 
-            const nearby = priest.getNearestMonster("bscorpion")?.monster
             if (nearby
                 && (!nearby.target || [warrior?.id, rogue?.id, ranger?.id, priest?.id].includes(nearby.target))
                 && AL.Tools.distance(priest, nearby) <= priest.range) {
