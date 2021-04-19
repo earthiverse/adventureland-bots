@@ -6,6 +6,7 @@ const merchantName = "earthMer"
 const rangerName = "earthiverse"
 const priestName = "earthPri"
 const rogueName = "earthRog"
+const warriorName = "earthWar"
 const region: AL.ServerRegion = "ASIA"
 const identifier: AL.ServerIdentifier = "I"
 
@@ -13,6 +14,7 @@ let merchant: AL.Merchant
 let ranger: AL.Ranger
 let priest: AL.Priest
 let rogue: AL.Rogue
+let warrior: AL.Warrior
 
 const RADIUS = 125
 const MOVE_TIME_MS = 500
@@ -366,7 +368,7 @@ async function startShared(bot: AL.Character) {
         setTimeout(async () => { partyLoop() }, 10000)
     }
     partyLoop()
-    
+
     async function connectLoop() {
         if (bot.socket.disconnected) {
             console.log(`${bot.id} is disconnected. Reconnecting!`)
@@ -378,7 +380,7 @@ async function startShared(bot: AL.Character) {
         setTimeout(async () => { connectLoop() }, 1000)
     }
     connectLoop()
-    
+
     async function sellLoop() {
         try {
             if (bot.socket.disconnected) {
@@ -473,7 +475,7 @@ async function startRanger(ranger: AL.Ranger) {
 
             const nearby = ranger.getNearestMonster("bscorpion")?.monster
             if (nearby
-                && [rogue.id, ranger.id, priest.id].includes(nearby.target)
+                && [warrior?.id, rogue?.id, ranger?.id, priest?.id].includes(nearby.target)
                 && AL.Tools.distance(ranger, nearby) <= ranger.range) {
                 if (ranger.canUse("huntersmark")) await ranger.huntersMark(nearby.id)
                 if (ranger.canUse("piercingshot")) await ranger.piercingShot(nearby.id)
@@ -515,7 +517,7 @@ async function startPriest(priest: AL.Priest) {
 
             const nearby = priest.getNearestMonster("bscorpion")?.monster
             if (nearby
-                && (!nearby.target || [rogue.id, ranger.id, priest.id].includes(nearby.target))
+                && (!nearby.target || [warrior?.id, rogue?.id, ranger?.id, priest?.id].includes(nearby.target))
                 && AL.Tools.distance(priest, nearby) <= priest.range) {
                 if (priest.canUse("curse")) await priest.curse(nearby.id)
                 if (priest.canUse("darkblessing")) await priest.darkBlessing()
@@ -562,7 +564,7 @@ async function startRogue(rogue: AL.Rogue) {
 
             const nearby = rogue.getNearestMonster("bscorpion")?.monster
             if (nearby
-                && [rogue.id, ranger.id, priest.id].includes(nearby.target)
+                && [warrior?.id, rogue?.id, ranger?.id, priest?.id].includes(nearby.target)
                 && AL.Tools.distance(rogue, nearby) <= rogue.range) {
                 if (rogue.canUse("attack")) await rogue.basicAttack(nearby.id)
                 if (rogue.canUse("quickstab")) await rogue.quickStab(nearby.id)
@@ -606,6 +608,61 @@ async function startRogue(rogue: AL.Rogue) {
         setTimeout(async () => { rspeedLoop() }, Math.max(10, rogue.getCooldown("rspeed")))
     }
     rspeedLoop()
+}
+
+async function startWarrior(warrior: AL.Warrior) {
+    async function attackLoop() {
+        try {
+            if (warrior.socket.disconnected) {
+                setTimeout(async () => { attackLoop() }, 10)
+                return
+            }
+
+            const nearby = warrior.getNearestMonster("bscorpion")?.monster
+            if (nearby
+                && [warrior?.id, rogue?.id, ranger?.id, priest?.id].includes(nearby.target)
+                && AL.Tools.distance(rogue, nearby) <= rogue.range) {
+                if (rogue.canUse("attack")) await rogue.basicAttack(nearby.id)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { attackLoop() }, Math.max(10, rogue.getCooldown("attack")))
+    }
+    attackLoop()
+
+    async function chargeLoop() {
+        try {
+            if (warrior.socket.disconnected) {
+                setTimeout(async () => { chargeLoop() }, 10)
+                return
+            }
+
+            if (warrior.canUse("charge")) await warrior.charge()
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { chargeLoop() }, warrior.getCooldown("charge"))
+    }
+    chargeLoop()
+
+    async function warcryLoop() {
+        try {
+            if (warrior.socket.disconnected) {
+                setTimeout(async () => { warcryLoop() }, 10)
+                return
+            }
+
+            if (warrior.canUse("warcry")) await warrior.warcry()
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { warcryLoop() }, Math.max(10, warrior.getCooldown("warcry")))
+    }
+    warcryLoop()
 }
 
 async function startMerchant(merchant: AL.Merchant) {
@@ -880,11 +937,13 @@ async function run() {
     const merchantP = AL.Game.startMerchant(merchantName, region, identifier)
     const rangerP = AL.Game.startRanger(rangerName, region, identifier)
     const priestP = AL.Game.startPriest(priestName, region, identifier)
-    const rogueP = AL.Game.startRogue(rogueName, region, identifier)
+    // const rogueP = AL.Game.startRogue(rogueName, region, identifier)
+    const warriorP = AL.Game.startWarrior(warriorName, region, identifier)
     merchant = await merchantP
     ranger = await rangerP
     priest = await priestP
-    rogue = await rogueP
+    // rogue = await rogueP
+    warrior = await warriorP
 
     // Start the characters
     startShared(merchant)
@@ -895,5 +954,7 @@ async function run() {
     startPriest(priest)
     startShared(rogue)
     startRogue(rogue)
+    startShared(warrior)
+    startWarrior(warrior)
 }
 run()
