@@ -494,7 +494,7 @@ async function startRanger(bot: AL.Ranger) {
                 for (const [, entity] of bot.entities) {
                     if (entity.type !== "mummy") continue // We're only interested in mummies
                     if (AL.Tools.distance(bot, entity) > bot.range) continue // It's too far away to attack
-                    if (entity.willDieToProjectiles(bot.projectiles)) continue // It will die to incoming projectiles
+                    if (entity.willDieToProjectiles(bot.projectiles, bot.players)) continue // It will die to incoming projectiles
 
                     targets.push(entity)
                 }
@@ -506,7 +506,7 @@ async function startRanger(bot: AL.Ranger) {
                 for (const [, entity] of bot.entities) {
                     if (entity.type !== "mummy") continue // We're only interested in mummies
                     if (AL.Tools.distance(bot, entity) > bot.range * bot.G.skills.supershot.range_multiplier) continue // It's too far away to attack
-                    if (entity.willDieToProjectiles(bot.projectiles)) continue // It will die to incoming projectiles
+                    if (entity.willDieToProjectiles(bot.projectiles, bot.players)) continue // It will die to incoming projectiles
 
                     targets.push(entity)
                 }
@@ -651,7 +651,7 @@ async function startWarrior(bot: AL.Warrior) {
                 for (const [, entity] of bot.entities) {
                     if (entity.type !== "mummy") continue // We're only interested in mummies
                     if (AL.Tools.distance(bot, entity) > bot.range) continue // It's too far away to attack
-                    if (entity.willDieToProjectiles(bot.projectiles)) continue // It will die to incoming projectiles
+                    if (entity.willDieToProjectiles(bot.projectiles, bot.players)) continue // It will die to incoming projectiles
 
                     targets.push(entity)
                 }
@@ -671,7 +671,7 @@ async function startWarrior(bot: AL.Warrior) {
                 for (const [, entity] of bot.entities) {
                     if (entity.type !== "mummy") continue // We're only interested in mummies
                     if (AL.Tools.distance(bot, entity) > bot.G.skills.cleave.range) continue // It's too far away to attack
-                    if (entity.willDieToProjectiles(bot.projectiles)) continue // It will die to incoming projectiles
+                    if (entity.willDieToProjectiles(bot.projectiles, bot.players)) continue // It will die to incoming projectiles
 
                     targets.push(entity)
                 }
@@ -682,7 +682,7 @@ async function startWarrior(bot: AL.Warrior) {
                     if (entity.type !== "mummy") continue // We're only interested in mummies
                     if (entity.target !== undefined) continue // We're only interested in entities without a current target
                     if (AL.Tools.distance(bot, entity) > bot.G.skills.taunt.range) continue // It's too far away to attack
-                    if (entity.willDieToProjectiles(bot.projectiles)) continue // It will die to incoming projectiles
+                    if (entity.willDieToProjectiles(bot.projectiles, bot.players)) continue // It will die to incoming projectiles
 
                     targets.push(entity)
                 }
@@ -805,7 +805,7 @@ async function startPriest(bot: AL.Priest) {
                 for (const [, entity] of bot.entities) {
                     if (entity.type !== "mummy") continue // We're only interested in mummies
                     if (AL.Tools.distance(bot, entity) > bot.range) continue // It's too far away to attack
-                    if (entity.willDieToProjectiles(bot.projectiles)) continue // It will die to incoming projectiles
+                    if (entity.willDieToProjectiles(bot.projectiles, bot.players)) continue // It will die to incoming projectiles
 
                     targets.push(entity)
                 }
