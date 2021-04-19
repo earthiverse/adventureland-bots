@@ -667,7 +667,7 @@ async function startWarrior(warrior: AL.Warrior) {
 
 async function startMerchant(merchant: AL.Merchant) {
     merchant.socket.on("request", (data: { name: string }) => {
-        if ([ranger.id, priest.id, rogue.id].includes(data.name)) {
+        if ([warrior?.id, rogue?.id, ranger?.id, priest?.id].includes(data.name)) {
             merchant.acceptPartyRequest(data.name)
         }
     })
