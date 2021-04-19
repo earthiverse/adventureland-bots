@@ -6,7 +6,7 @@
   "type": "module",
   "dependencies": {
     "@typescript-eslint/parser": "^4.22.0",
-    "alclient": "^0.3.24",
+    "alclient": "^0.3.25",
     "axios": "^0.21.1",
     "eslint": "^7.24.0"
   },
