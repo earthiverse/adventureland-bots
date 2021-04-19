@@ -239,7 +239,7 @@ async function startShared(bot: AL.Character) {
 
     let moveLoop: { (): void; (): Promise<void>; (): Promise<void> }
     const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
-    if (bot.ctype == "rogue") {
+    if (bot.ctype == "rogue" || bot.ctype == "warrior") {
         moveLoop = async () => {
             try {
                 if (bot.socket.disconnected) {
