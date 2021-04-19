@@ -265,18 +265,19 @@ async function startShared(bot: AL.Character) {
                         const endGoalAngle = angleFromSpawnToBscorpionGoing + Math.PI / 2 // Our goal is 90 degrees
                         const endGoal = { x: bscorpionSpawn.x + RADIUS * Math.cos(endGoalAngle), y: bscorpionSpawn.y + RADIUS * Math.sin(endGoalAngle) }
 
-                        const moveDistance = bot.speed * MOVE_TIME_MS / 1000
-                        const angleFromSpawnToRanger = Math.atan2(bot.y - bscorpionSpawn.y, bot.x - bscorpionSpawn.x)
-                        const moveAngle = 2 * Math.asin(moveDistance * 0.5 / RADIUS)
-                        const moveGoal1 = { x: bscorpionSpawn.x + RADIUS * Math.cos(angleFromSpawnToRanger + moveAngle), y: bscorpionSpawn.y + RADIUS * Math.sin(angleFromSpawnToRanger + moveAngle) }
-                        const moveGoal2 = { x: bscorpionSpawn.x + RADIUS * Math.cos(angleFromSpawnToRanger - moveAngle), y: bscorpionSpawn.y + RADIUS * Math.sin(angleFromSpawnToRanger - moveAngle) }
-                        const moveGoal1Distance = AL.Tools.distance(moveGoal1, endGoal)
-                        const moveGoal2Distance = AL.Tools.distance(moveGoal2, endGoal)
-                        if (moveGoal1Distance > moveGoal2Distance) {
-                            bot.move(moveGoal2.x, moveGoal2.y).catch(() => { /* Ignore Errors */ })
-                        } else {
-                            bot.move(moveGoal1.x, moveGoal1.y).catch(() => { /* Ignore Errors */ })
-                        }
+                        // const moveDistance = bot.speed * MOVE_TIME_MS / 1000
+                        // const angleFromSpawnToRanger = Math.atan2(bot.y - bscorpionSpawn.y, bot.x - bscorpionSpawn.x)
+                        // const moveAngle = 2 * Math.asin(moveDistance * 0.5 / RADIUS)
+                        // const moveGoal1 = { x: bscorpionSpawn.x + RADIUS * Math.cos(angleFromSpawnToRanger + moveAngle), y: bscorpionSpawn.y + RADIUS * Math.sin(angleFromSpawnToRanger + moveAngle) }
+                        // const moveGoal2 = { x: bscorpionSpawn.x + RADIUS * Math.cos(angleFromSpawnToRanger - moveAngle), y: bscorpionSpawn.y + RADIUS * Math.sin(angleFromSpawnToRanger - moveAngle) }
+                        // const moveGoal1Distance = AL.Tools.distance(moveGoal1, endGoal)
+                        // const moveGoal2Distance = AL.Tools.distance(moveGoal2, endGoal)
+                        // if (moveGoal1Distance > moveGoal2Distance) {
+                        //     bot.move(moveGoal2.x, moveGoal2.y).catch(() => { /* Ignore Errors */ })
+                        // } else {
+                        //     bot.move(moveGoal1.x, moveGoal1.y).catch(() => { /* Ignore Errors */ })
+                        // }
+                        bot.move(endGoal.x, endGoal.y).catch(() => { /* Ignore Errors */ })
                     } else {
                         // There isn't a bscorpion nearby
                         const angleFromSpawnToBot = Math.atan2(rogue.y - bscorpionSpawn.y, rogue.x - bscorpionSpawn.x)
