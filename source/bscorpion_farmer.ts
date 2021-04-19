@@ -952,8 +952,8 @@ async function run() {
     startRanger(ranger)
     startShared(priest)
     startPriest(priest)
-    startShared(rogue)
-    startRogue(rogue)
+    // startShared(rogue)
+    // startRogue(rogue)
     startShared(warrior)
     startWarrior(warrior)
 }
