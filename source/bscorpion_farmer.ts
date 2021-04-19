@@ -7,7 +7,7 @@ const rangerName = "earthiverse"
 const priestName = "earthPri"
 const rogueName = "earthRog"
 const warriorName = "earthWar"
-const region: AL.ServerRegion = "ASIA"
+const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "I"
 
 let merchant: AL.Merchant
@@ -519,8 +519,8 @@ async function startPriest(priest: AL.Priest) {
             if (nearby
                 && (!nearby.target || [warrior?.id, rogue?.id, ranger?.id, priest?.id].includes(nearby.target))
                 && AL.Tools.distance(priest, nearby) <= priest.range) {
-                if (priest.canUse("curse")) await priest.curse(nearby.id)
-                if (priest.canUse("darkblessing")) await priest.darkBlessing()
+                if (priest.canUse("curse")) priest.curse(nearby.id)
+                if (priest.canUse("darkblessing")) priest.darkBlessing()
                 if (priest.canUse("attack")) await priest.basicAttack(nearby.id)
             }
         } catch (e) {
