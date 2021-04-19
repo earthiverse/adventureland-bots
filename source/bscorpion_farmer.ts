@@ -17,7 +17,7 @@ let rogue: AL.Rogue
 let warrior: AL.Warrior
 
 const RADIUS = 125
-const ANGLE = Math.PI / 3
+const ANGLE = Math.PI / 2
 const MOVE_TIME_MS = 250
 const MERCHANT_GOLD_TO_HOLD = 100_000_000
 const MERCHANT_ITEMS_TO_HOLD: AL.ItemName[] = [
