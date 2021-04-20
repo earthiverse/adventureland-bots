@@ -31,8 +31,8 @@ const MERCHANT_ITEMS_TO_HOLD: AL.ItemName[] = [
     "monstertoken",
     // Scrolls
     "cscroll0", "cscroll1", "cscroll2", "cscroll3", "scroll0", "scroll1", "scroll2", "scroll3", "scroll4", "strscroll", "intscroll", "dexscroll",
-    // Fishing Rod
-    "rod",
+    // Pickaxe and fishing rod
+    "pickaxe", "rod",
     // Main Items
     "dartgun", "wbook1",
 
@@ -946,6 +946,30 @@ async function startMerchant(merchant: AL.Merchant) {
                 }
                 await merchant.smartMove({ map: "main", x: -1368, y: 0 }) // Move to fishing sppot
                 await merchant.fish()
+                if (wasEquippedMainhand) await merchant.equip(merchant.locateItem(wasEquippedMainhand.name))
+                if (wasEquippedOffhand) await merchant.equip(merchant.locateItem(wasEquippedOffhand.name))
+            }
+            
+            // Go mining if we can
+            if (merchant.getCooldown("mining") == 0 /* Mining is available */
+                && (merchant.hasItem("pickaxe") || merchant.isEquipped("pickaxe")) /* We have a pickaxe */) {
+                let wasEquippedMainhand = merchant.slots.mainhand
+                let wasEquippedOffhand = merchant.slots.offhand
+                if (wasEquippedOffhand) await merchant.unequip("offhand") // pickaxe is a 2-handed weapon, so we need to unequip our offhand if we have something equipped
+                else if (merchant.hasItem("wbook1")) wasEquippedOffhand = { name: "wbook1" } // We want to equip a wbook1 by default if we have one after we go mining
+                if (wasEquippedMainhand) {
+                    if (wasEquippedMainhand.name !== "pickaxe") {
+                        // We didn't have a pickaxe equipped before, let's equip one now
+                        await merchant.unequip("mainhand")
+                        await merchant.equip(merchant.locateItem("pickaxe"))
+                    }
+                } else {
+                    // We didn't have anything equipped before
+                    if (merchant.hasItem("dartgun")) wasEquippedMainhand = { name: "dartgun" } // We want to equip a dartgun by default if we have one after we go mining
+                    await merchant.equip(merchant.locateItem("pickaxe")) // Equip the pickaxe
+                }
+                await merchant.smartMove({ map: "tunnel", x: -280, y: -10 }) // Move to mining sppot
+                await merchant.mine()
                 if (wasEquippedMainhand) await merchant.equip(merchant.locateItem(wasEquippedMainhand.name))
                 if (wasEquippedOffhand) await merchant.equip(merchant.locateItem(wasEquippedOffhand.name))
             }
