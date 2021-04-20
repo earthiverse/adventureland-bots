@@ -532,6 +532,7 @@ async function startPriest(priest: AL.Priest) {
             if (nearby
                 && (!nearby.target || [warrior?.id, rogue?.id, ranger?.id, priest?.id].includes(nearby.target))
                 && AL.Tools.distance(priest, nearby) <= priest.range) {
+                if (priest.canUse("absorb") && nearby.target && nearby.target !== priest.id) priest.absorbSins(nearby.target) // Make the scorpion target us if it's attacking one of our friends
                 if (priest.canUse("curse")) priest.curse(nearby.id)
                 if (priest.canUse("darkblessing")) priest.darkBlessing()
                 if (priest.canUse("attack")) await priest.basicAttack(nearby.id)
