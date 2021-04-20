@@ -162,6 +162,29 @@ async function startShared(bot: AL.Character) {
     }
     compoundLoop()
 
+    let elixirLoop: { (): void; (): Promise<void> }
+    if (["ranger", "warrior", "rogue"].includes(bot.ctype)) {
+        elixirLoop = async () => {
+            try {
+                if (bot.socket.disconnected) {
+                    setTimeout(async () => { elixirLoop() }, 10)
+                    return
+                }
+
+                if (!bot.slots.elixir) {
+                    let pumpkinSpice = bot.locateItem("pumpkinspice")
+                    if (pumpkinSpice == undefined && bot.canBuy("pumpkinspice")) pumpkinSpice = await bot.buy("pumpkinspice")
+                    if (pumpkinSpice !== undefined) await bot.equip(pumpkinSpice)
+                }
+            } catch (e) {
+                console.error(e)
+            }
+
+            setTimeout(async () => { elixirLoop() }, 250)
+        }
+        elixirLoop()
+    }
+
     async function healLoop() {
         try {
             if (bot.socket.disconnected) {
