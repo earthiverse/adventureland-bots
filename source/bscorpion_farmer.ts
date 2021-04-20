@@ -211,11 +211,12 @@ async function startShared(bot: AL.Character) {
                 }
             }
 
+            setTimeout(async () => { healLoop() }, Math.max(10, bot.getCooldown("use_hp")))
         } catch (e) {
             console.error(e)
+            setTimeout(async () => { healLoop() }, 10)
         }
 
-        setTimeout(async () => { healLoop() }, Math.max(10, bot.getCooldown("use_hp")))
     }
     healLoop()
 
@@ -503,13 +504,13 @@ async function startPriest(priest: AL.Priest) {
             }
 
             const nearby = priest.getNearestMonster("bscorpion")?.monster
-            
-            if(nearby && nearby.hp < 50000 && priest.slots.mainhand.name !== "lmace") {
+
+            if (nearby && nearby.hp < 50000 && priest.slots.mainhand.name !== "lmace") {
                 // Equip lunar mace for the extra luck when it's low HP
-                priest.equip(priest.locateItem("lmace"))
-            } else if(priest.slots.mainhand.name !== "firestaff") {
+                await priest.equip(priest.locateItem("lmace"))
+            } else if (priest.slots.mainhand.name !== "firestaff") {
                 // Equip the fire staff for extra burn change when it's high hp
-                priest.equip(priest.locateItem("firestaff"))
+                await priest.equip(priest.locateItem("firestaff"))
             }
 
             if (priest.canUse("heal")) {
