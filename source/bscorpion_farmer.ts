@@ -734,11 +734,7 @@ async function startMerchant(merchant: AL.Merchant) {
             }
 
             // If we are full, let's go to the bank
-            let freeSlots = 0
-            for (const item of merchant.items) {
-                if (!item) freeSlots++
-            }
-            if (freeSlots == 0 || lastBankVisit < Date.now() - 120000 || merchant.hasPvPMarkedItem()) {
+            if (merchant.isFull() || lastBankVisit < Date.now() - 120000 || merchant.hasPvPMarkedItem()) {
                 await merchant.closeMerchantStand()
                 await merchant.smartMove("items1")
 
@@ -891,7 +887,8 @@ async function startMerchant(merchant: AL.Merchant) {
 
             // mluck our friends
             if (merchant.canUse("mluck")) {
-                for (const friend of [ranger, priest, rogue]) {
+                for (const friend of [ranger, priest, rogue, warrior]) {
+                    if (!friend) continue
                     if (!friend.s.mluck || !friend.s.mluck.strong || friend.s.mluck.ms < 120000) {
                         // Move to them, and we'll automatically mluck them
                         if (AL.Tools.distance(merchant, friend) > merchant.G.skills.mluck.range) {
@@ -899,10 +896,10 @@ async function startMerchant(merchant: AL.Merchant) {
                             console.log(`[merchant] We are moving to ${friend.name} to mluck them!`)
                             await merchant.smartMove(friend, { getWithin: merchant.G.skills.mluck.range / 2 })
                         }
-                    }
 
-                    setTimeout(async () => { moveLoop() }, 250)
-                    return
+                        setTimeout(async () => { moveLoop() }, 250)
+                        return
+                    }
                 }
             }
 
