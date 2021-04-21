@@ -988,6 +988,7 @@ async function startMerchant(merchant: AL.Merchant) {
                     if (merchant.hasItem("dartgun")) wasEquippedMainhand = { name: "dartgun" } // We want to equip a dartgun by default if we have one after we go fishing
                     await merchant.equip(merchant.locateItem("rod")) // Equip the rod
                 }
+                merchant.closeMerchantStand()
                 await merchant.smartMove({ map: "main", x: -1368, y: 0 }) // Move to fishing sppot
                 await merchant.fish()
                 if (wasEquippedMainhand) await merchant.equip(merchant.locateItem(wasEquippedMainhand.name))
@@ -1012,6 +1013,7 @@ async function startMerchant(merchant: AL.Merchant) {
                     if (merchant.hasItem("dartgun")) wasEquippedMainhand = { name: "dartgun" } // We want to equip a dartgun by default if we have one after we go mining
                     await merchant.equip(merchant.locateItem("pickaxe")) // Equip the pickaxe
                 }
+                merchant.closeMerchantStand()
                 await merchant.smartMove({ map: "tunnel", x: -280, y: -10 }) // Move to mining sppot
                 await merchant.mine()
                 if (wasEquippedMainhand) await merchant.equip(merchant.locateItem(wasEquippedMainhand.name))
