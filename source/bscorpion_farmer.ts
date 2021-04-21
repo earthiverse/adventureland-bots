@@ -161,6 +161,18 @@ async function startShared(bot: AL.Character) {
     }
     compoundLoop()
 
+    async function connectLoop() {
+        if (bot.socket.disconnected) {
+            console.log(`${bot.id} is disconnected. Reconnecting!`)
+            bot.socket.connect()
+            setTimeout(async () => { connectLoop() }, 60000)
+            return
+        }
+
+        setTimeout(async () => { connectLoop() }, 1000)
+    }
+    connectLoop()
+
     let elixirLoop: { (): void; (): Promise<void> }
     if (["ranger", "warrior", "rogue"].includes(bot.ctype)) {
         elixirLoop = async () => {
@@ -376,18 +388,6 @@ async function startShared(bot: AL.Character) {
     }
     partyLoop()
 
-    async function connectLoop() {
-        if (bot.socket.disconnected) {
-            console.log(`${bot.id} is disconnected. Reconnecting!`)
-            bot.socket.connect()
-            setTimeout(async () => { connectLoop() }, 60000)
-            return
-        }
-
-        setTimeout(async () => { connectLoop() }, 1000)
-    }
-    connectLoop()
-
     async function sellLoop() {
         try {
             if (bot.socket.disconnected) {
@@ -416,6 +416,32 @@ async function startShared(bot: AL.Character) {
         setTimeout(async () => { sellLoop() }, 1000)
     }
     sellLoop()
+
+    let sendItemLoop
+    if (bot.ctype !== "merchant") {
+        sendItemLoop = async () => {
+            try {
+                if (bot.socket.disconnected) {
+                    setTimeout(async () => { sellLoop() }, 10)
+                    return
+                }
+
+                const sendTo = bot.players.get(merchant.id)
+                if (sendTo && AL.Tools.distance(bot, sendTo) < AL.Constants.NPC_INTERACTION_DISTANCE) {
+                    const extraGold = bot.gold - 10_000_000
+
+                    if (extraGold > 0) await bot.sendGold(merchant.id, extraGold)
+                    const prims = bot.locateItem("offeringp")
+                    if (prims !== undefined) await bot.sendItem(merchant.id, prims, bot.items[prims].q)
+                }
+            } catch (e) {
+                console.error(e)
+            }
+
+            setTimeout(async () => { sendItemLoop() }, 1000)
+        }
+        sendItemLoop()
+    }
 
     async function upgradeLoop() {
         try {
@@ -508,12 +534,16 @@ async function startPriest(priest: AL.Priest) {
 
             const nearby = priest.getNearestMonster("bscorpion")?.monster
 
-            if (nearby && nearby.hp < 50000 && priest.slots.mainhand.name !== "lmace") {
-                // Equip lunar mace for the extra luck when it's low HP
-                await priest.equip(priest.locateItem("lmace"))
-            } else if (priest.slots.mainhand.name !== "firestaff") {
-                // Equip the fire staff for extra burn change when it's high hp
-                await priest.equip(priest.locateItem("firestaff"))
+            if (nearby && nearby.hp < 50000) {
+                // Equip items that have more luck
+                if (priest.slots.mainhand?.name !== "lmace" && priest.hasItem("lmace")) await priest.equip(priest.locateItem("lmace"))
+                if (priest.slots.orb?.name !== "rabbitsfoot" && priest.hasItem("rabbitsfoot")) await priest.equip(priest.locateItem("rabbitsfoot"))
+                if (priest.slots.offhand?.name !== "mshield" && priest.hasItem("mshield")) await priest.equip(priest.locateItem("mshield"))
+            } else {
+                // Equip items that do more damage
+                if (priest.slots.mainhand?.name !== "firestaff") await priest.equip(priest.locateItem("firestaff"))
+                if (priest.slots.orb?.name !== "orbofint" && priest.hasItem("orbofint")) await priest.equip(priest.locateItem("orbofint"))
+                if (priest.slots.offhand?.name !== "wbook1" && priest.hasItem("wbook1")) await priest.equip(priest.locateItem("wbook1"))
             }
 
             if (priest.canUse("heal")) {
