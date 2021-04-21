@@ -1,5 +1,4 @@
 import AL from "alclient"
-import { NodeData } from "alclient/build/definitions/pathfinder"
 
 /** Config */
 const merchantName = "earthMer"
@@ -242,25 +241,6 @@ async function startShared(bot: AL.Character) {
 
     }
     healLoop()
-
-    async function lootLoop() {
-        try {
-            if (bot.socket.disconnected) {
-                setTimeout(async () => { lootLoop() }, 10)
-                return
-            }
-
-            for (const [, chest] of bot.chests) {
-                if (AL.Tools.distance(bot, chest) > 800) continue
-                await bot.openChest(chest.id)
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { lootLoop() }, 250)
-    }
-    lootLoop()
 
     let moveLoop: { (): void; (): Promise<void>; (): Promise<void> }
     const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
@@ -588,7 +568,41 @@ async function startPriest(priest: AL.Priest) {
     }
     elixirLoop()
 
-    // TODO: if the scorpion is aggro on a friend, take the aggro from them
+    async function lootLoop() {
+        try {
+            if (priest.socket.disconnected) {
+                setTimeout(async () => { lootLoop() }, 10)
+                return
+            }
+
+            // If we have a booster, we'll switch it to gold while we loot, then switch back
+            let previousBooster: "luckbooster" | "xpbooster" | false = false
+            let booster: number
+
+            for (const [, chest] of priest.chests) {
+                if (AL.Tools.distance(priest, chest) > 800) continue
+                if (!booster) {
+                    for (const boosterType of (["luckbooster", "xpbooster"] as ("luckbooster" | "xpbooster")[])) {
+                        booster = priest.locateItem(boosterType)
+                        if (booster !== undefined) {
+                            previousBooster = boosterType
+                            await priest.shiftBooster(booster, "goldbooster")
+                        }
+                        break
+                    }
+                }
+                await priest.openChest(chest.id)
+            }
+            if (previousBooster) {
+                await priest.shiftBooster(booster, previousBooster)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { lootLoop() }, 250)
+    }
+    lootLoop()
 }
 
 async function startRogue(rogue: AL.Rogue) {
@@ -949,7 +963,7 @@ async function startMerchant(merchant: AL.Merchant) {
                 if (wasEquippedMainhand) await merchant.equip(merchant.locateItem(wasEquippedMainhand.name))
                 if (wasEquippedOffhand) await merchant.equip(merchant.locateItem(wasEquippedOffhand.name))
             }
-            
+
             // Go mining if we can
             if (merchant.getCooldown("mining") == 0 /* Mining is available */
                 && (merchant.hasItem("pickaxe") || merchant.isEquipped("pickaxe")) /* We have a pickaxe */) {
