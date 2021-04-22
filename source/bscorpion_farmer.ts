@@ -299,7 +299,7 @@ async function startShared(bot: AL.Character) {
                         // There isn't a bscorpion nearby
                         const angleFromSpawnToBot = Math.atan2(bot.y - bscorpionSpawn.y, bot.x - bscorpionSpawn.x)
                         const endGoal = { x: bscorpionSpawn.x + RADIUS * Math.cos(angleFromSpawnToBot), y: bscorpionSpawn.y + RADIUS * Math.sin(angleFromSpawnToBot) }
-                        bot.move(endGoal.x, endGoal.y)
+                        bot.move(endGoal.x, endGoal.y).catch(() => { /* Ignore Errors */ })
                     }
                 } else {
                     // Move to the bscorpion spawn
@@ -352,7 +352,7 @@ async function startShared(bot: AL.Character) {
                         // There isn't a bscorpion nearby
                         const angleFromSpawnToBot = Math.atan2(bot.y - bscorpionSpawn.y, bot.x - bscorpionSpawn.x)
                         const endGoal = { x: bscorpionSpawn.x + RADIUS * Math.cos(angleFromSpawnToBot), y: bscorpionSpawn.y + RADIUS * Math.sin(angleFromSpawnToBot) }
-                        bot.move(endGoal.x, endGoal.y)
+                        bot.move(endGoal.x, endGoal.y).catch(() => { /* Ignore Errors */ })
                     }
                 } else {
                     // Move to the bscorpion spawn
