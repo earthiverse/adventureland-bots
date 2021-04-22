@@ -422,7 +422,7 @@ async function startShared(bot: AL.Character) {
         sendItemLoop = async () => {
             try {
                 if (bot.socket.disconnected) {
-                    setTimeout(async () => { sellLoop() }, 10)
+                    setTimeout(async () => { sendItemLoop() }, 10)
                     return
                 }
 
