@@ -1,4 +1,4 @@
-import AL, { Tools } from "alclient"
+import AL from "alclient"
 import fs from "fs"
 
 type BuyData = {
