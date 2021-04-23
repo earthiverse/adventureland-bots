@@ -3715,25 +3715,29 @@ async function startMerchant(bot: Merchant) {
             // Go fishing if we can
             if (bot.getCooldown("fishing") == 0 /* Fishing is available */
                 && (bot.hasItem("rod") || bot.isEquipped("rod")) /* We have a rod */) {
-                let wasEquippedMainhand = bot.character.slots.mainhand
-                let wasEquippedOffhand = bot.character.slots.offhand
-                if (wasEquippedOffhand) await bot.unequip("offhand") // rod is a 2-handed weapon, so we need to unequip our offhand if we have something equipped
-                else if (bot.hasItem("wbook1")) wasEquippedOffhand = { name: "wbook1" } // We want to equip a wbook1 by default if we have one after we go fishing
-                if (wasEquippedMainhand) {
-                    if (wasEquippedMainhand.name !== "rod") {
-                        // We didn't have a rod equipped before, let's equip one now
-                        await bot.unequip("mainhand")
-                        await bot.equip(bot.locateItem("rod"))
-                    }
-                } else {
-                    // We didn't have anything equipped before
-                    if (bot.hasItem("dartgun")) wasEquippedMainhand = { name: "dartgun" } // We want to equip a dartgun by default if we have one after we go fishing
-                    await bot.equip(bot.locateItem("rod")) // Equip the rod
-                }
+                merchant.closeMerchantStand()
                 await bot.smartMove({ map: "main", x: -1368, y: 0 }) // Move to fishing sppot
+                await bot.unequip("offhand")
+                await bot.unequip("mainhand")
+                await bot.equip(bot.locateItem("rod"))
                 await bot.fish()
-                if (wasEquippedMainhand) await bot.equip(bot.locateItem(wasEquippedMainhand.name))
-                if (wasEquippedOffhand) await bot.equip(bot.locateItem(wasEquippedOffhand.name))
+                await bot.unequip("mainhand")
+                if (bot.hasItem("dartgun")) await bot.equip(bot.locateItem("dartgun"))
+                if (bot.hasItem("wbook1")) await bot.equip(bot.locateItem("wbook1"))
+            }
+
+            // Go mining if we can
+            if (merchant.getCooldown("mining") == 0 /* Mining is available */
+                && (merchant.hasItem("pickaxe") || merchant.isEquipped("pickaxe")) /* We have a pickaxe */) {
+                merchant.closeMerchantStand()
+                await bot.smartMove({ map: "tunnel", x: -280, y: -10 }) // Move to mining sppot
+                await bot.unequip("offhand")
+                await bot.unequip("mainhand")
+                await bot.equip(bot.locateItem("pickaxe"))
+                await bot.mine()
+                await bot.unequip("mainhand")
+                if (bot.hasItem("dartgun")) await bot.equip(bot.locateItem("dartgun"))
+                if (bot.hasItem("wbook1")) await bot.equip(bot.locateItem("wbook1"))
             }
 
             // Hang out in town
