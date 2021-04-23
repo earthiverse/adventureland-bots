@@ -507,7 +507,7 @@ export class Pathfinder {
             path.splice(i, 1)
         }
 
-        // Optimize the path (front)
+        // Optimize path (front)
         const first = path[0]
         for (let i = 2; i < path.length; i++) {
             const skipCheck = path[i]
@@ -520,17 +520,18 @@ export class Pathfinder {
             }
         }
 
-        // // Optimize the path (back)
-        // for (let i = path.length - 3; i > 0; i--) {
-        //     const last = path[path.length - 1]
-        //     const skipCheck = path[i]
-        //     if (skipCheck.type !== "move") break // Can only optimize moves
-        //     if (Pathfinder.canWalk(skipCheck, last)) {
-        //         // We can skip something!
-        //         path.splice(i, (path.length - 2) - i)
-        //         i++ // Check if we can skip again
-        //     }
-        // }
+        // Optimize path (back)
+        const last = path[path.length - 1]
+        for(let i = path.length - 3; i > 0; i--) {
+            const skipCheck = path[i]
+
+            if(skipCheck.type !== "move") break // Can only optimize moves
+            if(Pathfinder.canWalk(skipCheck, last)) {
+                // We can skip something!
+                path.splice(i + 1, path.length - i - 2)
+                i = path.length - 2
+            }
+        }
 
         console.log(`Path from ${fromNode.id} to ${toNode.id} found! (${path.length} steps)`)
         console.log(path)
