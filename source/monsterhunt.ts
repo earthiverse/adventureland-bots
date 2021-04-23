@@ -895,6 +895,35 @@ async function startRanger(bot: Ranger) {
             equipment: { mainhand: "crossbow", orb: "test_orb" },
             requirePriest: true
         },
+        bscorpion: {
+            attack: async () => { return await tankAttackStrategy("bscorpion", "earthPri") },
+            move: async () => {
+                const bscorpionSpawn = bot.locateMonsters("bscorpion")[0]
+                const RADIUS = 125
+                const ANGLE = Math.PI / 2.5
+                if (Pathfinder.canWalk(bot.character, bscorpionSpawn)) {
+                    const bscorpion = bot.getNearestMonster("bscorpion")?.monster
+                    if (bscorpion) {
+                        // There's a bscorpion nearby
+                        const angleFromSpawnToBscorpionGoing = Math.atan2(bscorpion.going_y - bscorpionSpawn.y, bscorpion.going_x - bscorpionSpawn.x)
+                        const endGoalAngle = angleFromSpawnToBscorpionGoing + ANGLE
+                        const endGoal = { x: bscorpionSpawn.x + RADIUS * Math.cos(endGoalAngle), y: bscorpionSpawn.y + RADIUS * Math.sin(endGoalAngle) }
+                        bot.move(endGoal.x, endGoal.y).catch(() => { /* Ignore Errors */ })
+                    } else {
+                        // There isn't a bscorpion nearby
+                        const angleFromSpawnToBot = Math.atan2(bot.character.y - bscorpionSpawn.y, bot.character.x - bscorpionSpawn.x)
+                        const endGoal = { x: bscorpionSpawn.x + RADIUS * Math.cos(angleFromSpawnToBot), y: bscorpionSpawn.y + RADIUS * Math.sin(angleFromSpawnToBot) }
+                        bot.move(endGoal.x, endGoal.y).catch(() => { /* Ignore Errors */ })
+                    }
+                } else {
+                    // Move to the bscorpion spawn
+                    await bot.smartMove(bscorpionSpawn, { getWithin: RADIUS })
+                }
+                return 250
+            },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
+            requirePriest: true
+        },
         cgoo: {
             attack: async () => { return await defaultAttackStrategy(["cgoo"]) },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "arena", x: 0, y: -500 }, "cgoo") },
@@ -1723,6 +1752,35 @@ async function startPriest(bot: Priest) {
             attack: async () => { return await defaultAttackStrategy(["booboo"]) },
             move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 265, y: -605 }) },
             equipment: { orb: "test_orb" },
+        },
+        bscorpion: {
+            attack: async () => { return await defaultAttackStrategy(["bscorpion"]) },
+            move: async () => {
+                const bscorpionSpawn = bot.locateMonsters("bscorpion")[0]
+                const RADIUS = 125
+                const ANGLE = Math.PI / 2.5
+                if (Pathfinder.canWalk(bot.character, bscorpionSpawn)) {
+                    const bscorpion = bot.getNearestMonster("bscorpion")?.monster
+                    if (bscorpion) {
+                        // There's a bscorpion nearby
+                        const angleFromSpawnToBscorpionGoing = Math.atan2(bscorpion.going_y - bscorpionSpawn.y, bscorpion.going_x - bscorpionSpawn.x)
+                        const endGoalAngle = angleFromSpawnToBscorpionGoing + ANGLE
+                        const endGoal = { x: bscorpionSpawn.x + RADIUS * Math.cos(endGoalAngle), y: bscorpionSpawn.y + RADIUS * Math.sin(endGoalAngle) }
+                        bot.move(endGoal.x, endGoal.y).catch(() => { /* Ignore Errors */ })
+                    } else {
+                        // There isn't a bscorpion nearby
+                        const angleFromSpawnToBot = Math.atan2(bot.character.y - bscorpionSpawn.y, bot.character.x - bscorpionSpawn.x)
+                        const endGoal = { x: bscorpionSpawn.x + RADIUS * Math.cos(angleFromSpawnToBot), y: bscorpionSpawn.y + RADIUS * Math.sin(angleFromSpawnToBot) }
+                        bot.move(endGoal.x, endGoal.y).catch(() => { /* Ignore Errors */ })
+                    }
+                } else {
+                    // Move to the bscorpion spawn
+                    await bot.smartMove(bscorpionSpawn, { getWithin: RADIUS })
+                }
+                return 250
+            },
+            equipment: { mainhand: "lmace", orb: "test_orb" },
+            requirePriest: true
         },
         cgoo: {
             attack: async () => { return await defaultAttackStrategy(["cgoo"]) },
@@ -2561,7 +2619,7 @@ async function startWarrior(bot: Warrior) {
         let target: EntityData
         for (const [, entity] of bot.entities) {
             if (entity.type !== mtype) continue
-            if (entity.range > bot.character.range) continue
+            if (entity.range > bot.character.range + bot.character.speed) continue
             if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
 
             target = entity
@@ -2570,7 +2628,8 @@ async function startWarrior(bot: Warrior) {
         if (target && !target.s.stunned && bot.canUse("stomp")) {
             // If they're not stunned, stun then attack
             await bot.stomp()
-        } else if (target && target.s.stunned && bot.canUse("attack")) {
+            if (bot.canUse("attack")) await bot.attack(target.id)
+        } else if (target?.s.stunned && bot.canUse("attack")) {
             await bot.attack(target.id)
         }
 
@@ -2707,6 +2766,45 @@ async function startWarrior(bot: Warrior) {
             attack: async () => { return await oneTargetAttackStrategy("booboo") },
             move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 265, y: -625 }) },
             equipment: { mainhand: "basher", orb: "test_orb" },
+            requirePriest: true
+        },
+        bscorpion: {
+            attack: async () => {
+                const bscorpion = bot.getNearestMonster("bscorpion")?.monster
+                if (bscorpion?.target) {
+                    return await defaultAttackStrategy(["bscorpion"])
+                } else {
+                    return 250
+                }
+            },
+            move: async () => {
+                const bscorpionSpawn = bot.locateMonsters("bscorpion")[0]
+                const RADIUS = 125
+                const ANGLE = Math.PI / 2.5
+                if (Pathfinder.canWalk(bot.character, bscorpionSpawn)) {
+                    const bscorpion = bot.getNearestMonster("bscorpion")?.monster
+                    if (bscorpion?.target) {
+                        // There's a bscorpion and it has a target
+                        bot.move(bscorpion.x, bscorpion.y).catch(() => { /* Ignore errors */ })
+                    } else if (bscorpion) {
+                        // It has no target
+                        const angleFromSpawnToBscorpionGoing = Math.atan2(bscorpion.going_y - bscorpionSpawn.y, bscorpion.going_x - bscorpionSpawn.x)
+                        const endGoalAngle = angleFromSpawnToBscorpionGoing + ANGLE // Our goal is 90 degrees
+                        const endGoal = { x: bscorpionSpawn.x + RADIUS * Math.cos(endGoalAngle), y: bscorpionSpawn.y + RADIUS * Math.sin(endGoalAngle) }
+                        bot.move(endGoal.x, endGoal.y).catch(() => { /* Ignore Errors */ })
+                    } else {
+                        // There isn't a bscorpion nearby
+                        const angleFromSpawnToBot = Math.atan2(bot.character.y - bscorpionSpawn.y, bot.character.x - bscorpionSpawn.x)
+                        const endGoal = { x: bscorpionSpawn.x + RADIUS * Math.cos(angleFromSpawnToBot), y: bscorpionSpawn.y + RADIUS * Math.sin(angleFromSpawnToBot) }
+                        bot.move(endGoal.x, endGoal.y).catch(() => { /* Ignore Errors */ })
+                    }
+                } else {
+                    // Move to the bscorpion spawn
+                    await bot.smartMove(bscorpionSpawn, { getWithin: RADIUS })
+                }
+                return 250
+            },
+            equipment: { mainhand: "lmace", orb: "test_orb" },
             requirePriest: true
         },
         cgoo: {
@@ -3717,8 +3815,8 @@ async function startMerchant(bot: Merchant) {
                 && (bot.hasItem("rod") || bot.isEquipped("rod")) /* We have a rod */) {
                 merchant.closeMerchantStand()
                 await bot.smartMove({ map: "main", x: -1368, y: 0 }) // Move to fishing sppot
-                await bot.unequip("offhand")
-                await bot.unequip("mainhand")
+                if (bot.character.slots.offhand) await bot.unequip("offhand")
+                if (bot.character.slots.mainhand) await bot.unequip("mainhand")
                 await bot.equip(bot.locateItem("rod"))
                 await bot.fish()
                 await bot.unequip("mainhand")
@@ -3731,8 +3829,8 @@ async function startMerchant(bot: Merchant) {
                 && (merchant.hasItem("pickaxe") || merchant.isEquipped("pickaxe")) /* We have a pickaxe */) {
                 merchant.closeMerchantStand()
                 await bot.smartMove({ map: "tunnel", x: -280, y: -10 }) // Move to mining sppot
-                await bot.unequip("offhand")
-                await bot.unequip("mainhand")
+                if (bot.character.slots.offhand) await bot.unequip("offhand")
+                if (bot.character.slots.mainhand) await bot.unequip("mainhand")
                 await bot.equip(bot.locateItem("pickaxe"))
                 await bot.mine()
                 await bot.unequip("mainhand")
