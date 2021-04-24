@@ -13,7 +13,7 @@ const identifier: AL.ServerIdentifier = "II"
 /** Variables */
 const ITEMS_TO_EXCHANGE: AL.ItemName[] = [
     // General exchangables
-    "5bucks", "gem0", "gem1",
+    "5bucks", "gem0", "gem1", "gemfragment",
     // Seashells for potions
     "seashell",
     // Leather for capes
