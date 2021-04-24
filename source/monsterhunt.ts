@@ -2951,7 +2951,19 @@ async function startWarrior(bot: Warrior) {
         mummy: {
             attack: async () => { return await defaultAttackStrategy(["mummy"]) },
             // TODO: Make abuseRageMoveStrategy where we go to the rage range until we have targets, then move back.
-            move: async () => { return await holdPositionMoveStrategy({ map: "spookytown", x: 230, y: -1129 }) },
+            move: async () => {
+                let highestMummyLevel = 0
+                for (const [, entity] of bot.entities) {
+                    if (entity.type !== "mummy") continue
+                    if (entity.level > highestMummyLevel) highestMummyLevel = entity.level
+                }
+                if (highestMummyLevel <= 1) // Aggro mummies
+                    holdPositionMoveStrategy({ map: "spookytown", x: 230, y: -1131 })
+                else if (bot.character.targets) // Don't aggro mummies
+                    return await holdPositionMoveStrategy({ map: "spookytown", x: 230, y: -1129 })
+                else // Aggro mummies
+                    return await holdPositionMoveStrategy({ map: "spookytown", x: 230, y: -1131 })
+            },
             equipment: { mainhand: "bataxe", orb: "test_orb" },
             requirePriest: true
         },
