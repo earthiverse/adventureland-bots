@@ -2804,7 +2804,7 @@ async function startWarrior(bot: Warrior) {
                 }
                 return 250
             },
-            equipment: { mainhand: "lmace", orb: "test_orb" },
+            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             requirePriest: true
         },
         cgoo: {
