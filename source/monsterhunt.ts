@@ -2927,7 +2927,23 @@ async function startWarrior(bot: Warrior) {
             attackWhileIdle: true
         },
         mole: {
-            attack: async () => { return await defaultAttackStrategy(["mole"]) },
+            attack: async () => {
+                let shouldAgitate = bot.canUse("agitate")
+                if (shouldAgitate) {
+                    for (const [, mole] of bot.entities) {
+                        if (Tools.distance(bot.character, mole) > bot.G.skills.agitate.range) continue // Too far away to agitate
+                        if (mole.target) continue // It's already targeting something
+                        if (mole.type !== "mole" // There's something that's not a mole here...
+                            || mole.target
+                            || mole.level > 3) { // The moles are too high level
+                            shouldAgitate = false
+                            break
+                        }
+                    }
+                    if (shouldAgitate) bot.agitate()
+                }
+                return await defaultAttackStrategy(["mole"])
+            },
             move: async () => { return await holdPositionMoveStrategy({ map: "tunnel", x: 5, y: -329 }) },
             equipment: { mainhand: "basher", orb: "test_orb" },
             requirePriest: true
@@ -2972,18 +2988,20 @@ async function startWarrior(bot: Warrior) {
         osnake: {
             attack: async () => {
                 // Agitate snakes to farm them while attacking the osnakes
-                let shouldAgitate = false
-                for (const [, entity] of bot.entities) {
-                    if (Tools.distance(bot.character, entity) > bot.G.skills.agitate.range) continue // Out of range
-                    if (entity.target) continue // It's already targeting something
-                    if (entity.type !== "osnake" && !strategy[entity.type].attackWhileIdle) {
-                        // Something else is here.
-                        shouldAgitate = false
-                        break
+                let shouldAgitate = bot.canUse("agitate")
+                if (shouldAgitate) {
+                    for (const [, entity] of bot.entities) {
+                        if (Tools.distance(bot.character, entity) > bot.G.skills.agitate.range) continue // Out of range
+                        if (entity.target) continue // It's already targeting something
+                        if (entity.type !== "osnake" && !strategy[entity.type].attackWhileIdle) {
+                            // Something else is here.
+                            shouldAgitate = false
+                            break
+                        }
+                        shouldAgitate = true
                     }
-                    shouldAgitate = true
+                    if (shouldAgitate) bot.agitate()
                 }
-                if (shouldAgitate && bot.canUse("agitate")) bot.agitate()
                 return await defaultAttackStrategy(["osnake"])
             },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "halloween", x: 347, y: -747 }, "osnake") },
