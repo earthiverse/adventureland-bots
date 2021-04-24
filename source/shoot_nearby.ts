@@ -396,32 +396,34 @@ async function startMage(mage: AL.Mage) {
                 return
             }
 
-            for (const [, entity] of mage.entities) {
-                if (AL.Tools.distance(mage, entity) > mage.range) continue // Too far away
-                if (entity.cooperative !== true && entity.target && ![mage1?.id, mage2?.id, mage3?.id, merchant?.id].includes(entity.target)) continue // It's targeting someone else
-                if (entity.willDieToProjectiles(mage.projectiles, mage.players, mage.entities)) continue // Already gonna die
-                if (entity.willBurnToDeath()) continue // Will burn to death shortly
+            if (mage.canUse("attack")) {
+                for (const [, entity] of mage.entities) {
+                    if (AL.Tools.distance(mage, entity) > mage.range) continue // Too far away
+                    if (entity.cooperative !== true && entity.target && ![mage1?.id, mage2?.id, mage3?.id, merchant?.id].includes(entity.target)) continue // It's targeting someone else
+                    if (entity.willDieToProjectiles(mage.projectiles, mage.players, mage.entities)) continue // Already gonna die
+                    if (entity.willBurnToDeath()) continue // Will burn to death shortly
 
-                if (AL.Tools.calculateDamageRange(mage, entity)[0] > entity.hp) {
-                    for (const bot of [merchant, mage1, mage2, mage3]) {
-                        if (!bot) continue
-                        bot.entities.delete(entity.id)
+                    if (AL.Tools.calculateDamageRange(mage, entity)[0] > entity.hp) {
+                        for (const bot of [merchant, mage1, mage2, mage3]) {
+                            if (!bot) continue
+                            bot.entities.delete(entity.id)
+                        }
                     }
-                }
 
-                // Energize for more DPS
-                for (const friend of [mage1, mage2, mage3]) {
-                    if (friend.id == mage.id) continue // Can't energize ourselves
-                    if (AL.Tools.distance(mage, friend) > mage.G.skills.energize.range) continue // Too far away
-                    if (!friend.canUse("energize")) continue // Friend can't use energize
+                    // Energize for more DPS
+                    for (const friend of [mage1, mage2, mage3]) {
+                        if (friend.id == mage.id) continue // Can't energize ourselves
+                        if (AL.Tools.distance(mage, friend) > mage.G.skills.energize.range) continue // Too far away
+                        if (!friend.canUse("energize")) continue // Friend can't use energize
 
-                    // Energize!
-                    friend.energize(mage.id)
+                        // Energize!
+                        friend.energize(mage.id)
+                        break
+                    }
+
+                    await mage.basicAttack(entity.id)
                     break
                 }
-
-                await mage.basicAttack(entity.id)
-                break
             }
         } catch (e) {
             console.error(e)
