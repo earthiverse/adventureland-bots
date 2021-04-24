@@ -693,7 +693,7 @@ async function startMerchant(merchant: AL.Merchant) {
 
 async function run() {
     // Login and prepare pathfinding
-    await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData()])
+    await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Pathfinder.prepare()])
 
     // Start all characters
     console.log("Connecting...")
