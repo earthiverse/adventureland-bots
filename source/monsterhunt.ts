@@ -2940,7 +2940,7 @@ async function startWarrior(bot: Warrior) {
                             break
                         }
                     }
-                    if (shouldAgitate) bot.agitate()
+                    if (shouldAgitate) await bot.agitate()
                 }
                 return await defaultAttackStrategy(["mole"])
             },
@@ -2958,7 +2958,7 @@ async function startWarrior(bot: Warrior) {
                     if (entity.level > highestMummyLevel) highestMummyLevel = entity.level
                 }
                 if (highestMummyLevel <= 1) // Aggro mummies
-                    holdPositionMoveStrategy({ map: "spookytown", x: 230, y: -1131 })
+                    return await holdPositionMoveStrategy({ map: "spookytown", x: 230, y: -1131 })
                 else if (bot.character.targets) // Don't aggro mummies
                     return await holdPositionMoveStrategy({ map: "spookytown", x: 230, y: -1129 })
                 else // Aggro mummies
@@ -3012,7 +3012,7 @@ async function startWarrior(bot: Warrior) {
                         }
                         shouldAgitate = true
                     }
-                    if (shouldAgitate) bot.agitate()
+                    if (shouldAgitate) await bot.agitate()
                 }
                 return await defaultAttackStrategy(["osnake"])
             },
