@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL, { Tools } from "alclient"
 
 /** Config */
 const merchantName = "earthMer"
@@ -242,7 +242,7 @@ async function startShared(bot: AL.Character) {
 
     }
     healLoop()
-    
+
     async function lootLoop() {
         try {
             for (const [, chest] of bot.chests) {
@@ -408,6 +408,18 @@ async function startMage(mage: AL.Mage) {
                         bot.entities.delete(entity.id)
                     }
                 }
+
+                // Energize for more DPS
+                for (const friend of [mage1, mage2, mage3]) {
+                    if (friend.id == mage.id) continue // Can't energize ourselves
+                    if (AL.Tools.distance(mage, friend) > mage.G.skills.energize.range) continue // Too far away
+                    if (!friend.canUse("energize")) continue // Friend can't use energize
+
+                    // Energize!
+                    friend.energize(mage.id)
+                    break
+                }
+
                 await mage.basicAttack(entity.id)
                 break
             }
