@@ -941,7 +941,7 @@ async function startMerchant(merchant: AL.Merchant) {
             for (const mN in merchant.S) {
                 const type = mN as AL.MonsterName
                 if (!merchant.S[type].live) continue
-                if (!merchant.S[type].target) continue
+                if (!(merchant.S[type] as any).target) continue
 
                 if (AL.Tools.distance(merchant, merchant.S[type]) > 100) {
                     await merchant.closeMerchantStand()

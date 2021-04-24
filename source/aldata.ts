@@ -22,7 +22,7 @@ async function run() {
         const observer = await AL.Game.startObserver(region, identifier)
 
         // Server Status
-        observer.socket.on("server_info", async (data: AL.SInfo) => {
+        observer.socket.on("server_info", async (data: AL.ServerData) => {
             const statuses = Object.keys(data).filter(k => { typeof data[k] === "object" }).map(e => {
                 data[e].eventname = e
                 data[e].server_region = region

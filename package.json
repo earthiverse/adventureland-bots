@@ -6,9 +6,9 @@
   "type": "module",
   "dependencies": {
     "@typescript-eslint/parser": "^4.22.0",
-    "alclient": "^0.3.29",
+    "alclient": "^0.3.31",
     "axios": "^0.21.1",
-    "eslint": "^7.24.0"
+    "eslint": "^7.25.0"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.22.0",

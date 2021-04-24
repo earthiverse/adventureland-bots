@@ -242,6 +242,20 @@ async function startShared(bot: AL.Character) {
 
     }
     healLoop()
+    
+    async function lootLoop() {
+        try {
+            for (const [, chest] of bot.chests) {
+                if (AL.Tools.distance(bot, chest) > 800) continue
+                await bot.openChest(chest.id)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { lootLoop() }, 250)
+    }
+    lootLoop()
 
     async function partyLoop() {
         try {
@@ -385,7 +399,7 @@ async function startMage(mage: AL.Mage) {
             for (const [, entity] of mage.entities) {
                 if (AL.Tools.distance(mage, entity) > mage.range) continue // Too far away
                 if (entity.cooperative !== true && entity.target && ![mage1?.id, mage2?.id, mage3?.id, merchant?.id].includes(entity.target)) continue // It's targeting someone else
-                if (entity.willDieToProjectiles(mage.projectiles, mage.players)) continue // Already gonna die
+                if (entity.willDieToProjectiles(mage.projectiles, mage.players, mage.entities)) continue // Already gonna die
                 if (entity.willBurnToDeath()) continue // Will burn to death shortly
 
                 if (AL.Tools.calculateDamageRange(mage, entity)[0] > entity.hp) {
@@ -600,7 +614,7 @@ async function startMerchant(merchant: AL.Merchant) {
             for (const mN in merchant.S) {
                 const type = mN as AL.MonsterName
                 if (!merchant.S[type].live) continue
-                if (!merchant.S[type].target) continue
+                if (!(merchant.S[type] as any).target) continue
 
                 if (AL.Tools.distance(merchant, merchant.S[type]) > 100) {
                     await merchant.closeMerchantStand()
