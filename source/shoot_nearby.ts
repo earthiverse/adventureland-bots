@@ -2,22 +2,17 @@ import AL from "alclient"
 
 /** Config */
 const merchantName = "earthMer"
-const rangerName = "earthiverse"
-const priestName = "earthPri"
-const rogueName = "earthRog"
-const warriorName = "earthWar"
+const mage1Name = "earthMag"
+const mage2Name = "earthMag2"
+const mage3Name = "earthMag3"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "III"
 
 let merchant: AL.Merchant
-let ranger: AL.Ranger
-let priest: AL.Priest
-let rogue: AL.Rogue
-let warrior: AL.Warrior
+let mage1: AL.Mage
+let mage2: AL.Mage
+let mage3: AL.Mage
 
-const RADIUS = 125
-const ANGLE = Math.PI / 2.5
-const MOVE_TIME_MS = 250
 const MERCHANT_GOLD_TO_HOLD = 100_000_000
 const MERCHANT_ITEMS_TO_HOLD: AL.ItemName[] = [
     // Things we keep on ourselves
@@ -47,12 +42,6 @@ const ITEMS_TO_SELL: {
 } = {
     // Default clothing
     "shoes": 2, "pants": 2, "coat": 2, "helmet": 2, "gloves": 2,
-    // Wanderers attire
-    "wshoes": 2, "wbreeches": 2, "wattire": 2, "wcap": 2, "wgloves": 2,
-    // Candy
-    "gphelmet": 2, "lantern": 2, "maceofthedead": 2, "phelmet": 2,
-    // Candy Canes
-    "xmace": 2,
 }
 
 async function startShared(bot: AL.Character) {
@@ -254,119 +243,6 @@ async function startShared(bot: AL.Character) {
     }
     healLoop()
 
-    let moveLoop: { (): void; (): Promise<void>; (): Promise<void> }
-    const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
-    if (bot.ctype == "rogue" || bot.ctype == "warrior") {
-        moveLoop = async () => {
-            try {
-                if (bot.socket.disconnected) {
-                    setTimeout(async () => { moveLoop() }, 10)
-                    return
-                }
-
-                // If we are dead, respawn
-                if (bot.rip) {
-                    await bot.respawn()
-                    setTimeout(async () => { moveLoop() }, 1000)
-                    return
-                }
-
-                if (AL.Pathfinder.canWalkPath(bot, bscorpionSpawn)) {
-                    const bscorpion = bot.getNearestMonster("bscorpion")?.monster
-                    if (bscorpion?.target) {
-                        // There's a bscorpion and it has a target
-                        bot.move(bscorpion.x, bscorpion.y).catch(() => { /* Ignore errors */ })
-                    } else if (bscorpion) {
-                        // It has no target
-                        const angleFromSpawnToBscorpionGoing = Math.atan2(bscorpion.going_y - bscorpionSpawn.y, bscorpion.going_x - bscorpionSpawn.x)
-                        const endGoalAngle = angleFromSpawnToBscorpionGoing + ANGLE // Our goal is 90 degrees
-                        const endGoal = { x: bscorpionSpawn.x + RADIUS * Math.cos(endGoalAngle), y: bscorpionSpawn.y + RADIUS * Math.sin(endGoalAngle) }
-
-                        // const moveDistance = bot.speed * MOVE_TIME_MS / 1000
-                        // const angleFromSpawnToRanger = Math.atan2(bot.y - bscorpionSpawn.y, bot.x - bscorpionSpawn.x)
-                        // const moveAngle = 2 * Math.asin(moveDistance * 0.5 / RADIUS)
-                        // const moveGoal1 = { x: bscorpionSpawn.x + RADIUS * Math.cos(angleFromSpawnToRanger + moveAngle), y: bscorpionSpawn.y + RADIUS * Math.sin(angleFromSpawnToRanger + moveAngle) }
-                        // const moveGoal2 = { x: bscorpionSpawn.x + RADIUS * Math.cos(angleFromSpawnToRanger - moveAngle), y: bscorpionSpawn.y + RADIUS * Math.sin(angleFromSpawnToRanger - moveAngle) }
-                        // const moveGoal1Distance = AL.Tools.distance(moveGoal1, endGoal)
-                        // const moveGoal2Distance = AL.Tools.distance(moveGoal2, endGoal)
-                        // if (moveGoal1Distance > moveGoal2Distance) {
-                        //     bot.move(moveGoal2.x, moveGoal2.y).catch(() => { /* Ignore Errors */ })
-                        // } else {
-                        //     bot.move(moveGoal1.x, moveGoal1.y).catch(() => { /* Ignore Errors */ })
-                        // }
-                        bot.move(endGoal.x, endGoal.y).catch(() => { /* Ignore Errors */ })
-                    } else {
-                        // There isn't a bscorpion nearby
-                        const angleFromSpawnToBot = Math.atan2(bot.y - bscorpionSpawn.y, bot.x - bscorpionSpawn.x)
-                        const endGoal = { x: bscorpionSpawn.x + RADIUS * Math.cos(angleFromSpawnToBot), y: bscorpionSpawn.y + RADIUS * Math.sin(angleFromSpawnToBot) }
-                        bot.move(endGoal.x, endGoal.y).catch(() => { /* Ignore Errors */ })
-                    }
-                } else {
-                    // Move to the bscorpion spawn
-                    await bot.smartMove(bscorpionSpawn, { getWithin: RADIUS })
-                }
-            } catch (e) {
-                console.error(e)
-            }
-
-            setTimeout(async () => { moveLoop() }, MOVE_TIME_MS)
-        }
-        moveLoop()
-    } else if (bot.ctype !== "merchant") {
-        moveLoop = async () => {
-            try {
-                if (bot.socket.disconnected) {
-                    setTimeout(async () => { moveLoop() }, 10)
-                    return
-                }
-
-                // If we are dead, respawn
-                if (bot.rip) {
-                    await bot.respawn()
-                    setTimeout(async () => { moveLoop() }, 1000)
-                    return
-                }
-
-                if (AL.Pathfinder.canWalkPath(bot, bscorpionSpawn)) {
-                    const bscorpion = bot.getNearestMonster("bscorpion")?.monster
-                    if (bscorpion) {
-                        // There's a bscorpion nearby
-                        const angleFromSpawnToBscorpionGoing = Math.atan2(bscorpion.going_y - bscorpionSpawn.y, bscorpion.going_x - bscorpionSpawn.x)
-                        const endGoalAngle = angleFromSpawnToBscorpionGoing + ANGLE // Our goal is 90 degrees
-                        const endGoal = { x: bscorpionSpawn.x + RADIUS * Math.cos(endGoalAngle), y: bscorpionSpawn.y + RADIUS * Math.sin(endGoalAngle) }
-
-                        // const moveDistance = bot.speed * MOVE_TIME_MS / 1000
-                        // const angleFromSpawnToRanger = Math.atan2(bot.y - bscorpionSpawn.y, bot.x - bscorpionSpawn.x)
-                        // const moveAngle = 2 * Math.asin(moveDistance * 0.5 / RADIUS)
-                        // const moveGoal1 = { x: bscorpionSpawn.x + RADIUS * Math.cos(angleFromSpawnToRanger + moveAngle), y: bscorpionSpawn.y + RADIUS * Math.sin(angleFromSpawnToRanger + moveAngle) }
-                        // const moveGoal2 = { x: bscorpionSpawn.x + RADIUS * Math.cos(angleFromSpawnToRanger - moveAngle), y: bscorpionSpawn.y + RADIUS * Math.sin(angleFromSpawnToRanger - moveAngle) }
-                        // const moveGoal1Distance = AL.Tools.distance(moveGoal1, endGoal)
-                        // const moveGoal2Distance = AL.Tools.distance(moveGoal2, endGoal)
-                        // if (moveGoal1Distance > moveGoal2Distance) {
-                        //     bot.move(moveGoal2.x, moveGoal2.y).catch(() => { /* Ignore Errors */ })
-                        // } else {
-                        //     bot.move(moveGoal1.x, moveGoal1.y).catch(() => { /* Ignore Errors */ })
-                        // }
-                        bot.move(endGoal.x, endGoal.y).catch(() => { /* Ignore Errors */ })
-                    } else {
-                        // There isn't a bscorpion nearby
-                        const angleFromSpawnToBot = Math.atan2(bot.y - bscorpionSpawn.y, bot.x - bscorpionSpawn.x)
-                        const endGoal = { x: bscorpionSpawn.x + RADIUS * Math.cos(angleFromSpawnToBot), y: bscorpionSpawn.y + RADIUS * Math.sin(angleFromSpawnToBot) }
-                        bot.move(endGoal.x, endGoal.y).catch(() => { /* Ignore Errors */ })
-                    }
-                } else {
-                    // Move to the bscorpion spawn
-                    await bot.smartMove(bscorpionSpawn, { getWithin: RADIUS })
-                }
-            } catch (e) {
-                console.error(e)
-            }
-
-            setTimeout(async () => { moveLoop() }, MOVE_TIME_MS)
-        }
-        moveLoop()
-    }
-
     async function partyLoop() {
         try {
             if (bot.socket.disconnected) {
@@ -498,259 +374,42 @@ async function startShared(bot: AL.Character) {
     upgradeLoop()
 }
 
-async function startRanger(ranger: AL.Ranger) {
+async function startMage(mage: AL.Mage) {
     async function attackLoop() {
         try {
-            if (ranger.socket.disconnected) {
+            if (mage.socket.disconnected) {
                 setTimeout(async () => { attackLoop() }, 10)
                 return
             }
 
-            const nearby = ranger.getNearestMonster("bscorpion")?.monster
-            if (nearby
-                && [warrior?.id, rogue?.id, ranger?.id, priest?.id].includes(nearby.target)
-                && AL.Tools.distance(ranger, nearby) <= ranger.range) {
-                if (ranger.canUse("huntersmark")) await ranger.huntersMark(nearby.id)
-                if (ranger.canUse("piercingshot")) await ranger.piercingShot(nearby.id)
-                else if (ranger.canUse("attack")) await ranger.basicAttack(nearby.id)
-                if (ranger.canUse("supershot")) await ranger.superShot(nearby.id)
-            }
-        } catch (e) {
-            console.error(e)
-        }
+            for (const [, entity] of mage.entities) {
+                if (AL.Tools.distance(mage, entity) > mage.range) continue // Too far away
+                if (entity.cooperative !== true && entity.target && ![mage1?.id, mage2?.id, mage3?.id, merchant?.id].includes(entity.target)) continue // It's targeting someone else
+                if (entity.willDieToProjectiles(mage.projectiles, mage.players)) continue // Already gonna die
+                if (entity.willBurnToDeath()) continue // Will burn to death shortly
 
-        setTimeout(async () => { attackLoop() }, Math.max(10, ranger.getCooldown("attack")))
-    }
-    attackLoop()
-}
-
-async function startPriest(priest: AL.Priest) {
-    async function attackLoop() {
-        try {
-            if (priest.socket.disconnected) {
-                setTimeout(async () => { attackLoop() }, 10)
-                return
-            }
-
-            const nearby = priest.getNearestMonster("bscorpion")?.monster
-
-            if (nearby && nearby.hp < 50000) {
-                // Equip items that have more luck
-                if (priest.slots.mainhand?.name !== "lmace" && priest.hasItem("lmace")) await priest.equip(priest.locateItem("lmace"))
-                if (priest.slots.orb?.name !== "rabbitsfoot" && priest.hasItem("rabbitsfoot")) await priest.equip(priest.locateItem("rabbitsfoot"))
-                if (priest.slots.offhand?.name !== "mshield" && priest.hasItem("mshield")) await priest.equip(priest.locateItem("mshield"))
-            } else {
-                // Equip items that do more damage
-                if (priest.slots.mainhand?.name !== "firestaff") await priest.equip(priest.locateItem("firestaff"))
-                if (priest.slots.orb?.name !== "orbofint" && priest.hasItem("orbofint")) await priest.equip(priest.locateItem("orbofint"))
-                if (priest.slots.offhand?.name !== "wbook1" && priest.hasItem("wbook1")) await priest.equip(priest.locateItem("wbook1"))
-            }
-
-            if (priest.canUse("heal")) {
-                if (priest.hp < priest.max_hp * 0.8) {
-                    // Heal ourself
-                    await priest.heal(priest.id)
-                } else {
-                    // Heal others
-                    for (const [, player] of priest.players) {
-                        if (player.hp > player.max_hp * 0.8) continue // Lots of HP
-                        if (AL.Tools.distance(priest, player) > priest.range) continue // Too far away
-
-                        await priest.heal(player.id)
-                        break
+                if (AL.Tools.calculateDamageRange(mage, entity)[0] > entity.hp) {
+                    for (const bot of [merchant, mage1, mage2, mage3]) {
+                        if (!bot) continue
+                        bot.entities.delete(entity.id)
                     }
                 }
-            }
-
-            if (nearby
-                && (!nearby.target || [warrior?.id, rogue?.id, ranger?.id, priest?.id].includes(nearby.target))
-                && AL.Tools.distance(priest, nearby) <= priest.range) {
-                if (priest.canUse("absorb") && nearby.target && nearby.target !== priest.id) priest.absorbSins(nearby.target) // Make the scorpion target us if it's attacking one of our friends
-                if (priest.canUse("curse")) priest.curse(nearby.id)
-                if (priest.canUse("darkblessing")) priest.darkBlessing()
-                if (priest.canUse("attack")) await priest.basicAttack(nearby.id)
+                await mage.basicAttack(entity.id)
+                break
             }
         } catch (e) {
             console.error(e)
         }
 
-        setTimeout(async () => { attackLoop() }, Math.max(10, priest.getCooldown("attack")))
+        setTimeout(async () => { attackLoop() }, Math.max(10, mage.getCooldown("attack")))
     }
     attackLoop()
-
-    async function elixirLoop() {
-        try {
-            if (priest.socket.disconnected) {
-                setTimeout(async () => { elixirLoop() }, 10)
-                return
-            }
-
-            if (!priest.slots.elixir) {
-                let luckElixir = priest.locateItem("elixirluck")
-                if (luckElixir == undefined && priest.canBuy("elixirluck")) luckElixir = await priest.buy("elixirluck")
-                if (luckElixir !== undefined) await priest.equip(luckElixir)
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { elixirLoop() }, 250)
-    }
-    elixirLoop()
-
-    async function lootLoop() {
-        try {
-            if (priest.socket.disconnected) {
-                setTimeout(async () => { lootLoop() }, 10)
-                return
-            }
-
-            // If we have a booster, we'll switch it to gold while we loot, then switch back
-            let previousBooster: "luckbooster" | "xpbooster" | false = false
-            let booster: number
-
-            for (const [, chest] of priest.chests) {
-                if (AL.Tools.distance(priest, chest) > 800) continue
-                if (!booster) {
-                    for (const boosterType of (["luckbooster", "xpbooster"] as ("luckbooster" | "xpbooster")[])) {
-                        booster = priest.locateItem(boosterType)
-                        if (booster !== undefined) {
-                            previousBooster = boosterType
-                            await priest.shiftBooster(booster, "goldbooster")
-                        }
-                        break
-                    }
-                }
-                await priest.openChest(chest.id)
-            }
-            if (previousBooster) {
-                await priest.shiftBooster(booster, previousBooster)
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { lootLoop() }, 250)
-    }
-    lootLoop()
-}
-
-async function startRogue(rogue: AL.Rogue) {
-    async function attackLoop() {
-        try {
-            if (rogue.socket.disconnected) {
-                setTimeout(async () => { attackLoop() }, 10)
-                return
-            }
-
-            const nearby = rogue.getNearestMonster("bscorpion")?.monster
-            if (nearby
-                && [warrior?.id, rogue?.id, ranger?.id, priest?.id].includes(nearby.target)
-                && AL.Tools.distance(rogue, nearby) <= rogue.range) {
-                if (rogue.canUse("attack")) await rogue.basicAttack(nearby.id)
-                if (rogue.canUse("quickstab")) await rogue.quickStab(nearby.id)
-                if (rogue.canUse("quickpunch")) await rogue.quickPunch(nearby.id)
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { attackLoop() }, Math.max(10, rogue.getCooldown("attack")))
-    }
-    attackLoop()
-
-    async function rspeedLoop() {
-        try {
-            if (rogue.socket.disconnected) {
-                setTimeout(async () => { rspeedLoop() }, 10)
-                return
-            }
-
-
-            if (rogue.canUse("rspeed")) {
-
-                if (!rogue.s.rspeed || rogue.s.rspeed.ms <= 60000) {
-                    // Apply it to ourselves
-                    await rogue.rspeed(rogue.id)
-                } else {
-                    // Apply it to others
-                    for (const [, player] of rogue.players) {
-                        if (!player.s.rspeed || player.s.rspeed.ms > 60000) continue // Already has rspeed
-                        if (AL.Tools.distance(rogue, player) > rogue.G.skills.rspeed.range) continue // Too far away
-
-                        await rogue.rspeed(player.id)
-                    }
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { rspeedLoop() }, Math.max(10, rogue.getCooldown("rspeed")))
-    }
-    rspeedLoop()
-}
-
-async function startWarrior(warrior: AL.Warrior) {
-    async function attackLoop() {
-        try {
-            if (warrior.socket.disconnected) {
-                setTimeout(async () => { attackLoop() }, 10)
-                return
-            }
-
-            const nearby = warrior.getNearestMonster("bscorpion")?.monster
-            if (nearby
-                && [warrior?.id, rogue?.id, ranger?.id, priest?.id].includes(nearby.target)
-                && AL.Tools.distance(warrior, nearby) <= warrior.range) {
-                if (warrior.canUse("attack")) await warrior.basicAttack(nearby.id)
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { attackLoop() }, Math.max(10, warrior.getCooldown("attack")))
-    }
-    attackLoop()
-
-    async function chargeLoop() {
-        try {
-            if (warrior.socket.disconnected) {
-                setTimeout(async () => { chargeLoop() }, 10)
-                return
-            }
-
-            if (warrior.canUse("charge")) await warrior.charge()
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { chargeLoop() }, warrior.getCooldown("charge"))
-    }
-    chargeLoop()
-
-    async function warcryLoop() {
-        try {
-            if (warrior.socket.disconnected) {
-                setTimeout(async () => { warcryLoop() }, 10)
-                return
-            }
-
-            if (warrior.canUse("warcry")) await warrior.warcry()
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { warcryLoop() }, Math.max(10, warrior.getCooldown("warcry")))
-    }
-    warcryLoop()
 }
 
 async function startMerchant(merchant: AL.Merchant) {
+    // Accept all the party requests!
     merchant.socket.on("request", (data: { name: string }) => {
-        if ([warrior?.id, rogue?.id, ranger?.id, priest?.id].includes(data.name)) {
-            merchant.acceptPartyRequest(data.name)
-        }
+        merchant.acceptPartyRequest(data.name)
     })
 
     async function mluckLoop() {
@@ -954,7 +613,7 @@ async function startMerchant(merchant: AL.Merchant) {
 
             // mluck our friends
             if (merchant.canUse("mluck")) {
-                for (const friend of [ranger, priest, rogue, warrior]) {
+                for (const friend of [mage1, mage2, mage3]) {
                     if (!friend) continue
                     if (!friend.s.mluck || !friend.s.mluck.strong || friend.s.mluck.ms < 120000) {
                         // Move to them, and we'll automatically mluck them
@@ -1034,31 +693,29 @@ async function startMerchant(merchant: AL.Merchant) {
 
 async function run() {
     // Login and prepare pathfinding
-    await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Pathfinder.prepare()])
+    await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData()])
 
     // Start all characters
     console.log("Connecting...")
     const merchantP = AL.Game.startMerchant(merchantName, region, identifier)
-    const rangerP = AL.Game.startRanger(rangerName, region, identifier)
-    const priestP = AL.Game.startPriest(priestName, region, identifier)
+    const mage1P = AL.Game.startMage(mage1Name, region, identifier)
+    const mage2P = AL.Game.startMage(mage2Name, region, identifier)
     // const rogueP = AL.Game.startRogue(rogueName, region, identifier)
-    const warriorP = AL.Game.startWarrior(warriorName, region, identifier)
+    const mage3P = AL.Game.startMage(mage3Name, region, identifier)
     merchant = await merchantP
-    ranger = await rangerP
-    priest = await priestP
+    mage1 = await mage1P
+    mage2 = await mage2P
     // rogue = await rogueP
-    warrior = await warriorP
+    mage3 = await mage3P
 
     // Start the characters
     startShared(merchant)
     startMerchant(merchant)
-    startShared(ranger)
-    startRanger(ranger)
-    startShared(priest)
-    startPriest(priest)
-    // startShared(rogue)
-    // startRogue(rogue)
-    startShared(warrior)
-    startWarrior(warrior)
+    startShared(mage1)
+    startMage(mage1)
+    startShared(mage2)
+    startMage(mage2)
+    startShared(mage3)
+    startMage(mage3)
 }
 run()
