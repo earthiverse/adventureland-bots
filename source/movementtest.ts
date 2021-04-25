@@ -1,7 +1,7 @@
-import AL, { MonsterName } from "alclient"
+import AL from "alclient-mongo"
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
-const targetMonster: MonsterName = "snake"
+const targetMonster: AL.MonsterName = "snake"
 
 async function run() {
     await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Pathfinder.prepare()])

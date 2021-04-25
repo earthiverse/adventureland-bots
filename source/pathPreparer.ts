@@ -1,5 +1,5 @@
-import AL from "alclient"
-import { NodeData } from "alclient/build/definitions/pathfinder"
+import AL from "alclient-mongo"
+import { NodeData } from "alclient-mongo/build/definitions/pathfinder"
 import { performance } from "perf_hooks"
 
 function moveDebug(from: NodeData, to: NodeData, avoidTown = false) {

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import AL from "alclient"
-import { Entity } from "alclient/build/Entity"
+import AL from "alclient-mongo"
+import { Entity } from "alclient-mongo/build/Entity"
 
 /** Config */
 const merchantName = "earthMer"

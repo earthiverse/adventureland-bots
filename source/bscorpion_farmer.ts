@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL, { ServerInfoDataLive } from "alclient-mongo"
 
 /** Config */
 const merchantName = "earthMer"
@@ -831,7 +831,7 @@ async function startMerchant(merchant: AL.Merchant) {
                 }
 
                 // Store information about everything in our bank to use it later to find upgradable stuff
-                const bankItems: AL.ItemInfo[] = []
+                const bankItems: AL.ItemData[] = []
                 for (let i = 0; i <= 7; i++) {
                     const bankPack = `items${i}` as Exclude<AL.BankPackName, "gold">
                     for (const item of merchant.bank[bankPack]) {
@@ -941,11 +941,11 @@ async function startMerchant(merchant: AL.Merchant) {
             for (const mN in merchant.S) {
                 const type = mN as AL.MonsterName
                 if (!merchant.S[type].live) continue
-                if (!(merchant.S[type] as any).target) continue
+                if (!(merchant.S[type] as ServerInfoDataLive).target) continue
 
-                if (AL.Tools.distance(merchant, merchant.S[type]) > 100) {
+                if (AL.Tools.distance(merchant, (merchant.S[type] as AL.ServerInfoDataLive)) > 100) {
                     await merchant.closeMerchantStand()
-                    await merchant.smartMove(merchant.S[type], { getWithin: 100 })
+                    await merchant.smartMove((merchant.S[type] as AL.ServerInfoDataLive), { getWithin: 100 })
                 }
 
                 setTimeout(async () => { moveLoop() }, 250)

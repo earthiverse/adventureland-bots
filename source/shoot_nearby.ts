@@ -1,4 +1,4 @@
-import AL, { Tools } from "alclient"
+import AL from "alclient-mongo"
 
 /** Config */
 const merchantName = "earthMer"
@@ -265,10 +265,10 @@ async function startShared(bot: AL.Character) {
             }
 
             if (!bot.party || !bot.partyData.list) {
-                bot.sendPartyRequest(merchant.id)
-            } else if (bot.partyData.list[0] !== merchant.id) {
+                bot.sendPartyRequest(merchantName)
+            } else if (bot.partyData.list[0] !== merchantName) {
                 bot.leaveParty()
-                bot.sendPartyRequest(merchant.id)
+                bot.sendPartyRequest(merchantName)
             }
         } catch (e) {
             console.error(e)
@@ -316,13 +316,20 @@ async function startShared(bot: AL.Character) {
                     return
                 }
 
-                const sendTo = bot.players.get(merchant.id)
+                const sendTo = bot.players.get(merchantName)
                 if (sendTo && AL.Tools.distance(bot, sendTo) < AL.Constants.NPC_INTERACTION_DISTANCE) {
                     const extraGold = bot.gold - 10_000_000
 
-                    if (extraGold > 0) await bot.sendGold(merchant.id, extraGold)
-                    const prims = bot.locateItem("offeringp")
-                    if (prims !== undefined) await bot.sendItem(merchant.id, prims, bot.items[prims].q)
+                    if (extraGold > 0) await bot.sendGold(merchantName, extraGold)
+                    for (let i = 0; i < bot.items.length; i++) {
+                        const item = bot.items[i]
+                        if (!item) continue // Don't send nothing
+                        if (item.name == "mpot1" || item.name == "hpot1") continue // Don't send potions
+                        if (item.name == "computer" || item.name == "tracker") continue // Don't send computer or tracker
+
+                        // Send everything else
+                        await bot.sendItem(merchantName, i, item.q ? item.q : 1)
+                    }
                 }
             } catch (e) {
                 console.error(e)
@@ -518,7 +525,7 @@ async function startMerchant(merchant: AL.Merchant) {
                 }
 
                 // Store information about everything in our bank to use it later to find upgradable stuff
-                const bankItems: AL.ItemInfo[] = []
+                const bankItems: AL.ItemData[] = []
                 for (let i = 0; i <= 7; i++) {
                     const bankPack = `items${i}` as Exclude<AL.BankPackName, "gold">
                     for (const item of merchant.bank[bankPack]) {
@@ -627,12 +634,12 @@ async function startMerchant(merchant: AL.Merchant) {
             // MLuck people if there is a server info target
             for (const mN in merchant.S) {
                 const type = mN as AL.MonsterName
-                if (!merchant.S[type].live) continue
-                if (!(merchant.S[type] as any).target) continue
+                if (merchant.S[type].live) continue
+                if (!(merchant.S[type] as AL.ServerInfoDataLive).target) continue
 
-                if (AL.Tools.distance(merchant, merchant.S[type]) > 100) {
+                if (AL.Tools.distance(merchant, (merchant.S[type] as AL.ServerInfoDataLive)) > 100) {
                     await merchant.closeMerchantStand()
-                    await merchant.smartMove(merchant.S[type], { getWithin: 100 })
+                    await merchant.smartMove((merchant.S[type] as AL.ServerInfoDataLive), { getWithin: 100 })
                 }
 
                 setTimeout(async () => { moveLoop() }, 250)

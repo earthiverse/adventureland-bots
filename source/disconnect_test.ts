@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL from "alclient-mongo"
 
 async function run() {
     // Login and prepare pathfinding
