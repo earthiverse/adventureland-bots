@@ -539,11 +539,13 @@ async function startPriest(priest: AL.Priest) {
                 if (priest.slots.mainhand?.name !== "lmace" && priest.hasItem("lmace")) await priest.equip(priest.locateItem("lmace"))
                 if (priest.slots.orb?.name !== "rabbitsfoot" && priest.hasItem("rabbitsfoot")) await priest.equip(priest.locateItem("rabbitsfoot"))
                 if (priest.slots.offhand?.name !== "mshield" && priest.hasItem("mshield")) await priest.equip(priest.locateItem("mshield"))
+                if (priest.slots.shoes?.name !== "wshoes" && priest.hasItem("wshoes")) await priest.equip(priest.locateItem("wshoes"))
             } else {
                 // Equip items that do more damage
                 if (priest.slots.mainhand?.name !== "firestaff") await priest.equip(priest.locateItem("firestaff"))
                 if (priest.slots.orb?.name !== "orbofint" && priest.hasItem("orbofint")) await priest.equip(priest.locateItem("orbofint"))
                 if (priest.slots.offhand?.name !== "wbook1" && priest.hasItem("wbook1")) await priest.equip(priest.locateItem("wbook1"))
+                if (priest.slots.shoes?.name !== "wingedboots" && priest.hasItem("wingedboots")) await priest.equip(priest.locateItem("wingedboots"))
             }
 
             if (priest.canUse("heal")) {
