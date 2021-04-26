@@ -555,7 +555,7 @@ async function startPriest(priest: AL.Priest) {
                 } else {
                     // Heal others
                     for (const [, player] of priest.players) {
-                        if (player.hp < player.max_hp * 0.8) continue // Lots of HP
+                        if (player.hp > player.max_hp * 0.8) continue // Lots of HP
                         if (AL.Tools.distance(priest, player) > priest.range) continue // Too far away
 
                         await priest.heal(player.id)
