@@ -7,6 +7,7 @@ const mage2Name = "earthMag2"
 const mage3Name = "earthMag3"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "III"
+const defaultLocation: AL.IPosition = { map: "spookytown", x: 346.5, y: -747 } // Snakes in Spookytown
 
 let merchant: AL.Merchant
 let mage1: AL.Mage
@@ -36,6 +37,16 @@ const MERCHANT_ITEMS_TO_HOLD: AL.ItemName[] = [
     // TEMP: For crafting eggbaskets
     "egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8"
 ]
+
+const BOT_GOLD_TO_HOLD = 2_000_000
+const BOT_ITEMS_TO_HOLD: AL.ItemName[] = [
+    // Things we keep on ourselves
+    "computer", "tracker", "xptome",
+
+    // Potions
+    "hpot0", "hpot1", "mpot0", "mpot1"
+]
+
 const ITEMS_TO_SELL: {
     /** Items this level and under will be sold */
     [T in AL.ItemName]?: number
@@ -318,7 +329,7 @@ async function startShared(bot: AL.Character) {
 
                 const sendTo = bot.players.get(merchantName)
                 if (sendTo && AL.Tools.distance(bot, sendTo) < AL.Constants.NPC_INTERACTION_DISTANCE) {
-                    const extraGold = bot.gold - 10_000_000
+                    const extraGold = bot.gold - BOT_GOLD_TO_HOLD
 
                     if (extraGold > 0) await bot.sendGold(merchantName, extraGold)
                     for (let i = 0; i < bot.items.length; i++) {
@@ -339,6 +350,17 @@ async function startShared(bot: AL.Character) {
         }
         sendItemLoop()
     }
+
+    async function updateLoop() {
+        try {
+            bot.requestEntitiesData()
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { updateLoop() }, 30000)
+    }
+    updateLoop()
 
     async function upgradeLoop() {
         try {
@@ -395,7 +417,7 @@ async function startShared(bot: AL.Character) {
     upgradeLoop()
 }
 
-async function startMage(mage: AL.Mage) {
+async function startMage(mage: AL.Mage, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
     async function attackLoop() {
         try {
             if (mage.socket.disconnected) {
@@ -439,6 +461,25 @@ async function startMage(mage: AL.Mage) {
         setTimeout(async () => { attackLoop() }, Math.max(10, mage.getCooldown("attack")))
     }
     attackLoop()
+
+    async function moveLoop() {
+        try {
+            // If we are dead, respawn
+            if (mage.rip) {
+                await mage.respawn()
+                setTimeout(async () => { moveLoop() }, 1000)
+                return
+            }
+
+            const destination: AL.IPosition = { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y }
+            if (AL.Tools.distance(mage, destination) > 1) await mage.smartMove(destination)
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { moveLoop() }, 250)
+    }
+    moveLoop()
 }
 
 async function startMerchant(merchant: AL.Merchant) {
@@ -528,6 +569,7 @@ async function startMerchant(merchant: AL.Merchant) {
                 const bankItems: AL.ItemData[] = []
                 for (let i = 0; i <= 7; i++) {
                     const bankPack = `items${i}` as Exclude<AL.BankPackName, "gold">
+                    if (!merchant?.bank[bankPack]) continue // This bank slot isn't available
                     for (const item of merchant.bank[bankPack]) {
                         bankItems.push(item)
                     }
@@ -749,8 +791,8 @@ async function run() {
     startShared(mage1)
     startMage(mage1)
     startShared(mage2)
-    startMage(mage2)
+    startMage(mage2, { x: -20, y: 0 })
     startShared(mage3)
-    startMage(mage3)
+    startMage(mage3, { x: 20, y: 0 })
 }
 run()
