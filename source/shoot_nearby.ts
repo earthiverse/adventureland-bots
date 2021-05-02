@@ -7,7 +7,7 @@ const mage2Name = "earthMag2"
 const mage3Name = "earthMag3"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "III"
-const defaultLocation: AL.IPosition = { map: "spookytown", x: 346.5, y: -747 } // Snakes in Spookytown
+const defaultLocation: AL.IPosition = { map: "halloween", x: 346.5, y: -747 } // Snakes in Halloween
 
 let merchant: AL.Merchant
 let mage1: AL.Mage
