@@ -16,7 +16,7 @@ import { Tools } from "./Tools.js"
 import { IEntity } from "./database/entities/entities.types.js"
 
 const DEFAULT_REGION: ServerRegion = "US"
-const DEFAULT_IDENTIFIER: ServerIdentifier = "III"
+const DEFAULT_IDENTIFIER: ServerIdentifier = "II"
 let region: ServerRegion = DEFAULT_REGION
 let identifier: ServerIdentifier = DEFAULT_IDENTIFIER
 
@@ -1722,7 +1722,7 @@ async function startPriest(bot: Priest) {
                 if (bscorpion && [ranger.character.id, warrior.character.id, merchant.character.id].includes(bscorpion.target)) {
                     await bot.absorbSins(bscorpion.id)
                 }
-                
+
                 return await defaultAttackStrategy(["bscorpion"])
             },
             move: async () => {
