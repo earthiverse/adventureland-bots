@@ -1758,7 +1758,7 @@ async function startPriest(bot: Priest) {
                 // Get the bscorpion to target us if it's attacking a friend
                 const bscorpion = bot.getNearestMonster("bscorpion")?.monster
                 if (bscorpion && [ranger.character.id, warrior.character.id, merchant.character.id].includes(bscorpion.target)) {
-                    await bot.absorbSins(bscorpion.id)
+                    await bot.absorbSins(bscorpion.target)
                 }
 
                 return await defaultAttackStrategy(["bscorpion"])
