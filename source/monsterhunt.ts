@@ -1754,7 +1754,15 @@ async function startPriest(bot: Priest) {
             equipment: { orb: "test_orb" },
         },
         bscorpion: {
-            attack: async () => { return await defaultAttackStrategy(["bscorpion"]) },
+            attack: async () => {
+                // Get the bscorpion to target us if it's attacking a friend
+                const bscorpion = bot.getNearestMonster("bscorpion")?.monster
+                if (bscorpion && [ranger.character.id, warrior.character.id, merchant.character.id].includes(bscorpion.target)) {
+                    await bot.absorbSins(bscorpion.id)
+                }
+
+                return await defaultAttackStrategy(["bscorpion"])
+            },
             move: async () => {
                 const bscorpionSpawn = bot.locateMonsters("bscorpion")[0]
                 const RADIUS = 125
