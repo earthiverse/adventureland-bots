@@ -353,7 +353,7 @@ async function startShared(bot: AL.Character) {
 
     async function updateLoop() {
         try {
-            bot.requestEntitiesData()
+            await bot.requestEntitiesData()
         } catch (e) {
             console.error(e)
         }
