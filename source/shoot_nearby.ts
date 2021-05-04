@@ -256,6 +256,11 @@ async function startShared(bot: AL.Character) {
 
     async function lootLoop() {
         try {
+            if (bot.socket.disconnected) {
+                setTimeout(async () => { lootLoop() }, 1000)
+                return
+            }
+
             for (const [, chest] of bot.chests) {
                 if (AL.Tools.distance(bot, chest) > 800) continue
                 await bot.openChest(chest.id)
@@ -353,6 +358,11 @@ async function startShared(bot: AL.Character) {
 
     async function updateLoop() {
         try {
+            if (bot.socket.disconnected) {
+                setTimeout(async () => { updateLoop() }, 30000)
+                return
+            }
+
             await bot.requestEntitiesData()
         } catch (e) {
             console.error(e)
