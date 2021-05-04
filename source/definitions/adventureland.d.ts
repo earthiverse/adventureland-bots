@@ -352,6 +352,8 @@ export type ItemInfo = {
   // TODO: Confirm
   /** If set, the item might drop if we die to another player's attacks (i.e. die to PvP) */
   v?: boolean
+  /** If set, the item is locked. 's' == 'sealed', 'u' == 'unlocking', "l" == 'locked'. */
+  l?: "l" | "s" | "x"
 }
 
 export type SlotInfo = {

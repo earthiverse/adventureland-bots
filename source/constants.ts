@@ -58,7 +58,7 @@ export const ITEMS_TO_BUY: ItemName[] = [
     // Pants
     "frankypants", "hpants", "mrnpants", "mwpants", "pants1", "starkillers", "wbreeches", "xpants",
     // Armor
-    "cdragon", "coat1", "harmor", "mcape", "mrnarmor", "mwarmor", "tshirt0", "tshirt1", "tshirt2", "tshirt3", "tshirt4", "tshirt6", "tshirt7", "tshirt8", "tshirt88", "tshirt9", "vattire", "warpvest", /*"wattire",*/ "xarmor",
+    "cdragon", "coat1", "harmor", "mcape", "mrnarmor", "mwarmor", "tshirt0", "tshirt1", "tshirt2", "tshirt3", "tshirt4", "tshirt6", "tshirt7", "tshirt8", "tshirt88", "tshirt9", "vattire", "warpvest", "wattire", "xarmor",
     // Helmets
     "cyber", "eears", "fury", "helmet1", "hhelmet", "mchat", "mmhat", "mphat", "mrnhat", "mwhelmet", "oxhelmet", "partyhat", "rednose", "wcap", "xhelmet",
     // Gloves
@@ -84,12 +84,6 @@ export const ITEMS_TO_BUY: ItemName[] = [
 export const ITEMS_TO_SELL: ItemLevelInfo = {
     // Default clothing
     "shoes": 2, "pants": 2, "coat": 2, "helmet": 2, "gloves": 2,
-    // Wanderers attire
-    "wshoes": 2, "wbreeches": 2, "wattire": 2, "wcap": 2, "wgloves": 2,
-    // Candy
-    "gphelmet": 2, "lantern": 2, "maceofthedead": 2, "phelmet": 2,
-    // Candy Canes
-    "xmace": 2,
 }
 
 export const PLAYER_GOLD_TO_HOLD = 5000000
@@ -149,9 +143,9 @@ export const PRIEST_ITEMS_TO_HOLD: ItemName[] = [
     // Weapons
     "firestaff", "lmace", "pmace",
     // Shields
-    "lantern", "shield", "sshield",
+    "lantern", "mshield", "shield", "sshield",
     // Orbs
-    "orbg", "orbofint", "test_orb", "wbook1"
+    "orbg", "orbofint", "test_orb", "wbook1",
 ]
 
 export const RANGER_ITEMS_TO_HOLD: ItemName[] = [

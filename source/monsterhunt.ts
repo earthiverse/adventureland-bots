@@ -1475,6 +1475,7 @@ async function startRanger(bot: Ranger) {
                 for (let i = 0; i < bot.character.items.length; i++) {
                     const item = bot.character.items[i]
                     if (!item || RANGER_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
+                    if (item.l == "l") continue // Don't send locked items
 
                     if (merchant.isFull()) {
                         // Can we stack it in the merchant's inventory?
@@ -1498,6 +1499,7 @@ async function startRanger(bot: Ranger) {
                     for (let i = 0; i < bot.character.items.length; i++) {
                         const item = bot.character.items[i]
                         if (!item || RANGER_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
+                        if (item.l == "l") continue // Don't send locked items
 
                         if (item.q == undefined) continue // Item is not stackable
                         for (const itemPos of sendTo.locateItems(item.name)) {
@@ -1761,6 +1763,20 @@ async function startPriest(bot: Priest) {
                     await bot.absorbSins(bscorpion.target)
                 }
 
+                if (bscorpion && bscorpion.target == bot.character.id && bscorpion.hp < 50000) {
+                    // Equip items that have more luck
+                    if (bot.character.slots.mainhand?.name !== "lmace" && priest.hasItem("lmace")) await priest.equip(priest.locateItem("lmace"))
+                    if (bot.character.slots.orb?.name !== "rabbitsfoot" && priest.hasItem("rabbitsfoot")) await priest.equip(priest.locateItem("rabbitsfoot"))
+                    if (bot.character.slots.offhand?.name !== "mshield" && priest.hasItem("mshield")) await priest.equip(priest.locateItem("mshield"))
+                    if (bot.character.slots.shoes?.name !== "wshoes" && priest.hasItem("wshoes")) await priest.equip(priest.locateItem("wshoes"))
+                } else {
+                    // Equip items that do more damage
+                    if (bot.character.slots.mainhand?.name !== "firestaff") await priest.equip(priest.locateItem("firestaff"))
+                    if (bot.character.slots.orb?.name !== "orbofint" && priest.hasItem("orbofint")) await priest.equip(priest.locateItem("orbofint"))
+                    if (bot.character.slots.offhand?.name !== "wbook1" && priest.hasItem("wbook1")) await priest.equip(priest.locateItem("wbook1"))
+                    if (bot.character.slots.shoes?.name !== "wingedboots" && priest.hasItem("wingedboots")) await priest.equip(priest.locateItem("wingedboots"))
+                }
+
                 return await defaultAttackStrategy(["bscorpion"])
             },
             move: async () => {
@@ -1787,7 +1803,7 @@ async function startPriest(bot: Priest) {
                 }
                 return 250
             },
-            equipment: { mainhand: "lmace", orb: "test_orb" },
+            equipment: { /** We have custom equipment in the loops above to maximize luck and damage */ },
             requirePriest: true
         },
         cgoo: {
@@ -2286,6 +2302,7 @@ async function startPriest(bot: Priest) {
                 for (let i = 0; i < bot.character.items.length; i++) {
                     const item = bot.character.items[i]
                     if (!item || PRIEST_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
+                    if (item.l == "l") continue // Don't send locked items
 
                     if (merchant.isFull()) {
                         // Can we stack it in the merchant's inventory?
@@ -2309,6 +2326,7 @@ async function startPriest(bot: Priest) {
                     for (let i = 0; i < bot.character.items.length; i++) {
                         const item = bot.character.items[i]
                         if (!item || PRIEST_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
+                        if (item.l == "l") continue // Don't send locked items
                         if (item.q == undefined) continue // Item is not stackable
                         for (const itemPos of sendTo.locateItems(item.name)) {
                             const sendToItem = sendTo.character.items[itemPos]
@@ -3392,6 +3410,7 @@ async function startWarrior(bot: Warrior) {
                 for (let i = 0; i < bot.character.items.length; i++) {
                     const item = bot.character.items[i]
                     if (!item || WARRIOR_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
+                    if (item.l == "l") continue // Don't send locked items
 
                     if (merchant.isFull()) {
                         // Can we stack it in the merchant's inventory?
@@ -3415,6 +3434,7 @@ async function startWarrior(bot: Warrior) {
                     for (let i = 0; i < bot.character.items.length; i++) {
                         const item = bot.character.items[i]
                         if (!item || WARRIOR_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
+                        if (item.l == "l") continue // Don't send locked items
                         if (item.q == undefined) continue // Item is not stackable
                         for (const itemPos of sendTo.locateItems(item.name)) {
                             const sendToItem = sendTo.character.items[itemPos]
