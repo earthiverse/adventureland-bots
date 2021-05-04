@@ -143,9 +143,11 @@ export const PRIEST_ITEMS_TO_HOLD: ItemName[] = [
     // Weapons
     "firestaff", "lmace", "pmace",
     // Shields
-    "lantern", "mshield", "shield", "sshield",
+    "lantern", "shield", "sshield",
     // Orbs
     "orbg", "orbofint", "test_orb", "wbook1",
+    // Luck stuff
+    "mshield", "rabbitsfoot", "wingedboots"
 ]
 
 export const RANGER_ITEMS_TO_HOLD: ItemName[] = [
