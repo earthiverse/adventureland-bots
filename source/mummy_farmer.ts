@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import AL from "alclient-mongo"
-import { Entity } from "alclient-mongo/build/Entity"
+import AL from "alclient"
 
 /** Config */
 const merchantName = "earthMer"
@@ -159,7 +158,7 @@ let warrior: AL.Warrior
 let priest: AL.Priest
 
 async function baseLoops(bot: AL.PingCompensatedCharacter) {
-    sorting = (a: Entity, b: Entity) => {
+    sorting = (a: AL.Entity, b: AL.Entity) => {
         // Prioritize targets that won't burn to death
         if (!a.willBurnToDeath() && b.willBurnToDeath()) return 1
 
@@ -486,7 +485,7 @@ async function startRanger(bot: AL.Ranger) {
 
     async function attackLoop() {
         try {
-            let targets: Entity[] = []
+            let targets: AL.Entity[] = []
             let newTargetsAmount
             const getTargets = () => {
                 newTargetsAmount = bot.targets
@@ -645,7 +644,7 @@ async function startWarrior(bot: AL.Warrior) {
 
     async function attackLoop() {
         try {
-            let targets: Entity[] = []
+            let targets: AL.Entity[] = []
             const getTargets = () => {
                 targets = []
                 for (const [, entity] of bot.entities) {
@@ -799,7 +798,7 @@ async function startPriest(bot: AL.Priest) {
 
     async function attackLoop() {
         try {
-            let targets: Entity[] = []
+            let targets: AL.Entity[] = []
             const getTargets = () => {
                 targets = []
                 for (const [, entity] of bot.entities) {

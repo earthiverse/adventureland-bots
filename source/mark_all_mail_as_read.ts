@@ -1,4 +1,4 @@
-import AL from "alclient-mongo"
+import AL from "alclient"
 import fs from "fs"
 
 AL.Game.loginJSONFile("../credentials.json").then(async () => {

@@ -1,4 +1,4 @@
-import AL, { ServerInfoDataLive } from "alclient-mongo"
+import AL, { ServerInfoDataLive } from "alclient"
 
 /** Config */
 const merchantName = "earthMer"

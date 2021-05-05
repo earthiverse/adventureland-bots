@@ -1,4 +1,4 @@
-import AL from "alclient-mongo"
+import AL from "alclient"
 
 /** Config */
 const merchantName = "earthMer"
@@ -13,6 +13,13 @@ let merchant: AL.Merchant
 let mage1: AL.Mage
 let mage2: AL.Mage
 let mage3: AL.Mage
+
+const ITEMS_TO_BUY: AL.ItemName[] = [
+    "intring", "intearring",
+    "wbook0", "wbook1",
+    "wand", "pinkie",
+    "ornamentstaff"
+]
 
 const MERCHANT_GOLD_TO_HOLD = 100_000_000
 const MERCHANT_ITEMS_TO_HOLD: AL.ItemName[] = [
@@ -498,6 +505,27 @@ async function startMerchant(merchant: AL.Merchant) {
         merchant.acceptPartyRequest(data.name)
     })
 
+    async function buyLoop() {
+        try {
+            if (merchant.socket.disconnected) {
+                setTimeout(async () => { buyLoop() }, 10)
+                return
+            }
+
+            // Buy two wands so we can upgrade them for our mages
+            const count = merchant.countItem("wand")
+            if (count < 2 && merchant.canBuy("wand")) {
+                if (count == 0) await merchant.buy("wand")
+                await merchant.buy("wand")
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { buyLoop() }, 250)
+    }
+    buyLoop()
+
     async function mluckLoop() {
         try {
             if (merchant.socket.disconnected) {
@@ -776,6 +804,37 @@ async function startMerchant(merchant: AL.Merchant) {
         setTimeout(async () => { moveLoop() }, 250)
     }
     moveLoop()
+
+    async function pontyLoop() {
+        try {
+            if (merchant.socket.disconnected) {
+                setTimeout(async () => { pontyLoop() }, 10000)
+                return
+            }
+
+            const ponty = merchant.locateNPC("secondhands")[0]
+            if (AL.Tools.distance(merchant, ponty) < AL.Constants.NPC_INTERACTION_DISTANCE) {
+                const pontyData = await merchant.getPontyItems()
+                for (const item of pontyData) {
+                    if (ITEMS_TO_BUY.includes(item.name)) {
+                        await merchant.buyFromPonty(item)
+                    }
+                }
+            }
+
+            // Buy two wands so we can upgrade them for our mages
+            const count = merchant.countItem("wand")
+            if (count < 2 && merchant.canBuy("wand")) {
+                if (count == 0) await merchant.buy("wand")
+                await merchant.buy("wand")
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { pontyLoop() }, 10000)
+    }
+    pontyLoop()
 }
 
 async function run() {

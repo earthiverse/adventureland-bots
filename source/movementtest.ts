@@ -1,4 +1,4 @@
-import AL from "alclient-mongo"
+import AL from "alclient"
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 const targetMonster: AL.MonsterName = "snake"

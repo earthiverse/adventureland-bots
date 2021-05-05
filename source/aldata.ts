@@ -1,5 +1,5 @@
 import axios from "axios"
-import AL from "alclient-mongo"
+import AL from "alclient"
 
 const servers: [AL.ServerRegion, AL.ServerIdentifier][] = [
     ["ASIA", "I"],

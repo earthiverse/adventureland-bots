@@ -1,8 +1,7 @@
-import AL from "alclient-mongo"
-import { NodeData } from "alclient-mongo/build/definitions/pathfinder"
+import AL from "alclient"
 import { performance } from "perf_hooks"
 
-function moveDebug(from: NodeData, to: NodeData, avoidTown = false) {
+function moveDebug(from: Required<AL.IPosition>, to: Required<AL.IPosition>, avoidTown = false) {
     console.log(`Finding path from (${from.map},${from.x},${from.y}) to (${to.map},${to.x},${to.y})`)
     const start = performance.now()
     const closestSpawn = AL.Pathfinder.findClosestSpawn(from.map, from.x, from.y)
@@ -45,7 +44,7 @@ AL.Game.loginJSONFile("../credentials.json").then(async () => {
     // console.log(`Computed path in ${Date.now() - start}ms`)
 
     // The following gives me errors walking through walls, we're going to try and fix it
-    let path = moveDebug({ map: "arena", x: 0, y: -500 }, { map: "arena", x: 283, y: -148 })
+    let path = moveDebug({ map: "arena", in: "arena", x: 0, y: -500 }, { map: "arena", in: "arena", x: 283, y: -148 })
     console.log(AL.Pathfinder.canWalkPath(path[0], path[1]))
 
     // path = moveDebug({ map: "winter_cave", x: 0, y: -50 }, { map: "main", x: -55, y: -472 })
@@ -61,8 +60,8 @@ AL.Game.loginJSONFile("../credentials.json").then(async () => {
     // path = moveDebug({map: "main", x: 0, y: 0}, {map: "main", x: -984, y: 1762})
 
     // crabx to main
-    path = moveDebug({map: "main", x: -984, y: 1762}, {map: "main", x: 0, y: 0})
-    path = moveDebug({map: "main", x: -984, y: 1762}, {map: "main", x: 0, y: 0}, true)
+    path = moveDebug({ map: "main", in: "main", x: -984, y: 1762 }, { map: "main", in: "main", x: 0, y: 0 })
+    path = moveDebug({ map: "main", in: "main", x: -984, y: 1762 }, { map: "main", in: "main", x: 0, y: 0 }, true)
 
     // // scorpion to crabx
     // path = moveDebug({map: "main", x: 1577.5, y: -168}, {map: "main", x: -984, y: 1762})
