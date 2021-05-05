@@ -1444,7 +1444,18 @@ async function startRanger(bot: Ranger) {
                 return
             }
 
-            // Priority #3: Special monsters
+            // Priority #3: If there are new characters, and we don't have (or are about to run out of newcomersblessing), go to that character and get some
+            if (!bot.character.s || !bot.character.s.newcomersblessing || bot.character.s.newcomersblessing) {
+                const newcomer = await CharacterModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, $expr: { $eq: ["$s.newcomersblessing.f", "$name"] } }).lean().exec()
+                if (newcomer) {
+                    await bot.smartMove(newcomer, { getWithin: 20 })
+                    await bot.smartMove("newyear_tree", { getWithin: 400 })
+                    setTimeout(async () => { moveLoop() }, 500)
+                    return
+                }
+            }
+
+            // Priority #4: Special monsters
             if (rangerTarget) {
                 cooldown = await strategy[rangerTarget].move()
             }
@@ -2383,7 +2394,18 @@ async function startPriest(bot: Priest) {
                 return
             }
 
-            // Priority #3: Special monsters
+            // Priority #3: If there are new characters, and we don't have (or are about to run out of newcomersblessing), go to that character and get some
+            if (!bot.character.s || !bot.character.s.newcomersblessing || bot.character.s.newcomersblessing) {
+                const newcomer = await CharacterModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, $expr: { $eq: ["$s.newcomersblessing.f", "$name"] } }).lean().exec()
+                if (newcomer) {
+                    await bot.smartMove(newcomer, { getWithin: 20 })
+                    await bot.smartMove("newyear_tree", { getWithin: 400 })
+                    setTimeout(async () => { moveLoop() }, 500)
+                    return
+                }
+            }
+
+            // Priority #4: Special monsters
             if (priestTarget) {
                 cooldown = await strategy[priestTarget].move()
             }
@@ -3491,7 +3513,18 @@ async function startWarrior(bot: Warrior) {
                 return
             }
 
-            // Priority #3: Special monsters
+            // Priority #3: If there are new characters, and we don't have (or are about to run out of newcomersblessing), go to that character and get some
+            if (!bot.character.s || !bot.character.s.newcomersblessing || bot.character.s.newcomersblessing) {
+                const newcomer = await CharacterModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, $expr: { $eq: ["$s.newcomersblessing.f", "$name"] } }).lean().exec()
+                if (newcomer) {
+                    await bot.smartMove(newcomer, { getWithin: 20 })
+                    await bot.smartMove("newyear_tree", { getWithin: 400 })
+                    setTimeout(async () => { moveLoop() }, 500)
+                    return
+                }
+            }
+
+            // Priority #4: Special monsters
             if (warriorTarget) {
                 cooldown = await strategy[warriorTarget].move()
             }
