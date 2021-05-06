@@ -1,5 +1,5 @@
 import axios from "axios"
-import AL from "alclient"
+import AL from "alclient-mongo"
 
 const servers: [AL.ServerRegion, AL.ServerIdentifier][] = [
     ["ASIA", "I"],
@@ -15,6 +15,7 @@ const servers: [AL.ServerRegion, AL.ServerIdentifier][] = [
 // const notableNPCs: string[] = ["Angel", "Kane"]
 
 async function run() {
+    AL.Database.connect()
     await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData()])
 
     for (const [region, identifier] of servers) {
