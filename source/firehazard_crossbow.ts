@@ -75,7 +75,8 @@ async function startMerchant(merchant: AL.Merchant) {
 
 async function run() {
     // Login and prepare pathfinding
-    await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Pathfinder.prepare()])
+    await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData()])
+    await AL.Pathfinder.prepare(AL.Game.G)
 
     // Start all characters
     console.log("Connecting...")

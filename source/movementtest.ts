@@ -4,7 +4,9 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 const targetMonster: AL.MonsterName = "snake"
 
 async function run() {
-    await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Pathfinder.prepare()])
+    // Login and prepare pathfinding
+    await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData()])
+    await AL.Pathfinder.prepare(AL.Game.G)
     const warrior = await AL.Game.startWarrior("earthWar2", "ASIA", "I")
 
     console.log(warrior.locateMonster(targetMonster))

@@ -26,7 +26,7 @@ function moveDebug(from: Required<AL.IPosition>, to: Required<AL.IPosition>, avo
 
 AL.Game.loginJSONFile("../credentials.json").then(async () => {
     console.log("Preparing pathfinding...")
-    await AL.Pathfinder.prepare()
+    await AL.Pathfinder.prepare(await AL.Game.getGData())
 
     // console.log("Finding path from 'main' to 'spookytown'")
     // let start = Date.now()

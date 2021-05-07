@@ -84,6 +84,11 @@ AL.Game.loginJSONFile("../credentials.json").then(async () => {
         }
         const bestSell = bestSeller as BuyData
 
+        if(!G.items[bestSell.itemName]) {
+            console.error(`What is a ${bestSell.itemName}?`)
+            return
+        }
+
         if(bestSeller.price <= G.items[bestSell.itemName].g) {
             console.log(`Uhh, is it just me or is ${bestSell.name}'s ${bestSell.itemName} really cheap @ ${bestSell.price} gold?`)
         }

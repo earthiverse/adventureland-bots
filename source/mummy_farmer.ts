@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import AL from "alclient"
+import { startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "./loops_general"
+import { startMluckLoop } from "./loops_merchant"
+import { startPartyHealLoop } from "./loops_priest"
 
 /** Config */
 const merchantName = "earthMer"
@@ -169,140 +172,9 @@ async function baseLoops(bot: AL.PingCompensatedCharacter) {
         return b.hp - a.hp
     }
 
-    async function buyLoop() {
-        try {
-            if (bot.canBuy("hpot1")) {
-                // Buy HP Pots
-                const numHpot1 = bot.countItem("hpot1")
-                if (numHpot1 < 1000) await bot.buy("hpot1", 1000 - numHpot1)
-
-                // Buy MP Pots
-                const numMpot1 = bot.countItem("mpot1")
-                if (numMpot1 < 1000) await bot.buy("mpot1", 1000 - numMpot1)
-            }
-
-            // Look for buyable things on merchants
-            for (const [, player] of bot.players) {
-                if (!player.stand) continue // Not selling anything
-                if (AL.Tools.distance(bot, player) > AL.Constants.NPC_INTERACTION_DISTANCE) continue // Too far away
-
-                for (const s in player.slots) {
-                    const slot = s as AL.TradeSlotType
-                    const item = player.slots[slot]
-                    if (!item) continue // Nothing in the slot
-                    if (!item.rid) continue // Not a trade item
-                    if (item.b) continue // They are buying, not selling
-
-                    const q = item.q === undefined ? 1 : item.q
-
-                    // Join new giveaways
-                    if (item.giveaway && bot.ctype == "merchant" && (!item.list || !item.list.includes(bot.id))) {
-                        // TODO: Move this to a function
-                        bot.socket.emit("join_giveaway", { slot: slot, id: player.id, rid: item.rid })
-                        continue
-                    }
-
-                    // Buy if we can resell to NPC for more money
-                    const cost = bot.calculateItemCost(item)
-                    if ((item.price < cost * 0.6) // Item is lower price than G, which means we could sell it to an NPC straight away and make a profit...
-                        || ITEMS_TO_BUY.includes(item.name) && item.price <= cost // Item is the same, or lower price than the NPC would sell for, and we want it.
-                    ) {
-                        await bot.buyFromMerchant(player.id, slot, item.rid, q)
-                    }
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-        setTimeout(async () => { buyLoop() }, 1000)
-    }
-    buyLoop()
-
-    async function compoundLoop() {
-        try {
-            if (bot.q.compound) {
-                // We are upgrading, we have to wait
-                setTimeout(async () => { compoundLoop() }, bot.q.compound.ms)
-                return
-            }
-            if (bot.map.startsWith("bank")) {
-                // We are in the bank, we have to wait
-                setTimeout(async () => { compoundLoop() }, 1000)
-                return
-            }
-
-            const duplicates = bot.locateDuplicateItems()
-            for (const iN in duplicates) {
-                const itemName = iN as AL.ItemName
-                const numDuplicates = duplicates[iN].length
-
-                // Check if there's enough to compound
-                if (numDuplicates < 3) {
-                    delete duplicates[itemName]
-                    continue
-                }
-
-                // Check if there's three with the same level. If there is, set the array to those three
-                let found = false
-                for (let i = 0; i < numDuplicates - 2; i++) {
-                    const item1 = bot.items[duplicates[itemName][i]]
-                    const item2 = bot.items[duplicates[itemName][i + 1]]
-                    const item3 = bot.items[duplicates[itemName][i + 2]]
-
-                    if (item1.level == item2.level && item1.level == item3.level) {
-                        duplicates[itemName] = duplicates[itemName].splice(i, 3)
-                        found = true
-                        break
-                    }
-                }
-                if (!found) delete duplicates[itemName]
-            }
-
-            // At this point, 'duplicates' only contains arrays of 3 items.
-            for (const iN in duplicates) {
-                // Check if item is upgradable, or if we want to upgrade it
-                const itemName = iN as AL.ItemName
-                const gInfo = bot.G.items[itemName]
-                if (gInfo.compound == undefined) continue // Not compoundable
-                const itemPoss = duplicates[itemName]
-                const itemInfo = bot.items[itemPoss[0]]
-                if (itemInfo.level >= 4) continue // We don't want to compound past level 4 automatically.
-                if (ITEMS_TO_SELL[itemName] && !itemInfo.p && itemInfo.level < ITEMS_TO_SELL[itemName]) continue // Don't compound items we want to sell unless they're special
-
-                // Figure out the scroll we need to upgrade
-                const grade = bot.calculateItemGrade(itemInfo)
-                const cscrollName = `cscroll${grade}` as AL.ItemName
-                let cscrollPos = bot.locateItem(cscrollName)
-                if (cscrollPos == undefined && !bot.canBuy(cscrollName)) continue // We can't buy a scroll for whatever reason :(
-                else if (cscrollPos == undefined) cscrollPos = await bot.buy(cscrollName)
-
-                // Compound!
-                await bot.compound(itemPoss[0], itemPoss[1], itemPoss[2], cscrollPos)
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { compoundLoop() }, 250)
-    }
-    compoundLoop()
-
-    async function elixirLoop() {
-        try {
-            if (bot.ctype == "merchant") return // Don't buy or equip an elixir if we're a merchant.
-
-            if (!bot.slots.elixir) {
-                let luckElixir = bot.locateItem("elixirluck")
-                if (luckElixir == undefined && bot.canBuy("elixirluck")) luckElixir = await bot.buy("elixirluck")
-                if (luckElixir !== undefined) await bot.equip(luckElixir)
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { elixirLoop() }, 1000)
-    }
-    elixirLoop()
+    startBuyLoop(bot, ITEMS_TO_BUY)
+    startCompoundLoop(bot, ITEMS_TO_SELL)
+    startElixirLoop(bot, "elixirluck")
 
     // async function exchangeLoop() {
     //     try {
@@ -332,152 +204,11 @@ async function baseLoops(bot: AL.PingCompensatedCharacter) {
     // }
     // exchangeLoop()
 
-    async function healLoop() {
-        try {
-            if (!bot.rip) {
-                const missingHP = bot.max_hp - bot.hp
-                const missingMP = bot.max_mp - bot.mp
-                const hpRatio = bot.hp / bot.max_hp
-                const mpRatio = bot.mp / bot.max_mp
-                const hpot1 = bot.locateItem("hpot1")
-                const hpot0 = bot.locateItem("hpot0")
-                const mpot1 = bot.locateItem("mpot1")
-                const mpot0 = bot.locateItem("mpot0")
-                if (hpRatio < mpRatio) {
-                    if (missingHP >= 400 && hpot1 !== undefined) {
-                        await bot.useHPPot(hpot1)
-                    } else if (missingHP >= 200 && hpot0 !== undefined) {
-                        await bot.useHPPot(hpot0)
-                    } else {
-                        await bot.regenHP()
-                    }
-                } else if (mpRatio < hpRatio) {
-                    if (missingMP >= 500 && mpot1 !== undefined) {
-                        await bot.useMPPot(mpot1)
-                    } else if (missingMP >= 300 && mpot0 !== undefined) {
-                        await bot.useMPPot(mpot0)
-                    } else {
-                        await bot.regenMP()
-                    }
-                } else if (hpRatio < 1) {
-                    if (missingHP >= 400 && hpot1 !== undefined) {
-                        await bot.useHPPot(hpot1)
-                    } else if (missingHP >= 200 && hpot0 !== undefined) {
-                        await bot.useHPPot(hpot0)
-                    } else {
-                        await bot.regenHP()
-                    }
-                }
-            }
-
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { healLoop() }, Math.max(bot.getCooldown("use_hp"), 10))
-    }
-    healLoop()
-
-    async function lootLoop() {
-        try {
-            for (const [, chest] of bot.chests) {
-                if (AL.Tools.distance(bot, chest) > 800) continue
-                await bot.openChest(chest.id)
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { lootLoop() }, 250)
-    }
-    lootLoop()
-
-    async function partyLoop() {
-        try {
-            if (!bot.party) {
-                bot.sendPartyRequest(merchant.id)
-            } else if (bot.party !== merchant.id) {
-                bot.leaveParty()
-                bot.sendPartyRequest(merchant.id)
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { partyLoop() }, 10000)
-    }
-    partyLoop()
-
-    async function sellLoop() {
-        try {
-            if (bot.hasItem("computer")) {
-                // Sell things
-                for (let i = 0; i < bot.items.length; i++) {
-                    const item = bot.items[i]
-                    if (!item) continue // No item in this slot
-                    if (item.p) continue // This item is special in some way
-                    if (ITEMS_TO_SELL[item.name] == undefined) continue // We don't want to sell this item
-                    if (ITEMS_TO_SELL[item.name] <= item.level) continue // Keep this item, it's a high enough level that we want to keep it
-
-                    const q = bot.items[i].q !== undefined ? bot.items[i].q : 1
-
-                    await bot.sell(i, q)
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { sellLoop() }, 1000)
-    }
-    sellLoop()
-
-    async function upgradeLoop() {
-        try {
-            if (bot.q.upgrade) {
-                // We are upgrading, we have to wait
-                setTimeout(async () => { upgradeLoop() }, bot.q.upgrade.ms)
-                return
-            }
-            if (bot.map.startsWith("bank")) {
-                // We are in the bank, we have to wait
-                setTimeout(async () => { upgradeLoop() }, 1000)
-                return
-            }
-
-            // Find items that we have two (or more) of, and upgrade them if we can
-            const duplicates = bot.locateDuplicateItems()
-            for (const iN in duplicates) {
-                // Check if item is upgradable, or if we want to upgrade it
-                const itemName = iN as AL.ItemName
-                const gInfo = bot.G.items[itemName]
-                if (gInfo.upgrade == undefined) continue // Not upgradable
-                const itemPos = duplicates[itemName][0]
-                const itemInfo = bot.items[itemPos]
-                if (itemInfo.level >= 8) continue // We don't want to upgrade past level 8 automatically.
-                if (ITEMS_TO_SELL[itemName] && !itemInfo.p && itemInfo.level < ITEMS_TO_SELL[itemName]) continue // Don't upgrade items we want to sell unless it's special
-
-                // Figure out the scroll we need to upgrade
-                const grade = bot.calculateItemGrade(itemInfo)
-                const scrollName = `scroll${grade}` as AL.ItemName
-                let scrollPos = bot.locateItem(scrollName)
-                try {
-                    if (scrollPos == undefined && !bot.canBuy(scrollName)) continue // We can't buy a scroll for whatever reason :(
-                    else if (scrollPos == undefined) scrollPos = await bot.buy(scrollName)
-
-                    // Upgrade!
-                    await bot.upgrade(itemPos, scrollPos)
-                } catch (e) {
-                    console.error(e)
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { upgradeLoop() }, 250)
-    }
-    upgradeLoop()
+    startHealLoop(bot)
+    startLootLoop(bot)
+    startPartyLoop(bot, merchant.id)
+    startSellLoop(bot, ITEMS_TO_SELL)
+    startUpgradeLoop(bot, ITEMS_TO_SELL)
 }
 
 async function startRanger(bot: AL.Ranger) {
@@ -612,31 +343,7 @@ async function startRanger(bot: AL.Ranger) {
     }
     moveLoop()
 
-    async function sendItemLoop() {
-        try {
-            if (!merchant || merchant.isFull()) {
-                setTimeout(async () => { sendItemLoop() }, 10000)
-                return
-            }
-
-            const sendTo = bot.players.get(merchant.id)
-            if (sendTo && AL.Tools.distance(bot, sendTo) < AL.Constants.NPC_INTERACTION_DISTANCE) {
-                const extraGold = bot.gold - 1000000
-                if (extraGold > 0) await bot.sendGold(merchant.id, extraGold)
-                for (let i = 0; i < bot.items.length; i++) {
-                    const item = bot.items[i]
-                    if (!item || RANGER_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
-
-                    await bot.sendItem(merchant.id, i, item.q)
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { sendItemLoop() }, 1000)
-    }
-    sendItemLoop()
+    startSendStuffDenylistLoop(bot, merchant, RANGER_ITEMS_TO_HOLD, 1_000_000)
 }
 
 async function startWarrior(bot: AL.Warrior) {
@@ -766,31 +473,7 @@ async function startWarrior(bot: AL.Warrior) {
     }
     moveLoop()
 
-    async function sendItemLoop() {
-        try {
-            if (!merchant || merchant.isFull()) {
-                setTimeout(async () => { sendItemLoop() }, 10000)
-                return
-            }
-
-            const sendTo = bot.players.get(merchant.id)
-            if (sendTo && AL.Tools.distance(bot, sendTo) < AL.Constants.NPC_INTERACTION_DISTANCE) {
-                const extraGold = bot.gold - 1000000
-                if (extraGold > 0) await bot.sendGold(merchant.id, extraGold)
-                for (let i = 0; i < bot.items.length; i++) {
-                    const item = bot.items[i]
-                    if (!item || WARRIOR_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
-
-                    await bot.sendItem(merchant.id, i, item.q)
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { sendItemLoop() }, 1000)
-    }
-    sendItemLoop()
+    startSendStuffDenylistLoop(bot, merchant, WARRIOR_ITEMS_TO_HOLD, 1_000_000)
 }
 
 async function startPriest(bot: AL.Priest) {
@@ -906,58 +589,8 @@ async function startPriest(bot: AL.Priest) {
     }
     moveLoop()
 
-    async function partyHealLoop() {
-        try {
-            if (bot.c.town) {
-                setTimeout(async () => { partyHealLoop() }, bot.c.town.ms)
-                return
-            }
-
-            if (bot.canUse("partyheal")) {
-                for (const friend of [priest, ranger, warrior, merchant]) {
-                    if (friend.party !== bot.party) continue // Our priest isn't in the same party!?
-                    if (friend.rip) continue // Party member is already dead
-                    if (friend.hp < friend.max_hp * 0.5) {
-                        // Someone in our party has low HP
-                        await priest.partyHeal()
-                        break
-                    }
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { partyHealLoop() }, Math.max(bot.getCooldown("partyheal"), 10))
-    }
-    partyHealLoop()
-
-    async function sendItemLoop() {
-        try {
-            if (!merchant || merchant.isFull()) {
-                setTimeout(async () => { sendItemLoop() }, 10000)
-                return
-            }
-
-            const sendTo = bot.players.get(merchant.id)
-            if (sendTo && AL.Tools.distance(bot, sendTo) < AL.Constants.NPC_INTERACTION_DISTANCE) {
-                const extraGold = bot.gold - 1000000
-                if (extraGold > 0) await bot.sendGold(merchant.id, extraGold)
-                for (let i = 0; i < bot.items.length; i++) {
-                    const item = bot.items[i]
-                    if (!item || PRIEST_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
-
-                    await bot.sendItem(merchant.id, i, item.q)
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { sendItemLoop() }, 1000)
-    }
-    sendItemLoop()
-
+    startPartyHealLoop(bot, [priest, ranger, warrior, merchant])
+    startSendStuffDenylistLoop(bot, merchant, PRIEST_ITEMS_TO_HOLD, 1_000_000)
 }
 
 async function startMerchant(bot: AL.Merchant) {
@@ -986,32 +619,7 @@ async function startMerchant(bot: AL.Merchant) {
     }
     craftLoop()
 
-    async function mluckLoop() {
-        try {
-            if (bot.canUse("mluck")) {
-                if (!bot.s.mluck || bot.s.mluck.f !== bot.id) await bot.mluck(bot.id) // mluck ourself
-
-                for (const [, player] of bot.players) {
-                    if (AL.Tools.distance(bot, player) > bot.G.skills.mluck.range) continue // Too far away to mluck
-                    if (player.npc) continue // It's an NPC, we can't mluck NPCs.
-
-                    if (!player.s.mluck) {
-                        await bot.mluck(player.id) // Give the mluck 
-                    } else if (!player.s.mluck.strong && player.s.mluck.f !== bot.id) {
-                        await bot.mluck(player.id) // Steal the mluck
-                    } else if ((!player.s.mluck.strong && player.s.mluck.ms < (bot.G.conditions.mluck.duration - 60000))
-                        || (player.s.mluck.strong && player.s.mluck.f == bot.id && player.s.mluck.ms < (bot.G.conditions.mluck.duration - 60000))) {
-                        await bot.mluck(player.id) // Extend the mluck
-                    }
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { mluckLoop() }, 250)
-    }
-    mluckLoop()
+    startMluckLoop(bot)
 
     async function moveLoop() {
         try {
@@ -1035,7 +643,8 @@ async function startMerchant(bot: AL.Merchant) {
 
 async function run() {
     // Login and prepare pathfinding
-    await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Pathfinder.prepare()])
+    await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData()])
+    await AL.Pathfinder.prepare(AL.Game.G)
 
     // Start all characters
     console.log("Connecting...")
