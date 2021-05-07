@@ -4,7 +4,7 @@ import { ServerData, CharacterListData } from "./definitions/adventureland-serve
 import { connect, disconnect } from "./database/database.js"
 import { UserModel } from "./database/users/users.model.js"
 import { IUserDocument } from "./database/users/users.types.js"
-import { ServerRegion, ServerIdentifier, GData, CharacterType } from "./definitions/adventureland"
+import { ServerRegion, ServerIdentifier, GData, CharacterType, ItemName, MapName } from "./definitions/adventureland"
 import { Ranger } from "./Ranger.js"
 import { Observer } from "./Observer.js"
 import { Player } from "./Player.js"
@@ -34,6 +34,7 @@ export class Game {
     public static observers: { [T in string]: Observer } = {}
 
     public static G: GData
+    public static version: number
 
     private constructor() {
         // Private to force static methods
@@ -50,20 +51,45 @@ export class Game {
         if (mongo) disconnect()
     }
 
-    static async getGData(): Promise<GData> {
+    static async getGData(cache = false): Promise<GData> {
         if (this.G) return this.G
+        if (!this.version) this.getVersion()
+        const gFile = `G_${this.version}.json`
+        try {
+            // Check if there's cached data
+            this.G = JSON.parse(fs.readFileSync(gFile, "utf8")) as GData
+        } catch (e) {
+            // There's no cached data, download it
+            console.debug("Updating 'G' data...")
+            const response = await axios.get<string>("http://adventure.land/data.js")
+            if (response.status == 200) {
+                // Update G with the latest data
+                const matches = response.data.match(/var\s+G\s*=\s*(\{.+\});/)
+                const rawG = matches[1]
+                this.G = JSON.parse(rawG,) as GData
 
-        console.log("Updating 'G' data...")
-        const response = await axios.get("http://adventure.land/data.js")
+                console.debug("Updated 'G' data!")
+
+                if (cache) fs.writeFileSync(gFile, rawG)
+                return this.G
+            } else {
+                console.error(response)
+                console.error("Error fetching http://adventure.land/data.js")
+            }
+        }
+    }
+
+    static async getVersion(): Promise<number> {
+        const response = await axios.get("http://adventure.land/comm")
         if (response.status == 200) {
-            // Update G with the latest data
-            const matches = response.data.match(/var\s+G\s*=\s*(\{.+\});/)
-            this.G = JSON.parse(matches[1]) as GData
-            console.log("  Updated 'G' data!")
-            return this.G
+            // Find the version
+            const matches = (response.data as string).match(/var\s+VERSION\s*=\s*'(\d+)/)
+            this.version = Number.parseInt(matches[1])
+
+            return this.version
         } else {
             console.error(response)
-            console.error("Error fetching http://adventure.land/data.js")
+            console.error("Error fetching http://adventure.land/comm")
         }
     }
 
