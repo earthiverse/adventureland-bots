@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import AL from "alclient"
-import { startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "./loops_general"
-import { startMluckLoop } from "./loops_merchant"
-import { startPartyHealLoop } from "./loops_priest"
+import AL from "alclient-mongo"
+import { startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "./base/general"
+import { startMluckLoop } from "./base/merchant"
+import { startPartyHealLoop } from "./base/priest"
 
 /** Config */
 const merchantName = "earthMer"

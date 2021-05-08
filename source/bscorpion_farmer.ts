@@ -1,6 +1,6 @@
-import AL from "alclient"
+import AL from "alclient-mongo"
 import { ItemLevelInfo } from "./definitions/bot"
-import { startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startHealLoop, startPartyLoop, startSellLoop, startSendStuffAllowlistLoop, startUpgradeLoop } from "./loops_general"
+import { startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startHealLoop, startPartyLoop, startSellLoop, startSendStuffAllowlistLoop, startUpgradeLoop } from "./base/general"
 
 /** Config */
 const merchantName = "earthMer"

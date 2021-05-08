@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL from "alclient-mongo"
 
 export function startPartyHealLoop(bot: AL.Priest, members: AL.Character[]): void {
     async function partyHealLoop() {

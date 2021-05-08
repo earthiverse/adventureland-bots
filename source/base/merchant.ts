@@ -1,4 +1,5 @@
-import AL from "alclient"
+import AL from "alclient-mongo"
+import { LOOP_MS } from "./general"
 
 export function startMluckLoop(bot: AL.Merchant): void {
     async function mluckLoop() {
@@ -29,7 +30,7 @@ export function startMluckLoop(bot: AL.Merchant): void {
             console.error(e)
         }
 
-        setTimeout(async () => { mluckLoop() }, 100)
+        setTimeout(async () => { mluckLoop() }, LOOP_MS)
     }
     mluckLoop()
 }

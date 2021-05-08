@@ -6,7 +6,7 @@
   "type": "module",
   "dependencies": {
     "alclient": "^0.4.1",
-    "alclient-mongo": "^0.4.5",
+    "alclient-mongo": "^0.4.6",
     "axios": "^0.21.1"
   },
   "devDependencies": {

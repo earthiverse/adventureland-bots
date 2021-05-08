@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL from "alclient-mongo"
 
 const rangerName = "earthiverse"
 const priest1Name = "earthPri"

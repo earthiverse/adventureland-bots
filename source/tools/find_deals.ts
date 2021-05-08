@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL from "alclient-mongo"
 import fs from "fs"
 
 type BuyData = {

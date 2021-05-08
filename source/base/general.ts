@@ -1,9 +1,69 @@
-import AL from "alclient"
-import { ItemLevelInfo } from "./definitions/bot"
+import AL from "alclient-mongo"
+import { ItemLevelInfo } from "../definitions/bot"
 
-const LOOP_MS = 100
+export const LOOP_MS = 100
+export const CHECK_PONTY_EVERY_MS = 10_000
+
+/**
+ * These are cooperative entities that don't spawn very often.
+ * We only want to do them when others are attacking them, too.
+ * 
+ * @param bot 
+ * @returns 
+ */
+export async function getPriority1Entities(bot: AL.Character): Promise<AL.IEntity[]> {
+    // NOTE: This list is ordered higher -> lower priority
+    const coop: AL.MonsterName[] = [
+        // Event-based
+        "dragold", "grinch", "mrgreen", "mrpumpkin",
+        // Year-round
+        "franky", "icegolem"]
+    return await AL.EntityModel.aggregate([
+        {
+            $match: {
+                type: { $in: coop },
+                target: { $ne: undefined }, // We only want to do these if others are doing them, too.
+                serverRegion: bot.server.region,
+                serverIdentifier: bot.server.name,
+                lastSeen: { $gt: Date.now() - 120000 }
+            }
+        },
+        { $addFields: { __order: { $indexOfArray: [coop, "$type"] } } },
+        { $sort: { "__order": 1 } }]).exec()
+}
+
+/**
+ * These are non-cooperative entities that don't spawn very often.
+ * @param bot 
+ * @returns 
+ */
+export async function getPriority2Entities(bot: AL.Character): Promise<AL.IEntity[]> {
+    // NOTE: This list is ordered higher -> lower priority
+    const solo: AL.MonsterName[] = [
+        "goldenbat",
+        // Very Rare Monsters
+        "tinyp", "cutebee",
+        // Event Monsters
+        "pinkgoo", "wabbit",
+        // Rare Monsters
+        "greenjr", "jr", "skeletor", "mvampire", "fvampire", "stompy", "snowman"
+    ]
+    return await AL.EntityModel.aggregate([
+        {
+            $match: {
+                type: { $in: solo },
+                serverRegion: bot.server.region,
+                serverIdentifier: bot.server.name,
+                lastSeen: { $gt: Date.now() - 120000 }
+            }
+        },
+        { $addFields: { __order: { $indexOfArray: [solo, "$type"] } } },
+        { $sort: { "__order": 1 } }]).exec()
+}
 
 export function startBuyLoop(bot: AL.Character, itemsToBuy: AL.ItemName[] = [], items: [AL.ItemName, number][] = [["hpot1", 1000], ["mpot1", 1000], ["xptome", 1]],): void {
+    const pontyLocations = bot.locateNPC("secondhands")
+    let lastPonty = 0
     async function buyLoop() {
         try {
             if (bot.socket.disconnected) {
@@ -18,7 +78,27 @@ export function startBuyLoop(bot: AL.Character, itemsToBuy: AL.ItemName[] = [], 
                 }
             }
 
-            // Look for buyable things on merchants
+            // Buy things from Ponty
+            if (Date.now() - CHECK_PONTY_EVERY_MS > lastPonty) {
+                for (const ponty of pontyLocations) {
+                    if (AL.Tools.distance(bot, ponty) > AL.Constants.NPC_INTERACTION_DISTANCE) continue
+                    const pontyItems = await bot.getPontyItems()
+                    lastPonty = Date.now()
+                    for (const item of pontyItems) {
+                        if (!item) continue
+
+                        if (
+                            item.p // Buy all shiny/glitched/etc. items
+                            || itemsToBuy.includes(item.name) // Buy anything in our buy list
+                        ) {
+                            await bot.buyFromPonty(item)
+                            continue
+                        }
+                    }
+                }
+            }
+
+            // Buy things from other merchants
             for (const [, player] of bot.players) {
                 if (!player.stand) continue // Not selling anything
                 if (AL.Tools.distance(bot, player) > AL.Constants.NPC_INTERACTION_DISTANCE) continue // Too far away
@@ -39,12 +119,14 @@ export function startBuyLoop(bot: AL.Character, itemsToBuy: AL.ItemName[] = [], 
                         continue
                     }
 
+
                     // Buy if we can resell to NPC for more money
                     const cost = bot.calculateItemCost(item)
                     if ((item.price < cost * 0.6) // Item is lower price than G, which means we could sell it to an NPC straight away and make a profit...
-                        || itemsToBuy.includes(item.name) && item.price <= cost // Item is the same, or lower price than the NPC would sell for, and we want it.
+                        || (itemsToBuy.includes(item.name) && item.price <= cost * AL.Constants.PONTY_MARKUP) // Item is the same, or lower price than Ponty would sell it for, and we want it.
                     ) {
                         await bot.buyFromMerchant(player.id, slot, item.rid, q)
+                        continue
                     }
                 }
             }
@@ -168,6 +250,62 @@ export function startElixirLoop(bot: AL.Character, elixir: AL.ItemName): void {
         setTimeout(async () => { elixirLoop() }, LOOP_MS)
     }
     elixirLoop()
+}
+
+export function startEventLoop(bot: AL.Character): void {
+    const newYearTrees = bot.locateNPC("newyear_tree")
+    async function eventLoop() {
+        try {
+            if (bot.socket.disconnected) {
+                setTimeout(async () => { eventLoop() }, 10)
+                return
+            }
+
+            // Winter event stuff
+            if (bot.S && bot.S.holidayseason && !bot.s?.holidayspirit) {
+                // Get the holiday buff
+                for (const tree of newYearTrees) {
+                    if (AL.Tools.distance(bot, tree) > AL.Constants.NPC_INTERACTION_DISTANCE) continue
+                    bot.socket.emit("interaction", { type: "newyear_tree" })
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        setTimeout(async () => { eventLoop() }, LOOP_MS)
+    }
+    eventLoop()
+}
+
+export function startExchangeLoop(bot: AL.Character, itemsToExchange: AL.ItemName[]): void {
+    async function exchangeLoop() {
+        try {
+            if (bot.socket.disconnected) {
+                setTimeout(async () => { exchangeLoop() }, 10)
+                return
+            }
+
+            // TODO: Make bot.canExchange() function and replace the computer check
+            // TODO: Add a check to see if we are currently exchanging to that function
+            if (bot.hasItem("computer") && bot.esize > 10) {
+                for (let i = 0; i < bot.items.length; i++) {
+                    const item = bot.items[i]
+                    if (!item) continue
+                    if (!itemsToExchange.includes(item.name)) continue // Don't want / can't exchange
+
+                    const gInfo = bot.G.items[item.name]
+                    if (gInfo.e !== undefined && item.q < gInfo.e) continue // Don't have enough to exchange
+
+                    await bot.exchange(i)
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { exchangeLoop() }, LOOP_MS)
+    }
+    exchangeLoop()
 }
 
 export function startHealLoop(bot: AL.Character): void {

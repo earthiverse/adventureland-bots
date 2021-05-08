@@ -1,4 +1,4 @@
-import { ItemName, MonsterName, SlotType } from "alclient"
+import { ItemName, MonsterName, SlotType } from "alclient-mongo"
 
 export type Strategy = {
     [T in MonsterName]?: {
