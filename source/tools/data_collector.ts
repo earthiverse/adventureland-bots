@@ -22,7 +22,7 @@ const PEEK_CHARS = ["earthMag", "earthMag2", "earthMag3", "earthRan2", "earthRan
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
 async function run() {
-    await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData(true)])
+    await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
     await AL.Pathfinder.prepare(AL.Game.G)
 
     for (const [region, identifier] of servers) {

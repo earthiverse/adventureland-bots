@@ -1,7 +1,7 @@
 import AL from "alclient-mongo"
 import fs from "fs"
 
-AL.Game.loginJSONFile("../credentials.json").then(async () => {
+AL.Game.loginJSONFile("../../credentials.json").then(async () => {
     console.log("Grabbing all mail...")
     const mail = await AL.Game.getMail(true)
     console.log(`  All mail retrieved! Saving ${mail.length} messages to mail.json.`)

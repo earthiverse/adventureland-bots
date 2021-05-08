@@ -11,7 +11,7 @@ type BuyData = {
     price: number
 }
 
-AL.Game.loginJSONFile("../credentials.json").then(async () => {
+AL.Game.loginJSONFile("../../credentials.json").then(async () => {
     const G = await AL.Game.getGData()
 
     // Grab and parse the data
