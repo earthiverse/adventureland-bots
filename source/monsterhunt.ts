@@ -12,7 +12,7 @@ import { Ranger } from "./Ranger.js"
 import { Pathfinder } from "./Pathfinder.js"
 import { Tools } from "./Tools.js"
 import { IEntity } from "./database/entities/entities.types.js"
-import { EntityModel, PlayerModel } from "./database/database.js"
+import { EntityModel, PlayerModel } from "./database/Database.js"
 
 const DEFAULT_REGION: ServerRegion = "US"
 const DEFAULT_IDENTIFIER: ServerIdentifier = "II"

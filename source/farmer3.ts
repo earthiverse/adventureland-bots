@@ -11,7 +11,7 @@ import { Pathfinder } from "./Pathfinder.js"
 import { Tools } from "./Tools.js"
 import { Mage } from "./Mage.js"
 import { Rogue } from "./Rogue.js"
-import { PlayerModel } from "./database/database.js"
+import { PlayerModel } from "./database/Database.js"
 
 const region: ServerRegion = "EU"
 const identifier: ServerIdentifier = "I"

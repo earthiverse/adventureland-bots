@@ -4,7 +4,7 @@ import { ServerData, DeathData, EntitiesData, NewMapData, WelcomeData, LoadedDat
 import { ServerRegion, ServerIdentifier, GData, MapName, MonsterName, SInfo } from "./definitions/adventureland"
 import { SEND_ALDATA_INFO, SPECIAL_MONSTERS } from "./constants.js"
 import { NPCModel } from "./database/npcs/npcs.model.js"
-import { EntityModel, PlayerModel } from "./database/database.js"
+import { EntityModel, PlayerModel } from "./database/Database.js"
 
 export class Observer {
     public socket: SocketIOClient.Socket;

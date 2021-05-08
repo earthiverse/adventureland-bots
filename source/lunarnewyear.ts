@@ -11,7 +11,7 @@ import { PingCompensatedPlayer } from "./PingCompensatedPlayer.js"
 import { Ranger } from "./Ranger.js"
 import { Pathfinder } from "./Pathfinder.js"
 import { Tools } from "./Tools.js"
-import { EntityModel, PlayerModel } from "./database/database.js"
+import { EntityModel, PlayerModel } from "./database/Database.js"
 
 let REGION: ServerRegion = "US"
 let IDENTIFIER: ServerIdentifier = "II"

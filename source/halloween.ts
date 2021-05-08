@@ -12,7 +12,7 @@ import { PingCompensatedPlayer } from "./PingCompensatedPlayer.js"
 import { Ranger } from "./Ranger.js"
 import { Pathfinder } from "./Pathfinder.js"
 import { Tools } from "./Tools.js"
-import { PlayerModel } from "./database/database.js"
+import { PlayerModel } from "./database/Database.js"
 
 let ranger: Ranger
 let rangerTarget: MonsterName
