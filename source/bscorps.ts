@@ -1,5 +1,4 @@
 import { PLAYER_GOLD_TO_HOLD, ITEMS_TO_BUY, ITEMS_TO_EXCHANGE, ITEMS_TO_SELL, MERCHANT_ITEMS_TO_HOLD, NPC_INTERACTION_DISTANCE, PRIEST_ITEMS_TO_HOLD, RANGER_ITEMS_TO_HOLD, SPECIAL_MONSTERS, WARRIOR_ITEMS_TO_HOLD, MERCHANT_GOLD_TO_HOLD } from "./constants.js"
-import { CharacterModel } from "./database/characters/characters.model.js"
 import { EntityModel } from "./database/entities/entities.model.js"
 import { EntityData, HitData, PlayerData } from "./definitions/adventureland-server.js"
 import { BankPackType, ItemInfo, ItemName, MonsterName, ServerIdentifier, ServerRegion, SlotType, TradeSlotType } from "./definitions/adventureland.js"
@@ -14,6 +13,7 @@ import { Ranger } from "./Ranger.js"
 import { Pathfinder } from "./Pathfinder.js"
 import { Tools } from "./Tools.js"
 import { IEntity } from "./database/entities/entities.types.js"
+import { PlayerModel } from "./database/database.js"
 
 const DEFAULT_REGION: ServerRegion = "US"
 const DEFAULT_IDENTIFIER: ServerIdentifier = "II"
@@ -1408,7 +1408,7 @@ async function startRanger(bot: Ranger) {
 
             // Priority #2: If there are new characters, and we don't have (or are about to run out of newcomersblessing), go to that character and get some
             if (!bot.character.s || !bot.character.s.newcomersblessing || bot.character.s.newcomersblessing) {
-                const newcomer = await CharacterModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, $expr: { $eq: ["$s.newcomersblessing.f", "$name"] } }).lean().exec()
+                const newcomer = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, $expr: { $eq: ["$s.newcomersblessing.f", "$name"] } }).lean().exec()
                 if (newcomer) {
                     await bot.smartMove(newcomer, { getWithin: 20 })
                     await bot.smartMove("newyear_tree", { getWithin: 400 })
@@ -2340,7 +2340,7 @@ async function startPriest(bot: Priest) {
 
             // Priority #2: If there are new characters, and we don't have (or are about to run out of newcomersblessing), go to that character and get some
             if (!bot.character.s || !bot.character.s.newcomersblessing || bot.character.s.newcomersblessing) {
-                const newcomer = await CharacterModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, $expr: { $eq: ["$s.newcomersblessing.f", "$name"] } }).lean().exec()
+                const newcomer = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, $expr: { $eq: ["$s.newcomersblessing.f", "$name"] } }).lean().exec()
                 if (newcomer) {
                     await bot.smartMove(newcomer, { getWithin: 20 })
                     await bot.smartMove("newyear_tree", { getWithin: 400 })
@@ -3441,7 +3441,7 @@ async function startWarrior(bot: Warrior) {
 
             // Priority #2: If there are new characters, and we don't have (or are about to run out of newcomersblessing), go to that character and get some
             if (!bot.character.s || !bot.character.s.newcomersblessing || bot.character.s.newcomersblessing) {
-                const newcomer = await CharacterModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, $expr: { $eq: ["$s.newcomersblessing.f", "$name"] } }).lean().exec()
+                const newcomer = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, $expr: { $eq: ["$s.newcomersblessing.f", "$name"] } }).lean().exec()
                 if (newcomer) {
                     await bot.smartMove(newcomer, { getWithin: 20 })
                     await bot.smartMove("newyear_tree", { getWithin: 400 })
@@ -3810,7 +3810,7 @@ async function startMerchant(bot: Merchant) {
 
             // Find other characters that need mluck and go find them
             if (bot.canUse("mluck")) {
-                const charactersToMluck = await CharacterModel.find({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, $or: [{ "s.mluck": undefined }, { "s.mluck.strong": undefined, "s.mluck.f": { "$ne": bot.character.id } }] }).lean().exec()
+                const charactersToMluck = await PlayerModel.find({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, $or: [{ "s.mluck": undefined }, { "s.mluck.strong": undefined, "s.mluck.f": { "$ne": bot.character.id } }] }).lean().exec()
                 for (const character of charactersToMluck) {
                     // Move to them, and we'll automatically mluck them
                     if (Tools.distance(bot.character, character) > bot.G.skills.mluck.range) {

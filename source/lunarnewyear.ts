@@ -1,6 +1,4 @@
 import { ITEMS_TO_BUY, ITEMS_TO_EXCHANGE, ITEMS_TO_SELL, MERCHANT_ITEMS_TO_HOLD, NPC_INTERACTION_DISTANCE, PRIEST_ITEMS_TO_HOLD, RANGER_ITEMS_TO_HOLD, SPECIAL_MONSTERS, WARRIOR_ITEMS_TO_HOLD } from "./constants.js"
-import { CharacterModel } from "./database/characters/characters.model.js"
-import { EntityModel } from "./database/entities/entities.model.js"
 import { EntityData, HitData, PlayerData } from "./definitions/adventureland-server.js"
 import { BankPackType, ItemInfo, ItemName, MonsterName, ServerIdentifier, ServerRegion, SlotType, TradeSlotType } from "./definitions/adventureland.js"
 import { Strategy } from "./definitions/bot.js"
@@ -13,6 +11,7 @@ import { PingCompensatedPlayer } from "./PingCompensatedPlayer.js"
 import { Ranger } from "./Ranger.js"
 import { Pathfinder } from "./Pathfinder.js"
 import { Tools } from "./Tools.js"
+import { EntityModel, PlayerModel } from "./database/database.js"
 
 let REGION: ServerRegion = "US"
 let IDENTIFIER: ServerIdentifier = "II"
@@ -737,7 +736,7 @@ async function startRanger(bot: Ranger) {
             }
 
             // Look in database for monster
-            const specialTarget = await EntityModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, type: mtype }).lean().exec()
+            const specialTarget = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, type: mtype }).lean().exec()
             if (specialTarget) {
                 await bot.smartMove(specialTarget, { getWithin: bot.character.range - 10 })
             } else {
@@ -1558,7 +1557,7 @@ async function startPriest(bot: Priest) {
             }
 
             // Look in database for monster
-            const specialTarget = await EntityModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, type: mtype }).lean().exec()
+            const specialTarget = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, type: mtype }).lean().exec()
             if (specialTarget) {
                 await bot.smartMove(specialTarget, { getWithin: bot.character.range - 10 })
             } else {
@@ -2447,7 +2446,7 @@ async function startWarrior(bot: Warrior) {
             }
 
             // Look in database for monster
-            const specialTarget = await EntityModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, type: mtype }).lean().exec()
+            const specialTarget = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, type: mtype }).lean().exec()
             if (specialTarget) {
                 await bot.smartMove(specialTarget, { getWithin: bot.character.range - 10 })
             } else {
@@ -3340,7 +3339,7 @@ async function startMerchant(bot: Merchant) {
 
             // Find other characters that need mluck and go find them
             if (bot.canUse("mluck")) {
-                const charactersToMluck = await CharacterModel.find({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 }, $or: [{ "s.mluck": undefined }, { "s.mluck.strong": undefined, "s.mluck.f": { "$ne": bot.character.id } }] }).lean().exec()
+                const charactersToMluck = await PlayerModel.find({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 }, $or: [{ "s.mluck": undefined }, { "s.mluck.strong": undefined, "s.mluck.f": { "$ne": bot.character.id } }] }).lean().exec()
                 for (const character of charactersToMluck) {
                     // Move to them, and we'll automatically mluck them
                     if (Tools.distance(bot.character, character) > bot.G.skills.mluck.range) {

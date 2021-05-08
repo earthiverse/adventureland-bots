@@ -1,5 +1,4 @@
 import { ITEMS_TO_BUY, ITEMS_TO_EXCHANGE, ITEMS_TO_SELL, MAGE_ITEMS_TO_HOLD, MERCHANT_ITEMS_TO_HOLD, NPC_INTERACTION_DISTANCE, PRIEST_ITEMS_TO_HOLD, RANGER_ITEMS_TO_HOLD, WARRIOR_ITEMS_TO_HOLD } from "./constants.js"
-import { CharacterModel } from "./database/characters/characters.model.js"
 import { EntityData, HitData } from "./definitions/adventureland-server.js"
 import { ItemName, MonsterName, ServerIdentifier, ServerRegion, TradeSlotType } from "./definitions/adventureland.js"
 import { Game } from "./Game.js"
@@ -12,6 +11,7 @@ import { Pathfinder } from "./Pathfinder.js"
 import { Tools } from "./Tools.js"
 import { Mage } from "./Mage.js"
 import { Rogue } from "./Rogue.js"
+import { PlayerModel } from "./database/database.js"
 
 const region: ServerRegion = "ASIA"
 const identifier: ServerIdentifier = "I"
@@ -1008,7 +1008,7 @@ async function startMerchant(bot: Merchant) {
 
             // Find other characters that need mluck and go find them
             if (bot.canUse("mluck")) {
-                const charactersToMluck = await CharacterModel.find({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 }, $or: [{ "s.mluck": undefined }, { "s.mluck.strong": undefined, "s.mluck.f": { "$ne": bot.character.id } }] }).lean().exec()
+                const charactersToMluck = await PlayerModel.find({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 }, $or: [{ "s.mluck": undefined }, { "s.mluck.strong": undefined, "s.mluck.f": { "$ne": bot.character.id } }] }).lean().exec()
                 for (const character of charactersToMluck) {
                     // Move to them, and we'll automatically mluck them
                     await bot.closeMerchantStand()

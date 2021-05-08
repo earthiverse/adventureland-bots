@@ -2,10 +2,9 @@ import axios from "axios"
 import socketio from "socket.io-client"
 import { ServerData, DeathData, EntitiesData, NewMapData, WelcomeData, LoadedData } from "./definitions/adventureland-server"
 import { ServerRegion, ServerIdentifier, GData, MapName, MonsterName, SInfo } from "./definitions/adventureland"
-import { CharacterModel } from "./database/characters/characters.model.js"
-import { EntityModel } from "./database/entities/entities.model.js"
 import { SEND_ALDATA_INFO, SPECIAL_MONSTERS } from "./constants.js"
 import { NPCModel } from "./database/npcs/npcs.model.js"
+import { EntityModel, PlayerModel } from "./database/database.js"
 
 export class Observer {
     public socket: SocketIOClient.Socket;
@@ -138,7 +137,7 @@ export class Observer {
                     lastSeen: Date.now()
                 }, { upsert: true, useFindAndModify: false }).exec()
             } else {
-                CharacterModel.updateOne({ name: player.id }, {
+                PlayerModel.updateOne({ name: player.id }, {
                     map: data.map,
                     name: player.id,
                     x: player.x,

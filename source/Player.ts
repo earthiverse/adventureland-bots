@@ -1,14 +1,14 @@
 import { AchievementProgressData, CharacterData, ServerData, ActionData, ChestOpenedData, DeathData, DisappearData, ChestData, EntitiesData, EvalData, GameResponseData, HitData, NewMapData, PartyData, StartData, WelcomeData, LoadedData, EntityData, PlayerData, AuthData, DisappearingTextData, GameLogData, UIData, UpgradeData, QData } from "./definitions/adventureland-server"
 import { GData, SkillName, BankInfo, ConditionName, MapName, ItemInfo, ItemName, SlotType, MonsterName, SInfo, IPosition, NPCType, BankPackType, TradeSlotType } from "./definitions/adventureland"
 import { Tools } from "./Tools.js"
-import { CharacterModel } from "./database/characters/characters.model.js"
 import { Pathfinder } from "./Pathfinder.js"
 import { LinkData, NodeData } from "./definitions/pathfinder"
-import { NPC_INTERACTION_DISTANCE, USE_BJARNY_MAGIPORT, UPDATE_POSITIONS_EVERY_MS } from "./constants.js"
+import { NPC_INTERACTION_DISTANCE, USE_BJARNY_MAGIPORT } from "./constants.js"
 import { DeathModel } from "./database/deaths/deaths.model.js"
 import { Observer } from "./Observer.js"
 import { MAX_PINGS, TIMEOUT } from "./Game.js"
 import { Mage } from "./Mage.js"
+import { PlayerModel } from "./database/players/players.model.js"
 
 
 export class Player extends Observer {
@@ -1968,7 +1968,7 @@ export class Player extends Observer {
 
         // If Bjarny is close to our goal ask for a magiport!
         if (USE_BJARNY_MAGIPORT && !this.players.has("Bjarny") && this.server.name !== "PVP") {
-            const bjarny = await CharacterModel.findOne({ name: "Bjarny", serverIdentifier: this.server.name, serverRegion: this.server.region, lastSeen: { $gt: Date.now() - 15000 } }).lean().exec()
+            const bjarny = await PlayerModel.findOne({ name: "Bjarny", serverIdentifier: this.server.name, serverRegion: this.server.region, lastSeen: { $gt: Date.now() - 15000 } }).lean().exec()
             if (bjarny && Tools.distance(this.character, fixedTo) > Tools.distance(fixedTo, bjarny)) {
                 console.log("WE ARE ASKING BJARNY FOR A MAGIPORT!")
                 await this.sendCM(["Bjarny"], "magiport")

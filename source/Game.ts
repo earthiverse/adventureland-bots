@@ -1,10 +1,7 @@
 import axios from "axios"
 import fs from "fs"
 import { ServerData, CharacterListData } from "./definitions/adventureland-server"
-import { connect, disconnect } from "./database/database.js"
-import { UserModel } from "./database/users/users.model.js"
-import { IUserDocument } from "./database/users/users.types.js"
-import { ServerRegion, ServerIdentifier, GData, CharacterType, ItemName, MapName } from "./definitions/adventureland"
+import { ServerRegion, ServerIdentifier, GData, CharacterType } from "./definitions/adventureland"
 import { Ranger } from "./Ranger.js"
 import { Observer } from "./Observer.js"
 import { Player } from "./Player.js"
@@ -14,17 +11,15 @@ import { Merchant } from "./Merchant.js"
 import { Priest } from "./Priest.js"
 import { Warrior } from "./Warrior.js"
 import { Rogue } from "./Rogue.js"
+import { AuthModel, Database } from "./database/database.js"
 
 // TODO: Move to config file
 export const MAX_PINGS = 100
 export const PING_EVERY_MS = 30000
 export const TIMEOUT = 1000
 
-// Connect to Mongo
-connect()
-
 export class Game {
-    protected static user: IUserDocument
+    protected static user: { userID: string, userAuth: string }
     // TODO: Move this type to type definitions
     protected static servers: { [T in ServerRegion]?: { [T in ServerIdentifier]?: ServerData } } = {}
     // TODO: Move this type to type definitions
@@ -48,7 +43,7 @@ export class Game {
         await this.stopAllObservers()
 
         // Disconnect from the database
-        if (mongo) disconnect()
+        if (mongo) await Database.disconnect()
     }
 
     static async getGData(cache = false): Promise<GData> {
@@ -58,6 +53,7 @@ export class Game {
         try {
             // Check if there's cached data
             this.G = JSON.parse(fs.readFileSync(gFile, "utf8")) as GData
+            return this.G
         } catch (e) {
             // There's no cached data, download it
             console.debug("Updating 'G' data...")
@@ -93,16 +89,18 @@ export class Game {
         }
     }
 
-    static async login(email: string, password: string): Promise<boolean> {
-        // See if we already have a userAuth stored in our database
-        const user = await UserModel.findOne({ email: email, password: password }).exec()
+    static async login(email: string, password?: string, mongo?: string): Promise<boolean> {
+        // Connect to Mongo
+        Database.connect(mongo)
 
-        if (user) {
-            console.log("Using authentication from database...")
-            this.user = user
+        // See if we already have a userAuth stored in our database
+        const find = await AuthModel.findOne({ email: email }).lean().exec()
+        if (find?.userID && find?.userAuth) {
+            console.debug("Using auth data from database...")
+            this.user = { userID: find.userID, userAuth: find.userAuth }
         } else {
             // Login and save the auth
-            console.log("Logging in...")
+            console.debug("Logging in...")
             const login = await axios.post("https://adventure.land/api/signup_or_login", `method=signup_or_login&arguments={"email":"${email}","password":"${password}","only_login":true}`)
             let loginResult
             for (const datum of login.data) {
@@ -112,15 +110,18 @@ export class Game {
                 }
             }
             if (loginResult && loginResult.message == "Logged In!") {
-                console.log("  Logged in!")
+                console.debug("Logged in!")
                 // We successfully logged in
                 // Find the auth cookie and save it
                 for (const cookie of login.headers["set-cookie"]) {
                     const result = /^auth=(.+?);/.exec(cookie)
                     if (result) {
                         // Save our data to the database
-                        this.user = await UserModel.findOneAndUpdate({ email: email }, { password: password, userID: result[1].split("-")[0], userAuth: result[1].split("-")[1] }, { upsert: true, new: true, lean: true, useFindAndModify: true }).exec()
-                        console.log(this.user)
+                        this.user = {
+                            userID: result[1].split("-")[0],
+                            userAuth: result[1].split("-")[1]
+                        }
+                        await AuthModel.updateOne({ email: email }, { userAuth: this.user.userAuth, userID: this.user.userID }, { upsert: true }).lean().exec()
                         break
                     }
                 }
@@ -131,7 +132,7 @@ export class Game {
             } else {
                 // We failed logging in, but we don't know what went wrong
                 console.error(login.data)
-                return Promise.reject()
+                return Promise.reject("Failed logging in.")
             }
         }
 
@@ -139,8 +140,8 @@ export class Game {
     }
 
     static async loginJSONFile(path: string): Promise<boolean> {
-        const data: { email: string, password: string } = JSON.parse(fs.readFileSync(path, "utf8"))
-        return this.login(data.email, data.password)
+        const data: { email: string, password: string, mongo: string } = JSON.parse(fs.readFileSync(path, "utf8"))
+        return this.login(data.email, data.password, data.mongo)
     }
 
     static async startCharacter(cName: string, sRegion: ServerRegion, sID: ServerIdentifier, cType?: CharacterType): Promise<PingCompensatedPlayer> {

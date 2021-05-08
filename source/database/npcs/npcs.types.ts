@@ -1,5 +1,6 @@
 import { Document, Model } from "mongoose"
-import { ServerRegion, MapName, ServerIdentifier } from "../../definitions/adventureland"
+import { ServerRegion, ServerIdentifier } from "../../definitions/adventureland"
+import { MapName } from "../../definitions/adventureland"
 
 export interface INPC {
     name: string
@@ -13,5 +14,5 @@ export interface INPC {
 
 export interface INPCDocument extends INPC, Document { }
 
-export type IEntityModel = Model<INPCDocument>
+export type INPCModel = Model<INPCDocument>
 // export interface IEntityModel extends Model<IUserDocument> { }
