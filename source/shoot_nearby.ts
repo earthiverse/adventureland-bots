@@ -1,7 +1,7 @@
 import AL from "alclient-mongo"
-import { ItemLevelInfo } from "./definitions/bot"
-import { startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startUpdateLoop, startUpgradeLoop } from "./base/general"
-import { startMluckLoop } from "./base/merchant"
+import { ItemLevelInfo } from "./definitions/bot.js"
+import { startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startUpdateLoop, startUpgradeLoop } from "./base/general.js"
+import { startMluckLoop } from "./base/merchant.js"
 
 /** Config */
 const partyLeader = "earthMer"
