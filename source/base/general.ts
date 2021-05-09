@@ -638,7 +638,8 @@ export function startTrackerLoop(bot: AL.Character): void {
 
         setTimeout(async () => { trackerLoop(), CHECK_TRACKER_EVERY_MS })
     }
-    trackerLoop()
+    // Delay startup
+    setTimeout(async () => { trackerLoop(), 10000 })
 }
 
 export function startUpgradeLoop(bot: AL.Character, itemsToSell: ItemLevelInfo = ITEMS_TO_SELL): void {
