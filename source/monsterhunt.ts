@@ -1444,17 +1444,26 @@ async function startRanger(bot: Ranger) {
             }
 
             // Priority #3: If there are new characters, and we don't have (or are about to run out of newcomersblessing), go to that character and get some
-            if (!bot.character.s || !bot.character.s.newcomersblessing || bot.character.s.newcomersblessing) {
+            if (!bot.character.s || !bot.character.s.newcomersblessing) {
                 const newcomer = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, $expr: { $eq: ["$s.newcomersblessing.f", "$name"] } }).lean().exec()
                 if (newcomer) {
                     await bot.smartMove(newcomer, { getWithin: 20 })
-                    await bot.smartMove("newyear_tree", { getWithin: 400 })
                     setTimeout(async () => { moveLoop() }, 500)
                     return
                 }
             }
 
-            // Priority #4: Special monsters
+            // Priority #4: If there are rogues known to give rspeed buffs, and we don't have it, go to that character and get it
+            if (!bot.character.s || !bot.character.s.rspeed) {
+                const friendlyRogue = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, name: { $in: ["copper", "Bjarna"] } }).lean().exec()
+                if (friendlyRogue) {
+                    await bot.smartMove(friendlyRogue, { getWithin: 20 })
+                    setTimeout(async () => { moveLoop() }, 500)
+                    return
+                }
+            }
+
+            // Priority #5: Special monsters
             if (rangerTarget) {
                 cooldown = await strategy[rangerTarget].move()
             }
@@ -2394,17 +2403,26 @@ async function startPriest(bot: Priest) {
             }
 
             // Priority #3: If there are new characters, and we don't have (or are about to run out of newcomersblessing), go to that character and get some
-            if (!bot.character.s || !bot.character.s.newcomersblessing || bot.character.s.newcomersblessing) {
+            if (!bot.character.s || !bot.character.s.newcomersblessing) {
                 const newcomer = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, $expr: { $eq: ["$s.newcomersblessing.f", "$name"] } }).lean().exec()
                 if (newcomer) {
                     await bot.smartMove(newcomer, { getWithin: 20 })
-                    await bot.smartMove("newyear_tree", { getWithin: 400 })
                     setTimeout(async () => { moveLoop() }, 500)
                     return
                 }
             }
 
-            // Priority #4: Special monsters
+            // Priority #4: If there are rogues known to give rspeed buffs, and we don't have it, go to that character and get it
+            if (!bot.character.s || !bot.character.s.rspeed) {
+                const friendlyRogue = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, name: { $in: ["copper", "Bjarna"] } }).lean().exec()
+                if (friendlyRogue) {
+                    await bot.smartMove(friendlyRogue, { getWithin: 20 })
+                    setTimeout(async () => { moveLoop() }, 500)
+                    return
+                }
+            }
+
+            // Priority #5: Special monsters
             if (priestTarget) {
                 cooldown = await strategy[priestTarget].move()
             }
@@ -3513,17 +3531,26 @@ async function startWarrior(bot: Warrior) {
             }
 
             // Priority #3: If there are new characters, and we don't have (or are about to run out of newcomersblessing), go to that character and get some
-            if (!bot.character.s || !bot.character.s.newcomersblessing || bot.character.s.newcomersblessing) {
+            if (!bot.character.s || !bot.character.s.newcomersblessing) {
                 const newcomer = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, $expr: { $eq: ["$s.newcomersblessing.f", "$name"] } }).lean().exec()
                 if (newcomer) {
                     await bot.smartMove(newcomer, { getWithin: 20 })
-                    await bot.smartMove("newyear_tree", { getWithin: 400 })
                     setTimeout(async () => { moveLoop() }, 500)
                     return
                 }
             }
 
-            // Priority #4: Special monsters
+            // Priority #4: If there are rogues known to give rspeed buffs, and we don't have it, go to that character and get it
+            if (!bot.character.s || !bot.character.s.rspeed) {
+                const friendlyRogue = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, name: { $in: ["copper", "Bjarna"] } }).lean().exec()
+                if (friendlyRogue) {
+                    await bot.smartMove(friendlyRogue, { getWithin: 20 })
+                    setTimeout(async () => { moveLoop() }, 500)
+                    return
+                }
+            }
+
+            // Priority #5: Special monsters
             if (warriorTarget) {
                 cooldown = await strategy[warriorTarget].move()
             }
