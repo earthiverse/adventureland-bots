@@ -59,7 +59,7 @@ async function startRanger(bot: AL.Ranger) {
             const targets: AL.Entity[] = []
             for (const [, entity] of bot.entities) {
                 if (entity.type !== "crab") continue // Not a crab
-                if (!bot.partyData?.list?.includes(entity.target)) continue // Won't get credit for kill
+                if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
                 if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
                 if (entity.willDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
 
@@ -147,7 +147,7 @@ async function startMage(bot: AL.Mage) {
         try {
             for (const [, entity] of bot.entities) {
                 if (entity.type !== "crab") continue // Not a crab
-                if (!bot.partyData?.list?.includes(entity.target)) continue // Won't get credit for kill
+                if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
                 if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
                 if (entity.willDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
 
