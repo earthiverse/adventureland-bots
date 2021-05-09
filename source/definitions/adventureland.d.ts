@@ -805,6 +805,7 @@ export type ConditionName =
 
 export type EmotionName =
   | "drop_egg"
+  | "hearts_single"
 
 export type ItemName =
   | "5bucks"

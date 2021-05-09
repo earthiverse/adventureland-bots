@@ -192,4 +192,6 @@ export const SPECIAL_MONSTERS: MonsterName[] = ["cutebee", "dragold", "fvampire"
 
 export const USE_BJARNY_MAGIPORT = true
 
+export const FRIENDLY_ROGUES = ["copper", "Bjarna", "RisingVanir"]
+
 export const SEND_ALDATA_INFO = false

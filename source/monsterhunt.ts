@@ -1,4 +1,4 @@
-import { PLAYER_GOLD_TO_HOLD, ITEMS_TO_BUY, ITEMS_TO_EXCHANGE, ITEMS_TO_SELL, MERCHANT_ITEMS_TO_HOLD, NPC_INTERACTION_DISTANCE, PRIEST_ITEMS_TO_HOLD, RANGER_ITEMS_TO_HOLD, SPECIAL_MONSTERS, WARRIOR_ITEMS_TO_HOLD, MERCHANT_GOLD_TO_HOLD } from "./constants.js"
+import { PLAYER_GOLD_TO_HOLD, ITEMS_TO_BUY, ITEMS_TO_EXCHANGE, ITEMS_TO_SELL, MERCHANT_ITEMS_TO_HOLD, NPC_INTERACTION_DISTANCE, PRIEST_ITEMS_TO_HOLD, RANGER_ITEMS_TO_HOLD, SPECIAL_MONSTERS, WARRIOR_ITEMS_TO_HOLD, MERCHANT_GOLD_TO_HOLD, FRIENDLY_ROGUES } from "./constants.js"
 import { EntityData, HitData, PlayerData } from "./definitions/adventureland-server.js"
 import { BankPackType, ItemInfo, ItemName, MonsterName, ServerIdentifier, ServerRegion, SlotType, TradeSlotType } from "./definitions/adventureland.js"
 import { Strategy } from "./definitions/bot.js"
@@ -1406,6 +1406,7 @@ async function startRanger(bot: Ranger) {
     }
     attackLoop()
 
+    const friendlyRogues = FRIENDLY_ROGUES
     async function moveLoop() {
         let cooldown = 10
 
@@ -1455,9 +1456,11 @@ async function startRanger(bot: Ranger) {
 
             // Priority #4: If there are rogues known to give rspeed buffs, and we don't have it, go to that character and get it
             if (!bot.character.s || !bot.character.s.rspeed) {
-                const friendlyRogue = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, name: { $in: ["copper", "Bjarna"] } }).lean().exec()
+                const friendlyRogue = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, name: { $in: friendlyRogues } }).lean().exec()
                 if (friendlyRogue) {
                     await bot.smartMove(friendlyRogue, { getWithin: 20 })
+                    if (!bot.character.s.rspeed) await sleep(2500)
+                    if (!bot.character.s.rspeed) friendlyRogues.splice(friendlyRogues.indexOf(friendlyRogue.id))
                     setTimeout(async () => { moveLoop() }, 500)
                     return
                 }
@@ -2414,7 +2417,7 @@ async function startPriest(bot: Priest) {
 
             // Priority #4: If there are rogues known to give rspeed buffs, and we don't have it, go to that character and get it
             if (!bot.character.s || !bot.character.s.rspeed) {
-                const friendlyRogue = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, name: { $in: ["copper", "Bjarna"] } }).lean().exec()
+                const friendlyRogue = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, name: { $in: ["copper", "Bjarna", "RisingVanir"] } }).lean().exec()
                 if (friendlyRogue) {
                     await bot.smartMove(friendlyRogue, { getWithin: 20 })
                     setTimeout(async () => { moveLoop() }, 500)
@@ -3542,7 +3545,7 @@ async function startWarrior(bot: Warrior) {
 
             // Priority #4: If there are rogues known to give rspeed buffs, and we don't have it, go to that character and get it
             if (!bot.character.s || !bot.character.s.rspeed) {
-                const friendlyRogue = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, name: { $in: ["copper", "Bjarna"] } }).lean().exec()
+                const friendlyRogue = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, name: { $in: ["copper", "Bjarna", "RisingVanir"] } }).lean().exec()
                 if (friendlyRogue) {
                     await bot.smartMove(friendlyRogue, { getWithin: 20 })
                     setTimeout(async () => { moveLoop() }, 500)
@@ -3649,13 +3652,12 @@ async function startMerchant(bot: Merchant) {
     async function emoteLoop() {
         try {
             if (bot.socket.disconnected) return
-
-            bot.socket.emit("emotion", { name: "drop_egg" })
+            await bot.emote("drop_egg")
         } catch (e) {
             console.error(e)
         }
 
-        setTimeout(async () => { emoteLoop() }, 2000 + Math.min(...bot.pings))
+        setTimeout(async () => { emoteLoop() }, 2000)
     }
     emoteLoop()
 

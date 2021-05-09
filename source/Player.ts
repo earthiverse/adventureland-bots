@@ -1,5 +1,5 @@
-import { AchievementProgressData, CharacterData, ServerData, ActionData, ChestOpenedData, DeathData, DisappearData, ChestData, EntitiesData, EvalData, GameResponseData, HitData, NewMapData, PartyData, StartData, WelcomeData, LoadedData, EntityData, PlayerData, AuthData, DisappearingTextData, GameLogData, UIData, UpgradeData, QData } from "./definitions/adventureland-server"
-import { GData, SkillName, BankInfo, ConditionName, MapName, ItemInfo, ItemName, SlotType, MonsterName, SInfo, IPosition, NPCType, BankPackType, TradeSlotType } from "./definitions/adventureland"
+import { AchievementProgressData, CharacterData, ServerData, ActionData, ChestOpenedData, DeathData, DisappearData, ChestData, EntitiesData, EvalData, GameResponseData, HitData, NewMapData, PartyData, StartData, WelcomeData, LoadedData, EntityData, PlayerData, AuthData, DisappearingTextData, GameLogData, UIData, UpgradeData, QData, EmotionData } from "./definitions/adventureland-server"
+import { GData, SkillName, BankInfo, ConditionName, MapName, ItemInfo, ItemName, SlotType, MonsterName, SInfo, IPosition, NPCType, BankPackType, TradeSlotType, EmotionName } from "./definitions/adventureland"
 import { Tools } from "./Tools.js"
 import { Pathfinder } from "./Pathfinder.js"
 import { LinkData, NodeData } from "./definitions/pathfinder"
@@ -1383,6 +1383,53 @@ export class Player extends Observer {
 
         this.socket.emit("bank", { operation: "swap", pack: bankPack, str: bankSlot, inv: inventoryPos })
         return swapped
+    }
+
+
+    /**
+     * Perform an emotion
+     *
+     * @param {EmotionName} emotionName
+     * @return {*}  {Promise<void>}
+     * @memberof Character
+     */
+    public emote(emotionName: EmotionName): Promise<void> {
+        if (!this.character.emx[emotionName]) return Promise.reject(`We don't have the emotion '${emotionName}'`)
+
+        const emoted = new Promise<void>((resolve, reject) => {
+            const failCheck = (data: GameResponseData) => {
+                if (typeof data == "string") {
+                    if (data == "emotion_cooldown") {
+                        this.socket.removeListener("game_response", failCheck)
+                        this.socket.removeListener("emotion", successCheck)
+                        reject()
+                    } else if (data == "emotion_cant") {
+                        this.socket.removeListener("game_response", failCheck)
+                        this.socket.removeListener("emotion", successCheck)
+                        reject()
+                    }
+                }
+            }
+
+            const successCheck = (data: EmotionData) => {
+                if (data.name == emotionName && data.player == this.character.id) {
+                    this.socket.removeListener("game_response", failCheck)
+                    this.socket.removeListener("emotion", successCheck)
+                    resolve()
+                }
+            }
+
+            setTimeout(() => {
+                this.socket.removeListener("game_response", failCheck)
+                this.socket.removeListener("emotion", successCheck)
+                reject(`emote timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.socket.on("game_response", failCheck)
+            this.socket.on("emotion", successCheck)
+        })
+
+        this.socket.emit("emotion", { name: emotionName })
+        return emoted
     }
 
     public equip(inventoryPos: number, equipSlot?: SlotType): Promise<void> {
