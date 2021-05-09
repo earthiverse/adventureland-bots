@@ -489,6 +489,7 @@ export function startPartyLoop(bot: AL.Character, leader: string): void {
 }
 
 export function startPontyLoop(bot: AL.Character, itemsToBuy: AL.ItemName[] = ITEMS_TO_BUY): void {
+    const ponty = bot.locateNPC("secondhands")[0]
     async function pontyLoop() {
         try {
             if (bot.socket.disconnected) {
@@ -496,7 +497,6 @@ export function startPontyLoop(bot: AL.Character, itemsToBuy: AL.ItemName[] = IT
                 return
             }
 
-            const ponty = bot.locateNPC("secondhands")[0]
             if (AL.Tools.distance(bot, ponty) < AL.Constants.NPC_INTERACTION_DISTANCE) {
                 const pontyData = await bot.getPontyItems()
                 for (const item of pontyData) {
