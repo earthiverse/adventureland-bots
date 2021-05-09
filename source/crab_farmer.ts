@@ -35,6 +35,7 @@ async function startShared(bot: AL.Character) {
     startLootLoop(bot)
 
     if (bot.id == partyLeader) {
+        startTrackerLoop(bot)
         bot.socket.on("request", (data: { name: string }) => {
             if (partyMembers.includes(data.name)) {
                 bot.acceptPartyRequest(data.name)
@@ -56,8 +57,6 @@ async function startShared(bot: AL.Character) {
 }
 
 async function startRanger(bot: AL.Ranger) {
-    startTrackerLoop(bot)
-
     async function attackLoop() {
         try {
             if (bot.socket.disconnected) {
