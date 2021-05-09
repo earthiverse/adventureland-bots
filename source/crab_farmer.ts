@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { LOOP_MS, startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startUpdateLoop, startUpgradeLoop } from "./base/general.js"
+import { LOOP_MS, startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpdateLoop, startUpgradeLoop } from "./base/general.js"
 import { MERCHANT_GOLD_TO_HOLD, MERCHANT_ITEMS_TO_HOLD, startMluckLoop } from "./base/merchant.js"
 
 /** Config */
@@ -44,6 +44,7 @@ async function startShared(bot: AL.Character) {
         startPartyLoop(bot, partyLeader)
     }
 
+    startPontyLoop(bot)
     startSellLoop(bot)
 
     if (bot.ctype !== "merchant") {
@@ -55,7 +56,7 @@ async function startShared(bot: AL.Character) {
 }
 
 async function startRanger(bot: AL.Ranger) {
-    startElixirLoop(bot, "bunnyelixir")
+    startTrackerLoop(bot)
 
     async function attackLoop() {
         try {
@@ -162,7 +163,7 @@ async function startMage(bot: AL.Mage) {
                 setTimeout(async () => { attackLoop() }, 10)
                 return
             }
-            
+
             for (const [, entity] of bot.entities) {
                 if (entity.type !== "crab") continue // Not a crab
                 if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill

@@ -2,7 +2,8 @@ import AL from "alclient-mongo"
 import { ItemLevelInfo } from "../definitions/bot"
 
 export const LOOP_MS = 100
-export const CHECK_PONTY_EVERY_MS = 10_000
+export const CHECK_PONTY_EVERY_MS = 10_000 /** 10 seconds */
+export const CHECK_TRACKER_EVERY_MS = 600_000 /** 10 minutes */
 
 export const GOLD_TO_HOLD = 5_000_000
 
@@ -620,6 +621,24 @@ export function startSendStuffDenylistLoop(bot: AL.Character, sendTo: AL.Charact
         setTimeout(async () => { sendStuffLoop() }, LOOP_MS)
     }
     sendStuffLoop()
+}
+
+export function startTrackerLoop(bot: AL.Character): void {
+    async function trackerLoop() {
+        if (bot.socket.disconnected) {
+            setTimeout(async () => { trackerLoop() }, 10)
+            return
+        }
+
+        try {
+            await bot.getTrackerData()
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { trackerLoop(), CHECK_TRACKER_EVERY_MS })
+    }
+    trackerLoop()
 }
 
 export function startUpgradeLoop(bot: AL.Character, itemsToSell: ItemLevelInfo = ITEMS_TO_SELL): void {
