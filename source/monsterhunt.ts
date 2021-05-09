@@ -2366,6 +2366,7 @@ async function startPriest(bot: Priest) {
     }
     sendItemLoop()
 
+    const friendlyRogues = FRIENDLY_ROGUES
     async function moveLoop() {
         let cooldown = 10
 
@@ -3496,6 +3497,7 @@ async function startWarrior(bot: Warrior) {
     }
     sendItemLoop()
 
+    const friendlyRogues = FRIENDLY_ROGUES
     async function moveLoop() {
         let cooldown = 10
 
