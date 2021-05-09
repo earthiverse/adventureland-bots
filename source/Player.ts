@@ -9,7 +9,7 @@ import { Observer } from "./Observer.js"
 import { MAX_PINGS, TIMEOUT } from "./Game.js"
 import { Mage } from "./Mage.js"
 import { PlayerModel } from "./database/players/players.model.js"
-import { Database } from "./database/Database"
+import { Database } from "./database/Database.js"
 
 
 export class Player extends Observer {
