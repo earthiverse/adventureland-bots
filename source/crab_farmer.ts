@@ -35,7 +35,6 @@ async function startShared(bot: AL.Character) {
     startLootLoop(bot)
 
     if (bot.id == partyLeader) {
-        startTrackerLoop(bot)
         bot.socket.on("request", async (data: { name: string }) => {
             if (partyMembers.includes(data.name)) {
                 await bot.acceptPartyRequest(data.name)
@@ -204,6 +203,7 @@ async function startMage(bot: AL.Mage) {
 
 async function startMerchant(bot: AL.Merchant) {
     startMluckLoop(bot)
+    startTrackerLoop(bot)
 
     let lastBankVisit = Number.MIN_VALUE
     async function moveLoop() {
