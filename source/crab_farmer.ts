@@ -36,9 +36,9 @@ async function startShared(bot: AL.Character) {
 
     if (bot.id == partyLeader) {
         startTrackerLoop(bot)
-        bot.socket.on("request", (data: { name: string }) => {
+        bot.socket.on("request", async (data: { name: string }) => {
             if (partyMembers.includes(data.name)) {
-                bot.acceptPartyRequest(data.name)
+                await bot.acceptPartyRequest(data.name)
             }
         })
     } else {
