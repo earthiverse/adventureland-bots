@@ -451,11 +451,9 @@ export function startLootLoop(bot: AL.Character): void {
                 return
             }
 
-            let looted = 0
             for (const [, chest] of bot.chests) {
                 if (AL.Tools.distance(bot, chest) > 800) continue
                 await bot.openChest(chest.id)
-                if (looted++ >= 5) break
             }
         } catch (e) {
             console.error(e)
