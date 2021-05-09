@@ -285,16 +285,12 @@ export function startExchangeLoop(bot: AL.Character, itemsToExchange: AL.ItemNam
                 return
             }
 
-            // TODO: Make bot.canExchange() function and replace the computer check
-            // TODO: Add a check to see if we are currently exchanging to that function
-            if (bot.hasItem("computer") && bot.esize > 10) {
+            if (bot.esize > 10) {
                 for (let i = 0; i < bot.items.length; i++) {
                     const item = bot.items[i]
                     if (!item) continue
                     if (!itemsToExchange.includes(item.name)) continue // Don't want / can't exchange
-
-                    const gInfo = bot.G.items[item.name]
-                    if (gInfo.e !== undefined && item.q < gInfo.e) continue // Don't have enough to exchange
+                    if (!bot.canExchange(item.name)) continue // Can't exchange.
 
                     await bot.exchange(i)
                 }
@@ -446,7 +442,7 @@ export function startSellLoop(bot: AL.Character, itemsToSell: ItemLevelInfo): vo
                 return
             }
 
-            if (bot.hasItem("computer")) {
+            if (bot.canSell()) {
                 // Sell things
                 for (let i = 0; i < bot.items.length; i++) {
                     const item = bot.items[i]

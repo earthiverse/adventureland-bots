@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import AL from "alclient-mongo"
-import { startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "./base/general.js"
+import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "./base/general.js"
 import { startMluckLoop } from "./base/merchant.js"
 import { startPartyHealLoop } from "./base/priest.js"
 
@@ -175,34 +175,8 @@ async function baseLoops(bot: AL.PingCompensatedCharacter) {
     startBuyLoop(bot, ITEMS_TO_BUY)
     startCompoundLoop(bot, ITEMS_TO_SELL)
     startElixirLoop(bot, "elixirluck")
-
-    // async function exchangeLoop() {
-    //     try {
-    //         // TODO: Make bot.canExchange() function and replace the following line with that
-    //         const hasComputer = bot.locateItem("computer") !== undefined
-
-    //         if (hasComputer
-    //             && bot.gold > 50000000) {
-    //             for (let i = 0; i < bot.items.length; i++) {
-    //                 if (bot.esize <= 1) break // We are full
-
-    //                 const item = bot.items[i]
-    //                 if (!item) continue
-    //                 if (!ITEMS_TO_EXCHANGE.includes(item.name)) continue // Don't want / can't exchange
-
-    //                 const gInfo = bot.G.items[item.name]
-    //                 if (gInfo.e !== undefined && item.q < gInfo.e) continue // Don't have enough to exchange
-
-    //                 await bot.exchange(i)
-    //             }
-    //         }
-    //     } catch (e) {
-    //         console.error(e)
-    //     }
-
-    //     setTimeout(async () => { exchangeLoop() }, 250)
-    // }
-    // exchangeLoop()
+    
+    // startExchangeLoop(bot, ITEMS_TO_EXCHANGE)
 
     startHealLoop(bot)
     startLootLoop(bot)
