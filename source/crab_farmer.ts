@@ -203,7 +203,6 @@ async function startMage(bot: AL.Mage) {
 
 async function startMerchant(bot: AL.Merchant) {
     startMluckLoop(bot)
-    startTrackerLoop(bot)
 
     let lastBankVisit = Number.MIN_VALUE
     async function moveLoop() {
