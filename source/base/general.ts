@@ -554,6 +554,11 @@ export function startSellLoop(bot: AL.Character, itemsToSell: ItemLevelInfo = IT
 export function startSendStuffAllowlistLoop(bot: AL.Character, sendTo: AL.Character, itemsToSend: AL.ItemName[] = [], goldToHold = GOLD_TO_HOLD): void {
     async function sendStuffLoop() {
         try {
+            if (bot.socket.disconnected) {
+                setTimeout(async () => { sendStuffLoop() }, 10)
+                return
+            }
+
             if (sendTo.isFull()) {
                 setTimeout(async () => { sendStuffLoop() }, LOOP_MS)
                 return
@@ -588,6 +593,11 @@ export function startSendStuffAllowlistLoop(bot: AL.Character, sendTo: AL.Charac
 export function startSendStuffDenylistLoop(bot: AL.Character, sendTo: AL.Character, itemsToHold: AL.ItemName[] = ITEMS_TO_HOLD, goldToHold = 1_000_000): void {
     async function sendStuffLoop() {
         try {
+            if (bot.socket.disconnected) {
+                setTimeout(async () => { sendStuffLoop() }, 10)
+                return
+            }
+
             if (sendTo.isFull()) {
                 setTimeout(async () => { sendStuffLoop() }, 10000)
                 return

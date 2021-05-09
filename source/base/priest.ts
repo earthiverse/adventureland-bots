@@ -1,8 +1,14 @@
 import AL from "alclient-mongo"
+import { LOOP_MS } from "./general"
 
 export function startPartyHealLoop(bot: AL.Priest, members: AL.Character[]): void {
     async function partyHealLoop() {
         try {
+            if (bot.socket.disconnected) {
+                setTimeout(async () => { partyHealLoop() }, 10)
+                return
+            }
+
             if (bot.c.town) {
                 setTimeout(async () => { partyHealLoop() }, bot.c.town.ms)
                 return
@@ -23,7 +29,7 @@ export function startPartyHealLoop(bot: AL.Priest, members: AL.Character[]): voi
             console.error(e)
         }
 
-        setTimeout(async () => { partyHealLoop() }, Math.max(bot.getCooldown("partyheal"), 100))
+        setTimeout(async () => { partyHealLoop() }, Math.max(bot.getCooldown("partyheal"), LOOP_MS))
     }
     partyHealLoop()
 }

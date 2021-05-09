@@ -56,6 +56,11 @@ async function startRanger(bot: AL.Ranger) {
 
     async function attackLoop() {
         try {
+            if (bot.socket.disconnected) {
+                setTimeout(async () => { attackLoop() }, 10)
+                return
+            }
+
             const targets: AL.Entity[] = []
             for (const [, entity] of bot.entities) {
                 if (entity.type !== "crab") continue // Not a crab
@@ -132,6 +137,11 @@ async function startRanger(bot: AL.Ranger) {
 
     async function moveLoop() {
         try {
+            if (bot.socket.disconnected) {
+                setTimeout(async () => { moveLoop() }, 10)
+                return
+            }
+
             await bot.smartMove(location)
         } catch (e) {
             console.error(e)
@@ -145,6 +155,11 @@ async function startRanger(bot: AL.Ranger) {
 async function startMage(bot: AL.Mage) {
     async function attackLoop() {
         try {
+            if (bot.socket.disconnected) {
+                setTimeout(async () => { attackLoop() }, 10)
+                return
+            }
+            
             for (const [, entity] of bot.entities) {
                 if (entity.type !== "crab") continue // Not a crab
                 if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
@@ -165,6 +180,11 @@ async function startMage(bot: AL.Mage) {
 
     async function moveLoop() {
         try {
+            if (bot.socket.disconnected) {
+                setTimeout(async () => { moveLoop() }, 10)
+                return
+            }
+
             if (bot.id == mage1Name) {
                 await bot.smartMove({ map: location.map, x: location.x + 50, y: location.y + 50 })
             } else {
