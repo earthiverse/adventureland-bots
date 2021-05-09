@@ -1460,7 +1460,7 @@ async function startRanger(bot: Ranger) {
                 if (friendlyRogue) {
                     await bot.smartMove(friendlyRogue, { getWithin: 20 })
                     if (!bot.character.s.rspeed) await sleep(2500)
-                    if (!bot.character.s.rspeed) friendlyRogues.splice(friendlyRogues.indexOf(friendlyRogue.id))
+                    if (!bot.character.s.rspeed) friendlyRogues.splice(friendlyRogues.indexOf(friendlyRogue.id), 1)
                     setTimeout(async () => { moveLoop() }, 500)
                     return
                 }
@@ -2417,9 +2417,11 @@ async function startPriest(bot: Priest) {
 
             // Priority #4: If there are rogues known to give rspeed buffs, and we don't have it, go to that character and get it
             if (!bot.character.s || !bot.character.s.rspeed) {
-                const friendlyRogue = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, name: { $in: ["copper", "Bjarna", "RisingVanir"] } }).lean().exec()
+                const friendlyRogue = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, name: { $in: friendlyRogues } }).lean().exec()
                 if (friendlyRogue) {
                     await bot.smartMove(friendlyRogue, { getWithin: 20 })
+                    if (!bot.character.s.rspeed) await sleep(2500)
+                    if (!bot.character.s.rspeed) friendlyRogues.splice(friendlyRogues.indexOf(friendlyRogue.id), 1)
                     setTimeout(async () => { moveLoop() }, 500)
                     return
                 }
@@ -3545,9 +3547,11 @@ async function startWarrior(bot: Warrior) {
 
             // Priority #4: If there are rogues known to give rspeed buffs, and we don't have it, go to that character and get it
             if (!bot.character.s || !bot.character.s.rspeed) {
-                const friendlyRogue = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, name: { $in: ["copper", "Bjarna", "RisingVanir"] } }).lean().exec()
+                const friendlyRogue = await PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, name: { $in: friendlyRogues } }).lean().exec()
                 if (friendlyRogue) {
                     await bot.smartMove(friendlyRogue, { getWithin: 20 })
+                    if (!bot.character.s.rspeed) await sleep(2500)
+                    if (!bot.character.s.rspeed) friendlyRogues.splice(friendlyRogues.indexOf(friendlyRogue.id), 1)
                     setTimeout(async () => { moveLoop() }, 500)
                     return
                 }

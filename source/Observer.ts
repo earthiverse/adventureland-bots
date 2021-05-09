@@ -135,7 +135,7 @@ export class Observer {
                     npcUpdates.push({
                         updateOne: {
                             filter: { serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion, name: player.id },
-                            update: { map: player.map, x: player.x, y: player.y, lastSeen: Date.now() },
+                            update: { map: data.map, x: player.x, y: player.y, lastSeen: Date.now() },
                             upsert: true
                         }
                     })
@@ -143,7 +143,7 @@ export class Observer {
                     playerUpdates.push({
                         updateOne: {
                             filter: { name: player.id },
-                            update: { serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion, map: player.map, x: player.x, y: player.y, s: player.s, lastSeen: Date.now() },
+                            update: { serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion, map: data.map, x: player.x, y: player.y, s: player.s, lastSeen: Date.now() },
                             upsert: true
                         }
                     })
@@ -159,13 +159,14 @@ export class Observer {
             if (!SPECIAL_MONSTERS.includes(entity.type)) continue
 
             if (entity.hp == undefined) entity.hp = this.G.monsters[entity.type].hp
+            if (entity.level == undefined) entity.level = 1
 
             const lastUpdate = Database.lastMongoUpdate.get(entity.id)
             if (!lastUpdate || Date.now() > lastUpdate.getTime() + 5000) {
                 entityUpdates.push({
                     updateOne: {
                         filter: { serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion, name: entity.id, type: entity.type },
-                        update: { map: entity.map, x: entity.x, y: entity.y, level: entity.level, hp: entity.hp, target: entity.target, lastSeen: Date.now() },
+                        update: { map: data.map, x: entity.x, y: entity.y, level: entity.level, hp: entity.hp, target: entity.target, lastSeen: Date.now() },
                         upsert: true
                     }
                 })
