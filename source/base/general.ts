@@ -17,7 +17,7 @@ export const ITEMS_TO_HOLD: AL.ItemName[] = [
 
 export const ITEMS_TO_EXCHANGE: AL.ItemName[] = [
     // General exchangables
-    "5bucks", "gem0", "gem1", 
+    "5bucks", "gem0", "gem1",
     // Gem Fragments for t2 amulets
     "gemfragment",
     // Seashells for potions
@@ -476,7 +476,7 @@ export function startPartyLoop(bot: AL.Character, leader: string): void {
 
             if (!bot.party) {
                 bot.sendPartyRequest(leader)
-            } else if (bot.partyData?.list.includes(leader)) {
+            } else if (bot?.partyData?.list && !bot.partyData.list.includes(leader)) {
                 bot.leaveParty()
                 bot.sendPartyRequest(leader)
             }
