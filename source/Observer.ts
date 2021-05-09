@@ -44,7 +44,7 @@ export class Observer {
 
         this.socket.on("death", async (data: DeathData) => {
             try {
-                await EntityModel.deleteOne({ name: data.id }).exec()
+                await EntityModel.deleteOne({ serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion, name: data.id }).exec()
             } catch (e) {
                 // There probably wasn't an entity with that ID (this will happen a lot)
             }

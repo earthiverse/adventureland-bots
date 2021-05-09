@@ -9,6 +9,7 @@ import { Observer } from "./Observer.js"
 import { MAX_PINGS, TIMEOUT } from "./Game.js"
 import { Mage } from "./Mage.js"
 import { PlayerModel } from "./database/players/players.model.js"
+import { Database } from "./database/Database"
 
 
 export class Player extends Observer {
@@ -402,6 +403,7 @@ export class Player extends Observer {
             // Erase all of the entities
             this.entities.clear()
             this.players.clear()
+            Database.lastMongoUpdate.clear()
         } else if (this.character) {
             // Update all positions
             this.updatePositions()
