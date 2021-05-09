@@ -1,5 +1,18 @@
 import AL from "alclient-mongo"
-import { LOOP_MS } from "./general.js"
+import { ITEMS_TO_HOLD, LOOP_MS } from "./general.js"
+
+export const MERCHANT_GOLD_TO_HOLD = 100_000_000
+export const MERCHANT_ITEMS_TO_HOLD: AL.ItemName[] = [
+    ...ITEMS_TO_HOLD,
+    // MH Tokens
+    "monstertoken",
+    // Scrolls
+    "cscroll0", "cscroll1", "cscroll2", "cscroll3", "scroll0", "scroll1", "scroll2", "scroll3", "scroll4", "strscroll", "intscroll", "dexscroll",
+    // Fishing Rod and Pickaxe
+    "pickaxe", "rod",
+    // Main Items
+    "dartgun", "wbook1"
+]
 
 export function startMluckLoop(bot: AL.Merchant): void {
     async function mluckLoop() {

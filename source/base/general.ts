@@ -4,6 +4,87 @@ import { ItemLevelInfo } from "../definitions/bot"
 export const LOOP_MS = 100
 export const CHECK_PONTY_EVERY_MS = 10_000
 
+export const GOLD_TO_HOLD = 5_000_000
+
+export const ITEMS_TO_HOLD: AL.ItemName[] = [
+    // Things we keep on ourselves
+    "computer", "tracker", "stand0", "xptome",
+    // Boosters
+    "luckbooster", "goldbooster", "xpbooster",
+    // Potions
+    "hpot0", "hpot1", "mpot0", "mpot1"
+]
+
+export const ITEMS_TO_EXCHANGE: AL.ItemName[] = [
+    // General exchangables
+    "5bucks", "gem0", "gem1", 
+    // Gem Fragments for t2 amulets
+    "gemfragment",
+    // Seashells for potions
+    "seashell",
+    // Leather for capes
+    "leather",
+    // Christmas
+    "candycane", "mistletoe", "ornament",
+    // Halloween
+    "candy0", "candy1",
+    // Lunar New Year's
+    "greenenvelope", "redenvelope", "redenvelopev2", "redenvelopev3",
+    // Easter
+    "basketofeggs",
+    // Boxes
+    "armorbox", "bugbountybox", "gift0", "gift1", "mysterybox", "weaponbox", "xbox"
+]
+export const ITEMS_TO_BUY: AL.ItemName[] = [
+    // Exchangeables
+    ...ITEMS_TO_EXCHANGE,
+    // Belts
+    "dexbelt", "intbelt", "strbelt",
+    // Rings
+    "cring", "ctristone", "dexring", "goldring", "intring", "ringofluck", "strring", "suckerpunch", "trigger", "tristone", "vring",
+    // Earrings
+    "cearring", "dexearring", "intearring", "lostearring", "strearring",
+    // Amulets
+    "amuletofm", "dexamulet", "intamulet", "snring", "stramulet", "t2dexamulet", "t2intamulet", "t2stramulet",
+    // Orbs
+    "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull",
+    // Shields
+    "t2quiver", "lantern", "mshield", "quiver", "sshield", "xshield",
+    // Capes
+    "angelwings", "bcape", "cape", "ecape", "stealthcape", "vcape",
+    // Shoes
+    "eslippers", "hboots", "mrnboots", "mwboots", "shoes1", "vboots", "wingedboots", "wshoes", "xboots",
+    // Pants
+    "frankypants", "hpants", "mrnpants", "mwpants", "pants1", "starkillers", "wbreeches", "xpants",
+    // Armor
+    "cdragon", "coat1", "harmor", "mcape", "mrnarmor", "mwarmor", "tshirt0", "tshirt1", "tshirt2", "tshirt3", "tshirt4", "tshirt6", "tshirt7", "tshirt8", "tshirt88", "tshirt9", "vattire", "warpvest", "wattire", "xarmor",
+    // Helmets
+    "cyber", "eears", "fury", "helmet1", "hhelmet", "mchat", "mmhat", "mphat", "mrnhat", "mwhelmet", "oxhelmet", "partyhat", "rednose", "wcap", "xhelmet",
+    // Gloves
+    "gloves1", "goldenpowerglove", "handofmidas", "hgloves", "mpxgloves", "mrngloves", "mwgloves", "poker", "powerglove", "vgloves", "wgloves", "xgloves",
+    // Good weapons
+    "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "firebow", "frostbow", "froststaff", "gbow", "harbringer", "heartwood", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow", "t3bow", "wblade",
+    // Things we can exchange / craft with
+    "ascale", "bfur", "cscale", "electronics", "feather0", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", /*"networkcard",*/ "platinumingot", "platinumnugget", "pleather", "snakefang",
+    // Things to make xbox
+    "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8",
+    // Things to make easter basket
+    "egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8",
+    // Essences
+    "essenceofether", "essenceoffire", "essenceoffrost", "essenceofgreed", "essenceoflife", "essenceofnature",
+    // Potions & consumables
+    "bunnyelixir", "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate", "vblood",
+    // High level scrolls
+    "cscroll3", "scroll3", "scroll4", "forscroll", "luckscroll", "manastealscroll",
+    // Misc. Things
+    "bottleofxp", "bugbountybox", "computer", "cxjar", "monstertoken", "poison", "snakeoil"
+]
+
+export const ITEMS_TO_SELL: ItemLevelInfo = {
+    // Default clothing
+    "shoes": 2, "pants": 2, "coat": 2, "helmet": 2, "gloves": 2,
+}
+
 /**
  * These are cooperative entities that don't spawn very often.
  * We only want to do them when others are attacking them, too.
@@ -61,7 +142,7 @@ export async function getPriority2Entities(bot: AL.Character): Promise<AL.IEntit
         { $sort: { "__order": 1 } }]).exec()
 }
 
-export function startBuyLoop(bot: AL.Character, itemsToBuy: AL.ItemName[] = [], items: [AL.ItemName, number][] = [["hpot1", 1000], ["mpot1", 1000], ["xptome", 1]],): void {
+export function startBuyLoop(bot: AL.Character, itemsToBuy: AL.ItemName[] = ITEMS_TO_BUY, items: [AL.ItemName, number][] = [["hpot1", 1000], ["mpot1", 1000], ["xptome", 1]],): void {
     const pontyLocations = bot.locateNPC("secondhands")
     let lastPonty = 0
     async function buyLoop() {
@@ -138,7 +219,7 @@ export function startBuyLoop(bot: AL.Character, itemsToBuy: AL.ItemName[] = [], 
     buyLoop()
 }
 
-export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo): void {
+export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo = ITEMS_TO_SELL): void {
     async function compoundLoop() {
         try {
             if (bot.socket.disconnected) {
@@ -408,7 +489,7 @@ export function startPartyLoop(bot: AL.Character, leader: string): void {
     partyLoop()
 }
 
-export function startPontyLoop(bot: AL.Character, itemsToBuy: AL.ItemName[]): void {
+export function startPontyLoop(bot: AL.Character, itemsToBuy: AL.ItemName[] = ITEMS_TO_BUY): void {
     async function pontyLoop() {
         try {
             if (bot.socket.disconnected) {
@@ -434,7 +515,7 @@ export function startPontyLoop(bot: AL.Character, itemsToBuy: AL.ItemName[]): vo
     pontyLoop()
 }
 
-export function startSellLoop(bot: AL.Character, itemsToSell: ItemLevelInfo): void {
+export function startSellLoop(bot: AL.Character, itemsToSell: ItemLevelInfo = ITEMS_TO_SELL): void {
     async function sellLoop() {
         try {
             if (bot.socket.disconnected) {
@@ -472,7 +553,7 @@ export function startSellLoop(bot: AL.Character, itemsToSell: ItemLevelInfo): vo
  * @param itemsToSend 
  * @param goldToHold 
  */
-export function startSendStuffAllowlistLoop(bot: AL.Character, sendTo: AL.Character, itemsToSend: AL.ItemName[] = [], goldToHold = 1_000_000): void {
+export function startSendStuffAllowlistLoop(bot: AL.Character, sendTo: AL.Character, itemsToSend: AL.ItemName[] = [], goldToHold = GOLD_TO_HOLD): void {
     async function sendStuffLoop() {
         try {
             if (sendTo.isFull()) {
@@ -506,7 +587,7 @@ export function startSendStuffAllowlistLoop(bot: AL.Character, sendTo: AL.Charac
  * @param itemsToHold 
  * @param goldToHold 
  */
-export function startSendStuffDenylistLoop(bot: AL.Character, sendTo: AL.Character, itemsToHold: AL.ItemName[] = [], goldToHold = 1_000_000): void {
+export function startSendStuffDenylistLoop(bot: AL.Character, sendTo: AL.Character, itemsToHold: AL.ItemName[] = ITEMS_TO_HOLD, goldToHold = 1_000_000): void {
     async function sendStuffLoop() {
         try {
             if (sendTo.isFull()) {
@@ -533,7 +614,7 @@ export function startSendStuffDenylistLoop(bot: AL.Character, sendTo: AL.Charact
     sendStuffLoop()
 }
 
-export function startUpgradeLoop(bot: AL.Character, itemsToSell: ItemLevelInfo): void {
+export function startUpgradeLoop(bot: AL.Character, itemsToSell: ItemLevelInfo = ITEMS_TO_SELL): void {
     async function upgradeLoop() {
         try {
             if (bot.socket.disconnected) {

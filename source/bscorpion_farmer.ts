@@ -1,6 +1,6 @@
 import AL from "alclient-mongo"
 import { ItemLevelInfo } from "./definitions/bot"
-import { startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startHealLoop, startPartyLoop, startSellLoop, startSendStuffAllowlistLoop, startUpgradeLoop } from "./base/general.js"
+import { GOLD_TO_HOLD, startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startHealLoop, startPartyLoop, startSellLoop, startSendStuffAllowlistLoop, startUpgradeLoop } from "./base/general.js"
 
 /** Config */
 const merchantName = "earthMer"
@@ -494,7 +494,7 @@ async function startMerchant(merchant: AL.Merchant) {
                 lastBankVisit = Date.now()
 
                 // Deposit excess gold
-                const excessGold = merchant.gold - MERCHANT_GOLD_TO_HOLD
+                const excessGold = merchant.gold - GOLD_TO_HOLD * 20
                 if (excessGold > 0) {
                     await merchant.depositGold(excessGold)
                 } else if (excessGold < 0) {
