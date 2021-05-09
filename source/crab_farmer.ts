@@ -73,9 +73,9 @@ async function startRanger(bot: AL.Ranger) {
 
             if (targets.length >= 5 && bot.canUse("5shot")) {
                 if (!bot.s.energized) {
-                    if (mage1.canUse("energize")) {
+                    if (mage1.socket.connected && mage1.canUse("energize")) {
                         mage1.energize(bot.id)
-                    } else if (mage2.canUse("energize")) {
+                    } else if (mage2.socket.connected && mage2.canUse("energize")) {
                         mage2.energize(bot.id)
                     }
                 }
@@ -92,9 +92,9 @@ async function startRanger(bot: AL.Ranger) {
                 }
             } else if (targets.length >= 3 && bot.canUse("3shot")) {
                 if (!bot.s.energized) {
-                    if (mage1.canUse("energize")) {
+                    if (mage1.socket.connected && mage1.canUse("energize")) {
                         mage1.energize(bot.id)
-                    } else if (mage2.canUse("energize")) {
+                    } else if (mage2.socket.connected && mage2.canUse("energize")) {
                         mage2.energize(bot.id)
                     }
                 }
@@ -111,9 +111,9 @@ async function startRanger(bot: AL.Ranger) {
                 }
             } else if (targets.length && bot.canUse("attack")) {
                 if (!bot.s.energized) {
-                    if (mage1.canUse("energize")) {
+                    if (mage1.socket.connected && mage1.canUse("energize")) {
                         mage1.energize(bot.id)
-                    } else if (mage2.canUse("energize")) {
+                    } else if (mage2.socket.connected && mage2.canUse("energize")) {
                         mage2.energize(bot.id)
                     }
                 }
