@@ -35,7 +35,7 @@ async function startShared(bot: AL.Character) {
     startLootLoop(bot)
 
     if (bot.id == partyLeader) {
-        startTrackerLoop(bot)
+        // startTrackerLoop(bot)
         bot.socket.on("request", async (data: { name: string }) => {
             if (partyMembers.includes(data.name)) {
                 await bot.acceptPartyRequest(data.name)
@@ -45,7 +45,7 @@ async function startShared(bot: AL.Character) {
         startPartyLoop(bot, partyLeader)
     }
 
-    startPontyLoop(bot)
+    // startPontyLoop(bot)
     startSellLoop(bot)
 
     if (bot.ctype !== "merchant") {
