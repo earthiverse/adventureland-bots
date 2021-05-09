@@ -13,7 +13,10 @@ const identifier: AL.ServerIdentifier = "II"
 const partyLeader = "earthiverse"
 const partyMembers = [rangerName, mage1Name, mage2Name,
     // Kouin's characters
-    "bataxedude", "cclair", "fathergreen", "kakaka", "kekeke", "kouin", "kukuku", "piredude", "mule0", "mule1", "mule2", "mule3", "mule4", "mule5", "mule6", "mule7", "mule8", "mule9", "mule10"]
+    "bataxedude", "cclair", "fathergreen", "kakaka", "kekeke", "kouin", "kukuku", "piredude", "mule0", "mule1", "mule2", "mule3", "mule4", "mule5", "mule6", "mule7", "mule8", "mule9", "mule10",
+    // Lolwutpear's characters
+    "lolwutpear", "shoopdawhoop", "ytmnd"
+]
 
 const location: AL.IPosition = { map: "main", x: -1202.5, y: -66 }
 
