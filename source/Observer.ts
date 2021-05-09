@@ -4,7 +4,7 @@ import { ServerData, DeathData, EntitiesData, NewMapData, WelcomeData, LoadedDat
 import { ServerRegion, ServerIdentifier, GData, MapName, MonsterName, SInfo } from "./definitions/adventureland"
 import { SEND_ALDATA_INFO, SPECIAL_MONSTERS } from "./constants.js"
 import { NPCModel } from "./database/npcs/npcs.model.js"
-import { EntityModel, PlayerModel } from "./database/Database.js"
+import { Database, EntityModel, PlayerModel } from "./database/Database.js"
 
 export class Observer {
     public socket: SocketIOClient.Socket;
@@ -124,55 +124,54 @@ export class Observer {
 
     protected async parseEntities(data: EntitiesData): Promise<void> {
         // Update all the players
-        // TODO: Can we optimize this to update many?
+        const entityUpdates = []
+        const npcUpdates = []
+        const playerUpdates = []
         for (const player of data.players) {
-            if (player.npc) {
-                NPCModel.updateOne({ name: player.id, serverRegion: this.serverRegion, serverIdentifier: this.serverIdentifier }, {
-                    map: data.map,
-                    name: player.id,
-                    x: player.x,
-                    y: player.y,
-                    serverRegion: this.serverRegion,
-                    serverIdentifier: this.serverIdentifier,
-                    lastSeen: Date.now()
-                }, { upsert: true, useFindAndModify: false }).exec()
-            } else {
-                PlayerModel.updateOne({ name: player.id }, {
-                    map: data.map,
-                    name: player.id,
-                    x: player.x,
-                    y: player.y,
-                    serverRegion: this.serverRegion,
-                    serverIdentifier: this.serverIdentifier,
-                    lastSeen: Date.now(),
-                    s: player.s
-                }, { upsert: true, useFindAndModify: false }).exec()
+
+            const lastUpdate = Database.lastMongoUpdate.get(player.id)
+            if (!lastUpdate || Date.now() > lastUpdate.getTime() + 5000) {
+                if (player.npc) {
+                    npcUpdates.push({
+                        updateOne: {
+                            filter: { serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion, name: player.id },
+                            update: { map: player.map, x: player.x, y: player.y, lastSeen: Date.now() },
+                            upsert: true
+                        }
+                    })
+                } else {
+                    playerUpdates.push({
+                        updateOne: {
+                            filter: { name: player.id },
+                            update: { serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion, map: player.map, x: player.x, y: player.y, s: player.s, lastSeen: Date.now() },
+                            upsert: true
+                        }
+                    })
+                }
+                Database.lastMongoUpdate.set(player.id, new Date())
             }
         }
+        if (npcUpdates.length) NPCModel.bulkWrite(npcUpdates)
+        if (playerUpdates.length) PlayerModel.bulkWrite(playerUpdates)
 
         // Update entities if they're special
-        // TODO: Can we optimize this to update many?
         for (const entity of data.monsters) {
-            if (!SPECIAL_MONSTERS.includes(entity.type))
-                continue
+            if (!SPECIAL_MONSTERS.includes(entity.type)) continue
 
-            if (entity.hp == undefined)
-                entity.hp = this.G.monsters[entity.type].hp
+            if (entity.hp == undefined) entity.hp = this.G.monsters[entity.type].hp
 
-            await EntityModel.updateOne({ type: entity.type, serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion }, {
-                map: data.map,
-                name: entity.id,
-                x: entity.x,
-                y: entity.y,
-                target: entity.target,
-                serverRegion: this.serverRegion,
-                serverIdentifier: this.serverIdentifier,
-                lastSeen: Date.now(),
-                level: entity.level ? entity.level : 1,
-                hp: entity.hp,
-                type: entity.type
-            }, { upsert: true, useFindAndModify: false }).exec()
+            const lastUpdate = Database.lastMongoUpdate.get(entity.id)
+            if (!lastUpdate || Date.now() > lastUpdate.getTime() + 5000) {
+                entityUpdates.push({
+                    updateOne: {
+                        filter: { serverIdentifier: this.serverIdentifier, serverRegion: this.serverRegion, name: entity.id, type: entity.type },
+                        update: { map: entity.map, x: entity.x, y: entity.y, level: entity.level, hp: entity.hp, target: entity.target, lastSeen: Date.now() },
+                        upsert: true
+                    }
+                })
+            }
         }
+        if (entityUpdates.length) EntityModel.bulkWrite(entityUpdates)
     }
 
     public async connect(): Promise<void> {
