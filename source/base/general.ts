@@ -84,6 +84,10 @@ export const ITEMS_TO_BUY: AL.ItemName[] = [
 export const ITEMS_TO_SELL: ItemLevelInfo = {
     // Default clothing
     "shoes": 2, "pants": 2, "coat": 2, "helmet": 2, "gloves": 2,
+    // Field generators
+    "fieldgen0": 999,
+    // Snowballs
+    "snowball": 999
 }
 
 /**
@@ -475,7 +479,7 @@ export function startPartyLoop(bot: AL.Character, leader: string): void {
 
             if (!bot.party) {
                 bot.sendPartyRequest(leader)
-            } else if (bot?.partyData?.list && !bot.partyData.list.includes(leader)) {
+            } else if (bot.partyData?.list && !bot.partyData.list.includes(leader)) {
                 bot.leaveParty()
                 bot.sendPartyRequest(leader)
             }
@@ -529,7 +533,7 @@ export function startSellLoop(bot: AL.Character, itemsToSell: ItemLevelInfo = IT
                     if (!item) continue // No item in this slot
                     if (item.p) continue // This item is special in some way
                     if (itemsToSell[item.name] == undefined) continue // We don't want to sell this item
-                    if (itemsToSell[item.name] <= item.level) continue // Keep this item, it's a high enough level that we want to keep it
+                    if (item.level && itemsToSell[item.name] <= item.level) continue // Keep this item, it's a high enough level that we want to keep it
 
                     const q = bot.items[i].q !== undefined ? bot.items[i].q : 1
 

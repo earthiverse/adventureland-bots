@@ -40,6 +40,11 @@ async function startShared(bot: AL.Character) {
                 await bot.acceptPartyRequest(data.name)
             }
         })
+        bot.socket.on("invite", async (data: { name: string }) => {
+            if (partyMembers.includes(data.name)) {
+                await bot.acceptPartyInvite(data.name)
+            }
+        })
     } else {
         startPartyLoop(bot, partyLeader)
     }
