@@ -177,9 +177,9 @@ async function startMage(bot: AL.Mage) {
             }
 
             if (bot.id == mage1Name) {
-                await bot.smartMove({ map: location.map, x: location.x - 50, y: location.y + 50 })
+                await bot.smartMove({ map: location.map, x: location.x - 150, y: location.y + 60 })
             } else {
-                await bot.smartMove({ map: location.map, x: location.x + 50, y: location.y - 50 })
+                await bot.smartMove({ map: location.map, x: location.x + 150, y: location.y - 60 })
             }
         } catch (e) {
             console.error(e)
