@@ -371,7 +371,8 @@ export function startExchangeLoop(bot: AL.Character, itemsToExchange: AL.ItemNam
                 return
             }
 
-            if (bot.esize > 10) {
+            if (bot.esize > 10 /** Only exchange if we have plenty of space */
+                && !(bot.G.maps[bot.map] as AL.GMap).mount /** Don't exchange in the bank */) {
                 for (let i = 0; i < bot.items.length; i++) {
                     const item = bot.items[i]
                     if (!item) continue
