@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { LOOP_MS, startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startUpdateLoop, startUpgradeLoop } from "./base/general.js"
+import { ITEMS_TO_EXCHANGE, LOOP_MS, startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpdateLoop, startUpgradeLoop } from "./base/general.js"
 import { MERCHANT_GOLD_TO_HOLD, MERCHANT_ITEMS_TO_HOLD, startMluckLoop } from "./base/merchant.js"
 
 /** Config */
@@ -33,6 +33,7 @@ async function startShared(bot: AL.Character) {
     startCompoundLoop(bot)
     startConnectLoop(bot)
     startElixirLoop(bot, "elixirluck")
+    startExchangeLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)
 
@@ -50,6 +51,8 @@ async function startShared(bot: AL.Character) {
         // startPartyInviteLoop(bot, "cclair")
         // startPartyInviteLoop(bot, "fathergreen")
         // startPartyInviteLoop(bot, "kakaka")
+
+        startTrackerLoop(bot)
     } else {
         startPartyLoop(bot, partyLeader)
     }
@@ -367,6 +370,23 @@ async function startMerchant(bot: AL.Merchant) {
                             break
                         }
                     }
+                }
+
+                // Withdraw exchangable items
+                for (let i = 0; i < bankItems.length && freeSpaces > 2; i++) {
+                    const item = bankItems[i]
+                    if (!item) continue // No item
+
+                    if (!ITEMS_TO_EXCHANGE.includes(item.name)) continue // Not exchangable
+
+                    const gInfo = bot.G.items[item.name]
+                    if (item.q < gInfo.e) continue // Not enough to exchange
+
+                    // Withdraw the item
+                    const pack = `items${Math.floor(i / 42)}` as Exclude<AL.BankPackName, "gold">
+                    const slot = i % 42
+                    await bot.withdrawItem(pack, slot)
+                    freeSpaces--
                 }
 
                 // Withdraw things we want to hold

@@ -363,7 +363,7 @@ export function startEventLoop(bot: AL.Character): void {
     eventLoop()
 }
 
-export function startExchangeLoop(bot: AL.Character, itemsToExchange: AL.ItemName[]): void {
+export function startExchangeLoop(bot: AL.Character, itemsToExchange: AL.ItemName[] = ITEMS_TO_EXCHANGE): void {
     async function exchangeLoop() {
         try {
             if (bot.socket.disconnected) {
@@ -661,10 +661,9 @@ export function startTrackerLoop(bot: AL.Character): void {
             console.error(e)
         }
 
-        setTimeout(async () => { trackerLoop(), CHECK_TRACKER_EVERY_MS })
+        setTimeout(async () => { trackerLoop() }, CHECK_TRACKER_EVERY_MS)
     }
-    // Delay startup
-    setTimeout(async () => { trackerLoop() }, 10000)
+    trackerLoop()
 }
 
 export function startUpgradeLoop(bot: AL.Character, itemsToSell: ItemLevelInfo = ITEMS_TO_SELL): void {
