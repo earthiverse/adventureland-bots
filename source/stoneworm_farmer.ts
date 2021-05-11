@@ -18,7 +18,9 @@ const partyMembers = [rangerName, mage1Name, mage2Name,
     "lolwutpear", "shoopdawhoop", "ytmnd"
 ]
 
-const location: AL.IPosition = { map: "spookytown", x: 835.5, y: -2 }
+const rangerLocation: AL.IPosition = { map: "spookytown", x: 994.5, y: -133 }
+const mage1Location: AL.IPosition = {map: "spookytown", x: 741, y: 61}
+const mage2Location: AL.IPosition = {map: "spookytown", x: 852, y: 153}
 
 /** Characters */
 let merchant: AL.Merchant
@@ -133,7 +135,7 @@ async function startRanger(bot: AL.Ranger) {
                 return
             }
 
-            await bot.smartMove(location)
+            await bot.smartMove(rangerLocation)
         } catch (e) {
             console.error(e)
         }
@@ -141,6 +143,38 @@ async function startRanger(bot: AL.Ranger) {
         setTimeout(async () => { moveLoop() }, LOOP_MS)
     }
     moveLoop()
+
+    async function supershotLoop() {
+        try {
+            if (bot.socket.disconnected) {
+                setTimeout(async () => { supershotLoop() }, 10)
+                return
+            }
+
+            // Find the furthest away target that we can supershot, and supershot it.
+            let ssTarget: AL.Entity
+            let ssDistance = Number.MAX_VALUE
+            for (const [, entity] of bot.entities) {
+                if (entity.type !== "stoneworm") continue // Not a stoneworm
+                if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
+                const distance = AL.Tools.distance(bot, entity)
+                if (distance > bot.range * bot.G.skills.supershot.range_multiplier) continue // Too far
+                if (entity.willDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
+
+                if (distance < ssDistance) {
+                    ssTarget = entity
+                    ssDistance = distance
+                }
+            }
+
+            if (bot.canUse("supershot")) {
+                bot.superShot(ssTarget.id)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+    }
+    supershotLoop()
 }
 
 async function startMage(bot: AL.Mage) {
@@ -177,9 +211,9 @@ async function startMage(bot: AL.Mage) {
             }
 
             if (bot.id == mage1Name) {
-                await bot.smartMove({ map: location.map, x: location.x - 150, y: location.y + 60 })
+                await bot.smartMove(mage1Location)
             } else {
-                await bot.smartMove({ map: location.map, x: location.x + 150, y: location.y - 60 })
+                await bot.smartMove(mage2Location)
             }
         } catch (e) {
             console.error(e)
