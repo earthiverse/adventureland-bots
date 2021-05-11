@@ -492,6 +492,27 @@ export function startPartyLoop(bot: AL.Character, leader: string): void {
     partyLoop()
 }
 
+export function startPartyInviteLoop(bot: AL.Character, player: string): void {
+    async function partyInviteLoop() {
+        try {
+            if (bot.socket.disconnected) {
+                setTimeout(async () => { partyInviteLoop() }, 10)
+                return
+            }
+
+            if (bot.partyData?.list && !bot.partyData.list.includes(player) /** Only invite if they're missing */
+                && bot.partyData.list.length < 9 /** Don't invite if we're at capacity */) {
+                bot.sendPartyInvite(player)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { partyInviteLoop() }, 10000)
+    }
+    partyInviteLoop()
+}
+
 export function startPontyLoop(bot: AL.Character, itemsToBuy: AL.ItemName[] = ITEMS_TO_BUY): void {
     const ponty = bot.locateNPC("secondhands")[0]
     async function pontyLoop() {

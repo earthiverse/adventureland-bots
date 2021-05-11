@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { LOOP_MS, startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpdateLoop, startUpgradeLoop } from "./base/general.js"
+import { LOOP_MS, startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startUpdateLoop, startUpgradeLoop } from "./base/general.js"
 import { MERCHANT_GOLD_TO_HOLD, MERCHANT_ITEMS_TO_HOLD, startMluckLoop } from "./base/merchant.js"
 
 /** Config */
@@ -18,7 +18,7 @@ const partyMembers = [rangerName, mage1Name, mage2Name,
     "lolwutpear", "shoopdawhoop", "ytmnd"
 ]
 
-const location: AL.IPosition = { map: "main", x: -1202.5, y: -66 }
+const location: AL.IPosition = { map: "halloween", x: -835.5, y: -2 }
 
 /** Characters */
 let merchant: AL.Merchant
@@ -45,6 +45,9 @@ async function startShared(bot: AL.Character) {
                 await bot.acceptPartyInvite(data.name)
             }
         })
+        // startPartyInviteLoop(bot, "cclair")
+        // startPartyInviteLoop(bot, "fathergreen")
+        // startPartyInviteLoop(bot, "kakaka")
     } else {
         startPartyLoop(bot, partyLeader)
     }
@@ -70,7 +73,7 @@ async function startRanger(bot: AL.Ranger) {
 
             const targets: AL.Entity[] = []
             for (const [, entity] of bot.entities) {
-                if (entity.type !== "crab") continue // Not a crab
+                if (entity.type !== "stoneworm") continue // Not a stoneworm
                 if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
                 if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
                 if (entity.willDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
@@ -78,26 +81,7 @@ async function startRanger(bot: AL.Ranger) {
                 targets.push(entity)
             }
 
-            if (targets.length >= 5 && bot.canUse("5shot")) {
-                if (!bot.s.energized) {
-                    if (mage1.socket.connected && mage1.canUse("energize")) {
-                        mage1.energize(bot.id)
-                    } else if (mage2.socket.connected && mage2.canUse("energize")) {
-                        mage2.energize(bot.id)
-                    }
-                }
-                await bot.fiveShot(targets[0].id, targets[1].id, targets[2].id, targets[3].id, targets[4].id)
-
-                // If it's a guaranteed kill, remove it from the everyone's entity list so we don't attack it
-                for (let i = 0; i < 5; i++) {
-                    const target = targets[i]
-                    if (AL.Tools.calculateDamageRange(bot, target)[0] * bot.G.skills["5shot"].damage_multiplier >= target.hp) {
-                        for (const friend of [ranger, mage1, mage2]) {
-                            friend.entities.delete(targets[i].id)
-                        }
-                    }
-                }
-            } else if (targets.length >= 3 && bot.canUse("3shot")) {
+            if (targets.length >= 3 && bot.canUse("3shot")) {
                 if (!bot.s.energized) {
                     if (mage1.socket.connected && mage1.canUse("energize")) {
                         mage1.energize(bot.id)
@@ -168,7 +152,7 @@ async function startMage(bot: AL.Mage) {
             }
 
             for (const [, entity] of bot.entities) {
-                if (entity.type !== "crab") continue // Not a crab
+                if (entity.type !== "stoneworm") continue // Not a stoneworm
                 if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
                 if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
                 if (entity.willDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
@@ -193,9 +177,9 @@ async function startMage(bot: AL.Mage) {
             }
 
             if (bot.id == mage1Name) {
-                await bot.smartMove({ map: location.map, x: location.x + 50, y: location.y + 50 })
+                await bot.smartMove({ map: location.map, x: location.x - 50, y: location.y + 50 })
             } else {
-                await bot.smartMove({ map: location.map, x: location.x - 50, y: location.y - 50 })
+                await bot.smartMove({ map: location.map, x: location.x + 50, y: location.y - 50 })
             }
         } catch (e) {
             console.error(e)
