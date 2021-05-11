@@ -19,8 +19,8 @@ const partyMembers = [rangerName, mage1Name, mage2Name,
 ]
 
 const rangerLocation: AL.IPosition = { map: "spookytown", x: 994.5, y: -133 }
-const mage1Location: AL.IPosition = {map: "spookytown", x: 741, y: 61}
-const mage2Location: AL.IPosition = {map: "spookytown", x: 852, y: 153}
+const mage1Location: AL.IPosition = { map: "spookytown", x: 741, y: 61 }
+const mage2Location: AL.IPosition = { map: "spookytown", x: 852, y: 153 }
 
 /** Characters */
 let merchant: AL.Merchant
@@ -91,7 +91,6 @@ async function startRanger(bot: AL.Ranger) {
                         mage2.energize(bot.id)
                     }
                 }
-                await bot.threeShot(targets[0].id, targets[1].id, targets[2].id)
 
                 // If it's a guaranteed kill, remove it from the everyone's entity list so we don't attack it
                 for (let i = 0; i < 3; i++) {
@@ -102,6 +101,8 @@ async function startRanger(bot: AL.Ranger) {
                         }
                     }
                 }
+
+                await bot.threeShot(targets[0].id, targets[1].id, targets[2].id)
             } else if (targets.length && bot.canUse("attack")) {
                 if (!bot.s.energized) {
                     if (mage1.socket.connected && mage1.canUse("energize")) {
@@ -110,7 +111,6 @@ async function startRanger(bot: AL.Ranger) {
                         mage2.energize(bot.id)
                     }
                 }
-                await bot.basicAttack(targets[0].id)
 
                 // If it's a guaranteed kill, remove it from the everyone's entity list so we don't attack it
                 const target = targets[0]
@@ -119,6 +119,8 @@ async function startRanger(bot: AL.Ranger) {
                         friend.entities.delete(targets[0].id)
                     }
                 }
+
+                await bot.basicAttack(targets[0].id)
             }
         } catch (e) {
             console.error(e)
@@ -168,7 +170,14 @@ async function startRanger(bot: AL.Ranger) {
             }
 
             if (bot.canUse("supershot")) {
-                bot.superShot(ssTarget.id)
+                // If it's a guaranteed kill, remove it from the everyone's entity list so we don't attack it
+                if (AL.Tools.calculateDamageRange(bot, ssTarget)[0] * bot.G.skills["supershot"].damage_multiplier >= ssTarget.hp) {
+                    for (const friend of [ranger, mage1, mage2]) {
+                        friend.entities.delete(ssTarget.id)
+                    }
+                }
+
+                await bot.superShot(ssTarget.id)
             }
         } catch (e) {
             console.error(e)
