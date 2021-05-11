@@ -18,7 +18,7 @@ const partyMembers = [rangerName, mage1Name, mage2Name,
     "lolwutpear", "shoopdawhoop", "ytmnd"
 ]
 
-const location: AL.IPosition = { map: "spookytown", x: -835.5, y: -2 }
+const location: AL.IPosition = { map: "spookytown", x: 835.5, y: -2 }
 
 /** Characters */
 let merchant: AL.Merchant
