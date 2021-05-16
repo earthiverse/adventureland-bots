@@ -304,14 +304,18 @@ export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo 
 
 export function startConnectLoop(bot: AL.Character): void {
     async function connectLoop() {
-        if (bot.socket.disconnected) {
-            console.log(`${bot.id} is disconnected. Reconnecting!`)
-            bot.socket.connect()
-            setTimeout(async () => { connectLoop() }, 60000)
-            return
+        try {
+            if (bot.socket.disconnected) {
+                console.log(`${bot.id} is disconnected. Reconnecting!`)
+                bot.socket.connect()
+                setTimeout(async () => { connectLoop() }, 60000)
+                return
+            }
+        } catch (e) {
+            console.error(e)
         }
 
-        setTimeout(async () => { connectLoop() }, LOOP_MS)
+        setTimeout(async () => { connectLoop() }, 1000)
     }
     connectLoop()
 }
