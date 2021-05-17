@@ -129,6 +129,11 @@ async function startMage(mage: AL.Mage, positionOffset: { x: number, y: number }
 
     async function moveLoop() {
         try {
+            if (mage.socket.disconnected) {
+                setTimeout(async () => { moveLoop() }, 10)
+                return
+            }
+
             // If we are dead, respawn
             if (mage.rip) {
                 await mage.respawn()
