@@ -102,15 +102,17 @@ async function startMage(mage: AL.Mage, positionOffset: { x: number, y: number }
                     }
 
                     // Energize for more DPS
-                    for (const friend of [mage1, mage2, mage3]) {
-                        if (friend.socket.disconnected) continue // Friend is disconnected
-                        if (friend.id == mage.id) continue // Can't energize ourselves
-                        if (AL.Tools.distance(mage, friend) > mage.G.skills.energize.range) continue // Too far away
-                        if (!friend.canUse("energize")) continue // Friend can't use energize
+                    if (!mage.s.energized) {
+                        for (const friend of [mage1, mage2, mage3]) {
+                            if (friend.socket.disconnected) continue // Friend is disconnected
+                            if (friend.id == mage.id) continue // Can't energize ourselves
+                            if (AL.Tools.distance(mage, friend) > mage.G.skills.energize.range) continue // Too far away
+                            if (!friend.canUse("energize")) continue // Friend can't use energize
 
-                        // Energize!
-                        friend.energize(mage.id)
-                        break
+                            // Energize!
+                            friend.energize(mage.id)
+                            break
+                        }
                     }
 
                     await mage.basicAttack(entity.id)
