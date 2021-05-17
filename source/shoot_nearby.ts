@@ -1,6 +1,5 @@
 import AL from "alclient-mongo"
-import { ItemLevelInfo } from "./definitions/bot.js"
-import { startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startUpdateLoop, startUpgradeLoop } from "./base/general.js"
+import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpdateLoop, startUpgradeLoop } from "./base/general.js"
 import { startMluckLoop } from "./base/merchant.js"
 
 /** Config */
@@ -58,27 +57,26 @@ const BOT_ITEMS_TO_HOLD: AL.ItemName[] = [
     "hpot0", "hpot1", "mpot0", "mpot1"
 ]
 
-const ITEMS_TO_SELL: ItemLevelInfo = {
-    // Default clothing
-    "shoes": 2, "pants": 2, "coat": 2, "helmet": 2, "gloves": 2,
-}
-
 async function startShared(bot: AL.Character) {
     startBuyLoop(bot, ITEMS_TO_BUY)
-    startCompoundLoop(bot, ITEMS_TO_SELL)
+    startCompoundLoop(bot)
     startConnectLoop(bot)
     startElixirLoop(bot, "elixirluck")
     startHealLoop(bot)
     startLootLoop(bot)
     startPartyLoop(bot, partyLeader)
-    startSellLoop(bot, ITEMS_TO_SELL)
+    startSellLoop(bot)
 
     if (bot.ctype !== "merchant") {
         startSendStuffDenylistLoop(bot, merchant, BOT_ITEMS_TO_HOLD, BOT_GOLD_TO_HOLD)
     }
 
+    if (bot.id == mage1Name) {
+        startTrackerLoop(bot)
+    }
+
     startUpdateLoop(bot)
-    startUpgradeLoop(bot, ITEMS_TO_SELL)
+    startUpgradeLoop(bot)
 }
 
 async function startMage(mage: AL.Mage, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
@@ -135,6 +133,9 @@ async function startMage(mage: AL.Mage, positionOffset: { x: number, y: number }
                 setTimeout(async () => { moveLoop() }, 1000)
                 return
             }
+
+            await goToPoitonSellerIfLow(mage)
+            await goToNPCShopIfFull(mage)
 
             const destination: AL.IPosition = { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y }
             if (AL.Tools.distance(mage, destination) > 1) await mage.smartMove(destination)

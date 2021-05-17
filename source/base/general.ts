@@ -9,7 +9,7 @@ export const GOLD_TO_HOLD = 5_000_000
 
 export const ITEMS_TO_HOLD: AL.ItemName[] = [
     // Things we keep on ourselves
-    "computer", "tracker", "stand0", "xptome",
+    "computer", "tracker", "xptome",
     // Boosters
     "luckbooster", "goldbooster", "xpbooster",
     // Potions
@@ -147,7 +147,55 @@ export async function getPriority2Entities(bot: AL.Character): Promise<AL.IEntit
         { $sort: { "__order": 1 } }]).exec()
 }
 
-export function startBuyLoop(bot: AL.Character, itemsToBuy: AL.ItemName[] = ITEMS_TO_BUY, items: [AL.ItemName, number][] = [["hpot1", 1000], ["mpot1", 1000], ["xptome", 1]],): void {
+/**
+ * Go to the potion seller NPC if we're low on potions so we can buy some
+ * 
+ * NOTE: If you don't startBuyLoop() with a potion amount higher than minHpPots and minMpPots, we might get stuck!
+ * NOTE: If you don't have enough gold, we might get stuck!
+ * @param bot 
+ * @param minHpPots 
+ * @param minMpPots 
+ * @returns 
+ */
+export async function goToPoitonSellerIfLow(bot: AL.Character, minHpPots = 100, minMpPots = 100): Promise<void> {
+    if (bot.hasItem("computer")) return // Don't need to move if we have a computer
+
+    const currentHpPots = bot.countItem("hpot1")
+    const currentMpPots = bot.countItem("mpot1")
+
+    // We're under the minimum, go buy potions
+    if (currentHpPots < minHpPots || currentMpPots < minMpPots) await bot.smartMove("fancypots", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE })
+}
+
+/**
+ * Go near an NPC so we can sell our unwanted items.
+ * 
+ * NOTE: If you don't startSellItemLoop(), we might get stuck!
+ * @param bot 
+ * @param itemsToSell 
+ * @returns 
+ */
+export async function goToNPCShopIfFull(bot: AL.Character, itemsToSell = ITEMS_TO_SELL): Promise<void> {
+    if (!bot.isFull()) return // Not full
+    if (bot.hasItem("computer")) return // We don't need to move if we have a computer
+
+    let hasSellableItem = false
+    for (const item of bot.items) {
+        if (!item) continue
+        if (itemsToSell[item.name]) {
+            // We have something we could sell to make room
+            hasSellableItem = true
+            break
+        }
+    }
+    if (!hasSellableItem) return // We don't have anything to sell
+
+    // TODO: Find the closest shop
+
+    await bot.smartMove("fancypots", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE })
+}
+
+export function startBuyLoop(bot: AL.Character, itemsToBuy = ITEMS_TO_BUY, itemsToBuy2: [AL.ItemName, number][] = [["hpot1", 1000], ["mpot1", 1000], ["xptome", 1]]): void {
     const pontyLocations = bot.locateNPC("secondhands")
     let lastPonty = 0
     async function buyLoop() {
@@ -157,7 +205,7 @@ export function startBuyLoop(bot: AL.Character, itemsToBuy: AL.ItemName[] = ITEM
                 return
             }
 
-            for (const [item, amount] of items) {
+            for (const [item, amount] of itemsToBuy2) {
                 if (bot.canBuy(item)) {
                     const num = bot.countItem(item)
                     if (num < amount) await bot.buy(item, amount - num)
@@ -582,7 +630,7 @@ export function startSellLoop(bot: AL.Character, itemsToSell: ItemLevelInfo = IT
  * @param itemsToSend 
  * @param goldToHold 
  */
-export function startSendStuffAllowlistLoop(bot: AL.Character, sendTo: AL.Character, itemsToSend: AL.ItemName[] = [], goldToHold = GOLD_TO_HOLD): void {
+export function startSendStuffAllowlistLoop(bot: AL.Character, sendTo: AL.Character, itemsToSend: AL.ItemName[], goldToHold = GOLD_TO_HOLD): void {
     async function sendStuffLoop() {
         try {
             if (bot.socket.disconnected) {
@@ -601,6 +649,7 @@ export function startSendStuffAllowlistLoop(bot: AL.Character, sendTo: AL.Charac
                 for (let i = 0; i < bot.items.length; i++) {
                     const item = bot.items[i]
                     if (!item || !itemsToSend.includes(item.name)) continue // Only send items in our list
+                    if (item.l == "l") continue // Don't send locked items
 
                     await bot.sendItem(sendTo.id, i, item.q)
                 }
@@ -640,6 +689,7 @@ export function startSendStuffDenylistLoop(bot: AL.Character, sendTo: AL.Charact
                 for (let i = 0; i < bot.items.length; i++) {
                     const item = bot.items[i]
                     if (!item || itemsToHold.includes(item.name)) continue // Don't send important items
+                    if (item.l == "l") continue // Don't send locked items
 
                     await bot.sendItem(sendTo.id, i, item.q)
                 }
@@ -655,13 +705,15 @@ export function startSendStuffDenylistLoop(bot: AL.Character, sendTo: AL.Charact
 
 export function startTrackerLoop(bot: AL.Character): void {
     async function trackerLoop() {
-        if (bot.socket.disconnected) {
-            setTimeout(async () => { trackerLoop() }, 10)
-            return
-        }
-
         try {
-            await bot.getTrackerData()
+            if (bot.socket.disconnected) {
+                setTimeout(async () => { trackerLoop() }, 10)
+                return
+            }
+
+            if (bot.hasItem("tracker")) {
+                await bot.getTrackerData()
+            }
         } catch (e) {
             console.error(e)
         }
