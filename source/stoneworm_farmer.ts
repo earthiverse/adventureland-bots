@@ -140,6 +140,13 @@ async function startRanger(bot: AL.Ranger) {
                 return
             }
 
+            // If we are dead, respawn
+            if (bot.rip) {
+                await bot.respawn()
+                setTimeout(async () => { moveLoop() }, LOOP_MS)
+                return
+            }
+
             await bot.smartMove(rangerLocation)
         } catch (e) {
             console.error(e)
@@ -219,6 +226,13 @@ async function startMage(bot: AL.Mage) {
         try {
             if (bot.socket.disconnected) {
                 setTimeout(async () => { moveLoop() }, 10)
+                return
+            }
+
+            // If we are dead, respawn
+            if (bot.rip) {
+                await bot.respawn()
+                setTimeout(async () => { moveLoop() }, LOOP_MS)
                 return
             }
 
