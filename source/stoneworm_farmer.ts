@@ -81,7 +81,7 @@ async function startRanger(bot: AL.Ranger) {
                 if (entity.type !== "stoneworm") continue // Not a stoneworm
                 if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
                 if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
-                if (entity.willDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
+                if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
 
                 targets.push(entity)
             }
@@ -171,7 +171,7 @@ async function startRanger(bot: AL.Ranger) {
                 if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
                 const distance = AL.Tools.distance(bot, entity)
                 if (distance > bot.range * bot.G.skills.supershot.range_multiplier) continue // Too far
-                if (entity.willDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
+                if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
 
                 if (distance < ssDistance) {
                     ssTarget = entity
@@ -208,7 +208,7 @@ async function startMage(bot: AL.Mage) {
                 if (entity.type !== "stoneworm") continue // Not a stoneworm
                 if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
                 if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
-                if (entity.willDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
+                if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
 
                 if (bot.canUse("attack")) {
                     await bot.basicAttack(entity.id)
