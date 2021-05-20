@@ -165,6 +165,7 @@ export async function goToPoitonSellerIfLow(bot: AL.Character, minHpPots = 100, 
 
     // We're under the minimum, go buy potions
     if (currentHpPots < minHpPots || currentMpPots < minMpPots) await bot.smartMove("fancypots", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE })
+    await sleep(1000)
 }
 
 /**
@@ -193,6 +194,11 @@ export async function goToNPCShopIfFull(bot: AL.Character, itemsToSell = ITEMS_T
     // TODO: Find the closest shop
 
     await bot.smartMove("fancypots", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE })
+    await sleep(1000)
+}
+
+export function sleep(ms): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 export function startBuyLoop(bot: AL.Character, itemsToBuy = ITEMS_TO_BUY, itemsToBuy2: [AL.ItemName, number][] = [["hpot1", 1000], ["mpot1", 1000], ["xptome", 1]]): void {

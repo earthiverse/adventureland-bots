@@ -1,5 +1,6 @@
 import axios from "axios"
 import AL from "alclient-mongo"
+import { sleep } from "../base/general"
 
 const servers: [AL.ServerRegion, AL.ServerIdentifier][] = [
     ["ASIA", "I"],
@@ -18,8 +19,6 @@ const NOTABLE_NPCS: string[] = ["Angel", "Kane"]
 const PEEK = true
 const PEEK_MS = 40000
 const PEEK_CHARS = ["earthMag", "earthMag2", "earthMag3", "earthRan2", "earthRan3", "earthRog", "earthRog2"]
-
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
 async function run() {
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
