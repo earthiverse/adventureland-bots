@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpdateLoop, startUpgradeLoop } from "./base/general.js"
+import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpdateLoop, startUpgradeLoop, startBuyToUpgradeLoop } from "./base/general.js"
 import { startMluckLoop } from "./base/merchant.js"
 
 /** Config */
@@ -156,31 +156,9 @@ async function startMage(mage: AL.Mage, positionOffset: { x: number, y: number }
 }
 
 async function startMerchant(merchant: AL.Merchant) {
-    // Accept all the party requests!
-    merchant.socket.on("request", (data: { name: string }) => {
-        merchant.acceptPartyRequest(data.name)
-    })
+    startPartyLoop(merchant, merchant.id) // Let anyone who wants to party with me do so
 
-    async function buyLoop() {
-        try {
-            if (merchant.socket.disconnected) {
-                setTimeout(async () => { buyLoop() }, 10)
-                return
-            }
-
-            // Buy two wands so we can upgrade them for our mages
-            const count = merchant.countItem("wand")
-            if (count < 2 && merchant.canBuy("wand")) {
-                if (count == 0) await merchant.buy("wand")
-                await merchant.buy("wand")
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { buyLoop() }, 250)
-    }
-    buyLoop()
+    startBuyToUpgradeLoop(merchant, "wand", 5)
 
     startMluckLoop(merchant)
 

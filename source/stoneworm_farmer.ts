@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { ITEMS_TO_EXCHANGE, LOOP_MS, startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpdateLoop, startUpgradeLoop } from "./base/general.js"
+import { ITEMS_TO_EXCHANGE, LOOP_MS, startBuyLoop, startBuyToUpgradeLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpdateLoop, startUpgradeLoop } from "./base/general.js"
 import { MERCHANT_GOLD_TO_HOLD, MERCHANT_ITEMS_TO_HOLD, startMluckLoop } from "./base/merchant.js"
 
 /** Config */
@@ -36,26 +36,7 @@ async function startShared(bot: AL.Character) {
     startExchangeLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)
-
-    if (bot.id == partyLeader) {
-        bot.socket.on("request", async (data: { name: string }) => {
-            if (partyMembers.includes(data.name)) {
-                await bot.acceptPartyRequest(data.name)
-            }
-        })
-        bot.socket.on("invite", async (data: { name: string }) => {
-            if (partyMembers.includes(data.name)) {
-                await bot.acceptPartyInvite(data.name)
-            }
-        })
-        // startPartyInviteLoop(bot, "cclair")
-        // startPartyInviteLoop(bot, "fathergreen")
-        // startPartyInviteLoop(bot, "kakaka")
-
-        startTrackerLoop(bot)
-    } else {
-        startPartyLoop(bot, partyLeader)
-    }
+    startPartyLoop(bot, partyLeader, partyMembers)
 
     startPontyLoop(bot)
     startSellLoop(bot)
@@ -252,6 +233,9 @@ async function startMage(bot: AL.Mage) {
 
 async function startMerchant(bot: AL.Merchant) {
     startMluckLoop(bot)
+    startPartyLoop(bot, bot.id) // Let anyone who wants to party with me do so
+
+    startBuyToUpgradeLoop(bot, "wand", 5)
 
     let lastBankVisit = Number.MIN_VALUE
     async function moveLoop() {
@@ -540,6 +524,7 @@ async function run() {
 
     startShared(ranger)
     startRanger(ranger)
+    startTrackerLoop(ranger)
 
     startShared(mage1)
     startMage(mage1)

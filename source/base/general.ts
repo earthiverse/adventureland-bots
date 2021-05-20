@@ -1,4 +1,4 @@
-import AL from "alclient-mongo"
+import AL, { ItemName } from "alclient-mongo"
 import { ItemLevelInfo } from "../definitions/bot"
 
 export const LOOP_MS = 100
@@ -272,6 +272,25 @@ export function startBuyLoop(bot: AL.Character, itemsToBuy = ITEMS_TO_BUY, items
     buyLoop()
 }
 
+export function startBuyToUpgradeLoop(bot: AL.Character, item: ItemName, quantity: number): void {
+    async function buyToUpgradeLoop() {
+        try {
+            if (bot.socket.disconnected) {
+                setTimeout(async () => { buyToUpgradeLoop() }, 10)
+                return
+            }
+
+            for (let i = bot.countItem(item); i < quantity; i++) {
+                if (bot.canBuy(item)) await bot.buy(item)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        setTimeout(async () => { buyToUpgradeLoop() }, LOOP_MS)
+    }
+    buyToUpgradeLoop()
+}
+
 export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo = ITEMS_TO_SELL): void {
     async function compoundLoop() {
         try {
@@ -522,7 +541,20 @@ export function startLootLoop(bot: AL.Character): void {
     lootLoop()
 }
 
-export function startPartyLoop(bot: AL.Character, leader: string): void {
+export function startPartyLoop(bot: AL.Character, leader: string, partyMembers?: string[]): void {
+    if (bot.id == leader) {
+        // Have the leader accept party requests
+        bot.socket.on("request", async (data: { name: string }) => {
+            if (partyMembers && !partyMembers.includes(data.name)) return // Discard requests from other players
+
+            try {
+                await bot.acceptPartyRequest(data.name)
+            } catch (e) {
+                console.error(e)
+            }
+        })
+        return
+    }
     async function partyLoop() {
         try {
             if (bot.socket.disconnected) {
