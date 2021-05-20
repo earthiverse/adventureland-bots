@@ -91,7 +91,7 @@ async function startMage(mage: AL.Mage, positionOffset: { x: number, y: number }
                 for (const [, entity] of mage.entities) {
                     if (AL.Tools.distance(mage, entity) > mage.range) continue // Too far away
                     if (entity.cooperative !== true && entity.target && ![mage1?.id, mage2?.id, mage3?.id, merchant?.id].includes(entity.target)) continue // It's targeting someone else
-                    if (entity.willDieToProjectiles(mage.projectiles, mage.players, mage.entities)) continue // Already gonna die
+                    if (entity.couldDieToProjectiles(mage.projectiles, mage.players, mage.entities)) continue // Possibly gonna die
                     if (entity.willBurnToDeath()) continue // Will burn to death shortly
 
                     if (AL.Tools.calculateDamageRange(mage, entity)[0] > entity.hp) {
