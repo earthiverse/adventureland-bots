@@ -143,7 +143,7 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
                 const destination: AL.IPosition = { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y }
                 if (AL.Tools.distance(bot, destination) > 1) await bot.smartMove(destination)
             } else if (Tools.distance(bot, closest) > bot.range) {
-                await bot.smartMove(closest, { getWithin: bot.range / 2 })
+                bot.smartMove(closest, { getWithin: bot.range / 2 }).catch(() => { /* suppress warnings */ })
             }
         } catch (e) {
             console.error(e)
