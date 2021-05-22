@@ -201,6 +201,19 @@ export function sleep(ms): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+export function startAvoidStacking(bot: AL.Character): void {
+    bot.socket.on("hit", async (data: AL.HitData) => {
+        if (!data.stacked) return
+        if (!data.stacked.includes(bot.id)) return // We're not the ones that are stacked
+
+        console.info(`Moving ${bot.id} to avoid stacking!`)
+
+        const x = -25 + Math.round(50 * Math.random())
+        const y = -25 + Math.round(50 * Math.random())
+        await bot.move(bot.x + x, bot.y + y).catch(() => { /* Suppress errors */ })
+    })
+}
+
 export function startBuyLoop(bot: AL.Character, itemsToBuy = ITEMS_TO_BUY, itemsToBuy2: [AL.ItemName, number][] = [["hpot1", 1000], ["mpot1", 1000], ["xptome", 1]]): void {
     const pontyLocations = bot.locateNPC("secondhands")
     let lastPonty = 0

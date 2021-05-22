@@ -1,5 +1,5 @@
 import AL, { Tools } from "alclient-mongo"
-import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpdateLoop, startUpgradeLoop, startBuyToUpgradeLoop } from "./base/general.js"
+import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpdateLoop, startUpgradeLoop, startAvoidStacking } from "./base/general.js"
 import { startMluckLoop } from "./base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "./base/warrior.js"
 
@@ -104,6 +104,7 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
     }
     attackLoop()
 
+    startAvoidStacking(bot)
     startChargeLoop(bot)
 
     async function moveLoop() {
