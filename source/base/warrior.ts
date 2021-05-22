@@ -1,6 +1,6 @@
 
 import AL from "alclient-mongo"
-import { LOOP_MS } from "./general"
+import { LOOP_MS } from "./general.js"
 
 export function startChargeLoop(bot: AL.Warrior): void {
     async function chargeLoop() {
