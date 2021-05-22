@@ -93,6 +93,29 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
                     }
 
                     await bot.basicAttack(entity.id)
+
+                    // Move to the next entity if we're gonna kill it
+                    if (bot.canKillInOneShot(entity)) {
+                        let closest: AL.Entity
+                        let distance = Number.MAX_VALUE
+                        for (const [, entity] of bot.entities) {
+                            if (entity.type !== target) continue // Only attack our target
+                            if (!AL.Pathfinder.canWalkPath(bot, entity)) continue // Can't simply walk to entity
+                            if (entity.cooperative !== true && entity.target && ![warrior1?.id, warrior2?.id, warrior3?.id, merchant?.id].includes(entity.target)) continue // It's targeting someone else
+                            if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Possibly gonna die
+                            if (entity.willBurnToDeath()) continue // Will burn to death shortly
+
+                            const d = Tools.distance(bot, entity)
+                            if (d < distance) {
+                                closest = entity
+                                distance = d
+                            }
+                        }
+
+                        if (closest && Tools.distance(bot, closest) > bot.range) {
+                            bot.smartMove(closest, { getWithin: bot.range / 2 }).catch(() => { /* suppress warnings */ })
+                        }
+                    }
                     break
                 }
             }
