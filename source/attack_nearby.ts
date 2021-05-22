@@ -11,6 +11,7 @@ const warrior2Name = "earthWar2"
 const warrior3Name = "earthWar3"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "II"
+const target: AL.MonsterName = "snake"
 const defaultLocation: AL.IPosition = { map: "main", x: 346.5, y: -747 } // Snakes in Halloween
 
 let merchant: AL.Merchant
@@ -125,6 +126,7 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
             let closest: AL.Entity
             let distance = Number.MAX_VALUE
             for (const [, entity] of bot.entities) {
+                if (entity.type !== target) continue // Only attack our target
                 if (!AL.Pathfinder.canWalkPath(bot, entity)) continue // Can't simply walk to entity
                 if (entity.cooperative !== true && entity.target && ![warrior1?.id, warrior2?.id, warrior3?.id, merchant?.id].includes(entity.target)) continue // It's targeting someone else
                 if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Possibly gonna die
@@ -141,7 +143,7 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
                 const destination: AL.IPosition = { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y }
                 if (AL.Tools.distance(bot, destination) > 1) await bot.smartMove(destination)
             } else if (Tools.distance(bot, closest) > bot.range) {
-                await bot.smartMove(closest, { getWithin: bot.range })
+                await bot.smartMove(closest, { getWithin: bot.range / 2 })
             }
         } catch (e) {
             console.error(e)
