@@ -95,9 +95,9 @@ async function startMage(mage: AL.Mage, positionOffset: { x: number, y: number }
                     if (entity.willBurnToDeath()) continue // Will burn to death shortly
 
                     if (mage.canKillInOneShot(entity)) {
-                        for (const bot of [merchant, mage1, mage2, mage3]) {
-                            if (!bot) continue
-                            bot.entities.delete(entity.id)
+                        for (const friend of [merchant, mage1, mage2, mage3]) {
+                            if (!friend) continue
+                            friend.entities.delete(entity.id)
                         }
                     }
 

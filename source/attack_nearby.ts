@@ -85,9 +85,9 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
                     if (entity.willBurnToDeath()) continue // Will burn to death shortly
 
                     if (bot.canKillInOneShot(entity)) {
-                        for (const bot of [merchant, warrior1, warrior2, warrior3]) {
-                            if (!bot) continue
-                            bot.entities.delete(entity.id)
+                        for (const friend of [merchant, warrior1, warrior2, warrior3]) {
+                            if (!friend) continue
+                            friend.entities.delete(entity.id)
                         }
                     }
 
@@ -135,9 +135,6 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
                     closest = entity
                     distance = d
                 }
-
-                await bot.basicAttack(entity.id)
-                break
             }
 
             if (!closest) {
@@ -437,7 +434,7 @@ async function run() {
 
     startShared(warrior2)
     startWarrior(warrior2, { x: -20, y: 0 })
-    
+
     startShared(warrior3)
     startWarrior(warrior3, { x: 20, y: 0 })
 }
