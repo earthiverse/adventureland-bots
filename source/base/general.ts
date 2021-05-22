@@ -164,7 +164,7 @@ export async function goToPoitonSellerIfLow(bot: AL.Character, minHpPots = 100, 
     const currentMpPots = bot.countItem("mpot1")
 
     // We're under the minimum, go buy potions
-    if (currentHpPots < minHpPots || currentMpPots < minMpPots) await bot.smartMove("fancypots", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE })
+    if (currentHpPots < minHpPots || currentMpPots < minMpPots) await bot.smartMove("fancypots", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
     await sleep(1000)
 }
 
@@ -193,7 +193,7 @@ export async function goToNPCShopIfFull(bot: AL.Character, itemsToSell = ITEMS_T
 
     // TODO: Find the closest shop
 
-    await bot.smartMove("fancypots", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE })
+    await bot.smartMove("fancypots", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
     await sleep(1000)
 }
 

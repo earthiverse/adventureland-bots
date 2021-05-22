@@ -98,13 +98,13 @@ async function startRanger(bot: AL.Ranger) {
 
                 // If it's a guaranteed kill, remove it from the everyone's entity list so we don't attack it
                 const target = targets[0]
-                if (AL.Tools.calculateDamageRange(bot, target)[0] * bot.G.skills["3shot"].damage_multiplier >= target.hp) {
+                if (bot.canKillInOneShot(target)) {
                     for (const friend of [ranger, mage1, mage2]) {
-                        friend.entities.delete(targets[0].id)
+                        friend.entities.delete(target.id)
                     }
                 }
 
-                await bot.basicAttack(targets[0].id)
+                await bot.basicAttack(target.id)
             }
         } catch (e) {
             console.error(e)

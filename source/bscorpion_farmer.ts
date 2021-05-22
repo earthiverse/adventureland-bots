@@ -1,12 +1,13 @@
 import AL from "alclient-mongo"
 import { ItemLevelInfo } from "./definitions/bot"
 import { GOLD_TO_HOLD, startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startHealLoop, startPartyLoop, startSellLoop, startSendStuffAllowlistLoop, startUpgradeLoop } from "./base/general.js"
+import { startChargeLoop, startWarcryLoop } from "./base/warrior"
+import { startMluckLoop } from "./base/merchant"
 
 /** Config */
 const merchantName = "earthMer"
 const rangerName = "earthiverse"
 const priestName = "earthPri"
-const rogueName = "earthRog"
 const warriorName = "earthWar"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "III"
@@ -20,7 +21,6 @@ let warrior: AL.Warrior
 const RADIUS = 125
 const ANGLE = Math.PI / 2.5
 const MOVE_TIME_MS = 250
-const MERCHANT_GOLD_TO_HOLD = 100_000_000
 const MERCHANT_ITEMS_TO_HOLD: AL.ItemName[] = [
     // Things we keep on ourselves
     "computer", "tracker", "stand0", "xptome",
@@ -399,37 +399,8 @@ async function startWarrior(warrior: AL.Warrior) {
     }
     attackLoop()
 
-    async function chargeLoop() {
-        try {
-            if (warrior.socket.disconnected) {
-                setTimeout(async () => { chargeLoop() }, 10)
-                return
-            }
-
-            if (warrior.canUse("charge")) await warrior.charge()
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { chargeLoop() }, warrior.getCooldown("charge"))
-    }
-    chargeLoop()
-
-    async function warcryLoop() {
-        try {
-            if (warrior.socket.disconnected) {
-                setTimeout(async () => { warcryLoop() }, 10)
-                return
-            }
-
-            if (warrior.canUse("warcry")) await warrior.warcry()
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { warcryLoop() }, Math.max(10, warrior.getCooldown("warcry")))
-    }
-    warcryLoop()
+    startChargeLoop(warrior)
+    startWarcryLoop(warrior)
 }
 
 async function startMerchant(merchant: AL.Merchant) {
@@ -439,37 +410,7 @@ async function startMerchant(merchant: AL.Merchant) {
         }
     })
 
-    async function mluckLoop() {
-        try {
-            if (merchant.socket.disconnected) {
-                setTimeout(async () => { mluckLoop() }, 10)
-                return
-            }
-
-            if (merchant.canUse("mluck")) {
-                if (!merchant.s.mluck || merchant.s.mluck.f !== merchant.id) await merchant.mluck(merchant.id) // mluck ourselves
-
-                for (const [, player] of merchant.players) {
-                    if (AL.Tools.distance(merchant, player) > merchant.G.skills.mluck.range) continue // Too far away to mluck
-                    if (player.npc) continue // It's an NPC, we can't mluck NPCs.
-
-                    if (!player.s.mluck) {
-                        await merchant.mluck(player.id) // Give the mluck 
-                    } else if (!player.s.mluck.strong && player.s.mluck.f !== merchant.id) {
-                        await merchant.mluck(player.id) // Steal the mluck
-                    } else if ((!player.s.mluck.strong && player.s.mluck.ms < (merchant.G.conditions.mluck.duration - 60000))
-                        || (player.s.mluck.strong && player.s.mluck.f == merchant.id && player.s.mluck.ms < (merchant.G.conditions.mluck.duration - 60000))) {
-                        await merchant.mluck(player.id) // Extend the mluck
-                    }
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { mluckLoop() }, 250)
-    }
-    mluckLoop()
+    startMluckLoop(merchant)
 
     let lastBankVisit = Number.MIN_VALUE
     async function moveLoop() {
@@ -728,7 +669,6 @@ async function run() {
     const merchantP = AL.Game.startMerchant(merchantName, region, identifier)
     const rangerP = AL.Game.startRanger(rangerName, region, identifier)
     const priestP = AL.Game.startPriest(priestName, region, identifier)
-    // const rogueP = AL.Game.startRogue(rogueName, region, identifier)
     const warriorP = AL.Game.startWarrior(warriorName, region, identifier)
     merchant = await merchantP
     ranger = await rangerP
@@ -739,12 +679,13 @@ async function run() {
     // Start the characters
     startShared(merchant)
     startMerchant(merchant)
+
     startShared(ranger)
     startRanger(ranger)
+
     startShared(priest)
     startPriest(priest)
-    // startShared(rogue)
-    // startRogue(rogue)
+
     startShared(warrior)
     startWarrior(warrior)
 }
