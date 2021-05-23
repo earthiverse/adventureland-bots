@@ -163,8 +163,10 @@ export async function goToPoitonSellerIfLow(bot: AL.Character, minHpPots = 100, 
     const currentHpPots = bot.countItem("hpot1")
     const currentMpPots = bot.countItem("mpot1")
 
+    if (currentHpPots >= minHpPots && currentMpPots < minMpPots) return // We don't need any more.
+
     // We're under the minimum, go buy potions
-    if (currentHpPots < minHpPots || currentMpPots < minMpPots) await bot.smartMove("fancypots", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+    await bot.smartMove("fancypots", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
     await sleep(1000)
 }
 
@@ -192,12 +194,11 @@ export async function goToNPCShopIfFull(bot: AL.Character, itemsToSell = ITEMS_T
     if (!hasSellableItem) return // We don't have anything to sell
 
     // TODO: Find the closest shop
-
     await bot.smartMove("fancypots", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
     await sleep(1000)
 }
 
-export function sleep(ms): Promise<void> {
+export function sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
@@ -393,8 +394,9 @@ export function startConnectLoop(bot: AL.Character): void {
         try {
             if (bot.socket.disconnected) {
                 console.log(`${bot.id} is disconnected. Reconnecting!`)
-                bot.socket.connect()
-                setTimeout(async () => { connectLoop() }, 60000)
+                bot.socket.close()
+                bot.socket.open()
+                setTimeout(async () => { connectLoop() }, 1000)
                 return
             }
         } catch (e) {
