@@ -1,6 +1,6 @@
 import axios from "axios"
 import AL from "alclient-mongo"
-import { sleep } from "../base/general"
+import { sleep } from "../base/general.js"
 
 const servers: [AL.ServerRegion, AL.ServerIdentifier][] = [
     ["ASIA", "I"],
