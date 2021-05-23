@@ -222,8 +222,6 @@ async function startMerchant(bot: AL.Merchant) {
     startMluckLoop(bot)
     startPartyLoop(bot, bot.id) // Let anyone who wants to party with me do so
 
-    startBuyToUpgradeLoop(bot, "wand", 5)
-
     let lastBankVisit = Number.MIN_VALUE
     async function moveLoop() {
         try {

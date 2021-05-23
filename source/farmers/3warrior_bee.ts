@@ -11,8 +11,8 @@ const warrior2Name = "earthWar2"
 const warrior3Name = "earthWar3"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "II"
-const target: AL.MonsterName = "snake"
-const defaultLocation: AL.IPosition = { map: "halloween", x: 346.5, y: -747 } // Snakes in Halloween
+const target: AL.MonsterName = "bee"
+const defaultLocation: AL.IPosition = { map: "main", x: 152, y: 1487} // bees
 
 let merchant: AL.Merchant
 let warrior1: AL.Warrior

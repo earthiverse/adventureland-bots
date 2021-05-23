@@ -10,7 +10,8 @@ const mage2Name = "earthMag2"
 const mage3Name = "earthMag3"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "III"
-const defaultLocation: AL.IPosition = { map: "halloween", x: 346.5, y: -747 } // Snakes in Halloween
+const targets: AL.MonsterName[] = ["osnake", "snake"]
+const defaultLocation: AL.IPosition = { map: "halloween", x: 346.5, y: -747 } // snakes
 
 let merchant: AL.Merchant
 let mage1: AL.Mage
@@ -43,6 +44,7 @@ async function startMage(mage: AL.Mage, positionOffset: { x: number, y: number }
 
             if (mage.canUse("attack")) {
                 for (const [, entity] of mage.entities) {
+                    if (!targets.includes(entity.type)) continue // Not the right type
                     if (AL.Tools.distance(mage, entity) > mage.range) continue // Too far away
                     if (entity.cooperative !== true && entity.target && ![mage1?.id, mage2?.id, mage3?.id, merchant?.id].includes(entity.target)) continue // It's targeting someone else
                     if (entity.couldDieToProjectiles(mage.projectiles, mage.players, mage.entities)) continue // Possibly gonna die
@@ -110,8 +112,6 @@ async function startMage(mage: AL.Mage, positionOffset: { x: number, y: number }
 
 async function startMerchant(merchant: AL.Merchant) {
     startPartyLoop(merchant, merchant.id) // Let anyone who wants to party with me do so
-
-    startBuyToUpgradeLoop(merchant, "wand", 5)
 
     startMluckLoop(merchant)
 
