@@ -6,7 +6,6 @@ export function startChargeLoop(bot: AL.Warrior): void {
     async function chargeLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { chargeLoop() }, 10)
                 return
             }
 
@@ -24,7 +23,6 @@ export function startWarcryLoop(bot: AL.Warrior): void {
     async function warcryLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { warcryLoop() }, 10)
                 return
             }
 

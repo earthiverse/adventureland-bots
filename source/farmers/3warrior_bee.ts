@@ -1,10 +1,10 @@
 import AL, { Tools } from "alclient-mongo"
-import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpdateLoop, startUpgradeLoop, startAvoidStacking } from "./base/general.js"
-import { startMluckLoop } from "./base/merchant.js"
-import { startChargeLoop, startWarcryLoop } from "./base/warrior.js"
+import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpdateLoop, startUpgradeLoop, startAvoidStacking, startReconnectLoop } from "../base/general.js"
+import { MERCHANT_GOLD_TO_HOLD, MERCHANT_ITEMS_TO_HOLD, startMluckLoop } from "../base/merchant.js"
+import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
+import { partyLeader, partyMembers } from "./party.js"
 
 /** Config */
-const partyLeader = "earthMer"
 const merchantName = "earthMer"
 const warrior1Name = "earthWar"
 const warrior2Name = "earthWar2"
@@ -12,58 +12,24 @@ const warrior3Name = "earthWar3"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "II"
 const target: AL.MonsterName = "snake"
-const defaultLocation: AL.IPosition = { map: "main", x: 346.5, y: -747 } // Snakes in Halloween
+const defaultLocation: AL.IPosition = { map: "halloween", x: 346.5, y: -747 } // Snakes in Halloween
 
 let merchant: AL.Merchant
 let warrior1: AL.Warrior
 let warrior2: AL.Warrior
 let warrior3: AL.Warrior
 
-const MERCHANT_GOLD_TO_HOLD = 100_000_000
-const MERCHANT_ITEMS_TO_HOLD: AL.ItemName[] = [
-    // Things we keep on ourselves
-    "computer", "tracker", "stand0", "xptome",
-    // Boosters
-    "luckbooster", "goldbooster", "xpbooster",
-    // Potions
-    "hpot0", "hpot1", "mpot0", "mpot1",
-    // MH Tokens
-    "monstertoken",
-    // Scrolls
-    "cscroll0", "cscroll1", "cscroll2", "cscroll3", "scroll0", "scroll1", "scroll2", "scroll3", "scroll4", "strscroll", "intscroll", "dexscroll",
-    // Pickaxe and fishing rod
-    "pickaxe", "rod",
-    // Main Items
-    "dartgun", "wbook1",
-
-    // TEMP: For crafting pouchbows
-    "smoke",
-
-    // TEMP: For crafting eggbaskets
-    "egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8"
-]
-
-const BOT_GOLD_TO_HOLD = 2_000_000
-const BOT_ITEMS_TO_HOLD: AL.ItemName[] = [
-    // Things we keep on ourselves
-    "computer", "tracker", "xptome",
-
-    // Potions
-    "hpot0", "hpot1", "mpot0", "mpot1"
-]
-
 async function startShared(bot: AL.Character) {
     startBuyLoop(bot)
     startCompoundLoop(bot)
-    startConnectLoop(bot)
     startElixirLoop(bot, "elixirluck")
     startHealLoop(bot)
     startLootLoop(bot)
-    startPartyLoop(bot, partyLeader)
+    startPartyLoop(bot, partyLeader, partyMembers)
     startSellLoop(bot)
 
     if (bot.ctype !== "merchant") {
-        startSendStuffDenylistLoop(bot, merchant, BOT_ITEMS_TO_HOLD, BOT_GOLD_TO_HOLD)
+        startSendStuffDenylistLoop(bot, merchant)
     }
 
     startUpdateLoop(bot)
@@ -74,7 +40,6 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
     async function attackLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { attackLoop() }, 10)
                 return
             }
 
@@ -133,7 +98,6 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
     async function moveLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { moveLoop() }, 10)
                 return
             }
 
@@ -189,7 +153,6 @@ async function startMerchant(merchant: AL.Merchant) {
     async function moveLoop() {
         try {
             if (merchant.socket.disconnected) {
-                setTimeout(async () => { moveLoop() }, 10)
                 return
             }
 
@@ -451,17 +414,25 @@ async function run() {
     warrior3 = await warrior3P
 
     // Start the characters
-    startShared(merchant)
-    startMerchant(merchant)
+    startReconnectLoop(merchant, () => {
+        startShared(merchant)
+        startMerchant(merchant)
+    })
 
-    startShared(warrior1)
-    startWarrior(warrior1)
-    startTrackerLoop(warrior1)
+    startReconnectLoop(warrior1, () => {
+        startShared(warrior1)
+        startWarrior(warrior1)
+        startTrackerLoop(warrior1)
+    })
 
-    startShared(warrior2)
-    startWarrior(warrior2, { x: -20, y: 0 })
+    startReconnectLoop(warrior2, () => {
+        startShared(warrior2)
+        startWarrior(warrior2, { x: -20, y: 0 })
+    })
 
-    startShared(warrior3)
-    startWarrior(warrior3, { x: 20, y: 0 })
+    startReconnectLoop(warrior3, () => {
+        startShared(warrior3)
+        startWarrior(warrior3, { x: 20, y: 0 })
+    })
 }
 run()

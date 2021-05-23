@@ -1,4 +1,4 @@
-import AL, { ItemName } from "alclient-mongo"
+import AL, { Game, ItemName } from "alclient-mongo"
 import { ItemLevelInfo } from "../definitions/bot"
 
 export const LOOP_MS = 100
@@ -221,7 +221,6 @@ export function startBuyLoop(bot: AL.Character, itemsToBuy = ITEMS_TO_BUY, items
     async function buyLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { buyLoop() }, 10)
                 return
             }
 
@@ -296,7 +295,6 @@ export function startBuyToUpgradeLoop(bot: AL.Character, item: ItemName, quantit
     async function buyToUpgradeLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { buyToUpgradeLoop() }, 10)
                 return
             }
 
@@ -315,7 +313,6 @@ export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo 
     async function compoundLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { compoundLoop() }, 10)
                 return
             }
 
@@ -389,30 +386,10 @@ export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo 
     compoundLoop()
 }
 
-export function startConnectLoop(bot: AL.Character): void {
-    async function connectLoop() {
-        try {
-            if (bot.socket.disconnected) {
-                console.log(`${bot.id} is disconnected. Reconnecting!`)
-                bot.socket.close()
-                bot.socket.open()
-                setTimeout(async () => { connectLoop() }, 1000)
-                return
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { connectLoop() }, 1000)
-    }
-    connectLoop()
-}
-
 export function startElixirLoop(bot: AL.Character, elixir: AL.ItemName): void {
     async function elixirLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { elixirLoop() }, 10)
                 return
             }
 
@@ -435,7 +412,6 @@ export function startEventLoop(bot: AL.Character): void {
     async function eventLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { eventLoop() }, 10)
                 return
             }
 
@@ -459,7 +435,6 @@ export function startExchangeLoop(bot: AL.Character, itemsToExchange: AL.ItemNam
     async function exchangeLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { exchangeLoop() }, 10)
                 return
             }
 
@@ -487,7 +462,6 @@ export function startHealLoop(bot: AL.Character): void {
     async function healLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { healLoop() }, 10)
                 return
             }
 
@@ -545,7 +519,6 @@ export function startLootLoop(bot: AL.Character): void {
     async function lootLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { lootLoop() }, 10)
                 return
             }
 
@@ -562,11 +535,11 @@ export function startLootLoop(bot: AL.Character): void {
     lootLoop()
 }
 
-export function startPartyLoop(bot: AL.Character, leader: string, partyMembers?: string[]): void {
+export function startPartyLoop(bot: AL.Character, leader: string, partyMembers?: Set<string>): void {
     if (bot.id == leader) {
         // Have the leader accept party requests
         bot.socket.on("request", async (data: { name: string }) => {
-            if (partyMembers && !partyMembers.includes(data.name)) return // Discard requests from other players
+            if (partyMembers?.has(data.name)) return // Discard requests from other players
 
             try {
                 await bot.acceptPartyRequest(data.name)
@@ -579,7 +552,6 @@ export function startPartyLoop(bot: AL.Character, leader: string, partyMembers?:
     async function partyLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { partyLoop() }, 10)
                 return
             }
 
@@ -602,7 +574,6 @@ export function startPartyInviteLoop(bot: AL.Character, player: string): void {
     async function partyInviteLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { partyInviteLoop() }, 10)
                 return
             }
 
@@ -624,7 +595,6 @@ export function startPontyLoop(bot: AL.Character, itemsToBuy: AL.ItemName[] = IT
     async function pontyLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { pontyLoop() }, 10000)
                 return
             }
 
@@ -645,11 +615,26 @@ export function startPontyLoop(bot: AL.Character, itemsToBuy: AL.ItemName[] = IT
     pontyLoop()
 }
 
+export function startReconnectLoop(bot: AL.Character, code: () => void): void {
+    const reconnectLoop = async () => {
+        try {
+            await bot.disconnect()
+            await bot.connect()
+            bot.socket.on("disconnect", async () => { reconnectLoop() })
+            code()
+        } catch (e) {
+            await bot.disconnect()
+            setTimeout(async () => { reconnectLoop() })
+        }
+    }
+    bot.socket.on("disconnect", async () => { reconnectLoop() })
+    code()
+}
+
 export function startSellLoop(bot: AL.Character, itemsToSell: ItemLevelInfo = ITEMS_TO_SELL): void {
     async function sellLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { sellLoop() }, 10)
                 return
             }
 
@@ -687,7 +672,6 @@ export function startSendStuffAllowlistLoop(bot: AL.Character, sendTo: AL.Charac
     async function sendStuffLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { sendStuffLoop() }, 10)
                 return
             }
 
@@ -727,7 +711,6 @@ export function startSendStuffDenylistLoop(bot: AL.Character, sendTo: AL.Charact
     async function sendStuffLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { sendStuffLoop() }, 10)
                 return
             }
 
@@ -760,7 +743,6 @@ export function startTrackerLoop(bot: AL.Character): void {
     async function trackerLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { trackerLoop() }, 10)
                 return
             }
 
@@ -780,7 +762,6 @@ export function startUpgradeLoop(bot: AL.Character, itemsToSell: ItemLevelInfo =
     async function upgradeLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { upgradeLoop() }, 10)
                 return
             }
 
@@ -836,7 +817,6 @@ export function startUpdateLoop(bot: AL.Character): void {
     async function updateLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { updateLoop() }, 30000)
                 return
             }
 

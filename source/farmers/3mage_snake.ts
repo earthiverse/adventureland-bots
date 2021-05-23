@@ -1,9 +1,9 @@
 import AL from "alclient-mongo"
-import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpdateLoop, startUpgradeLoop, startBuyToUpgradeLoop } from "./base/general.js"
-import { startMluckLoop } from "./base/merchant.js"
+import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpdateLoop, startUpgradeLoop, startBuyToUpgradeLoop, startReconnectLoop } from "../base/general.js"
+import { MERCHANT_GOLD_TO_HOLD, MERCHANT_ITEMS_TO_HOLD, startMluckLoop } from "../base/merchant.js"
+import { partyLeader, partyMembers } from "./party.js"
 
 /** Config */
-const partyLeader = "earthMer"
 const merchantName = "earthMer"
 const mage1Name = "earthMag"
 const mage2Name = "earthMag2"
@@ -17,62 +17,17 @@ let mage1: AL.Mage
 let mage2: AL.Mage
 let mage3: AL.Mage
 
-const ITEMS_TO_BUY: AL.ItemName[] = [
-    "intring", "intearring",
-    "wbook0", "wbook1",
-    "wand", "pinkie",
-    "ornamentstaff"
-]
-
-const MERCHANT_GOLD_TO_HOLD = 100_000_000
-const MERCHANT_ITEMS_TO_HOLD: AL.ItemName[] = [
-    // Things we keep on ourselves
-    "computer", "tracker", "stand0", "xptome",
-    // Boosters
-    "luckbooster", "goldbooster", "xpbooster",
-    // Potions
-    "hpot0", "hpot1", "mpot0", "mpot1",
-    // MH Tokens
-    "monstertoken",
-    // Scrolls
-    "cscroll0", "cscroll1", "cscroll2", "cscroll3", "scroll0", "scroll1", "scroll2", "scroll3", "scroll4", "strscroll", "intscroll", "dexscroll",
-    // Pickaxe and fishing rod
-    "pickaxe", "rod",
-    // Main Items
-    "dartgun", "wbook1",
-
-    // TEMP: For crafting pouchbows
-    "smoke",
-
-    // TEMP: For crafting eggbaskets
-    "egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8"
-]
-
-const BOT_GOLD_TO_HOLD = 2_000_000
-const BOT_ITEMS_TO_HOLD: AL.ItemName[] = [
-    // Things we keep on ourselves
-    "computer", "tracker", "xptome",
-
-    // Potions
-    "hpot0", "hpot1", "mpot0", "mpot1"
-]
-
 async function startShared(bot: AL.Character) {
-    startBuyLoop(bot, ITEMS_TO_BUY)
+    startBuyLoop(bot)
     startCompoundLoop(bot)
-    startConnectLoop(bot)
     startElixirLoop(bot, "elixirluck")
     startHealLoop(bot)
     startLootLoop(bot)
-    startPartyLoop(bot, partyLeader)
+    startPartyLoop(bot, partyLeader, partyMembers)
     startSellLoop(bot)
 
     if (bot.ctype !== "merchant") {
-        startSendStuffDenylistLoop(bot, merchant, BOT_ITEMS_TO_HOLD, BOT_GOLD_TO_HOLD)
-    }
-
-    if (bot.id == mage1Name) {
-        startTrackerLoop(bot)
+        startSendStuffDenylistLoop(bot, merchant)
     }
 
     startUpdateLoop(bot)
@@ -83,7 +38,6 @@ async function startMage(mage: AL.Mage, positionOffset: { x: number, y: number }
     async function attackLoop() {
         try {
             if (mage.socket.disconnected) {
-                setTimeout(async () => { attackLoop() }, 10)
                 return
             }
 
@@ -130,7 +84,6 @@ async function startMage(mage: AL.Mage, positionOffset: { x: number, y: number }
     async function moveLoop() {
         try {
             if (mage.socket.disconnected) {
-                setTimeout(async () => { moveLoop() }, 10)
                 return
             }
 
@@ -166,7 +119,6 @@ async function startMerchant(merchant: AL.Merchant) {
     async function moveLoop() {
         try {
             if (merchant.socket.disconnected) {
-                setTimeout(async () => { moveLoop() }, 10)
                 return
             }
 
@@ -409,7 +361,7 @@ async function startMerchant(merchant: AL.Merchant) {
     }
     moveLoop()
 
-    startPontyLoop(merchant, ITEMS_TO_BUY)
+    startPontyLoop(merchant)
 }
 
 async function run() {
@@ -422,22 +374,32 @@ async function run() {
     const merchantP = AL.Game.startMerchant(merchantName, region, identifier)
     const mage1P = AL.Game.startMage(mage1Name, region, identifier)
     const mage2P = AL.Game.startMage(mage2Name, region, identifier)
-    // const rogueP = AL.Game.startRogue(rogueName, region, identifier)
     const mage3P = AL.Game.startMage(mage3Name, region, identifier)
     merchant = await merchantP
     mage1 = await mage1P
     mage2 = await mage2P
-    // rogue = await rogueP
     mage3 = await mage3P
 
     // Start the characters
-    startShared(merchant)
-    startMerchant(merchant)
-    startShared(mage1)
-    startMage(mage1)
-    startShared(mage2)
-    startMage(mage2, { x: -20, y: 0 })
-    startShared(mage3)
-    startMage(mage3, { x: 20, y: 0 })
+    startReconnectLoop(merchant, () => {
+        startShared(merchant)
+        startMerchant(merchant)
+    })
+
+    startReconnectLoop(mage1, () => {
+        startShared(mage1)
+        startMage(mage1)
+        startTrackerLoop(mage1)
+    })
+
+    startReconnectLoop(mage2, () => {
+        startShared(mage2)
+        startMage(mage2, { x: -20, y: 0 })
+    })
+
+    startReconnectLoop(mage3, () => {
+        startShared(mage3)
+        startMage(mage3, { x: 20, y: 0 })
+    })
 }
 run()

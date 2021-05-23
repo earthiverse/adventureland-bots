@@ -159,7 +159,6 @@ export function startMluckLoop(bot: AL.Merchant): void {
     async function mluckLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { mluckLoop() }, 10)
                 return
             }
 

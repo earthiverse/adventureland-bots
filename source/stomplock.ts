@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { startBuyLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startTrackerLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startUpdateLoop, startUpgradeLoop } from "./base/general.js"
+import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startTrackerLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpdateLoop, startUpgradeLoop, startReconnectLoop } from "./base/general.js"
 
 /** Config */
 const warriorName = "earthWar"
@@ -34,7 +34,6 @@ type StompOrderCM = {
 async function startShared(bot: AL.Warrior) {
     startBuyLoop(bot)
     startCompoundLoop(bot)
-    startConnectLoop(bot)
     startElixirLoop(bot, "elixirluck")
     startExchangeLoop(bot)
     startHealLoop(bot)
@@ -49,7 +48,6 @@ async function startShared(bot: AL.Warrior) {
     async function attackLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { attackLoop() }, 10)
                 return
             }
 
@@ -119,18 +117,17 @@ async function startFollower(bot: AL.Warrior) {
     async function stompLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { stompLoop() }, 10)
                 return
             }
 
-            if(stompOrder[0] == bot.id) {
+            if (stompOrder[0] == bot.id) {
                 // It's our turn to stomp!
             }
 
         } catch (e) {
             console.error(e)
         }
-        
+
         setTimeout(async () => { stompLoop() }, Math.max(10, bot.getCooldown("stomp")))
     }
     stompLoop()
@@ -151,13 +148,20 @@ async function run() {
     follower2 = await follower2P
 
     // Start the characters
-    startShared(leader)
-    startLeader(leader)
+    startReconnectLoop(leader, () => {
+        startShared(leader)
+        startLeader(leader)
+    })
 
-    startShared(follower1)
-    startFollower(follower1)
+    startReconnectLoop(follower1, () => {
+        startShared(follower1)
+        startFollower(follower1)
+        startTrackerLoop(follower1)
+    })
 
-    startShared(follower2)
-    startFollower(follower2)
+    startReconnectLoop(follower2, () => {
+        startShared(follower2)
+        startFollower(follower2)
+    })
 }
 run()

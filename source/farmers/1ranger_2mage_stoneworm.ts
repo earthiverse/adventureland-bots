@@ -1,6 +1,7 @@
 import AL from "alclient-mongo"
-import { ITEMS_TO_EXCHANGE, LOOP_MS, startBuyLoop, startBuyToUpgradeLoop, startCompoundLoop, startConnectLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpdateLoop, startUpgradeLoop } from "./base/general.js"
-import { MERCHANT_GOLD_TO_HOLD, MERCHANT_ITEMS_TO_HOLD, startMluckLoop } from "./base/merchant.js"
+import { ITEMS_TO_EXCHANGE, LOOP_MS, startBuyLoop, startBuyToUpgradeLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startReconnectLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpdateLoop, startUpgradeLoop } from "../base/general.js"
+import { MERCHANT_GOLD_TO_HOLD, MERCHANT_ITEMS_TO_HOLD, startMluckLoop } from "../base/merchant.js"
+import { partyLeader, partyMembers } from "./party.js"
 
 /** Config */
 const merchantName = "earthMer"
@@ -9,14 +10,6 @@ const mage1Name = "earthMag"
 const mage2Name = "earthMag2"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "II"
-
-const partyLeader = "earthiverse"
-const partyMembers = [rangerName, mage1Name, mage2Name,
-    // Kouin's characters
-    "bataxedude", "cclair", "fathergreen", "kakaka", "kekeke", "kouin", "kukuku", "piredude", "mule0", "mule1", "mule2", "mule3", "mule4", "mule5", "mule6", "mule7", "mule8", "mule9", "mule10",
-    // Lolwutpear's characters
-    "lolwutpear", "shoopdawhoop", "ytmnd"
-]
 
 const rangerLocation: AL.IPosition = { map: "spookytown", x: 994.5, y: -133 }
 const mage1Location: AL.IPosition = { map: "spookytown", x: 741, y: 61 }
@@ -31,7 +24,6 @@ let mage2: AL.Mage
 async function startShared(bot: AL.Character) {
     startBuyLoop(bot)
     startCompoundLoop(bot)
-    startConnectLoop(bot)
     startElixirLoop(bot, "elixirluck")
     startExchangeLoop(bot)
     startHealLoop(bot)
@@ -53,7 +45,6 @@ async function startRanger(bot: AL.Ranger) {
     async function attackLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { attackLoop() }, 10)
                 return
             }
 
@@ -117,7 +108,6 @@ async function startRanger(bot: AL.Ranger) {
     async function moveLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { moveLoop() }, 10)
                 return
             }
 
@@ -140,7 +130,6 @@ async function startRanger(bot: AL.Ranger) {
     async function supershotLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { supershotLoop() }, 10)
                 return
             }
 
@@ -181,7 +170,6 @@ async function startMage(bot: AL.Mage) {
     async function attackLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { attackLoop() }, 10)
                 return
             }
 
@@ -206,7 +194,6 @@ async function startMage(bot: AL.Mage) {
     async function moveLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { moveLoop() }, 10)
                 return
             }
 
@@ -241,7 +228,6 @@ async function startMerchant(bot: AL.Merchant) {
     async function moveLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { moveLoop() }, 10)
                 return
             }
 
@@ -515,21 +501,28 @@ async function run() {
     merchant = await merchantP
     ranger = await rangerP
     mage1 = await mage1P
-    // rogue = await rogueP
     mage2 = await mage2P
 
     // Start the characters
-    startShared(merchant)
-    startMerchant(merchant)
+    startReconnectLoop(merchant, () => {
+        startShared(merchant)
+        startMerchant(merchant)
+    })
 
-    startShared(ranger)
-    startRanger(ranger)
-    startTrackerLoop(ranger)
+    startReconnectLoop(ranger, () => {
+        startShared(ranger)
+        startRanger(ranger)
+        startTrackerLoop(ranger)
+    })
 
-    startShared(mage1)
-    startMage(mage1)
+    startReconnectLoop(mage1, () => {
+        startShared(mage1)
+        startMage(mage1)
+    })
 
-    startShared(mage2)
-    startMage(mage2)
+    startReconnectLoop(mage2, () => {
+        startShared(mage2)
+        startMage(mage2)
+    })
 }
 run()

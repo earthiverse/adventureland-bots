@@ -5,7 +5,6 @@ export function startPartyHealLoop(bot: AL.Priest, members: AL.Character[]): voi
     async function partyHealLoop() {
         try {
             if (bot.socket.disconnected) {
-                setTimeout(async () => { partyHealLoop() }, 10)
                 return
             }
 
