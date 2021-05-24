@@ -1,5 +1,5 @@
 import AL, { Tools } from "alclient-mongo"
-import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpdateLoop, startUpgradeLoop, startAvoidStacking, startReconnectLoop } from "../base/general.js"
+import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, startAvoidStacking, startReconnectLoop, LOOP_MS } from "../base/general.js"
 import { MERCHANT_GOLD_TO_HOLD, MERCHANT_ITEMS_TO_HOLD, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { partyLeader, partyMembers } from "./party.js"
@@ -12,7 +12,7 @@ const warrior3Name = "earthWar3"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "II"
 const target: AL.MonsterName = "bee"
-const defaultLocation: AL.IPosition = { map: "main", x: 152, y: 1487} // bees
+const defaultLocation: AL.IPosition = { map: "main", x: 152, y: 1487 } // bees
 
 let merchant: AL.Merchant
 let warrior1: AL.Warrior
@@ -32,7 +32,6 @@ async function startShared(bot: AL.Character) {
         startSendStuffDenylistLoop(bot, merchant)
     }
 
-    startUpdateLoop(bot)
     startUpgradeLoop(bot)
 }
 
@@ -40,6 +39,7 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
     async function attackLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
                 return
             }
 
@@ -88,7 +88,7 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
             console.error(e)
         }
 
-        setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack")))
+        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
     }
     attackLoop()
 
@@ -98,13 +98,14 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
     async function moveLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                setTimeout(async () => { moveLoop() }, 1000)
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
@@ -137,7 +138,7 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
             console.error(e)
         }
 
-        setTimeout(async () => { moveLoop() }, 250)
+        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 
@@ -153,13 +154,14 @@ async function startMerchant(merchant: AL.Merchant) {
     async function moveLoop() {
         try {
             if (merchant.socket.disconnected) {
+                merchant.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
             // If we are dead, respawn
             if (merchant.rip) {
                 await merchant.respawn()
-                setTimeout(async () => { moveLoop() }, 1000)
+                merchant.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
@@ -182,7 +184,7 @@ async function startMerchant(merchant: AL.Merchant) {
                 for (let i = 0; i < merchant.items.length; i++) {
                     const item = merchant.items[i]
                     if (!item) continue
-                    if (!MERCHANT_ITEMS_TO_HOLD.includes(item.name) /* We don't want to hold on to it */
+                    if (!MERCHANT_ITEMS_TO_HOLD.has(item.name) /* We don't want to hold on to it */
                         || item.v) /* Item is PvP marked */ {
                         // Deposit it in the bank
                         try {
@@ -288,7 +290,7 @@ async function startMerchant(merchant: AL.Merchant) {
                     const item = bankItems[i]
                     if (!item) continue // No item
 
-                    if (!MERCHANT_ITEMS_TO_HOLD.includes(item.name)) continue // We don't want to hold this item
+                    if (!MERCHANT_ITEMS_TO_HOLD.has(item.name)) continue // We don't want to hold this item
                     if (merchant.hasItem(item.name)) continue // We are already holding one of these items
 
                     const pack = `items${Math.floor(i / 42)}` as Exclude<AL.BankPackName, "gold">
@@ -297,7 +299,7 @@ async function startMerchant(merchant: AL.Merchant) {
                     freeSpaces--
                 }
 
-                setTimeout(async () => { moveLoop() }, 250)
+                merchant.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -312,7 +314,7 @@ async function startMerchant(merchant: AL.Merchant) {
                     await merchant.smartMove((merchant.S[type] as AL.ServerInfoDataLive), { getWithin: 100 })
                 }
 
-                setTimeout(async () => { moveLoop() }, 250)
+                merchant.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -328,7 +330,7 @@ async function startMerchant(merchant: AL.Merchant) {
                             await merchant.smartMove(friend, { getWithin: merchant.G.skills.mluck.range / 2 })
                         }
 
-                        setTimeout(async () => { moveLoop() }, 250)
+                        merchant.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                         return
                     }
                 }
@@ -391,7 +393,7 @@ async function startMerchant(merchant: AL.Merchant) {
             console.error(e)
         }
 
-        setTimeout(async () => { moveLoop() }, 250)
+        merchant.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }
@@ -414,25 +416,17 @@ async function run() {
     warrior3 = await warrior3P
 
     // Start the characters
-    startReconnectLoop(merchant, () => {
-        startShared(merchant)
-        startMerchant(merchant)
-    })
+    startShared(merchant)
+    startMerchant(merchant)
 
-    startReconnectLoop(warrior1, () => {
-        startShared(warrior1)
-        startWarrior(warrior1)
-        startTrackerLoop(warrior1)
-    })
+    startShared(warrior1)
+    startWarrior(warrior1)
+    startTrackerLoop(warrior1)
 
-    startReconnectLoop(warrior2, () => {
-        startShared(warrior2)
-        startWarrior(warrior2, { x: -20, y: 0 })
-    })
+    startShared(warrior2)
+    startWarrior(warrior2, { x: -20, y: 0 })
 
-    startReconnectLoop(warrior3, () => {
-        startShared(warrior3)
-        startWarrior(warrior3, { x: 20, y: 0 })
-    })
+    startShared(warrior3)
+    startWarrior(warrior3, { x: 20, y: 0 })
 }
 run()

@@ -1,4 +1,4 @@
-import AL, { Game, ItemName } from "alclient-mongo"
+import AL from "alclient-mongo"
 import { ItemLevelInfo } from "../definitions/bot"
 
 export const LOOP_MS = 100
@@ -7,16 +7,16 @@ export const CHECK_TRACKER_EVERY_MS = 600_000 /** 10 minutes */
 
 export const GOLD_TO_HOLD = 5_000_000
 
-export const ITEMS_TO_HOLD: AL.ItemName[] = [
+export const ITEMS_TO_HOLD: Set<AL.ItemName> = new Set([
     // Things we keep on ourselves
     "computer", "tracker", "xptome",
     // Boosters
     "luckbooster", "goldbooster", "xpbooster",
     // Potions
     "hpot0", "hpot1", "mpot0", "mpot1"
-]
+])
 
-export const ITEMS_TO_EXCHANGE: AL.ItemName[] = [
+export const ITEMS_TO_EXCHANGE: Set<AL.ItemName> = new Set([
     // General exchangables
     "5bucks", "gem0", "gem1",
     // Gem Fragments for t2 amulets
@@ -35,8 +35,8 @@ export const ITEMS_TO_EXCHANGE: AL.ItemName[] = [
     "basketofeggs",
     // Boxes
     "armorbox", "bugbountybox", "gift0", "gift1", "mysterybox", "weaponbox", "xbox"
-]
-export const ITEMS_TO_BUY: AL.ItemName[] = [
+])
+export const ITEMS_TO_BUY: Set<AL.ItemName> = new Set([
     // Exchangeables
     ...ITEMS_TO_EXCHANGE,
     // Belts
@@ -48,38 +48,42 @@ export const ITEMS_TO_BUY: AL.ItemName[] = [
     // Amulets
     "amuletofm", "dexamulet", "intamulet", "snring", "stramulet", "t2dexamulet", "t2intamulet", "t2stramulet",
     // Orbs
-    "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull",
+    "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull", "vorb",
+    // Offhands
+    "exoarm", "wbook0", "wbook1",
     // Shields
     "t2quiver", "lantern", "mshield", "quiver", "sshield", "xshield",
     // Capes
-    "angelwings", "bcape", "cape", "ecape", "stealthcape", "vcape",
+    "angelwings", "bcape", "cape", "ecape", "fcape", "stealthcape", "vcape",
     // Shoes
     "eslippers", "hboots", "mrnboots", "mwboots", "shoes1", "vboots", "wingedboots", "wshoes", "xboots",
     // Pants
     "frankypants", "hpants", "mrnpants", "mwpants", "pants1", "starkillers", "wbreeches", "xpants",
     // Armor
-    "cdragon", "coat1", "harmor", "mcape", "mrnarmor", "mwarmor", "tshirt0", "tshirt1", "tshirt2", "tshirt3", "tshirt4", "tshirt6", "tshirt7", "tshirt8", "tshirt88", "tshirt9", "vattire", "warpvest", "wattire", "xarmor",
+    "cdragon", "coat1", "harmor", "luckyt", "mcape", "mrnarmor", "mwarmor", "tshirt0", "tshirt1", "tshirt2", "tshirt3", "tshirt4", "tshirt6", "tshirt7", "tshirt8", "tshirt88", "tshirt9", "vattire", "warpvest", "wattire", "xarmor",
     // Helmets
     "cyber", "eears", "fury", "helmet1", "hhelmet", "mchat", "mmhat", "mphat", "mrnhat", "mwhelmet", "oxhelmet", "partyhat", "rednose", "wcap", "xhelmet",
     // Gloves
     "gloves1", "goldenpowerglove", "handofmidas", "hgloves", "mpxgloves", "mrngloves", "mwgloves", "poker", "powerglove", "vgloves", "wgloves", "xgloves",
     // Good weapons
-    "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "firebow", "frostbow", "froststaff", "gbow", "harbringer", "heartwood", "hbow", "merry", "oozingterror", "ornamentstaff", "pmace", "t2bow", "t3bow", "wblade",
+    "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "fireblade", "firebow", "firestaff", "firestars", "frostbow", "froststaff", "gbow", "gstaff", "harbringer", "heartwood", "hbow", "hdagger", "merry", "oozingterror", "ornamentstaff", "pinkie", "pmace", "scythe", "t2bow", "t3bow", "vdagger", "vhammer", "vstaff", "vsword", "wblade",
     // Things we can exchange / craft with
-    "ascale", "bfur", "cscale", "electronics", "feather0", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", /*"networkcard",*/ "platinumingot", "platinumnugget", "pleather", "snakefang",
+    "ascale", "bfur", "cscale", "electronics", "feather0", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", "platinumingot", "platinumnugget", "pleather", "snakefang",
     // Things to make xbox
     "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8",
     // Things to make easter basket
     "egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8",
     // Essences
-    "essenceofether", "essenceoffire", "essenceoffrost", "essenceofgreed", "essenceoflife", "essenceofnature",
+    "essenceofether", "essenceoffire", "essenceoffrost", "essenceofgreed", "essenceoflife", "essenceofnature", "offering", "offeringp", "offeringx",
     // Potions & consumables
     "bunnyelixir", "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate", "vblood",
     // High level scrolls
     "cscroll3", "scroll3", "scroll4", "forscroll", "luckscroll", "manastealscroll",
+    // Merchant Tools
+    "pickaxe", "rod",
     // Misc. Things
-    "bottleofxp", "bugbountybox", "computer", "cxjar", "monstertoken", "poison", "snakeoil"
-]
+    "bottleofxp", "bugbountybox", "computer", "confetti", "cxjar", "emotionjar", "monstertoken", "poison", "puppyer", "snakeoil"
+])
 
 export const ITEMS_TO_SELL: ItemLevelInfo = {
     // Default clothing
@@ -221,6 +225,7 @@ export function startBuyLoop(bot: AL.Character, itemsToBuy = ITEMS_TO_BUY, items
     async function buyLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("buyloop", setTimeout(async () => { buyLoop() }, LOOP_MS))
                 return
             }
 
@@ -242,7 +247,7 @@ export function startBuyLoop(bot: AL.Character, itemsToBuy = ITEMS_TO_BUY, items
 
                         if (
                             item.p // Buy all shiny/glitched/etc. items
-                            || itemsToBuy.includes(item.name) // Buy anything in our buy list
+                            || itemsToBuy.has(item.name) // Buy anything in our buy list
                         ) {
                             await bot.buyFromPonty(item)
                             continue
@@ -276,7 +281,7 @@ export function startBuyLoop(bot: AL.Character, itemsToBuy = ITEMS_TO_BUY, items
                     // Buy if we can resell to NPC for more money
                     const cost = bot.calculateItemCost(item)
                     if ((item.price < cost * 0.6) // Item is lower price than G, which means we could sell it to an NPC straight away and make a profit...
-                        || (itemsToBuy.includes(item.name) && item.price <= cost * AL.Constants.PONTY_MARKUP) // Item is the same, or lower price than Ponty would sell it for, and we want it.
+                        || (itemsToBuy.has(item.name) && item.price <= cost * AL.Constants.PONTY_MARKUP) // Item is the same, or lower price than Ponty would sell it for, and we want it.
                     ) {
                         await bot.buyFromMerchant(player.id, slot, item.rid, q)
                         continue
@@ -286,15 +291,16 @@ export function startBuyLoop(bot: AL.Character, itemsToBuy = ITEMS_TO_BUY, items
         } catch (e) {
             console.error(e)
         }
-        setTimeout(async () => { buyLoop() }, LOOP_MS)
+        bot.timeouts.set("buyloop", setTimeout(async () => { buyLoop() }, LOOP_MS))
     }
     buyLoop()
 }
 
-export function startBuyToUpgradeLoop(bot: AL.Character, item: ItemName, quantity: number): void {
+export function startBuyToUpgradeLoop(bot: AL.Character, item: AL.ItemName, quantity: number): void {
     async function buyToUpgradeLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("upgradeloop", setTimeout(async () => { buyToUpgradeLoop() }, LOOP_MS))
                 return
             }
 
@@ -304,7 +310,7 @@ export function startBuyToUpgradeLoop(bot: AL.Character, item: ItemName, quantit
         } catch (e) {
             console.error(e)
         }
-        setTimeout(async () => { buyToUpgradeLoop() }, LOOP_MS)
+        bot.timeouts.set("upgradeloop", setTimeout(async () => { buyToUpgradeLoop() }, LOOP_MS))
     }
     buyToUpgradeLoop()
 }
@@ -313,17 +319,18 @@ export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo 
     async function compoundLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("compoundloop", setTimeout(async () => { compoundLoop() }, LOOP_MS))
                 return
             }
 
             if (bot.q.compound) {
                 // We are upgrading, we have to wait
-                setTimeout(async () => { compoundLoop() }, bot.q.compound.ms)
+                bot.timeouts.set("compoundloop", setTimeout(async () => { compoundLoop() }, bot.q.compound.ms))
                 return
             }
             if (bot.map.startsWith("bank")) {
                 // We are in the bank, we have to wait
-                setTimeout(async () => { compoundLoop() }, LOOP_MS)
+                bot.timeouts.set("compoundloop", setTimeout(async () => { compoundLoop() }, LOOP_MS))
                 return
             }
 
@@ -381,7 +388,7 @@ export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo 
             console.error(e)
         }
 
-        setTimeout(async () => { compoundLoop() }, LOOP_MS)
+        bot.timeouts.set("compoundloop", setTimeout(async () => { compoundLoop() }, LOOP_MS))
     }
     compoundLoop()
 }
@@ -390,6 +397,7 @@ export function startElixirLoop(bot: AL.Character, elixir: AL.ItemName): void {
     async function elixirLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("elixirloop", setTimeout(async () => { elixirLoop() }, LOOP_MS))
                 return
             }
 
@@ -402,7 +410,7 @@ export function startElixirLoop(bot: AL.Character, elixir: AL.ItemName): void {
             console.error(e)
         }
 
-        setTimeout(async () => { elixirLoop() }, LOOP_MS)
+        bot.timeouts.set("elixirloop", setTimeout(async () => { elixirLoop() }, LOOP_MS))
     }
     elixirLoop()
 }
@@ -412,6 +420,7 @@ export function startEventLoop(bot: AL.Character): void {
     async function eventLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("eventloop", setTimeout(async () => { eventLoop() }, LOOP_MS))
                 return
             }
 
@@ -426,15 +435,16 @@ export function startEventLoop(bot: AL.Character): void {
         } catch (e) {
             console.error(e)
         }
-        setTimeout(async () => { eventLoop() }, LOOP_MS)
+        bot.timeouts.set("eventloop", setTimeout(async () => { eventLoop() }, LOOP_MS))
     }
     eventLoop()
 }
 
-export function startExchangeLoop(bot: AL.Character, itemsToExchange: AL.ItemName[] = ITEMS_TO_EXCHANGE): void {
+export function startExchangeLoop(bot: AL.Character, itemsToExchange = ITEMS_TO_EXCHANGE): void {
     async function exchangeLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("exchangeloop", setTimeout(async () => { exchangeLoop() }, LOOP_MS))
                 return
             }
 
@@ -443,7 +453,7 @@ export function startExchangeLoop(bot: AL.Character, itemsToExchange: AL.ItemNam
                 for (let i = 0; i < bot.items.length; i++) {
                     const item = bot.items[i]
                     if (!item) continue
-                    if (!itemsToExchange.includes(item.name)) continue // Don't want / can't exchange
+                    if (!itemsToExchange.has(item.name)) continue // Don't want / can't exchange
                     if (!bot.canExchange(item.name)) continue // Can't exchange.
 
                     await bot.exchange(i)
@@ -453,7 +463,7 @@ export function startExchangeLoop(bot: AL.Character, itemsToExchange: AL.ItemNam
             console.error(e)
         }
 
-        setTimeout(async () => { exchangeLoop() }, LOOP_MS)
+        bot.timeouts.set("exchangeloop", setTimeout(async () => { exchangeLoop() }, LOOP_MS))
     }
     exchangeLoop()
 }
@@ -462,6 +472,7 @@ export function startHealLoop(bot: AL.Character): void {
     async function healLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("healloop", setTimeout(async () => { healLoop() }, Math.max(LOOP_MS, bot.getCooldown("use_hp"))))
                 return
             }
 
@@ -510,7 +521,7 @@ export function startHealLoop(bot: AL.Character): void {
             console.error(e)
         }
 
-        setTimeout(async () => { healLoop() }, Math.max(LOOP_MS, bot.getCooldown("use_hp")))
+        bot.timeouts.set("healloop", setTimeout(async () => { healLoop() }, Math.max(LOOP_MS, bot.getCooldown("use_hp"))))
     }
     healLoop()
 }
@@ -519,6 +530,7 @@ export function startLootLoop(bot: AL.Character): void {
     async function lootLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("lootloop", setTimeout(async () => { lootLoop() }, LOOP_MS))
                 return
             }
 
@@ -530,7 +542,7 @@ export function startLootLoop(bot: AL.Character): void {
             console.error(e)
         }
 
-        setTimeout(async () => { lootLoop() }, LOOP_MS)
+        bot.timeouts.set("lootloop", setTimeout(async () => { lootLoop() }, LOOP_MS))
     }
     lootLoop()
 }
@@ -552,6 +564,7 @@ export function startPartyLoop(bot: AL.Character, leader: string, partyMembers?:
     async function partyLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("partyloop", setTimeout(async () => { partyLoop() }, 10000))
                 return
             }
 
@@ -565,7 +578,7 @@ export function startPartyLoop(bot: AL.Character, leader: string, partyMembers?:
             console.error(e)
         }
 
-        setTimeout(async () => { partyLoop() }, 10000)
+        bot.timeouts.set("partyloop", setTimeout(async () => { partyLoop() }, 10000))
     }
     partyLoop()
 }
@@ -574,6 +587,7 @@ export function startPartyInviteLoop(bot: AL.Character, player: string): void {
     async function partyInviteLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("partyinviteloop", setTimeout(async () => { partyInviteLoop() }, 10000))
                 return
             }
 
@@ -585,23 +599,24 @@ export function startPartyInviteLoop(bot: AL.Character, player: string): void {
             console.error(e)
         }
 
-        setTimeout(async () => { partyInviteLoop() }, 10000)
+        bot.timeouts.set("partyinviteloop", setTimeout(async () => { partyInviteLoop() }, 10000))
     }
     partyInviteLoop()
 }
 
-export function startPontyLoop(bot: AL.Character, itemsToBuy: AL.ItemName[] = ITEMS_TO_BUY): void {
+export function startPontyLoop(bot: AL.Character, itemsToBuy = ITEMS_TO_BUY): void {
     const ponty = bot.locateNPC("secondhands")[0]
     async function pontyLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("pontyloop", setTimeout(async () => { pontyLoop() }, 10000))
                 return
             }
 
             if (AL.Tools.distance(bot, ponty) < AL.Constants.NPC_INTERACTION_DISTANCE) {
                 const pontyData = await bot.getPontyItems()
                 for (const item of pontyData) {
-                    if (itemsToBuy.includes(item.name)) {
+                    if (itemsToBuy.has(item.name)) {
                         await bot.buyFromPonty(item)
                     }
                 }
@@ -610,31 +625,35 @@ export function startPontyLoop(bot: AL.Character, itemsToBuy: AL.ItemName[] = IT
             console.error(e)
         }
 
-        setTimeout(async () => { pontyLoop() }, 10000)
+        bot.timeouts.set("pontyloop", setTimeout(async () => { pontyLoop() }, 10000))
     }
     pontyLoop()
 }
 
-export function startReconnectLoop(bot: AL.Character, code: () => void): void {
+export function startReconnectLoop(bot: AL.Character): void {
     const reconnectLoop = async () => {
         try {
-            await bot.disconnect()
-            await bot.connect()
-            bot.socket.on("disconnect", async () => { reconnectLoop() })
-            code()
+            if (bot.socket.disconnected) {
+                console.log(`Reconnecting ${bot.id}...`)
+                await bot.connect()
+                bot.timeouts.set("reconnectloop", setTimeout(async () => { reconnectLoop() }, AL.Constants.RECONNECT_TIMEOUT_MS))
+                return
+            }
         } catch (e) {
-            await bot.disconnect()
-            setTimeout(async () => { reconnectLoop() })
+            console.error(e)
+            bot.timeouts.set("reconnectloop", setTimeout(async () => { reconnectLoop() }, AL.Constants.RECONNECT_TIMEOUT_MS))
+            return
         }
+        bot.timeouts.set("reconnectloop", setTimeout(async () => { reconnectLoop() }, LOOP_MS))
     }
-    bot.socket.on("disconnect", async () => { reconnectLoop() })
-    code()
+    bot.timeouts.set("reconnectloop", setTimeout(async () => { reconnectLoop() }, AL.Constants.RECONNECT_TIMEOUT_MS))
 }
 
 export function startSellLoop(bot: AL.Character, itemsToSell: ItemLevelInfo = ITEMS_TO_SELL): void {
     async function sellLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("sellloop", setTimeout(async () => { sellLoop() }, LOOP_MS))
                 return
             }
 
@@ -656,7 +675,7 @@ export function startSellLoop(bot: AL.Character, itemsToSell: ItemLevelInfo = IT
             console.error(e)
         }
 
-        setTimeout(async () => { sellLoop() }, LOOP_MS)
+        bot.timeouts.set("sellloop", setTimeout(async () => { sellLoop() }, LOOP_MS))
     }
     sellLoop()
 }
@@ -672,11 +691,12 @@ export function startSendStuffAllowlistLoop(bot: AL.Character, sendTo: AL.Charac
     async function sendStuffLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("sendstuffallowlistloop", setTimeout(async () => { sendStuffLoop() }, LOOP_MS))
                 return
             }
 
             if (sendTo.isFull()) {
-                setTimeout(async () => { sendStuffLoop() }, LOOP_MS)
+                bot.timeouts.set("sendstuffallowlistloop", setTimeout(async () => { sendStuffLoop() }, LOOP_MS))
                 return
             }
 
@@ -695,7 +715,7 @@ export function startSendStuffAllowlistLoop(bot: AL.Character, sendTo: AL.Charac
             console.error(e)
         }
 
-        setTimeout(async () => { sendStuffLoop() }, LOOP_MS)
+        bot.timeouts.set("sendstuffallowlistloop", setTimeout(async () => { sendStuffLoop() }, LOOP_MS))
     }
     sendStuffLoop()
 }
@@ -707,15 +727,16 @@ export function startSendStuffAllowlistLoop(bot: AL.Character, sendTo: AL.Charac
  * @param itemsToHold 
  * @param goldToHold 
  */
-export function startSendStuffDenylistLoop(bot: AL.Character, sendTo: AL.Character, itemsToHold: AL.ItemName[] = ITEMS_TO_HOLD, goldToHold = 1_000_000): void {
+export function startSendStuffDenylistLoop(bot: AL.Character, sendTo: AL.Character, itemsToHold = ITEMS_TO_HOLD, goldToHold = 1_000_000): void {
     async function sendStuffLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("sendstuffdenylistloop", setTimeout(async () => { sendStuffLoop() }, LOOP_MS))
                 return
             }
 
-            if (sendTo.isFull()) {
-                setTimeout(async () => { sendStuffLoop() }, 10000)
+            if (!sendTo || sendTo.isFull()) {
+                bot.timeouts.set("sendstuffdenylistloop", setTimeout(async () => { sendStuffLoop() }, 10000))
                 return
             }
 
@@ -724,7 +745,7 @@ export function startSendStuffDenylistLoop(bot: AL.Character, sendTo: AL.Charact
                 if (extraGold > 0) await bot.sendGold(sendTo.id, extraGold)
                 for (let i = 0; i < bot.items.length; i++) {
                     const item = bot.items[i]
-                    if (!item || itemsToHold.includes(item.name)) continue // Don't send important items
+                    if (!item || itemsToHold.has(item.name)) continue // Don't send important items
                     if (item.l == "l") continue // Don't send locked items
 
                     await bot.sendItem(sendTo.id, i, item.q)
@@ -734,7 +755,7 @@ export function startSendStuffDenylistLoop(bot: AL.Character, sendTo: AL.Charact
             console.error(e)
         }
 
-        setTimeout(async () => { sendStuffLoop() }, LOOP_MS)
+        bot.timeouts.set("sendstuffdenylistloop", setTimeout(async () => { sendStuffLoop() }, LOOP_MS))
     }
     sendStuffLoop()
 }
@@ -743,6 +764,7 @@ export function startTrackerLoop(bot: AL.Character): void {
     async function trackerLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("trackerloop", setTimeout(async () => { trackerLoop() }, CHECK_TRACKER_EVERY_MS))
                 return
             }
 
@@ -753,7 +775,7 @@ export function startTrackerLoop(bot: AL.Character): void {
             console.error(e)
         }
 
-        setTimeout(async () => { trackerLoop() }, CHECK_TRACKER_EVERY_MS)
+        bot.timeouts.set("trackerloop", setTimeout(async () => { trackerLoop() }, CHECK_TRACKER_EVERY_MS))
     }
     trackerLoop()
 }
@@ -762,17 +784,18 @@ export function startUpgradeLoop(bot: AL.Character, itemsToSell: ItemLevelInfo =
     async function upgradeLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("upgradeloop", setTimeout(async () => { upgradeLoop() }, LOOP_MS))
                 return
             }
 
             if (bot.q.upgrade) {
                 // We are upgrading, we have to wait
-                setTimeout(async () => { upgradeLoop() }, bot.q.upgrade.ms)
+                bot.timeouts.set("upgradeloop", setTimeout(async () => { upgradeLoop() }, bot.q.upgrade.ms))
                 return
             }
             if (bot.map.startsWith("bank")) {
                 // We are in the bank, we have to wait
-                setTimeout(async () => { upgradeLoop() }, LOOP_MS)
+                bot.timeouts.set("upgradeloop", setTimeout(async () => { upgradeLoop() }, LOOP_MS))
                 return
             }
 
@@ -808,24 +831,7 @@ export function startUpgradeLoop(bot: AL.Character, itemsToSell: ItemLevelInfo =
             console.error(e)
         }
 
-        setTimeout(async () => { upgradeLoop() }, LOOP_MS)
+        bot.timeouts.set("upgradeloop", setTimeout(async () => { upgradeLoop() }, LOOP_MS))
     }
     upgradeLoop()
-}
-
-export function startUpdateLoop(bot: AL.Character): void {
-    async function updateLoop() {
-        try {
-            if (bot.socket.disconnected) {
-                return
-            }
-
-            await bot.requestEntitiesData()
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { updateLoop() }, 30000)
-    }
-    updateLoop()
 }

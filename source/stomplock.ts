@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startTrackerLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpdateLoop, startUpgradeLoop, startReconnectLoop } from "./base/general.js"
+import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startTrackerLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startReconnectLoop, LOOP_MS } from "./base/general.js"
 
 /** Config */
 const warriorName = "earthWar"
@@ -34,6 +34,7 @@ type StompOrderCM = {
 async function startShared(bot: AL.Warrior) {
     startBuyLoop(bot)
     startCompoundLoop(bot)
+    startReconnectLoop(bot)
     startElixirLoop(bot, "elixirluck")
     startExchangeLoop(bot)
     startHealLoop(bot)
@@ -42,12 +43,12 @@ async function startShared(bot: AL.Warrior) {
     startPontyLoop(bot)
     startSellLoop(bot)
 
-    startUpdateLoop(bot)
     startUpgradeLoop(bot)
 
     async function attackLoop() {
         try {
             if (bot.socket.disconnected) {
+                setTimeout(async () => { attackLoop() }, LOOP_MS)
                 return
             }
 
@@ -117,6 +118,7 @@ async function startFollower(bot: AL.Warrior) {
     async function stompLoop() {
         try {
             if (bot.socket.disconnected) {
+                setTimeout(async () => { stompLoop() }, LOOP_MS)
                 return
             }
 
@@ -148,20 +150,14 @@ async function run() {
     follower2 = await follower2P
 
     // Start the characters
-    startReconnectLoop(leader, () => {
-        startShared(leader)
-        startLeader(leader)
-    })
+    startShared(leader)
+    startLeader(leader)
 
-    startReconnectLoop(follower1, () => {
-        startShared(follower1)
-        startFollower(follower1)
-        startTrackerLoop(follower1)
-    })
+    startShared(follower1)
+    startFollower(follower1)
+    startTrackerLoop(follower1)
 
-    startReconnectLoop(follower2, () => {
-        startShared(follower2)
-        startFollower(follower2)
-    })
+    startShared(follower2)
+    startFollower(follower2)
 }
 run()

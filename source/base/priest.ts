@@ -5,11 +5,12 @@ export function startPartyHealLoop(bot: AL.Priest, members: AL.Character[]): voi
     async function partyHealLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("partyhealloop", setTimeout(async () => { partyHealLoop() }, Math.max(bot.getCooldown("partyheal"), LOOP_MS)))
                 return
             }
 
             if (bot.c.town) {
-                setTimeout(async () => { partyHealLoop() }, bot.c.town.ms)
+                bot.timeouts.set("partyhealloop", setTimeout(async () => { partyHealLoop() }, bot.c.town.ms))
                 return
             }
 
@@ -28,7 +29,7 @@ export function startPartyHealLoop(bot: AL.Priest, members: AL.Character[]): voi
             console.error(e)
         }
 
-        setTimeout(async () => { partyHealLoop() }, Math.max(bot.getCooldown("partyheal"), LOOP_MS))
+        bot.timeouts.set("partyhealloop", setTimeout(async () => { partyHealLoop() }, Math.max(bot.getCooldown("partyheal"), LOOP_MS)))
     }
     partyHealLoop()
 }

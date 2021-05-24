@@ -6,6 +6,7 @@ export function startChargeLoop(bot: AL.Warrior): void {
     async function chargeLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("chargeloop", setTimeout(async () => { chargeLoop() }, Math.max(LOOP_MS, bot.getCooldown("charge"))))
                 return
             }
 
@@ -14,7 +15,7 @@ export function startChargeLoop(bot: AL.Warrior): void {
             console.error(e)
         }
 
-        setTimeout(async () => { chargeLoop() }, Math.max(LOOP_MS, bot.getCooldown("charge")))
+        bot.timeouts.set("chargeloop", setTimeout(async () => { chargeLoop() }, Math.max(LOOP_MS, bot.getCooldown("charge"))))
     }
     chargeLoop()
 }
@@ -23,6 +24,7 @@ export function startWarcryLoop(bot: AL.Warrior): void {
     async function warcryLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("warcryloop", setTimeout(async () => { warcryLoop() }, Math.max(LOOP_MS, bot.getCooldown("warcry"))))
                 return
             }
 
@@ -31,7 +33,7 @@ export function startWarcryLoop(bot: AL.Warrior): void {
             console.error(e)
         }
 
-        setTimeout(async () => { warcryLoop() }, Math.max(LOOP_MS, bot.getCooldown("warcry")))
+        bot.timeouts.set("warcryloop", setTimeout(async () => { warcryLoop() }, Math.max(LOOP_MS, bot.getCooldown("warcry"))))
     }
     warcryLoop()
 }

@@ -2,7 +2,7 @@ import AL from "alclient-mongo"
 import { ITEMS_TO_HOLD, ITEMS_TO_SELL, LOOP_MS } from "./general.js"
 
 export const MERCHANT_GOLD_TO_HOLD = 100_000_000
-export const MERCHANT_ITEMS_TO_HOLD: AL.ItemName[] = [
+export const MERCHANT_ITEMS_TO_HOLD: Set<AL.ItemName> = new Set([
     ...ITEMS_TO_HOLD,
     // Merchant Stand
     "stand0",
@@ -14,7 +14,7 @@ export const MERCHANT_ITEMS_TO_HOLD: AL.ItemName[] = [
     "pickaxe", "rod",
     // Main Items
     "dartgun", "wbook1"
-]
+])
 
 // TODO: INCOMPLETE
 export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_HOLD, itemsToHold = MERCHANT_ITEMS_TO_HOLD, itemsToSell = ITEMS_TO_SELL): Promise<void> {
@@ -34,7 +34,7 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
         const item = bot.items[i]
         if (!item) continue
         if (item.v == undefined) {
-            if (itemsToHold.includes(item.name)) continue // We want to hold it
+            if (itemsToHold.has(item.name)) continue // We want to hold it
             if (item.l == "l") continue // We want to hold it
             if (itemsToSell[item.name]) {
                 if (item.level !== undefined && item.level <= itemsToSell[item.name]) continue // We want to sell it
@@ -143,7 +143,7 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
         const item = bankItems[i]
         if (!item) continue // No item
 
-        if (!MERCHANT_ITEMS_TO_HOLD.includes(item.name)) continue // We don't want to hold this item
+        if (!MERCHANT_ITEMS_TO_HOLD.has(item.name)) continue // We don't want to hold this item
         if (bot.hasItem(item.name)) continue // We are already holding one of these items
 
         const pack = `items${Math.floor(i / 42)}` as Exclude<AL.BankPackName, "gold">
@@ -159,6 +159,7 @@ export function startMluckLoop(bot: AL.Merchant): void {
     async function mluckLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("mluckloop", setTimeout(async () => { mluckLoop() }, LOOP_MS))
                 return
             }
 
@@ -183,7 +184,7 @@ export function startMluckLoop(bot: AL.Merchant): void {
             console.error(e)
         }
 
-        setTimeout(async () => { mluckLoop() }, LOOP_MS)
+        bot.timeouts.set("mluckloop", setTimeout(async () => { mluckLoop() }, LOOP_MS))
     }
     mluckLoop()
 }

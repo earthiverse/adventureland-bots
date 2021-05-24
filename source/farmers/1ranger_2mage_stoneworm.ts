@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { ITEMS_TO_EXCHANGE, LOOP_MS, startBuyLoop, startBuyToUpgradeLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startReconnectLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpdateLoop, startUpgradeLoop } from "../base/general.js"
+import { ITEMS_TO_EXCHANGE, LOOP_MS, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startReconnectLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
 import { MERCHANT_GOLD_TO_HOLD, MERCHANT_ITEMS_TO_HOLD, startMluckLoop } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "./party.js"
 
@@ -24,6 +24,7 @@ let mage2: AL.Mage
 async function startShared(bot: AL.Character) {
     startBuyLoop(bot)
     startCompoundLoop(bot)
+    startReconnectLoop(bot)
     startElixirLoop(bot, "elixirluck")
     startExchangeLoop(bot)
     startHealLoop(bot)
@@ -37,7 +38,6 @@ async function startShared(bot: AL.Character) {
         startSendStuffDenylistLoop(bot, merchant)
     }
 
-    startUpdateLoop(bot)
     startUpgradeLoop(bot)
 }
 
@@ -45,6 +45,7 @@ async function startRanger(bot: AL.Ranger) {
     async function attackLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
                 return
             }
 
@@ -101,20 +102,21 @@ async function startRanger(bot: AL.Ranger) {
             console.error(e)
         }
 
-        setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack")))
+        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
     }
     attackLoop()
 
     async function moveLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
                 return
             }
 
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                setTimeout(async () => { moveLoop() }, LOOP_MS)
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
                 return
             }
 
@@ -123,13 +125,14 @@ async function startRanger(bot: AL.Ranger) {
             console.error(e)
         }
 
-        setTimeout(async () => { moveLoop() }, LOOP_MS)
+        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
     }
     moveLoop()
 
     async function supershotLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("supershotloop", setTimeout(async () => { supershotLoop() }, LOOP_MS))
                 return
             }
 
@@ -162,6 +165,8 @@ async function startRanger(bot: AL.Ranger) {
         } catch (e) {
             console.error(e)
         }
+
+        bot.timeouts.set("supershotloop", setTimeout(async () => { supershotLoop() }, LOOP_MS))
     }
     supershotLoop()
 }
@@ -170,6 +175,7 @@ async function startMage(bot: AL.Mage) {
     async function attackLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
                 return
             }
 
@@ -187,20 +193,21 @@ async function startMage(bot: AL.Mage) {
         } catch (e) {
             console.error(e)
         }
-        setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack")))
+        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
     }
     attackLoop()
 
     async function moveLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
                 return
             }
 
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                setTimeout(async () => { moveLoop() }, LOOP_MS)
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
                 return
             }
 
@@ -213,7 +220,7 @@ async function startMage(bot: AL.Mage) {
             console.error(e)
         }
 
-        setTimeout(async () => { moveLoop() }, LOOP_MS)
+        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
     }
     moveLoop()
 }
@@ -226,13 +233,14 @@ async function startMerchant(bot: AL.Merchant) {
     async function moveLoop() {
         try {
             if (bot.socket.disconnected) {
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
                 return
             }
 
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                setTimeout(async () => { moveLoop() }, 1000)
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
@@ -255,7 +263,7 @@ async function startMerchant(bot: AL.Merchant) {
                 for (let i = 0; i < bot.items.length; i++) {
                     const item = bot.items[i]
                     if (!item) continue
-                    if (!MERCHANT_ITEMS_TO_HOLD.includes(item.name) /* We don't want to hold on to it */
+                    if (!MERCHANT_ITEMS_TO_HOLD.has(item.name) /* We don't want to hold on to it */
                         || item.v) /* Item is PvP marked */ {
                         // Deposit it in the bank
                         try {
@@ -359,7 +367,7 @@ async function startMerchant(bot: AL.Merchant) {
                     const item = bankItems[i]
                     if (!item) continue // No item
 
-                    if (!ITEMS_TO_EXCHANGE.includes(item.name)) continue // Not exchangable
+                    if (!ITEMS_TO_EXCHANGE.has(item.name)) continue // Not exchangable
 
                     const gInfo = bot.G.items[item.name]
                     if (item.q < gInfo.e) continue // Not enough to exchange
@@ -377,7 +385,7 @@ async function startMerchant(bot: AL.Merchant) {
                     const item = bankItems[i]
                     if (!item) continue // No item
 
-                    if (!MERCHANT_ITEMS_TO_HOLD.includes(item.name)) continue // We don't want to hold this item
+                    if (!MERCHANT_ITEMS_TO_HOLD.has(item.name)) continue // We don't want to hold this item
                     if (bot.hasItem(item.name)) continue // We are already holding one of these items
 
                     const pack = `items${Math.floor(i / 42)}` as Exclude<AL.BankPackName, "gold">
@@ -386,7 +394,7 @@ async function startMerchant(bot: AL.Merchant) {
                     freeSpaces--
                 }
 
-                setTimeout(async () => { moveLoop() }, 250)
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -401,7 +409,7 @@ async function startMerchant(bot: AL.Merchant) {
                     await bot.smartMove((bot.S[type] as AL.ServerInfoDataLive), { getWithin: 100 })
                 }
 
-                setTimeout(async () => { moveLoop() }, 250)
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
                 return
             }
 
@@ -417,7 +425,7 @@ async function startMerchant(bot: AL.Merchant) {
                             await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2 })
                         }
 
-                        setTimeout(async () => { moveLoop() }, 250)
+                        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
                         return
                     }
                 }
@@ -480,7 +488,7 @@ async function startMerchant(bot: AL.Merchant) {
             console.error(e)
         }
 
-        setTimeout(async () => { moveLoop() }, 250)
+        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
     }
     moveLoop()
 }
@@ -502,25 +510,17 @@ async function run() {
     mage2 = await mage2P
 
     // Start the characters
-    startReconnectLoop(merchant, () => {
-        startShared(merchant)
-        startMerchant(merchant)
-    })
+    startShared(merchant)
+    startMerchant(merchant)
 
-    startReconnectLoop(ranger, () => {
-        startShared(ranger)
-        startRanger(ranger)
-        startTrackerLoop(ranger)
-    })
+    startShared(ranger)
+    startRanger(ranger)
+    startTrackerLoop(ranger)
 
-    startReconnectLoop(mage1, () => {
-        startShared(mage1)
-        startMage(mage1)
-    })
+    startShared(mage1)
+    startMage(mage1)
 
-    startReconnectLoop(mage2, () => {
-        startShared(mage2)
-        startMage(mage2)
-    })
+    startShared(mage2)
+    startMage(mage2)
 }
 run()

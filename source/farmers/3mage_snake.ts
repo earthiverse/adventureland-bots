@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpdateLoop, startUpgradeLoop, startBuyToUpgradeLoop, startReconnectLoop } from "../base/general.js"
+import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, startReconnectLoop, LOOP_MS } from "../base/general.js"
 import { MERCHANT_GOLD_TO_HOLD, MERCHANT_ITEMS_TO_HOLD, startMluckLoop } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "./party.js"
 
@@ -21,6 +21,7 @@ let mage3: AL.Mage
 async function startShared(bot: AL.Character) {
     startBuyLoop(bot)
     startCompoundLoop(bot)
+    startReconnectLoop(bot)
     startElixirLoop(bot, "elixirluck")
     startHealLoop(bot)
     startLootLoop(bot)
@@ -31,7 +32,6 @@ async function startShared(bot: AL.Character) {
         startSendStuffDenylistLoop(bot, merchant)
     }
 
-    startUpdateLoop(bot)
     startUpgradeLoop(bot)
 }
 
@@ -39,6 +39,7 @@ async function startMage(mage: AL.Mage, positionOffset: { x: number, y: number }
     async function attackLoop() {
         try {
             if (mage.socket.disconnected) {
+                mage.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
                 return
             }
 
@@ -79,20 +80,21 @@ async function startMage(mage: AL.Mage, positionOffset: { x: number, y: number }
             console.error(e)
         }
 
-        setTimeout(async () => { attackLoop() }, Math.max(10, mage.getCooldown("attack")))
+        mage.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, mage.getCooldown("attack"))))
     }
     attackLoop()
 
     async function moveLoop() {
         try {
             if (mage.socket.disconnected) {
+                mage.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
             // If we are dead, respawn
             if (mage.rip) {
                 await mage.respawn()
-                setTimeout(async () => { moveLoop() }, 1000)
+                mage.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
@@ -105,7 +107,7 @@ async function startMage(mage: AL.Mage, positionOffset: { x: number, y: number }
             console.error(e)
         }
 
-        setTimeout(async () => { moveLoop() }, 250)
+        mage.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }
@@ -119,13 +121,14 @@ async function startMerchant(merchant: AL.Merchant) {
     async function moveLoop() {
         try {
             if (merchant.socket.disconnected) {
+                merchant.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
             // If we are dead, respawn
             if (merchant.rip) {
                 await merchant.respawn()
-                setTimeout(async () => { moveLoop() }, 1000)
+                merchant.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
@@ -148,7 +151,7 @@ async function startMerchant(merchant: AL.Merchant) {
                 for (let i = 0; i < merchant.items.length; i++) {
                     const item = merchant.items[i]
                     if (!item) continue
-                    if (!MERCHANT_ITEMS_TO_HOLD.includes(item.name) /* We don't want to hold on to it */
+                    if (!MERCHANT_ITEMS_TO_HOLD.has(item.name) /* We don't want to hold on to it */
                         || item.v) /* Item is PvP marked */ {
                         // Deposit it in the bank
                         try {
@@ -254,7 +257,7 @@ async function startMerchant(merchant: AL.Merchant) {
                     const item = bankItems[i]
                     if (!item) continue // No item
 
-                    if (!MERCHANT_ITEMS_TO_HOLD.includes(item.name)) continue // We don't want to hold this item
+                    if (!MERCHANT_ITEMS_TO_HOLD.has(item.name)) continue // We don't want to hold this item
                     if (merchant.hasItem(item.name)) continue // We are already holding one of these items
 
                     const pack = `items${Math.floor(i / 42)}` as Exclude<AL.BankPackName, "gold">
@@ -263,7 +266,7 @@ async function startMerchant(merchant: AL.Merchant) {
                     freeSpaces--
                 }
 
-                setTimeout(async () => { moveLoop() }, 250)
+                merchant.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -278,7 +281,7 @@ async function startMerchant(merchant: AL.Merchant) {
                     await merchant.smartMove((merchant.S[type] as AL.ServerInfoDataLive), { getWithin: 100 })
                 }
 
-                setTimeout(async () => { moveLoop() }, 250)
+                merchant.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -294,7 +297,7 @@ async function startMerchant(merchant: AL.Merchant) {
                             await merchant.smartMove(friend, { getWithin: merchant.G.skills.mluck.range / 2 })
                         }
 
-                        setTimeout(async () => { moveLoop() }, 250)
+                        merchant.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                         return
                     }
                 }
@@ -357,7 +360,7 @@ async function startMerchant(merchant: AL.Merchant) {
             console.error(e)
         }
 
-        setTimeout(async () => { moveLoop() }, 250)
+        merchant.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 
@@ -381,25 +384,17 @@ async function run() {
     mage3 = await mage3P
 
     // Start the characters
-    startReconnectLoop(merchant, () => {
-        startShared(merchant)
-        startMerchant(merchant)
-    })
+    startShared(merchant)
+    startMerchant(merchant)
 
-    startReconnectLoop(mage1, () => {
-        startShared(mage1)
-        startMage(mage1)
-        startTrackerLoop(mage1)
-    })
+    startShared(mage1)
+    startMage(mage1)
+    startTrackerLoop(mage1)
 
-    startReconnectLoop(mage2, () => {
-        startShared(mage2)
-        startMage(mage2, { x: -20, y: 0 })
-    })
+    startShared(mage2)
+    startMage(mage2, { x: -20, y: 0 })
 
-    startReconnectLoop(mage3, () => {
-        startShared(mage3)
-        startMage(mage3, { x: 20, y: 0 })
-    })
+    startShared(mage3)
+    startMage(mage3, { x: 20, y: 0 })
 }
 run()
