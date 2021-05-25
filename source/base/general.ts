@@ -699,6 +699,27 @@ export function startSendStuffDenylistLoop(bot: AL.Character, sendTo: AL.Charact
     sendStuffLoop()
 }
 
+export function startServerPartyInviteLoop(bot: AL.Character, ignore = [bot.id]): void {
+    async function serverPartyInviteLoop() {
+        try {
+            const players = await bot.getPlayers()
+            for (const player of players) {
+                if (player.party == bot.id) continue // They're already in our party
+                if (player.type == "merchant") continue // We don't want any merchants
+                if (ignore.includes(player.name)) continue // Ignore
+                if (bot.partyData?.list?.length >= 9) break // We're full
+
+                await bot.sendPartyInvite(player.name)
+                await sleep(1000)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("serverpartyinviteloop", setTimeout(async () => { serverPartyInviteLoop() }, 1000))
+    }
+    serverPartyInviteLoop()
+}
+
 export function startTrackerLoop(bot: AL.Character): void {
     async function trackerLoop() {
         try {

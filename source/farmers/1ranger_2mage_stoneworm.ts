@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { ITEMS_TO_EXCHANGE, LOOP_MS, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
+import { ITEMS_TO_EXCHANGE, LOOP_MS, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startServerPartyInviteLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
 import { MERCHANT_GOLD_TO_HOLD, MERCHANT_ITEMS_TO_HOLD, startMluckLoop } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "./party.js"
 
@@ -215,6 +215,7 @@ async function startMage(bot: AL.Mage) {
 async function startMerchant(bot: AL.Merchant) {
     startMluckLoop(bot)
     startPartyLoop(bot, bot.id) // Let anyone who wants to party with me do so
+    startServerPartyInviteLoop(bot, [...partyMembers]) // Let's invite everyone, lol
 
     let lastBankVisit = Number.MIN_VALUE
     async function moveLoop() {
