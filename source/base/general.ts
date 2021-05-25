@@ -705,11 +705,18 @@ export function startServerPartyInviteLoop(bot: AL.Character, ignore = [bot.id])
             const players = await bot.getPlayers()
             for (const player of players) {
                 if (player.party == bot.id) continue // They're already in our party
-                if (player.type == "merchant") continue // We don't want any merchants
                 if (ignore.includes(player.name)) continue // Ignore
                 if (bot.partyData?.list?.length >= 9) break // We're full
 
-                await bot.sendPartyInvite(player.name)
+                if (bot.party) {
+                    // We have a party, let's invite more!
+                    await bot.sendPartyInvite(player.name)
+                } else {
+                    // We don't have a party, let's invite more, or request to join theirs!
+                    await bot.sendPartyInvite(player.name)
+                    if (player.party) await bot.sendPartyRequest(player.name)
+                }
+
                 await sleep(1000)
             }
         } catch (e) {
