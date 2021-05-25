@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { ITEMS_TO_EXCHANGE, LOOP_MS, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startReconnectLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
+import { ITEMS_TO_EXCHANGE, LOOP_MS, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
 import { MERCHANT_GOLD_TO_HOLD, MERCHANT_ITEMS_TO_HOLD, startMluckLoop } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "./party.js"
 
@@ -24,7 +24,6 @@ let mage2: AL.Mage
 async function startShared(bot: AL.Character) {
     startBuyLoop(bot)
     startCompoundLoop(bot)
-    startReconnectLoop(bot)
     startElixirLoop(bot, "elixirluck")
     startExchangeLoop(bot)
     startHealLoop(bot)
@@ -44,10 +43,7 @@ async function startShared(bot: AL.Character) {
 async function startRanger(bot: AL.Ranger) {
     async function attackLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             const targets: AL.Entity[] = []
             for (const [, entity] of bot.entities) {
@@ -108,10 +104,7 @@ async function startRanger(bot: AL.Ranger) {
 
     async function moveLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             // If we are dead, respawn
             if (bot.rip) {
@@ -131,10 +124,7 @@ async function startRanger(bot: AL.Ranger) {
 
     async function supershotLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("supershotloop", setTimeout(async () => { supershotLoop() }, LOOP_MS))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             // Find the furthest away target that we can supershot, and supershot it.
             let ssTarget: AL.Entity
@@ -152,7 +142,7 @@ async function startRanger(bot: AL.Ranger) {
                 }
             }
 
-            if (bot.canUse("supershot")) {
+            if (ssTarget && bot.canUse("supershot")) {
                 // If it's a guaranteed kill, remove it from the everyone's entity list so we don't attack it
                 if (AL.Tools.calculateDamageRange(bot, ssTarget)[0] * bot.G.skills["supershot"].damage_multiplier >= ssTarget.hp) {
                     for (const friend of [ranger, mage1, mage2]) {
@@ -174,10 +164,7 @@ async function startRanger(bot: AL.Ranger) {
 async function startMage(bot: AL.Mage) {
     async function attackLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             for (const [, entity] of bot.entities) {
                 if (entity.type !== "stoneworm") continue // Not a stoneworm
@@ -199,10 +186,7 @@ async function startMage(bot: AL.Mage) {
 
     async function moveLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             // If we are dead, respawn
             if (bot.rip) {
@@ -232,10 +216,7 @@ async function startMerchant(bot: AL.Merchant) {
     let lastBankVisit = Number.MIN_VALUE
     async function moveLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             // If we are dead, respawn
             if (bot.rip) {
@@ -500,27 +481,109 @@ async function run() {
 
     // Start all characters
     console.log("Connecting...")
-    const merchantP = AL.Game.startMerchant(merchantName, region, identifier)
-    const rangerP = AL.Game.startRanger(rangerName, region, identifier)
-    const mage1P = AL.Game.startMage(mage1Name, region, identifier)
-    const mage2P = AL.Game.startMage(mage2Name, region, identifier)
-    merchant = await merchantP
-    ranger = await rangerP
-    mage1 = await mage1P
-    mage2 = await mage2P
+    const startMerchantLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+        // Start the characters
+        const loopBot = async () => {
+            try {
+                if (merchant) await merchant.disconnect()
+                merchant = await AL.Game.startMerchant(name, region, identifier)
+                startShared(merchant)
+                startMerchant(merchant)
+                merchant.socket.on("disconnect", async () => { loopBot() })
+            } catch (e) {
+                console.error(e)
+                if (merchant) await merchant.disconnect()
+                const wait = /wait_(\d+)_second/.exec(e)
+                if (wait && wait[1]) {
+                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                } else if (/limits/.test(e)) {
+                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                } else {
+                    setTimeout(async () => { loopBot() }, 10000)
+                }
+            }
+        }
+        loopBot()
+    }
+    startMerchantLoop(merchantName, region, identifier).catch(() => { /* ignore errors */ })
 
-    // Start the characters
-    startShared(merchant)
-    startMerchant(merchant)
+    const startRangerLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+        // Start the characters
+        const loopBot = async () => {
+            try {
+                if (ranger) await ranger.disconnect()
+                ranger = await AL.Game.startRanger(name, region, identifier)
+                startShared(ranger)
+                startRanger(ranger)
+                startTrackerLoop(ranger)
+                ranger.socket.on("disconnect", async () => { loopBot() })
+            } catch (e) {
+                console.error(e)
+                if (ranger) await ranger.disconnect()
+                const wait = /wait_(\d+)_second/.exec(e)
+                if (wait && wait[1]) {
+                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                } else if (/limits/.test(e)) {
+                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                } else {
+                    setTimeout(async () => { loopBot() }, 10000)
+                }
+            }
+        }
+        loopBot()
+    }
+    startRangerLoop(rangerName, region, identifier).catch(() => { /* ignore errors */ })
 
-    startShared(ranger)
-    startRanger(ranger)
-    startTrackerLoop(ranger)
+    const startMage1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+        // Start the characters
+        const loopBot = async () => {
+            try {
+                if (mage1) await mage1.disconnect()
+                mage1 = await AL.Game.startMage(name, region, identifier)
+                startShared(mage1)
+                startMage(mage1)
+                mage1.socket.on("disconnect", async () => { loopBot() })
+            } catch (e) {
+                console.error(e)
+                if (mage1) await mage1.disconnect()
+                const wait = /wait_(\d+)_second/.exec(e)
+                if (wait && wait[1]) {
+                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                } else if (/limits/.test(e)) {
+                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                } else {
+                    setTimeout(async () => { loopBot() }, 10000)
+                }
+            }
+        }
+        loopBot()
+    }
+    startMage1Loop(mage1Name, region, identifier).catch(() => { /* ignore errors */ })
 
-    startShared(mage1)
-    startMage(mage1)
-
-    startShared(mage2)
-    startMage(mage2)
+    const startMage2Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+        // Start the characters
+        const loopBot = async () => {
+            try {
+                if (mage2) await mage2.disconnect()
+                mage2 = await AL.Game.startMage(name, region, identifier)
+                startShared(mage2)
+                startMage(mage2)
+                mage2.socket.on("disconnect", async () => { loopBot() })
+            } catch (e) {
+                console.error(e)
+                if (mage2) await mage2.disconnect()
+                const wait = /wait_(\d+)_second/.exec(e)
+                if (wait && wait[1]) {
+                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                } else if (/limits/.test(e)) {
+                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                } else {
+                    setTimeout(async () => { loopBot() }, 10000)
+                }
+            }
+        }
+        loopBot()
+    }
+    startMage2Loop(mage2Name, region, identifier).catch(() => { /* ignore errors */ })
 }
 run()

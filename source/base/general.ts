@@ -224,10 +224,7 @@ export function startBuyLoop(bot: AL.Character, itemsToBuy = ITEMS_TO_BUY, items
     let lastPonty = 0
     async function buyLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("buyloop", setTimeout(async () => { buyLoop() }, LOOP_MS))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             for (const [item, amount] of itemsToBuy2) {
                 if (bot.canBuy(item)) {
@@ -299,10 +296,7 @@ export function startBuyLoop(bot: AL.Character, itemsToBuy = ITEMS_TO_BUY, items
 export function startBuyToUpgradeLoop(bot: AL.Character, item: AL.ItemName, quantity: number): void {
     async function buyToUpgradeLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("upgradeloop", setTimeout(async () => { buyToUpgradeLoop() }, LOOP_MS))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             for (let i = bot.countItem(item); i < quantity; i++) {
                 if (bot.canBuy(item)) await bot.buy(item)
@@ -318,10 +312,7 @@ export function startBuyToUpgradeLoop(bot: AL.Character, item: AL.ItemName, quan
 export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo = ITEMS_TO_SELL): void {
     async function compoundLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("compoundloop", setTimeout(async () => { compoundLoop() }, LOOP_MS))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.q.compound) {
                 // We are upgrading, we have to wait
@@ -396,10 +387,7 @@ export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo 
 export function startElixirLoop(bot: AL.Character, elixir: AL.ItemName): void {
     async function elixirLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("elixirloop", setTimeout(async () => { elixirLoop() }, LOOP_MS))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             if (!bot.slots.elixir) {
                 let drinkThis = bot.locateItem(elixir)
@@ -419,10 +407,7 @@ export function startEventLoop(bot: AL.Character): void {
     const newYearTrees = bot.locateNPC("newyear_tree")
     async function eventLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("eventloop", setTimeout(async () => { eventLoop() }, LOOP_MS))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             // Winter event stuff
             if (bot.S && bot.S.holidayseason && !bot.s?.holidayspirit) {
@@ -443,10 +428,7 @@ export function startEventLoop(bot: AL.Character): void {
 export function startExchangeLoop(bot: AL.Character, itemsToExchange = ITEMS_TO_EXCHANGE): void {
     async function exchangeLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("exchangeloop", setTimeout(async () => { exchangeLoop() }, LOOP_MS))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.esize > 10 /** Only exchange if we have plenty of space */
                 && !(bot.G.maps[bot.map] as AL.GMap).mount /** Don't exchange in the bank */) {
@@ -471,10 +453,7 @@ export function startExchangeLoop(bot: AL.Character, itemsToExchange = ITEMS_TO_
 export function startHealLoop(bot: AL.Character): void {
     async function healLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("healloop", setTimeout(async () => { healLoop() }, Math.max(LOOP_MS, bot.getCooldown("use_hp"))))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             if (!bot.rip) {
                 const missingHP = bot.max_hp - bot.hp
@@ -529,10 +508,7 @@ export function startHealLoop(bot: AL.Character): void {
 export function startLootLoop(bot: AL.Character): void {
     async function lootLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("lootloop", setTimeout(async () => { lootLoop() }, LOOP_MS))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             for (const [, chest] of bot.chests) {
                 if (AL.Tools.distance(bot, chest) > 800) continue
@@ -563,10 +539,7 @@ export function startPartyLoop(bot: AL.Character, leader: string, partyMembers?:
     }
     async function partyLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("partyloop", setTimeout(async () => { partyLoop() }, 10000))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             if (!bot.party) {
                 bot.sendPartyRequest(leader)
@@ -586,10 +559,7 @@ export function startPartyLoop(bot: AL.Character, leader: string, partyMembers?:
 export function startPartyInviteLoop(bot: AL.Character, player: string): void {
     async function partyInviteLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("partyinviteloop", setTimeout(async () => { partyInviteLoop() }, 10000))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.partyData?.list && !bot.partyData.list.includes(player) /** Only invite if they're missing */
                 && bot.partyData.list.length < 9 /** Don't invite if we're at capacity */) {
@@ -608,10 +578,7 @@ export function startPontyLoop(bot: AL.Character, itemsToBuy = ITEMS_TO_BUY): vo
     const ponty = bot.locateNPC("secondhands")[0]
     async function pontyLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("pontyloop", setTimeout(async () => { pontyLoop() }, 10000))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             if (AL.Tools.distance(bot, ponty) < AL.Constants.NPC_INTERACTION_DISTANCE) {
                 const pontyData = await bot.getPontyItems()
@@ -630,32 +597,10 @@ export function startPontyLoop(bot: AL.Character, itemsToBuy = ITEMS_TO_BUY): vo
     pontyLoop()
 }
 
-export function startReconnectLoop(bot: AL.Character): void {
-    const reconnectLoop = async () => {
-        try {
-            if (bot.socket.disconnected) {
-                console.log(`Reconnecting ${bot.id}...`)
-                await bot.connect()
-                bot.timeouts.set("reconnectloop", setTimeout(async () => { reconnectLoop() }, AL.Constants.RECONNECT_TIMEOUT_MS))
-                return
-            }
-        } catch (e) {
-            console.error(e)
-            bot.timeouts.set("reconnectloop", setTimeout(async () => { reconnectLoop() }, AL.Constants.RECONNECT_TIMEOUT_MS))
-            return
-        }
-        bot.timeouts.set("reconnectloop", setTimeout(async () => { reconnectLoop() }, LOOP_MS))
-    }
-    bot.timeouts.set("reconnectloop", setTimeout(async () => { reconnectLoop() }, AL.Constants.RECONNECT_TIMEOUT_MS))
-}
-
 export function startSellLoop(bot: AL.Character, itemsToSell: ItemLevelInfo = ITEMS_TO_SELL): void {
     async function sellLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("sellloop", setTimeout(async () => { sellLoop() }, LOOP_MS))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.canSell()) {
                 // Sell things
@@ -690,10 +635,7 @@ export function startSellLoop(bot: AL.Character, itemsToSell: ItemLevelInfo = IT
 export function startSendStuffAllowlistLoop(bot: AL.Character, sendTo: AL.Character, itemsToSend: AL.ItemName[], goldToHold = GOLD_TO_HOLD): void {
     async function sendStuffLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("sendstuffallowlistloop", setTimeout(async () => { sendStuffLoop() }, LOOP_MS))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             if (sendTo.isFull()) {
                 bot.timeouts.set("sendstuffallowlistloop", setTimeout(async () => { sendStuffLoop() }, LOOP_MS))
@@ -730,10 +672,7 @@ export function startSendStuffAllowlistLoop(bot: AL.Character, sendTo: AL.Charac
 export function startSendStuffDenylistLoop(bot: AL.Character, sendTo: AL.Character, itemsToHold = ITEMS_TO_HOLD, goldToHold = 1_000_000): void {
     async function sendStuffLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("sendstuffdenylistloop", setTimeout(async () => { sendStuffLoop() }, LOOP_MS))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             if (!sendTo || sendTo.isFull()) {
                 bot.timeouts.set("sendstuffdenylistloop", setTimeout(async () => { sendStuffLoop() }, 10000))
@@ -763,10 +702,7 @@ export function startSendStuffDenylistLoop(bot: AL.Character, sendTo: AL.Charact
 export function startTrackerLoop(bot: AL.Character): void {
     async function trackerLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("trackerloop", setTimeout(async () => { trackerLoop() }, CHECK_TRACKER_EVERY_MS))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.hasItem("tracker")) {
                 await bot.getTrackerData()
@@ -783,10 +719,7 @@ export function startTrackerLoop(bot: AL.Character): void {
 export function startUpgradeLoop(bot: AL.Character, itemsToSell: ItemLevelInfo = ITEMS_TO_SELL): void {
     async function upgradeLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("upgradeloop", setTimeout(async () => { upgradeLoop() }, LOOP_MS))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.q.upgrade) {
                 // We are upgrading, we have to wait

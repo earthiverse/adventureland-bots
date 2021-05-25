@@ -1,18 +1,15 @@
 import AL from "alclient-mongo"
-import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startTrackerLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startReconnectLoop, LOOP_MS } from "./base/general.js"
+import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startTrackerLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, LOOP_MS } from "./base/general.js"
 
 /** Config */
-const warriorName = "earthWar"
-const warrior2Name = "earthWar2"
-const warrior3Name = "earthWar3"
+const leaderName = "earthWar"
+const follower1Name = "earthWar2"
+const follower2Name = "earthWar3"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "II"
 
 const partyLeader = "earthWar"
-const partyMembers = [warriorName, warrior2Name, warrior3Name,
-    // Lolwutpear's characters
-    "fdsfdsfds"
-]
+const partyMembers = [leaderName, follower1Name, follower2Name]
 
 const targets: AL.MonsterName[] = ["bluefairy", "greenfairy", "redfairy"]
 
@@ -34,7 +31,6 @@ type StompOrderCM = {
 async function startShared(bot: AL.Warrior) {
     startBuyLoop(bot)
     startCompoundLoop(bot)
-    startReconnectLoop(bot)
     startElixirLoop(bot, "elixirluck")
     startExchangeLoop(bot)
     startHealLoop(bot)
@@ -47,10 +43,7 @@ async function startShared(bot: AL.Warrior) {
 
     async function attackLoop() {
         try {
-            if (bot.socket.disconnected) {
-                setTimeout(async () => { attackLoop() }, LOOP_MS)
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.canUse("attack")) {
                 for (const [, entity] of bot.entities) {
@@ -117,10 +110,7 @@ async function startFollower(bot: AL.Warrior) {
 
     async function stompLoop() {
         try {
-            if (bot.socket.disconnected) {
-                setTimeout(async () => { stompLoop() }, LOOP_MS)
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             if (stompOrder[0] == bot.id) {
                 // It's our turn to stomp!
@@ -142,9 +132,9 @@ async function run() {
 
     // Start all characters
     console.log("Connecting...")
-    const leaderP = AL.Game.startWarrior(warriorName, region, identifier)
-    const follower1P = AL.Game.startWarrior(warrior2Name, region, identifier)
-    const follower2P = AL.Game.startWarrior(warrior3Name, region, identifier)
+    const leaderP = AL.Game.startWarrior(leaderName, region, identifier)
+    const follower1P = AL.Game.startWarrior(follower1Name, region, identifier)
+    const follower2P = AL.Game.startWarrior(follower2Name, region, identifier)
     leader = await leaderP
     follower1 = await follower1P
     follower2 = await follower2P

@@ -158,10 +158,7 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
 export function startMluckLoop(bot: AL.Merchant): void {
     async function mluckLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("mluckloop", setTimeout(async () => { mluckLoop() }, LOOP_MS))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.canUse("mluck")) {
                 if (!bot.s.mluck || bot.s.mluck.f !== bot.id) await bot.mluck(bot.id) // mluck ourselves

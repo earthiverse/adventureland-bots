@@ -1,5 +1,5 @@
 import AL, { Tools } from "alclient-mongo"
-import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startTrackerLoop, startUpgradeLoop, startAvoidStacking, startReconnectLoop } from "../base/general.js"
+import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startTrackerLoop, startUpgradeLoop, startAvoidStacking } from "../base/general.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 
 /** Config */
@@ -16,7 +16,6 @@ let warrior2: AL.Warrior
 async function startShared(bot: AL.Character) {
     startBuyLoop(bot)
     startCompoundLoop(bot)
-    startReconnectLoop(bot)
     startElixirLoop(bot, "elixirluck")
     startHealLoop(bot)
     startLootLoop(bot)
@@ -29,10 +28,7 @@ async function startShared(bot: AL.Character) {
 async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
     async function attackLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.canUse("attack")) {
                 for (const [, entity] of bot.entities) {
@@ -88,10 +84,7 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
 
     async function moveLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             // If we are dead, respawn
             if (bot.rip) {
@@ -148,11 +141,57 @@ async function run() {
     warrior1 = await warrior1P
     warrior2 = await warrior2P
 
-    startShared(warrior1)
-    startWarrior(warrior1)
-    startTrackerLoop(warrior1)
+    const startWarrior1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+        // Start the characters
+        const loopBot = async () => {
+            try {
+                if (warrior1) await warrior1.disconnect()
+                warrior1 = await AL.Game.startWarrior(name, region, identifier)
+                startShared(warrior1)
+                startWarrior(warrior1)
+                startTrackerLoop(warrior1)
+                warrior1.socket.on("disconnect", async () => { loopBot() })
+            } catch (e) {
+                console.error(e)
+                if (warrior1) await warrior1.disconnect()
+                const wait = /wait_(\d+)_second/.exec(e)
+                if (wait && wait[1]) {
+                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                } else if (/limits/.test(e)) {
+                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                } else {
+                    setTimeout(async () => { loopBot() }, 10000)
+                }
+            }
+        }
+        loopBot()
+    }
+    startWarrior1Loop(warrior1Name, region, identifier).catch(() => { /* ignore errors */ })
 
-    startShared(warrior2)
-    startWarrior(warrior2, { x: -20, y: 0 })
+    const startWarrior2Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+        // Start the characters
+        const loopBot = async () => {
+            try {
+                if (warrior2) await warrior2.disconnect()
+                warrior2 = await AL.Game.startWarrior(name, region, identifier)
+                startShared(warrior2)
+                startWarrior(warrior2, { x: -20, y: 0 })
+                warrior2.socket.on("disconnect", async () => { loopBot() })
+            } catch (e) {
+                console.error(e)
+                if (warrior2) await warrior2.disconnect()
+                const wait = /wait_(\d+)_second/.exec(e)
+                if (wait && wait[1]) {
+                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                } else if (/limits/.test(e)) {
+                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                } else {
+                    setTimeout(async () => { loopBot() }, 10000)
+                }
+            }
+        }
+        loopBot()
+    }
+    startWarrior2Loop(warrior2Name, region, identifier).catch(() => { /* ignore errors */ })
 }
 run()

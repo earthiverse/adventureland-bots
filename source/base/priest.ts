@@ -4,10 +4,7 @@ import { LOOP_MS } from "./general.js"
 export function startPartyHealLoop(bot: AL.Priest, members: AL.Character[]): void {
     async function partyHealLoop() {
         try {
-            if (bot.socket.disconnected) {
-                bot.timeouts.set("partyhealloop", setTimeout(async () => { partyHealLoop() }, Math.max(bot.getCooldown("partyheal"), LOOP_MS)))
-                return
-            }
+            if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.c.town) {
                 bot.timeouts.set("partyhealloop", setTimeout(async () => { partyHealLoop() }, bot.c.town.ms))
