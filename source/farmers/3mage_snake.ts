@@ -364,14 +364,6 @@ async function run() {
 
     // Start all characters
     console.log("Connecting...")
-    const merchantP = AL.Game.startMerchant(merchantName, region, identifier)
-    const mage1P = AL.Game.startMage(mage1Name, region, identifier)
-    const mage2P = AL.Game.startMage(mage2Name, region, identifier)
-    const mage3P = AL.Game.startMage(mage3Name, region, identifier)
-    merchant = await merchantP
-    mage1 = await mage1P
-    mage2 = await mage2P
-    mage3 = await mage3P
 
     const startMerchantLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
         // Start the characters

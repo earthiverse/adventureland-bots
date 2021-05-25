@@ -69,6 +69,7 @@ async function startRanger(bot: AL.Ranger) {
                     const target = targets[i]
                     if (AL.Tools.calculateDamageRange(bot, target)[0] * bot.G.skills["3shot"].damage_multiplier >= target.hp) {
                         for (const friend of [ranger, mage1, mage2]) {
+                            if (!friend) continue
                             friend.entities.delete(targets[i].id)
                         }
                     }
@@ -88,6 +89,7 @@ async function startRanger(bot: AL.Ranger) {
                 const target = targets[0]
                 if (bot.canKillInOneShot(target)) {
                     for (const friend of [ranger, mage1, mage2]) {
+                        if (!friend) continue
                         friend.entities.delete(target.id)
                     }
                 }
@@ -146,6 +148,7 @@ async function startRanger(bot: AL.Ranger) {
                 // If it's a guaranteed kill, remove it from the everyone's entity list so we don't attack it
                 if (AL.Tools.calculateDamageRange(bot, ssTarget)[0] * bot.G.skills["supershot"].damage_multiplier >= ssTarget.hp) {
                     for (const friend of [ranger, mage1, mage2]) {
+                        if (!friend) continue
                         friend.entities.delete(ssTarget.id)
                     }
                 }
@@ -481,6 +484,7 @@ async function run() {
 
     // Start all characters
     console.log("Connecting...")
+
     const startMerchantLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {

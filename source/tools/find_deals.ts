@@ -12,7 +12,7 @@ type BuyData = {
 }
 
 AL.Game.loginJSONFile("../../credentials.json").then(async () => {
-    const G = await AL.Game.getGData()
+    const G = await AL.Game.getGData(true)
 
     // Grab and parse the data
     console.log("Grabbing merchant data...")
@@ -64,11 +64,11 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
 
             let bestSeller = { price: Number.MAX_VALUE }
             for (const order of selling[buyOrder]) {
-                if (order.price < bestSeller.price) bestSeller = order
+                if (order.price > bestSeller.price) bestSeller = order
             }
             const bestSell = bestSeller as BuyData
 
-            if(bestBuyer.price > bestSeller.price) {
+            if (bestBuyer.price > bestSeller.price) {
                 console.log(`We can make money on ${buyOrder} if...`)
                 console.log(`  We buy from ${bestBuy.name} at ${bestBuy.price}`)
                 console.log(`  We sell to ${bestSell.name} for ${bestSell.price}`)
@@ -77,20 +77,22 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
     }
 
     // Look for items that cost less than G's value
-    for(const sellOrder in selling) {
+    for (const sellOrder in selling) {
         let bestSeller = { price: Number.MAX_VALUE }
         for (const order of selling[sellOrder]) {
             if (order.price < bestSeller.price) bestSeller = order
         }
         const bestSell = bestSeller as BuyData
 
-        if(!G.items[bestSell.itemName]) {
+        if (!G.items[bestSell.itemName]) {
             console.error(`What is a ${bestSell.itemName}?`)
             return
         }
 
-        if(bestSeller.price <= G.items[bestSell.itemName].g) {
+        if (bestSeller.price <= G.items[bestSell.itemName].g) {
             console.log(`Uhh, is it just me or is ${bestSell.name}'s ${bestSell.itemName} really cheap @ ${bestSell.price} gold?`)
         }
     }
+
+    AL.Database.disconnect()
 })

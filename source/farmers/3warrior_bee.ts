@@ -396,14 +396,6 @@ async function run() {
 
     // Start all characters
     console.log("Connecting...")
-    const merchantP = AL.Game.startMerchant(merchantName, region, identifier)
-    const warrior1P = AL.Game.startWarrior(warrior1Name, region, identifier)
-    const warrior2P = AL.Game.startWarrior(warrior2Name, region, identifier)
-    const warrior3P = AL.Game.startWarrior(warrior3Name, region, identifier)
-    merchant = await merchantP
-    warrior1 = await warrior1P
-    warrior2 = await warrior2P
-    warrior3 = await warrior3P
 
     const startMerchantLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
         // Start the characters

@@ -133,13 +133,9 @@ async function run() {
     // Login and prepare pathfinding
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData()])
     await AL.Pathfinder.prepare(AL.Game.G)
-
+    
     // Start all characters
     console.log("Connecting...")
-    const warrior1P = AL.Game.startWarrior(warrior1Name, region, identifier)
-    const warrior2P = AL.Game.startWarrior(warrior2Name, region, identifier)
-    warrior1 = await warrior1P
-    warrior2 = await warrior2P
 
     const startWarrior1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
         // Start the characters
