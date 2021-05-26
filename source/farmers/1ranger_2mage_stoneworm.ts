@@ -28,12 +28,12 @@ async function startShared(bot: AL.Character) {
     startExchangeLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)
-    startPartyLoop(bot, partyLeader, partyMembers)
 
     startPontyLoop(bot)
     startSellLoop(bot)
 
     if (bot.ctype !== "merchant") {
+        startPartyLoop(bot, partyLeader, partyMembers)
         startSendStuffDenylistLoop(bot, merchant)
     }
 
@@ -215,13 +215,7 @@ async function startMage(bot: AL.Mage) {
 async function startMerchant(bot: AL.Merchant) {
     startMluckLoop(bot)
     startPartyLoop(bot, bot.id) // Let anyone who wants to party with me do so
-
-    bot.socket.on("party_update", (data: AL.PartyData) => {
-        console.log(data)
-    })
-
-    // TODO: Ignore doesn't work!?
-    // startServerPartyInviteLoop(bot, [...partyMembers]) // Let's invite everyone, lol
+    startServerPartyInviteLoop(bot, [...partyMembers]) // Let's invite everyone, lol
 
     let lastBankVisit = Number.MIN_VALUE
     async function moveLoop() {

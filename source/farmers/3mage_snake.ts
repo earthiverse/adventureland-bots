@@ -24,10 +24,10 @@ async function startShared(bot: AL.Character) {
     startElixirLoop(bot, "elixirluck")
     startHealLoop(bot)
     startLootLoop(bot)
-    startPartyLoop(bot, partyLeader, partyMembers)
     startSellLoop(bot)
 
     if (bot.ctype !== "merchant") {
+        startPartyLoop(bot, partyLeader, partyMembers)
         startSendStuffDenylistLoop(bot, merchant)
     }
 

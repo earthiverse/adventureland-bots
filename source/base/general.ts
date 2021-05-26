@@ -530,7 +530,6 @@ export function startPartyLoop(bot: AL.Character, leader: string, partyMembers?:
             if (partyMembers && !partyMembers.has(data.name)) return // Discard requests from other players
 
             try {
-                console.log(`accepting ${data.name}'s party request`)
                 await bot.acceptPartyRequest(data.name)
             } catch (e) {
                 console.error(e)
@@ -711,12 +710,10 @@ export function startServerPartyInviteLoop(bot: AL.Character, ignore = [bot.id])
                 if (bot.partyData?.list?.length >= 9) break // We're full
 
                 if (bot.party) {
-                    console.log(`sending ${player.name} a party invite`)
                     // We have a party, let's invite more!
                     await bot.sendPartyInvite(player.name)
                 } else {
                     // We don't have a party, let's invite more, or request to join theirs!
-                    console.log(`sending ${player.name} a party invite`)
                     await bot.sendPartyInvite(player.name)
                     if (player.party) await bot.sendPartyRequest(player.name)
                 }
