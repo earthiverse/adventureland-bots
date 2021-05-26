@@ -704,7 +704,7 @@ export function startServerPartyInviteLoop(bot: AL.Character, ignore = [bot.id])
         try {
             const players = await bot.getPlayers()
             for (const player of players) {
-                if (player.party == bot.id) continue // They're already in our party
+                if (bot.party && player.party == bot.party) continue // They're already in our party
                 if (ignore.includes(player.name)) continue // Ignore
                 if (bot.partyData?.list?.length >= 9) break // We're full
 
