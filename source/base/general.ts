@@ -530,6 +530,7 @@ export function startPartyLoop(bot: AL.Character, leader: string, partyMembers?:
             if (partyMembers && !partyMembers.has(data.name)) return // Discard requests from other players
 
             try {
+                console.log(`accepting ${data.name}'s party request`)
                 await bot.acceptPartyRequest(data.name)
             } catch (e) {
                 console.error(e)

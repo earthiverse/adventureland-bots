@@ -216,6 +216,10 @@ async function startMerchant(bot: AL.Merchant) {
     startMluckLoop(bot)
     startPartyLoop(bot, bot.id) // Let anyone who wants to party with me do so
 
+    bot.socket.on("party_update", (data: AL.PartyData) => {
+        console.log(data)
+    })
+
     // TODO: Ignore doesn't work!?
     // startServerPartyInviteLoop(bot, [...partyMembers]) // Let's invite everyone, lol
 
