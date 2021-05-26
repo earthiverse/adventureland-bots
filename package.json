@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
-    "alclient-mongo": "^0.4.30",
+    "alclient-mongo": "^0.4.31",
     "axios": "^0.21.1"
   },
   "devDependencies": {

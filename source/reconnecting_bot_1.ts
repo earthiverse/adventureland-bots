@@ -157,6 +157,25 @@ async function startShared(bot: AL.Character) {
         bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
     }
     moveLoop()
+
+    async function debugLoop() {
+        try {
+            if (bot.players.has(bot.id)) {
+                console.log("IT'S IN THERE. OH NO, THAT'S BAD.")
+                bot.players.delete(bot.id)
+                console.log("deleted... but for how long?")
+            } else {
+                console.log("safe")
+            }
+
+            console.log(`we have ${bot.players.size} players in our set`)
+            console.log(`we have ${bot.entities.size} monsters in our set`)
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("debugLoop", setTimeout(async () => { debugLoop() }, 2500))
+    }
+    debugLoop()
 }
 
 async function run() {
@@ -179,9 +198,9 @@ async function run() {
                 console.error(e)
                 if (bot) await bot.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
-                if(wait && wait[1]) {
+                if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
-                } else if(/limits/.test(e)) {
+                } else if (/limits/.test(e)) {
                     setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
                     setTimeout(async () => { loopBot() }, 10000)
@@ -190,6 +209,6 @@ async function run() {
         }
         loopBot()
     }
-    startBot("earthPal", "US", "I").catch(() => { /* ignore errors */ })
+    startBot("earthPal", "ASIA", "I").catch(() => { /* ignore errors */ })
 }
 run()
