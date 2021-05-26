@@ -527,7 +527,7 @@ export function startPartyLoop(bot: AL.Character, leader: string, partyMembers?:
     if (bot.id == leader) {
         // Have the leader accept party requests
         bot.socket.on("request", async (data: { name: string }) => {
-            if (!partyMembers?.has(data.name)) return // Discard requests from other players
+            if (partyMembers && !partyMembers.has(data.name)) return // Discard requests from other players
 
             try {
                 await bot.acceptPartyRequest(data.name)
