@@ -710,10 +710,12 @@ export function startServerPartyInviteLoop(bot: AL.Character, ignore = [bot.id])
                 if (bot.partyData?.list?.length >= 9) break // We're full
 
                 if (bot.party) {
+                    console.log(`sending ${player.name} a party invite`)
                     // We have a party, let's invite more!
                     await bot.sendPartyInvite(player.name)
                 } else {
                     // We don't have a party, let's invite more, or request to join theirs!
+                    console.log(`sending ${player.name} a party invite`)
                     await bot.sendPartyInvite(player.name)
                     if (player.party) await bot.sendPartyRequest(player.name)
                 }
