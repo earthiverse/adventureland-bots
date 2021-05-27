@@ -267,13 +267,11 @@ export function startBuyLoop(bot: AL.Character, itemsToBuy = ITEMS_TO_BUY, items
 
                     const q = item.q === undefined ? 1 : item.q
 
-                    // Join new giveaways
+                    // Join new giveaways if we're a merchant
                     if (item.giveaway && bot.ctype == "merchant" && (!item.list || !item.list.includes(bot.id))) {
-                        // TODO: Move this to a function
-                        bot.socket.emit("join_giveaway", { slot: slot, id: player.id, rid: item.rid })
+                        await (bot as AL.Merchant).joinGiveaway(slot, player.id, item.rid)
                         continue
                     }
-
 
                     // Buy if we can resell to NPC for more money
                     const cost = bot.calculateItemCost(item)

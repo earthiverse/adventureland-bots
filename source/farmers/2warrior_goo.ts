@@ -131,7 +131,7 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
 
 async function run() {
     // Login and prepare pathfinding
-    await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData()])
+    await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
     await AL.Pathfinder.prepare(AL.Game.G)
     
     // Start all characters

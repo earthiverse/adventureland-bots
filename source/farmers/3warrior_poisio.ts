@@ -1,18 +1,19 @@
-import AL, { Tools } from "alclient-mongo"
+import AL from "alclient-mongo"
 import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, startAvoidStacking } from "../base/general.js"
-import { MERCHANT_GOLD_TO_HOLD, MERCHANT_ITEMS_TO_HOLD, startMluckLoop } from "../base/merchant.js"
+import { mainPoisios } from "../base/locations.js"
+import { doBanking, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { partyLeader, partyMembers } from "./party.js"
 
 /** Config */
-const merchantName = "earthMer"
+const merchantName = "earthMer2"
 const warrior1Name = "earthWar"
 const warrior2Name = "earthWar2"
 const warrior3Name = "earthWar3"
-const region: AL.ServerRegion = "US"
-const identifier: AL.ServerIdentifier = "II"
-const target: AL.MonsterName = "bee"
-const defaultLocation: AL.IPosition = { map: "main", x: 152, y: 1487 } // bees
+const region: AL.ServerRegion = "ASIA"
+const identifier: AL.ServerIdentifier = "I"
+const target: AL.MonsterName = "poisio"
+const defaultLocation: AL.IPosition = mainPoisios
 
 let merchant: AL.Merchant
 let warrior1: AL.Warrior
@@ -67,14 +68,14 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
                             if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Possibly gonna die
                             if (entity.willBurnToDeath()) continue // Will burn to death shortly
 
-                            const d = Tools.distance(bot, entity)
+                            const d = AL.Tools.distance(bot, entity)
                             if (d < distance) {
                                 closest = entity
                                 distance = d
                             }
                         }
 
-                        if (closest && Tools.distance(bot, closest) > bot.range) {
+                        if (closest && AL.Tools.distance(bot, closest) > bot.range) {
                             bot.smartMove(closest, { getWithin: bot.range / 2 }).catch(() => { /* suppress warnings */ })
                         }
                     }
@@ -115,7 +116,7 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
                 if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Possibly gonna die
                 if (entity.willBurnToDeath()) continue // Will burn to death shortly
 
-                const d = Tools.distance(bot, entity)
+                const d = AL.Tools.distance(bot, entity)
                 if (d < distance) {
                     closest = entity
                     distance = d
@@ -125,7 +126,7 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
             if (!closest) {
                 const destination: AL.IPosition = { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y }
                 if (AL.Tools.distance(bot, destination) > 1) await bot.smartMove(destination)
-            } else if (Tools.distance(bot, closest) > bot.range) {
+            } else if (AL.Tools.distance(bot, closest) > bot.range) {
                 bot.smartMove(closest, { getWithin: bot.range / 2 }).catch(() => { /* suppress warnings */ })
             }
         } catch (e) {
@@ -158,138 +159,8 @@ async function startMerchant(bot: AL.Merchant) {
 
             // If we are full, let's go to the bank
             if (bot.isFull() || lastBankVisit < Date.now() - 120000 || bot.hasPvPMarkedItem()) {
-                await bot.closeMerchantStand()
-                await bot.smartMove("items1")
-
                 lastBankVisit = Date.now()
-
-                // Deposit excess gold
-                const excessGold = bot.gold - MERCHANT_GOLD_TO_HOLD
-                if (excessGold > 0) {
-                    await bot.depositGold(excessGold)
-                } else if (excessGold < 0) {
-                    await bot.withdrawGold(-excessGold)
-                }
-
-                // Deposit items
-                for (let i = 0; i < bot.items.length; i++) {
-                    const item = bot.items[i]
-                    if (!item) continue
-                    if (!MERCHANT_ITEMS_TO_HOLD.has(item.name) /* We don't want to hold on to it */
-                        || item.v) /* Item is PvP marked */ {
-                        // Deposit it in the bank
-                        try {
-                            await bot.depositItem(i)
-                        } catch (e) {
-                            console.error(e)
-                        }
-                    }
-                }
-
-                // Store information about everything in our bank to use it later to find upgradable stuff
-                const bankItems: AL.ItemData[] = []
-                for (let i = 0; i <= 7; i++) {
-                    const bankPack = `items${i}` as Exclude<AL.BankPackName, "gold">
-                    if (!bot?.bank[bankPack]) continue // This bank slot isn't available
-                    for (const item of bot.bank[bankPack]) {
-                        bankItems.push(item)
-                    }
-                }
-                let freeSpaces = bot.esize
-                const duplicates = bot.locateDuplicateItems(bankItems)
-
-                // Withdraw compoundable & upgradable things
-                for (const iN in duplicates) {
-                    const itemName = iN as AL.ItemName
-                    const d = duplicates[itemName]
-                    const gInfo = bot.G.items[itemName]
-                    if (gInfo.upgrade) {
-                        // Withdraw upgradable items
-                        if (freeSpaces < 3) break // Not enough space in inventory
-
-                        const pack1 = `items${Math.floor((d[0]) / 42)}` as Exclude<AL.BankPackName, "gold">
-                        const slot1 = d[0] % 42
-                        let withdrew = false
-                        for (let i = 1; i < d.length && freeSpaces > 2; i++) {
-                            const pack2 = `items${Math.floor((d[i]) / 42)}` as Exclude<AL.BankPackName, "gold">
-                            const slot2 = d[i] % 42
-                            const item2 = bot.bank[pack2][slot2]
-                            const level0Grade = gInfo.grades.lastIndexOf(0) + 1
-
-                            if (item2.level >= 9 - level0Grade) continue // We don't want to upgrade high level items automatically
-
-                            try {
-                                await bot.withdrawItem(pack2, slot2)
-                                withdrew = true
-                                freeSpaces--
-                            } catch (e) {
-                                console.error(e)
-                            }
-                        }
-                        if (withdrew) {
-                            try {
-                                await bot.withdrawItem(pack1, slot1)
-                                freeSpaces--
-                            } catch (e) {
-                                console.error(e)
-                            }
-                        }
-                    } else if (gInfo.compound) {
-                        // Withdraw compoundable items
-                        if (freeSpaces < 5) break // Not enough space in inventory
-                        if (d.length < 3) continue // Not enough to compound
-
-                        for (let i = 0; i < d.length - 2 && freeSpaces > 4; i++) {
-                            const pack1 = `items${Math.floor((d[i]) / 42)}` as Exclude<AL.BankPackName, "gold">
-                            const slot1 = d[i] % 42
-                            const item1 = bot.bank[pack1][slot1]
-                            const pack2 = `items${Math.floor((d[i + 1]) / 42)}` as Exclude<AL.BankPackName, "gold">
-                            const slot2 = d[i + 1] % 42
-                            const item2 = bot.bank[pack2][slot2]
-                            const pack3 = `items${Math.floor((d[i + 2]) / 42)}` as Exclude<AL.BankPackName, "gold">
-                            const slot3 = d[i + 2] % 42
-                            const item3 = bot.bank[pack3][slot3]
-
-                            const level0Grade = gInfo.grades.lastIndexOf(0) + 1
-                            if (item1.level >= 4 - level0Grade) continue // We don't want to comopound high level items automaticaclly
-                            if (item1.level !== item2.level) continue
-                            if (item1.level !== item3.level) continue
-
-                            // Withdraw the three items
-                            try {
-                                await bot.withdrawItem(pack1, slot1)
-                                freeSpaces--
-                                await bot.withdrawItem(pack2, slot2)
-                                freeSpaces--
-                                await bot.withdrawItem(pack3, slot3)
-                                freeSpaces--
-                            } catch (e) {
-                                console.error(e)
-                            }
-
-                            // Remove the three items from the array
-                            d.splice(i, 3)
-                            i = i - 1
-                            break
-                        }
-                    }
-                }
-
-                // Withdraw things we want to hold
-                // TODO: improve to stack items that are stackable
-                for (let i = 0; i < bankItems.length && freeSpaces > 2; i++) {
-                    const item = bankItems[i]
-                    if (!item) continue // No item
-
-                    if (!MERCHANT_ITEMS_TO_HOLD.has(item.name)) continue // We don't want to hold this item
-                    if (bot.hasItem(item.name)) continue // We are already holding one of these items
-
-                    const pack = `items${Math.floor(i / 42)}` as Exclude<AL.BankPackName, "gold">
-                    const slot = i % 42
-                    bot.withdrawItem(pack, slot)
-                    freeSpaces--
-                }
-
+                await doBanking(bot)
                 bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
@@ -378,7 +249,7 @@ async function startMerchant(bot: AL.Merchant) {
             }
 
             // Hang out in town
-            await bot.smartMove("main")
+            await bot.smartMove({ map: "main", x: - 200, y: - 100 })
             await bot.openMerchantStand()
         } catch (e) {
             console.error(e)
@@ -391,7 +262,7 @@ async function startMerchant(bot: AL.Merchant) {
 
 async function run() {
     // Login and prepare pathfinding
-    await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData()])
+    await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
     await AL.Pathfinder.prepare(AL.Game.G)
 
     // Start all characters

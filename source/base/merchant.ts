@@ -16,7 +16,6 @@ export const MERCHANT_ITEMS_TO_HOLD: Set<AL.ItemName> = new Set([
     "dartgun", "wbook1"
 ])
 
-// TODO: INCOMPLETE
 export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_HOLD, itemsToHold = MERCHANT_ITEMS_TO_HOLD, itemsToSell = ITEMS_TO_SELL): Promise<void> {
     await bot.closeMerchantStand()
     await bot.smartMove("items1")
@@ -151,8 +150,6 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
         bot.withdrawItem(pack, slot)
         freeSpaces--
     }
-
-    // TODO: improve to stack items that are stackable
 }
 
 export function startMluckLoop(bot: AL.Merchant): void {
