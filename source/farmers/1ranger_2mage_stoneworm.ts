@@ -248,7 +248,7 @@ async function startMerchant(bot: AL.Merchant) {
                     await bot.smartMove((bot.S[type] as AL.ServerInfoDataLive), { getWithin: 100 })
                 }
 
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -264,9 +264,21 @@ async function startMerchant(bot: AL.Merchant) {
                             await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2 })
                         }
 
-                        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+                        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                         return
                     }
+                }
+            }
+
+            // get stuff from our friends
+            for (const friend of [ranger, mage1, mage2]) {
+                if (!friend) continue
+                if (friend.isFull()) {
+                    await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+                    lastBankVisit = Date.now()
+                    await doBanking(bot)
+                    bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                    return
                 }
             }
 

@@ -5,6 +5,7 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
+    "alclient": "^0.4.24",
     "alclient-mongo": "^0.4.32",
     "axios": "^0.21.1",
     "console-table-printer": "^2.9.0"

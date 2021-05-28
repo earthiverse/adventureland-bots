@@ -1,4 +1,4 @@
-import AL, { Tools } from "alclient-mongo"
+import AL from "alclient-mongo"
 import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startTrackerLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToNPCShopIfFull, goToPoitonSellerIfLow } from "../base/general.js"
 import { partyLeader, partyMembers } from "./party.js"
 
@@ -6,8 +6,8 @@ import { partyLeader, partyMembers } from "./party.js"
 const leaderName = partyLeader
 const follower1Name = "earthWar2"
 const follower2Name = "earthWar3"
-const region: AL.ServerRegion = "ASIA"
-const identifier: AL.ServerIdentifier = "I"
+export const region: AL.ServerRegion = "ASIA"
+export const identifier: AL.ServerIdentifier = "I"
 const targets: AL.MonsterName[] = ["tortoise"]
 const LOOP_MS = 25
 
@@ -27,7 +27,7 @@ type StompOrderCM = {
 }
 type CM = StompReadyCM | StompOrderCM
 
-async function startShared(bot: AL.Warrior) {
+export async function startShared(bot: AL.Warrior): Promise<void> {
     function sendStompReady() {
         const stompReadyCM: StompReadyCM = {
             type: "ready",
@@ -178,7 +178,7 @@ async function startShared(bot: AL.Warrior) {
                 if (!AL.Pathfinder.canWalkPath(bot, entity)) continue // Can't simply walk to entity
                 if (entity.willBurnToDeath()) continue // Will burn to death shortly
 
-                const d = Tools.distance(bot, entity)
+                const d = AL.Tools.distance(bot, entity)
                 if (d < distance) {
                     closest = entity
                     distance = d
@@ -200,7 +200,7 @@ async function startShared(bot: AL.Warrior) {
     moveLoop()
 }
 
-async function startLeader(bot: AL.Warrior) {
+async function startLeader(bot: AL.Warrior): Promise<void> {
     const readyToStomp = new Set<string>()
 
     startTrackerLoop(bot)

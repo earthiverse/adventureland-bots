@@ -1,8 +1,9 @@
 
-import AL from "alclient-mongo"
+import AL from "alclient"
+import ALM from "alclient-mongo"
 import { LOOP_MS } from "./general.js"
 
-export function startChargeLoop(bot: AL.Warrior): void {
+export function startChargeLoop(bot: AL.Warrior | ALM.Warrior): void {
     async function chargeLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -17,7 +18,7 @@ export function startChargeLoop(bot: AL.Warrior): void {
     chargeLoop()
 }
 
-export function startWarcryLoop(bot: AL.Warrior): void {
+export function startWarcryLoop(bot: AL.Warrior | ALM.Warrior): void {
     async function warcryLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return

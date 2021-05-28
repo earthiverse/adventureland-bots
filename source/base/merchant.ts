@@ -1,8 +1,9 @@
-import AL from "alclient-mongo"
+import AL from "alclient"
+import ALM from "alclient-mongo"
 import { ITEMS_TO_HOLD, ITEMS_TO_SELL, LOOP_MS } from "./general.js"
 
 export const MERCHANT_GOLD_TO_HOLD = 100_000_000
-export const MERCHANT_ITEMS_TO_HOLD: Set<AL.ItemName> = new Set([
+export const MERCHANT_ITEMS_TO_HOLD: Set<AL.ItemName | ALM.ItemName> = new Set([
     ...ITEMS_TO_HOLD,
     // Merchant Stand
     "stand0",
@@ -16,7 +17,7 @@ export const MERCHANT_ITEMS_TO_HOLD: Set<AL.ItemName> = new Set([
     "dartgun", "wbook1"
 ])
 
-export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_HOLD, itemsToHold = MERCHANT_ITEMS_TO_HOLD, itemsToSell = ITEMS_TO_SELL): Promise<void> {
+export async function doBanking(bot: AL.Merchant | ALM.Merchant, goldToHold = MERCHANT_GOLD_TO_HOLD, itemsToHold = MERCHANT_ITEMS_TO_HOLD, itemsToSell = ITEMS_TO_SELL): Promise<void> {
     await bot.closeMerchantStand()
     await bot.smartMove("items1")
 
@@ -49,9 +50,9 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
     }
 
     // Store information about everything in our bank to use it later to find upgradable stuff
-    const bankItems: AL.ItemData[] = []
+    const bankItems: AL.ItemData[] | ALM.ItemData[] = []
     for (let i = 0; i <= 7; i++) {
-        const bankPack = `items${i}` as Exclude<AL.BankPackName, "gold">
+        const bankPack = `items${i}` as Exclude<AL.BankPackName | ALM.BankPackName, "gold">
         if (!bot?.bank[bankPack]) continue // This bank slot isn't available
         for (const item of bot.bank[bankPack]) {
             bankItems.push(item)
@@ -62,18 +63,18 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
 
     // Withdraw compoundable & upgradable things
     for (const iN in duplicates) {
-        const itemName = iN as AL.ItemName
+        const itemName = iN as AL.ItemName | ALM.ItemName
         const d = duplicates[itemName]
         const gInfo = bot.G.items[itemName]
         if (gInfo.upgrade) {
             // Withdraw upgradable items
             if (freeSpaces < 3) break // Not enough space in inventory
 
-            const pack1 = `items${Math.floor((d[0]) / 42)}` as Exclude<AL.BankPackName, "gold">
+            const pack1 = `items${Math.floor((d[0]) / 42)}` as Exclude<AL.BankPackName | ALM.BankPackName, "gold">
             const slot1 = d[0] % 42
             let withdrew = false
             for (let i = 1; i < d.length && freeSpaces > 2; i++) {
-                const pack2 = `items${Math.floor((d[i]) / 42)}` as Exclude<AL.BankPackName, "gold">
+                const pack2 = `items${Math.floor((d[i]) / 42)}` as Exclude<AL.BankPackName | ALM.BankPackName, "gold">
                 const slot2 = d[i] % 42
                 const item2 = bot.bank[pack2][slot2]
                 const level0Grade = gInfo.grades.lastIndexOf(0) + 1
@@ -102,13 +103,13 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
             if (d.length < 3) continue // Not enough to compound
 
             for (let i = 0; i < d.length - 2 && freeSpaces > 4; i++) {
-                const pack1 = `items${Math.floor((d[i]) / 42)}` as Exclude<AL.BankPackName, "gold">
+                const pack1 = `items${Math.floor((d[i]) / 42)}` as Exclude<AL.BankPackName | ALM.BankPackName, "gold">
                 const slot1 = d[i] % 42
                 const item1 = bot.bank[pack1][slot1]
-                const pack2 = `items${Math.floor((d[i + 1]) / 42)}` as Exclude<AL.BankPackName, "gold">
+                const pack2 = `items${Math.floor((d[i + 1]) / 42)}` as Exclude<AL.BankPackName | ALM.BankPackName, "gold">
                 const slot2 = d[i + 1] % 42
                 const item2 = bot.bank[pack2][slot2]
-                const pack3 = `items${Math.floor((d[i + 2]) / 42)}` as Exclude<AL.BankPackName, "gold">
+                const pack3 = `items${Math.floor((d[i + 2]) / 42)}` as Exclude<AL.BankPackName | ALM.BankPackName, "gold">
                 const slot3 = d[i + 2] % 42
                 const item3 = bot.bank[pack3][slot3]
 
@@ -145,14 +146,14 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
         if (!MERCHANT_ITEMS_TO_HOLD.has(item.name)) continue // We don't want to hold this item
         if (bot.hasItem(item.name)) continue // We are already holding one of these items
 
-        const pack = `items${Math.floor(i / 42)}` as Exclude<AL.BankPackName, "gold">
+        const pack = `items${Math.floor(i / 42)}` as Exclude<AL.BankPackName | ALM.BankPackName, "gold">
         const slot = i % 42
         bot.withdrawItem(pack, slot)
         freeSpaces--
     }
 }
 
-export function startMluckLoop(bot: AL.Merchant): void {
+export function startMluckLoop(bot: AL.Merchant | ALM.Merchant): void {
     async function mluckLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -161,7 +162,7 @@ export function startMluckLoop(bot: AL.Merchant): void {
                 if (!bot.s.mluck || bot.s.mluck.f !== bot.id) await bot.mluck(bot.id) // mluck ourselves
 
                 for (const [, player] of bot.players) {
-                    if (AL.Tools.distance(bot, player) > bot.G.skills.mluck.range) continue // Too far away to mluck
+                    if (ALM.Tools.distance(bot, player) > bot.G.skills.mluck.range) continue // Too far away to mluck
                     if (player.npc) continue // It's an NPC, we can't mluck NPCs.
 
                     if (!player.s.mluck) {
