@@ -337,6 +337,22 @@ async function startMerchant(bot: AL.Merchant) {
         bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
     }
     moveLoop()
+
+    async function scareLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            if (bot.isScared() && bot.canUse("scare")) {
+                // Scare, because we are scared
+                await bot.scare()
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { scareLoop() }, Math.max(250, bot.getCooldown("scare")))
+    }
+    scareLoop()
 }
 
 async function run() {
