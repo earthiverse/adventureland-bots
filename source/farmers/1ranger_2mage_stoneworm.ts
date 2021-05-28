@@ -1,6 +1,6 @@
 import AL from "alclient-mongo"
-import { ITEMS_TO_EXCHANGE, LOOP_MS, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startServerPartyInviteLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
-import { doBanking, MERCHANT_GOLD_TO_HOLD, MERCHANT_ITEMS_TO_HOLD, startMluckLoop } from "../base/merchant.js"
+import { LOOP_MS, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startServerPartyInviteLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
+import { doBanking, startMluckLoop } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "./party.js"
 
 /** Config */
@@ -57,9 +57,9 @@ async function startRanger(bot: AL.Ranger) {
 
             if (targets.length >= 3 && bot.canUse("3shot")) {
                 if (!bot.s.energized) {
-                    if (mage1.socket.connected && mage1.canUse("energize")) {
+                    if (mage1.socket.connected && mage1.canUse("energize") && AL.Tools.distance(bot, mage1) < bot.G.skills.energize.range) {
                         mage1.energize(bot.id)
-                    } else if (mage2.socket.connected && mage2.canUse("energize")) {
+                    } else if (mage2.socket.connected && mage2.canUse("energize")  && AL.Tools.distance(bot, mage2) < bot.G.skills.energize.range) {
                         mage2.energize(bot.id)
                     }
                 }
@@ -79,9 +79,9 @@ async function startRanger(bot: AL.Ranger) {
             } else if (targets.length && bot.canUse("attack")) {
                 if (!bot.s.energized) {
                     if (mage1.socket.connected && mage1.canUse("energize")) {
-                        mage1.energize(bot.id)
+                        mage1.energize(bot.id).catch((e) => { console.error(e) })
                     } else if (mage2.socket.connected && mage2.canUse("energize")) {
-                        mage2.energize(bot.id)
+                        mage2.energize(bot.id).catch((e) => { console.error(e) })
                     }
                 }
 
@@ -186,6 +186,29 @@ async function startMage(bot: AL.Mage) {
         bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
     }
     attackLoop()
+
+    async function cburstLoop() {
+        try {
+            const targets: [string, number][] = []
+            for (const [, entity] of bot.entities) {
+                if (entity.type !== "stoneworm") continue // Not a stoneworm
+                if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
+                if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
+                if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
+                if (entity.hp > 100) continue // We only want to use cburst to kill low hp monsters
+
+                targets.push([entity.id, entity.hp / bot.G.skills.cburst.ratio])
+            }
+
+            if (targets.length && bot.canUse("cburst")) {
+                await bot.cburst(targets)
+            }
+        } catch (e) {
+            console.error()
+        }
+        bot.timeouts.set("cburstloop", setTimeout(async () => { cburstLoop() }, Math.max(10, bot.getCooldown("cburst"))))
+    }
+    cburstLoop()
 
     async function moveLoop() {
         try {

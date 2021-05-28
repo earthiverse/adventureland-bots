@@ -1,6 +1,6 @@
 import AL from "alclient-mongo"
 import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
-import { doBanking, MERCHANT_GOLD_TO_HOLD, MERCHANT_ITEMS_TO_HOLD, startMluckLoop } from "../base/merchant.js"
+import { doBanking, startMluckLoop } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "./party.js"
 
 /** Config */
@@ -79,6 +79,29 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
         bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
     }
     attackLoop()
+    
+    async function cburstLoop() {
+        try {
+            const cburstTargets: [string, number][] = []
+            for (const [, entity] of bot.entities) {
+                if (!targets.includes(entity.type)) continue // Not the right type
+                if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
+                if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
+                if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
+                if (entity.hp > 100) continue // We only want to use cburst to kill low hp monsters
+
+                cburstTargets.push([entity.id, entity.hp / bot.G.skills.cburst.ratio])
+            }
+
+            if (cburstTargets.length && bot.canUse("cburst")) {
+                await bot.cburst(cburstTargets)
+            }
+        } catch (e) {
+            console.error()
+        }
+        bot.timeouts.set("cburstloop", setTimeout(async () => { cburstLoop() }, Math.max(10, bot.getCooldown("cburst"))))
+    }
+    cburstLoop()
 
     async function moveLoop() {
         try {
