@@ -350,7 +350,7 @@ async function startMerchant(bot: AL.Merchant) {
             console.error(e)
         }
 
-        setTimeout(async () => { scareLoop() }, Math.max(250, bot.getCooldown("scare")))
+        bot.timeouts.set("scareloop", setTimeout(async () => { scareLoop() }, Math.max(250, bot.getCooldown("scare"))))
     }
     scareLoop()
 }
