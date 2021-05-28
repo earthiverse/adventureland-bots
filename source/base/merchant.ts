@@ -153,6 +153,62 @@ export async function doBanking(bot: AL.Merchant | ALM.Merchant, goldToHold = ME
     }
 }
 
+export async function goFishing(bot: AL.Merchant | ALM.Merchant): Promise<void> {
+    if (bot.getCooldown("fishing") > 0) return // Fishing is on cooldown
+    if (!bot.hasItem("rod") && !bot.isEquipped("rod")) return // We don't have a rod
+
+    // TODO: Improve item equipping and unequipping
+
+    let wasEquippedMainhand = bot.slots.mainhand
+    let wasEquippedOffhand = bot.slots.offhand
+    if (wasEquippedOffhand) await bot.unequip("offhand") // rod is a 2-handed weapon, so we need to unequip our offhand if we have something equipped
+    else if (bot.hasItem("wbook1")) wasEquippedOffhand = { name: "wbook1" } // We want to equip a wbook1 by default if we have one after we go fishing
+    if (wasEquippedMainhand) {
+        if (wasEquippedMainhand.name !== "rod") {
+            // We didn't have a rod equipped before, let's equip one now
+            await bot.unequip("mainhand")
+            await bot.equip(bot.locateItem("rod"))
+        }
+    } else {
+        // We didn't have anything equipped before
+        if (bot.hasItem("dartgun")) wasEquippedMainhand = { name: "dartgun" } // We want to equip a dartgun by default if we have one after we go fishing
+        await bot.equip(bot.locateItem("rod")) // Equip the rod
+    }
+    bot.closeMerchantStand()
+    await bot.smartMove({ map: "main", x: -1368, y: 0 }) // Move to fishing sppot
+    await bot.fish()
+    if (wasEquippedMainhand) await bot.equip(bot.locateItem(wasEquippedMainhand.name))
+    if (wasEquippedOffhand) await bot.equip(bot.locateItem(wasEquippedOffhand.name))
+}
+
+export async function goMining(bot: AL.Merchant | ALM.Merchant): Promise<void> {
+    if (bot.getCooldown("mining") > 0) return // Mining is on cooldown
+    if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe")) return // We don't have a pickaxe
+
+    // TODO: Improve item equipping and unequipping
+
+    let wasEquippedMainhand = bot.slots.mainhand
+    let wasEquippedOffhand = bot.slots.offhand
+    if (wasEquippedOffhand) await bot.unequip("offhand") // pickaxe is a 2-handed weapon, so we need to unequip our offhand if we have something equipped
+    else if (bot.hasItem("wbook1")) wasEquippedOffhand = { name: "wbook1" } // We want to equip a wbook1 by default if we have one after we go mining
+    if (wasEquippedMainhand) {
+        if (wasEquippedMainhand.name !== "pickaxe") {
+            // We didn't have a pickaxe equipped before, let's equip one now
+            await bot.unequip("mainhand")
+            await bot.equip(bot.locateItem("pickaxe"))
+        }
+    } else {
+        // We didn't have anything equipped before
+        if (bot.hasItem("dartgun")) wasEquippedMainhand = { name: "dartgun" } // We want to equip a dartgun by default if we have one after we go mining
+        await bot.equip(bot.locateItem("pickaxe")) // Equip the pickaxe
+    }
+    bot.closeMerchantStand()
+    await bot.smartMove({ map: "tunnel", x: -280, y: -10 }) // Move to mining sppot
+    await bot.mine()
+    if (wasEquippedMainhand) await bot.equip(bot.locateItem(wasEquippedMainhand.name))
+    if (wasEquippedOffhand) await bot.equip(bot.locateItem(wasEquippedOffhand.name))
+}
+
 export function startMluckLoop(bot: AL.Merchant | ALM.Merchant): void {
     async function mluckLoop() {
         try {

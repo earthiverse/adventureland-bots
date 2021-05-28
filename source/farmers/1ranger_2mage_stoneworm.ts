@@ -1,6 +1,6 @@
 import AL from "alclient-mongo"
 import { LOOP_MS, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startServerPartyInviteLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
-import { doBanking, startMluckLoop } from "../base/merchant.js"
+import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "./party.js"
 
 /** Config */
@@ -59,7 +59,7 @@ async function startRanger(bot: AL.Ranger) {
                 if (!bot.s.energized) {
                     if (mage1.socket.connected && mage1.canUse("energize") && AL.Tools.distance(bot, mage1) < bot.G.skills.energize.range) {
                         mage1.energize(bot.id)
-                    } else if (mage2.socket.connected && mage2.canUse("energize")  && AL.Tools.distance(bot, mage2) < bot.G.skills.energize.range) {
+                    } else if (mage2.socket.connected && mage2.canUse("energize") && AL.Tools.distance(bot, mage2) < bot.G.skills.energize.range) {
                         mage2.energize(bot.id)
                     }
                 }
@@ -260,21 +260,6 @@ async function startMerchant(bot: AL.Merchant) {
                 return
             }
 
-            // MLuck people if there is a server info target
-            for (const mN in bot.S) {
-                const type = mN as AL.MonsterName
-                if (!bot.S[type].live) continue
-                if (!(bot.S[type] as AL.ServerInfoDataLive).target) continue
-
-                if (AL.Tools.distance(merchant, (bot.S[type] as AL.ServerInfoDataLive)) > 100) {
-                    await bot.closeMerchantStand()
-                    await bot.smartMove((bot.S[type] as AL.ServerInfoDataLive), { getWithin: 100 })
-                }
-
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
-                return
-            }
-
             // mluck our friends
             if (bot.canUse("mluck")) {
                 for (const friend of [ranger, mage1, mage2]) {
@@ -306,53 +291,40 @@ async function startMerchant(bot: AL.Merchant) {
             }
 
             // Go fishing if we can
-            if (bot.getCooldown("fishing") == 0 /* Fishing is available */
-                && (bot.hasItem("rod") || bot.isEquipped("rod")) /* We have a rod */) {
-                let wasEquippedMainhand = bot.slots.mainhand
-                let wasEquippedOffhand = bot.slots.offhand
-                if (wasEquippedOffhand) await bot.unequip("offhand") // rod is a 2-handed weapon, so we need to unequip our offhand if we have something equipped
-                else if (bot.hasItem("wbook1")) wasEquippedOffhand = { name: "wbook1" } // We want to equip a wbook1 by default if we have one after we go fishing
-                if (wasEquippedMainhand) {
-                    if (wasEquippedMainhand.name !== "rod") {
-                        // We didn't have a rod equipped before, let's equip one now
-                        await bot.unequip("mainhand")
-                        await bot.equip(bot.locateItem("rod"))
-                    }
-                } else {
-                    // We didn't have anything equipped before
-                    if (bot.hasItem("dartgun")) wasEquippedMainhand = { name: "dartgun" } // We want to equip a dartgun by default if we have one after we go fishing
-                    await bot.equip(bot.locateItem("rod")) // Equip the rod
-                }
-                bot.closeMerchantStand()
-                await bot.smartMove({ map: "main", x: -1368, y: 0 }) // Move to fishing sppot
-                await bot.fish()
-                if (wasEquippedMainhand) await bot.equip(bot.locateItem(wasEquippedMainhand.name))
-                if (wasEquippedOffhand) await bot.equip(bot.locateItem(wasEquippedOffhand.name))
-            }
+            await goFishing(bot)
 
             // Go mining if we can
-            if (bot.getCooldown("mining") == 0 /* Mining is available */
-                && (bot.hasItem("pickaxe") || bot.isEquipped("pickaxe")) /* We have a pickaxe */) {
-                let wasEquippedMainhand = bot.slots.mainhand
-                let wasEquippedOffhand = bot.slots.offhand
-                if (wasEquippedOffhand) await bot.unequip("offhand") // pickaxe is a 2-handed weapon, so we need to unequip our offhand if we have something equipped
-                else if (bot.hasItem("wbook1")) wasEquippedOffhand = { name: "wbook1" } // We want to equip a wbook1 by default if we have one after we go mining
-                if (wasEquippedMainhand) {
-                    if (wasEquippedMainhand.name !== "pickaxe") {
-                        // We didn't have a pickaxe equipped before, let's equip one now
-                        await bot.unequip("mainhand")
-                        await bot.equip(bot.locateItem("pickaxe"))
-                    }
-                } else {
-                    // We didn't have anything equipped before
-                    if (bot.hasItem("dartgun")) wasEquippedMainhand = { name: "dartgun" } // We want to equip a dartgun by default if we have one after we go mining
-                    await bot.equip(bot.locateItem("pickaxe")) // Equip the pickaxe
+            await goMining(bot)
+
+            // MLuck people if there is a server info target
+            for (const mN in bot.S) {
+                const type = mN as AL.MonsterName
+                if (!bot.S[type].live) continue
+                if (!(bot.S[type] as AL.ServerInfoDataLive).target) continue
+
+                if (AL.Tools.distance(merchant, (bot.S[type] as AL.ServerInfoDataLive)) > 100) {
+                    await bot.closeMerchantStand()
+                    await bot.smartMove((bot.S[type] as AL.ServerInfoDataLive), { getWithin: 100 })
                 }
-                bot.closeMerchantStand()
-                await bot.smartMove({ map: "tunnel", x: -280, y: -10 }) // Move to mining sppot
-                await bot.mine()
-                if (wasEquippedMainhand) await bot.equip(bot.locateItem(wasEquippedMainhand.name))
-                if (wasEquippedOffhand) await bot.equip(bot.locateItem(wasEquippedOffhand.name))
+
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                return
+            }
+
+            // Find other characters that need mluck and go find them
+            if (bot.canUse("mluck")) {
+                const charactersToMluck = await AL.PlayerModel.find({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, $or: [{ "s.mluck": undefined }, { "s.mluck.strong": undefined, "s.mluck.f": { "$ne": bot.id } }] }).lean().exec()
+                for (const stranger of charactersToMluck) {
+                    // Move to them, and we'll automatically mluck them
+                    if (AL.Tools.distance(bot, stranger) > bot.G.skills.mluck.range) {
+                        await bot.closeMerchantStand()
+                        console.log(`[merchant] We are moving to ${stranger.name} to mluck them!`)
+                        await bot.smartMove(stranger, { getWithin: bot.G.skills.mluck.range / 2 })
+                    }
+
+                    setTimeout(async () => { moveLoop() }, 250)
+                    return
+                }
             }
 
             // Hang out in town
