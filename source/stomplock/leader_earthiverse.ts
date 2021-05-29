@@ -1,20 +1,47 @@
 import AL from "alclient-mongo"
-import { identifier, region, startShared } from "./runners.js"
+import { partyLeader } from "./party"
+import { identifier, region, startLeader, startShared } from "./runners"
 
 /** Config */
-const follower1Name = "announcement"
-const follower2Name = "battleworthy"
-const follower3Name = "charmingness"
+const leaderName = partyLeader
+const follower1Name = "earthWar2"
+const follower2Name = "earthWar3"
 
 /** Characters */
+let leader: AL.Warrior
 let follower1: AL.Warrior
 let follower2: AL.Warrior
-let follower3: AL.Warrior
 
 async function run() {
     // Login and prepare pathfinding
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
     await AL.Pathfinder.prepare(AL.Game.G)
+
+    const startLeaderLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+        // Start the characters
+        const loopBot = async () => {
+            try {
+                if (leader) await leader.disconnect()
+                leader = await AL.Game.startWarrior(name, region, identifier)
+                startShared(leader)
+                startLeader(leader)
+                leader.socket.on("disconnect", async () => { loopBot() })
+            } catch (e) {
+                console.error(e)
+                if (leader) await leader.disconnect()
+                const wait = /wait_(\d+)_second/.exec(e)
+                if (wait && wait[1]) {
+                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                } else if (/limits/.test(e)) {
+                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                } else {
+                    setTimeout(async () => { loopBot() }, 10000)
+                }
+            }
+        }
+        loopBot()
+    }
+    startLeaderLoop(leaderName, region, identifier).catch(() => { /* ignore errors */ })
 
     const startFollower1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
         // Start the characters
@@ -65,30 +92,5 @@ async function run() {
         loopBot()
     }
     startFollower2Loop(follower2Name, region, identifier).catch(() => { /* ignore errors */ })
-
-    const startFollower3Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
-        // Start the characters
-        const loopBot = async () => {
-            try {
-                if (follower3) await follower3.disconnect()
-                follower3 = await AL.Game.startWarrior(name, region, identifier)
-                startShared(follower3)
-                follower3.socket.on("disconnect", async () => { loopBot() })
-            } catch (e) {
-                console.error(e)
-                if (follower3) await follower3.disconnect()
-                const wait = /wait_(\d+)_second/.exec(e)
-                if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
-                } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
-                } else {
-                    setTimeout(async () => { loopBot() }, 10000)
-                }
-            }
-        }
-        loopBot()
-    }
-    startFollower3Loop(follower3Name, region, identifier).catch(() => { /* ignore errors */ })
 }
 run()

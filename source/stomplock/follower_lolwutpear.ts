@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { identifier, region, startShared } from "./leader.js"
+import { identifier, region, startShared } from "./runners.js"
 
 /** Config */
 const follower1Name = "fgsfds"
