@@ -8,7 +8,7 @@ const follower1Name = "earthWar2"
 const follower2Name = "earthWar3"
 export const region: AL.ServerRegion = "ASIA"
 export const identifier: AL.ServerIdentifier = "I"
-const targets: AL.MonsterName[] = ["tortoise"]
+const targets: AL.MonsterName[] = ["bigbird"]
 const LOOP_MS = 25
 
 /** Characters */
@@ -29,6 +29,9 @@ type StompOrderCM = {
 type CM = StompReadyCM | StompOrderCM
 
 export async function startShared(bot: AL.Warrior): Promise<void> {
+    let stompOrder: string[] = []
+    let entityOrder: string[] = []
+
     function sendStompReady() {
         const stompReadyCM: StompReadyCM = {
             type: "ready",
@@ -57,6 +60,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
             if (bot.canUse("attack")) {
                 for (const entityID of entityOrder) {
                     const entity = bot.entities.get(entityID)
+                    if (!entity) continue // Entity died?
                     if (!targets.includes(entity.type)) continue // Not a target
                     if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
                     if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
@@ -85,6 +89,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
             } else if (bot.targets > 0 && bot.canUse("scare")) {
                 for (const entityID of entityOrder) {
                     const entity = bot.entities.get(entityID)
+                    if (!entity) continue // Entity died?
                     if (!entity.target || entity.target != bot.id) continue // Not targeting us
                     if (entity.s.stunned && entity.s.stunned.ms > ((LOOP_MS + Math.max(...bot.pings)) * 2)) continue // Enemy is still stunned
 
@@ -99,9 +104,6 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
         setTimeout(async () => { scareLoop() }, Math.max(LOOP_MS, bot.getCooldown("scare")))
     }
     scareLoop()
-
-    let stompOrder: string[] = []
-    let entityOrder: string[] = []
 
     // TODO: Update with CMData type when ALClient gets updated
     bot.socket.on("cm", async (data: { name: string, message: string }) => {
@@ -132,6 +134,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
 
                 for (const entityID of entityOrder) {
                     const entity = bot.entities.get(entityID)
+                    if (!entity) continue // Entity died?
                     if (!targets.includes(entity.type)) continue // Not a target
                     if (entity.s.stunned && entity.s.stunned.ms > ((LOOP_MS + Math.max(...bot.pings)) * 2)) continue // Enemy is still stunned
                     if (AL.Tools.distance(bot, entity) > bot.G.skills.stomp.range) continue // Too far to stomp
@@ -177,26 +180,22 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
             await goToPoitonSellerIfLow(bot)
             await goToNPCShopIfFull(bot)
 
-            let closest: AL.Entity
-            let distance = Number.MAX_VALUE
+            let next: AL.Entity
             for (const entityID of entityOrder) {
                 const entity = bot.entities.get(entityID)
+                if (!entity) continue // Entity died?
                 if (!targets.includes(entity.type)) continue // Only attack our target
                 if (!AL.Pathfinder.canWalkPath(bot, entity)) continue // Can't simply walk to entity
                 if (entity.willBurnToDeath()) continue // Will burn to death shortly
 
-                const d = AL.Tools.distance(bot, entity)
-                if (d < distance) {
-                    closest = entity
-                    distance = d
-                }
+                next = entity
             }
 
-            if (!closest) {
+            if (!next) {
                 const destination: AL.IPosition = bot.locateMonster(targets[0])[0]
                 if (AL.Tools.distance(bot, destination) > 1) await bot.smartMove(destination)
-            } else if (AL.Tools.distance(bot, closest) > bot.range) {
-                bot.smartMove(closest, { getWithin: bot.range / 2 }).catch(() => { /* suppress warnings */ })
+            } else if (AL.Tools.distance(bot, next) > bot.range) {
+                bot.smartMove(next, { getWithin: bot.range / 2 }).catch(() => { /* suppress warnings */ })
             }
         } catch (e) {
             console.error(e)
@@ -244,7 +243,7 @@ async function startLeader(bot: AL.Warrior): Promise<void> {
                 playerOrder: [...readyToStomp],
                 entityOrder: entityOrder
             }
-            bot.sendCM([...readyToStomp], stompOrder)
+            bot.sendCM([...partyMembers], stompOrder)
         } catch (e) {
             console.error(e)
         }
