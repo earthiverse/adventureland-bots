@@ -69,7 +69,7 @@ export const ITEMS_TO_BUY: Set<AL.ItemName | ALM.ItemName> = new Set([
     // Good weapons
     "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "fireblade", "firebow", "firestaff", "firestars", "frostbow", "froststaff", "gbow", "gstaff", "harbringer", "heartwood", "hbow", "hdagger", "merry", "oozingterror", "ornamentstaff", "pinkie", "pmace", "scythe", "t2bow", "t3bow", "vdagger", "vhammer", "vstaff", "vsword", "wblade",
     // Things we can exchange / craft with
-    "ascale", "bfur", "cscale", "electronics", "feather0", "fireblade", "goldenegg", "goldingot", "goldnugget", "leather", "platinumingot", "platinumnugget", "pleather", "snakefang",
+    "ascale", "bfur", "cscale", "electronics", "feather0", "frogt", "goldenegg", "goldingot", "goldnugget", "leather", "platinumingot", "platinumnugget", "pleather", "snakefang",
     // Things to make xbox
     "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8",
     // Things to make easter basket
@@ -83,7 +83,7 @@ export const ITEMS_TO_BUY: Set<AL.ItemName | ALM.ItemName> = new Set([
     // Merchant Tools
     "pickaxe", "rod",
     // Misc. Things
-    "bottleofxp", "bugbountybox", "computer", "confetti", "cxjar", "emotionjar", "monstertoken", "poison", "puppyer", "snakeoil"
+    "bottleofxp", "bugbountybox", "computer", "confetti", "cxjar", "emotionjar", "monstertoken", "poison", "puppyer", "shadowstone", "snakeoil"
 ])
 
 export const ITEMS_TO_SELL: ItemLevelInfo = {
