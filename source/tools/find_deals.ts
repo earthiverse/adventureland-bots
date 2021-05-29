@@ -16,11 +16,17 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
 
     // Grab and parse the data
     console.log("Grabbing merchant data...")
+    const num = {
+        merchants: 0,
+        buyingItems: 0,
+        sellingItems: 0
+    }
     const buying: { [T in string]: BuyData[] } = {}
     const selling: { [T in string]: BuyData[] } = {}
     const merchantData = await AL.Game.getMerchants()
     fs.writeFileSync("merchantData.json", JSON.stringify(merchantData))
     for (const merchant of merchantData) {
+        num.merchants += 1
         for (const slotName in merchant.slots) {
             const item = merchant.slots[slotName as AL.TradeSlotType]
             const key = item.level == undefined ? item.name : `${item.name}_${item.level}`
@@ -37,6 +43,7 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
                     y: merchant.y,
                     price: item.price
                 })
+                num.buyingItems += 1
             } else {
                 // They are selling
                 if (!selling[key]) selling[key] = []
@@ -49,9 +56,12 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
                     y: merchant.y,
                     price: item.price
                 })
+                num.sellingItems += 1
             }
         }
     }
+
+    console.log(`${num.merchants} merchants are buying ${num.buyingItems} items, and selling ${num.sellingItems} items.`)
 
     // Look for items that could be dropshipped
     for (const buyOrder in buying) {
