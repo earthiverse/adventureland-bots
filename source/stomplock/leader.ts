@@ -23,7 +23,8 @@ type StompReadyCM = {
 }
 type StompOrderCM = {
     type: "stompOrder"
-    order: string[]
+    playerOrder: string[]
+    entityOrder: string[]
 }
 type CM = StompReadyCM | StompOrderCM
 
@@ -54,7 +55,8 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
             if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.canUse("attack")) {
-                for (const [, entity] of bot.entities) {
+                for (const entityID of entityOrder) {
+                    const entity = bot.entities.get(entityID)
                     if (!targets.includes(entity.type)) continue // Not a target
                     if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
                     if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
@@ -81,7 +83,8 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
                 // Scare, because we are scared
                 await bot.scare()
             } else if (bot.targets > 0 && bot.canUse("scare")) {
-                for (const [, entity] of bot.entities) {
+                for (const entityID of entityOrder) {
+                    const entity = bot.entities.get(entityID)
                     if (!entity.target || entity.target != bot.id) continue // Not targeting us
                     if (entity.s.stunned && entity.s.stunned.ms > ((LOOP_MS + Math.max(...bot.pings)) * 2)) continue // Enemy is still stunned
 
@@ -98,6 +101,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
     scareLoop()
 
     let stompOrder: string[] = []
+    let entityOrder: string[] = []
 
     // TODO: Update with CMData type when ALClient gets updated
     bot.socket.on("cm", async (data: { name: string, message: string }) => {
@@ -106,7 +110,8 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
         try {
             const decodedMessage: CM = JSON.parse(data.message)
             if (decodedMessage.type == "stompOrder") {
-                stompOrder = decodedMessage.order
+                stompOrder = decodedMessage.playerOrder
+                entityOrder = decodedMessage.entityOrder
             }
         } catch (e) {
             console.error(e)
@@ -125,7 +130,8 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
                     return
                 }
 
-                for (const [, entity] of bot.entities) {
+                for (const entityID of entityOrder) {
+                    const entity = bot.entities.get(entityID)
                     if (!targets.includes(entity.type)) continue // Not a target
                     if (entity.s.stunned && entity.s.stunned.ms > ((LOOP_MS + Math.max(...bot.pings)) * 2)) continue // Enemy is still stunned
                     if (AL.Tools.distance(bot, entity) > bot.G.skills.stomp.range) continue // Too far to stomp
@@ -173,7 +179,8 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
 
             let closest: AL.Entity
             let distance = Number.MAX_VALUE
-            for (const [, entity] of bot.entities) {
+            for (const entityID of entityOrder) {
+                const entity = bot.entities.get(entityID)
                 if (!targets.includes(entity.type)) continue // Only attack our target
                 if (!AL.Pathfinder.canWalkPath(bot, entity)) continue // Can't simply walk to entity
                 if (entity.willBurnToDeath()) continue // Will burn to death shortly
@@ -226,9 +233,16 @@ async function startLeader(bot: AL.Warrior): Promise<void> {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
+            const entityOrder: string[] = []
+            for (const [, entity] of bot.entities) {
+                if (!targets.includes(entity.type)) continue // Only attack our target
+                entityOrder.push(entity.id)
+            }
+
             const stompOrder: StompOrderCM = {
                 type: "stompOrder",
-                order: [...readyToStomp]
+                playerOrder: [...readyToStomp],
+                entityOrder: entityOrder
             }
             bot.sendCM([...readyToStomp], stompOrder)
         } catch (e) {
