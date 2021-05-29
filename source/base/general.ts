@@ -701,6 +701,8 @@ export function startSendStuffDenylistLoop(bot: AL.Character | ALM.Character, se
 export function startServerPartyInviteLoop(bot: AL.Character | ALM.Character, ignore = [bot.id]): void {
     async function serverPartyInviteLoop() {
         try {
+            if (!bot.socket || bot.socket.disconnected) return
+            
             const players = await bot.getPlayers()
             for (const player of players) {
                 if (bot.party && player.party == bot.party) continue // They're already in our party
