@@ -1,6 +1,6 @@
 import AL from "alclient-mongo"
-import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, startAvoidStacking } from "../base/general.js"
-import { mainPoisios } from "../base/locations.js"
+import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, startAvoidStacking, sleep } from "../base/general.js"
+import { mainSpiders } from "../base/locations.js"
 import { doBanking, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { partyLeader, partyMembers } from "./party.js"
@@ -12,8 +12,8 @@ const warrior2Name = "earthWar2"
 const warrior3Name = "earthWar3"
 const region: AL.ServerRegion = "ASIA"
 const identifier: AL.ServerIdentifier = "I"
-const target: AL.MonsterName = "poisio"
-const defaultLocation: AL.IPosition = mainPoisios
+const target: AL.MonsterName = "spider"
+const defaultLocation: AL.IPosition = mainSpiders
 
 let merchant: AL.Merchant
 let warrior1: AL.Warrior
@@ -273,6 +273,7 @@ async function run() {
         const loopBot = async () => {
             try {
                 if (merchant) await merchant.disconnect()
+                await sleep(2000)
                 merchant = await AL.Game.startMerchant(name, region, identifier)
                 startShared(merchant)
                 startMerchant(merchant)
@@ -282,11 +283,11 @@ async function run() {
                 if (merchant) await merchant.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(async () => { loopBot() }, Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS - 2000)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(async () => { loopBot() }, 8000)
                 }
             }
         }
@@ -299,6 +300,7 @@ async function run() {
         const loopBot = async () => {
             try {
                 if (warrior1) await warrior1.disconnect()
+                await sleep(2000)
                 warrior1 = await AL.Game.startWarrior(name, region, identifier)
                 startShared(warrior1)
                 startWarrior(warrior1)
@@ -309,11 +311,11 @@ async function run() {
                 if (warrior1) await warrior1.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(async () => { loopBot() }, Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS - 2000)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(async () => { loopBot() }, 8000)
                 }
             }
         }
@@ -326,6 +328,7 @@ async function run() {
         const loopBot = async () => {
             try {
                 if (warrior2) await warrior2.disconnect()
+                await sleep(2000)
                 warrior2 = await AL.Game.startWarrior(name, region, identifier)
                 startShared(warrior2)
                 startWarrior(warrior2, { x: -20, y: 0 })
@@ -335,11 +338,11 @@ async function run() {
                 if (warrior2) await warrior2.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(async () => { loopBot() }, Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS - 2000)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(async () => { loopBot() }, 8000)
                 }
             }
         }
@@ -352,6 +355,7 @@ async function run() {
         const loopBot = async () => {
             try {
                 if (warrior3) await warrior3.disconnect()
+                await sleep(2000)
                 warrior3 = await AL.Game.startWarrior(name, region, identifier)
                 startShared(warrior3)
                 startWarrior(warrior3, { x: 20, y: 0 })
@@ -361,11 +365,11 @@ async function run() {
                 if (warrior3) await warrior3.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(async () => { loopBot() }, Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS - 2000)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(async () => { loopBot() }, 8000)
                 }
             }
         }

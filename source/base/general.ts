@@ -95,6 +95,12 @@ export const ITEMS_TO_SELL: ItemLevelInfo = {
     "snowball": 999
 }
 
+export const REPLENISHABLES_TO_BUY: [AL.ItemName | ALM.ItemName, number][] = [
+    ["hpot1", 1000],
+    ["mpot1", 1000],
+    ["xptome", 1]
+]
+
 /**
  * These are cooperative entities that don't spawn very often.
  * We only want to do them when others are attacking them, too.
@@ -150,6 +156,49 @@ export async function getPriority2Entities(bot: ALM.Character): Promise<ALM.IEnt
         },
         { $addFields: { __order: { $indexOfArray: [solo, "$type"] } } },
         { $sort: { "__order": 1 } }]).exec()
+}
+
+export async function getMonsterHuntTargets(bot: ALM.Character): Promise<(AL.MonsterName | ALM.MonsterName)[]> {
+    const targets: (AL.MonsterName | ALM.MonsterName)[] = []
+
+    if (!bot.party) {
+        // We have no party, we're doing MHs solo
+        if (bot.s.monsterhunt && bot.s.monsterhunt.c > 0) return [bot.s.monsterhunt.id] // We have an active MH
+        return [] // We don't have an active MH
+    }
+
+    for (const player of await ALM.PlayerModel.aggregate([
+        {
+            $match: {
+                "s.monsterhunt.c": { $gt: 0 }, // Active MH
+                lastSeen: { $gt: Date.now() - 60000 }, // Seen recently
+                serverRegion: bot.serverData.region, // Same region
+                serverIdentifier: bot.serverData.name, // Same server
+                name: { $in: bot.partyData.list } // Same party
+            }
+        }, {
+            $addFields: {
+                timeLeft: { $subtract: ["$s.monsterhunt.ms", { $subtract: [Date.now(), "$lastSeen"] }] },
+                monster: "$s.monsterhunt.id"
+            }
+        }, {
+            $match: {
+                timeLeft: { $gt: 0 }
+            }
+        }, {
+            $sort: {
+                timeLeft: 1
+            }
+        }, {
+            $project: {
+                monster: 1
+            }
+        }]
+    ).exec()) {
+        targets.push(player.monster)
+    }
+
+    return targets
 }
 
 /**
@@ -220,14 +269,14 @@ export function startAvoidStacking(bot: AL.Character | ALM.Character): void {
     })
 }
 
-export function startBuyLoop(bot: AL.Character | ALM.Character, itemsToBuy = ITEMS_TO_BUY, itemsToBuy2: [AL.ItemName | ALM.ItemName, number][] = [["hpot1", 1000], ["mpot1", 1000], ["xptome", 1]]): void {
+export function startBuyLoop(bot: AL.Character | ALM.Character, itemsToBuy = ITEMS_TO_BUY, replenishablesToBuy = REPLENISHABLES_TO_BUY): void {
     const pontyLocations = bot.locateNPC("secondhands")
     let lastPonty = 0
     async function buyLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            for (const [item, amount] of itemsToBuy2) {
+            for (const [item, amount] of replenishablesToBuy) {
                 if (bot.canBuy(item)) {
                     const num = bot.countItem(item)
                     if (num < amount) await bot.buy(item, amount - num)
@@ -631,7 +680,7 @@ export function startSellLoop(bot: AL.Character | ALM.Character, itemsToSell: It
  * @param itemsToSend 
  * @param goldToHold 
  */
-export function startSendStuffAllowlistLoop(bot: AL.Character | ALM.Character, sendTo: AL.Character | ALM.Character, itemsToSend: AL.ItemName[] | ALM.ItemName[], goldToHold = GOLD_TO_HOLD): void {
+export function startSendStuffAllowlistLoop(bot: AL.Character | ALM.Character, sendTo: AL.Character | ALM.Character, itemsToSend: (AL.ItemName | ALM.ItemName)[], goldToHold = GOLD_TO_HOLD): void {
     async function sendStuffLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -702,7 +751,7 @@ export function startServerPartyInviteLoop(bot: AL.Character | ALM.Character, ig
     async function serverPartyInviteLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
-            
+
             const players = await bot.getPlayers()
             for (const player of players) {
                 if (bot.party && player.party == bot.party) continue // They're already in our party

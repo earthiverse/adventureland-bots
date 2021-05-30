@@ -230,6 +230,8 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
                 entityOrder.push(entity.id)
             }
 
+            entityOrder.sort()
+
             const stompOrder: StompOrderCM = {
                 type: "stompOrder",
                 playerOrder: [...readyToStomp],
