@@ -67,7 +67,7 @@ async function startRanger(bot: AL.Ranger) {
                 // If it's a guaranteed kill, remove it from the everyone's entity list so we don't attack it
                 for (let i = 0; i < 3; i++) {
                     const target = targets[i]
-                    if (AL.Tools.calculateDamageRange(bot, target)[0] * bot.G.skills["3shot"].damage_multiplier >= target.hp) {
+                    if (bot.calculateDamageRange(target, "3shot")[0] >= target.hp) {
                         for (const friend of [ranger, mage1, mage2]) {
                             if (!friend) continue
                             friend.entities.delete(targets[i].id)
@@ -146,7 +146,7 @@ async function startRanger(bot: AL.Ranger) {
 
             if (ssTarget && bot.canUse("supershot")) {
                 // If it's a guaranteed kill, remove it from the everyone's entity list so we don't attack it
-                if (AL.Tools.calculateDamageRange(bot, ssTarget)[0] * bot.G.skills["supershot"].damage_multiplier >= ssTarget.hp) {
+                if (bot.calculateDamageRange(ssTarget, "supershot")[0] >= ssTarget.hp) {
                     for (const friend of [ranger, mage1, mage2]) {
                         if (!friend) continue
                         friend.entities.delete(ssTarget.id)
