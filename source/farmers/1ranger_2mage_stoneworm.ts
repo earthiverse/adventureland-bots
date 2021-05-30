@@ -34,7 +34,7 @@ async function startShared(bot: AL.Character) {
 
     if (bot.ctype !== "merchant") {
         startPartyLoop(bot, partyLeader, partyMembers)
-        startSendStuffDenylistLoop(bot, merchant)
+        startSendStuffDenylistLoop(bot, merchantName)
     }
 
     startUpgradeLoop(bot)

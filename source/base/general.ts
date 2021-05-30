@@ -680,25 +680,32 @@ export function startSellLoop(bot: AL.Character | ALM.Character, itemsToSell: It
  * @param itemsToSend 
  * @param goldToHold 
  */
-export function startSendStuffAllowlistLoop(bot: AL.Character | ALM.Character, sendTo: AL.Character | ALM.Character, itemsToSend: (AL.ItemName | ALM.ItemName)[], goldToHold = GOLD_TO_HOLD): void {
+export function startSendStuffAllowlistLoop(bot: AL.Character | ALM.Character, sendTo: string, itemsToSend: (AL.ItemName | ALM.ItemName)[], goldToHold = GOLD_TO_HOLD): void {
     async function sendStuffLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
+            const sendToPlayer = bot.players.get(sendTo)
 
-            if (sendTo.isFull()) {
+            if (!sendToPlayer) {
                 bot.timeouts.set("sendstuffallowlistloop", setTimeout(async () => { sendStuffLoop() }, LOOP_MS))
                 return
             }
 
-            if (ALM.Tools.distance(bot, sendTo) < ALM.Constants.NPC_INTERACTION_DISTANCE) {
+            if (ALM.Tools.distance(bot, sendToPlayer) < ALM.Constants.NPC_INTERACTION_DISTANCE) {
                 const extraGold = bot.gold - goldToHold
-                if (extraGold > 0) await bot.sendGold(sendTo.id, extraGold)
+                if (extraGold > 0) await bot.sendGold(sendTo, extraGold)
                 for (let i = 0; i < bot.items.length; i++) {
                     const item = bot.items[i]
                     if (!item || !itemsToSend.includes(item.name)) continue // Only send items in our list
                     if (item.l == "l") continue // Don't send locked items
 
-                    await bot.sendItem(sendTo.id, i, item.q)
+                    try {
+                        await bot.sendItem(sendTo, i, item.q)
+                    } catch (e) {
+                        // They're probably full
+                        bot.timeouts.set("sendstuffdenylistloop", setTimeout(async () => { sendStuffLoop() }, 5000))
+                        return
+                    }
                 }
             }
         } catch (e) {
@@ -717,25 +724,32 @@ export function startSendStuffAllowlistLoop(bot: AL.Character | ALM.Character, s
  * @param itemsToHold 
  * @param goldToHold 
  */
-export function startSendStuffDenylistLoop(bot: AL.Character | ALM.Character, sendTo: AL.Character | ALM.Character, itemsToHold = ITEMS_TO_HOLD, goldToHold = 1_000_000): void {
+export function startSendStuffDenylistLoop(bot: AL.Character | ALM.Character, sendTo: string, itemsToHold = ITEMS_TO_HOLD, goldToHold = 1_000_000): void {
     async function sendStuffLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
+            const sendToPlayer = bot.players.get(sendTo)
 
-            if (!sendTo || sendTo.isFull()) {
+            if (!sendToPlayer) {
                 bot.timeouts.set("sendstuffdenylistloop", setTimeout(async () => { sendStuffLoop() }, 10000))
                 return
             }
 
-            if (ALM.Tools.distance(bot, sendTo) < ALM.Constants.NPC_INTERACTION_DISTANCE) {
+            if (ALM.Tools.distance(bot, sendToPlayer) < ALM.Constants.NPC_INTERACTION_DISTANCE) {
                 const extraGold = bot.gold - goldToHold
-                if (extraGold > 0) await bot.sendGold(sendTo.id, extraGold)
+                if (extraGold > 0) await bot.sendGold(sendTo, extraGold)
                 for (let i = 0; i < bot.items.length; i++) {
                     const item = bot.items[i]
                     if (!item || itemsToHold.has(item.name)) continue // Don't send important items
                     if (item.l == "l") continue // Don't send locked items
 
-                    await bot.sendItem(sendTo.id, i, item.q)
+                    try {
+                        await bot.sendItem(sendTo, i, item.q)
+                    } catch (e) {
+                        // They're probably full
+                        bot.timeouts.set("sendstuffdenylistloop", setTimeout(async () => { sendStuffLoop() }, 5000))
+                        return
+                    }
                 }
             }
         } catch (e) {
