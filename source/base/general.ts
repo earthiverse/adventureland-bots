@@ -279,6 +279,7 @@ export function sleep(ms: number): Promise<void> {
 
 export function startAvoidStacking(bot: AL.Character | ALM.Character): void {
     bot.socket.on("hit", async (data: AL.HitData | ALM.HitData) => {
+        if (data.id !== bot.id) return // Not for us
         if (!data.stacked) return
         if (!data.stacked.includes(bot.id)) return // We're not the ones that are stacked
 
