@@ -1,6 +1,6 @@
 import AL from "alclient-mongo"
-import { partyLeader } from "./party"
-import { identifier, region, startLeader, startShared } from "./runners"
+import { partyLeader } from "./party.js"
+import { identifier, region, startLeader, startShared } from "./runners.js"
 
 /** Config */
 const leaderName = partyLeader
