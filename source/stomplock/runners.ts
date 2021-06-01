@@ -2,7 +2,7 @@ import AL from "alclient-mongo"
 import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startTrackerLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToNPCShopIfFull, goToPoitonSellerIfLow } from "../base/general.js"
 import { partyLeader, partyMembers } from "./party.js"
 
-export const region: AL.ServerRegion = "ASIA"
+export const region: AL.ServerRegion = "US"
 export const identifier: AL.ServerIdentifier = "I"
 
 const targets: AL.MonsterName[] = ["bigbird"]
@@ -18,7 +18,7 @@ type StompOrderCM = {
     playerOrder: string[]
     entityOrder: string[]
 }
-type CM = StompReadyCM | StompOrderCM
+type CM = StompOrderCM | StompReadyCM
 
 export async function startShared(bot: AL.Warrior): Promise<void> {
     let stompOrder: string[] = []
