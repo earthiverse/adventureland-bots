@@ -26,8 +26,8 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
 
     function sendStompReady() {
         const stompReadyCM: StompReadyCM = {
-            type: "ready",
-            ready: bot.canUse("stomp")
+            ready: bot.canUse("stomp"),
+            type: "ready"
         }
         bot.sendCM([partyLeader], stompReadyCM)
     }
@@ -128,7 +128,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
                     const entity = bot.entities.get(entityID)
                     if (!entity) continue // Entity died?
                     if (!targets.includes(entity.type)) continue // Not a target
-                    if (entity.s.stunned && entity.s.stunned.ms > ((LOOP_MS + Math.max(...bot.pings)) * 2)) continue // Enemy is still stunned
+                    if (entity.s.stunned && entity.s.stunned.ms > ((LOOP_MS + Math.max(...bot.pings)) * 4)) continue // Enemy is still stunned
                     if (AL.Tools.distance(bot, entity) > bot.G.skills.stomp.range) continue // Too far to stomp
 
                     // It's our turn to stomp!
@@ -158,6 +158,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
     }
     sendStompReadyLoop()
 
+    const spawn = bot.locateMonster(targets[0])[0]
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -183,12 +184,43 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
                 next = entity
             }
 
-            if (!next) {
-                const destination: AL.IPosition = bot.locateMonster(targets[0])[0]
-                if (AL.Tools.distance(bot, destination) > 1) await bot.smartMove(destination)
-            } else if (AL.Tools.distance(bot, next) > bot.range) {
-                bot.smartMove(next, { getWithin: bot.range / 2 }).catch(() => { /* suppress warnings */ })
+            let destination:AL.IPosition = { ...spawn }
+            if (next) destination = { map: next.map, x: next.x, y: next.y }
+            if (bot.party) {
+                // Avoid stacking on party members
+                switch (bot.partyData.list.indexOf(bot.id)) {
+                case 1:
+                    destination.x += 6
+                    break
+                case 2:
+                    destination.x -= 6
+                    break
+                case 3:
+                    destination.y += 6
+                    break
+                case 4:
+                    destination.y -= 6
+                    break
+                case 5:
+                    destination.x += 6
+                    destination.y += 6
+                    break
+                case 6:
+                    destination.x += 6
+                    destination.y -= 6
+                    break
+                case 7:
+                    destination.x -= 6
+                    destination.y += 6
+                    break
+                case 8:
+                    destination.x -= 6
+                    destination.y -= 6
+                    break
+                }
             }
+            if (!next) await bot.smartMove(destination)
+            else bot.smartMove(destination).catch(() => { /* Suppress errors */ })
         } catch (e) {
             console.error(e)
         }
@@ -199,7 +231,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
 }
 
 export async function startLeader(bot: AL.Warrior): Promise<void> {
-    const readyToStomp = new Set<string>()
+    const readyToStomp: string[] = []
 
     startTrackerLoop(bot)
 
@@ -210,9 +242,9 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
             const decodedMessage: CM = JSON.parse(data.message)
             if (decodedMessage.type == "ready") {
                 if (decodedMessage.ready) {
-                    readyToStomp.add(data.name)
+                    if (!readyToStomp.includes(data.name)) { readyToStomp.push(data.name)}
                 } else {
-                    readyToStomp.delete(data.name)
+                    readyToStomp.splice(readyToStomp.indexOf(data.name), 1)
                 }
             }
         } catch (e) {
@@ -233,15 +265,15 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
             entityOrder.sort()
 
             const stompOrder: StompOrderCM = {
-                type: "stompOrder",
+                entityOrder: entityOrder,
                 playerOrder: [...readyToStomp],
-                entityOrder: entityOrder
+                type: "stompOrder"
             }
             bot.sendCM([...partyMembers], stompOrder)
         } catch (e) {
             console.error(e)
         }
-        setTimeout(async () => { sendStompOrderLoop() }, bot.G.skills.stomp.duration / 2)
+        setTimeout(async () => { sendStompOrderLoop() }, bot.G.skills.stomp.duration / 3)
     }
     sendStompOrderLoop()
 }
