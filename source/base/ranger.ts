@@ -2,7 +2,8 @@ import AL from "alclient-mongo"
 import FastPriorityQueue from "fastpriorityqueue"
 
 export async function attackTheseTypes(bot: AL.Ranger, types: AL.MonsterName[], friends: AL.Character[], options?: {
-    tank: string
+    targetingPlayer?: string
+    maxNumberTargets?: number
 }): Promise<void> {
     if (!bot.canUse("attack")) return // We can't attack
 
@@ -23,20 +24,47 @@ export async function attackTheseTypes(bot: AL.Ranger, types: AL.MonsterName[], 
         return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
     }
 
+    // Calculate how much courage we have left to spare
+    let numPhysicalTargetingMe = 0
+    let numPureTargetingMe = 0
+    let numMagicalTargetingMe = 0
+    for (const entity of bot.getEntities({
+        targetingMe: true
+    })) {
+        switch (entity.damage_type) {
+        case "magical":
+            numMagicalTargetingMe += 1
+            break
+        case "physical":
+            numPhysicalTargetingMe += 1
+            break
+        case "pure":
+            numPureTargetingMe += 1
+            break
+        }
+    }
+    if ((numPhysicalTargetingMe + numPureTargetingMe + numMagicalTargetingMe) < bot.targets) {
+        // Something else is targeting us, assume they're the same type
+        const difference = bot.targets - (numPhysicalTargetingMe + numPureTargetingMe + numMagicalTargetingMe)
+        numPhysicalTargetingMe += difference
+        numPureTargetingMe += difference
+        numMagicalTargetingMe += difference
+    }
+
     const targets = new FastPriorityQueue<AL.Entity>(priority)
     const threeShotTargets = new FastPriorityQueue<AL.Entity>(priority)
     const fiveShotTargets = new FastPriorityQueue<AL.Entity>(priority)
-    for (const [, entity] of bot.entities) {
-        if (!types.includes(entity.type)) continue // Wrong type
-        if (AL.Tools.distance(bot, entity) > entity.range) continue // Too far away
-        if (!entity.couldGiveCreditForKill(bot)) continue // Can't get credit for kill
-        if (options?.tank && entity.target !== options?.tank) continue // Tank isn't tanking
-        if (entity.willDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // About to die
-
+    for (const entity of bot.getEntities({
+        typeList: types,
+        withinRange: bot.range,
+        couldGiveCredit: true,
+        targetingPlayer: options?.targetingPlayer,
+        willDieToProjectiles: false
+    })) {
         targets.add(entity)
 
         if (entity.immune) continue // Can't attack it with 3shot or 5shot
-        const minimumDamage = bot.calculateDamageRange(entity)[0]
+
         if (entity.target) {
             // It has a target, we can attack it without gaining additional fear
             threeShotTargets.add(entity)
@@ -44,12 +72,54 @@ export async function attackTheseTypes(bot: AL.Ranger, types: AL.MonsterName[], 
             continue
         }
 
-        // If we can kill it in one hit
-        if (entity.hp < minimumDamage * bot.G.skills["3shot"].damage_multiplier) threeShotTargets.add(entity)
-        if (entity.hp < minimumDamage * bot.G.skills["5shot"].damage_multiplier) fiveShotTargets.add(entity)
+        let addedToThreeShotTargets = false
+
+        // Check if we can kill it in one hit without gaining additional fear
+        if (entity.hp <= bot.calculateDamageRange(bot, "5shot")[0]) {
+            fiveShotTargets.add(entity)
+            threeShotTargets.add(entity)
+            continue
+        } else if (entity.hp <= bot.calculateDamageRange(bot, "3shot")[0]) {
+            threeShotTargets.add(entity)
+            addedToThreeShotTargets = true
+        }
+
+        switch (entity.damage_type) {
+        case "magical":
+            if (bot.mcourage > numMagicalTargetingMe) {
+                // We can tank one more magical monster
+                if (!addedToThreeShotTargets) threeShotTargets.add(entity)
+                fiveShotTargets.add(entity)
+                numMagicalTargetingMe += 1
+                continue
+            }
+            break
+        case "physical":
+            if (bot.courage > numPhysicalTargetingMe) {
+                // We can tank one more physical monster
+                if (!addedToThreeShotTargets)threeShotTargets.add(entity)
+                fiveShotTargets.add(entity)
+                numPhysicalTargetingMe += 1
+                continue
+            }
+            break
+        case "pure":
+            if (bot.courage > numPureTargetingMe) {
+                // We can tank one more pure monster
+                if (!addedToThreeShotTargets)threeShotTargets.add(entity)
+                fiveShotTargets.add(entity)
+                numPureTargetingMe += 1
+                continue
+            }
+            break
+        }
     }
 
-    // TODO: improve by checking our fear level / courage and seeing if we can tank it
+    // Apply huntersmark if we can't kill it in one shot and we have enough MP
+    const target = targets.peek()
+    if (bot.canUse("huntersmark") && bot.mp > (bot.mp_cost + bot.G.skills.huntersmark.mp) && !bot.canKillInOneShot(target)) {
+        bot.huntersMark(target.id).catch((e) => { console.error(e) })
+    }
 
     if (bot.canUse("5shot") && fiveShotTargets.size >= 5) {
         const entities: AL.Entity[] = []
@@ -90,16 +160,27 @@ export async function attackTheseTypes(bot: AL.Ranger, types: AL.MonsterName[], 
         }
     }
 
-    if (bot.canUse("supershot")) {
-        for (const [, entity] of bot.entities) {
-            if (!types.includes(entity.type)) continue // Wrong type
-            if (AL.Tools.distance(bot, entity) > entity.range) continue // Too far away
-            if (!entity.couldGiveCreditForKill(bot)) continue // Can't get credit for kill
-            if (options?.tank && entity.target !== options?.tank) continue // Tank isn't tanking
-            if (entity.willDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // About to die
-            if (entity.immune) continue // Can't attack it with supershot
+    if (!bot.canUse("supershot")) return
 
+    const supershotTargets = new FastPriorityQueue<AL.Entity>(priority)
+    for (const entity of bot.getEntities({
+        typeList: types,
+        withinRange: bot.range * bot.G.skills.supershot.range_multiplier,
+        couldGiveCredit: true,
+        targetingPlayer: options?.targetingPlayer,
+        willDieToProjectiles: false
+    })) {
+        if (entity.immune) continue // Can't attack it with supershot
+
+        // If we can kill something guaranteed, break early
+        if (bot.canKillInOneShot(entity, "supershot")) {
+            for (const friend of friends) friend.entities.delete(entity.id)
             await bot.superShot(entity.id)
+            return
         }
+
+        supershotTargets.add(entity)
     }
+
+    if (supershotTargets.size > 0) await bot.superShot(supershotTargets.poll().id)
 }

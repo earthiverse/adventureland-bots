@@ -1,6 +1,6 @@
 import AL from "alclient"
-import ALM from "alclient-mongo"
-import { ItemLevelInfo } from "../definitions/bot"
+import ALM, { IPosition } from "alclient-mongo"
+import { ItemLevelInfo } from "../definitions/bot.js"
 
 export const LOOP_MS = 100
 export const CHECK_PONTY_EVERY_MS = 10_000 /** 10 seconds */
@@ -104,9 +104,9 @@ export const REPLENISHABLES_TO_BUY: [AL.ItemName | ALM.ItemName, number][] = [
 /**
  * These are cooperative entities that don't spawn very often.
  * We only want to do them when others are attacking them, too.
- * 
- * @param bot 
- * @returns 
+ *
+ * @param bot
+ * @returns
  */
 export async function getPriority1Entities(bot: ALM.Character): Promise<ALM.IEntity[]> {
     // NOTE: This list is ordered higher -> lower priority
@@ -131,8 +131,8 @@ export async function getPriority1Entities(bot: ALM.Character): Promise<ALM.IEnt
 
 /**
  * These are non-cooperative entities that don't spawn very often.
- * @param bot 
- * @returns 
+ * @param bot
+ * @returns
  */
 export async function getPriority2Entities(bot: ALM.Character): Promise<ALM.IEntity[]> {
     // NOTE: This list is ordered higher -> lower priority
@@ -203,13 +203,13 @@ export async function getMonsterHuntTargets(bot: ALM.Character): Promise<(AL.Mon
 
 /**
  * Go to the potion seller NPC if we're low on potions so we can buy some
- * 
+ *
  * NOTE: If you don't startBuyLoop() with a potion amount higher than minHpPots and minMpPots, we might get stuck!
  * NOTE: If you don't have enough gold, we might get stuck!
- * @param bot 
- * @param minHpPots 
- * @param minMpPots 
- * @returns 
+ * @param bot
+ * @param minHpPotss
+ * @param minMpPots
+ * @returns
  */
 export async function goToPoitonSellerIfLow(bot: AL.Character | ALM.Character, minHpPots = 100, minMpPots = 100): Promise<void> {
     if (bot.hasItem("computer")) return // Don't need to move if we have a computer
@@ -226,11 +226,11 @@ export async function goToPoitonSellerIfLow(bot: AL.Character | ALM.Character, m
 
 /**
  * Go near an NPC so we can sell our unwanted items.
- * 
+ *
  * NOTE: If you don't startSellItemLoop(), we might get stuck!
- * @param bot 
- * @param itemsToSell 
- * @returns 
+ * @param bot
+ * @param itemsToSell
+ * @returns
  */
 export async function goToNPCShopIfFull(bot: AL.Character | ALM.Character, itemsToSell = ITEMS_TO_SELL): Promise<void> {
     if (!bot.isFull()) return // Not full
@@ -250,6 +250,27 @@ export async function goToNPCShopIfFull(bot: AL.Character | ALM.Character, items
     // TODO: Find the closest shop
     await bot.smartMove("fancypots", { getWithin: ALM.Constants.NPC_INTERACTION_DISTANCE / 2 })
     await sleep(1000)
+}
+
+export function moveInCircle(bot: AL.Character | ALM.Character, location: AL.IPosition, radius = 125, angle = Math.PI / 2.5): Promise<IPosition> {
+    if (AL.Pathfinder.canWalkPath(bot, location)) {
+        const bscorpion = bot.getNearestMonster("bscorpion")?.monster
+        if (bscorpion) {
+            // There's a bscorpion nearby
+            const angleFromSpawnToBscorpionGoing = Math.atan2(bscorpion.going_y - location.y, bscorpion.going_x - location.x)
+            const endGoalAngle = angleFromSpawnToBscorpionGoing + angle
+            const endGoal = { x: location.x + radius * Math.cos(endGoalAngle), y: location.y + radius * Math.sin(endGoalAngle) }
+            return bot.move(endGoal.x, endGoal.y)
+        } else {
+            // There isn't a bscorpion nearby
+            const angleFromSpawnToBot = Math.atan2(bot.y - location.y, bot.x - location.x)
+            const endGoal = { x: location.x + radius * Math.cos(angleFromSpawnToBot), y: location.y + radius * Math.sin(angleFromSpawnToBot) }
+            return bot.move(endGoal.x, endGoal.y)
+        }
+    } else {
+        // Move to the bscorpion spawn
+        return bot.smartMove(location, { getWithin: radius })
+    }
 }
 
 export function sleep(ms: number): Promise<void> {
@@ -675,10 +696,10 @@ export function startSellLoop(bot: AL.Character | ALM.Character, itemsToSell: It
 
 /**
  * Only send the items in `itemsToSend`.
- * @param bot 
- * @param sendTo 
- * @param itemsToSend 
- * @param goldToHold 
+ * @param bot
+ * @param sendTo
+ * @param itemsToSend
+ * @param goldToHold
  */
 export function startSendStuffAllowlistLoop(bot: AL.Character | ALM.Character, sendTo: string, itemsToSend: (AL.ItemName | ALM.ItemName)[], goldToHold = GOLD_TO_HOLD): void {
     async function sendStuffLoop() {
@@ -719,10 +740,10 @@ export function startSendStuffAllowlistLoop(bot: AL.Character | ALM.Character, s
 
 /**
  * Send all items except for those in `itemsToHold`
- * @param bot 
- * @param sendTo 
- * @param itemsToHold 
- * @param goldToHold 
+ * @param bot
+ * @param sendTo
+ * @param itemsToHold
+ * @param goldToHold
  */
 export function startSendStuffDenylistLoop(bot: AL.Character | ALM.Character, sendTo: string, itemsToHold = ITEMS_TO_HOLD, goldToHold = 1_000_000): void {
     async function sendStuffLoop() {

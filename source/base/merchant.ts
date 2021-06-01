@@ -222,7 +222,7 @@ export function startMluckLoop(bot: AL.Merchant | ALM.Merchant): void {
                     if (player.npc) continue // It's an NPC, we can't mluck NPCs.
 
                     if (!player.s.mluck) {
-                        await bot.mluck(player.id) // Give the mluck 
+                        await bot.mluck(player.id) // Give the mluck
                     } else if (!player.s.mluck.strong && player.s.mluck.f !== bot.id) {
                         await bot.mluck(player.id) // Steal the mluck
                     } else if ((!player.s.mluck.strong && player.s.mluck.ms < (bot.G.conditions.mluck.duration - 60000))

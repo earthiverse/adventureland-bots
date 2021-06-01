@@ -17,8 +17,9 @@
         "watch": false
     },
     "include": [
-        "source/**/*.ts"
-, "source/definitions/bot.dts"    ],
+        "source/**/*.ts",
+        "source/definitions/bot.ts"
+    ],
     "exclude": [
         "build",
         "node_modules"
