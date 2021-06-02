@@ -1,5 +1,6 @@
 import AL from "alclient-mongo"
 import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
+import { halloweenSafeSnakes } from "../base/locations.js"
 import { doBanking, startMluckLoop } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "./party.js"
 
@@ -11,7 +12,7 @@ const mage3Name = "shoopdawhoop"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "III"
 const targets: AL.MonsterName[] = ["osnake", "snake"]
-const defaultLocation: AL.IPosition = { map: "halloween", x: 346.5, y: -747 } // snakes
+const defaultLocation: AL.IPosition = halloweenSafeSnakes
 
 let merchant: AL.Merchant
 let mage1: AL.Mage

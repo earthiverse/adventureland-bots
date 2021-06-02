@@ -11,7 +11,7 @@ const warrior1Name = "announcement"
 const warrior2Name = "battleworthy"
 const warrior3Name = "charmingness"
 const region: AL.ServerRegion = "US"
-const identifier: AL.ServerIdentifier = "I"
+const identifier: AL.ServerIdentifier = "II"
 const target: AL.MonsterName = "scorpion"
 const defaultLocation: AL.IPosition = mainScorpions
 
@@ -76,7 +76,7 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
                         }
 
                         if (closest && AL.Tools.distance(bot, closest) > bot.range) {
-                            const newClosest:AL.IPosition = { map: closest.map, x: closest.x + positionOffset.x, y: closest.y + positionOffset.y}
+                            const newClosest:AL.IPosition = { map: closest.map, x: closest.x + positionOffset.x, y: closest.y + positionOffset.y }
                             bot.smartMove(newClosest).catch(() => { /* suppress warnings */ })
                         }
                     }
@@ -126,7 +126,7 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
             }
 
             if (closest) {
-                bot.smartMove({map: closest.map, x: closest.x + positionOffset.x, y: closest.y + positionOffset.y}).catch(() => { /* suppress errors */ })
+                bot.smartMove({ map: closest.map, x: closest.x + positionOffset.x, y: closest.y + positionOffset.y }).catch(() => { /* suppress errors */ })
             } else {
                 await bot.smartMove(myLocation)
             }

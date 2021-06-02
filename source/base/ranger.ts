@@ -164,11 +164,11 @@ export async function attackTheseTypes(bot: AL.Ranger, types: AL.MonsterName[], 
 
     const supershotTargets = new FastPriorityQueue<AL.Entity>(priority)
     for (const entity of bot.getEntities({
-        typeList: types,
-        withinRange: bot.range * bot.G.skills.supershot.range_multiplier,
         couldGiveCredit: true,
         targetingPlayer: options?.targetingPlayer,
-        willDieToProjectiles: false
+        typeList: types,
+        willDieToProjectiles: false,
+        withinRange: bot.range * bot.G.skills.supershot.range_multiplier
     })) {
         if (entity.immune) continue // Can't attack it with supershot
 

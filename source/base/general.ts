@@ -624,6 +624,7 @@ export function startPartyLoop(bot: AL.Character | ALM.Character, leader: string
 
                         if (toKickMember) {
                             // There's someone with a lower priority that we can kick
+                            console.log(`Kicking ${toKickMember} so ${data.name} can join`)
                             await bot.kickPartyMember(toKickMember)
                         } else {
                             // The party is full of higher priority members
@@ -632,7 +633,7 @@ export function startPartyLoop(bot: AL.Character | ALM.Character, leader: string
                     }
                 }
 
-                await bot.acceptPartyRequest(data.name)
+                console.log(await bot.acceptPartyRequest(data.name))
             } catch (e) {
                 console.error(e)
             }
@@ -644,10 +645,10 @@ export function startPartyLoop(bot: AL.Character | ALM.Character, leader: string
             if (!bot.socket || bot.socket.disconnected) return
 
             if (!bot.party) {
-                bot.sendPartyRequest(leader)
+                await bot.sendPartyRequest(leader)
             } else if (bot.partyData?.list && !bot.partyData.list.includes(leader)) {
-                bot.leaveParty()
-                bot.sendPartyRequest(leader)
+                await bot.leaveParty()
+                await bot.sendPartyRequest(leader)
             }
         } catch (e) {
             console.error(e)

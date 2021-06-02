@@ -61,6 +61,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
                     if (!entity.s.stunned || entity.s.stunned.ms < ((LOOP_MS + Math.max(...bot.pings)) * 2)) continue // Enemy is not stunned, or is about to be free, don't attack!
 
                     await bot.basicAttack(entity.id)
+                    break
                 }
             }
         } catch (e) {
@@ -87,6 +88,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
 
                     // Scare, because we might run out of stun soon!
                     await bot.scare()
+                    break
                 }
             }
         } catch (e) {
@@ -242,7 +244,7 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
             const decodedMessage: CM = JSON.parse(data.message)
             if (decodedMessage.type == "ready") {
                 if (decodedMessage.ready) {
-                    if (!readyToStomp.includes(data.name)) { readyToStomp.push(data.name)}
+                    if (!readyToStomp.includes(data.name)) { readyToStomp.push(data.name) }
                 } else {
                     readyToStomp.splice(readyToStomp.indexOf(data.name), 1)
                 }
