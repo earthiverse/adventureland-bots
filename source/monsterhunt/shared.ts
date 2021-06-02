@@ -4,7 +4,7 @@ import { partyLeader, partyMembers } from "./party.js"
 
 export async function startShared(bot: AL.Character): Promise<void> {
     bot.socket.on("magiport", async (data: { name: string }) => {
-        if (partyMembers.has(data.name)) {
+        if (partyMembers.includes(data.name)) {
             if (bot.c?.town) await bot.stopWarpToTown()
             await bot.acceptMagiport(data.name)
             return

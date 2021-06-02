@@ -1,6 +1,6 @@
 import AL from "alclient-mongo"
 import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, startAvoidStacking, sleep } from "../base/general.js"
-import { mainPoisios } from "../base/locations.js"
+import { mainScorpions } from "../base/locations.js"
 import { doBanking, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { partyLeader, partyMembers } from "./party.js"
@@ -12,8 +12,8 @@ const warrior2Name = "battleworthy"
 const warrior3Name = "charmingness"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "I"
-const target: AL.MonsterName = "poisio"
-const defaultLocation: AL.IPosition = mainPoisios
+const target: AL.MonsterName = "scorpion"
+const defaultLocation: AL.IPosition = mainScorpions
 
 let merchant: AL.Merchant
 let warrior1: AL.Warrior
@@ -29,7 +29,7 @@ async function startShared(bot: AL.Character) {
     startSellLoop(bot)
 
     if (bot.ctype !== "merchant") {
-        startPartyLoop(bot, partyLeader, new Set(partyMembers))
+        startPartyLoop(bot, partyLeader, partyMembers)
         startSendStuffDenylistLoop(bot, merchantName)
     }
 
@@ -76,7 +76,8 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
                         }
 
                         if (closest && AL.Tools.distance(bot, closest) > bot.range) {
-                            bot.smartMove(closest, { getWithin: bot.range / 2 }).catch(() => { /* suppress warnings */ })
+                            const newClosest:AL.IPosition = { map: closest.map, x: closest.x + positionOffset.x, y: closest.y + positionOffset.y}
+                            bot.smartMove(newClosest).catch(() => { /* suppress warnings */ })
                         }
                     }
                     break
@@ -93,6 +94,7 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
     startAvoidStacking(bot)
     startChargeLoop(bot)
 
+    const myLocation = { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y }
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -123,11 +125,10 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
                 }
             }
 
-            if (!closest) {
-                const destination: AL.IPosition = { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y }
-                if (AL.Tools.distance(bot, destination) > 1) bot.smartMove(destination)
-            } else if (AL.Tools.distance(bot, closest) > bot.range) {
-                bot.smartMove(closest, { getWithin: bot.range / 2 }).catch(() => { /* suppress warnings */ })
+            if (closest) {
+                bot.smartMove({map: closest.map, x: closest.x + positionOffset.x, y: closest.y + positionOffset.y}).catch(() => { /* suppress errors */ })
+            } else {
+                await bot.smartMove(myLocation)
             }
         } catch (e) {
             console.error(e)
@@ -331,7 +332,7 @@ async function run() {
                 await sleep(2000)
                 warrior2 = await AL.Game.startWarrior(name, region, identifier)
                 startShared(warrior2)
-                startWarrior(warrior2, { x: -20, y: 0 })
+                startWarrior(warrior2, { x: -6, y: 0 })
                 warrior2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -358,7 +359,7 @@ async function run() {
                 await sleep(2000)
                 warrior3 = await AL.Game.startWarrior(name, region, identifier)
                 startShared(warrior3)
-                startWarrior(warrior3, { x: 20, y: 0 })
+                startWarrior(warrior3, { x: 6, y: 0 })
                 warrior3.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)

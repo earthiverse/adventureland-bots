@@ -9,7 +9,7 @@ const mage1Name = "lolwutpear"
 const mage2Name = "ytmnd"
 const mage3Name = "shoopdawhoop"
 const region: AL.ServerRegion = "US"
-const identifier: AL.ServerIdentifier = "II"
+const identifier: AL.ServerIdentifier = "III"
 const targets: AL.MonsterName[] = ["osnake", "snake"]
 const defaultLocation: AL.IPosition = { map: "halloween", x: 346.5, y: -747 } // snakes
 
@@ -27,7 +27,7 @@ async function startShared(bot: AL.Character) {
     startSellLoop(bot)
 
     if (bot.ctype !== "merchant") {
-        startPartyLoop(bot, partyLeader, new Set(partyMembers))
+        startPartyLoop(bot, partyLeader, partyMembers)
         startSendStuffDenylistLoop(bot, merchantName)
     }
 

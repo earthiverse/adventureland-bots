@@ -593,13 +593,45 @@ export function startLootLoop(bot: AL.Character | ALM.Character): void {
     lootLoop()
 }
 
-export function startPartyLoop(bot: AL.Character | ALM.Character, leader: string, partyMembers?: Set<string>): void {
+export function startPartyLoop(bot: AL.Character | ALM.Character, leader: string, partyMembers?: string[]): void {
     if (bot.id == leader) {
         // Have the leader accept party requests
         bot.socket.on("request", async (data: { name: string }) => {
-            if (partyMembers && !partyMembers.has(data.name)) return // Discard requests from other players
-
             try {
+                if (partyMembers) {
+                    if (!partyMembers.includes(data.name)) return // Discard requests from other players
+
+                    // If there's an incoming request, and we're full, kick the lower priority characters
+                    if (bot.partyData && bot.partyData.list.length >= 9) {
+                        const requestPriority = partyMembers.length - partyMembers.indexOf(data.name)
+
+                        let toKickMember:string
+                        let toKickPriority = requestPriority
+
+                        for (let i = bot.partyData.list.indexOf(bot.id) + 1; i < bot.partyData.list.length; i++) {
+                            const memberName = bot.partyData.list[i]
+                            if (!partyMembers.includes(memberName)){
+                            // Someone snuck in to our party
+                                toKickMember = memberName
+                                break
+                            }
+
+                            const memberPriority = partyMembers.length - partyMembers.indexOf(memberName)
+                            if (memberPriority > toKickPriority) continue // This member has a higher priority
+                            toKickPriority = memberPriority
+                            toKickMember = memberName
+                        }
+
+                        if (toKickMember) {
+                            // There's someone with a lower priority that we can kick
+                            await bot.kickPartyMember(toKickMember)
+                        } else {
+                            // The party is full of higher priority members
+                            return
+                        }
+                    }
+                }
+
                 await bot.acceptPartyRequest(data.name)
             } catch (e) {
                 console.error(e)

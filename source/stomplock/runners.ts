@@ -97,9 +97,8 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
     }
     scareLoop()
 
-    // TODO: Update with CMData type when ALClient gets updated
-    bot.socket.on("cm", async (data: { name: string, message: string }) => {
-        if (!partyMembers.has(data.name)) return // Discard messages from other players
+    bot.socket.on("cm", async (data: AL.CMData) => {
+        if (!partyMembers.includes(data.name)) return // Discard messages from other players
 
         try {
             const decodedMessage: CM = JSON.parse(data.message)
@@ -128,17 +127,18 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
                     const entity = bot.entities.get(entityID)
                     if (!entity) continue // Entity died?
                     if (!targets.includes(entity.type)) continue // Not a target
-                    if (entity.s.stunned && entity.s.stunned.ms > ((LOOP_MS + Math.max(...bot.pings)) * 4)) continue // Enemy is still stunned
+                    if (entity.s.stunned) {
+                        // Check if enemy is still stunned long enough
+                        if (entity.s.stunned.ms >= Math.max((LOOP_MS + Math.min(...bot.pings)) * 2, bot.G.skills.stomp.duration - (bot.G.skills.stomp.cooldown / bot.partyData?.list.length))) continue
+                    }
                     if (AL.Tools.distance(bot, entity) > bot.G.skills.stomp.range) continue // Too far to stomp
 
                     // It's our turn to stomp!
                     await bot.stomp()
                     sendStompReady()
-                    setTimeout(async () => { sendStompReady() }, bot.G.skills.stomp.cooldown)
                     break
                 }
             }
-
         } catch (e) {
             console.error(e)
         }
@@ -236,7 +236,7 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
     startTrackerLoop(bot)
 
     bot.socket.on("cm", async (data: AL.CMData) => {
-        if (!partyMembers.has(data.name)) return // Discard messages from other players
+        if (!partyMembers.includes(data.name)) return // Discard messages from other players
 
         try {
             const decodedMessage: CM = JSON.parse(data.message)

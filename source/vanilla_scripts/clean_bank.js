@@ -2,7 +2,7 @@
 /**
  * This script will search our bank and combine multiple stacks of items to single stacks if we can.
  * The items will end up in your inventory, put them back in the bank after
- * 
+ *
  * NOTES: Run this script in the bank.
  * NOTES: Run this with lots of space in your inventory. (TODO: Check for space)
  */
