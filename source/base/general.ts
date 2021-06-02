@@ -628,6 +628,7 @@ export function startPartyLoop(bot: AL.Character | ALM.Character, leader: string
                             await bot.kickPartyMember(toKickMember)
                         } else {
                             // The party is full of higher priority members
+                            console.log(`Ignoring ${data.name}'s party request because we are full.`)
                             return
                         }
                     }

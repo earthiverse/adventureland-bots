@@ -1,11 +1,10 @@
 import AL from "alclient-mongo"
-import { partyLeader } from "./party.js"
 import { identifier, topBoundary, topPositions, region, startShared, targets } from "./runners.js"
 
 /** Config */
-const follower1Name = "earthMag2"
-const follower2Name = "earthMag3"
-const follower3Name = partyLeader
+const follower1Name = "facilitating"
+const follower2Name = "gratuitously"
+const follower3Name = "hypothesized"
 
 /** Characters */
 let follower1: AL.Mage

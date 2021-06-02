@@ -10,7 +10,7 @@ const mage1Name = "lolwutpear"
 const mage2Name = "ytmnd"
 const mage3Name = "shoopdawhoop"
 const region: AL.ServerRegion = "US"
-const identifier: AL.ServerIdentifier = "III"
+const identifier: AL.ServerIdentifier = "II"
 const targets: AL.MonsterName[] = ["osnake", "snake"]
 const defaultLocation: AL.IPosition = halloweenSafeSnakes
 
