@@ -238,7 +238,7 @@ async function startMerchant(bot: AL.Merchant) {
             }
 
             // Hang out in town
-            await bot.smartMove("main")
+            await bot.smartMove({ map: "main", x: -250, y: -100 })
             await bot.openMerchantStand()
         } catch (e) {
             console.error(e)
