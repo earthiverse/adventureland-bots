@@ -4,26 +4,43 @@
  * Each loop serves a different function, and is not relied upon by other loops.
  */
 const attackThisType = "goo"
-async function attackAndMoveLoop() {
+async function attackLoop() {
     try {
         const target = get_nearest_monster({ path_check: true, type: attackThisType })
-        if (character.range > distance(character, target)) {
+        if (target && character.range >= distance(character, target)) {
             // Awaiting the attack lets us setTimeout right before the next attack is ready to maximize DPS.
             await attack(target)
 
             // `reduce_cooldown` is used to compensate for ping between the client and server. Utilizing it increases DPS.
             // However, if you reduce_cooldown too much, you may miss an attack.
             reduce_cooldown("attack", Math.min(...parent.pings))
-        } else {
+        }
+    } catch (e) {
+        console.error(e)
+    }
+    setTimeout(async () => { attackLoop() }, Math.max(100, parent.next_skill["attack"].getTime() - Date.now()))
+}
+attackLoop()
+
+async function moveLoop() {
+    try {
+        // NOTE: If you want to move around the map, for example to refill potions,
+        // you should modify this function.
+
+        const target = get_nearest_monster({ path_check: true, type: attackThisType })
+        if (!target) {
+            // We're not near any targets, let's move to them
+            await smart_move(attackThisType)
+        } else if (character.range < distance(character, target)) {
             // We are out of range to attack the target, so let's move closer
             move(character.x + (target.x - character.x) / 2, character.y + (target.y - character.y) / 2)
         }
     } catch (e) {
         console.error(e)
     }
-    setTimeout(async () => { attackAndMoveLoop() }, Math.max(100, parent.next_skill["attack"].getTime() - Date.now()))
+    setTimeout(async () => { moveLoop() }, 250)
 }
-attackAndMoveLoop()
+moveLoop()
 
 async function regenLoop() {
     try {
