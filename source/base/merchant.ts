@@ -11,6 +11,8 @@ export const MERCHANT_ITEMS_TO_HOLD: Set<AL.ItemName | ALM.ItemName> = new Set([
     "monstertoken",
     // Scrolls
     "cscroll0", "cscroll1", "cscroll2", "cscroll3", "scroll0", "scroll1", "scroll2", "scroll3", "scroll4", "strscroll", "intscroll", "dexscroll",
+    // Prims
+    "offering", "offeringp",
     // Fishing Rod and Pickaxe
     "pickaxe", "rod",
     // Main Items

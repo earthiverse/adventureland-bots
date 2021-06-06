@@ -37,6 +37,7 @@ export const ITEMS_TO_EXCHANGE: Set<AL.ItemName | ALM.ItemName> = new Set([
     // Boxes
     "armorbox", "bugbountybox", "gift0", "gift1", "mysterybox", "weaponbox", "xbox"
 ])
+
 export const ITEMS_TO_BUY: Set<AL.ItemName | ALM.ItemName> = new Set([
     // Exchangeables
     ...ITEMS_TO_EXCHANGE,
@@ -93,6 +94,10 @@ export const ITEMS_TO_SELL: ItemLevelInfo = {
     "fieldgen0": 999,
     // Snowballs
     "snowball": 999
+}
+
+export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
+    "bow4": 2, "crossbow": 2, "cyber": 1, "exoarm": 1, "fury": 1, "starkillers": 1, "suckerpunch": 1,
 }
 
 export const REPLENISHABLES_TO_BUY: [AL.ItemName | ALM.ItemName, number][] = [
@@ -438,12 +443,25 @@ export function startCompoundLoop(bot: AL.Character | ALM.Character, itemsToSell
                 const grade = await bot.calculateItemGrade(itemInfo)
                 const cscrollName = `cscroll${grade}` as AL.ItemName | ALM.ItemName
                 let cscrollPos = bot.locateItem(cscrollName)
-                if (cscrollPos == undefined && !bot.canBuy(cscrollName)) continue // We can't buy a scroll for whatever reason :(
-                else if (cscrollPos == undefined) cscrollPos = await bot.buy(cscrollName)
+                const primlingPos = bot.locateItem("offeringp")
+                try {
+                    if (cscrollPos == undefined && !bot.canBuy(cscrollName)) continue // We can't buy a scroll for whatever reason :(
+                    else if (cscrollPos == undefined) cscrollPos = await bot.buy(cscrollName)
 
-                // Compound!
-                if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as AL.Merchant | ALM.Merchant).massProduction()
-                await bot.compound(itemPoss[0], itemPoss[1], itemPoss[2], cscrollPos)
+                    if ((ITEMS_TO_PRIMLING[itemName] && itemInfo.level >= ITEMS_TO_PRIMLING[itemName])
+                        || ((level0Grade == 0 && itemInfo.level >= 3) || (level0Grade == 1 && itemInfo.level >= 2) || (level0Grade == 2 && itemInfo.level >= 1))) {
+                        // We want to use a primling to upgrade these
+                        if (primlingPos == undefined) continue // We don't have any primlings
+                        if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as AL.Merchant | ALM.Merchant).massProduction()
+                        await bot.compound(itemPoss[0], itemPoss[1], itemPoss[2], cscrollPos, primlingPos)
+                    } else {
+                        // We don't want to use a primling to upgrade these
+                        if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as AL.Merchant | ALM.Merchant).massProduction()
+                        await bot.compound(itemPoss[0], itemPoss[1], itemPoss[2], cscrollPos)
+                    }
+                } catch (e) {
+                    console.error(e)
+                }
             }
         } catch (e) {
             console.error(e)
@@ -898,13 +916,22 @@ export function startUpgradeLoop(bot: AL.Character | ALM.Character, itemsToSell:
                 const grade = await bot.calculateItemGrade(itemInfo)
                 const scrollName = `scroll${grade}` as AL.ItemName | ALM.ItemName
                 let scrollPos = bot.locateItem(scrollName)
+                const primlingPos = bot.locateItem("offeringp")
                 try {
                     if (scrollPos == undefined && !bot.canBuy(scrollName)) continue // We can't buy a scroll for whatever reason :(
                     else if (scrollPos == undefined) scrollPos = await bot.buy(scrollName)
 
-                    // Upgrade!
-                    if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as AL.Merchant | ALM.Merchant).massProduction()
-                    await bot.upgrade(itemPos, scrollPos)
+                    if ((ITEMS_TO_PRIMLING[itemName] && itemInfo.level >= ITEMS_TO_PRIMLING[itemName])
+                        || ((level0Grade == 0 && itemInfo.level >= 8) || (level0Grade == 1 && itemInfo.level >= 6) || (level0Grade == 2 && itemInfo.level >= 4))) {
+                        // We want to use a primling to upgrade these
+                        if (primlingPos == undefined) continue // We don't have any primlings
+                        if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as AL.Merchant | ALM.Merchant).massProduction()
+                        await bot.upgrade(itemPos, scrollPos, primlingPos)
+                    } else {
+                        // We don't want to use a primling to upgrade these
+                        if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as AL.Merchant | ALM.Merchant).massProduction()
+                        await bot.upgrade(itemPos, scrollPos)
+                    }
                 } catch (e) {
                     console.error(e)
                 }
