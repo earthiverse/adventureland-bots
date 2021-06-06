@@ -97,7 +97,7 @@ export const ITEMS_TO_SELL: ItemLevelInfo = {
 }
 
 export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
-    "bow4": 2, "crossbow": 2, "cyber": 1, "exoarm": 1, "fury": 1, "starkillers": 1, "suckerpunch": 1,
+    "crossbow": 2, "cyber": 1, "exoarm": 1, "fury": 1, "gstaff": 1, "starkillers": 1, "suckerpunch": 1, "t3bow": 1
 }
 
 export const REPLENISHABLES_TO_BUY: [AL.ItemName | ALM.ItemName, number][] = [
