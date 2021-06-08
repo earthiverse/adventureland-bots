@@ -122,7 +122,7 @@ async function run() {
             if (priest) await priest.disconnect()
         }
         const now = new Date()
-        const nextStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() - now.getMinutes() % 2 + 1, 10)
+        const nextStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() + 1, 10)
         setTimeout(async () => { connectLoop() }, nextStart.getTime() - Date.now())
     }
 
@@ -147,13 +147,13 @@ async function run() {
             console.error(e)
         }
         const now = new Date()
-        const nextStop = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() - now.getMinutes() % 2 + 1, 50)
+        const nextStop = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() + 1, 50)
         setTimeout(async () => { disconnectLoop() }, nextStop.getTime() - Date.now())
     }
 
     const now = new Date()
-    const nextStop = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() - now.getMinutes() % 2 + 1, 50)
-    const nextStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() - now.getMinutes() % 2 + 1, 10)
+    const nextStop = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() + 1, 50)
+    const nextStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() + 1, 10)
     setTimeout(async () => { connectLoop() }, nextStart.getTime() - Date.now())
     setTimeout(async () => { disconnectLoop() }, nextStop.getTime() - Date.now())
 }
