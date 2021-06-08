@@ -26,7 +26,6 @@ async function startPriest(bot: AL.Priest) {
                     willDieToProjectiles: false,
                     withinRange: bot.range,
                 })) {
-                    console.log(`attacking ${entity.id}`)
                     await bot.basicAttack(entity.id)
                     break
                 }
@@ -65,22 +64,40 @@ async function startPriest(bot: AL.Priest) {
             // Look for frogs
             let nearest:AL.Entity
             let distance = Number.MAX_VALUE
-            for (const frog of bot.getEntities({
+            for (const squigtoad of bot.getEntities({
                 couldGiveCredit: true,
                 type: "squigtoad",
                 willBurnToDeath: false,
                 willDieToProjectiles: false
             })) {
-                const d = AL.Tools.distance(bot, frog)
+                const d = AL.Tools.distance(bot, squigtoad)
                 if (d < distance) {
-                    nearest = frog
+                    nearest = squigtoad
                     distance = d
                 }
             }
             if (nearest) {
                 await bot.smartMove(nearest)
             } else {
-                await bot.smartMove("squigtoad")
+
+                // Look for squigs
+                for (const squig of bot.getEntities({
+                    couldGiveCredit: true,
+                    type: "squig",
+                    willBurnToDeath: false,
+                    willDieToProjectiles: false
+                })) {
+                    const d = AL.Tools.distance(bot, squig)
+                    if (d < distance) {
+                        nearest = squig
+                        distance = d
+                    }
+                }
+                if (nearest) {
+                    await bot.smartMove(nearest)
+                } else {
+                    await bot.smartMove("squigtoad")
+                }
             }
 
         } catch (e) {
@@ -105,7 +122,7 @@ async function run() {
             if (priest) await priest.disconnect()
         }
         const now = new Date()
-        const nextStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() - now.getMinutes() % 2 + 2, 10)
+        const nextStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() - now.getMinutes() % 2 + 1, 10)
         setTimeout(async () => { connectLoop() }, nextStart.getTime() - Date.now())
     }
 
@@ -136,10 +153,7 @@ async function run() {
 
     const now = new Date()
     const nextStop = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() - now.getMinutes() % 2 + 1, 50)
-    const nextStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() - now.getMinutes() % 2 + 2, 10)
-    console.log(`now: ${now.toString()}`)
-    console.log(`nextStop: ${nextStop.toString()}`)
-    console.log(`nextStart: ${nextStart.toString()}`)
+    const nextStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() - now.getMinutes() % 2 + 1, 10)
     setTimeout(async () => { connectLoop() }, nextStart.getTime() - Date.now())
     setTimeout(async () => { disconnectLoop() }, nextStop.getTime() - Date.now())
 }

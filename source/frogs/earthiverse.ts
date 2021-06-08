@@ -79,7 +79,23 @@ async function startMage(bot: AL.Mage) {
             if (nearest) {
                 await bot.smartMove(nearest)
             } else {
-                await bot.smartMove("frog")
+                for (const tortoise of bot.getEntities({
+                    couldGiveCredit: true,
+                    type: "tortoise",
+                    willBurnToDeath: false,
+                    willDieToProjectiles: false
+                })) {
+                    const d = AL.Tools.distance(bot, tortoise)
+                    if (d < distance) {
+                        nearest = tortoise
+                        distance = d
+                    }
+                }
+                if (nearest) {
+                    await bot.smartMove(nearest)
+                } else {
+                    await bot.smartMove("frog")
+                }
             }
 
         } catch (e) {
