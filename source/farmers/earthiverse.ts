@@ -342,9 +342,23 @@ async function startMerchant(bot: AL.Merchant) {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            if (bot.isScared() && bot.canUse("scare")) {
+            if (bot.canUse("scare", { ignoreEquipped: true }) && (
+                bot.isScared() // We are scared
+                || (bot.targets > 0 && bot.c.town) // We are teleporting
+                || (bot.targets > 0 && bot.hp < bot.max_hp * 0.25) // We are low on HP
+            )) {
+                // Equip the orb if we need to
+                let previousItem:AL.ItemData
+                if (!bot.canUse("scare") && bot.hasItem("jacko")) {
+                    previousItem = bot.slots.orb
+                    await bot.equip(bot.locateItem("jacko"))
+                }
+
                 // Scare, because we are scared
                 await bot.scare()
+
+                // Re-equip our orb
+                if (previousItem) await bot.equip(bot.locateItem(previousItem.name))
             }
         } catch (e) {
             console.error(e)

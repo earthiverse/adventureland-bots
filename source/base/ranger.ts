@@ -55,11 +55,11 @@ export async function attackTheseTypes(bot: AL.Ranger, types: AL.MonsterName[], 
     const threeShotTargets = new FastPriorityQueue<AL.Entity>(priority)
     const fiveShotTargets = new FastPriorityQueue<AL.Entity>(priority)
     for (const entity of bot.getEntities({
-        typeList: types,
-        withinRange: bot.range,
         couldGiveCredit: true,
         targetingPlayer: options?.targetingPlayer,
-        willDieToProjectiles: false
+        typeList: types,
+        willDieToProjectiles: false,
+        withinRange: bot.range
     })) {
         targets.add(entity)
 

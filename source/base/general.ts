@@ -120,7 +120,7 @@ export async function getPriority1Entities(bot: ALM.Character): Promise<ALM.IEnt
         "dragold", "grinch", "mrgreen", "mrpumpkin",
         // Year-round
         "franky", "icegolem"]
-    return await ALM.EntityModel.aggregate([
+    return ALM.EntityModel.aggregate([
         {
             $match: {
                 type: { $in: coop },
@@ -150,7 +150,7 @@ export async function getPriority2Entities(bot: ALM.Character): Promise<ALM.IEnt
         // Rare Monsters
         "greenjr", "jr", "skeletor", "mvampire", "fvampire", "stompy", "snowman"
     ]
-    return await ALM.EntityModel.aggregate([
+    return ALM.EntityModel.aggregate([
         {
             $match: {
                 type: { $in: solo },
@@ -176,6 +176,7 @@ export async function getMonsterHuntTargets(bot: ALM.Character): Promise<(AL.Mon
         {
             $match: {
                 "s.monsterhunt.c": { $gt: 0 }, // Active MH
+                "s.monsterhunt.sn": `${bot.server.region} ${bot.server.name}`, // MH is on the correct server
                 lastSeen: { $gt: Date.now() - 60000 }, // Seen recently
                 serverRegion: bot.serverData.region, // Same region
                 serverIdentifier: bot.serverData.name, // Same server
@@ -255,6 +256,67 @@ export async function goToNPCShopIfFull(bot: AL.Character | ALM.Character, items
     // TODO: Find the closest shop
     await bot.smartMove("fancypots", { getWithin: ALM.Constants.NPC_INTERACTION_DISTANCE / 2 })
     await sleep(1000)
+}
+
+export async function goToNearestWalkableToMonster(bot: AL.Character | ALM.Character, types: AL.MonsterName[], defaultPosition: AL.IPosition): Promise<void> {
+    let nearest:IPosition
+    let distance = Number.MAX_VALUE
+    for (const entity of bot.getEntities({
+        canWalkTo: true,
+        couldGiveCredit: true,
+        typeList: types,
+        willBurnToDeath: false,
+        willDieToProjectiles: false
+    })) {
+        const d = AL.Tools.distance(bot, entity)
+        if (d < distance) {
+            nearest = entity
+            distance = d
+        }
+    }
+
+    if (nearest && distance > bot.range) {
+        const destination = { map: nearest.map, x: nearest.x, y: nearest.y }
+
+        // Offset our position based on our party, so we don't get stacking damage
+        switch (bot.partyData.list.indexOf(bot.id)) {
+        case 1:
+            destination.x += 6
+            break
+        case 2:
+            destination.x -= 6
+            break
+        case 3:
+            destination.y += 6
+            break
+        case 4:
+            destination.y -= 6
+            break
+        case 5:
+            destination.x += 6
+            destination.y += 6
+            break
+        case 6:
+            destination.x += 6
+            destination.y -= 6
+            break
+        case 7:
+            destination.x -= 6
+            destination.y += 6
+            break
+        case 8:
+            destination.x -= 6
+            destination.y -= 6
+            break
+        }
+        bot.move(destination.x, destination.y).catch(() => { /* Suppress errors */ })
+    } else if (!nearest) {
+        if (AL.Pathfinder.canWalkPath(bot, defaultPosition)) {
+            bot.move(defaultPosition.x, defaultPosition.y).catch(() => { /* Suppress errors */ })
+        } else {
+            await bot.smartMove(defaultPosition)
+        }
+    }
 }
 
 export function moveInCircle(bot: AL.Character | ALM.Character, location: AL.IPosition, radius = 125, angle = Math.PI / 2.5): Promise<IPosition> {

@@ -5,8 +5,8 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
-    "alclient": "^0.5.7",
-    "alclient-mongo": "^0.5.7npm in",
+    "alclient": "^0.5.9",
+    "alclient-mongo": "^0.5.9",
     "axios": "^0.21.1",
     "console-table-printer": "^2.9.0",
     "fastpriorityqueue": "^0.7.1"
