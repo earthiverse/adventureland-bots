@@ -1,15 +1,16 @@
 import AL from "alclient-mongo"
-import { LOOP_MS, startHealLoop, startLootLoop, startSellLoop } from "../base/general.js"
+import { LOOP_MS, startBuyLoop, startHealLoop, startLootLoop, startSellLoop } from "../base/general.js"
 
 /** Config */
-let region:AL.ServerRegion = "ASIA"
-let identifier:AL.ServerIdentifier = "I"
+let region: AL.ServerRegion = "ASIA"
+let identifier: AL.ServerIdentifier = "I"
 const priestName = "earthPri2"
 
 /** Characters */
 let priest: AL.Priest
 
 async function startPriest(bot: AL.Priest) {
+    startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
     startSellLoop(bot, { "hpamulet": 2, "hpbelt": 2, "ringsj": 2, "wcap": 2, "wshoes": 2 })
@@ -62,7 +63,7 @@ async function startPriest(bot: AL.Priest) {
             }
 
             // Look for frogs
-            let nearest:AL.Entity
+            let nearest: AL.Entity
             let distance = Number.MAX_VALUE
             for (const squigtoad of bot.getEntities({
                 couldGiveCredit: true,

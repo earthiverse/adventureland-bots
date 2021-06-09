@@ -1,5 +1,5 @@
 import AL from "alclient"
-import ALM, { IPosition } from "alclient-mongo"
+import ALM, { Entity, IPosition } from "alclient-mongo"
 import { ItemLevelInfo } from "../definitions/bot.js"
 
 export const LOOP_MS = 100
@@ -7,6 +7,8 @@ export const CHECK_PONTY_EVERY_MS = 10_000 /** 10 seconds */
 export const CHECK_TRACKER_EVERY_MS = 600_000 /** 10 minutes */
 
 export const GOLD_TO_HOLD = 5_000_000
+
+export const FRIENDLY_ROGUES = ["copper", "Bjarna", "RisingVanir"]
 
 export const ITEMS_TO_HOLD: Set<AL.ItemName | ALM.ItemName> = new Set([
     // Things we keep on ourselves
@@ -207,6 +209,60 @@ export async function getMonsterHuntTargets(bot: ALM.Character): Promise<(AL.Mon
     return targets
 }
 
+export async function goToAggroMonster(bot: AL.Character | ALM.Character, entity: AL.Entity | ALM.Entity): Promise<unknown> {
+    if (entity.target) return // It's already aggro'd
+
+    if (entity.going_x !== undefined && entity.going_y !== undefined) {
+        const distanceToTravel = ALM.Tools.distance({ x: entity.x, y: entity.y }, { x: entity.going_x, y: entity.going_y })
+        const lead = 20 + (LOOP_MS / 1000) * entity.speed
+        if (distanceToTravel >= lead) {
+            const destination: IPosition = { map: entity.map, x: entity.going_x, y: entity.going_y }
+            if (AL.Pathfinder.canWalkPath(bot, destination)) {
+                return bot.move(destination.x, destination.y)
+            } else {
+                return bot.smartMove(destination)
+            }
+        } else {
+            const angle = Math.atan2(entity.going_y - entity.y, entity.going_x - entity.x)
+            const destination = { map: entity.map, x: entity.x + Math.cos(angle) * lead, y: entity.y + Math.sin(angle) * lead }
+            if (AL.Pathfinder.canWalkPath(bot, destination)) {
+                return bot.move(destination.x, destination.y)
+            } else {
+                return bot.smartMove(destination)
+            }
+        }
+    }
+}
+
+export async function goToSpecialMonster(bot: ALM.Character, type: ALM.MonsterName): Promise<unknown> {
+    // Look for it nearby
+    let nearby = bot.getNearestMonster(type)
+    if (nearby) {
+        return bot.smartMove(nearby.monster, { getWithin: bot.range - 10 })
+    }
+
+    // Look for it in the server data
+    if (bot.S && bot.S[type] && bot.S[type].live) {
+        const destination = bot.S[type] as ALM.ServerInfoDataLive
+        if (ALM.Tools.distance(bot, destination) > bot.range) return bot.smartMove(destination, { getWithin: bot.range - 10 })
+    }
+
+    // Look for it in our database
+    const special = await ALM.EntityModel.findOne({ serverIdentifier: bot.server.name, serverRegion: bot.server.region, type: type }).lean().exec()
+    if (special) {
+        return bot.smartMove(special, { getWithin: bot.range - 10 })
+    }
+
+    // Look for if there's a spawn for it
+    for (const spawn of bot.locateMonster(type)) {
+        // Move to the next spawn
+        await bot.smartMove(spawn, { getWithin: bot.range - 10 })
+
+        nearby = bot.getNearestMonster(type)
+        if (nearby) break // We found it?
+    }
+}
+
 /**
  * Go to the potion seller NPC if we're low on potions so we can buy some
  *
@@ -258,8 +314,8 @@ export async function goToNPCShopIfFull(bot: AL.Character | ALM.Character, items
     await sleep(1000)
 }
 
-export async function goToNearestWalkableToMonster(bot: AL.Character | ALM.Character, types: AL.MonsterName[], defaultPosition: AL.IPosition): Promise<void> {
-    let nearest:IPosition
+export async function goToNearestWalkableToMonster(bot: AL.Character | ALM.Character, types: AL.MonsterName[], defaultPosition?: AL.IPosition): Promise<void> {
+    let nearest: IPosition
     let distance = Number.MAX_VALUE
     for (const entity of bot.getEntities({
         canWalkTo: true,
@@ -310,7 +366,7 @@ export async function goToNearestWalkableToMonster(bot: AL.Character | ALM.Chara
             break
         }
         bot.move(destination.x, destination.y).catch(() => { /* Suppress errors */ })
-    } else if (!nearest) {
+    } else if (!nearest && defaultPosition) {
         if (AL.Pathfinder.canWalkPath(bot, defaultPosition)) {
             bot.move(defaultPosition.x, defaultPosition.y).catch(() => { /* Suppress errors */ })
         } else {
@@ -560,10 +616,11 @@ export function startEventLoop(bot: AL.Character | ALM.Character): void {
             if (!bot.socket || bot.socket.disconnected) return
 
             // Winter event stuff
-            if (bot.S && bot.S.holidayseason && !bot.s?.holidayspirit) {
+            if (bot.S && bot.S.holidayseason && !bot.s.holidayspirit) {
                 // Get the holiday buff
                 for (const tree of newYearTrees) {
                     if (ALM.Tools.distance(bot, tree) > ALM.Constants.NPC_INTERACTION_DISTANCE) continue
+                    // TODO: Improve ALClient by making this a function
                     bot.socket.emit("interaction", { type: "newyear_tree" })
                 }
             }
@@ -685,7 +742,7 @@ export function startPartyLoop(bot: AL.Character | ALM.Character, leader: string
                     if (bot.partyData && bot.partyData.list.length >= 9) {
                         const requestPriority = partyMembers.length - partyMembers.indexOf(data.name)
 
-                        let toKickMember:string
+                        let toKickMember: string
                         let toKickPriority = requestPriority
 
                         for (let i = bot.partyData.list.indexOf(bot.id) + 1; i < bot.partyData.list.length; i++) {
@@ -779,6 +836,38 @@ export function startPontyLoop(bot: AL.Character | ALM.Character, itemsToBuy = I
         bot.timeouts.set("pontyloop", setTimeout(async () => { pontyLoop() }, 10000))
     }
     pontyLoop()
+}
+
+export function startScareLoop(bot: AL.Character | ALM.Character): void {
+    async function scareLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            if (bot.canUse("scare", { ignoreEquipped: true }) && (
+                bot.isScared() // We are scared
+                || (bot.targets > 0 && bot.c.town) // We are teleporting
+                || (bot.targets > 0 && bot.hp < bot.max_hp * 0.25) // We are low on HP
+            )) {
+                // Equip the orb if we need to
+                let previousItem: AL.ItemData
+                if (!bot.canUse("scare") && bot.hasItem("jacko")) {
+                    previousItem = bot.slots.orb
+                    await bot.equip(bot.locateItem("jacko"))
+                }
+
+                // Scare, because we are scared
+                await bot.scare()
+
+                // Re-equip our orb
+                if (previousItem) await bot.equip(bot.locateItem(previousItem.name))
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        bot.timeouts.set("scareloop", setTimeout(async () => { scareLoop() }, Math.max(250, bot.getCooldown("scare"))))
+    }
+    scareLoop()
 }
 
 export function startSellLoop(bot: AL.Character | ALM.Character, itemsToSell: ItemLevelInfo = ITEMS_TO_SELL): void {

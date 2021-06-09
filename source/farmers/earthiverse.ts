@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { LOOP_MS, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startServerPartyInviteLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
+import { LOOP_MS, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startServerPartyInviteLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "./party.js"
 
@@ -338,35 +338,7 @@ async function startMerchant(bot: AL.Merchant) {
     }
     moveLoop()
 
-    async function scareLoop() {
-        try {
-            if (!bot.socket || bot.socket.disconnected) return
-
-            if (bot.canUse("scare", { ignoreEquipped: true }) && (
-                bot.isScared() // We are scared
-                || (bot.targets > 0 && bot.c.town) // We are teleporting
-                || (bot.targets > 0 && bot.hp < bot.max_hp * 0.25) // We are low on HP
-            )) {
-                // Equip the orb if we need to
-                let previousItem:AL.ItemData
-                if (!bot.canUse("scare") && bot.hasItem("jacko")) {
-                    previousItem = bot.slots.orb
-                    await bot.equip(bot.locateItem("jacko"))
-                }
-
-                // Scare, because we are scared
-                await bot.scare()
-
-                // Re-equip our orb
-                if (previousItem) await bot.equip(bot.locateItem(previousItem.name))
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        bot.timeouts.set("scareloop", setTimeout(async () => { scareLoop() }, Math.max(250, bot.getCooldown("scare"))))
-    }
-    scareLoop()
+    startScareLoop(bot)
 }
 
 async function run() {

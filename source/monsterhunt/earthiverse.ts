@@ -1,8 +1,8 @@
 import AL from "alclient-mongo"
-import { goToNearestWalkableToMonster, moveInCircle } from "../base/general.js"
+import { goToAggroMonster, goToNearestWalkableToMonster, goToSpecialMonster, moveInCircle } from "../base/general.js"
 import { attackTheseTypes } from "../base/ranger.js"
 import { Information, Strategy } from "../definitions/bot.js"
-import { IDENTIFIER, REGION, startMerchant, startPriest, startRanger, startWarrior } from "./shared.js"
+import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMerchant, startPriest, startRanger, startWarrior } from "./shared.js"
 
 const information: Information = {
     friends: [undefined, undefined, undefined, undefined],
@@ -52,7 +52,7 @@ function prepareRanger(bot: AL.Ranger) {
             move: async () => { await bot.smartMove({ map: "main", x: 526, y: 1846 }) },
         },
         bat: {
-            attack: async () => { await attackTheseTypes(bot, ["bat", "goldenbat", "mvampire"], information.friends) },
+            attack: async () => { await attackTheseTypes(bot, ["bat"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "crossbow", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "cave", x: -194, y: -461 }) },
@@ -64,7 +64,7 @@ function prepareRanger(bot: AL.Ranger) {
             move: async () => { await bot.smartMove({ map: "winter_cave", x: 51, y: -164 }) },
         },
         bee: {
-            attack: async () => { await attackTheseTypes(bot, ["bee", "cutebee"], information.friends) },
+            attack: async () => { await attackTheseTypes(bot, ["bee"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "hbow", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "main", x: 494, y: 1101 }) },
@@ -90,22 +90,105 @@ function prepareRanger(bot: AL.Ranger) {
             attack: async () => { return attackTheseTypes(bot, ["bscorpion"], information.friends, { targetingPlayer: "earthPri" }) },
             equipment: { mainhand: "firebow", orb: "test_orb" },
             move: async () => { await moveInCircle(bot, bscorpionSpawn) },
+            requirePriest: true
         },
         cgoo: {
             attack: async () => { return attackTheseTypes(bot, ["cgoo"], information.friends) },
+            attackWhileIdle: true,
             equipment: { mainhand: "hbow", orb: "test_orb" },
             move: async () => { goToNearestWalkableToMonster(bot, ["cgoo"], { map: "arena", x: 0, y: -500 }) },
         },
         crab: {
             attack: async () => { return attackTheseTypes(bot, ["crab"], information.friends) },
+            attackWhileIdle: true,
             equipment: { mainhand: "hbow", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "main", x: -1202, y: -66 }) },
         },
         crabx: {
             attack: async () => { return attackTheseTypes(bot, ["crabx"], information.friends) },
+            attackWhileIdle: true,
             equipment: { mainhand: "hbow", orb: "test_orb" },
             move: async () => { goToNearestWalkableToMonster(bot, ["crabx"], { map: "main", x: -1202, y: -66 }) },
-        }
+        },
+        croc: {
+            attack: async () => { return attackTheseTypes(bot, ["croc"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "crossbow", orb: "test_orb" },
+            move: async () => { await bot.smartMove({ map: "main", x: 801, y: 1710 }) },
+        },
+        cutebee: {
+            attack: async () => { return attackTheseTypes(bot, ["cutebee"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "firebow", orb: "test_orb" },
+            move: async () => {
+                const nearby = bot.getNearestMonster("cutebee")
+                if (nearby) {
+                    if (!nearby.monster.target) {
+                        // The cutebee will avoid 99.9% of our attacks, so let's try to walk in front of it so that we can aggro it
+                        goToAggroMonster(bot, nearby.monster)
+                    } else {
+                        goToNearestWalkableToMonster(bot, ["cutebee"])
+                    }
+                } else {
+                    await goToSpecialMonster(bot, "cutebee")
+                }
+            }
+        },
+        dragold: {
+            attack: async () => { return attackTheseTypes(bot, ["dragold"], information.friends, { targetingPlayer: information.warrior.name }) },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
+            move: async () => { await goToSpecialMonster(bot, "dragold") },
+            requirePriest: true
+        },
+        fireroamer: {
+            attack: async () => { return attackTheseTypes(bot, ["fireroamer"], information.friends, { targetingPlayer: information.warrior.name }) },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
+            move: async () => { await bot.smartMove({ map: "desertland", x: 160, y: -675 }) },
+            requirePriest: true
+        },
+        franky: {
+            attack: async () => { return attackTheseTypes(bot, ["nerfedmummy", "franky"], information.friends) },
+            equipment: { mainhand: "crossbow", orb: "test_orb" },
+            move: async () => {
+                const nearest = bot.getNearestMonster("franky")
+                if (nearest && nearest.distance > 25) {
+                    // Move close to Franky because other characters might help blast away mummies
+                    await bot.smartMove(nearest.monster, { getWithin: 25 })
+                } else {
+                    await goToSpecialMonster(bot, "franky")
+                }
+            }
+        },
+        fvampire: {
+            attack: async () => { return attackTheseTypes(bot, ["fvampire"], information.friends) },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
+            move: async () => { await goToSpecialMonster(bot, "fvampire") },
+            requirePriest: true
+        },
+        ghost: {
+            attack: async () => { return attackTheseTypes(bot, ["ghost"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "firebow", orb: "test_orb" },
+            move: async () => { await bot.smartMove({ map: "halloween", x: 256, y: -1224 }) }
+        },
+        goldenbat: {
+            attack: async () => { return attackTheseTypes(bot, ["goldenbat"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "crossbow", orb: "test_orb" },
+            move: async () => { await goToSpecialMonster(bot, "goldenbat") },
+        },
+        goo: {
+            attack: async () => { return attackTheseTypes(bot, ["goo"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "hbow", orb: "test_orb" },
+            move: async () => { await bot.smartMove({ map: "main", x: -32, y: 787 }) },
+        },
+        greenjr: {
+            attack: async () => { return attackTheseTypes(bot, ["greenjr"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "firebow", orb: "test_orb" },
+            move: async () => { await bot.smartMove("greenjr") },
+        },
     }
 
     startRanger(bot, information, strategy)
@@ -114,7 +197,6 @@ function prepareRanger(bot: AL.Ranger) {
 function prepareWarrior(bot: AL.Warrior) {
     startWarrior(bot, information, {})
 }
-
 
 async function run() {
     // Login and prepare pathfinding
@@ -148,7 +230,7 @@ async function run() {
         }
         loopBot()
     }
-    startMerchantLoop(information.merchant.name, REGION, IDENTIFIER).catch(() => { /* ignore errors */ })
+    startMerchantLoop(information.merchant.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
 
     const startPriestLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
         // Start the characters
@@ -174,7 +256,7 @@ async function run() {
         }
         loopBot()
     }
-    startPriestLoop(information.priest.name, REGION, IDENTIFIER).catch(() => { /* ignore errors */ })
+    startPriestLoop(information.priest.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
 
     const startRangerLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
         // Start the characters
@@ -200,7 +282,7 @@ async function run() {
         }
         loopBot()
     }
-    startRangerLoop(information.ranger.name, REGION, IDENTIFIER).catch(() => { /* ignore errors */ })
+    startRangerLoop(information.ranger.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
 
     const startWarriorLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
         // Start the characters
@@ -226,6 +308,6 @@ async function run() {
         }
         loopBot()
     }
-    startWarriorLoop(information.warrior.name, REGION, IDENTIFIER).catch(() => { /* ignore errors */ })
+    startWarriorLoop(information.warrior.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
 }
 run()
