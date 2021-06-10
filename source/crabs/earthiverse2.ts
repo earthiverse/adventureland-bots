@@ -1,6 +1,6 @@
 import AL from "alclient-mongo"
 import { LOOP_MS, startBuyLoop, startHealLoop, startLootLoop, startSellLoop } from "../base/general.js"
-import { attackTheseTypes } from "../base/ranger.js"
+import { attackTheseTypesRanger } from "../base/ranger.js"
 
 /** Config */
 const region: AL.ServerRegion = "EU"
@@ -20,7 +20,7 @@ async function startRanger(bot: AL.Ranger) {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            await attackTheseTypes(bot, ["crab"], [ranger])
+            await attackTheseTypesRanger(bot, ["crab"], [ranger])
         } catch (e) {
             console.error(e)
         }

@@ -1,7 +1,7 @@
 import AL from "alclient-mongo"
 import FastPriorityQueue from "fastpriorityqueue"
 
-export async function attackTheseTypes(bot: AL.Ranger, types: AL.MonsterName[], friends: AL.Character[], options?: {
+export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterName[], friends: AL.Character[], options?: {
     targetingPlayer?: string
     maxNumberTargets?: number
 }): Promise<void> {
