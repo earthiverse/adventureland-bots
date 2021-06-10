@@ -195,7 +195,7 @@ async function startMage(bot: AL.Mage) {
                 if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
                 if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
                 if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
-                if (entity.hp > 100) continue // We only want to use cburst to kill low hp monsters
+                if (entity.hp > 200) continue // We only want to use cburst to kill low hp monsters
 
                 targets.push([entity.id, entity.hp / bot.G.skills.cburst.ratio])
             }
