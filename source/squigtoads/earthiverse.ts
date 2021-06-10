@@ -51,6 +51,7 @@ async function startPriest(bot: AL.Priest) {
     }
     attackLoop()
 
+    const squigtoadSpawn = bot.locateMonster("squigtoad")[0]
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -78,9 +79,8 @@ async function startPriest(bot: AL.Priest) {
                 }
             }
             if (nearest) {
-                await bot.smartMove(nearest)
+                bot.smartMove(nearest, { getWithin: bot.range - nearest.speed }).catch(() => { /* Suppress errors */ })
             } else {
-
                 // Look for squigs
                 for (const squig of bot.getEntities({
                     couldGiveCredit: true,
@@ -95,9 +95,9 @@ async function startPriest(bot: AL.Priest) {
                     }
                 }
                 if (nearest) {
-                    await bot.smartMove(nearest)
+                    bot.smartMove(nearest, { getWithin: bot.range - nearest.speed }).catch(() => { /* Suppress errors */ })
                 } else {
-                    await bot.smartMove("squigtoad")
+                    bot.smartMove(squigtoadSpawn).catch(() => { /* Suppress errors */ })
                 }
             }
 

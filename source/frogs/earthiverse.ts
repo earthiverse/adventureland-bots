@@ -51,6 +51,7 @@ async function startMage(bot: AL.Mage) {
     }
     attackLoop()
 
+    const frogSpawn = bot.locateMonster("frog")[0]
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -78,7 +79,7 @@ async function startMage(bot: AL.Mage) {
                 }
             }
             if (nearest) {
-                await bot.smartMove(nearest)
+                bot.smartMove(nearest, { getWithin: bot.range - nearest.speed }).catch(() => { /* Suppress errors */ })
             } else {
                 for (const tortoise of bot.getEntities({
                     couldGiveCredit: true,
@@ -93,9 +94,9 @@ async function startMage(bot: AL.Mage) {
                     }
                 }
                 if (nearest) {
-                    await bot.smartMove(nearest)
+                    bot.smartMove(nearest, { getWithin: bot.range - nearest.speed }).catch(() => { /* Suppress errors */ })
                 } else {
-                    await bot.smartMove("frog")
+                    bot.smartMove(frogSpawn).catch(() => { /* Suppress errors */ })
                 }
             }
 
