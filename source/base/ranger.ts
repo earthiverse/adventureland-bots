@@ -117,6 +117,7 @@ export async function attackTheseTypes(bot: AL.Ranger, types: AL.MonsterName[], 
 
     // Apply huntersmark if we can't kill it in one shot and we have enough MP
     const target = targets.peek()
+    if (!target) return // No targets
     if (bot.canUse("huntersmark") && bot.mp > (bot.mp_cost + bot.G.skills.huntersmark.mp) && !bot.canKillInOneShot(target)) {
         bot.huntersMark(target.id).catch((e) => { console.error(e) })
     }
@@ -137,7 +138,7 @@ export async function attackTheseTypes(bot: AL.Ranger, types: AL.MonsterName[], 
         await bot.fiveShot(entities[0].id, entities[1].id, entities[2].id, entities[3].id, entities[4].id)
     } else if (bot.canUse("3shot") && threeShotTargets.size >= 3) {
         const entities: AL.Entity[] = []
-        while (entities.length < 3) entities.push(fiveShotTargets.poll())
+        while (entities.length < 3) entities.push(threeShotTargets.poll())
 
         if (friends) {
             // Remove them from our friends' entities list if we're going to kill it
@@ -158,6 +159,8 @@ export async function attackTheseTypes(bot: AL.Ranger, types: AL.MonsterName[], 
                 for (const friend of friends) friend.entities.delete(entity.id)
             }
         }
+
+        await bot.basicAttack(entity.id)
     }
 
     if (!bot.canUse("supershot")) return
