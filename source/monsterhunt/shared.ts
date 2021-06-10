@@ -1,6 +1,6 @@
 import AL from "alclient-mongo"
 import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startEventLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
-import { attackTheseTypes } from "../base/ranger.js"
+import { attackTheseTypesRanger } from "../base/ranger.js"
 import { Information, Strategy } from "../definitions/bot.js"
 import { partyLeader, partyMembers } from "./party.js"
 
@@ -101,70 +101,13 @@ export async function startRanger(bot: AL.Ranger, information: Information, stra
             }
 
             // Idle strategy
-            await attackTheseTypes(bot, idleTargets, information.friends)
+            await attackTheseTypesRanger(bot, idleTargets, information.friends)
         } catch (e) {
             console.error(e)
         }
         bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
     }
     attackLoop()
-
-    const friendlyRogues = FRIENDLY_ROGUES
-    async function moveLoop() {
-        try {
-            if (!bot.socket || bot.socket.disconnected) return // Stop if disconnected
-
-            // If we are dead, respawn
-            if (bot.rip) {
-                await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
-                return
-            }
-
-            // Get a MH if we're on the default server and we don't have one
-            if (!bot.s.monsterhunt && bot.server.name == DEFAULT_IDENTIFIER && bot.server.region == DEFAULT_REGION) {
-                await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
-                await bot.getMonsterHuntQuest()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
-                return
-            }
-
-            // Turn in our monsterhunt if we can
-            if (bot.s.monsterhunt && bot.s.monsterhunt.c == 0) {
-                await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
-                await bot.finishMonsterHuntQuest()
-                await bot.getMonsterHuntQuest()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
-                return
-            }
-
-            // Get some holiday spirit if it's Christmas
-            if (bot.S && bot.S.holidayseason && !bot.s.holidayspirit) {
-                await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
-                return
-            }
-
-            // Get some buffs from rogues
-            if (!bot.s.rspeed) {
-                const friendlyRogue = await AL.PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, name: { $in: friendlyRogues } }).lean().exec()
-                if (friendlyRogue) {
-                    await bot.smartMove(friendlyRogue, { getWithin: 20 })
-                    if (!bot.s.rspeed) await sleep(2500)
-                    if (!bot.s.rspeed) friendlyRogues.splice(friendlyRogues.indexOf(friendlyRogue.id), 1) // They're not giving rspeed, remove them from our list
-                    bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
-                    return
-                }
-            }
-
-            // Move to our target
-            if (information.ranger.target) strategy[information.ranger.target].move()
-        } catch (e) {
-            console.error(e)
-        }
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
-    }
-    moveLoop()
 }
 
 export async function startWarrior(bot: AL.Warrior, information: Information, strategy: Strategy): Promise<void> {
@@ -194,6 +137,75 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
     startSellLoop(bot)
     if (bot.ctype !== "merchant") startSendStuffDenylistLoop(bot, information.merchant.name)
     startUpgradeLoop(bot)
+
+    if (bot.ctype !== "merchant") {
+        const friendlyRogues = FRIENDLY_ROGUES
+        const moveLoop = async () => {
+            try {
+                if (!bot.socket || bot.socket.disconnected) return // Stop if disconnected
+
+                // If we are dead, respawn
+                if (bot.rip) {
+                    await bot.respawn()
+                    bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                    return
+                }
+
+                // Get a MH if we're on the default server and we don't have one
+                if (!bot.s.monsterhunt && bot.server.name == DEFAULT_IDENTIFIER && bot.server.region == DEFAULT_REGION) {
+                    await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
+                    await bot.getMonsterHuntQuest()
+                    bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
+                    return
+                }
+
+                // Turn in our monsterhunt if we can
+                if (bot.s.monsterhunt && bot.s.monsterhunt.c == 0) {
+                    await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
+                    await bot.finishMonsterHuntQuest()
+                    await bot.getMonsterHuntQuest()
+                    bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
+                    return
+                }
+
+                // Get some holiday spirit if it's Christmas
+                if (bot.S && bot.S.holidayseason && !bot.s.holidayspirit) {
+                    await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+                    bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
+                    return
+                }
+
+                // Get some buffs from rogues
+                if (!bot.s.rspeed) {
+                    const friendlyRogue = await AL.PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, name: { $in: friendlyRogues } }).lean().exec()
+                    if (friendlyRogue) {
+                        await bot.smartMove(friendlyRogue, { getWithin: 20 })
+                        if (!bot.s.rspeed) await sleep(2500)
+                        if (!bot.s.rspeed) friendlyRogues.splice(friendlyRogues.indexOf(friendlyRogue.id), 1) // They're not giving rspeed, remove them from our list
+                        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
+                        return
+                    }
+                }
+
+                // Move to our target
+                switch (bot.ctype) {
+                case "priest":
+                    if (information.priest.target) strategy[information.priest.target].move()
+                    break
+                case "ranger":
+                    if (information.ranger.target) strategy[information.ranger.target].move()
+                    break
+                case "warrior":
+                    if (information.warrior.target) strategy[information.warrior.target].move()
+                    break
+                }
+            } catch (e) {
+                console.error(e)
+            }
+            bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
+        }
+        moveLoop()
+    }
 
     async function targetLoop(): Promise<void> {
         try {
