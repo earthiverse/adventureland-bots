@@ -134,6 +134,9 @@ async function run() {
                 region = "US"
                 identifier = "I"
             } else if (region == "US" && identifier == "I") {
+                region = "US"
+                identifier = "III"
+            } else if (region == "US" && identifier == "III") {
                 region = "EU"
                 identifier = "I"
             } else if (region == "EU" && identifier == "I") {
