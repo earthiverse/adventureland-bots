@@ -180,8 +180,8 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
     if (bot.canUse("attack")) {
         const priority = (a: AL.Entity, b: AL.Entity): boolean => {
             // Order in array
-            if (types.indexOf(a.type) > types.indexOf(b.type)) return true
-            else if (types.indexOf(a.type) < types.indexOf(b.type)) return false
+            if (types.indexOf(a.type) < types.indexOf(b.type)) return true
+            else if (types.indexOf(a.type) > types.indexOf(b.type)) return false
 
             // Has a target -> higher priority
             if (a.target && !b.target) return true

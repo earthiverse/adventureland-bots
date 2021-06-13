@@ -8,9 +8,9 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
 }): Promise<void> {
     if (bot.canUse("attack")) {
         const attackPriority = (a: AL.Entity, b: AL.Entity): boolean => {
-        // Order in array
-            if (types.indexOf(a.type) > types.indexOf(b.type)) return true
-            else if (types.indexOf(a.type) < types.indexOf(b.type)) return false
+            // Order in array
+            if (types.indexOf(a.type) < types.indexOf(b.type)) return true
+            else if (types.indexOf(a.type) > types.indexOf(b.type)) return false
 
             // Has a target -> higher priority
             if (a.target && !b.target) return true
