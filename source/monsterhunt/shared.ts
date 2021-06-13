@@ -1,6 +1,9 @@
 import AL from "alclient-mongo"
 import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startEventLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
+import { attackTheseTypesMerchant } from "../base/merchant.js"
+import { attackTheseTypesPriest } from "../base/priest.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
+import { attackTheseTypesWarrior } from "../base/warrior.js"
 import { Information, Strategy } from "../definitions/bot.js"
 import { partyLeader, partyMembers } from "./party.js"
 
@@ -37,10 +40,136 @@ export async function getTarget(bot: AL.Character, strategy: Strategy, informati
 
 export async function startMerchant(bot: AL.Merchant, information: Information, strategy: Strategy): Promise<void> {
     startShared(bot, strategy, information)
+
+    const idleTargets: AL.MonsterName[] = []
+    for (const t in strategy) {
+        if (!strategy[t as AL.MonsterName].attackWhileIdle) continue
+        idleTargets.push(t as AL.MonsterName)
+    }
+
+    async function attackLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return // Stop if disconnected
+
+            if (
+                bot.rip // We are dead
+                || bot.c.town // We are teleporting to town
+                || bot.isOnCooldown("scare") // We don't have scare ready
+            ) {
+                // We are dead
+                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                return
+            }
+
+            if (information.merchant.target) {
+                // Equipment
+                if (strategy[information.merchant.target].equipment) {
+                    for (const s in strategy[information.merchant.target].equipment) {
+                        const slot = s as AL.SlotType
+                        const itemName = strategy[information.merchant.target].equipment[slot]
+                        const wType = bot.G.items[itemName].wtype
+
+                        if (bot.G.classes[bot.ctype].doublehand[wType]) {
+                            // Check if we have something in our offhand, we need to unequip it.
+                            if (bot.slots.offhand) await bot.unequip("offhand")
+                        }
+
+                        if (slot == "offhand" && bot.slots["mainhand"]) {
+                            const mainhandItem = bot.slots["mainhand"].name
+                            const mainhandWType = bot.G.items[mainhandItem].wtype
+                            if (bot.G.classes[bot.ctype].doublehand[mainhandWType]) {
+                                // We're equipping an offhand item, but we have a doublehand item equipped in our mainhand.
+                                await bot.unequip("mainhand")
+                            }
+                        }
+
+                        if (!bot.slots[slot]
+                            || (bot.slots[slot] && bot.slots[slot].name !== itemName)) {
+                            const i = bot.locateItem(itemName)
+                            if (i !== undefined) await bot.equip(i, slot)
+                        }
+                    }
+                }
+
+                // Strategy
+                await strategy[information.merchant.target].attack()
+            }
+
+            // Idle strategy
+            await attackTheseTypesMerchant(bot, idleTargets, information.friends)
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
+    }
+    attackLoop()
 }
 
 export async function startPriest(bot: AL.Priest, information: Information, strategy: Strategy): Promise<void> {
     startShared(bot, strategy, information)
+
+    const idleTargets: AL.MonsterName[] = []
+    for (const t in strategy) {
+        if (!strategy[t as AL.MonsterName].attackWhileIdle) continue
+        idleTargets.push(t as AL.MonsterName)
+    }
+
+    async function attackLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return // Stop if disconnected
+
+            if (
+                bot.rip // We are dead
+                || bot.c.town // We are teleporting to town
+                || bot.isOnCooldown("scare") // We don't have scare ready
+            ) {
+                // We are dead
+                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                return
+            }
+
+            if (information.priest.target) {
+                // Equipment
+                if (strategy[information.priest.target].equipment) {
+                    for (const s in strategy[information.priest.target].equipment) {
+                        const slot = s as AL.SlotType
+                        const itemName = strategy[information.priest.target].equipment[slot]
+                        const wType = bot.G.items[itemName].wtype
+
+                        if (bot.G.classes[bot.ctype].doublehand[wType]) {
+                            // Check if we have something in our offhand, we need to unequip it.
+                            if (bot.slots.offhand) await bot.unequip("offhand")
+                        }
+
+                        if (slot == "offhand" && bot.slots["mainhand"]) {
+                            const mainhandItem = bot.slots["mainhand"].name
+                            const mainhandWType = bot.G.items[mainhandItem].wtype
+                            if (bot.G.classes[bot.ctype].doublehand[mainhandWType]) {
+                                // We're equipping an offhand item, but we have a doublehand item equipped in our mainhand.
+                                await bot.unequip("mainhand")
+                            }
+                        }
+
+                        if (!bot.slots[slot]
+                            || (bot.slots[slot] && bot.slots[slot].name !== itemName)) {
+                            const i = bot.locateItem(itemName)
+                            if (i !== undefined) await bot.equip(i, slot)
+                        }
+                    }
+                }
+
+                // Strategy
+                await strategy[information.priest.target].attack()
+            }
+
+            // Idle strategy
+            await attackTheseTypesPriest(bot, idleTargets, information.friends)
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
+    }
+    attackLoop()
 }
 
 export async function startRanger(bot: AL.Ranger, information: Information, strategy: Strategy): Promise<void> {
@@ -112,6 +241,69 @@ export async function startRanger(bot: AL.Ranger, information: Information, stra
 
 export async function startWarrior(bot: AL.Warrior, information: Information, strategy: Strategy): Promise<void> {
     startShared(bot, strategy, information)
+
+    const idleTargets: AL.MonsterName[] = []
+    for (const t in strategy) {
+        if (!strategy[t as AL.MonsterName].attackWhileIdle) continue
+        idleTargets.push(t as AL.MonsterName)
+    }
+
+    async function attackLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return // Stop if disconnected
+
+            if (
+                bot.rip // We are dead
+                || bot.c.town // We are teleporting to town
+                || bot.isOnCooldown("scare") // We don't have scare ready
+            ) {
+                // We are dead
+                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                return
+            }
+
+            if (information.warrior.target) {
+                // Equipment
+                if (strategy[information.warrior.target].equipment) {
+                    for (const s in strategy[information.warrior.target].equipment) {
+                        const slot = s as AL.SlotType
+                        const itemName = strategy[information.warrior.target].equipment[slot]
+                        const wType = bot.G.items[itemName].wtype
+
+                        if (bot.G.classes[bot.ctype].doublehand[wType]) {
+                            // Check if we have something in our offhand, we need to unequip it.
+                            if (bot.slots.offhand) await bot.unequip("offhand")
+                        }
+
+                        if (slot == "offhand" && bot.slots["mainhand"]) {
+                            const mainhandItem = bot.slots["mainhand"].name
+                            const mainhandWType = bot.G.items[mainhandItem].wtype
+                            if (bot.G.classes[bot.ctype].doublehand[mainhandWType]) {
+                                // We're equipping an offhand item, but we have a doublehand item equipped in our mainhand.
+                                await bot.unequip("mainhand")
+                            }
+                        }
+
+                        if (!bot.slots[slot]
+                            || (bot.slots[slot] && bot.slots[slot].name !== itemName)) {
+                            const i = bot.locateItem(itemName)
+                            if (i !== undefined) await bot.equip(i, slot)
+                        }
+                    }
+                }
+
+                // Strategy
+                await strategy[information.warrior.target].attack()
+            }
+
+            // Idle strategy
+            await attackTheseTypesWarrior(bot, idleTargets, information.friends)
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
+    }
+    attackLoop()
 }
 
 export async function startShared(bot: AL.Character, strategy: Strategy, information: Information): Promise<void> {

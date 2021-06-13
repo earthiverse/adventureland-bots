@@ -1,11 +1,9 @@
-import AL from "alclient"
-import ALM from "alclient-mongo"
+import AL from "alclient-mongo"
 import FastPriorityQueue from "fastpriorityqueue"
 import { LOOP_MS } from "./general.js"
 
 export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterName[], friends: AL.Character[], options?: {
     targetingPlayer?: string
-    maxNumberTargets?: number
 }): Promise<void> {
     if (!bot.canUse("attack")) return // We can't attack
 
@@ -39,6 +37,10 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
     }
 
     const attackPriority = (a: AL.Entity, b: AL.Entity): boolean => {
+        // Order in array
+        if (types.indexOf(a.type) > types.indexOf(b.type)) return true
+        else if (types.indexOf(a.type) < types.indexOf(b.type)) return false
+
         // Has a target -> higher priority
         if (a.target && !b.target) return true
         else if (!a.target && b.target) return false
@@ -66,11 +68,18 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
         targets.add(entity)
     }
 
-    const toAttack = targets.peek()
-    if (toAttack) await bot.basicAttack(toAttack.id)
+    const target = targets.peek()
+    if (!target) return // No target
+
+    // Apply curse if we can't kill it in one shot and we have enough MP
+    if (bot.canUse("curse") && bot.mp > (bot.mp_cost + bot.G.skills.curse.mp) && !bot.canKillInOneShot(target)) {
+        bot.curse(target.id).catch((e) => { console.error(e) })
+    }
+
+    if (target) await bot.basicAttack(target.id)
 }
 
-export function startPartyHealLoop(bot: AL.Priest | ALM.Priest, friends: AL.Character[] | ALM.Character[]): void {
+export function startPartyHealLoop(bot: AL.Priest | AL.Priest, friends: AL.Character[] | AL.Character[]): void {
     async function partyHealLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return

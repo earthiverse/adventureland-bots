@@ -1,5 +1,5 @@
 import AL from "alclient"
-import ALM, { Entity, IPosition } from "alclient-mongo"
+import ALM from "alclient-mongo"
 import { ItemLevelInfo } from "../definitions/bot.js"
 
 export const LOOP_MS = 100
@@ -216,7 +216,7 @@ export async function goToAggroMonster(bot: AL.Character | ALM.Character, entity
         const distanceToTravel = ALM.Tools.distance({ x: entity.x, y: entity.y }, { x: entity.going_x, y: entity.going_y })
         const lead = 20 + (LOOP_MS / 1000) * entity.speed
         if (distanceToTravel >= lead) {
-            const destination: IPosition = { map: entity.map, x: entity.going_x, y: entity.going_y }
+            const destination: ALM.IPosition = { map: entity.map, x: entity.going_x, y: entity.going_y }
             if (AL.Pathfinder.canWalkPath(bot, destination)) {
                 return bot.move(destination.x, destination.y)
             } else {
@@ -232,6 +232,13 @@ export async function goToAggroMonster(bot: AL.Character | ALM.Character, entity
             }
         }
     }
+}
+
+export async function goToPriestIfHurt(bot: ALM.Character, priest: ALM.Character): Promise<ALM.IPosition> {
+    if (bot.hp > bot.max_hp / 2) return // We still have over half our HP
+    if (!priest) return // Priest is not available
+
+    return bot.smartMove(priest, { getWithin: priest.range })
 }
 
 export async function goToSpecialMonster(bot: ALM.Character, type: ALM.MonsterName): Promise<unknown> {
@@ -315,7 +322,7 @@ export async function goToNPCShopIfFull(bot: AL.Character | ALM.Character, items
 }
 
 export async function goToNearestWalkableToMonster(bot: AL.Character | ALM.Character, types: AL.MonsterName[], defaultPosition?: AL.IPosition): Promise<void> {
-    let nearest: IPosition
+    let nearest: ALM.IPosition
     let distance = Number.MAX_VALUE
     for (const entity of bot.getEntities({
         canWalkTo: true,
@@ -375,24 +382,24 @@ export async function goToNearestWalkableToMonster(bot: AL.Character | ALM.Chara
     }
 }
 
-export function moveInCircle(bot: AL.Character | ALM.Character, location: AL.IPosition, radius = 125, angle = Math.PI / 2.5): Promise<IPosition> {
-    if (AL.Pathfinder.canWalkPath(bot, location)) {
-        const bscorpion = bot.getNearestMonster("bscorpion")?.monster
-        if (bscorpion) {
+export function moveInCircle(bot: AL.Character | ALM.Character, type: ALM.MonsterName, center: AL.IPosition, radius = 125, angle = Math.PI / 2.5): Promise<ALM.IPosition> {
+    if (AL.Pathfinder.canWalkPath(bot, center)) {
+        const nearest = bot.getNearestMonster(type)?.monster
+        if (nearest) {
             // There's a bscorpion nearby
-            const angleFromSpawnToBscorpionGoing = Math.atan2(bscorpion.going_y - location.y, bscorpion.going_x - location.x)
-            const endGoalAngle = angleFromSpawnToBscorpionGoing + angle
-            const endGoal = { x: location.x + radius * Math.cos(endGoalAngle), y: location.y + radius * Math.sin(endGoalAngle) }
+            const angleFromCenterToMonsterGoing = Math.atan2(nearest.going_y - center.y, nearest.going_x - center.x)
+            const endGoalAngle = angleFromCenterToMonsterGoing + angle
+            const endGoal = { x: center.x + radius * Math.cos(endGoalAngle), y: center.y + radius * Math.sin(endGoalAngle) }
             return bot.move(endGoal.x, endGoal.y)
         } else {
             // There isn't a bscorpion nearby
-            const angleFromSpawnToBot = Math.atan2(bot.y - location.y, bot.x - location.x)
-            const endGoal = { x: location.x + radius * Math.cos(angleFromSpawnToBot), y: location.y + radius * Math.sin(angleFromSpawnToBot) }
+            const angleFromSpawnToBot = Math.atan2(bot.y - center.y, bot.x - center.x)
+            const endGoal = { x: center.x + radius * Math.cos(angleFromSpawnToBot), y: center.y + radius * Math.sin(angleFromSpawnToBot) }
             return bot.move(endGoal.x, endGoal.y)
         }
     } else {
         // Move to the bscorpion spawn
-        return bot.smartMove(location, { getWithin: radius })
+        return bot.smartMove(center, { getWithin: radius })
     }
 }
 

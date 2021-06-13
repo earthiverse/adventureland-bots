@@ -3,11 +3,14 @@ import FastPriorityQueue from "fastpriorityqueue"
 
 export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterName[], friends: AL.Character[], options?: {
     targetingPlayer?: string
-    maxNumberTargets?: number
 }): Promise<void> {
     if (!bot.canUse("attack")) return // We can't attack
 
     const priority = (a: AL.Entity, b: AL.Entity): boolean => {
+        // Order in array
+        if (types.indexOf(a.type) > types.indexOf(b.type)) return true
+        else if (types.indexOf(a.type) < types.indexOf(b.type)) return false
+
         // Has a target -> higher priority
         if (a.target && !b.target) return true
         else if (!a.target && b.target) return false
@@ -104,7 +107,7 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
             }
             break
         case "pure":
-            if (bot.courage > numPureTargetingMe) {
+            if (bot.pcourage > numPureTargetingMe) {
                 // We can tank one more pure monster
                 if (!addedToThreeShotTargets)threeShotTargets.add(entity)
                 fiveShotTargets.add(entity)
@@ -126,12 +129,10 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
         const entities: AL.Entity[] = []
         while (entities.length < 5) entities.push(fiveShotTargets.poll())
 
-        if (friends) {
-            // Remove them from our friends' entities list if we're going to kill it
-            for (const entity of entities) {
-                if (bot.canKillInOneShot(entity, "5shot")) {
-                    for (const friend of friends) friend.entities.delete(entity.id)
-                }
+        // Remove them from our friends' entities list if we're going to kill it
+        for (const entity of entities) {
+            if (bot.canKillInOneShot(entity, "5shot")) {
+                for (const friend of friends) friend.entities.delete(entity.id)
             }
         }
 
@@ -140,12 +141,10 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
         const entities: AL.Entity[] = []
         while (entities.length < 3) entities.push(threeShotTargets.poll())
 
-        if (friends) {
-            // Remove them from our friends' entities list if we're going to kill it
-            for (const entity of entities) {
-                if (bot.canKillInOneShot(entity, "3shot")) {
-                    for (const friend of friends) friend.entities.delete(entity.id)
-                }
+        // Remove them from our friends' entities list if we're going to kill it
+        for (const entity of entities) {
+            if (bot.canKillInOneShot(entity, "3shot")) {
+                for (const friend of friends) friend.entities.delete(entity.id)
             }
         }
 
@@ -153,12 +152,12 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
     } else {
         const entity = targets.poll()
 
-        if (friends) {
-            // Remove them from our friends' entities list if we're going to kill it
-            if (bot.canKillInOneShot(entity)) {
-                for (const friend of friends) friend.entities.delete(entity.id)
-            }
+        // Remove them from our friends' entities list if we're going to kill it
+        if (bot.canKillInOneShot(entity)) {
+            for (const friend of friends) friend.entities.delete(entity.id)
         }
+
+        // TODO: Check if it makes sense to do a piercing shot, and do so if it does.
 
         await bot.basicAttack(entity.id)
     }
@@ -185,5 +184,5 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
         supershotTargets.add(entity)
     }
 
-    if (supershotTargets.size > 0) await bot.superShot(supershotTargets.poll().id)
+    if (supershotTargets.size > 0) await bot.superShot(supershotTargets.peek().id)
 }
