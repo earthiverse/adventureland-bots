@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { ITEMS_TO_HOLD, ITEMS_TO_SELL, LOOP_MS } from "./general.js"
+import { ITEMS_TO_EXCHANGE, ITEMS_TO_HOLD, ITEMS_TO_SELL, LOOP_MS } from "./general.js"
 
 export const MERCHANT_GOLD_TO_HOLD = 100_000_000
 export const MERCHANT_ITEMS_TO_HOLD: Set<AL.ItemName> = new Set([
@@ -86,6 +86,29 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
     let freeSpaces = bot.esize
     const duplicates = bot.locateDuplicateItems(bankItems)
 
+    // Withdraw things we want to hold
+    for (let i = 0; i < bankItems.length && freeSpaces > 2; i++) {
+        const item = bankItems[i]
+        if (!item) continue // No item
+
+        if (!MERCHANT_ITEMS_TO_HOLD.has(item.name)) continue // We don't want to hold this item
+        if (bot.hasItem(item.name)) {
+            const gInfo = bot.G.items[item.name]
+            if (!gInfo.s) continue // Not stackable
+            if (bot.countItem(item.name) + item.q > gInfo.s) continue // We can't stack them in one spot
+
+            const pack = `items${Math.floor(i / 42)}` as Exclude<AL.BankPackName, "gold">
+            const slot = i % 42
+            bot.withdrawItem(pack, slot)
+            continue
+        }
+
+        const pack = `items${Math.floor(i / 42)}` as Exclude<AL.BankPackName, "gold">
+        const slot = i % 42
+        bot.withdrawItem(pack, slot)
+        freeSpaces--
+    }
+
     // Withdraw compoundable & upgradable things
     for (const iN in duplicates) {
         const itemName = iN as AL.ItemName
@@ -163,17 +186,20 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
         }
     }
 
-    // Withdraw things we want to hold
+    // Withdraw exchangable items
     for (let i = 0; i < bankItems.length && freeSpaces > 2; i++) {
         const item = bankItems[i]
         if (!item) continue // No item
 
-        if (!MERCHANT_ITEMS_TO_HOLD.has(item.name)) continue // We don't want to hold this item
-        if (bot.hasItem(item.name)) continue // We are already holding one of these items
+        if (!ITEMS_TO_EXCHANGE.has(item.name)) continue // Not exchangable
 
+        const gInfo = bot.G.items[item.name]
+        if (item.q < gInfo.e) continue // Not enough to exchange
+
+        // Withdraw the item
         const pack = `items${Math.floor(i / 42)}` as Exclude<AL.BankPackName, "gold">
         const slot = i % 42
-        bot.withdrawItem(pack, slot)
+        await bot.withdrawItem(pack, slot)
         freeSpaces--
     }
 }
