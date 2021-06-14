@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
+import { goToBankIfFull, goToNPCShopIfFull, goToPoitonSellerIfLow, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 
 /** Config */
@@ -40,6 +40,10 @@ async function startMage(bot: AL.Mage) {
                 bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
                 return
             }
+
+            await goToPoitonSellerIfLow(bot)
+            await goToNPCShopIfFull(bot)
+            await goToBankIfFull(bot)
 
             // Look for frogs
             let nearest: AL.Entity

@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
+import { goToBankIfFull, goToNPCShopIfFull, goToPoitonSellerIfLow, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
 import { attackTheseTypesWarrior } from "../base/warrior.js"
 
 /** Config */
@@ -41,7 +41,11 @@ async function startWarrior(bot: AL.Warrior) {
                 return
             }
 
-            // Look for frogs
+            await goToPoitonSellerIfLow(bot)
+            await goToNPCShopIfFull(bot)
+            await goToBankIfFull(bot)
+
+            // Look for roosters
             let nearest: AL.Entity
             let distance = Number.MAX_VALUE
             for (const rooster of bot.getEntities({

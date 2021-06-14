@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
+import { goToBankIfFull, goToNPCShopIfFull, goToPoitonSellerIfLow, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
 
 /** Config */
@@ -14,7 +14,7 @@ async function startPriest(bot: AL.Priest) {
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
-    startSellLoop(bot, { "hpamulet": 2, "hpbelt": 2, "ringsj": 2, "wcap": 2, "wshoes": 2 })
+    startSellLoop(bot, { "hpamulet": 2, "hpbelt": 2, "ringsj": 2 })
     startPartyLoop(bot, "earthPri2", MY_CHARACTERS)
 
     async function attackLoop() {
@@ -40,6 +40,10 @@ async function startPriest(bot: AL.Priest) {
                 bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
                 return
             }
+
+            await goToPoitonSellerIfLow(bot)
+            await goToNPCShopIfFull(bot)
+            await goToBankIfFull(bot)
 
             // Look for frogs
             let nearest: AL.Entity

@@ -236,6 +236,28 @@ export async function goToAggroMonster(bot: AL.Character | ALM.Character, entity
     }
 }
 
+export async function goToBankIfFull(bot: ALM.Character, itemsToHold = ITEMS_TO_HOLD, goldToHold = GOLD_TO_HOLD): Promise<void> {
+    if (!bot.isFull()) return // We aren't full
+
+    await bot.smartMove("fancypots") // Move to potion seller to give the sell loop a chance to sell things
+    await bot.smartMove("items0") // Move to bank teller to give bank time to get ready
+
+    for (let i = 0; i < bot.isize; i++) {
+        const item = bot.items[i]
+        if (!item) continue // No item in this slot
+        if (item.l == "l") continue // Don't send locked items
+        if (itemsToHold.has(item.name)) continue
+
+        try {
+            await bot.depositItem(i)
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    if (bot.gold > goldToHold) await bot.depositGold(bot.gold - goldToHold)
+}
+
 export async function goToPriestIfHurt(bot: ALM.Character, priest: ALM.Character): Promise<ALM.IPosition> {
     if (bot.hp > bot.max_hp / 2) return // We still have over half our HP
     if (!priest) return // Priest is not available
@@ -933,7 +955,8 @@ export function startSendStuffAllowlistLoop(bot: AL.Character | ALM.Character, s
                 if (extraGold > 0) await bot.sendGold(sendTo, extraGold)
                 for (let i = 0; i < bot.items.length; i++) {
                     const item = bot.items[i]
-                    if (!item || !itemsToSend.includes(item.name)) continue // Only send items in our list
+                    if (!item) continue // No item
+                    if (!itemsToSend.includes(item.name)) continue // Only send items in our list
                     if (item.l == "l") continue // Don't send locked items
 
                     try {
@@ -977,8 +1000,9 @@ export function startSendStuffDenylistLoop(bot: AL.Character | ALM.Character, se
                 if (extraGold > 0) await bot.sendGold(sendTo, extraGold)
                 for (let i = 0; i < bot.items.length; i++) {
                     const item = bot.items[i]
-                    if (!item || itemsToHold.has(item.name)) continue // Don't send important items
+                    if (!item) continue // No item
                     if (item.l == "l") continue // Don't send locked items
+                    if (itemsToHold.has(item.name)) continue // Don't send important items
 
                     try {
                         await bot.sendItem(sendTo, i, item.q)
