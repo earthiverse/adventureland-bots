@@ -209,7 +209,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
         })) {
             targets.add(entity)
         }
-        if (targets) {
+        if (targets.size) {
             const entity = targets.peek()
             const canKill = bot.canKillInOneShot(entity)
 
