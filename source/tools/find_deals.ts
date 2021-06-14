@@ -17,8 +17,8 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
     // Grab and parse the data
     console.log("Grabbing merchant data...")
     const num = {
-        merchants: 0,
         buyingItems: 0,
+        merchants: 0,
         sellingItems: 0
     }
     const buying: { [T in string]: BuyData[] } = {}
@@ -35,26 +35,26 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
                 // They are buying
                 if (!buying[key]) buying[key] = []
                 buying[key].push({
-                    itemName: item.name,
                     itemLevel: item.level,
-                    name: merchant.name,
+                    itemName: item.name,
                     map: merchant.map,
+                    name: merchant.name,
+                    price: item.price,
                     x: merchant.x,
-                    y: merchant.y,
-                    price: item.price
+                    y: merchant.y
                 })
                 num.buyingItems += 1
             } else {
                 // They are selling
                 if (!selling[key]) selling[key] = []
                 selling[key].push({
-                    itemName: item.name,
                     itemLevel: item.level,
-                    name: merchant.name,
+                    itemName: item.name,
                     map: merchant.map,
+                    name: merchant.name,
+                    price: item.price,
                     x: merchant.x,
-                    y: merchant.y,
-                    price: item.price
+                    y: merchant.y
                 })
                 num.sellingItems += 1
             }
@@ -99,8 +99,10 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
             return
         }
 
-        if (bestSeller.price <= G.items[bestSell.itemName].g) {
-            console.log(`Uhh, is it just me or is ${bestSell.name}'s ${bestSell.itemName} really cheap @ ${bestSell.price} gold?`)
+        if (bestSeller.price < G.items[bestSell.itemName].g * 0.6) {
+            console.log(`We could resell ${bestSell.name}'s ${bestSell.itemName} to the NPC for profit.`)
+        } else if (bestSeller.price < G.items[bestSell.itemName].g) {
+            console.log(`${bestSell.name}'s ${bestSell.itemName} @ ${bestSell.price} is a good price.`)
         }
     }
 

@@ -67,16 +67,30 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
     })) {
         targets.add(entity)
     }
+    if (targets.size == 0) return // No target
 
     const target = targets.peek()
-    if (!target) return // No target
 
     // Apply curse if we can't kill it in one shot and we have enough MP
     if (bot.canUse("curse") && bot.mp > (bot.mp_cost + bot.G.skills.curse.mp) && !bot.canKillInOneShot(target)) {
         bot.curse(target.id).catch((e) => { console.error(e) })
     }
 
-    if (target) await bot.basicAttack(target.id)
+    // Use our friends to energize
+    if (!bot.s.energized) {
+        for (const friend of friends) {
+            if (friend.socket.disconnected) continue // Friend is disconnected
+            if (friend.id == bot.id) continue // Can't energize ourselves
+            if (AL.Tools.distance(bot, friend) > bot.G.skills.energize.range) continue // Too far away
+            if (!friend.canUse("energize")) continue // Friend can't use energize
+
+            // Energize!
+            (friend as AL.Mage).energize(bot.id)
+            break
+        }
+    }
+
+    await bot.basicAttack(target.id)
 }
 
 export function startPartyHealLoop(bot: AL.Priest | AL.Priest, friends: AL.Character[] | AL.Character[]): void {

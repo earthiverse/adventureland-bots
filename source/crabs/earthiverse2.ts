@@ -63,43 +63,23 @@ async function run() {
             console.error(e)
             if (ranger) await ranger.disconnect()
         }
-        const now = new Date()
-        const nextStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() + 1, 10)
-        setTimeout(async () => { connectLoop() }, nextStart.getTime() - Date.now())
+        const msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
     }
 
     const disconnectLoop = async () => {
         try {
             if (ranger) await ranger.disconnect()
-            // if (region == "ASIA" && identifier == "I") {
-            //     region = "US"
-            //     identifier = "I"
-            // } else if (region == "US" && identifier == "I") {
-            //     region = "US"
-            //     identifier = "III"
-            // } else if (region == "US" && identifier == "III") {
-            //     region = "EU"
-            //     identifier = "I"
-            // } else if (region == "EU" && identifier == "I") {
-            //     region = "EU"
-            //     identifier = "II"
-            // } else if (region == "EU" && identifier == "II") {
-            //     region = "ASIA"
-            //     identifier = "I"
-            // }
             ranger = undefined
         } catch (e) {
             console.error(e)
         }
-        const now = new Date()
-        const nextStop = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() + 1, 50)
-        setTimeout(async () => { disconnectLoop() }, nextStop.getTime() - Date.now())
+        const msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
     }
 
-    const now = new Date()
-    const nextStop = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() + 1, 50)
-    const nextStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() + 1, 10)
-    setTimeout(async () => { connectLoop() }, nextStart.getTime() - Date.now())
-    setTimeout(async () => { disconnectLoop() }, nextStop.getTime() - Date.now())
+    const msToNextMinute = 60_000 - (Date.now() % 60_000)
+    setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
+    setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
 }
 run()

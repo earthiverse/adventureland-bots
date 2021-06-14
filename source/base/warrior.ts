@@ -218,10 +218,22 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
                 bot.mp -= bot.G.skills.stomp.mp
             }
 
-            if (friends) {
-                // Remove them from our friends' entities list if we're going to kill it
-                if (canKill) {
-                    for (const friend of friends) friend.entities.delete(entity.id)
+            // Remove them from our friends' entities list if we're going to kill it
+            if (canKill) {
+                for (const friend of friends) friend.entities.delete(entity.id)
+            }
+
+            // Use our friends to energize
+            if (!bot.s.energized) {
+                for (const friend of friends) {
+                    if (friend.socket.disconnected) continue // Friend is disconnected
+                    if (friend.id == bot.id) continue // Can't energize ourselves
+                    if (AL.Tools.distance(bot, friend) > bot.G.skills.energize.range) continue // Too far away
+                    if (!friend.canUse("energize")) continue // Friend can't use energize
+
+                    // Energize!
+                    (friend as AL.Mage).energize(bot.id)
+                    break
                 }
             }
 

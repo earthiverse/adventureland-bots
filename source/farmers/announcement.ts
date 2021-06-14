@@ -1,8 +1,8 @@
 import AL from "alclient-mongo"
-import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, startAvoidStacking, sleep } from "../base/general.js"
+import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, startAvoidStacking, sleep, goToNearestWalkableToMonster } from "../base/general.js"
 import { mainScorpions } from "../base/locations.js"
 import { doBanking, startMluckLoop } from "../base/merchant.js"
-import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
+import { attackTheseTypesWarrior, startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { partyLeader, partyMembers } from "./party.js"
 
 /** Config */
@@ -12,7 +12,7 @@ const warrior2Name = "battleworthy"
 const warrior3Name = "charmingness"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "II"
-const target: AL.MonsterName = "scorpion"
+const targets: AL.MonsterName[] = ["scorpion"]
 const defaultLocation: AL.IPosition = mainScorpions
 
 let merchant: AL.Merchant
@@ -40,49 +40,7 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
-
-            if (bot.canUse("attack")) {
-                for (const [, entity] of bot.entities) {
-                    if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far away
-                    if (entity.cooperative !== true && entity.target && ![warrior1?.id, warrior2?.id, warrior3?.id, merchant?.id].includes(entity.target)) continue // It's targeting someone else
-                    if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Possibly gonna die
-                    if (entity.willBurnToDeath()) continue // Will burn to death shortly
-
-                    if (bot.canKillInOneShot(entity)) {
-                        for (const friend of [merchant, warrior1, warrior2, warrior3]) {
-                            if (!friend) continue
-                            friend.entities.delete(entity.id)
-                        }
-                    }
-
-                    await bot.basicAttack(entity.id)
-
-                    // Move to the next entity if we're gonna kill it
-                    if (bot.canKillInOneShot(entity)) {
-                        let closest: AL.Entity
-                        let distance = Number.MAX_VALUE
-                        for (const [, entity] of bot.entities) {
-                            if (entity.type !== target) continue // Only attack our target
-                            if (!AL.Pathfinder.canWalkPath(bot, entity)) continue // Can't simply walk to entity
-                            if (entity.cooperative !== true && entity.target && ![warrior1?.id, warrior2?.id, warrior3?.id, merchant?.id].includes(entity.target)) continue // It's targeting someone else
-                            if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Possibly gonna die
-                            if (entity.willBurnToDeath()) continue // Will burn to death shortly
-
-                            const d = AL.Tools.distance(bot, entity)
-                            if (d < distance) {
-                                closest = entity
-                                distance = d
-                            }
-                        }
-
-                        if (closest && AL.Tools.distance(bot, closest) > bot.range) {
-                            const newClosest:AL.IPosition = { map: closest.map, x: closest.x + positionOffset.x, y: closest.y + positionOffset.y }
-                            bot.smartMove(newClosest).catch(() => { /* suppress warnings */ })
-                        }
-                    }
-                    break
-                }
-            }
+            await attackTheseTypesWarrior(bot, targets, [warrior1, warrior2, warrior3])
         } catch (e) {
             console.error(e)
         }
@@ -94,7 +52,6 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
     startAvoidStacking(bot)
     startChargeLoop(bot)
 
-    const myLocation = { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y }
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -109,27 +66,7 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
             await goToPoitonSellerIfLow(bot)
             await goToNPCShopIfFull(bot)
 
-            let closest: AL.Entity
-            let distance = Number.MAX_VALUE
-            for (const [, entity] of bot.entities) {
-                if (entity.type !== target) continue // Only attack our target
-                if (!AL.Pathfinder.canWalkPath(bot, entity)) continue // Can't simply walk to entity
-                if (entity.cooperative !== true && entity.target && ![warrior1?.id, warrior2?.id, warrior3?.id, merchant?.id].includes(entity.target)) continue // It's targeting someone else
-                if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Possibly gonna die
-                if (entity.willBurnToDeath()) continue // Will burn to death shortly
-
-                const d = AL.Tools.distance(bot, entity)
-                if (d < distance) {
-                    closest = entity
-                    distance = d
-                }
-            }
-
-            if (closest) {
-                bot.smartMove({ map: closest.map, x: closest.x + positionOffset.x, y: closest.y + positionOffset.y }).catch(() => { /* suppress errors */ })
-            } else {
-                await bot.smartMove(myLocation)
-            }
+            goToNearestWalkableToMonster(bot, targets, { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y })
         } catch (e) {
             console.error(e)
         }

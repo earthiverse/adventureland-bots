@@ -2,6 +2,8 @@ import AL from "alclient-mongo"
 import FastPriorityQueue from "fastpriorityqueue"
 
 export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterName[], friends: AL.Character[], options?: {
+    disableHuntersMark?: boolean
+    disableSupershot?: boolean
     targetingPlayer?: string
 }): Promise<void> {
     if (!bot.canUse("attack")) return // We can't attack
@@ -118,11 +120,27 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
         }
     }
 
-    // Apply huntersmark if we can't kill it in one shot and we have enough MP
+    if (targets.size == 0) return // No targets
+
     const target = targets.peek()
-    if (!target) return // No targets
-    if (bot.canUse("huntersmark") && bot.mp > (bot.mp_cost + bot.G.skills.huntersmark.mp) && !bot.canKillInOneShot(target)) {
+
+    // Apply huntersmark if we can't kill it in one shot and we have enough MP
+    if (bot.canUse("huntersmark") && !options?.disableHuntersMark && bot.mp > (bot.mp_cost + bot.G.skills.huntersmark.mp) && !bot.canKillInOneShot(target)) {
         bot.huntersMark(target.id).catch((e) => { console.error(e) })
+    }
+
+    // Use our friends to energize
+    if (!bot.s.energized) {
+        for (const friend of friends) {
+            if (friend.socket.disconnected) continue // Friend is disconnected
+            if (friend.id == bot.id) continue // Can't energize ourselves
+            if (AL.Tools.distance(bot, friend) > bot.G.skills.energize.range) continue // Too far away
+            if (!friend.canUse("energize")) continue // Friend can't use energize
+
+            // Energize!
+            (friend as AL.Mage).energize(bot.id)
+            break
+        }
     }
 
     if (bot.canUse("5shot") && fiveShotTargets.size >= 5) {
@@ -162,7 +180,7 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
         await bot.basicAttack(entity.id)
     }
 
-    if (!bot.canUse("supershot")) return
+    if (!bot.canUse("supershot") || (options && options.disableSupershot)) return
 
     const supershotTargets = new FastPriorityQueue<AL.Entity>(priority)
     for (const entity of bot.getEntities({

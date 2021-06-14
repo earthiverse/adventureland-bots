@@ -268,7 +268,7 @@ export async function goToSpecialMonster(bot: ALM.Character, type: ALM.MonsterNa
         await bot.smartMove(spawn, { getWithin: bot.range - 10 })
 
         nearby = bot.getNearestMonster(type)
-        if (nearby) break // We found it?
+        if (nearby) return bot.smartMove(nearby.monster, { getWithin: bot.range - 10 })
     }
 }
 
@@ -372,6 +372,9 @@ export async function goToNearestWalkableToMonster(bot: AL.Character | ALM.Chara
         case 8:
             destination.x -= 6
             destination.y -= 6
+            break
+        case 9:
+            destination.x += 12
             break
         }
         bot.move(destination.x, destination.y).catch(() => { /* Suppress errors */ })

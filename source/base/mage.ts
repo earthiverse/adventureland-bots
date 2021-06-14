@@ -7,6 +7,20 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
     targetingPlayer?: string
 }): Promise<void> {
     if (bot.canUse("attack")) {
+        // Use our friends to energize
+        if (!bot.s.energized) {
+            for (const friend of friends) {
+                if (friend.socket.disconnected) continue // Friend is disconnected
+                if (friend.id == bot.id) continue // Can't energize ourselves
+                if (AL.Tools.distance(bot, friend) > bot.G.skills.energize.range) continue // Too far away
+                if (!friend.canUse("energize")) continue // Friend can't use energize
+
+                // Energize!
+                (friend as AL.Mage).energize(bot.id)
+                break
+            }
+        }
+
         const attackPriority = (a: AL.Entity, b: AL.Entity): boolean => {
             // Order in array
             if (types.indexOf(a.type) < types.indexOf(b.type)) return true

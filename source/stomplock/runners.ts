@@ -186,7 +186,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
                 next = entity
             }
 
-            let destination:AL.IPosition = { ...spawn }
+            let destination: AL.IPosition = { ...spawn }
             if (next) destination = { map: next.map, x: next.x, y: next.y }
             if (bot.party) {
                 // Avoid stacking on party members
@@ -218,6 +218,9 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
                 case 8:
                     destination.x -= 6
                     destination.y -= 6
+                    break
+                case 9:
+                    destination.x += 12
                     break
                 }
             }

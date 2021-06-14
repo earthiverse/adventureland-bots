@@ -123,45 +123,6 @@ async function startRanger(bot: AL.Ranger) {
         bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
     }
     moveLoop()
-
-    async function supershotLoop() {
-        try {
-            if (!bot.socket || bot.socket.disconnected) return
-
-            // Find the furthest away target that we can supershot, and supershot it.
-            let ssTarget: AL.Entity
-            let ssDistance = Number.MAX_VALUE
-            for (const [, entity] of bot.entities) {
-                if (entity.type !== "stoneworm") continue // Not a stoneworm
-                if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
-                const distance = AL.Tools.distance(bot, entity)
-                if (distance > bot.range * bot.G.skills.supershot.range_multiplier) continue // Too far
-                if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
-
-                if (distance < ssDistance) {
-                    ssTarget = entity
-                    ssDistance = distance
-                }
-            }
-
-            if (ssTarget && bot.canUse("supershot")) {
-                // If it's a guaranteed kill, remove it from the everyone's entity list so we don't attack it
-                if (bot.calculateDamageRange(ssTarget, "supershot")[0] >= ssTarget.hp) {
-                    for (const friend of [ranger, mage1, mage2]) {
-                        if (!friend) continue
-                        friend.entities.delete(ssTarget.id)
-                    }
-                }
-
-                await bot.superShot(ssTarget.id)
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        bot.timeouts.set("supershotloop", setTimeout(async () => { supershotLoop() }, LOOP_MS))
-    }
-    supershotLoop()
 }
 
 async function startMage(bot: AL.Mage) {
