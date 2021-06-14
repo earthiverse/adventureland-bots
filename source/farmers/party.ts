@@ -10,5 +10,5 @@ export const partyMembers = [
     // Lolwutpear's characters
     "fgsfds", "fsjal", "funny", "lolwutpear", "shoopdawhoop", "ytmnd", /* rogue!? */
     // Announcement's characters
-    "announcement", "battleworthy", "charmingness", "decisiveness", "facilitating", "gratuitously", "hypothesized" /* rogue? */
+    "announcement", "battleworthy", "charmingness", "decisiveness", "enlightening", "facilitating", "gratuitously", "hypothesized"
 ]

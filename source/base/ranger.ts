@@ -7,6 +7,7 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
     targetingPlayer?: string
 }): Promise<void> {
     if (!bot.canUse("attack")) return // We can't attack
+    if (bot.c.town) return // Don't attack if teleporting
 
     const priority = (a: AL.Entity, b: AL.Entity): boolean => {
         // Order in array

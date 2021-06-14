@@ -20,6 +20,7 @@ export const MERCHANT_ITEMS_TO_HOLD: Set<AL.ItemName> = new Set([
 
 export async function attackTheseTypesMerchant(bot: AL.Merchant, types: AL.MonsterName[], friends: AL.Character[]): Promise<void> {
     if (!bot.canUse("attack")) return // We can't attack
+    if (bot.c.town) return // Don't attack if teleporting
 
     const targets: AL.Entity[] = []
     for (const entity of bot.getEntities({

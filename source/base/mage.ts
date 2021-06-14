@@ -6,6 +6,7 @@ const CBURST_WHEN_HP_LESS_THAN = 200
 export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[], friends: AL.Character[], options?: {
     targetingPlayer?: string
 }): Promise<void> {
+    if (bot.c.town) return // Don't attack if teleporting
     if (bot.canUse("attack")) {
         // Use our friends to energize
         if (!bot.s.energized) {

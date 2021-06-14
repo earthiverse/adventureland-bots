@@ -9,6 +9,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
     disableStomp?: boolean
     maximumTargets?: number
 }): Promise<void> {
+    if (bot.c.town) return // Don't attack if teleporting
     if (bot.canUse("cleave") && !options?.disableCleave) {
         // Calculate how much courage we have left to spare
         let numPhysicalTargetingMe = 0

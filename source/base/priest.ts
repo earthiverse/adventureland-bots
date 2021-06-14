@@ -6,6 +6,7 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
     targetingPlayer?: string
 }): Promise<void> {
     if (!bot.canUse("attack")) return // We can't attack
+    if (bot.c.town) return // Don't attack if teleporting
 
     const healPriority = (a: AL.Player, b: AL.Player) => {
         // Heal our friends first

@@ -6,6 +6,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
     disableQuickStab?: boolean
     targetingPlayer?: string
 }): Promise<void> {
+    if (bot.c.town) return // Don't attack if teleporting
     const attackPriority = (a: AL.Entity, b: AL.Entity): boolean => {
         // Order in array
         if (types.indexOf(a.type) < types.indexOf(b.type)) return true
