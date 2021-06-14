@@ -366,38 +366,40 @@ export async function goToNearestWalkableToMonster(bot: AL.Character | ALM.Chara
         const destination = { map: nearest.map, x: nearest.x, y: nearest.y }
 
         // Offset our position based on our party, so we don't get stacking damage
-        switch (bot.partyData.list.indexOf(bot.id)) {
-        case 1:
-            destination.x += 6
-            break
-        case 2:
-            destination.x -= 6
-            break
-        case 3:
-            destination.y += 6
-            break
-        case 4:
-            destination.y -= 6
-            break
-        case 5:
-            destination.x += 6
-            destination.y += 6
-            break
-        case 6:
-            destination.x += 6
-            destination.y -= 6
-            break
-        case 7:
-            destination.x -= 6
-            destination.y += 6
-            break
-        case 8:
-            destination.x -= 6
-            destination.y -= 6
-            break
-        case 9:
-            destination.x += 12
-            break
+        if (bot.party) {
+            switch (bot.partyData.list.indexOf(bot.id)) {
+            case 1:
+                destination.x += 6
+                break
+            case 2:
+                destination.x -= 6
+                break
+            case 3:
+                destination.y += 6
+                break
+            case 4:
+                destination.y -= 6
+                break
+            case 5:
+                destination.x += 6
+                destination.y += 6
+                break
+            case 6:
+                destination.x += 6
+                destination.y -= 6
+                break
+            case 7:
+                destination.x -= 6
+                destination.y += 6
+                break
+            case 8:
+                destination.x -= 6
+                destination.y -= 6
+                break
+            case 9:
+                destination.x += 12
+                break
+            }
         }
         bot.move(destination.x, destination.y).catch(() => { /* Suppress errors */ })
     } else if (!nearest && defaultPosition) {
