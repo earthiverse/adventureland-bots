@@ -773,7 +773,7 @@ export function startPartyLoop(bot: AL.Character | ALM.Character, leader: string
                     if (!partyMembers.includes(data.name)) return // Discard requests from other players
 
                     // If there's an incoming request, and we're full, kick the lower priority characters
-                    if (bot.partyData && bot.partyData.list.length >= 10) {
+                    if (bot.partyData && bot.partyData.list.length >= 9) {
                         const requestPriority = partyMembers.length - partyMembers.indexOf(data.name)
 
                         let toKickMember: string
@@ -1033,7 +1033,7 @@ export function startServerPartyInviteLoop(bot: AL.Character | ALM.Character, ig
                 if (bot.party && player.party == bot.party) continue // They're already in our party
                 if (ignore.includes(player.name)) continue // Ignore
                 if (ignore.includes(player.party)) continue // Ignore
-                if (bot.partyData?.list?.length >= 10) break // We're full
+                if (bot.partyData?.list?.length >= 9) break // We're full
 
                 if (bot.party) {
                     // We have a party, let's invite more!
