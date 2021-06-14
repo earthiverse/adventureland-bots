@@ -104,7 +104,7 @@ async function run() {
         const connectLoop = async () => {
             try {
                 mage2 = await AL.Game.startMage(name, region, identifier)
-                startMage(mage2)
+                startMage(mage2, { x: 25, y: 0 })
             } catch (e) {
                 console.error(e)
                 if (mage2) await mage2.disconnect()
@@ -134,7 +134,7 @@ async function run() {
         const connectLoop = async () => {
             try {
                 mage3 = await AL.Game.startMage(name, region, identifier)
-                startMage(mage3)
+                startMage(mage3, { x: -25, y: 0 })
             } catch (e) {
                 console.error(e)
                 if (mage3) await mage3.disconnect()
