@@ -52,7 +52,7 @@ export const ITEMS_TO_BUY: Set<AL.ItemName | ALM.ItemName> = new Set([
     // Earrings
     "cearring", "dexearring", "intearring", "lostearring", "strearring",
     // Amulets
-    "amuletofm", "dexamulet", "intamulet", "snring", "stramulet", "t2dexamulet", "t2intamulet", "t2stramulet",
+    "amuletofm", "dexamulet", "intamulet", "mpxamulet", "northstar", "snring", "stramulet", "t2dexamulet", "t2intamulet", "t2stramulet",
     // Orbs
     "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull", "vorb",
     // Offhands
@@ -72,7 +72,7 @@ export const ITEMS_TO_BUY: Set<AL.ItemName | ALM.ItemName> = new Set([
     // Gloves
     "gloves1", "goldenpowerglove", "handofmidas", "hgloves", "mpxgloves", "mrngloves", "mwgloves", "poker", "powerglove", "vgloves", "wgloves", "xgloves",
     // Good weapons
-    "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "fireblade", "firebow", "firestaff", "firestars", "frostbow", "froststaff", "gbow", "gstaff", "harbringer", "heartwood", "hbow", "hdagger", "merry", "oozingterror", "ornamentstaff", "pinkie", "pmace", "scythe", "t2bow", "t3bow", "vdagger", "vhammer", "vstaff", "vsword", "wblade",
+    "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "fireblade", "firebow", "firestaff", "firestars", "frostbow", "froststaff", "gbow", "gstaff", "harbringer", "heartwood", "hbow", "hdagger", "merry", "oozingterror", "ornamentstaff", "pinkie", "pmace", "scythe", "snowflakes", "t2bow", "t3bow", "vdagger", "vhammer", "vstaff", "vsword", "wblade",
     // Things we can exchange / craft with
     "ascale", "bfur", "cscale", "electronics", "feather0", "frogt", "goldenegg", "goldingot", "goldnugget", "leather", "platinumingot", "platinumnugget", "pleather", "snakefang",
     // Things to make xbox

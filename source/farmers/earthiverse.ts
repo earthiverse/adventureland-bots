@@ -28,8 +28,6 @@ async function startShared(bot: AL.Character) {
     startExchangeLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)
-
-    startPontyLoop(bot)
     startSellLoop(bot)
 
     if (bot.ctype !== "merchant") {
@@ -197,6 +195,7 @@ async function startMage(bot: AL.Mage) {
 }
 
 async function startMerchant(bot: AL.Merchant) {
+    startPontyLoop(bot)
     startMluckLoop(bot)
     startPartyLoop(bot, bot.id) // Let anyone who wants to party with me do so
     startServerPartyInviteLoop(bot, [...partyMembers]) // Let's invite everyone, lol

@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
+import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, ITEMS_TO_SELL } from "../base/general.js"
 import { halloweenSafeSnakes } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { doBanking, startMluckLoop } from "../base/merchant.js"
@@ -21,22 +21,15 @@ let mage2: AL.Mage
 let mage3: AL.Mage
 
 async function startShared(bot: AL.Character) {
-    startBuyLoop(bot)
-    startCompoundLoop(bot)
-    startElixirLoop(bot, "elixirluck")
+    startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
-    startSellLoop(bot)
-
-    if (bot.ctype !== "merchant") {
-        startPartyLoop(bot, partyLeader, partyMembers)
-        startSendStuffDenylistLoop(bot, merchantName)
-    }
-
-    startUpgradeLoop(bot)
+    startSellLoop(bot, { ...ITEMS_TO_SELL, "hpamulet": 2, "hpbelt": 2, "quiver": 2, "ringsj": 2, "stinger": 2 })
 }
 
 async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
+    startPartyLoop(bot, partyLeader, partyMembers)
+    startSendStuffDenylistLoop(bot, merchantName)
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -76,6 +69,8 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
 }
 
 async function startMerchant(bot: AL.Merchant) {
+    startCompoundLoop(bot)
+    startUpgradeLoop(bot)
     startPartyLoop(bot, bot.id) // Let anyone who wants to party with me do so
 
     startMluckLoop(bot)
@@ -193,8 +188,6 @@ async function startMerchant(bot: AL.Merchant) {
         bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
-
-    startPontyLoop(bot)
 }
 
 async function run() {

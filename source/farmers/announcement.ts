@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, startAvoidStacking, sleep, goToNearestWalkableToMonster, ITEMS_TO_SELL } from "../base/general.js"
+import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, startAvoidStacking, sleep, goToNearestWalkableToMonster, ITEMS_TO_SELL } from "../base/general.js"
 import { mainScorpions } from "../base/locations.js"
 import { doBanking, startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesWarrior, startChargeLoop, startWarcryLoop } from "../base/warrior.js"
@@ -22,21 +22,15 @@ let warrior3: AL.Warrior
 
 async function startShared(bot: AL.Character) {
     startBuyLoop(bot)
-    startCompoundLoop(bot)
-    startElixirLoop(bot, "elixirluck")
     startHealLoop(bot)
     startLootLoop(bot)
-    startSellLoop(bot, { ...ITEMS_TO_SELL, "hpamulet": 2, "hpbelt": 2, "quiver": 2, "ringsj": 2 })
-
-    if (bot.ctype !== "merchant") {
-        startPartyLoop(bot, partyLeader, partyMembers)
-        startSendStuffDenylistLoop(bot, merchantName)
-    }
-
-    startUpgradeLoop(bot)
+    startSellLoop(bot, { ...ITEMS_TO_SELL, "hpamulet": 2, "hpbelt": 2, "quiver": 2, "ringsj": 2, "stinger": 2 })
 }
 
 async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
+    startPartyLoop(bot, partyLeader, partyMembers)
+    startSendStuffDenylistLoop(bot, merchantName)
+
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -79,6 +73,8 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
 }
 
 async function startMerchant(bot: AL.Merchant) {
+    startCompoundLoop(bot)
+    startUpgradeLoop(bot)
     startPartyLoop(bot, bot.id) // Let anyone who wants to party with me do so
 
     startMluckLoop(bot)
