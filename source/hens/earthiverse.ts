@@ -1,16 +1,16 @@
 import AL from "alclient-mongo"
 import { LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
-import { attackTheseTypesMage } from "../base/mage.js"
+import { attackTheseTypesWarrior } from "../base/warrior.js"
 
 /** Config */
 let region: AL.ServerRegion = "ASIA"
 let identifier: AL.ServerIdentifier = "I"
-const mageName = "earthMag3"
+const warriorName = "earthWar3"
 
 /** Characters */
-let mage: AL.Mage
+let warrior: AL.Warrior
 
-async function startMage(bot: AL.Mage) {
+async function startWarrior(bot: AL.Warrior) {
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
@@ -21,7 +21,7 @@ async function startMage(bot: AL.Mage) {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            await attackTheseTypesMage(bot, ["frog", "tortoise"], [mage])
+            await attackTheseTypesWarrior(warrior, ["rooster", "hen"], [warrior])
         } catch (e) {
             console.error(e)
         }
@@ -29,7 +29,7 @@ async function startMage(bot: AL.Mage) {
     }
     attackLoop()
 
-    const frogSpawn = bot.locateMonster("frog")[0]
+    const chickenCoop = bot.locateMonster("rooster")[0]
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -44,37 +44,37 @@ async function startMage(bot: AL.Mage) {
             // Look for frogs
             let nearest: AL.Entity
             let distance = Number.MAX_VALUE
-            for (const frog of bot.getEntities({
+            for (const rooster of bot.getEntities({
                 couldGiveCredit: true,
-                type: "frog",
+                type: "rooster",
                 willBurnToDeath: false,
                 willDieToProjectiles: false
             })) {
-                const d = AL.Tools.distance(bot, frog)
+                const d = AL.Tools.distance(bot, rooster)
                 if (d < distance) {
-                    nearest = frog
+                    nearest = rooster
                     distance = d
                 }
             }
             if (nearest) {
                 bot.smartMove(nearest, { getWithin: bot.range - nearest.speed }).catch(() => { /* Suppress errors */ })
             } else {
-                for (const tortoise of bot.getEntities({
+                for (const hen of bot.getEntities({
                     couldGiveCredit: true,
-                    type: "tortoise",
+                    type: "hen",
                     willBurnToDeath: false,
                     willDieToProjectiles: false
                 })) {
-                    const d = AL.Tools.distance(bot, tortoise)
+                    const d = AL.Tools.distance(bot, hen)
                     if (d < distance) {
-                        nearest = tortoise
+                        nearest = hen
                         distance = d
                     }
                 }
                 if (nearest) {
                     bot.smartMove(nearest, { getWithin: bot.range - nearest.speed }).catch(() => { /* Suppress errors */ })
                 } else {
-                    bot.smartMove(frogSpawn).catch(() => { /* Suppress errors */ })
+                    bot.smartMove(chickenCoop).catch(() => { /* Suppress errors */ })
                 }
             }
 
@@ -93,11 +93,11 @@ async function run() {
 
     const connectLoop = async () => {
         try {
-            mage = await AL.Game.startMage(mageName, region, identifier)
-            startMage(mage)
+            warrior = await AL.Game.startWarrior(warriorName, region, identifier)
+            startWarrior(warrior)
         } catch (e) {
             console.error(e)
-            if (mage) await mage.disconnect()
+            if (warrior) await warrior.disconnect()
         }
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
         setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
@@ -105,7 +105,7 @@ async function run() {
 
     const disconnectLoop = async () => {
         try {
-            if (mage) await mage.disconnect()
+            if (warrior) await warrior.disconnect()
             if (region == "ASIA" && identifier == "I") {
                 region = "US"
                 identifier = "I"
@@ -122,7 +122,7 @@ async function run() {
                 region = "ASIA"
                 identifier = "I"
             }
-            mage = undefined
+            warrior = undefined
         } catch (e) {
             console.error(e)
         }

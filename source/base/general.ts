@@ -10,6 +10,8 @@ export const GOLD_TO_HOLD = 5_000_000
 
 export const FRIENDLY_ROGUES = ["copper", "Bjarna", "RisingVanir"]
 
+export const MY_CHARACTERS = ["earthiverse", "earthMag", "earthMag2", "earthMag3", "earthMer", "earthMer2", "earthMer3", "earthMer4", "earthMer5", "earthPal", "earthPri", "earthPri2", "earthRan2", "earthRan3", "earthRog", "earthRog2", "earthWar", "earthWar2"]
+
 export const ITEMS_TO_HOLD: Set<AL.ItemName | ALM.ItemName> = new Set([
     // Things we keep on ourselves
     "computer", "tracker", "xptome",
@@ -746,7 +748,7 @@ export function startPartyLoop(bot: AL.Character | ALM.Character, leader: string
                     if (!partyMembers.includes(data.name)) return // Discard requests from other players
 
                     // If there's an incoming request, and we're full, kick the lower priority characters
-                    if (bot.partyData && bot.partyData.list.length >= 9) {
+                    if (bot.partyData && bot.partyData.list.length >= 10) {
                         const requestPriority = partyMembers.length - partyMembers.indexOf(data.name)
 
                         let toKickMember: string
@@ -1000,10 +1002,11 @@ export function startServerPartyInviteLoop(bot: AL.Character | ALM.Character, ig
 
             const players = await bot.getPlayers()
             for (const player of players) {
+                if (player.name == bot.id) continue // It's us!
                 if (bot.party && player.party == bot.party) continue // They're already in our party
                 if (ignore.includes(player.name)) continue // Ignore
                 if (ignore.includes(player.party)) continue // Ignore
-                if (bot.partyData?.list?.length >= 9) break // We're full
+                if (bot.partyData?.list?.length >= 10) break // We're full
 
                 if (bot.party) {
                     // We have a party, let's invite more!

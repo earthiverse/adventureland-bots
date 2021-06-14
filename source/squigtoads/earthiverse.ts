@@ -1,5 +1,6 @@
 import AL from "alclient-mongo"
-import { LOOP_MS, startBuyLoop, startHealLoop, startLootLoop, startSellLoop } from "../base/general.js"
+import { LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
+import { attackTheseTypesPriest } from "../base/priest.js"
 
 /** Config */
 let region: AL.ServerRegion = "ASIA"
@@ -14,36 +15,13 @@ async function startPriest(bot: AL.Priest) {
     startHealLoop(bot)
     startLootLoop(bot)
     startSellLoop(bot, { "hpamulet": 2, "hpbelt": 2, "ringsj": 2, "wcap": 2, "wshoes": 2 })
+    startPartyLoop(bot, "earthPri2", MY_CHARACTERS)
 
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            if (bot.canUse("attack")) {
-                for (const entity of bot.getEntities({
-                    couldGiveCredit: true,
-                    type: "squigtoad",
-                    willBurnToDeath: false,
-                    willDieToProjectiles: false,
-                    withinRange: bot.range,
-                })) {
-                    await bot.basicAttack(entity.id)
-                    break
-                }
-            }
-
-            if (bot.canUse("attack")) {
-                for (const entity of bot.getEntities({
-                    couldGiveCredit: true,
-                    type: "squig",
-                    willBurnToDeath: false,
-                    willDieToProjectiles: false,
-                    withinRange: bot.range,
-                })) {
-                    await bot.basicAttack(entity.id)
-                    break
-                }
-            }
+            await attackTheseTypesPriest(bot, ["squigtoad", "squig"], [priest])
         } catch (e) {
             console.error(e)
         }
@@ -122,9 +100,8 @@ async function run() {
             console.error(e)
             if (priest) await priest.disconnect()
         }
-        const now = new Date()
-        const nextStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() + 1, 10)
-        setTimeout(async () => { connectLoop() }, nextStart.getTime() - Date.now())
+        const msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
     }
 
     const disconnectLoop = async () => {
@@ -150,15 +127,12 @@ async function run() {
         } catch (e) {
             console.error(e)
         }
-        const now = new Date()
-        const nextStop = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() + 1, 50)
-        setTimeout(async () => { disconnectLoop() }, nextStop.getTime() - Date.now())
+        const msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
     }
 
-    const now = new Date()
-    const nextStop = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() + 1, 50)
-    const nextStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() + 1, 10)
-    setTimeout(async () => { connectLoop() }, nextStart.getTime() - Date.now())
-    setTimeout(async () => { disconnectLoop() }, nextStop.getTime() - Date.now())
+    const msToNextMinute = 60_000 - (Date.now() % 60_000)
+    setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
+    setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
 }
 run()
