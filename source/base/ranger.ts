@@ -11,16 +11,26 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
 
     const priority = (a: AL.Entity, b: AL.Entity): boolean => {
         // Order in array
-        if (types.indexOf(a.type) < types.indexOf(b.type)) return true
-        else if (types.indexOf(a.type) > types.indexOf(b.type)) return false
+        const a_index = types.indexOf(a.type)
+        const b_index = types.indexOf(b.type)
+        if (a_index < b_index) return true
+        else if (a_index > b_index) return false
 
         // Has a target -> higher priority
         if (a.target && !b.target) return true
         else if (!a.target && b.target) return false
 
+        // Could die -> lower priority
+        const a_couldDie = a.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)
+        const b_couldDie = b.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)
+        if (!a_couldDie && b_couldDie) return true
+        else if (a_couldDie && !b_couldDie) return false
+
         // Will burn to death -> lower priority
-        if (!a.willBurnToDeath() && b.willBurnToDeath()) return true
-        else if (a.willBurnToDeath() && !b.willBurnToDeath()) return false
+        const a_willBurn = a.willBurnToDeath()
+        const b_willBurn = b.willBurnToDeath()
+        if (!a_willBurn && b_willBurn) return true
+        else if (a_willBurn && !b_willBurn) return false
 
         // Lower HP -> higher priority
         if (a.hp < b.hp) return true
@@ -133,6 +143,7 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
     // Use our friends to energize
     if (!bot.s.energized) {
         for (const friend of friends) {
+            if (!friend) continue // No friend
             if (friend.socket.disconnected) continue // Friend is disconnected
             if (friend.id == bot.id) continue // Can't energize ourselves
             if (AL.Tools.distance(bot, friend) > bot.G.skills.energize.range) continue // Too far away
@@ -151,7 +162,10 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
         // Remove them from our friends' entities list if we're going to kill it
         for (const entity of entities) {
             if (bot.canKillInOneShot(entity, "5shot")) {
-                for (const friend of friends) friend.entities.delete(entity.id)
+                for (const friend of friends) {
+                    if (!friend) continue // No friend
+                    friend.entities.delete(entity.id)
+                }
             }
         }
 
@@ -163,7 +177,10 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
         // Remove them from our friends' entities list if we're going to kill it
         for (const entity of entities) {
             if (bot.canKillInOneShot(entity, "3shot")) {
-                for (const friend of friends) friend.entities.delete(entity.id)
+                for (const friend of friends) {
+                    if (!friend) continue // No friend
+                    friend.entities.delete(entity.id)
+                }
             }
         }
 
@@ -173,7 +190,10 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
 
         // Remove them from our friends' entities list if we're going to kill it
         if (bot.canKillInOneShot(entity)) {
-            for (const friend of friends) friend.entities.delete(entity.id)
+            for (const friend of friends) {
+                if (!friend) continue // No friend
+                friend.entities.delete(entity.id)
+            }
         }
 
         // TODO: Check if it makes sense to do a piercing shot, and do so if it does.
@@ -195,7 +215,10 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
 
         // If we can kill something guaranteed, break early
         if (bot.canKillInOneShot(entity, "supershot")) {
-            for (const friend of friends) friend.entities.delete(entity.id)
+            for (const friend of friends) {
+                if (!friend) continue // No friend
+                friend.entities.delete(entity.id)
+            }
             await bot.superShot(entity.id)
             return
         }

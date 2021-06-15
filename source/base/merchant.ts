@@ -37,7 +37,10 @@ export async function attackTheseTypesMerchant(bot: AL.Merchant, types: AL.Monst
 
     // Remove them from our friends' entities list if we're going to kill it
     if (bot.canKillInOneShot(entity)) {
-        for (const friend of friends) friend.entities.delete(entity.id)
+        for (const friend of friends) {
+            if (!friend) continue // No friend
+            friend.entities.delete(entity.id)
+        }
     }
 
     await bot.basicAttack(entity.id)

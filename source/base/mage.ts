@@ -24,16 +24,26 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
 
         const attackPriority = (a: AL.Entity, b: AL.Entity): boolean => {
             // Order in array
-            if (types.indexOf(a.type) < types.indexOf(b.type)) return true
-            else if (types.indexOf(a.type) > types.indexOf(b.type)) return false
+            const a_index = types.indexOf(a.type)
+            const b_index = types.indexOf(b.type)
+            if (a_index < b_index) return true
+            else if (a_index > b_index) return false
 
             // Has a target -> higher priority
             if (a.target && !b.target) return true
             else if (!a.target && b.target) return false
 
+            // Could die -> lower priority
+            const a_couldDie = a.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)
+            const b_couldDie = b.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)
+            if (!a_couldDie && b_couldDie) return true
+            else if (a_couldDie && !b_couldDie) return false
+
             // Will burn to death -> lower priority
-            if (!a.willBurnToDeath() && b.willBurnToDeath()) return true
-            else if (a.willBurnToDeath() && !b.willBurnToDeath()) return false
+            const a_willBurn = a.willBurnToDeath()
+            const b_willBurn = b.willBurnToDeath()
+            if (!a_willBurn && b_willBurn) return true
+            else if (a_willBurn && !b_willBurn) return false
 
             // Lower HP -> higher priority
             if (a.hp < b.hp) return true
@@ -58,7 +68,10 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
         if (!target) return // No target
 
         if (bot.canKillInOneShot(target)) {
-            for (const friend of friends) friend.entities.delete(target.id)
+            for (const friend of friends) {
+                if (!friend) continue // No friend
+                friend.entities.delete(target.id)
+            }
         }
 
         if (target) await bot.basicAttack(target.id)
@@ -82,7 +95,10 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
         if (targets.length && bot.mp >= mpNeeded) {
             // Remove them from our friends' entities list, since we're going to kill them
             for (const [id] of targets) {
-                for (const friend of friends) friend.entities.delete(id)
+                for (const friend of friends) {
+                    if (!friend) continue // No friend
+                    friend.entities.delete(id)
+                }
             }
 
             await bot.cburst(targets)
