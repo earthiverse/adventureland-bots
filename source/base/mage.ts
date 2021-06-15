@@ -8,20 +8,6 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
 }): Promise<void> {
     if (bot.c.town) return // Don't attack if teleporting
     if (bot.canUse("attack")) {
-        // Use our friends to energize
-        if (!bot.s.energized) {
-            for (const friend of friends) {
-                if (friend.socket.disconnected) continue // Friend is disconnected
-                if (friend.id == bot.id) continue // Can't energize ourselves
-                if (AL.Tools.distance(bot, friend) > bot.G.skills.energize.range) continue // Too far away
-                if (!friend.canUse("energize")) continue // Friend can't use energize
-
-                // Energize!
-                (friend as AL.Mage).energize(bot.id)
-                break
-            }
-        }
-
         const attackPriority = (a: AL.Entity, b: AL.Entity): boolean => {
             // Order in array
             const a_index = types.indexOf(a.type)
@@ -74,7 +60,21 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
             }
         }
 
-        if (target) await bot.basicAttack(target.id)
+        // Use our friends to energize
+        if (!bot.s.energized) {
+            for (const friend of friends) {
+                if (!friend) continue // Friend is missing
+                if (friend.socket.disconnected) continue // Friend is disconnected
+                if (friend.id == bot.id) continue // Can't energize ourselves
+                if (AL.Tools.distance(bot, friend) > bot.G.skills.energize.range) continue // Too far away
+                if (!friend.canUse("energize")) continue // Friend can't use energize
+
+                // Energize!
+                (friend as AL.Mage).energize(bot.id)
+                break
+            }
+        }
+        await bot.basicAttack(target.id)
     }
 
     if (bot.canUse("cburst")) {

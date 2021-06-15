@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull } from "../base/general.js"
+import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL } from "../base/general.js"
 import { mainBeesNearTunnel } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 
@@ -17,18 +17,19 @@ const defaultLocation: AL.IPosition = mainBeesNearTunnel
 let mage1: AL.Mage
 let mage2: AL.Mage
 let mage3: AL.Mage
+const friends: [AL.Mage, AL.Mage, AL.Mage] = [undefined, undefined, undefined]
 
 async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
     startPartyLoop(bot, partyLeader, partyMembers)
-    startSellLoop(bot)
+    startSellLoop(bot, { ...ITEMS_TO_SELL, "hpamulet": 2, "hpbelt": 2, "quiver": 2, "ringsj": 2, "stinger": 2 })
 
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
-            await attackTheseTypesMage(bot, targets, [mage1, mage2, mage3])
+            await attackTheseTypesMage(bot, targets, friends)
         } catch (e) {
             console.error(e)
         }
@@ -74,6 +75,7 @@ async function run() {
         const connectLoop = async () => {
             try {
                 mage1 = await AL.Game.startMage(name, region, identifier)
+                friends[0] = mage1
                 startMage(mage1)
             } catch (e) {
                 console.error(e)
@@ -87,6 +89,7 @@ async function run() {
             try {
                 if (mage1) await mage1.disconnect()
                 mage1 = undefined
+                friends[0] = undefined
             } catch (e) {
                 console.error(e)
             }
@@ -104,6 +107,7 @@ async function run() {
         const connectLoop = async () => {
             try {
                 mage2 = await AL.Game.startMage(name, region, identifier)
+                friends[1] = mage2
                 startMage(mage2, { x: 25, y: 0 })
             } catch (e) {
                 console.error(e)
@@ -117,6 +121,7 @@ async function run() {
             try {
                 if (mage2) await mage2.disconnect()
                 mage2 = undefined
+                friends[1] = undefined
             } catch (e) {
                 console.error(e)
             }
@@ -134,6 +139,7 @@ async function run() {
         const connectLoop = async () => {
             try {
                 mage3 = await AL.Game.startMage(name, region, identifier)
+                friends[2] = mage3
                 startMage(mage3, { x: -25, y: 0 })
             } catch (e) {
                 console.error(e)
@@ -146,6 +152,7 @@ async function run() {
         const disconnectLoop = async () => {
             try {
                 if (mage3) await mage3.disconnect()
+                friends[2] = undefined
                 mage3 = undefined
             } catch (e) {
                 console.error(e)

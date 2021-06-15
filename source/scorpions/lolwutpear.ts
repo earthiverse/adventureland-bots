@@ -56,7 +56,7 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
             await goToNPCShopIfFull(bot)
             await goToBankIfFull(bot)
 
-            goToNearestWalkableToMonster(bot, targets, { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y })
+            await goToNearestWalkableToMonster(bot, targets, { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y })
         } catch (e) {
             console.error(e)
         }

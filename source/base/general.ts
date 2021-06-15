@@ -219,7 +219,7 @@ export async function goToAggroMonster(bot: ALM.Character, entity: ALM.Entity): 
         if (distanceToTravel >= lead) {
             const destination: ALM.IPosition = { map: entity.map, x: entity.going_x, y: entity.going_y }
             if (ALM.Pathfinder.canWalkPath(bot, destination)) {
-                return bot.move(destination.x, destination.y)
+                bot.move(destination.x, destination.y).catch(() => { /* Suppress errors */ })
             } else {
                 return bot.smartMove(destination)
             }
@@ -227,7 +227,7 @@ export async function goToAggroMonster(bot: ALM.Character, entity: ALM.Entity): 
             const angle = Math.atan2(entity.going_y - entity.y, entity.going_x - entity.x)
             const destination = { map: entity.map, x: entity.x + Math.cos(angle) * lead, y: entity.y + Math.sin(angle) * lead }
             if (ALM.Pathfinder.canWalkPath(bot, destination)) {
-                return bot.move(destination.x, destination.y)
+                bot.move(destination.x, destination.y).catch(() => { /* Suppress errors */ })
             } else {
                 return bot.smartMove(destination)
             }
@@ -344,7 +344,7 @@ export async function goToNPCShopIfFull(bot: ALM.Character, itemsToSell = ITEMS_
     await sleep(1000)
 }
 
-export async function goToNearestWalkableToMonster(bot: ALM.Character, types: ALM.MonsterName[], defaultPosition?: ALM.IPosition): Promise<void> {
+export async function goToNearestWalkableToMonster(bot: ALM.Character, types: ALM.MonsterName[], defaultPosition?: ALM.IPosition): Promise<unknown> {
     let nearest: ALM.IPosition
     let distance = Number.MAX_VALUE
     for (const entity of bot.getEntities({
@@ -405,7 +405,7 @@ export async function goToNearestWalkableToMonster(bot: ALM.Character, types: AL
         if (ALM.Pathfinder.canWalkPath(bot, defaultPosition)) {
             bot.move(defaultPosition.x, defaultPosition.y).catch(() => { /* Suppress errors */ })
         } else {
-            await bot.smartMove(defaultPosition)
+            return bot.smartMove(defaultPosition)
         }
     }
 }
@@ -782,8 +782,8 @@ export function startPartyLoop(bot: ALM.Character, leader: string, partyMembers?
 
                         for (let i = bot.partyData.list.indexOf(bot.id) + 1; i < bot.partyData.list.length; i++) {
                             const memberName = bot.partyData.list[i]
-                            if (!partyMembers.includes(memberName)){
-                            // Someone snuck in to our party
+                            if (!partyMembers.includes(memberName)) {
+                                // Someone snuck in to our party
                                 toKickMember = memberName
                                 break
                             }
