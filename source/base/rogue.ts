@@ -2,6 +2,7 @@ import AL from "alclient-mongo"
 import FastPriorityQueue from "fastpriorityqueue"
 
 export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName[], friends: AL.Character[], options?: {
+    disableMentalBurst?: boolean
     disableQuickPunch?: boolean
     disableQuickStab?: boolean
     targetingPlayer?: string
@@ -37,6 +38,30 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
         // Closer -> higher priority
         return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
     }
+
+    if (bot.canUse("mentalburst")) {
+        const targets: AL.Entity[] = []
+        for (const entity of bot.getEntities({
+            couldGiveCredit: true,
+            targetingPlayer: options?.targetingPlayer,
+            typeList: types,
+            willDieToProjectiles: false,
+            withinRange: (bot.range * bot.G.skills.mentalburst.range_multiplier) + bot.G.skills.mentalburst.range_bonus
+        })) {
+            if (!bot.canKillInOneShot(entity, "mentalburst")) continue
+            targets.push(entity)
+        }
+
+        if (targets.length) {
+            const target = targets[0]
+            for (const friend of friends) {
+                if (!friend) continue // No friend
+                friend.entities.delete(target.id)
+            }
+            await bot.mentalBurst(target.id)
+        }
+    }
+
     if (bot.canUse("attack")) {
         const targets = new FastPriorityQueue<AL.Entity>(attackPriority)
         for (const entity of bot.getEntities({
