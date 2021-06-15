@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startTrackerLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToNPCShopIfFull, goToPoitonSellerIfLow } from "../base/general.js"
+import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startTrackerLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull } from "../base/general.js"
 import { partyLeader, partyMembers } from "./party.js"
 
 export const region: AL.ServerRegion = "US"
@@ -173,7 +173,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
             }
 
             await goToPoitonSellerIfLow(bot)
-            await goToNPCShopIfFull(bot)
+            await goToBankIfFull(bot)
 
             let next: AL.Entity
             for (const entityID of entityOrder) {

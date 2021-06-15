@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL } from "../base/general.js"
+import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL } from "../base/general.js"
 import { mainBeesNearTunnel } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 
@@ -50,7 +50,6 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
             }
 
             await goToPoitonSellerIfLow(bot)
-            await goToNPCShopIfFull(bot)
             await goToBankIfFull(bot)
 
             const destination: AL.IPosition = { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y }

@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToNPCShopIfFull } from "../base/general.js"
+import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull } from "../base/general.js"
 import { partyLeader, partyMembers } from "./party.js"
 
 export const region: AL.ServerRegion = "US"
@@ -82,7 +82,7 @@ export async function startShared(bot: AL.Mage, targets: AL.MonsterName[], bound
             }
 
             await goToPoitonSellerIfLow(bot)
-            await goToNPCShopIfFull(bot)
+            await goToBankIfFull(bot)
 
             // Hold position
             await bot.smartMove(position)

@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, goToNearestWalkableToMonster, ITEMS_TO_SELL } from "../base/general.js"
+import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, goToNearestWalkableToMonster, ITEMS_TO_SELL } from "../base/general.js"
 import { mainBeesNearTunnel } from "../base/locations.js"
 import { attackTheseTypesRogue } from "../base/rogue.js"
 
@@ -42,7 +42,6 @@ async function startRogue(bot: AL.Rogue, positionOffset: { x: number, y: number 
             }
 
             await goToPoitonSellerIfLow(bot)
-            await goToNPCShopIfFull(bot)
             await goToBankIfFull(bot)
 
             await goToNearestWalkableToMonster(bot, targets, { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y })

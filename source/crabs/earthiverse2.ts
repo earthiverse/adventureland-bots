@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { goToBankIfFull, goToNPCShopIfFull, goToPoitonSellerIfLow, LOOP_MS, startBuyLoop, startHealLoop, startLootLoop, startSellLoop } from "../base/general.js"
+import { goToBankIfFull, goToPoitonSellerIfLow, LOOP_MS, startBuyLoop, startHealLoop, startLootLoop, startSellLoop } from "../base/general.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 
 /** Config */
@@ -41,7 +41,6 @@ async function startRanger(bot: AL.Ranger) {
             }
 
             await goToPoitonSellerIfLow(bot)
-            await goToNPCShopIfFull(bot)
             await goToBankIfFull(bot)
 
             await bot.smartMove(crabSpawn)
