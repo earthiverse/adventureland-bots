@@ -820,7 +820,7 @@ export function startPartyLoop(bot: ALM.Character, leader: string, partyMembers?
             if (!bot.party) {
                 await bot.sendPartyRequest(leader)
             } else if (bot.partyData?.list && !bot.partyData.list.includes(leader)) {
-                await bot.leaveParty()
+                // await bot.leaveParty()
                 await bot.sendPartyRequest(leader)
             }
         } catch (e) {
