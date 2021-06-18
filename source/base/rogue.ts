@@ -1,7 +1,7 @@
 import AL from "alclient-mongo"
 import FastPriorityQueue from "fastpriorityqueue"
 
-export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName[], friends: AL.Character[], options?: {
+export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName[], friends: AL.Character[] = [], options?: {
     disableMentalBurst?: boolean
     disableQuickPunch?: boolean
     disableQuickStab?: boolean
@@ -56,6 +56,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
             const target = targets[0]
             for (const friend of friends) {
                 if (!friend) continue // No friend
+                if (friend.id == bot.id) continue // Don't delete it from our own list
                 friend.entities.delete(target.id)
             }
             await bot.mentalBurst(target.id)
@@ -80,6 +81,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
         if (bot.canKillInOneShot(target)) {
             for (const friend of friends) {
                 if (!friend) continue // No friend
+                if (friend.id == bot.id) continue // Don't delete it from our own list
                 friend.entities.delete(target.id)
             }
         }
@@ -87,6 +89,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
         // Use our friends to energize
         if (!bot.s.energized) {
             for (const friend of friends) {
+                if (!friend) continue // No friend
                 if (friend.socket.disconnected) continue // Friend is disconnected
                 if (friend.id == bot.id) continue // Can't energize ourselves
                 if (AL.Tools.distance(bot, friend) > bot.G.skills.energize.range) continue // Too far away
@@ -117,7 +120,11 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
         if (!target) return // No target
 
         if (bot.canKillInOneShot(target, "quickpunch")) {
-            for (const friend of friends) friend.entities.delete(target.id)
+            for (const friend of friends) {
+                if (!friend) continue // No friend
+                if (friend.id == bot.id) continue // Don't delete it from our own list
+                friend.entities.delete(target.id)
+            }
         }
 
         if (target) await bot.quickPunch(target.id)
@@ -139,7 +146,11 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
         if (!target) return // No target
 
         if (bot.canKillInOneShot(target, "quickstab")) {
-            for (const friend of friends) friend.entities.delete(target.id)
+            for (const friend of friends) {
+                if (!friend) continue // No friend
+                if (friend.id == bot.id) continue // Don't delete it from our own list
+                friend.entities.delete(target.id)
+            }
         }
 
         if (target) await bot.quickStab(target.id)

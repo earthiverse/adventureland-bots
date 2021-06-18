@@ -2,7 +2,7 @@ import AL from "alclient-mongo"
 import FastPriorityQueue from "fastpriorityqueue"
 import { LOOP_MS } from "./general.js"
 
-export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.MonsterName[], friends: AL.Character[], options?: {
+export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.MonsterName[], friends: AL.Character[] = [], options?: {
     targetingPlayer?: string
     disableAgitate?: boolean
     disableCleave?: boolean
@@ -88,6 +88,8 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
             for (const target of cleaveTargets) {
                 if (bot.canKillInOneShot(target, "cleave")) {
                     for (const friend of friends) {
+                        if (!friend) continue // No friend
+                        if (friend.id == bot.id) continue // Don't delete it from our own list
                         friend.entities.delete(target.id)
                     }
                 }
@@ -233,6 +235,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
             if (canKill) {
                 for (const friend of friends) {
                     if (!friend) continue // No friend
+                    if (friend.id == bot.id) continue // Don't delete it from our own list
                     friend.entities.delete(entity.id)
                 }
             }

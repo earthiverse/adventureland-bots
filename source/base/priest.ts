@@ -2,7 +2,7 @@ import AL from "alclient-mongo"
 import FastPriorityQueue from "fastpriorityqueue"
 import { LOOP_MS } from "./general.js"
 
-export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterName[], friends: AL.Character[], options?: {
+export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterName[], friends: AL.Character[] = [], options?: {
     targetingPlayer?: string
 }): Promise<void> {
     if (!bot.canUse("attack")) return // We can't attack
@@ -107,6 +107,7 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
     if (canKill) {
         for (const friend of friends) {
             if (!friend) continue // No friend
+            if (friend.id == bot.id) continue // Don't delete it from our own list
             friend.entities.delete(target.id)
         }
     }

@@ -1,7 +1,7 @@
 import AL from "alclient-mongo"
 import FastPriorityQueue from "fastpriorityqueue"
 
-export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterName[], friends: AL.Character[], options?: {
+export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterName[], friends: AL.Character[] = [], options?: {
     disableHuntersMark?: boolean
     disableSupershot?: boolean
     targetingPlayer?: string
@@ -164,6 +164,7 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
             if (bot.canKillInOneShot(entity, "5shot")) {
                 for (const friend of friends) {
                     if (!friend) continue // No friend
+                    if (friend.id == bot.id) continue // Don't delete it from our own list
                     friend.entities.delete(entity.id)
                 }
             }
@@ -179,6 +180,7 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
             if (bot.canKillInOneShot(entity, "3shot")) {
                 for (const friend of friends) {
                     if (!friend) continue // No friend
+                    if (friend.id == bot.id) continue // Don't delete it from our own list
                     friend.entities.delete(entity.id)
                 }
             }
@@ -192,6 +194,7 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
         if (bot.canKillInOneShot(entity)) {
             for (const friend of friends) {
                 if (!friend) continue // No friend
+                if (friend.id == bot.id) continue // Don't delete it from our own list
                 friend.entities.delete(entity.id)
             }
         }
@@ -217,6 +220,7 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
         if (bot.canKillInOneShot(entity, "supershot")) {
             for (const friend of friends) {
                 if (!friend) continue // No friend
+                if (friend.id == bot.id) continue // Don't delete it from our own list
                 friend.entities.delete(entity.id)
             }
             await bot.superShot(entity.id)

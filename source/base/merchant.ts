@@ -18,7 +18,7 @@ export const MERCHANT_ITEMS_TO_HOLD: Set<AL.ItemName> = new Set([
     "dartgun", "wbook1"
 ])
 
-export async function attackTheseTypesMerchant(bot: AL.Merchant, types: AL.MonsterName[], friends: AL.Character[]): Promise<void> {
+export async function attackTheseTypesMerchant(bot: AL.Merchant, types: AL.MonsterName[], friends: AL.Character[] = []): Promise<void> {
     if (!bot.canUse("attack")) return // We can't attack
     if (bot.c.town) return // Don't attack if teleporting
 
@@ -39,6 +39,7 @@ export async function attackTheseTypesMerchant(bot: AL.Merchant, types: AL.Monst
     if (bot.canKillInOneShot(entity)) {
         for (const friend of friends) {
             if (!friend) continue // No friend
+            if (friend.id == bot.id) continue // Don't delete it from our own list
             friend.entities.delete(entity.id)
         }
     }

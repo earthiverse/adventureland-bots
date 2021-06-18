@@ -3,7 +3,7 @@ import FastPriorityQueue from "fastpriorityqueue"
 
 const CBURST_WHEN_HP_LESS_THAN = 200
 
-export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[], friends: AL.Character[], options?: {
+export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[], friends: AL.Character[] = [], options?: {
     targetingPlayer?: string
 }): Promise<void> {
     if (bot.c.town) return // Don't attack if teleporting
@@ -56,6 +56,7 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
         if (bot.canKillInOneShot(target)) {
             for (const friend of friends) {
                 if (!friend) continue // No friend
+                if (friend.id == bot.id) continue // Don't delete it from our own list
                 friend.entities.delete(target.id)
             }
         }
@@ -97,6 +98,7 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
             for (const [id] of targets) {
                 for (const friend of friends) {
                     if (!friend) continue // No friend
+                    if (friend.id == bot.id) continue // Don't delete it from our own list
                     friend.entities.delete(id)
                 }
             }
