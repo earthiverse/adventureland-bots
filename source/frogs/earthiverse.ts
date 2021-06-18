@@ -116,12 +116,18 @@ async function run() {
                 region = "US"
                 identifier = "III"
             } else if (region == "US" && identifier == "III") {
+                region = "US"
+                identifier = "PVP"
+            } else if (region == "US" && identifier == "PVP") {
                 region = "EU"
                 identifier = "I"
             } else if (region == "EU" && identifier == "I") {
                 region = "EU"
                 identifier = "II"
             } else if (region == "EU" && identifier == "II") {
+                region = "EU"
+                identifier = "PVP"
+            } else if (region == "EU" && identifier == "PVP") {
                 region = "ASIA"
                 identifier = "I"
             }
