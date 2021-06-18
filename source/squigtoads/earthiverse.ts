@@ -14,7 +14,7 @@ async function startPriest(bot: AL.Priest) {
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
-    startSellLoop(bot, { "hpamulet": 2, "hpbelt": 2, "ringsj": 2 })
+    startSellLoop(bot, { "hpamulet": 2, "hpbelt": 2, "ringsj": 2, "shield": 2, "wcap": 2, "wshoes": 2 })
     startPartyLoop(bot, "earthPri2", MY_CHARACTERS)
 
     async function attackLoop() {
