@@ -15,6 +15,7 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
     let lastName = undefined
     let lastDate = undefined
     console.log("Pruning achievements...")
+    // eslint-disable-next-line sort-keys
     for (const achievement of await AL.AchievementModel.find({}, { name: 1, date: 1 }).sort({ name: 1, date: -1 }).lean().exec()) {
         if (achievement.name !== lastName) {
             // This is the latest data we have for the user, we want to keep it.

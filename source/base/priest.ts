@@ -20,6 +20,9 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
         const b_hpRatio = b.hp / b.max_hp
         if (a_hpRatio < b_hpRatio) return true
         else if (b_hpRatio < a_hpRatio) return false
+
+        // Heal closer players
+        return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
     }
     const players = new FastPriorityQueue<AL.Player>(healPriority)
     for (const [, player] of bot.players) {
