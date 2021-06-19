@@ -62,6 +62,7 @@ async function startMage(bot: AL.Mage) {
             if (nearest) {
                 bot.smartMove(nearest, { getWithin: bot.range - nearest.speed }).catch(() => { /* Suppress errors */ })
             } else {
+                // Look for tortoises
                 for (const tortoise of bot.getEntities({
                     couldGiveCredit: true,
                     type: "tortoise",

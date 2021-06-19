@@ -24,7 +24,10 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
         // Heal closer players
         return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
     }
-    const players = new FastPriorityQueue<AL.Player>(healPriority)
+    const players = new FastPriorityQueue<AL.Character | AL.Player>(healPriority)
+    // Potentially heal ourself
+    if (bot.hp / bot.max_hp <= 0.8) players.add(bot)
+    // Potentially heal others
     for (const [, player] of bot.players) {
         if (AL.Tools.distance(bot, player) > bot.range) continue // Too far away to heal
         if (player.hp / player.max_hp > 0.8) continue // Player still has a lot of hp
