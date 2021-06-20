@@ -46,6 +46,7 @@ export async function startShared(bot: AL.Mage, targets: AL.MonsterName[], bound
                     if (bot.canKillInOneShot(entity)) {
                         for (const friend of friends) {
                             if (!friend) continue
+                            if (friend.id == bot.id) continue
                             friend.entities.delete(entity.id)
                         }
                     }

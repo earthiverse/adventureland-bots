@@ -1,6 +1,6 @@
 import AL from "alclient-mongo"
-import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startEventLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyInviteLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startServerPartyInviteLoop, startUpgradeLoop } from "../base/general.js"
-import { attackTheseTypesMerchant } from "../base/merchant.js"
+import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, goToBankIfFull, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startEventLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startServerPartyInviteLoop, startUpgradeLoop } from "../base/general.js"
+import { attackTheseTypesMerchant, doBanking, goFishing, goMining } from "../base/merchant.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 import { attackTheseTypesWarrior } from "../base/warrior.js"
@@ -9,28 +9,36 @@ import { partyLeader, partyMembers } from "./party.js"
 
 const DEFAULT_TARGET: AL.MonsterName = "crab"
 
-export const DEFAULT_REGION: AL.ServerRegion = "US"
-export const DEFAULT_IDENTIFIER: AL.ServerIdentifier = "II"
+export const DEFAULT_REGION: AL.ServerRegion = "ASIA"
+export const DEFAULT_IDENTIFIER: AL.ServerIdentifier = "I"
 
 export async function getTarget(bot: AL.Character, strategy: Strategy, information: Information): Promise<AL.MonsterName> {
     for (const entity of await getPriority1Entities(bot)) {
         if (!strategy[entity.type]) continue // No strategy
-        if (strategy[entity.type].requirePriest && bot.ctype !== "priest" && information.priest.target !== entity.type) continue // Need priest
-
+        if (strategy[entity.type].requirePriest &&
+            !((information.bot1.bot?.ctype == "priest" && information.bot1.target == entity.type)
+            || (information.bot2.bot?.ctype == "priest" && information.bot2.target == entity.type)
+            || (information.bot3.bot?.ctype == "priest" && information.bot3.target == entity.type))) continue // No priest
         return entity.type
     }
 
     for (const entity of await getPriority2Entities(bot)) {
         if (!strategy[entity.type]) continue // No strategy
-        if (strategy[entity.type].requirePriest && bot.ctype !== "priest" && information.priest.target !== entity.type) continue // Need priest
-        if (bot.G.monsters[entity.type].cooperative !== true && entity.target && ![information.merchant.bot.id, information.warrior.bot.id, information.priest.bot.id, information.merchant.bot.id].includes(entity.target)) continue // It's targeting someone else
+        if (strategy[entity.type].requirePriest &&
+            !((information.bot1.bot?.ctype == "priest" && information.bot1.target == entity.type)
+            || (information.bot2.bot?.ctype == "priest" && information.bot2.target == entity.type)
+            || (information.bot3.bot?.ctype == "priest" && information.bot3.target == entity.type))) continue // No priest
+        if (bot.G.monsters[entity.type].cooperative !== true && entity.target && ![information.merchant.name, information.bot3.name, information.bot1.name, information.merchant.name].includes(entity.target)) continue // It's targeting someone else
 
         return entity.type
     }
 
     for (const type of await getMonsterHuntTargets(bot)) {
-        if (!strategy[type]) continue // We don't have a strategy for the given type
-        if (strategy[type].requirePriest && bot.ctype !== "priest" && information.priest.target !== type) continue // Need priest
+        if (!strategy[type]) continue // No strategy
+        if (strategy[type].requirePriest &&
+            !((information.bot1.bot?.ctype == "priest" && information.bot1.target == type)
+            || (information.bot2.bot?.ctype == "priest" && information.bot2.target == type)
+            || (information.bot3.bot?.ctype == "priest" && information.bot3.target == type))) continue // No priest
 
         return type
     }
@@ -105,6 +113,107 @@ export async function startMerchant(bot: AL.Merchant, information: Information, 
         bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
     }
     attackLoop()
+
+    let lastBankVisit = Number.MIN_VALUE
+    async function moveLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            // If we are dead, respawn
+            if (bot.rip) {
+                await bot.respawn()
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                return
+            }
+
+            // If we are full, let's go to the bank
+            await goToBankIfFull(bot)
+            // NOTE: TEMPORARY
+            // if (bot.isFull() || lastBankVisit < Date.now() - 120000 || bot.hasPvPMarkedItem()) {
+            //     lastBankVisit = Date.now()
+            //     await doBanking(bot)
+            //     bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+            //     return
+            // }
+
+            // mluck our friends
+            if (bot.canUse("mluck")) {
+                for (const friend of information.friends) {
+                    if (!friend) continue
+                    if (friend.id == bot.id) continue
+                    if (!friend.s.mluck || !friend.s.mluck.strong || friend.s.mluck.ms < 120000) {
+                        // Move to them, and we'll automatically mluck them
+                        if (AL.Tools.distance(bot, friend) > bot.G.skills.mluck.range) {
+                            await bot.closeMerchantStand()
+                            console.log(`[merchant] We are moving to ${friend.name} to mluck them!`)
+                            await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2 })
+                        }
+
+                        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                        return
+                    }
+                }
+            }
+
+            // get stuff from our friends
+            for (const friend of information.friends) {
+                if (!friend) continue
+                if (friend.isFull()) {
+                    await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+                    lastBankVisit = Date.now()
+                    await doBanking(bot)
+                    bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                    return
+                }
+            }
+
+            // Go fishing if we can
+            await goFishing(bot)
+
+            // Go mining if we can
+            await goMining(bot)
+
+            // MLuck people if there is a server info target
+            for (const mN in bot.S) {
+                const type = mN as AL.MonsterName
+                if (!bot.S[type].live) continue
+                if (!(bot.S[type] as AL.ServerInfoDataLive).target) continue
+
+                if (AL.Tools.distance(bot, (bot.S[type] as AL.ServerInfoDataLive)) > 100) {
+                    await bot.closeMerchantStand()
+                    await bot.smartMove((bot.S[type] as AL.ServerInfoDataLive), { getWithin: 100 })
+                }
+
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                return
+            }
+
+            // Find other characters that need mluck and go find them
+            if (bot.canUse("mluck")) {
+                const charactersToMluck = await AL.PlayerModel.find({ $or: [{ "s.mluck": undefined }, { "s.mluck.f": { "$ne": bot.id }, "s.mluck.strong": undefined }], lastSeen: { $gt: Date.now() - 120000 }, serverIdentifier: bot.server.name, serverRegion: bot.server.region }).lean().exec()
+                for (const stranger of charactersToMluck) {
+                    // Move to them, and we'll automatically mluck them
+                    if (AL.Tools.distance(bot, stranger) > bot.G.skills.mluck.range) {
+                        await bot.closeMerchantStand()
+                        console.log(`[merchant] We are moving to ${stranger.name} to mluck them!`)
+                        await bot.smartMove(stranger, { getWithin: bot.G.skills.mluck.range / 2 })
+                    }
+
+                    setTimeout(async () => { moveLoop() }, 250)
+                    return
+                }
+            }
+
+            // Hang out in town
+            await bot.smartMove("main")
+            await bot.openMerchantStand()
+        } catch (e) {
+            console.error(e)
+        }
+
+        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+    }
+    moveLoop()
 }
 
 export async function startPriest(bot: AL.Priest, information: Information, strategy: Strategy): Promise<void> {
@@ -130,12 +239,21 @@ export async function startPriest(bot: AL.Priest, information: Information, stra
                 return
             }
 
-            if (information.priest.target) {
+            let target: AL.MonsterName
+            if (bot.id == information.bot1.name) {
+                target = information.bot1.target
+            } else if (bot.id == information.bot2.name) {
+                target = information.bot2.target
+            } else if (bot.id == information.bot3.name) {
+                target = information.bot3.target
+            }
+
+            if (target) {
                 // Equipment
-                if (strategy[information.priest.target].equipment) {
-                    for (const s in strategy[information.priest.target].equipment) {
+                if (strategy[target].equipment) {
+                    for (const s in strategy[target].equipment) {
                         const slot = s as AL.SlotType
-                        const itemName = strategy[information.priest.target].equipment[slot]
+                        const itemName = strategy[target].equipment[slot]
                         const wType = bot.G.items[itemName].wtype
 
                         if (bot.G.classes[bot.ctype].doublehand[wType]) {
@@ -161,7 +279,7 @@ export async function startPriest(bot: AL.Priest, information: Information, stra
                 }
 
                 // Strategy
-                await strategy[information.priest.target].attack()
+                await strategy[target].attack()
             }
 
             // Idle strategy
@@ -197,12 +315,21 @@ export async function startRanger(bot: AL.Ranger, information: Information, stra
                 return
             }
 
-            if (information.ranger.target) {
+            let target: AL.MonsterName
+            if (bot.id == information.bot1.name) {
+                target = information.bot1.target
+            } else if (bot.id == information.bot2.name) {
+                target = information.bot2.target
+            } else if (bot.id == information.bot3.name) {
+                target = information.bot3.target
+            }
+
+            if (target) {
                 // Equipment
-                if (strategy[information.ranger.target].equipment) {
-                    for (const s in strategy[information.ranger.target].equipment) {
+                if (strategy[target].equipment) {
+                    for (const s in strategy[target].equipment) {
                         const slot = s as AL.SlotType
-                        const itemName = strategy[information.ranger.target].equipment[slot]
+                        const itemName = strategy[target].equipment[slot]
                         const wType = bot.G.items[itemName].wtype
 
                         if (bot.G.classes[bot.ctype].doublehand[wType]) {
@@ -228,7 +355,7 @@ export async function startRanger(bot: AL.Ranger, information: Information, stra
                 }
 
                 // Strategy
-                await strategy[information.ranger.target].attack()
+                await strategy[target].attack()
             }
 
             // Idle strategy
@@ -264,12 +391,21 @@ export async function startWarrior(bot: AL.Warrior, information: Information, st
                 return
             }
 
-            if (information.warrior.target) {
+            let target: AL.MonsterName
+            if (bot.id == information.bot1.name) {
+                target = information.bot1.target
+            } else if (bot.id == information.bot2.name) {
+                target = information.bot2.target
+            } else if (bot.id == information.bot3.name) {
+                target = information.bot3.target
+            }
+
+            if (target) {
                 // Equipment
-                if (strategy[information.warrior.target].equipment) {
-                    for (const s in strategy[information.warrior.target].equipment) {
+                if (strategy[target].equipment) {
+                    for (const s in strategy[target].equipment) {
                         const slot = s as AL.SlotType
-                        const itemName = strategy[information.warrior.target].equipment[slot]
+                        const itemName = strategy[target].equipment[slot]
                         const wType = bot.G.items[itemName].wtype
 
                         if (bot.G.classes[bot.ctype].doublehand[wType]) {
@@ -295,7 +431,7 @@ export async function startWarrior(bot: AL.Warrior, information: Information, st
                 }
 
                 // Strategy
-                await strategy[information.warrior.target].attack()
+                await strategy[target].attack()
             }
 
             // Idle strategy
@@ -318,7 +454,8 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
     })
 
     startAvoidStacking(bot)
-    startBuyLoop(bot)
+    // startBuyLoop(bot) NOTE: TEMPORARY
+    startBuyLoop(bot, new Set())
     startCompoundLoop(bot)
     if (bot.ctype !== "merchant") startElixirLoop(bot, "elixirluck")
     startEventLoop(bot)
@@ -326,11 +463,11 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
     startHealLoop(bot)
     startLootLoop(bot)
     if (bot.ctype !== "merchant") startPartyLoop(bot, partyLeader, partyMembers)
-    startPontyLoop(bot)
+    // startPontyLoop(bot) NOTE: TEMPORARY
     startScareLoop(bot)
     startSellLoop(bot)
     if (bot.ctype !== "merchant") startSendStuffDenylistLoop(bot, information.merchant.name)
-    startUpgradeLoop(bot)
+    // startUpgradeLoop(bot) NOTE: TEMPORARY
 
     if (bot.ctype !== "merchant") {
         const friendlyRogues = FRIENDLY_ROGUES
@@ -382,16 +519,12 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
                 }
 
                 // Move to our target
-                switch (bot.ctype) {
-                case "priest":
-                    if (information.priest.target) strategy[information.priest.target].move()
-                    break
-                case "ranger":
-                    if (information.ranger.target) strategy[information.ranger.target].move()
-                    break
-                case "warrior":
-                    if (information.warrior.target) strategy[information.warrior.target].move()
-                    break
+                if (bot.id == information.bot1.name) {
+                    if (information.bot1.target) await strategy[information.bot1.target].move()
+                } else if (bot.id == information.bot2.name) {
+                    if (information.bot2.target) await strategy[information.bot2.target].move()
+                } else if (bot.id == information.bot3.name) {
+                    if (information.bot3.target) await strategy[information.bot3.target].move()
                 }
             } catch (e) {
                 console.error(e)
@@ -406,23 +539,18 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
             if (!bot.socket || bot.socket.disconnected) return
 
             const newTarget = await getTarget(bot, strategy, information)
-            switch (bot.ctype) {
-            case "priest":
-                if (newTarget !== information.priest.target) bot.stopSmartMove()
-                information.priest.target = newTarget
-                break
-            case "merchant":
+            if (bot.id == information.bot1.name) {
+                if (newTarget !== information.bot1.target) bot.stopSmartMove()
+                information.bot1.target = newTarget
+            } else if (bot.id == information.bot2.name) {
+                if (newTarget !== information.bot2.target) bot.stopSmartMove()
+                information.bot2.target = newTarget
+            } else if (bot.id == information.bot3.name) {
+                if (newTarget !== information.bot3.target) bot.stopSmartMove()
+                information.bot3.target = newTarget
+            } else if (bot.id == information.merchant.target) {
                 if (newTarget !== information.merchant.target) bot.stopSmartMove()
                 information.merchant.target = newTarget
-                break
-            case "ranger":
-                if (newTarget !== information.ranger.target) bot.stopSmartMove()
-                information.ranger.target = newTarget
-                break
-            case "warrior":
-                if (newTarget !== information.warrior.target) bot.stopSmartMove()
-                information.warrior.target = newTarget
-                break
             }
         } catch (e) {
             console.error(e)

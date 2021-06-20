@@ -16,24 +16,24 @@ export type Strategy = {
 }
 
 export type Information = {
-    friends: [AL.Merchant, AL.Priest, AL.Ranger, AL.Warrior]
+    friends: [AL.Merchant, AL.Character, AL.Character, AL.Character]
     merchant: {
         bot: AL.Merchant
         name: string
         target: AL.MonsterName
     }
-    priest: {
-        bot: AL.Priest
+    bot1: {
+        bot: AL.Character
         name: string
         target: AL.MonsterName
     }
-    ranger: {
-        bot: AL.Ranger
+    bot2: {
+        bot: AL.Character
         name: string
         target: AL.MonsterName
     }
-    warrior: {
-        bot: AL.Warrior
+    bot3: {
+        bot: AL.Character
         name: string
         target: AL.MonsterName
     }

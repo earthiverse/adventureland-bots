@@ -66,7 +66,7 @@ async function startRanger(bot: AL.Ranger) {
                 for (let i = 0; i < 3; i++) {
                     const target = targets[i]
                     if (bot.calculateDamageRange(target, "3shot")[0] >= target.hp) {
-                        for (const friend of [ranger, mage1, mage2]) {
+                        for (const friend of [mage1, mage2]) {
                             if (!friend) continue
                             friend.entities.delete(targets[i].id)
                         }
@@ -86,7 +86,7 @@ async function startRanger(bot: AL.Ranger) {
                 // If it's a guaranteed kill, remove it from the everyone's entity list so we don't attack it
                 const target = targets[0]
                 if (bot.canKillInOneShot(target)) {
-                    for (const friend of [ranger, mage1, mage2]) {
+                    for (const friend of [mage1, mage2]) {
                         if (!friend) continue
                         friend.entities.delete(target.id)
                     }
@@ -135,6 +135,13 @@ async function startMage(bot: AL.Mage) {
                 if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
 
                 if (bot.canUse("attack")) {
+                    if (bot.canKillInOneShot(entity)) {
+                        for (const friend of [ranger, mage1, mage2]) {
+                            if (!friend) continue
+                            if (friend.id == bot.id) continue
+                            friend.entities.delete(entity.id)
+                        }
+                    }
                     await bot.basicAttack(entity.id)
                 }
                 break

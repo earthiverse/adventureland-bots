@@ -44,13 +44,13 @@ for (const itemName in stackList) {
         const stack1 = stacks[j]
         const stack2 = stacks[j + 1]
         const stackLimit = G.items[itemName].s
-        if (stack1.q + stack2.q > stackLimit) continue // Can't stack, too much
+        if (stack1[2] + stack2[2] > stackLimit) continue // Can't stack, too much
 
         // TODO: If we have a stand or computer with an empty space, use it to help create full stacks
 
         // We can stack!
-        bank_retrieve(stack1[0], stack1[2])
-        bank_retrieve(stack2[0], stack2[2])
+        bank_retrieve(stack1[0], stack1[1])
+        bank_retrieve(stack2[0], stack2[1])
         stack2[2] += stack1[2]
     }
 }

@@ -9,24 +9,25 @@ import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMerchant, startPriest, startRa
 
 const information: Information = {
     friends: [undefined, undefined, undefined, undefined],
-    merchant: {
-        bot: undefined,
-        name: "earthMer",
-        target: undefined
-    },
-    priest: {
+    // eslint-disable-next-line sort-keys
+    bot1: {
         bot: undefined,
         name: "earthPri",
         target: undefined
     },
-    ranger: {
+    bot2: {
         bot: undefined,
-        name: "earthiverse",
+        name: "earthRan2",
         target: undefined
     },
-    warrior: {
+    bot3: {
         bot: undefined,
         name: "earthWar",
+        target: undefined
+    },
+    merchant: {
+        bot: undefined,
+        name: "earthMer2",
         target: undefined
     }
 }
@@ -168,14 +169,18 @@ function preparePriest(bot: AL.Priest) {
             equipment: { orb: "test_orb" },
             move: async () => {
                 const nearby = bot.getNearestMonster("cutebee")
+                console.log(nearby)
                 if (nearby) {
                     if (!nearby.monster.target) {
                         // The cutebee will avoid 99.9% of our attacks, so let's try to walk in front of it so that we can aggro it
+                        console.log("AGGRO THE BEE")
                         await goToAggroMonster(bot, nearby.monster)
                     } else {
+                        console.log("WALK TO THE BEE")
                         await goToNearestWalkableToMonster(bot, ["cutebee"])
                     }
                 } else {
+                    console.log("GO TO SPECIAL MONSTER")
                     await goToSpecialMonster(bot, "cutebee")
                 }
             }
@@ -186,7 +191,7 @@ function preparePriest(bot: AL.Priest) {
             move: async () => { await goToSpecialMonster(bot, "dragold") },
         },
         fireroamer: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["fireroamer"], information.friends, { targetingPlayer: information.warrior.name }) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["fireroamer"], information.friends, { targetingPlayer: information.bot3.name }) },
             equipment: { orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "desertland", x: 180, y: -675 }) },
         },
@@ -262,7 +267,7 @@ function preparePriest(bot: AL.Priest) {
             move: async () => { await bot.smartMove({ map: "halloween", x: 28, y: 631 }) },
         },
         mole: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["mole"], information.friends, { targetingPlayer: information.warrior.name }) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["mole"], information.friends, { targetingPlayer: information.bot3.name }) },
             equipment: { orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "tunnel", x: -35, y: -329 }) },
         },
@@ -294,7 +299,7 @@ function preparePriest(bot: AL.Priest) {
             move: async () => { await goToSpecialMonster(bot, "franky") },
         },
         oneeye: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["oneeye"], information.friends, { targetingPlayer: information.warrior.name }) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["oneeye"], information.friends, { targetingPlayer: information.bot3.name }) },
             equipment: { orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "level2w", x: -155, y: 0 }) },
         },
@@ -328,7 +333,7 @@ function preparePriest(bot: AL.Priest) {
             move: async () => { await bot.smartMove({ map: "desertland", x: -809, y: 135 }) },
         },
         pppompom: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["pppompom"], information.friends, { targetingPlayer: information.warrior.name }) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["pppompom"], information.friends, { targetingPlayer: information.bot3.name }) },
             equipment: { orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "level2n", x: 120, y: -130 }) },
         },
@@ -356,7 +361,7 @@ function preparePriest(bot: AL.Priest) {
             move: async () => { await bot.smartMove({ map: "main", x: 1598, y: -168 }) },
         },
         skeletor: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["skeletor"], information.friends, { targetingPlayer: information.warrior.name }) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["skeletor"], information.friends, { targetingPlayer: information.bot3.name }) },
             equipment: { orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "arena", x: 400, y: -575 }) },
         },
@@ -396,7 +401,7 @@ function preparePriest(bot: AL.Priest) {
             move: async () => { await bot.smartMove({ map: "spookytown", x: 697, y: 129 }) },
         },
         tinyp: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["tinyp"], information.friends, { targetingPlayer: information.warrior.name }) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["tinyp"], information.friends, { targetingPlayer: information.bot3.name }) },
             equipment: { orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "tinyp") },
         },
@@ -423,7 +428,7 @@ function preparePriest(bot: AL.Priest) {
             move: async () => { await goToNearestWalkableToMonster(bot, ["wolfie"], { map: "winterland", x: -149, y: -2026 }) },
         },
         xscorpion: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["xscorpion"], information.friends, { targetingPlayer: information.warrior.name }) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["xscorpion"], information.friends, { targetingPlayer: information.bot3.name }) },
             equipment: { orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "halloween", x: -325, y: 725 }) },
         }
@@ -482,7 +487,7 @@ function prepareRanger(bot: AL.Ranger) {
             move: async () => { await bot.smartMove({ map: "spookytown", x: 265, y: -645 }) },
         },
         bscorpion: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["bscorpion"], information.friends, { targetingPlayer: information.priest.name }) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["bscorpion"], information.friends, { targetingPlayer: information.bot1.name }) },
             equipment: { mainhand: "firebow", orb: "test_orb" },
             move: async () => { await moveInCircle(bot, "bscorpion", bscorpionSpawn) },
             requirePriest: true
@@ -530,13 +535,13 @@ function prepareRanger(bot: AL.Ranger) {
             }
         },
         dragold: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["dragold"], information.friends, { targetingPlayer: information.warrior.name }) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["dragold"], information.friends, { targetingPlayer: information.bot3.name }) },
             equipment: { mainhand: "firebow", orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "dragold") },
             requirePriest: true
         },
         fireroamer: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["fireroamer"], information.friends, { targetingPlayer: information.warrior.name }) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["fireroamer"], information.friends, { targetingPlayer: information.bot3.name }) },
             equipment: { mainhand: "firebow", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "desertland", x: 160, y: -675 }) },
             requirePriest: true
@@ -609,7 +614,7 @@ function prepareRanger(bot: AL.Ranger) {
             move: async () => { await bot.smartMove({ map: "halloween", x: 8, y: 631 }) },
         },
         mole: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["mole"], information.friends, { targetingPlayer: information.warrior.name }) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["mole"], information.friends, { targetingPlayer: information.bot3.name }) },
             equipment: { mainhand: "firebow", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "tunnel", x: -15, y: -329 }) },
             requirePriest: true
@@ -645,7 +650,7 @@ function prepareRanger(bot: AL.Ranger) {
             move: async () => { await bot.smartMove("franky") },
         },
         oneeye: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["oneeye"], information.friends, { targetingPlayer: information.warrior.name }) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["oneeye"], information.friends, { targetingPlayer: information.bot3.name }) },
             equipment: { mainhand: "firebow", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "level2w", x: -175, y: 0 }) },
             requirePriest: true,
@@ -682,7 +687,7 @@ function prepareRanger(bot: AL.Ranger) {
             move: async () => { await bot.smartMove({ map: "desertland", x: -829, y: 135 }) },
         },
         pppompom: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["pppompom"], information.friends, { targetingPlayer: information.warrior.name }) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["pppompom"], information.friends, { targetingPlayer: information.bot3.name }) },
             equipment: { mainhand: "firebow", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "level2n", x: 120, y: -170 }) },
             requirePriest: true
@@ -713,7 +718,7 @@ function prepareRanger(bot: AL.Ranger) {
             move: async () => { await bot.smartMove({ map: "main", x: 1578, y: -168 }) },
         },
         skeletor: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["skeletor"], information.friends, { targetingPlayer: information.warrior.name }) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["skeletor"], information.friends, { targetingPlayer: information.bot3.name }) },
             equipment: { mainhand: "firebow", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "arena", x: 380, y: -575 }) },
             requirePriest: true,
@@ -754,7 +759,7 @@ function prepareRanger(bot: AL.Ranger) {
             move: async () => { await bot.smartMove({ map: "spookytown", x: 677, y: 129 }) },
         },
         tinyp: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["tinyp"], information.friends, { targetingPlayer: information.warrior.name }) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["tinyp"], information.friends, { targetingPlayer: information.bot3.name }) },
             equipment: { mainhand: "firebow", orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "tinyp") },
         },
@@ -783,7 +788,7 @@ function prepareRanger(bot: AL.Ranger) {
             requirePriest: true
         },
         xscorpion: {
-            attack: async () => { return await attackTheseTypesRanger(bot, ["xscorpion"], information.friends, { targetingPlayer: information.warrior.name }) },
+            attack: async () => { return await attackTheseTypesRanger(bot, ["xscorpion"], information.friends, { targetingPlayer: information.bot3.name }) },
             equipment: { mainhand: "firebow", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "halloween", x: -325, y: 775 }) },
             requirePriest: true
@@ -809,10 +814,10 @@ function prepareWarrior(bot: AL.Warrior) {
             move: async () => { await goToNearestWalkableToMonster(bot, ["bat"], { map: "cave", x: 1243, y: -27 }) },
         },
         bbpompom: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["bbpompom"], information.friends) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["bbpompom"], information.friends, { disableAgitate: true }) },
             equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
             move: async () => {
-                await goToPriestIfHurt(bot, information.priest.bot)
+                await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToNearestWalkableToMonster(bot, ["bbpompom"], { map: "winter_cave", x: 31, y: -164 })
             },
         },
@@ -841,7 +846,7 @@ function prepareWarrior(bot: AL.Warrior) {
             requirePriest: true
         },
         bscorpion: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["bscorpion"], information.friends, { targetingPlayer: information.priest.name }) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["bscorpion"], information.friends, { targetingPlayer: information.bot1.name }) },
             equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["bscorpion"], bscorpionSpawn) },
             requirePriest: true
@@ -850,7 +855,7 @@ function prepareWarrior(bot: AL.Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["cgoo"], information.friends) },
             equipment: { mainhand: "basher", orb: "test_orb" },
             move: async () => {
-                await goToPriestIfHurt(bot, information.priest.bot)
+                await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToNearestWalkableToMonster(bot, ["cgoo"], { map: "arena", x: 151.6, y: 40.82 })
             },
         },
@@ -894,7 +899,7 @@ function prepareWarrior(bot: AL.Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["dragold"], information.friends) },
             equipment: { mainhand: "basher", orb: "test_orb" },
             move: async () => {
-                await goToPriestIfHurt(bot, information.priest.bot)
+                await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToSpecialMonster(bot, "dragold")
             },
         },
@@ -913,7 +918,7 @@ function prepareWarrior(bot: AL.Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["fvampire"], information.friends) },
             equipment: { mainhand: "basher", orb: "test_orb" },
             move: async () => {
-                await goToPriestIfHurt(bot, information.priest.bot)
+                await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToSpecialMonster(bot, "fvampire")
             },
             requirePriest: true
@@ -922,7 +927,7 @@ function prepareWarrior(bot: AL.Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["ghost"], information.friends) },
             equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
             move: async () => {
-                await goToPriestIfHurt(bot, information.priest.bot)
+                await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToNearestWalkableToMonster(bot, ["ghost"], { map: "halloween", x: 236, y: -1224 })
             },
         },
@@ -954,7 +959,7 @@ function prepareWarrior(bot: AL.Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["iceroamer"], information.friends) },
             equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
             move: async () => {
-                await goToPriestIfHurt(bot, information.priest.bot)
+                await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToNearestWalkableToMonster(bot, ["iceroamer"], { map: "winterland", x: 1532, y: 104 })
             }
         },
@@ -965,7 +970,7 @@ function prepareWarrior(bot: AL.Warrior) {
             move: async () => { await goToSpecialMonster(bot, "jr") },
         },
         minimush: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["minimush"], information.friends) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["minimush"], information.friends, { disableAgitate: true }) },
             attackWhileIdle: true,
             equipment: { mainhand: "bataxe", orb: "test_orb" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["minimush"], { map: "halloween", x: -18, y: 631 }) },
@@ -989,7 +994,7 @@ function prepareWarrior(bot: AL.Warrior) {
             requirePriest: true
         },
         mummy: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["mummy"], information.friends, { maximumTargets: 3 }) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["mummy"], information.friends, { disableAgitate: true }) },
             equipment: { mainhand: "bataxe", orb: "test_orb" },
             move: async () => {
                 let highestMummyLevel = 0
@@ -1133,7 +1138,7 @@ function prepareWarrior(bot: AL.Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["stoneworm"], information.friends) },
             equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
             move: async () => {
-                await goToPriestIfHurt(bot, information.priest.bot)
+                await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToNearestWalkableToMonster(bot, ["stoneworm"], { map: "spookytown", x: 717, y: 129 })
             },
         },
@@ -1165,7 +1170,9 @@ function prepareWarrior(bot: AL.Warrior) {
         wolfie: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["wolfie"], information.friends) },
             equipment: { mainhand: "basher", orb: "test_orb" },
-            move: async () => { await goToNearestWalkableToMonster(bot, ["wolfie"], { map: "winterland", x: -189, y: -2026 }) },
+            move: async () => {
+                await goToPriestIfHurt(bot, information.bot1.bot)
+                await goToNearestWalkableToMonster(bot, ["wolfie"], { map: "winterland", x: -189, y: -2026 }) },
             requirePriest: true
         },
         xscorpion: {
@@ -1186,108 +1193,236 @@ async function run() {
     // Start all characters
     console.log("Connecting...")
 
+    // const startMerchantLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    //     // Start the characters
+    //     const loopBot = async () => {
+    //         try {
+    //             if (information.merchant.bot) await information.merchant.bot.disconnect()
+    //             information.merchant.bot = await AL.Game.startMerchant(name, region, identifier)
+    //             information.friends[0] = information.merchant.bot
+    //             prepareMerchant(information.merchant.bot)
+    //             information.merchant.bot.socket.on("disconnect", async () => { loopBot() })
+    //         } catch (e) {
+    //             console.error(e)
+    //             if (information.merchant.bot) await information.merchant.bot.disconnect()
+    //             const wait = /wait_(\d+)_second/.exec(e)
+    //             if (wait && wait[1]) {
+    //                 setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+    //             } else if (/limits/.test(e)) {
+    //                 setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+    //             } else {
+    //                 setTimeout(async () => { loopBot() }, 10000)
+    //             }
+    //         }
+    //     }
+    //     loopBot()
+    // }
+    // startMerchantLoop(information.merchant.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
+
+    // const startPriestLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    //     // Start the characters
+    //     const loopBot = async () => {
+    //         try {
+    //             if (information.bot1.bot) await information.bot1.bot.disconnect()
+    //             information.bot1.bot = await AL.Game.startPriest(name, region, identifier)
+    //             information.friends[1] = information.bot1.bot
+    //             preparePriest(information.bot1.bot as AL.Priest)
+    //             information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
+    //         } catch (e) {
+    //             console.error(e)
+    //             if (information.bot1.bot) await information.bot1.bot.disconnect()
+    //             const wait = /wait_(\d+)_second/.exec(e)
+    //             if (wait && wait[1]) {
+    //                 setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+    //             } else if (/limits/.test(e)) {
+    //                 setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+    //             } else {
+    //                 setTimeout(async () => { loopBot() }, 10000)
+    //             }
+    //         }
+    //     }
+    //     loopBot()
+    // }
+    // startPriestLoop(information.bot1.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
+
+    // const startRangerLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    //     // Start the characters
+    //     const loopBot = async () => {
+    //         try {
+    //             if (information.bot2.bot) await information.bot2.bot.disconnect()
+    //             information.bot2.bot = await AL.Game.startRanger(name, region, identifier)
+    //             information.friends[2] = information.bot2.bot
+    //             prepareRanger(information.bot2.bot as AL.Ranger)
+    //             information.bot2.bot.socket.on("disconnect", async () => { loopBot() })
+    //         } catch (e) {
+    //             console.error(e)
+    //             if (information.bot2.bot) await information.bot2.bot.disconnect()
+    //             const wait = /wait_(\d+)_second/.exec(e)
+    //             if (wait && wait[1]) {
+    //                 setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+    //             } else if (/limits/.test(e)) {
+    //                 setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+    //             } else {
+    //                 setTimeout(async () => { loopBot() }, 10000)
+    //             }
+    //         }
+    //     }
+    //     loopBot()
+    // }
+    // startRangerLoop(information.bot2.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
+
+    // const startWarriorLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    //     // Start the characters
+    //     const loopBot = async () => {
+    //         try {
+    //             if (information.bot3.bot) await information.bot3.bot.disconnect()
+    //             information.bot3.bot = await AL.Game.startWarrior(name, region, identifier)
+    //             information.friends[3] = information.bot3.bot
+    //             prepareWarrior(information.bot3.bot as AL.Warrior)
+    //             information.bot3.bot.socket.on("disconnect", async () => { loopBot() })
+    //         } catch (e) {
+    //             console.error(e)
+    //             if (information.bot3.bot) await information.bot3.bot.disconnect()
+    //             const wait = /wait_(\d+)_second/.exec(e)
+    //             if (wait && wait[1]) {
+    //                 setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+    //             } else if (/limits/.test(e)) {
+    //                 setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+    //             } else {
+    //                 setTimeout(async () => { loopBot() }, 10000)
+    //             }
+    //         }
+    //     }
+    //     loopBot()
+    // }
+    // startWarriorLoop(information.bot3.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
+
     const startMerchantLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
-        // Start the characters
-        const loopBot = async () => {
+        const connectLoop = async () => {
             try {
-                if (information.merchant.bot) await information.merchant.bot.disconnect()
                 information.merchant.bot = await AL.Game.startMerchant(name, region, identifier)
                 information.friends[0] = information.merchant.bot
                 prepareMerchant(information.merchant.bot)
-                information.merchant.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
                 if (information.merchant.bot) await information.merchant.bot.disconnect()
-                const wait = /wait_(\d+)_second/.exec(e)
-                if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
-                } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
-                } else {
-                    setTimeout(async () => { loopBot() }, 10000)
-                }
             }
+            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
+            setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
         }
-        loopBot()
+
+        const disconnectLoop = async () => {
+            try {
+                if (information.merchant.bot) await information.merchant.bot.disconnect()
+                information.merchant.bot = undefined
+                information.friends[0] = undefined
+            } catch (e) {
+                console.error(e)
+            }
+            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
+            setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
+        }
+
+        const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
+        setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
+        setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
     }
-    startMerchantLoop(information.merchant.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
+    startMerchantLoop(information.merchant.name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
 
     const startPriestLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
-        // Start the characters
-        const loopBot = async () => {
+        const connectLoop = async () => {
             try {
-                if (information.priest.bot) await information.priest.bot.disconnect()
-                information.priest.bot = await AL.Game.startPriest(name, region, identifier)
-                information.friends[1] = information.priest.bot
-                preparePriest(information.priest.bot)
-                information.priest.bot.socket.on("disconnect", async () => { loopBot() })
+                information.bot1.bot = await AL.Game.startPriest(name, region, identifier)
+                information.friends[1] = information.bot1.bot
+                preparePriest(information.bot1.bot as AL.Priest)
             } catch (e) {
                 console.error(e)
-                if (information.priest.bot) await information.priest.bot.disconnect()
-                const wait = /wait_(\d+)_second/.exec(e)
-                if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
-                } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
-                } else {
-                    setTimeout(async () => { loopBot() }, 10000)
-                }
+                if (information.bot1.bot) await information.bot1.bot.disconnect()
             }
+            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
+            setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
         }
-        loopBot()
+
+        const disconnectLoop = async () => {
+            try {
+                if (information.bot1.bot) await information.bot1.bot.disconnect()
+                information.bot1.bot = undefined
+                information.friends[1] = undefined
+            } catch (e) {
+                console.error(e)
+            }
+            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
+            setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
+        }
+
+        const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
+        setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
+        setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
     }
-    startPriestLoop(information.priest.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
+    startPriestLoop(information.bot1.name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
 
     const startRangerLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
-        // Start the characters
-        const loopBot = async () => {
+        const connectLoop = async () => {
             try {
-                if (information.ranger.bot) await information.ranger.bot.disconnect()
-                information.ranger.bot = await AL.Game.startRanger(name, region, identifier)
-                information.friends[2] = information.ranger.bot
-                prepareRanger(information.ranger.bot)
-                information.ranger.bot.socket.on("disconnect", async () => { loopBot() })
+                information.bot2.bot = await AL.Game.startRanger(name, region, identifier)
+                information.friends[2] = information.bot2.bot
+                prepareRanger(information.bot2.bot as AL.Ranger)
             } catch (e) {
                 console.error(e)
-                if (information.ranger.bot) await information.ranger.bot.disconnect()
-                const wait = /wait_(\d+)_second/.exec(e)
-                if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
-                } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
-                } else {
-                    setTimeout(async () => { loopBot() }, 10000)
-                }
+                if (information.bot2.bot) await information.bot2.bot.disconnect()
             }
+            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
+            setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
         }
-        loopBot()
+
+        const disconnectLoop = async () => {
+            try {
+                if (information.bot2.bot) await information.bot2.bot.disconnect()
+                information.bot2.bot = undefined
+                information.friends[2] = undefined
+            } catch (e) {
+                console.error(e)
+            }
+            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
+            setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
+        }
+
+        const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
+        setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
+        setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
     }
-    startRangerLoop(information.ranger.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
+    startRangerLoop(information.bot2.name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
 
     const startWarriorLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
-        // Start the characters
-        const loopBot = async () => {
+        const connectLoop = async () => {
             try {
-                if (information.warrior.bot) await information.warrior.bot.disconnect()
-                information.warrior.bot = await AL.Game.startWarrior(name, region, identifier)
-                information.friends[3] = information.warrior.bot
-                prepareWarrior(information.warrior.bot)
-                information.warrior.bot.socket.on("disconnect", async () => { loopBot() })
+                information.bot3.bot = await AL.Game.startWarrior(name, region, identifier)
+                information.friends[3] = information.bot3.bot
+                prepareWarrior(information.bot3.bot as AL.Warrior)
             } catch (e) {
                 console.error(e)
-                if (information.warrior.bot) await information.warrior.bot.disconnect()
-                const wait = /wait_(\d+)_second/.exec(e)
-                if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
-                } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
-                } else {
-                    setTimeout(async () => { loopBot() }, 10000)
-                }
+                if (information.bot3.bot) await information.bot3.bot.disconnect()
             }
+            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
+            setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
         }
-        loopBot()
+
+        const disconnectLoop = async () => {
+            try {
+                if (information.bot3.bot) await information.bot3.bot.disconnect()
+                information.bot3.bot = undefined
+                information.friends[3] = undefined
+            } catch (e) {
+                console.error(e)
+            }
+            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
+            setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
+        }
+
+        const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
+        setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
+        setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
     }
-    startWarriorLoop(information.warrior.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
+    startWarriorLoop(information.bot3.name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
 }
 run()

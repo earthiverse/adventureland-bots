@@ -174,7 +174,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
         if (!avoidAgitate && agitateTargets.length > 1) {
             bot.agitate().catch((e) => { console.error(e) })
             bot.mp -= bot.G.skills.agitate.mp
-        } else if (agitateTargets.length == 1 && bot.canUse("taunt") && !(options?.maximumTargets && bot.targets + 1 > options?.maximumTargets)) {
+        } else if (agitateTargets[0] && AL.Tools.distance(bot, agitateTargets[0]) < bot.G.skills.taunt.range && bot.canUse("taunt") && !(options?.maximumTargets && bot.targets + 1 > options?.maximumTargets)) {
             bot.taunt(agitateTargets[0].id).catch((e) => { console.error(e) })
             bot.mp -= bot.G.skills.taunt.mp
         }
