@@ -57,7 +57,8 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
             for (const friend of friends) {
                 if (!friend) continue // No friend
                 if (friend.id == bot.id) continue // Don't delete it from our own list
-                friend.entities.delete(target.id)
+                if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                friend.deleteEntity(target.id)
             }
             await bot.mentalBurst(target.id)
         }
@@ -82,7 +83,8 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
             for (const friend of friends) {
                 if (!friend) continue // No friend
                 if (friend.id == bot.id) continue // Don't delete it from our own list
-                friend.entities.delete(target.id)
+                if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                friend.deleteEntity(target.id)
             }
         }
 
@@ -123,7 +125,8 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
             for (const friend of friends) {
                 if (!friend) continue // No friend
                 if (friend.id == bot.id) continue // Don't delete it from our own list
-                friend.entities.delete(target.id)
+                if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                friend.deleteEntity(target.id)
             }
         }
 
@@ -149,7 +152,8 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
             for (const friend of friends) {
                 if (!friend) continue // No friend
                 if (friend.id == bot.id) continue // Don't delete it from our own list
-                friend.entities.delete(target.id)
+                if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                friend.deleteEntity(target.id)
             }
         }
 

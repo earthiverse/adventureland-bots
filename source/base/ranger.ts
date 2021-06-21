@@ -165,7 +165,8 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
                 for (const friend of friends) {
                     if (!friend) continue // No friend
                     if (friend.id == bot.id) continue // Don't delete it from our own list
-                    friend.entities.delete(entity.id)
+                    if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                    friend.deleteEntity(entity.id)
                 }
             }
         }
@@ -181,7 +182,8 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
                 for (const friend of friends) {
                     if (!friend) continue // No friend
                     if (friend.id == bot.id) continue // Don't delete it from our own list
-                    friend.entities.delete(entity.id)
+                    if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                    friend.deleteEntity(entity.id)
                 }
             }
         }
@@ -195,7 +197,8 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
             for (const friend of friends) {
                 if (!friend) continue // No friend
                 if (friend.id == bot.id) continue // Don't delete it from our own list
-                friend.entities.delete(entity.id)
+                if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                friend.deleteEntity(entity.id)
             }
         }
 
@@ -221,7 +224,8 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
             for (const friend of friends) {
                 if (!friend) continue // No friend
                 if (friend.id == bot.id) continue // Don't delete it from our own list
-                friend.entities.delete(entity.id)
+                if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                friend.deleteEntity(entity.id)
             }
             await bot.superShot(entity.id)
             return

@@ -90,7 +90,8 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
                     for (const friend of friends) {
                         if (!friend) continue // No friend
                         if (friend.id == bot.id) continue // Don't delete it from our own list
-                        friend.entities.delete(target.id)
+                        if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                        friend.deleteEntity(target.id)
                     }
                 }
             }
@@ -236,7 +237,8 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
                 for (const friend of friends) {
                     if (!friend) continue // No friend
                     if (friend.id == bot.id) continue // Don't delete it from our own list
-                    friend.entities.delete(entity.id)
+                    if (AL.Constants.SPECIAL_MONSTERS.includes(entity.type)) continue // Don't delete special monsters
+                    friend.deleteEntity(entity.id)
                 }
             }
 

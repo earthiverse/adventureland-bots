@@ -57,7 +57,8 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
             for (const friend of friends) {
                 if (!friend) continue // No friend
                 if (friend.id == bot.id) continue // Don't delete it from our own list
-                friend.entities.delete(target.id)
+                if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                friend.deleteEntity(target.id)
             }
         }
 
@@ -90,6 +91,7 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
             withinRange: bot.range
         })) {
             if (entity.hp >= CBURST_WHEN_HP_LESS_THAN) continue // Lots of HP
+            if (AL.Constants.SPECIAL_MONSTERS.includes(entity.type)) continue // Don't cburst special monsters
             targets.push([entity.id, entity.hp / bot.G.skills.cburst.ratio])
             mpNeeded += entity.hp / bot.G.skills.cburst.ratio
         }
@@ -99,7 +101,7 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
                 for (const friend of friends) {
                     if (!friend) continue // No friend
                     if (friend.id == bot.id) continue // Don't delete it from our own list
-                    friend.entities.delete(id)
+                    friend.deleteEntity(id)
                 }
             }
 

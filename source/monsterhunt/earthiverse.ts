@@ -1004,13 +1004,10 @@ function prepareWarrior(bot: AL.Warrior) {
                 }
                 if (highestMummyLevel <= 1) {
                     // Mummies are low level, stay and rage
-                    bot.smartMove({ map: "spookytown", x: 230, y: -1131 }).catch(() => { /* Suppress errors */ })
-                } else if (bot.targets) {
-                    // We have a target, stay back
-                    bot.smartMove({ map: "spookytown", x: 230, y: -1129 }).catch(() => { /* Suppress errors */ })
+                    await bot.smartMove({ map: "spookytown", x: 230, y: -1131 }).catch(() => { /* Suppress errors */ })
                 } else {
-                    // We don't have a target, stay in rage range until we get one (or many)
-                    bot.smartMove({ map: "spookytown", x: 230, y: -1131 }).catch(() => { /* Suppress errors */ })
+                    // Stay back
+                    await bot.smartMove({ map: "spookytown", x: 230, y: -1129 }).catch(() => { /* Suppress errors */ })
                 }
             },
             requirePriest: true

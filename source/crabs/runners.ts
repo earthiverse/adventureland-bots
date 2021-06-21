@@ -47,7 +47,8 @@ export async function startShared(bot: AL.Mage, targets: AL.MonsterName[], bound
                         for (const friend of friends) {
                             if (!friend) continue
                             if (friend.id == bot.id) continue
-                            friend.entities.delete(entity.id)
+                            if (AL.Constants.SPECIAL_MONSTERS.includes(entity.type)) continue // Don't delete special monsters
+                            friend.deleteEntity(entity.id)
                         }
                     }
 

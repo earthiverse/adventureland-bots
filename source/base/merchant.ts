@@ -40,7 +40,8 @@ export async function attackTheseTypesMerchant(bot: AL.Merchant, types: AL.Monst
         for (const friend of friends) {
             if (!friend) continue // No friend
             if (friend.id == bot.id) continue // Don't delete it from our own list
-            friend.entities.delete(entity.id)
+            if (AL.Constants.SPECIAL_MONSTERS.includes(entity.type)) continue // Don't delete special monsters
+            friend.deleteEntity(entity.id)
         }
     }
 

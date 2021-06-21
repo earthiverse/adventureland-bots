@@ -68,7 +68,7 @@ async function startRanger(bot: AL.Ranger) {
                     if (bot.calculateDamageRange(target, "3shot")[0] >= target.hp) {
                         for (const friend of [mage1, mage2]) {
                             if (!friend) continue
-                            friend.entities.delete(targets[i].id)
+                            friend.deleteEntity(targets[i].id)
                         }
                     }
                 }
@@ -88,7 +88,7 @@ async function startRanger(bot: AL.Ranger) {
                 if (bot.canKillInOneShot(target)) {
                     for (const friend of [mage1, mage2]) {
                         if (!friend) continue
-                        friend.entities.delete(target.id)
+                        friend.deleteEntity(target.id)
                     }
                 }
 
@@ -139,7 +139,8 @@ async function startMage(bot: AL.Mage) {
                         for (const friend of [ranger, mage1, mage2]) {
                             if (!friend) continue
                             if (friend.id == bot.id) continue
-                            friend.entities.delete(entity.id)
+                            if (AL.Constants.SPECIAL_MONSTERS.includes(entity.type)) continue // Don't delete special monsters
+                            friend.deleteEntity(entity.id)
                         }
                     }
                     await bot.basicAttack(entity.id)
