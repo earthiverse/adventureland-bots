@@ -10,8 +10,8 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
 
     const healPriority = (a: AL.Player, b: AL.Player) => {
         // Heal our friends first
-        const a_isFriend = friends.some((friend) => { friend.id == a.id })
-        const b_isFriend = friends.some((friend) => { friend.id == b.id })
+        const a_isFriend = friends.some((friend) => { friend?.id == a.id })
+        const b_isFriend = friends.some((friend) => { friend?.id == b.id })
         if (a_isFriend && !b_isFriend) return true
         else if (b_isFriend && !a_isFriend) return false
 
@@ -30,9 +30,10 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
     // Potentially heal others
     for (const [, player] of bot.players) {
         if (AL.Tools.distance(bot, player) > bot.range) continue // Too far away to heal
+        if (player.rip) continue // Player is already dead
         if (player.hp / player.max_hp > 0.8) continue // Player still has a lot of hp
 
-        const isFriend = friends.some((friend) => { friend.id == bot.id })
+        const isFriend = friends.some((friend) => { friend?.id == bot.id })
         if (!isFriend && bot.party && bot.partyData.list && !bot.partyData.list.includes(player.id)) continue // They're not our friend, and not in our party
 
         players.add(player)

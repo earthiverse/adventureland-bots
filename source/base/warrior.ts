@@ -1,4 +1,4 @@
-import AL from "alclient-mongo"
+import AL, { Tools } from "alclient-mongo"
 import FastPriorityQueue from "fastpriorityqueue"
 import { LOOP_MS } from "./general.js"
 
@@ -137,9 +137,9 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
             if (entity.target == bot.id) continue // Already targeting me
             if (!entity.isTauntable(bot)) continue // Not tauntable
             if (!types.includes(entity.type) || avoidAgitate) {
-            // A monster we don't want to attack is here, don't agitate
+                // A monster we don't want to attack is here, don't agitate
                 avoidAgitate = true
-                break
+                continue // Don't break, we could still taunt what we want to kill
             }
 
             switch (entity.damage_type) {
@@ -175,9 +175,13 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
         if (!avoidAgitate && agitateTargets.length > 1) {
             bot.agitate().catch((e) => { console.error(e) })
             bot.mp -= bot.G.skills.agitate.mp
-        } else if (agitateTargets[0] && AL.Tools.distance(bot, agitateTargets[0]) < bot.G.skills.taunt.range && bot.canUse("taunt") && !(options?.maximumTargets && bot.targets + 1 > options?.maximumTargets)) {
-            bot.taunt(agitateTargets[0].id).catch((e) => { console.error(e) })
-            bot.mp -= bot.G.skills.taunt.mp
+        } else if (bot.canUse("taunt") && !(options?.maximumTargets && bot.targets + 1 > options?.maximumTargets)) {
+            for (const target of agitateTargets) {
+                if (Tools.distance(bot, target) > bot.G.skills.taunt.range) continue // Too far
+                bot.taunt(target.id).catch((e) => { console.error(e) })
+                bot.mp -= bot.G.skills.taunt.mp
+                break
+            }
         }
     }
 

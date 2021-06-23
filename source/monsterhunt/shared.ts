@@ -1,7 +1,7 @@
 import AL from "alclient-mongo"
 import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, goToBankIfFull, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startEventLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startServerPartyInviteLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMerchant, doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
-import { attackTheseTypesPriest } from "../base/priest.js"
+import { attackTheseTypesPriest, startPartyHealLoop } from "../base/priest.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 import { attackTheseTypesWarrior } from "../base/warrior.js"
 import { Information, Strategy } from "../definitions/bot.js"
@@ -219,6 +219,7 @@ export async function startMerchant(bot: AL.Merchant, information: Information, 
 
 export async function startPriest(bot: AL.Priest, information: Information, strategy: Strategy): Promise<void> {
     startShared(bot, strategy, information)
+    startPartyHealLoop(bot, information.friends)
 
     const idleTargets: AL.MonsterName[] = []
     for (const t in strategy) {
@@ -460,7 +461,7 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
     startCompoundLoop(bot)
     if (bot.ctype !== "merchant") startElixirLoop(bot, "elixirluck")
     startEventLoop(bot)
-    startExchangeLoop(bot)
+    // startExchangeLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)
     if (bot.ctype !== "merchant") startPartyLoop(bot, partyLeader, partyMembers)
