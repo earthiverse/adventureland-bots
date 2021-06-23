@@ -880,21 +880,22 @@ export function startScareLoop(bot: ALM.Character): void {
 
             if (bot.canUse("scare", { ignoreEquipped: true }) && (
                 bot.isScared() // We are scared
+                || (bot.s.burned && bot.s.burned.intensity > bot.max_hp / 10) // We are burning pretty badly
                 || (bot.targets > 0 && bot.c.town) // We are teleporting
                 || (bot.targets > 0 && bot.hp < bot.max_hp * 0.25) // We are low on HP
             )) {
-                // Equip the orb if we need to
-                let previousItem: ALM.ItemData
+                // Equip the jacko if we need to
+                let inventoryPos: number
                 if (!bot.canUse("scare") && bot.hasItem("jacko")) {
-                    previousItem = bot.slots.orb
-                    await bot.equip(bot.locateItem("jacko"))
+                    inventoryPos = bot.locateItem("jacko")
+                    bot.equip(inventoryPos)
                 }
 
                 // Scare, because we are scared
-                await bot.scare()
+                bot.scare()
 
                 // Re-equip our orb
-                if (previousItem) await bot.equip(bot.locateItem(previousItem.name))
+                if (inventoryPos !== undefined) bot.equip(inventoryPos)
             }
         } catch (e) {
             console.error(e)
