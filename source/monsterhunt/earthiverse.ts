@@ -222,6 +222,7 @@ function preparePriest(bot: AL.Priest) {
         },
         ghost: {
             attack: async () => { await attackTheseTypesPriest(bot, ["ghost"], information.friends) },
+            attackWhileIdle: true,
             equipment: { orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "halloween", x: 276, y: -1224 }) },
         },
@@ -757,6 +758,7 @@ function prepareRanger(bot: AL.Ranger) {
             attack: async () => { return attackTheseTypesRanger(bot, ["stoneworm"], information.friends) },
             equipment: { mainhand: "crossbow", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "spookytown", x: 677, y: 129 }) },
+            requirePriest: true
         },
         tinyp: {
             attack: async () => { return attackTheseTypesRanger(bot, ["tinyp"], information.friends, { targetingPlayer: information.bot3.name }) },
@@ -836,8 +838,9 @@ function prepareWarrior(bot: AL.Warrior) {
         boar: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["boar"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "basher", orb: "test_orb" },
+            equipment: { mainhand: "bataxe", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "winterland", x: 0, y: -1109 }) },
+            requirePriest: true
         },
         booboo: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["booboo"], information.friends, { maximumTargets: 1 }) },
@@ -904,7 +907,7 @@ function prepareWarrior(bot: AL.Warrior) {
             },
         },
         fireroamer: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["fireroamer"], information.friends) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["fireroamer"], information.friends, { maximumTargets: 1 }) },
             equipment: { mainhand: "basher", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "desertland", x: 140, y: -675 }) },
             requirePriest: true
@@ -925,6 +928,7 @@ function prepareWarrior(bot: AL.Warrior) {
         },
         ghost: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["ghost"], information.friends) },
+            attackWhileIdle: true,
             equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
@@ -1132,12 +1136,13 @@ function prepareWarrior(bot: AL.Warrior) {
             move: async () => { await goToNearestWalkableToMonster(bot, ["squigtoad"], { map: "main", x: -1195, y: 422 }) },
         },
         stoneworm: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["stoneworm"], information.friends) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["stoneworm"], information.friends, { disableAgitate: true }) },
             equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToNearestWalkableToMonster(bot, ["stoneworm"], { map: "spookytown", x: 717, y: 129 })
             },
+            requirePriest: true
         },
         tinyp: {
             attack: async () => {
@@ -1166,7 +1171,7 @@ function prepareWarrior(bot: AL.Warrior) {
         },
         wolfie: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["wolfie"], information.friends) },
-            equipment: { mainhand: "basher", orb: "test_orb" },
+            equipment: { mainhand: "bataxe", orb: "test_orb" },
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToNearestWalkableToMonster(bot, ["wolfie"], { map: "winterland", x: -189, y: -2026 }) },
