@@ -4,6 +4,7 @@ import FastPriorityQueue from "fastpriorityqueue"
 const CBURST_WHEN_HP_LESS_THAN = 200
 
 export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[], friends: AL.Character[] = [], options?: {
+    cburstWhenHPLessThan?: number
     targetingPlayer?: string
 }): Promise<void> {
     if (bot.c.town) return // Don't attack if teleporting
@@ -90,7 +91,9 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
             willDieToProjectiles: false,
             withinRange: bot.range
         })) {
-            if (entity.hp >= CBURST_WHEN_HP_LESS_THAN) continue // Lots of HP
+            if (options?.cburstWhenHPLessThan) {
+                if (entity.hp >= options.cburstWhenHPLessThan) continue
+            } else if (entity.hp >= CBURST_WHEN_HP_LESS_THAN) continue // Lots of HP
             if (AL.Constants.SPECIAL_MONSTERS.includes(entity.type)) continue // Don't cburst special monsters
             targets.push([entity.id, entity.hp / bot.G.skills.cburst.ratio])
             mpNeeded += entity.hp / bot.G.skills.cburst.ratio
