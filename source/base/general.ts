@@ -639,7 +639,7 @@ export function startElixirLoop(bot: ALM.Character, elixir: ALM.ItemName): void 
             console.error(e)
         }
 
-        bot.timeouts.set("elixirloop", setTimeout(async () => { elixirLoop() }, LOOP_MS))
+        bot.timeouts.set("elixirloop", setTimeout(async () => { elixirLoop() }, 1000))
     }
     elixirLoop()
 }
