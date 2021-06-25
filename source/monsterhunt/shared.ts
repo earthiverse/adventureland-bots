@@ -33,7 +33,7 @@ export async function getTarget(bot: AL.Character, strategy: Strategy, informati
         return entity.type
     }
 
-    for (const type of await getMonsterHuntTargets(bot)) {
+    for (const type of await getMonsterHuntTargets(bot, information.friends)) {
         if (!strategy[type]) continue // No strategy
         if (strategy[type].requirePriest &&
             !((information.bot1.bot?.ctype == "priest" && information.bot1.target == type)

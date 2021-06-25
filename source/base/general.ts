@@ -1,4 +1,4 @@
-import ALM from "alclient-mongo"
+import ALM, { MonsterName } from "alclient-mongo"
 import { ItemLevelInfo } from "../definitions/bot.js"
 
 export const LOOP_MS = 100
@@ -166,45 +166,90 @@ export async function getPriority2Entities(bot: ALM.Character): Promise<ALM.IEnt
         { $sort: { "__order": 1 } }]).exec()
 }
 
-export async function getMonsterHuntTargets(bot: ALM.Character): Promise<(ALM.MonsterName)[]> {
-    const targets: (ALM.MonsterName)[] = []
-
+export async function getMonsterHuntTargets(bot: ALM.Character, friends: ALM.Character[]): Promise<(ALM.MonsterName)[]> {
     if (!bot.party) {
         // We have no party, we're doing MHs solo
         if (bot.s.monsterhunt && bot.s.monsterhunt.c > 0) return [bot.s.monsterhunt.id] // We have an active MH
         return [] // We don't have an active MH
     }
 
-    for (const player of await ALM.PlayerModel.aggregate([
-        {
-            $match: {
-                "s.monsterhunt.c": { $gt: 0 }, // Active MH
-                "s.monsterhunt.sn": `${bot.server.region} ${bot.server.name}`, // MH is on the correct server
-                lastSeen: { $gt: Date.now() - 60000 }, // Seen recently
-                serverRegion: bot.serverData.region, // Same region
-                serverIdentifier: bot.serverData.name, // Same server
-                name: { $in: bot.partyData.list } // Same party
+    const data: {
+        id: MonsterName
+        ms: number
+    }[] = []
+
+    // Add monster hunts from friends
+    const mhIDs = []
+    for (const friend of friends) {
+        if (!friend) continue
+        mhIDs.push(friend.id)
+
+        if (!friend.s.monsterhunt || friend.s.monsterhunt.c == 0) continue
+        data.push(friend.s.monsterhunt)
+    }
+
+    // Add monster hunts from others in our party
+    let lookupOthers = false
+    for (const partyMemberID of bot.partyData.list) {
+        if (!mhIDs.includes(partyMemberID)) {
+            const partyMember = bot.entities.get(partyMemberID)
+            if (partyMember) {
+                mhIDs.push(partyMemberID)
+                if (!partyMember.s.monsterhunt || partyMember.s.monsterhunt.c == 0) continue
+                data.push(partyMember.s.monsterhunt)
+            } else {
+                lookupOthers = true
             }
-        }, {
-            $addFields: {
-                timeLeft: { $subtract: ["$s.monsterhunt.ms", { $subtract: [Date.now(), "$lastSeen"] }] },
-                monster: "$s.monsterhunt.id"
-            }
-        }, {
-            $match: {
-                timeLeft: { $gt: 0 }
-            }
-        }, {
-            $sort: {
-                timeLeft: 1
-            }
-        }, {
-            $project: {
-                monster: 1
-            }
-        }]
-    ).exec()) {
-        targets.push(player.monster)
+        }
+    }
+
+    if (lookupOthers){
+        for (const player of await ALM.PlayerModel.aggregate([
+            {
+                $match: {
+                    $and: [
+                        { lastSeen: { $gt: Date.now() - 60000 } },
+                        { name: { $nin: mhIDs } },
+                        { name: { $in: bot.partyData.list } },
+                        { "s.monsterhunt.c": { $gt: 0 } },
+                        { "s.monsterhunt.sn": `${bot.server.region} ${bot.server.name}` },
+                        { serverIdentifier: bot.serverData.name },
+                        { serverRegion: bot.serverData.region }
+                    ]
+                }
+            }, {
+                $addFields: {
+                    monster: "$s.monsterhunt.id",
+                    timeLeft: { $subtract: ["$s.monsterhunt.ms", { $subtract: [Date.now(), "$lastSeen"] }] }
+                }
+            }, {
+                $match: {
+                    timeLeft: { $gt: 0 }
+                }
+            }, {
+                $sort: {
+                    timeLeft: 1
+                }
+            }, {
+                $project: {
+                    monster: 1,
+                    timeLeft: 1
+                }
+            }]
+        ).exec()) {
+            data.push({
+                id: player.monster,
+                ms: player.timeLeft
+            })
+        }
+    }
+
+    data.sort((a, b) => {
+        return a.ms - b.ms
+    })
+    const targets: (ALM.MonsterName)[] = []
+    for (const datum of data) {
+        targets.push(datum.id)
     }
 
     return targets
@@ -880,7 +925,7 @@ export function startScareLoop(bot: ALM.Character): void {
 
             if (bot.canUse("scare", { ignoreEquipped: true }) && (
                 bot.isScared() // We are scared
-                || (bot.s.burned && bot.s.burned.intensity > bot.max_hp / 10) // We are burning pretty badly
+                || (bot.s.burned && bot.s.burned.intensity > bot.max_hp / 5) // We are burning pretty badly
                 || (bot.targets > 0 && bot.c.town) // We are teleporting
                 || (bot.targets > 0 && bot.hp < bot.max_hp * 0.25) // We are low on HP
             )) {

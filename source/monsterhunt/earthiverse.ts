@@ -998,7 +998,7 @@ function prepareWarrior(bot: AL.Warrior) {
             requirePriest: true
         },
         mummy: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["mummy"], information.friends, { disableAgitate: true }) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["mummy"], information.friends, { maximumTargets: 3 }) },
             equipment: { mainhand: "bataxe", orb: "test_orb" },
             move: async () => {
                 let highestMummyLevel = 0
