@@ -55,7 +55,7 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
                 return
             }
 
-            if (!bot.slots.elixir && bot.gold > bot.G.items.elixirluck.gold) {
+            if (!bot.slots.elixir && bot.gold > bot.G.items.elixirluck.g) {
                 await bot.smartMove("elixirluck")
             }
 
