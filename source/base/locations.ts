@@ -3,7 +3,7 @@ import ALM from "alclient-mongo"
 
 // Main
 export const mainBeesNearTunnel: AL.IPosition | ALM.IPosition = { map: "main", x: 152, y: 1487 }
-export const mainCrabs: AL.IPosition | ALM.IPosition = { map: "main", x: -1202.5, y: -132 }
+export const mainCrabs: AL.IPosition | ALM.IPosition = { map: "main", x: -1202.5, y: -66 }
 export const mainGoos: AL.IPosition | ALM.IPosition = { map: "main", x: -64, y: 787 }
 export const mainPoisios: AL.IPosition | ALM.IPosition = { map: "main", x: -121, y: 1360 }
 export const mainScorpions: AL.IPosition | ALM.IPosition = { map: "main", x: 1577.5, y: -168 }
