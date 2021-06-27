@@ -3,7 +3,7 @@ import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriori
 import { attackTheseTypesMerchant, doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesPriest, startPartyHealLoop } from "../base/priest.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
-import { attackTheseTypesWarrior } from "../base/warrior.js"
+import { attackTheseTypesWarrior, startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { Information, Strategy } from "../definitions/bot.js"
 import { partyLeader, partyMembers } from "./party.js"
 
@@ -372,6 +372,9 @@ export async function startRanger(bot: AL.Ranger, information: Information, stra
 
 export async function startWarrior(bot: AL.Warrior, information: Information, strategy: Strategy): Promise<void> {
     startShared(bot, strategy, information)
+
+    startChargeLoop(bot)
+    startWarcryLoop(bot)
 
     const idleTargets: AL.MonsterName[] = []
     for (const t in strategy) {
