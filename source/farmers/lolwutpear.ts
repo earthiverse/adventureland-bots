@@ -35,7 +35,7 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            await attackTheseTypesMage(bot, targets, [mage1, mage2, mage3])
+            await attackTheseTypesMage(bot, targets, [mage1, mage2, mage3], { cburstWhenHPLessThan: 100 })
         } catch (e) {
             console.error(e)
         }
@@ -43,6 +43,32 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
         bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
     }
     attackLoop()
+
+    // Steal other people's targets with cburst
+    bot.socket.on("action", (data: AL.ActionData) => {
+        if (!["3shot", "5shot"].includes(data.type)) return
+        if (!bot.canUse("cburst")) return // Cburst not available
+        if (bot.mp < bot.max_mp / 2) return // Don't cburst when mp is low
+        if (bot.c.town) return // Don't cburst when teleporting
+
+        const attacker = bot.players.get(data.attacker)
+        if (!attacker) return // Attacker is very far away
+
+        if (AL.Tools.distance(bot, attacker) > 400) return // Probably not attacking the same target
+
+        const cburstData: [string, number][] = []
+        for (const [, entity] of bot.entities) {
+            if (!targets.includes(entity.type)) continue // Not the type we want
+            if (entity.target) continue // Already has a target
+            if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
+
+            cburstData.push([entity.id, 1 / bot.G.skills.cburst.ratio])
+        }
+
+        if (cburstData.length && bot.canUse("cburst")) {
+            bot.cburst(cburstData).catch(() => { /* Suppress warnings */ })
+        }
+    })
 
     async function moveLoop() {
         try {
