@@ -80,8 +80,8 @@ async function run() {
                 console.error(e)
                 if (mage1) await mage1.disconnect()
             }
-            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
-            setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
         }
 
         const disconnectLoop = async () => {
@@ -92,13 +92,13 @@ async function run() {
             } catch (e) {
                 console.error(e)
             }
-            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
-            setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
         }
 
-        const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
-        setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
-        setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
+        const msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
+        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
     }
     startMage1Loop(mage1Name, region, identifier)
 
@@ -112,8 +112,8 @@ async function run() {
                 console.error(e)
                 if (mage2) await mage2.disconnect()
             }
-            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
-            setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
         }
 
         const disconnectLoop = async () => {
@@ -124,13 +124,13 @@ async function run() {
             } catch (e) {
                 console.error(e)
             }
-            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
-            setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
         }
 
-        const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
-        setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
-        setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
+        const msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
+        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
     }
     startmage2Loop(mage2Name, region, identifier)
 
@@ -144,8 +144,8 @@ async function run() {
                 console.error(e)
                 if (mage3) await mage3.disconnect()
             }
-            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
-            setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
         }
 
         const disconnectLoop = async () => {
@@ -156,13 +156,13 @@ async function run() {
             } catch (e) {
                 console.error(e)
             }
-            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
-            setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
         }
 
-        const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
-        setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
-        setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
+        const msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
+        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
     }
     startmage3Loop(mage3Name, region, identifier)
 }

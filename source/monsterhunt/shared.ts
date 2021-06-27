@@ -437,7 +437,7 @@ export async function startWarrior(bot: AL.Warrior, information: Information, st
             }
 
             // Idle strategy
-            await attackTheseTypesWarrior(bot, idleTargets, information.friends)
+            await attackTheseTypesWarrior(bot, idleTargets, information.friends, { disableAgitate: true })
         } catch (e) {
             console.error(e)
         }

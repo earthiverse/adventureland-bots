@@ -70,8 +70,8 @@ async function run() {
                 console.error(e)
                 if (rogue1) await rogue1.disconnect()
             }
-            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
-            setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
         }
 
         const disconnectLoop = async () => {
@@ -81,13 +81,13 @@ async function run() {
             } catch (e) {
                 console.error(e)
             }
-            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
-            setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
         }
 
-        const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
-        setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
-        setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
+        const msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
+        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
     }
     startRogue1Loop(rogue1Name, region, identifier)
 }

@@ -83,8 +83,8 @@ async function run() {
                 console.error(e)
                 if (warrior1) await warrior1.disconnect()
             }
-            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
-            setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
         }
 
         const disconnectLoop = async () => {
@@ -94,13 +94,13 @@ async function run() {
             } catch (e) {
                 console.error(e)
             }
-            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
-            setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
         }
 
-        const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
-        setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
-        setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
+        const msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
+        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
     }
     startWarrior1Loop(warrior1Name, region, identifier)
 
@@ -113,8 +113,8 @@ async function run() {
                 console.error(e)
                 if (warrior2) await warrior2.disconnect()
             }
-            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
-            setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
         }
 
         const disconnectLoop = async () => {
@@ -124,13 +124,13 @@ async function run() {
             } catch (e) {
                 console.error(e)
             }
-            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
-            setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
         }
 
-        const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
-        setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
-        setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
+        const msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
+        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
     }
     startwarrior2Loop(warrior2Name, region, identifier)
 
@@ -143,8 +143,8 @@ async function run() {
                 console.error(e)
                 if (warrior3) await warrior3.disconnect()
             }
-            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
-            setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
         }
 
         const disconnectLoop = async () => {
@@ -154,13 +154,13 @@ async function run() {
             } catch (e) {
                 console.error(e)
             }
-            const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
-            setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
         }
 
-        const msToNextSecondMinute = 120_000 - (Date.now() % 120_000)
-        setTimeout(async () => { connectLoop() }, msToNextSecondMinute + 10000)
-        setTimeout(async () => { disconnectLoop() }, msToNextSecondMinute - 10000 < 0 ? msToNextSecondMinute + 110_000 : msToNextSecondMinute - 10000)
+        const msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
+        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
     }
     startwarrior3Loop(warrior3Name, region, identifier)
 }
