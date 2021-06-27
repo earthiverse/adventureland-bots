@@ -1,7 +1,7 @@
 import AL from "alclient-mongo"
 import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, goToBankIfFull, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startEventLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startServerPartyInviteLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMerchant, doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
-import { attackTheseTypesPriest, startPartyHealLoop } from "../base/priest.js"
+import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 import { attackTheseTypesWarrior, startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { Information, Strategy } from "../definitions/bot.js"
@@ -219,6 +219,7 @@ export async function startMerchant(bot: AL.Merchant, information: Information, 
 
 export async function startPriest(bot: AL.Priest, information: Information, strategy: Strategy): Promise<void> {
     startShared(bot, strategy, information)
+    startDarkBlessingLoop(bot)
     startPartyHealLoop(bot, information.friends)
 
     const idleTargets: AL.MonsterName[] = []

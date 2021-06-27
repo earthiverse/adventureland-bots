@@ -123,7 +123,23 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
     await bot.basicAttack(target.id)
 }
 
-export function startPartyHealLoop(bot: AL.Priest | AL.Priest, friends: AL.Character[] | AL.Character[]): void {
+export function startDarkBlessingLoop(bot: AL.Priest): void {
+    async function darkBlessingLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            if (!bot.s.darkblessing && bot.canUse("darkblessing")) await bot.darkBlessing()
+        } catch (e) {
+            console.error(e)
+        }
+
+        bot.timeouts.set("darkblessingloop", setTimeout(async () => { darkBlessingLoop() }, Math.max(LOOP_MS, bot.getCooldown("darkblessing"))))
+    }
+    darkBlessingLoop()
+
+}
+
+export function startPartyHealLoop(bot: AL.Priest, friends: AL.Character[]): void {
     async function partyHealLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
