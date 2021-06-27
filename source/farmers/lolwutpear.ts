@@ -48,6 +48,8 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
     bot.socket.on("action", (data: AL.ActionData) => {
         if (!["3shot", "5shot"].includes(data.type)) return
         if (!bot.canUse("cburst")) return // Cburst not available
+        if (bot.mp < bot.max_mp / 2) return // Don't cburst when mp is low
+        if (bot.c.town) return // Don't cburst when teleporting
 
         const attacker = bot.players.get(data.attacker)
         if (!attacker) return // Attacker is very far away
