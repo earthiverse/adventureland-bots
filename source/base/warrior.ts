@@ -39,11 +39,15 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
         }
 
         const cleaveTargets: AL.Entity[] = []
+        let couldCleaveNearby = false
         let avoidCleave = false
         for (const entity of bot.getEntities({
             withinRange: bot.G.skills.cleave.range,
         })) {
-            if (entity.target == bot.id) continue // Already targeting me
+            if (entity.target == bot.id) {
+                couldCleaveNearby = true
+                continue // Already targeting me
+            }
             if (!entity.isTauntable(bot)) continue // Already has a target
             if (!types.includes(entity.type) || avoidCleave) {
             // A monster we don't want to attack is here, don't cleave
@@ -81,7 +85,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
             cleaveTargets.push(entity)
         }
         if (options?.maximumTargets && cleaveTargets.length + bot.targets > options?.maximumTargets) avoidCleave = true
-        if (!avoidCleave && cleaveTargets.length > 1) {
+        if (!avoidCleave && (cleaveTargets.length > 1 || couldCleaveNearby)) {
             bot.mp -= bot.G.skills.cleave.mp
 
             // If we're going to kill the target, remove it from our friends
