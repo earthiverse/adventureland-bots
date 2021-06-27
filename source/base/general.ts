@@ -455,23 +455,36 @@ export async function goToNearestWalkableToMonster(bot: ALM.Character, types: AL
     }
 }
 
-export function moveInCircle(bot: ALM.Character, type: ALM.MonsterName, center: ALM.IPosition, radius = 125, angle = Math.PI / 2.5): Promise<ALM.IPosition> {
+export function kiteInCircle(bot: ALM.Character, type: ALM.MonsterName, center: ALM.IPosition, radius = 125, angle = Math.PI / 2.5): Promise<ALM.IPosition> {
     if (ALM.Pathfinder.canWalkPath(bot, center)) {
         const nearest = bot.getNearestMonster(type)?.monster
         if (nearest) {
-            // There's a bscorpion nearby
+            // There's a monster nearby
             const angleFromCenterToMonsterGoing = Math.atan2(nearest.going_y - center.y, nearest.going_x - center.x)
             const endGoalAngle = angleFromCenterToMonsterGoing + angle
             const endGoal = { x: center.x + radius * Math.cos(endGoalAngle), y: center.y + radius * Math.sin(endGoalAngle) }
             return bot.move(endGoal.x, endGoal.y)
         } else {
-            // There isn't a bscorpion nearby
+            // There isn't a monster nearby
             const angleFromSpawnToBot = Math.atan2(bot.y - center.y, bot.x - center.x)
             const endGoal = { x: center.x + radius * Math.cos(angleFromSpawnToBot), y: center.y + radius * Math.sin(angleFromSpawnToBot) }
             return bot.move(endGoal.x, endGoal.y)
         }
     } else {
-        // Move to the bscorpion spawn
+        // Move to where we can walk
+        return bot.smartMove(center, { getWithin: radius })
+    }
+}
+
+export function moveInCircle(bot: ALM.Character, center: ALM.IPosition, radius = 125, angle = Math.PI / 2.5): Promise<ALM.IPosition> {
+    if (ALM.Pathfinder.canWalkPath(bot, center)) {
+        const angleFromCenterToCurrent = Math.atan2(bot.y - center.y, bot.x - center.x)
+        const endGoalAngle = angleFromCenterToCurrent + angle
+        const endGoal = { x: center.x + radius * Math.cos(endGoalAngle), y: center.y + radius * Math.sin(endGoalAngle) }
+        return bot.move(endGoal.x, endGoal.y)
+
+    } else {
+        // Move to where we can walk
         return bot.smartMove(center, { getWithin: radius })
     }
 }

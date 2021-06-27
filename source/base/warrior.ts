@@ -270,7 +270,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
     }
 }
 
-export function startChargeLoop(bot: AL.Warrior | AL.Warrior): void {
+export function startChargeLoop(bot: AL.Warrior): void {
     async function chargeLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -285,7 +285,7 @@ export function startChargeLoop(bot: AL.Warrior | AL.Warrior): void {
     chargeLoop()
 }
 
-export function startWarcryLoop(bot: AL.Warrior | AL.Warrior): void {
+export function startWarcryLoop(bot: AL.Warrior): void {
     async function warcryLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
