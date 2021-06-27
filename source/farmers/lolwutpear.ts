@@ -49,7 +49,7 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
         if (!["3shot", "5shot"].includes(data.type)) return
         if (!bot.canUse("cburst")) return // Cburst not available
 
-        const attacker = bot.entities.get(data.attacker)
+        const attacker = bot.players.get(data.attacker)
         if (!attacker) return // Attacker is very far away
 
         if (AL.Tools.distance(bot, attacker) > 400) return // Probably not attacking the same target
