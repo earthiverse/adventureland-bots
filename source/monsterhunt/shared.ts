@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, goToBankIfFull, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startEventLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startServerPartyInviteLoop, startUpgradeLoop } from "../base/general.js"
+import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, goToBankIfFull, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startEventLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startServerPartyInviteLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMerchant, doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
@@ -469,7 +469,6 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
     startHealLoop(bot)
     startLootLoop(bot)
     if (bot.ctype !== "merchant") startPartyLoop(bot, partyLeader, partyMembers)
-    // startPontyLoop(bot) NOTE: TEMPORARY
     startScareLoop(bot)
     startSellLoop(bot)
     if (bot.ctype !== "merchant") startSendStuffDenylistLoop(bot, information.merchant.name)
