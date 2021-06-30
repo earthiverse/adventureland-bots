@@ -235,7 +235,6 @@ export async function startPriest(bot: AL.Priest, information: Information, stra
             if (
                 bot.rip // We are dead
                 || bot.c.town // We are teleporting to town
-                || bot.isOnCooldown("scare") // We don't have scare ready
             ) {
                 // We are dead
                 bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
@@ -563,5 +562,5 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
         }
         setTimeout(async () => { await targetLoop() }, 1000)
     }
-    targetLoop()
+    setTimeout(async () => { await targetLoop() }, 2000) // Offset by a few seconds so characters can load
 }
