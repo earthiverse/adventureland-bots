@@ -1,6 +1,6 @@
 import AL from "alclient-mongo"
 import { partyLeader } from "./party.js"
-import { identifier, bottomBoundary, bottomPositions, region, startShared, targets } from "./runners.js"
+import { identifier, region, startShared, targets } from "./runners.js"
 
 /** Config */
 const follower1Name = "earthMag2"
@@ -26,7 +26,7 @@ async function run() {
                 if (follower1) await follower1.disconnect()
                 follower1 = await AL.Game.startMage(name, region, identifier)
                 friends[0] = follower1
-                startShared(follower1, targets, bottomBoundary, bottomPositions[0], friends)
+                startShared(follower1, targets, friends)
                 follower1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -52,7 +52,7 @@ async function run() {
                 if (follower2) await follower2.disconnect()
                 follower2 = await AL.Game.startMage(name, region, identifier)
                 friends[1] = follower2
-                startShared(follower2, targets, bottomBoundary, bottomPositions[2], friends)
+                startShared(follower2, targets, friends)
                 follower2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -78,7 +78,7 @@ async function run() {
                 if (follower3) await follower3.disconnect()
                 follower3 = await AL.Game.startMage(name, region, identifier)
                 friends[2] = follower3
-                startShared(follower3, targets, bottomBoundary, bottomPositions[1], friends)
+                startShared(follower3, targets, friends)
                 follower3.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
