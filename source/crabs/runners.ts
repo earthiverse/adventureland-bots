@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull } from "../base/general.js"
+import { startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToPoitonSellerIfLow, goToBankIfFull } from "../base/general.js"
 import { partyLeader, partyMembers } from "./party.js"
 
 export type Boundary = { x: [number, number], y: [number, number] }
@@ -29,17 +29,12 @@ export async function startShared(bot: AL.Mage, targets: AL.MonsterName[], frien
         }
     }
 
-    startAvoidStacking(bot)
-    startBuyLoop(bot)
-    startCompoundLoop(bot)
+    startBuyLoop(bot, new Set())
     startElixirLoop(bot, "elixirluck")
-    startExchangeLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)
     startPartyLoop(bot, partyLeader, partyMembers)
-    startPontyLoop(bot)
-    startSellLoop(bot)
-    startUpgradeLoop(bot)
+    startSellLoop(bot, { "cclaw": 2, "crabclaw": 2, "hpamulet": 2, "hpbelt": 2, "ringsj": 2, "wcap": 2, "wshoes": 2 })
 
     async function attackLoop() {
         try {
