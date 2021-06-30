@@ -21,7 +21,7 @@ let warrior2: AL.Warrior
 let warrior3: AL.Warrior
 
 async function startShared(bot: AL.Character) {
-    startBuyLoop(bot)
+    startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
     startSellLoop(bot, { ...ITEMS_TO_SELL, "hpamulet": 2, "hpbelt": 2, "quiver": 2, "ringsj": 2, "stinger": 2 })
