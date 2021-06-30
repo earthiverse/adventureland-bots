@@ -3,8 +3,16 @@ import { goToBankIfFull, goToPoitonSellerIfLow, LOOP_MS, MY_CHARACTERS, startBuy
 import { attackTheseTypesMage } from "../base/mage.js"
 
 /** Config */
-let region: AL.ServerRegion = "ASIA"
-let identifier: AL.ServerIdentifier = "I"
+const servers: [AL.ServerRegion, AL.ServerIdentifier][] = [
+    ["ASIA", "I"],
+    ["US", "I"],
+    // ["US", "II"],
+    ["US", "III"],
+    ["US", "PVP"],
+    ["EU", "I"],
+    ["EU", "II"],
+    ["EU", "PVP"]
+]
 const mageName = "earthMag3"
 
 /** Characters */
@@ -97,7 +105,8 @@ async function run() {
 
     const connectLoop = async () => {
         try {
-            mage = await AL.Game.startMage(mageName, region, identifier)
+            const server = servers[(Date.now() / 1000 / 60) % servers.length]
+            mage = await AL.Game.startMage(mageName, server[0], server[1])
             startMage(mage)
         } catch (e) {
             console.error(e)
@@ -110,28 +119,6 @@ async function run() {
     const disconnectLoop = async () => {
         try {
             if (mage) await mage.disconnect()
-            if (region == "ASIA" && identifier == "I") {
-                region = "US"
-                identifier = "I"
-            } else if (region == "US" && identifier == "I") {
-                region = "US"
-                identifier = "III"
-            } else if (region == "US" && identifier == "III") {
-                region = "US"
-                identifier = "PVP"
-            } else if (region == "US" && identifier == "PVP") {
-                region = "EU"
-                identifier = "I"
-            } else if (region == "EU" && identifier == "I") {
-                region = "EU"
-                identifier = "II"
-            } else if (region == "EU" && identifier == "II") {
-                region = "EU"
-                identifier = "PVP"
-            } else if (region == "EU" && identifier == "PVP") {
-                region = "ASIA"
-                identifier = "I"
-            }
             mage = undefined
         } catch (e) {
             console.error(e)
