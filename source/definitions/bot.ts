@@ -10,8 +10,8 @@ export type Strategy = {
         equipment?: { [T in AL.SlotType]?: AL.ItemName }
         /** If set to true, we will attack by default whenever we have nothing else to do */
         attackWhileIdle?: boolean
-        /** If set to true, we won't do it unless it's also the priest's target */
-        requirePriest?: boolean
+        /** If set to true, we won't do it unless we also have a character of the given type targeting */
+        requireCtype?: AL.CharacterType
     }
 }
 

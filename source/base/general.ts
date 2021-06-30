@@ -262,15 +262,15 @@ export async function goToAggroMonster(bot: ALM.Character, entity: ALM.Entity): 
         const distanceToTravel = ALM.Tools.distance({ x: entity.x, y: entity.y }, { x: entity.going_x, y: entity.going_y })
         const lead = 20 + (LOOP_MS / 1000) * entity.speed
         if (distanceToTravel >= lead) {
-            const destination: ALM.IPosition = { map: entity.map, x: entity.going_x, y: entity.going_y }
+            const angle = Math.atan2(entity.going_y - entity.y, entity.going_x - entity.x)
+            const destination = { map: entity.map, x: entity.x + Math.cos(angle) * lead, y: entity.y + Math.sin(angle) * lead }
             if (ALM.Pathfinder.canWalkPath(bot, destination)) {
                 bot.move(destination.x, destination.y).catch(() => { /* Suppress errors */ })
             } else {
                 return bot.smartMove(destination)
             }
         } else {
-            const angle = Math.atan2(entity.going_y - entity.y, entity.going_x - entity.x)
-            const destination = { map: entity.map, x: entity.x + Math.cos(angle) * lead, y: entity.y + Math.sin(angle) * lead }
+            const destination: ALM.IPosition = { map: entity.map, x: entity.going_x, y: entity.going_y }
             if (ALM.Pathfinder.canWalkPath(bot, destination)) {
                 bot.move(destination.x, destination.y).catch(() => { /* Suppress errors */ })
             } else {

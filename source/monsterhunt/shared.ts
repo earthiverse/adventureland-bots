@@ -15,19 +15,19 @@ export const DEFAULT_IDENTIFIER: AL.ServerIdentifier = "I"
 export async function getTarget(bot: AL.Character, strategy: Strategy, information: Information): Promise<AL.MonsterName> {
     for (const entity of await getPriority1Entities(bot)) {
         if (!strategy[entity.type]) continue // No strategy
-        if (strategy[entity.type].requirePriest &&
-            !((information.bot1.bot?.ctype == "priest" && information.bot1.target == entity.type)
-            || (information.bot2.bot?.ctype == "priest" && information.bot2.target == entity.type)
-            || (information.bot3.bot?.ctype == "priest" && information.bot3.target == entity.type))) continue // No priest
+        if (strategy[entity.type].requireCtype &&
+            !((information.bot1.bot?.ctype == strategy[entity.type].requireCtype && information.bot1.target == entity.type)
+            || (information.bot2.bot?.ctype == strategy[entity.type].requireCtype && information.bot2.target == entity.type)
+            || (information.bot3.bot?.ctype == strategy[entity.type].requireCtype && information.bot3.target == entity.type))) continue // No priest
         return entity.type
     }
 
     for (const entity of await getPriority2Entities(bot)) {
         if (!strategy[entity.type]) continue // No strategy
-        if (strategy[entity.type].requirePriest &&
-            !((information.bot1.bot?.ctype == "priest" && information.bot1.target == entity.type)
-            || (information.bot2.bot?.ctype == "priest" && information.bot2.target == entity.type)
-            || (information.bot3.bot?.ctype == "priest" && information.bot3.target == entity.type))) continue // No priest
+        if (strategy[entity.type].requireCtype &&
+            !((information.bot1.bot?.ctype == strategy[entity.type].requireCtype && information.bot1.target == entity.type)
+            || (information.bot2.bot?.ctype == strategy[entity.type].requireCtype && information.bot2.target == entity.type)
+            || (information.bot3.bot?.ctype == strategy[entity.type].requireCtype && information.bot3.target == entity.type))) continue // No priest
         if (bot.G.monsters[entity.type].cooperative !== true && entity.target && ![information.merchant.name, information.bot3.name, information.bot1.name, information.merchant.name].includes(entity.target)) continue // It's targeting someone else
 
         return entity.type
@@ -35,10 +35,10 @@ export async function getTarget(bot: AL.Character, strategy: Strategy, informati
 
     for (const type of await getMonsterHuntTargets(bot, information.friends)) {
         if (!strategy[type]) continue // No strategy
-        if (strategy[type].requirePriest &&
-            !((information.bot1.bot?.ctype == "priest" && information.bot1.target == type)
-            || (information.bot2.bot?.ctype == "priest" && information.bot2.target == type)
-            || (information.bot3.bot?.ctype == "priest" && information.bot3.target == type))) continue // No priest
+        if (strategy[type].requireCtype &&
+            !((information.bot1.bot?.ctype == strategy[type].requireCtype && information.bot1.target == type)
+            || (information.bot2.bot?.ctype == strategy[type].requireCtype && information.bot2.target == type)
+            || (information.bot3.bot?.ctype == strategy[type].requireCtype && information.bot3.target == type))) continue // No priest
 
         return type
     }
@@ -467,7 +467,13 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
     // startExchangeLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)
-    if (bot.ctype !== "merchant") startPartyLoop(bot, partyLeader, partyMembers)
+    if (bot.ctype !== "merchant") {
+        if (bot.id == partyLeader) {
+            startPartyLoop(bot, partyLeader, partyMembers)
+        } else {
+            bot.timeouts.set("partyloop", setTimeout(async () => { startPartyLoop(bot, partyLeader, partyMembers) }, 2000))
+        }
+    }
     startScareLoop(bot)
     startSellLoop(bot)
     if (bot.ctype !== "merchant") startSendStuffDenylistLoop(bot, information.merchant.name)
@@ -561,5 +567,5 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
         }
         setTimeout(async () => { await targetLoop() }, 1000)
     }
-    setTimeout(async () => { await targetLoop() }, 2000) // Offset by a few seconds so characters can load
+    setTimeout(async () => { await targetLoop() }, 10000) // Offset by a few seconds so characters can load
 }
