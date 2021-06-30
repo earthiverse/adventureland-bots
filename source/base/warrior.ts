@@ -2,15 +2,20 @@ import AL, { Tools } from "alclient-mongo"
 import FastPriorityQueue from "fastpriorityqueue"
 import { LOOP_MS } from "./general.js"
 
-export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.MonsterName[], friends: AL.Character[] = [], options?: {
+export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.MonsterName[], friends: AL.Character[] = [], options: {
     targetingPlayer?: string
     disableAgitate?: boolean
     disableCleave?: boolean
     disableStomp?: boolean
     maximumTargets?: number
-}): Promise<void> {
+} = {}): Promise<void> {
     if (bot.c.town) return // Don't attack if teleporting
-    if (bot.canUse("cleave") && !options?.disableCleave) {
+
+    // Adjust options
+    if (options.targetingPlayer && options.targetingPlayer == bot.id) options.targetingPlayer = undefined
+    if (options.targetingPlayer) options.disableAgitate = true
+
+    if (bot.canUse("cleave") && !options.disableCleave) {
         // Calculate how much courage we have left to spare
         let numPhysicalTargetingMe = 0
         let numPureTargetingMe = 0
@@ -44,13 +49,18 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
         for (const entity of bot.getEntities({
             withinRange: bot.G.skills.cleave.range,
         })) {
+            if (options.targetingPlayer && !entity.target) {
+                // We don't want to aggro things
+                avoidCleave = true
+                break
+            }
             if (entity.target == bot.id) {
                 couldCleaveNearby = true
                 continue // Already targeting me
             }
             if (!entity.isTauntable(bot)) continue // Already has a target
             if (!types.includes(entity.type) || avoidCleave) {
-            // A monster we don't want to attack is here, don't cleave
+                // A monster we don't want to attack is here, don't cleave
                 avoidCleave = true
                 break
             }
@@ -84,7 +94,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
 
             cleaveTargets.push(entity)
         }
-        if (options?.maximumTargets && cleaveTargets.length + bot.targets > options?.maximumTargets) avoidCleave = true
+        if (options.maximumTargets && cleaveTargets.length + bot.targets > options.maximumTargets) avoidCleave = true
         if (!avoidCleave && (cleaveTargets.length > 1 || couldCleaveNearby)) {
             bot.mp -= bot.G.skills.cleave.mp
 
@@ -105,7 +115,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
         }
     }
 
-    if (bot.canUse("agitate") && !options?.disableAgitate) {
+    if (bot.canUse("agitate") && !options.disableAgitate) {
         // Calculate how much courage we have left to spare
         let numPhysicalTargetingMe = 0
         let numPureTargetingMe = 0
@@ -175,11 +185,11 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
 
             agitateTargets.push(entity)
         }
-        if (options?.maximumTargets && bot.targets + agitateTargets.length > options?.maximumTargets) avoidAgitate = true
+        if (options.maximumTargets && bot.targets + agitateTargets.length > options.maximumTargets) avoidAgitate = true
         if (!avoidAgitate && agitateTargets.length > 1) {
             bot.agitate().catch((e) => { console.error(e) })
             bot.mp -= bot.G.skills.agitate.mp
-        } else if (bot.canUse("taunt") && !(options?.maximumTargets && bot.targets + 1 > options?.maximumTargets)) {
+        } else if (bot.canUse("taunt") && !(options.maximumTargets && bot.targets + 1 > options.maximumTargets)) {
             for (const target of agitateTargets) {
                 if (Tools.distance(bot, target) > bot.G.skills.taunt.range) continue // Too far
                 bot.taunt(target.id).catch((e) => { console.error(e) })
@@ -224,7 +234,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
         const targets = new FastPriorityQueue<AL.Entity>(priority)
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
-            targetingPlayer: options?.targetingPlayer,
+            targetingPlayer: options.targetingPlayer,
             typeList: types,
             willDieToProjectiles: false,
             withinRange: bot.range
@@ -235,7 +245,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
             const entity = targets.peek()
             const canKill = bot.canKillInOneShot(entity)
 
-            if (!canKill && !options?.disableStomp && bot.canUse("stomp") && bot.mp > bot.G.skills.stomp.mp + bot.mp_cost) {
+            if (!canKill && !options.disableStomp && bot.canUse("stomp") && bot.mp > bot.G.skills.stomp.mp + bot.mp_cost) {
                 bot.stomp().catch((e) => { console.error(e) })
                 bot.mp -= bot.G.skills.stomp.mp
             }

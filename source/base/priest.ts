@@ -44,6 +44,8 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
         return
     }
 
+    if (bot.isOnCooldown("scare")) return
+
     const attackPriority = (a: AL.Entity, b: AL.Entity): boolean => {
         // Order in array
         const a_index = types.indexOf(a.type)
