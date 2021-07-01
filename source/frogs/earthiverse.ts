@@ -105,7 +105,7 @@ async function run() {
 
     const connectLoop = async () => {
         try {
-            const server = servers[(Date.now() / 1000 / 60) % servers.length]
+            const server = servers[Math.floor(Date.now() / 1000 / 60) % servers.length]
             mage = await AL.Game.startMage(mageName, server[0], server[1])
             startMage(mage)
         } catch (e) {

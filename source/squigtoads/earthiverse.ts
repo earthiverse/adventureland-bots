@@ -105,7 +105,7 @@ async function run() {
 
     const connectLoop = async () => {
         try {
-            const server = servers[(Date.now() / 1000 / 60) % servers.length]
+            const server = servers[Math.floor(Date.now() / 1000 / 60) % servers.length]
             priest = await AL.Game.startPriest(priestName, server[0], server[1])
             startPriest(priest)
         } catch (e) {
