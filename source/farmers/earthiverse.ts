@@ -11,9 +11,10 @@ const mage2Name = "earthMag2"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "II"
 
-const rangerLocation: AL.IPosition = { map: "spookytown", x: 994.5, y: -133 }
-const mage1Location: AL.IPosition = { map: "spookytown", x: 741, y: 61 }
-const mage2Location: AL.IPosition = { map: "spookytown", x: 756, y: 61 }
+const rangerLocation: AL.IPosition = { map: "main", x: 1577.5, y: -168 }
+const mage1Location: AL.IPosition = { map: "main", x: 1577.5, y: -279 }
+const mage2Location: AL.IPosition = { map: "main", x: 1577.5, y: -57 }
+const types = ["scorpion", "phoenix", "bigbird", "spider"]
 
 /** Characters */
 let merchant: AL.Merchant
@@ -45,7 +46,7 @@ async function startRanger(bot: AL.Ranger) {
 
             const targets: AL.Entity[] = []
             for (const [, entity] of bot.entities) {
-                if (entity.type !== "stoneworm") continue // Not a stoneworm
+                if (!types.includes(entity.type)) continue // Not a good type
                 if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
                 if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
                 if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
@@ -129,7 +130,7 @@ async function startMage(bot: AL.Mage) {
             if (!bot.socket || bot.socket.disconnected) return
 
             for (const [, entity] of bot.entities) {
-                if (entity.type !== "stoneworm") continue // Not a stoneworm
+                if (!types.includes(entity.type)) continue // Not a good type
                 if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
                 if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
                 if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
@@ -158,7 +159,7 @@ async function startMage(bot: AL.Mage) {
         try {
             const targets: [string, number][] = []
             for (const [, entity] of bot.entities) {
-                if (entity.type !== "stoneworm") continue // Not a stoneworm
+                if (!types.includes(entity.type)) continue // Not a good type
                 if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
                 if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
                 if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent

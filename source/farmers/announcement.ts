@@ -1,6 +1,6 @@
 import AL from "alclient-mongo"
 import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, startAvoidStacking, sleep, goToNearestWalkableToMonster, ITEMS_TO_SELL } from "../base/general.js"
-import { mainScorpions } from "../base/locations.js"
+import { mainSpiders } from "../base/locations.js"
 import { doBanking, startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesWarrior, startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { partyLeader, partyMembers } from "./party.js"
@@ -12,8 +12,8 @@ const warrior2Name = "battleworthy"
 const warrior3Name = "charmingness"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "II"
-const targets: AL.MonsterName[] = ["scorpion"]
-const defaultLocation: AL.IPosition = mainScorpions
+const targets: AL.MonsterName[] = ["spider"]
+const defaultLocation: AL.IPosition = mainSpiders
 
 let merchant: AL.Merchant
 let warrior1: AL.Warrior

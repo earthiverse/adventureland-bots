@@ -116,7 +116,7 @@ export const REPLENISHABLES_TO_BUY: [ALM.ItemName, number][] = [
  * @param bot
  * @returns
  */
-export async function getPriority1Entities(bot: ALM.Character): Promise<ALM.IEntity[]> {
+export function getPriority1Entities(bot: ALM.Character): Promise<ALM.IEntity[]> {
     // NOTE: This list is ordered higher -> lower priority
     const coop: ALM.MonsterName[] = [
         // Event-based
@@ -142,7 +142,7 @@ export async function getPriority1Entities(bot: ALM.Character): Promise<ALM.IEnt
  * @param bot
  * @returns
  */
-export async function getPriority2Entities(bot: ALM.Character): Promise<ALM.IEntity[]> {
+export function getPriority2Entities(bot: ALM.Character): Promise<ALM.IEntity[]> {
     // NOTE: This list is ordered higher -> lower priority
     const solo: ALM.MonsterName[] = [
         "goldenbat",

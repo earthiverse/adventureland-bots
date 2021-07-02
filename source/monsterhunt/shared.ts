@@ -18,8 +18,20 @@ export async function getTarget(bot: AL.Character, strategy: Strategy, informati
         if (strategy[entity.type].requireCtype &&
             !((information.bot1.bot?.ctype == strategy[entity.type].requireCtype && information.bot1.target == entity.type)
             || (information.bot2.bot?.ctype == strategy[entity.type].requireCtype && information.bot2.target == entity.type)
-            || (information.bot3.bot?.ctype == strategy[entity.type].requireCtype && information.bot3.target == entity.type))) continue // No priest
-        return entity.type
+            || (information.bot3.bot?.ctype == strategy[entity.type].requireCtype && information.bot3.target == entity.type))) continue
+        const realEntity = bot.entities.get(entity.name)
+        if (realEntity) {
+            return realEntity.type
+        } else {
+            if (AL.Tools.distance(bot, entity) < AL.Constants.MAX_VISIBLE_RANGE / 2) {
+
+                // We're close, but we can't see the entity. It's probably dead
+                AL.Database.lastMongoUpdate.delete(entity.name)
+                await AL.EntityModel.deleteOne({ name: entity.name, serverIdentifier: bot.serverData.name, serverRegion: bot.serverData.region })
+            } else {
+                return entity.type
+            }
+        }
     }
 
     for (const entity of await getPriority2Entities(bot)) {
@@ -27,10 +39,26 @@ export async function getTarget(bot: AL.Character, strategy: Strategy, informati
         if (strategy[entity.type].requireCtype &&
             !((information.bot1.bot?.ctype == strategy[entity.type].requireCtype && information.bot1.target == entity.type)
             || (information.bot2.bot?.ctype == strategy[entity.type].requireCtype && information.bot2.target == entity.type)
-            || (information.bot3.bot?.ctype == strategy[entity.type].requireCtype && information.bot3.target == entity.type))) continue // No priest
-        if (bot.G.monsters[entity.type].cooperative !== true && entity.target && ![information.merchant.name, information.bot3.name, information.bot1.name, information.merchant.name].includes(entity.target)) continue // It's targeting someone else
+            || (information.bot3.bot?.ctype == strategy[entity.type].requireCtype && information.bot3.target == entity.type))) continue
+        const realEntity = bot.entities.get(entity.name)
+        if (realEntity) {
+            if (realEntity.couldGiveCreditForKill(bot)) return realEntity.type
 
-        return entity.type
+            // Update the database to let others know that this entity is taken
+            AL.Database.lastMongoUpdate.set(realEntity.id, new Date())
+            await AL.EntityModel.updateOne({ name: realEntity.id, serverIdentifier: bot.serverData.name, serverRegion: bot.serverData.region, type: realEntity.type },
+                { hp: realEntity.hp, lastSeen: Date.now(), level: realEntity.level, map: realEntity.map, target: realEntity.target, x: realEntity.x, y: realEntity.y },
+                { upsert: true }).exec()
+        } else {
+            if (bot.G.monsters[entity.type].cooperative !== true && entity.target && ![information.bot1.name, information.bot2.name, information.bot3.name].includes(entity.target)) continue // It's targeting someone else
+            if (AL.Tools.distance(bot, entity) < AL.Constants.MAX_VISIBLE_RANGE / 2) {
+
+                // We're close, but we can't see the entity. It's probably dead
+                AL.Database.lastMongoUpdate.delete(entity.name)
+                await AL.EntityModel.deleteOne({ name: entity.name, serverIdentifier: bot.serverData.name, serverRegion: bot.serverData.region })
+            }
+            return entity.type
+        }
     }
 
     for (const type of await getMonsterHuntTargets(bot, information.friends)) {
@@ -38,7 +66,7 @@ export async function getTarget(bot: AL.Character, strategy: Strategy, informati
         if (strategy[type].requireCtype &&
             !((information.bot1.bot?.ctype == strategy[type].requireCtype && information.bot1.target == type)
             || (information.bot2.bot?.ctype == strategy[type].requireCtype && information.bot2.target == type)
-            || (information.bot3.bot?.ctype == strategy[type].requireCtype && information.bot3.target == type))) continue // No priest
+            || (information.bot3.bot?.ctype == strategy[type].requireCtype && information.bot3.target == type))) continue
 
         return type
     }
@@ -551,15 +579,19 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
             const newTarget = await getTarget(bot, strategy, information)
             if (bot.id == information.bot1.name) {
                 if (newTarget !== information.bot1.target) bot.stopSmartMove()
+                if (newTarget !== information.bot1.target) console.log(`changing ${information.bot1.name}'s target from ${information.bot1.target} to ${newTarget}`)
                 information.bot1.target = newTarget
             } else if (bot.id == information.bot2.name) {
                 if (newTarget !== information.bot2.target) bot.stopSmartMove()
+                if (newTarget !== information.bot1.target) console.log(`changing ${information.bot2.name}'s target from ${information.bot2.target} to ${newTarget}`)
                 information.bot2.target = newTarget
             } else if (bot.id == information.bot3.name) {
                 if (newTarget !== information.bot3.target) bot.stopSmartMove()
+                if (newTarget !== information.bot3.target) console.log(`changing ${information.bot1.name}'s target from ${information.bot3.target} to ${newTarget}`)
                 information.bot3.target = newTarget
             } else if (bot.id == information.merchant.target) {
                 if (newTarget !== information.merchant.target) bot.stopSmartMove()
+                if (newTarget !== information.bot1.target) console.log(`changing ${information.merchant.name}'s target from ${information.merchant.target} to ${newTarget}`)
                 information.merchant.target = newTarget
             }
         } catch (e) {
