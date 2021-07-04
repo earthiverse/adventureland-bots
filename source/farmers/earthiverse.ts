@@ -45,6 +45,11 @@ async function startRanger(bot: AL.Ranger) {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
+            if (bot.isOnCooldown("scare")) {
+                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
+                return
+            }
+
             const targets: AL.Entity[] = []
             for (const [, entity] of bot.entities) {
                 if (!types.includes(entity.type)) continue // Not a good type
@@ -130,6 +135,11 @@ async function startMage(bot: AL.Mage) {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
+            if (bot.isOnCooldown("scare")) {
+                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
+                return
+            }
+
             for (const [, entity] of bot.entities) {
                 if (!types.includes(entity.type)) continue // Not a good type
                 if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
@@ -158,6 +168,11 @@ async function startMage(bot: AL.Mage) {
 
     async function cburstLoop() {
         try {
+            if (bot.isOnCooldown("scare")) {
+                bot.timeouts.set("cburstloop", setTimeout(async () => { cburstLoop() }, Math.max(10, bot.getCooldown("cburst"))))
+                return
+            }
+
             const targets: [string, number][] = []
             for (const [, entity] of bot.entities) {
                 if (!types.includes(entity.type)) continue // Not a good type
