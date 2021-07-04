@@ -14,7 +14,7 @@ const identifier: AL.ServerIdentifier = "II"
 const rangerLocation: AL.IPosition = { map: "main", x: 1577.5, y: -168 }
 const mage1Location: AL.IPosition = { map: "main", x: 1577.5, y: -279 }
 const mage2Location: AL.IPosition = { map: "main", x: 1577.5, y: -57 }
-const types = ["scorpion", "phoenix", "bigbird", "spider"]
+const types = ["scorpion"]
 
 /** Characters */
 let merchant: AL.Merchant
