@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { goToBankIfFull, goToPoitonSellerIfLow, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
+import { GOLD_TO_HOLD, goToBankIfFull, goToPoitonSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 
 /** Config */
@@ -51,6 +51,25 @@ async function startMage(bot: AL.Mage) {
 
             await goToPoitonSellerIfLow(bot)
             await goToBankIfFull(bot)
+
+            if (bot.countItem("seashell") > 1000 || bot.hasItem("gem0") || bot.gold > 5_000_000) {
+                await bot.smartMove("items0") // Move to bank teller to give bank time to get ready
+
+                for (let i = 0; i < bot.isize; i++) {
+                    const item = bot.items[i]
+                    if (!item) continue // No item in this slot
+                    if (item.l == "l") continue // Don't send locked items
+                    if (ITEMS_TO_HOLD.has(item.name)) continue
+
+                    try {
+                        await bot.depositItem(i)
+                    } catch (e) {
+                        console.error(e)
+                    }
+                }
+
+                if (bot.gold > 1_000_000) await bot.depositGold(bot.gold - 1_000_000)
+            }
 
             // Look for frogs
             let nearest: AL.Entity
