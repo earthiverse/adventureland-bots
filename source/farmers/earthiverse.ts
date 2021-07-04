@@ -29,6 +29,7 @@ async function startShared(bot: AL.Character) {
     startExchangeLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)
+    startScareLoop(bot)
     startSellLoop(bot)
 
     if (bot.ctype !== "merchant") {
@@ -306,8 +307,6 @@ async function startMerchant(bot: AL.Merchant) {
         bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
     }
     moveLoop()
-
-    startScareLoop(bot)
 }
 
 async function run() {
