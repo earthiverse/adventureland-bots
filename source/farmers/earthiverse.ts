@@ -168,6 +168,8 @@ async function startMage(bot: AL.Mage) {
 
     async function cburstLoop() {
         try {
+            if (!bot.socket || bot.socket.disconnected) return
+
             if (bot.isOnCooldown("scare")) {
                 bot.timeouts.set("cburstloop", setTimeout(async () => { cburstLoop() }, Math.max(10, bot.getCooldown("cburst"))))
                 return
