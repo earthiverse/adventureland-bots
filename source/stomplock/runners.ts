@@ -35,7 +35,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
     }
 
     startAvoidStacking(bot)
-    startBuyLoop(bot)
+    startBuyLoop(bot, new Set())
     startChargeLoop(bot)
     startCompoundLoop(bot)
     startElixirLoop(bot, "elixirluck")
@@ -44,7 +44,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
     startLootLoop(bot)
     startPartyLoop(bot, partyLeader, partyMembers)
     startPontyLoop(bot)
-    startSellLoop(bot)
+    startSellLoop(bot, { "hpamulet": 2, "hpbelt": 2, "ringsj": 2, "shield": 2, "wcap": 2, "wshoes": 2 })
     startUpgradeLoop(bot)
     startWarcryLoop(bot)
 
@@ -66,7 +66,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
                     if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
                     if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
                     if (entity.willBurnToDeath()) continue // Will burn to death
-                    if (!entity.s.stunned || entity.s.stunned.ms < ((LOOP_MS + Math.max(...bot.pings)) * 2)) continue // Enemy is not stunned, or is about to be free, don't attack!
+                    if (!entity.s.stunned || entity.s.stunned.ms < ((LOOP_MS + Math.max(...bot.pings)) * 3)) continue // Enemy is not stunned, or is about to be free, don't attack!
 
                     await bot.basicAttack(entity.id)
                     break
@@ -92,7 +92,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
                     const entity = bot.entities.get(entityID)
                     if (!entity) continue // Entity died?
                     if (!entity.target || entity.target != bot.id) continue // Not targeting us
-                    if (entity.s.stunned && entity.s.stunned.ms > ((LOOP_MS + Math.min(...bot.pings)) * 2)) continue // Enemy is still stunned
+                    if (entity.s.stunned && entity.s.stunned.ms >= ((LOOP_MS + Math.min(...bot.pings)) * 3)) continue // Enemy is still stunned
 
                     // Scare, because we might run out of stun soon!
                     await bot.scare()
@@ -136,12 +136,8 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
                 for (const entityID of entityOrder) {
                     const entity = bot.entities.get(entityID)
                     if (!entity) continue // Entity died?
-                    if (!targets.includes(entity.type)) continue // Not a target
-                    if (entity.s.stunned) {
-                        // Check if enemy is still stunned long enough
-                        if (entity.s.stunned.ms >= (LOOP_MS + Math.min(...bot.pings)) * 2) continue
-                    }
-                    if (AL.Tools.distance(bot, entity) > bot.G.skills.stomp.range) continue // Too far to stomp
+                    if (entity.s.stunned && entity.s.stunned.ms >= (LOOP_MS + Math.min(...bot.pings)) * 3) break // Enemy is still stunned long enough
+                    if (AL.Tools.distance(bot, entity) > bot.G.skills.stomp.range) break // Too far to stomp
 
                     // It's our turn to stomp!
                     await bot.stomp()
