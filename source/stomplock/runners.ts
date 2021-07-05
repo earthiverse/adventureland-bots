@@ -297,7 +297,6 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
                 couldGiveCredit: true,
                 typeList: targets,
                 willDieToProjectiles: false,
-                withinRange: bot.range
             })) {
                 entities.add(entity)
             }
