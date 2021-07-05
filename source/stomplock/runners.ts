@@ -189,6 +189,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
                 if (entity.willBurnToDeath()) continue // Will burn to death shortly
 
                 next = entity
+                break
             }
 
             let destination: AL.IPosition = { ...spawn }
