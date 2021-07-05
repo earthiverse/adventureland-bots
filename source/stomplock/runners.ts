@@ -1,4 +1,5 @@
 import AL from "alclient-mongo"
+import FastPriorityQueue from "fastpriorityqueue"
 import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startTrackerLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull } from "../base/general.js"
 import { partyLeader, partyMembers } from "./party.js"
 
@@ -261,13 +262,50 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            const entityOrder: string[] = []
-            for (const [, entity] of bot.entities) {
-                if (!targets.includes(entity.type)) continue // Only attack our target
-                entityOrder.push(entity.id)
+            const priority = (a: AL.Entity, b: AL.Entity): boolean => {
+                // Order in array
+                const a_index = targets.indexOf(a.type)
+                const b_index = targets.indexOf(b.type)
+                if (a_index < b_index) return true
+                else if (a_index > b_index) return false
+
+                // Has a target -> higher priority
+                if (a.target && !b.target) return true
+                else if (!a.target && b.target) return false
+
+                // Could die -> lower priority
+                const a_couldDie = a.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)
+                const b_couldDie = b.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)
+                if (!a_couldDie && b_couldDie) return true
+                else if (a_couldDie && !b_couldDie) return false
+
+                // Will burn to death -> lower priority
+                const a_willBurn = a.willBurnToDeath()
+                const b_willBurn = b.willBurnToDeath()
+                if (!a_willBurn && b_willBurn) return true
+                else if (a_willBurn && !b_willBurn) return false
+
+                // Lower HP -> higher priority
+                if (a.hp < b.hp) return true
+                else if (a.hp > b.hp) return false
+
+                // Closer -> higher priority
+                return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
+            }
+            const entities = new FastPriorityQueue<AL.Entity>(priority)
+            for (const entity of bot.getEntities({
+                couldGiveCredit: true,
+                typeList: targets,
+                willDieToProjectiles: false,
+                withinRange: bot.range
+            })) {
+                entities.add(entity)
             }
 
-            entityOrder.sort()
+            const entityOrder: string[] = []
+            while (entities.size > 0) {
+                entityOrder.push(entities.poll().id)
+            }
 
             const stompOrder: StompOrderCM = {
                 entityOrder: entityOrder,
