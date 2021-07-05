@@ -1,6 +1,7 @@
 import AL from "alclient-mongo"
 import FastPriorityQueue from "fastpriorityqueue"
 import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startTrackerLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull } from "../base/general.js"
+import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { partyLeader, partyMembers } from "./party.js"
 
 export const region: AL.ServerRegion = "US"
@@ -35,6 +36,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
 
     startAvoidStacking(bot)
     startBuyLoop(bot)
+    startChargeLoop(bot)
     startCompoundLoop(bot)
     startElixirLoop(bot, "elixirluck")
     startExchangeLoop(bot)
@@ -43,8 +45,8 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
     startPartyLoop(bot, partyLeader, partyMembers)
     startPontyLoop(bot)
     startSellLoop(bot)
-
     startUpgradeLoop(bot)
+    startWarcryLoop(bot)
 
     async function attackLoop() {
         try {
@@ -90,7 +92,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
                     const entity = bot.entities.get(entityID)
                     if (!entity) continue // Entity died?
                     if (!entity.target || entity.target != bot.id) continue // Not targeting us
-                    if (entity.s.stunned && entity.s.stunned.ms > ((LOOP_MS + Math.max(...bot.pings)) * 2)) continue // Enemy is still stunned
+                    if (entity.s.stunned && entity.s.stunned.ms > ((LOOP_MS + Math.min(...bot.pings)) * 2)) continue // Enemy is still stunned
 
                     // Scare, because we might run out of stun soon!
                     await bot.scare()
@@ -137,7 +139,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
                     if (!targets.includes(entity.type)) continue // Not a target
                     if (entity.s.stunned) {
                         // Check if enemy is still stunned long enough
-                        if (entity.s.stunned.ms >= Math.min((LOOP_MS + Math.min(...bot.pings)) * 2, bot.G.skills.stomp.duration * 0.9 - (bot.G.skills.stomp.cooldown / bot.partyData?.list.length))) continue
+                        if (entity.s.stunned.ms >= (LOOP_MS + Math.min(...bot.pings)) * 2) continue
                     }
                     if (AL.Tools.distance(bot, entity) > bot.G.skills.stomp.range) continue // Too far to stomp
 
@@ -253,9 +255,9 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
             const decodedMessage: CM = JSON.parse(data.message)
             if (decodedMessage.type == "ready") {
                 if (decodedMessage.ready) {
-                    if (!readyToStomp.includes(data.name)) { readyToStomp.push(data.name) }
+                    if (!readyToStomp.includes(data.name)) readyToStomp.push(data.name)
                 } else {
-                    readyToStomp.splice(readyToStomp.indexOf(data.name), 1)
+                    if (readyToStomp.includes(data.name)) readyToStomp.splice(readyToStomp.indexOf(data.name), 1)
                 }
             }
         } catch (e) {
@@ -268,12 +270,6 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
             if (!bot.socket || bot.socket.disconnected) return
 
             const priority = (a: AL.Entity, b: AL.Entity): boolean => {
-                // Order in array
-                const a_index = targets.indexOf(a.type)
-                const b_index = targets.indexOf(b.type)
-                if (a_index < b_index) return true
-                else if (a_index > b_index) return false
-
                 // Has a target -> higher priority
                 if (a.target && !b.target) return true
                 else if (!a.target && b.target) return false

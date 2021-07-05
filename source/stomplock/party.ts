@@ -6,5 +6,7 @@ export const partyMembers = [
     // lolwutpear's warriors
     "fgsfds", "fsjal", "funny",
     // announcement's warriors
-    "announcement", "battleworthy", "charmingness"
+    "announcement", "battleworthy", "charmingness",
+    // TEMPORARY: Kouin
+    "kouin"
 ]

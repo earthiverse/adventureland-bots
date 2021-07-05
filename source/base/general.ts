@@ -833,6 +833,26 @@ export function startPartyLoop(bot: ALM.Character, leader: string, partyMembers?
 
                     // If there's an incoming request, and we're full, kick the lower priority characters
                     if (bot.partyData && bot.partyData.list.length >= 9) {
+                        // We can fit 10 members if one of them is a merchant.
+                        if (bot.partyData.list.length == 9) {
+                            let hasMerchant = false
+                            for (const partyMemberName in bot.partyData.party) {
+                                const partyMember = bot.partyData.party[partyMemberName]
+                                if (partyMember.type == "merchant") {
+                                    hasMerchant = true
+                                    break
+                                }
+                            }
+                            if (!hasMerchant) {
+                                const requestingPlayer = bot.players.get(data.name)
+                                if (requestingPlayer && requestingPlayer.ctype == "merchant") {
+                                    // We can fit a 10th member
+                                    console.log(await bot.acceptPartyRequest(data.name))
+                                    return
+                                }
+                            }
+                        }
+
                         const requestPriority = partyMembers.length - partyMembers.indexOf(data.name)
 
                         let toKickMember: string
