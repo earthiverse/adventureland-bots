@@ -4,9 +4,9 @@ import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, st
 import { partyLeader, partyMembers } from "./party.js"
 
 export const region: AL.ServerRegion = "US"
-export const identifier: AL.ServerIdentifier = "I"
+export const identifier: AL.ServerIdentifier = "II"
 
-const targets: AL.MonsterName[] = ["bigbird"]
+const targets: AL.MonsterName[] = ["redfairy", "greenfairy", "bluefairy"]
 const LOOP_MS = 25
 
 /** CM Types */
