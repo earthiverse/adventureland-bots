@@ -137,7 +137,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
                     if (!targets.includes(entity.type)) continue // Not a target
                     if (entity.s.stunned) {
                         // Check if enemy is still stunned long enough
-                        if (entity.s.stunned.ms >= Math.min((LOOP_MS + Math.min(...bot.pings)) * 3, bot.G.skills.stomp.duration - (bot.G.skills.stomp.cooldown / bot.partyData?.list.length))) continue
+                        if (entity.s.stunned.ms >= Math.min((LOOP_MS + Math.min(...bot.pings)) * 2, bot.G.skills.stomp.duration * 0.9 - (bot.G.skills.stomp.cooldown / bot.partyData?.list.length))) continue
                     }
                     if (AL.Tools.distance(bot, entity) > bot.G.skills.stomp.range) continue // Too far to stomp
 
@@ -162,7 +162,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
         } catch (e) {
             console.error(e)
         }
-        setTimeout(() => { sendStompReadyLoop() }, bot.G.skills.stomp.duration)
+        setTimeout(() => { sendStompReadyLoop() }, bot.G.skills.stomp.duration * 0.9)
     }
     sendStompReadyLoop()
 
@@ -185,7 +185,6 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
             for (const entityID of entityOrder) {
                 const entity = bot.entities.get(entityID)
                 if (!entity) continue // Entity died?
-                if (!targets.includes(entity.type)) continue // Only attack our target
                 if (!AL.Pathfinder.canWalkPath(bot, entity)) continue // Can't simply walk to entity
                 if (entity.willBurnToDeath()) continue // Will burn to death shortly
 
@@ -320,7 +319,7 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
         } catch (e) {
             console.error(e)
         }
-        setTimeout(async () => { sendStompOrderLoop() }, bot.G.skills.stomp.duration / 3)
+        setTimeout(async () => { sendStompOrderLoop() }, (bot.G.skills.stomp.duration * 0.9) / 3)
     }
     sendStompOrderLoop()
 }
