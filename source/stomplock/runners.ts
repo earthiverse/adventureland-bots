@@ -137,7 +137,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
                     if (!targets.includes(entity.type)) continue // Not a target
                     if (entity.s.stunned) {
                         // Check if enemy is still stunned long enough
-                        if (entity.s.stunned.ms >= Math.max((LOOP_MS + Math.min(...bot.pings)) * 2, bot.G.skills.stomp.duration - (bot.G.skills.stomp.cooldown / bot.partyData?.list.length))) continue
+                        if (entity.s.stunned.ms >= Math.min((LOOP_MS + Math.min(...bot.pings)) * 3, bot.G.skills.stomp.duration - (bot.G.skills.stomp.cooldown / bot.partyData?.list.length))) continue
                     }
                     if (AL.Tools.distance(bot, entity) > bot.G.skills.stomp.range) continue // Too far to stomp
 
