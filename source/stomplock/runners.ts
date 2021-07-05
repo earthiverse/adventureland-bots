@@ -50,6 +50,11 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
+            if (bot.isOnCooldown("scare")) {
+                setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("scare")))
+                return
+            }
+
             if (bot.canUse("attack")) {
                 for (const entityID of entityOrder) {
                     const entity = bot.entities.get(entityID)

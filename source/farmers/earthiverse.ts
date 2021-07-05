@@ -46,7 +46,7 @@ async function startRanger(bot: AL.Ranger) {
             if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.isOnCooldown("scare")) {
-                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
+                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("scare"))))
                 return
             }
 
@@ -136,7 +136,7 @@ async function startMage(bot: AL.Mage) {
             if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.isOnCooldown("scare")) {
-                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
+                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("scare"))))
                 return
             }
 
@@ -171,7 +171,7 @@ async function startMage(bot: AL.Mage) {
             if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.isOnCooldown("scare")) {
-                bot.timeouts.set("cburstloop", setTimeout(async () => { cburstLoop() }, Math.max(10, bot.getCooldown("cburst"))))
+                bot.timeouts.set("cburstloop", setTimeout(async () => { cburstLoop() }, Math.max(10, bot.getCooldown("scare"))))
                 return
             }
 
