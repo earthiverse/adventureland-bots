@@ -24,7 +24,7 @@ async function run() {
             try {
                 if (follower1) await follower1.disconnect()
                 follower1 = await AL.Game.startWarrior(name, region, identifier)
-                startShared(follower1)
+                startShared(follower1, merchantName)
                 follower1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -49,7 +49,7 @@ async function run() {
             try {
                 if (follower2) await follower2.disconnect()
                 follower2 = await AL.Game.startWarrior(name, region, identifier)
-                startShared(follower2)
+                startShared(follower2, merchantName)
                 follower2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -74,7 +74,7 @@ async function run() {
     //         try {
     //             if (follower3) await follower3.disconnect()
     //             follower3 = await AL.Game.startWarrior(name, region, identifier)
-    //             startShared(follower3)
+    //             startShared(follower3, merchantName)
     //             follower3.socket.on("disconnect", async () => { loopBot() })
     //         } catch (e) {
     //             console.error(e)

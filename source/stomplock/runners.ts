@@ -1,6 +1,6 @@
 import AL from "alclient-mongo"
 import FastPriorityQueue from "fastpriorityqueue"
-import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startTrackerLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull } from "../base/general.js"
+import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startTrackerLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop } from "../base/general.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { partyLeader, partyMembers } from "./party.js"
@@ -23,7 +23,7 @@ type StompOrderCM = {
 }
 type CM = StompOrderCM | StompReadyCM
 
-export async function startShared(bot: AL.Warrior): Promise<void> {
+export async function startShared(bot: AL.Warrior, merchantName: string): Promise<void> {
     let stompOrder: string[] = []
     let entityOrder: string[] = []
 
@@ -48,6 +48,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
     startSellLoop(bot, { "hpamulet": 2, "hpbelt": 2, "ringsj": 2, "shield": 2, "wcap": 2, "wshoes": 2 })
     startUpgradeLoop(bot)
     startWarcryLoop(bot)
+    startSendStuffDenylistLoop(bot, merchantName)
 
     async function attackLoop() {
         try {
@@ -133,7 +134,7 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
                 for (const entityID of entityOrder) {
                     const entity = bot.entities.get(entityID)
                     if (!entity) continue // Entity died?
-                    if (entity.s.stunned && entity.s.stunned.ms >= (LOOP_MS + Math.min(...bot.pings)) * 3) break // Enemy is still stunned long enough
+                    if (entity.s.stunned && entity.s.stunned.ms >= (LOOP_MS + Math.min(...bot.pings)) * 5) break // Enemy is still stunned long enough
                     if (AL.Tools.distance(bot, entity) > bot.G.skills.stomp.range) break // Too far to stomp
 
                     // It's our turn to stomp!
@@ -295,8 +296,14 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
 }
 
 export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], holdPosition: AL.IPosition): Promise<void> {
+    startHealLoop(bot)
     startPontyLoop(bot)
     startMluckLoop(bot)
+    startUpgradeLoop(bot)
+    startCompoundLoop(bot)
+    startLootLoop(bot)
+    startScareLoop(bot)
+    startSellLoop(bot)
 
     let lastBankVisit = Number.MIN_VALUE
     async function moveLoop() {
