@@ -1,6 +1,7 @@
 import AL from "alclient-mongo"
 import FastPriorityQueue from "fastpriorityqueue"
 import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startTrackerLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull } from "../base/general.js"
+import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { partyLeader, partyMembers } from "./party.js"
 
@@ -61,12 +62,8 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
                 for (const entityID of entityOrder) {
                     const entity = bot.entities.get(entityID)
                     if (!entity) continue // Entity died?
-                    if (!targets.includes(entity.type)) continue // Not a target
-                    if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
-                    if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
-                    if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
-                    if (entity.willBurnToDeath()) continue // Will burn to death
-                    if (!entity.s.stunned || entity.s.stunned.ms < ((LOOP_MS + Math.max(...bot.pings)) * 3)) continue // Enemy is not stunned, or is about to be free, don't attack!
+                    if (AL.Tools.distance(bot, entity) > bot.range) break // Too far
+                    if (!entity.s.stunned || entity.s.stunned.ms < ((LOOP_MS + Math.max(...bot.pings)) * 3)) break // Enemy is not stunned, or is about to be free, don't attack!
 
                     await bot.basicAttack(entity.id)
                     break
@@ -196,35 +193,35 @@ export async function startShared(bot: AL.Warrior): Promise<void> {
                 // Avoid stacking on party members
                 switch (bot.partyData.list.indexOf(bot.id)) {
                 case 1:
-                    destination.x += 6
+                    destination.x += 10
                     break
                 case 2:
-                    destination.x -= 6
+                    destination.x -= 10
                     break
                 case 3:
-                    destination.y += 6
+                    destination.y += 10
                     break
                 case 4:
-                    destination.y -= 6
+                    destination.y -= 10
                     break
                 case 5:
-                    destination.x += 6
-                    destination.y += 6
+                    destination.x += 10
+                    destination.y += 10
                     break
                 case 6:
-                    destination.x += 6
-                    destination.y -= 6
+                    destination.x += 10
+                    destination.y -= 10
                     break
                 case 7:
-                    destination.x -= 6
-                    destination.y += 6
+                    destination.x -= 10
+                    destination.y += 10
                     break
                 case 8:
-                    destination.x -= 6
-                    destination.y -= 6
+                    destination.x -= 10
+                    destination.y -= 10
                     break
                 case 9:
-                    destination.x += 12
+                    destination.x += 20
                     break
                 }
             }
@@ -315,4 +312,76 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
         setTimeout(async () => { sendStompOrderLoop() }, (bot.G.skills.stomp.duration * 0.9) / 3)
     }
     sendStompOrderLoop()
+}
+
+export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], holdPosition: AL.IPosition): Promise<void> {
+    startPontyLoop(bot)
+    startMluckLoop(bot)
+
+    let lastBankVisit = Number.MIN_VALUE
+    async function moveLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            // If we are dead, respawn
+            if (bot.rip) {
+                await bot.respawn()
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                return
+            }
+
+            // If we are full, let's go to the bank
+            if (bot.isFull() || lastBankVisit < Date.now() - 120000 || bot.hasPvPMarkedItem()) {
+                lastBankVisit = Date.now()
+                await doBanking(bot)
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                return
+            }
+
+            // mluck our friends
+            if (bot.canUse("mluck")) {
+                for (const friend of friends) {
+                    if (!friend) continue
+                    if (!friend.s.mluck || !friend.s.mluck.strong || friend.s.mluck.ms < 120000) {
+                        // Move to them, and we'll automatically mluck them
+                        if (AL.Tools.distance(bot, friend) > bot.G.skills.mluck.range) {
+                            await bot.closeMerchantStand()
+                            console.log(`[merchant] We are moving to ${friend.name} to mluck them!`)
+                            await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2 })
+                        }
+
+                        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                        return
+                    }
+                }
+            }
+
+            // get stuff from our friends
+            for (const friend of friends) {
+                if (!friend) continue
+                if (friend.isFull()) {
+                    await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+                    lastBankVisit = Date.now()
+                    await doBanking(bot)
+                    bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                    return
+                }
+            }
+
+            // Go fishing if we can
+            await goFishing(bot)
+
+            // Go mining if we can
+            await goMining(bot)
+
+            // Hang out in town
+            await bot.smartMove(holdPosition)
+            await bot.openMerchantStand()
+        } catch (e) {
+            console.error(e)
+        }
+
+        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+    }
+    moveLoop()
 }
