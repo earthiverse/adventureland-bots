@@ -263,28 +263,8 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
             if (!bot.socket || bot.socket.disconnected) return
 
             const priority = (a: AL.Entity, b: AL.Entity): boolean => {
-                // Has a target -> higher priority
-                if (a.target && !b.target) return true
-                else if (!a.target && b.target) return false
-
-                // Could die -> lower priority
-                const a_couldDie = a.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)
-                const b_couldDie = b.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)
-                if (!a_couldDie && b_couldDie) return true
-                else if (a_couldDie && !b_couldDie) return false
-
-                // Will burn to death -> lower priority
-                const a_willBurn = a.willBurnToDeath()
-                const b_willBurn = b.willBurnToDeath()
-                if (!a_willBurn && b_willBurn) return true
-                else if (a_willBurn && !b_willBurn) return false
-
-                // Lower HP -> higher priority
-                if (a.hp < b.hp) return true
-                else if (a.hp > b.hp) return false
-
-                // Closer -> higher priority
-                return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
+                // Older -> higher priority
+                return a.id < b.id
             }
             const entities = new FastPriorityQueue<AL.Entity>(priority)
             for (const entity of bot.getEntities({
