@@ -297,7 +297,6 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
 
 export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], holdPosition: AL.IPosition): Promise<void> {
     startHealLoop(bot)
-    startPontyLoop(bot)
     startMluckLoop(bot)
     startUpgradeLoop(bot)
     startCompoundLoop(bot)

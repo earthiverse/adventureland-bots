@@ -222,8 +222,13 @@ async function startMage(bot: AL.Mage) {
 }
 
 async function startMerchant(bot: AL.Merchant) {
-    startPontyLoop(bot)
+    startHealLoop(bot)
     startMluckLoop(bot)
+    startUpgradeLoop(bot)
+    startCompoundLoop(bot)
+    startLootLoop(bot)
+    startScareLoop(bot)
+    startSellLoop(bot)
     startPartyLoop(bot, bot.id) // Let anyone who wants to party with me do so
     startServerPartyInviteLoop(bot, [...partyMembers]) // Let's invite everyone, lol
 
