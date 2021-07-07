@@ -68,7 +68,7 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
                 await AL.AchievementModel.deleteOne({ date: achievement.date, name: achievement.name }).exec()
             } else {
                 lastDate = achievement.date
-                console.log(`keeping ${achievement.name} @ ${achievement.date} (over 1 year, different year)`)
+                console.log(`keeping ${achievement.name} @ ${achievement.date} (over 1 year, different month)`)
             }
         }
     }
