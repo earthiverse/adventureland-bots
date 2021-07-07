@@ -8,7 +8,7 @@ import { partyLeader, partyMembers } from "./party.js"
 export const region: AL.ServerRegion = "US"
 export const identifier: AL.ServerIdentifier = "II"
 
-const targets: AL.MonsterName[] = ["redfairy"]
+const targets: AL.MonsterName[] = ["bluefairy"]
 const LOOP_MS = 10
 
 /** CM Types */
