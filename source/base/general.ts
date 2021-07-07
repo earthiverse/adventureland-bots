@@ -119,14 +119,22 @@ export const REPLENISHABLES_TO_BUY: [ALM.ItemName, number][] = [
  * @param bot
  * @returns
  */
-export function getPriority1Entities(bot: ALM.Character): Promise<ALM.IEntity[]> {
+export async function getPriority1Entities(bot: ALM.Character): Promise<ALM.Entity[] | ALM.IEntity[]> {
     // NOTE: This list is ordered higher -> lower priority
     const coop: ALM.MonsterName[] = [
         // Event-based
         "dragold", "grinch", "mrgreen", "mrpumpkin",
         // Year-round
         "franky", "icegolem"]
-    return ALM.EntityModel.aggregate([
+    const nearby = []
+    for (const entity of bot.getEntities({
+        typeList: coop
+    })) {
+        if (entity.target == undefined) continue
+        nearby.push(entity)
+    }
+    if (nearby.length > 0) return nearby
+    return await ALM.EntityModel.aggregate([
         {
             $match: {
                 type: { $in: coop },
@@ -145,7 +153,7 @@ export function getPriority1Entities(bot: ALM.Character): Promise<ALM.IEntity[]>
  * @param bot
  * @returns
  */
-export function getPriority2Entities(bot: ALM.Character): Promise<ALM.IEntity[]> {
+export async function getPriority2Entities(bot: ALM.Character): Promise<ALM.Entity[] | ALM.IEntity[]> {
     // NOTE: This list is ordered higher -> lower priority
     const solo: ALM.MonsterName[] = [
         "goldenbat",
@@ -156,13 +164,28 @@ export function getPriority2Entities(bot: ALM.Character): Promise<ALM.IEntity[]>
         // Rare Monsters
         "greenjr", "jr", "skeletor", "mvampire", "fvampire", "stompy", "snowman"
     ]
-    return ALM.EntityModel.aggregate([
+    const nearby = bot.getEntities({
+        couldGiveCredit: true,
+        typeList: solo
+    })
+    if (nearby.length > 0) return nearby
+    let partyList = [bot.id]
+    if (bot.party) partyList = bot.partyData.list
+    return await ALM.EntityModel.aggregate([
         {
             $match: {
                 type: { $in: solo },
                 serverRegion: bot.server.region,
                 serverIdentifier: bot.server.name,
                 lastSeen: { $gt: Date.now() - 120000 }
+            }
+        },
+        {
+            $match: {
+                $or: [
+                    { target: undefined },
+                    { target: { $in: partyList } }
+                ]
             }
         },
         { $addFields: { __order: { $indexOfArray: [solo, "$type"] } } },
