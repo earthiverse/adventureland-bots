@@ -303,6 +303,7 @@ export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], h
     startLootLoop(bot)
     startScareLoop(bot)
     startSellLoop(bot)
+    startExchangeLoop(bot)
 
     let lastBankVisit = Number.MIN_VALUE
     async function moveLoop() {

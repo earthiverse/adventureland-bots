@@ -7,6 +7,4 @@ export const partyMembers = [
     "fgsfds", "fsjal", "funny",
     // announcement's warriors
     "announcement", "battleworthy", "charmingness",
-    // TEMPORARY: Kouin
-    "kouin"
 ]
