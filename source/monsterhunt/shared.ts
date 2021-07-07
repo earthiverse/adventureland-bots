@@ -642,6 +642,11 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
                     }
                 }
 
+                // Get a luck elixir
+                if (!bot.slots.elixir && !bot.hasItem("computer") && bot.gold > bot.G.items.elixirluck.g) {
+                    await bot.smartMove("elixirluck")
+                }
+
                 // Move to our target
                 if (bot.id == information.bot1.name) {
                     if (information.bot1.target) await strategy[information.bot1.target].move()
