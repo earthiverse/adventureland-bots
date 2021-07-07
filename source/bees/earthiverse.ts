@@ -26,7 +26,7 @@ async function startRogue(bot: AL.Rogue, positionOffset: { x: number, y: number 
             console.error(e)
         }
 
-        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
+        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, Math.min(bot.getCooldown("attack"), bot.getCooldown("quickstab")))))
     }
     attackLoop()
 
@@ -37,7 +37,7 @@ async function startRogue(bot: AL.Rogue, positionOffset: { x: number, y: number 
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -49,7 +49,7 @@ async function startRogue(bot: AL.Rogue, positionOffset: { x: number, y: number 
             console.error(e)
         }
 
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }
