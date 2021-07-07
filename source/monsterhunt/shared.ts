@@ -63,12 +63,14 @@ export async function getTarget(bot: AL.Character, strategy: Strategy, informati
     }
 
     // NOTE: TEMPORARY FOR FARMING MUMMIES
-    if (MY_CHARACTERS.includes(bot.name) && strategy["mummy"]) {
+    if (MY_CHARACTERS.includes(bot.id) && strategy.mummy) {
         return "mummy"
-    } else if (ANNOUNCEMENT_CHARACTERS.includes(bot.name)) {
+    } else if (ANNOUNCEMENT_CHARACTERS.includes(bot.id) && strategy.bee) {
         return "bee"
-    } else if (LOLWUTPEAR_CHARACTERS.includes(bot.name)) {
+    } else if (LOLWUTPEAR_CHARACTERS.includes(bot.id) && strategy.crab) {
         return "crab"
+    } else {
+        console.log("THIS WASN'T SUPPOSED TO HAPPEN WHY IS THIS HAPPENING")
     }
 
     for (const type of await getMonsterHuntTargets(bot, information.friends)) {
@@ -617,7 +619,8 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
                 if (bot.s.monsterhunt && bot.s.monsterhunt.c == 0) {
                     await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
                     await bot.finishMonsterHuntQuest()
-                    await bot.getMonsterHuntQuest()
+                    // NOTE: TEMPORARY FOR FARMING MUMMIES
+                    // await bot.getMonsterHuntQuest()
                     bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
                     return
                 }
