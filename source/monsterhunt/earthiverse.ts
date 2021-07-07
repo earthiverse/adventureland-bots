@@ -61,7 +61,7 @@ function prepareMerchant(bot: AL.Merchant) {
             move: async () => { await goToSpecialMonster(bot, "snowman") }
         }
     }
-    startMerchant(bot, information, strategy)
+    startMerchant(bot, information, strategy, { map: "main", x: 0, y: 0 })
 }
 
 function preparePriest(bot: AL.Priest) {

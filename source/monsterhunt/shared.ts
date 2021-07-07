@@ -159,7 +159,7 @@ export async function startMage(bot: AL.Mage, information: Information, strategy
     attackLoop()
 }
 
-export async function startMerchant(bot: AL.Merchant, information: Information, strategy: Strategy): Promise<void> {
+export async function startMerchant(bot: AL.Merchant, information: Information, strategy: Strategy, standPlace: AL.IPosition): Promise<void> {
     startShared(bot, strategy, information)
     startMluckLoop(bot)
     startPartyLoop(bot, bot.id)
@@ -318,7 +318,7 @@ export async function startMerchant(bot: AL.Merchant, information: Information, 
             }
 
             // Hang out in town
-            await bot.smartMove("main")
+            await bot.smartMove(standPlace)
             await bot.openMerchantStand()
         } catch (e) {
             console.error(e)

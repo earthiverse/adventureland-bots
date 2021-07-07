@@ -53,7 +53,7 @@ function prepareMerchant(bot: AL.Merchant) {
     const strategy: Strategy = {
     }
 
-    startMerchant(bot, information, strategy)
+    startMerchant(bot, information, strategy, { map: "main", x: 100, y: 0 })
 }
 
 async function run() {
