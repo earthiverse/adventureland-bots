@@ -631,7 +631,7 @@ function prepareRanger(bot: AL.Ranger) {
         },
         mummy: {
             attack: async () => { return attackTheseTypesRanger(bot, ["mummy"], information.friends) },
-            equipment: { mainhand: "firebow", orb: "test_orb" },
+            equipment: { mainhand: "firebow", offhand: "quiver", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "spookytown", x: 250, y: -1129 }) },
             requireCtype: "priest"
         },
