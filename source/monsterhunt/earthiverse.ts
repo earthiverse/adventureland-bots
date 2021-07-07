@@ -17,7 +17,7 @@ const information: Information = {
     },
     bot2: {
         bot: undefined,
-        name: "earthRan2",
+        name: "earthiverse",
         target: undefined
     },
     bot3: {
@@ -27,7 +27,7 @@ const information: Information = {
     },
     merchant: {
         bot: undefined,
-        name: "earthMer2",
+        name: "earthMer",
         target: undefined
     }
 }

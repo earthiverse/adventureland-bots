@@ -1,5 +1,6 @@
 import AL from "alclient-mongo"
-import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, goToBankIfFull, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startEventLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startServerPartyInviteLoop, startUpgradeLoop } from "../base/general.js"
+import { ANNOUNCEMENT_CHARACTERS, FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, goToBankIfFull, LOLWUTPEAR_CHARACTERS, LOOP_MS, MY_CHARACTERS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startEventLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startServerPartyInviteLoop, startUpgradeLoop } from "../base/general.js"
+import { attackTheseTypesMage } from "../base/mage.js"
 import { attackTheseTypesMerchant, doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
@@ -61,6 +62,15 @@ export async function getTarget(bot: AL.Character, strategy: Strategy, informati
         }
     }
 
+    // NOTE: TEMPORARY FOR FARMING MUMMIES
+    if (MY_CHARACTERS.includes(bot.name) && strategy["mummy"]) {
+        return "mummy"
+    } else if (ANNOUNCEMENT_CHARACTERS.includes(bot.name)) {
+        return "bee"
+    } else if (LOLWUTPEAR_CHARACTERS.includes(bot.name)) {
+        return "crab"
+    }
+
     for (const type of await getMonsterHuntTargets(bot, information.friends)) {
         if (!strategy[type]) continue // No strategy
         if (strategy[type].requireCtype &&
@@ -72,6 +82,81 @@ export async function getTarget(bot: AL.Character, strategy: Strategy, informati
     }
 
     return DEFAULT_TARGET
+}
+
+export async function startMage(bot: AL.Mage, information: Information, strategy: Strategy): Promise<void> {
+    startShared(bot, strategy, information)
+
+    const idleTargets: AL.MonsterName[] = []
+    for (const t in strategy) {
+        if (!strategy[t as AL.MonsterName].attackWhileIdle) continue
+        idleTargets.push(t as AL.MonsterName)
+    }
+
+    async function attackLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return // Stop if disconnected
+
+            if (
+                bot.rip // We are dead
+                || bot.c.town // We are teleporting to town
+            ) {
+                // We are dead
+                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                return
+            }
+
+            let target: AL.MonsterName
+            if (bot.id == information.bot1.name) {
+                target = information.bot1.target
+            } else if (bot.id == information.bot2.name) {
+                target = information.bot2.target
+            } else if (bot.id == information.bot3.name) {
+                target = information.bot3.target
+            }
+
+            if (target) {
+                // Equipment
+                if (strategy[target].equipment) {
+                    for (const s in strategy[target].equipment) {
+                        const slot = s as AL.SlotType
+                        const itemName = strategy[target].equipment[slot]
+                        const wType = bot.G.items[itemName].wtype
+
+                        if (bot.G.classes[bot.ctype].doublehand[wType]) {
+                            // Check if we have something in our offhand, we need to unequip it.
+                            if (bot.slots.offhand) await bot.unequip("offhand")
+                        }
+
+                        if (slot == "offhand" && bot.slots["mainhand"]) {
+                            const mainhandItem = bot.slots["mainhand"].name
+                            const mainhandWType = bot.G.items[mainhandItem].wtype
+                            if (bot.G.classes[bot.ctype].doublehand[mainhandWType]) {
+                                // We're equipping an offhand item, but we have a doublehand item equipped in our mainhand.
+                                await bot.unequip("mainhand")
+                            }
+                        }
+
+                        if (!bot.slots[slot]
+                            || (bot.slots[slot] && bot.slots[slot].name !== itemName)) {
+                            const i = bot.locateItem(itemName)
+                            if (i !== undefined) await bot.equip(i, slot)
+                        }
+                    }
+                }
+
+                // Strategy
+                await strategy[target].attack()
+            }
+
+            // Idle strategy
+            await attackTheseTypesMage(bot, idleTargets, information.friends)
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
+    }
+    attackLoop()
 }
 
 export async function startMerchant(bot: AL.Merchant, information: Information, strategy: Strategy): Promise<void> {
@@ -157,13 +242,12 @@ export async function startMerchant(bot: AL.Merchant, information: Information, 
 
             // If we are full, let's go to the bank
             await goToBankIfFull(bot)
-            // NOTE: TEMPORARY
-            // if (bot.isFull() || lastBankVisit < Date.now() - 120000 || bot.hasPvPMarkedItem()) {
-            //     lastBankVisit = Date.now()
-            //     await doBanking(bot)
-            //     bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
-            //     return
-            // }
+            if (bot.isFull() || lastBankVisit < Date.now() - 120000 || bot.hasPvPMarkedItem()) {
+                lastBankVisit = Date.now()
+                await doBanking(bot)
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                return
+            }
 
             // mluck our friends
             if (bot.canUse("mluck")) {
@@ -487,12 +571,12 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
     })
 
     startAvoidStacking(bot)
-    // startBuyLoop(bot) NOTE: TEMPORARY
+    startBuyLoop(bot)
     startBuyLoop(bot, new Set())
     startCompoundLoop(bot)
     if (bot.ctype !== "merchant") startElixirLoop(bot, "elixirluck")
     startEventLoop(bot)
-    // startExchangeLoop(bot)
+    startExchangeLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)
     if (bot.ctype !== "merchant") {
@@ -505,7 +589,7 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
     startScareLoop(bot)
     startSellLoop(bot)
     if (bot.ctype !== "merchant") startSendStuffDenylistLoop(bot, information.merchant.name)
-    // startUpgradeLoop(bot) NOTE: TEMPORARY
+    startUpgradeLoop(bot)
 
     if (bot.ctype !== "merchant") {
         const friendlyRogues = FRIENDLY_ROGUES
@@ -520,13 +604,14 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
                     return
                 }
 
-                // Get a MH if we're on the default server and we don't have one
-                if (!bot.s.monsterhunt && bot.server.name == DEFAULT_IDENTIFIER && bot.server.region == DEFAULT_REGION) {
-                    await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
-                    await bot.getMonsterHuntQuest()
-                    bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
-                    return
-                }
+                // NOTE: TEMPORARY FOR FARMING MUMMIES
+                // // Get a MH if we're on the default server and we don't have one
+                // if (!bot.s.monsterhunt && bot.server.name == DEFAULT_IDENTIFIER && bot.server.region == DEFAULT_REGION) {
+                //     await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
+                //     await bot.getMonsterHuntQuest()
+                //     bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
+                //     return
+                // }
 
                 // Turn in our monsterhunt if we can
                 if (bot.s.monsterhunt && bot.s.monsterhunt.c == 0) {
