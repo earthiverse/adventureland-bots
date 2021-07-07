@@ -23,7 +23,7 @@ const information: Information = {
     },
     merchant: {
         bot: undefined,
-        name: "earthMer",
+        name: "orlyowl",
         target: undefined
     }
 }
