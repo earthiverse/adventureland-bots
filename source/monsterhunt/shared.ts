@@ -10,8 +10,8 @@ import { partyLeader, partyMembers } from "./party.js"
 
 const DEFAULT_TARGET: AL.MonsterName = "crab"
 
-export const DEFAULT_REGION: AL.ServerRegion = "ASIA"
-export const DEFAULT_IDENTIFIER: AL.ServerIdentifier = "I"
+export const DEFAULT_REGION: AL.ServerRegion = "US"
+export const DEFAULT_IDENTIFIER: AL.ServerIdentifier = "II"
 
 export async function getTarget(bot: AL.Character, strategy: Strategy, information: Information): Promise<AL.MonsterName> {
     for (const entity of await getPriority1Entities(bot)) {
