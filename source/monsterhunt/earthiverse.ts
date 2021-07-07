@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { goToAggroMonster, goToNearestWalkableToMonster, goToPriestIfHurt, goToSpecialMonster, kiteInCircle } from "../base/general.js"
+import { goToAggroMonster, goToNearestWalkableToMonster, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesMerchant } from "../base/merchant.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
@@ -1252,6 +1252,7 @@ async function run() {
                 information.bot2.bot = await AL.Game.startRanger(name, region, identifier)
                 information.friends[2] = information.bot2.bot
                 prepareRanger(information.bot2.bot as AL.Ranger)
+                startTrackerLoop(information.bot2.bot)
                 information.bot2.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)

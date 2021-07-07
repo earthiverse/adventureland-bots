@@ -1,4 +1,5 @@
 import AL from "alclient-mongo"
+import { startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { Information, Strategy } from "../definitions/bot.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMage, startMerchant } from "./shared.js"
@@ -98,6 +99,7 @@ async function run() {
                 information.bot1.bot = await AL.Game.startMage(name, region, identifier)
                 information.friends[1] = information.bot1.bot
                 prepareMage(information.bot1.bot as AL.Mage)
+                startTrackerLoop(information.bot1.bot)
                 information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
