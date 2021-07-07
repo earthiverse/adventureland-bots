@@ -71,6 +71,8 @@ export async function getTarget(bot: AL.Character, strategy: Strategy, informati
         return "crab"
     } else {
         console.log("THIS WASN'T SUPPOSED TO HAPPEN WHY IS THIS HAPPENING")
+        console.log(bot.id)
+        console.log(strategy)
     }
 
     for (const type of await getMonsterHuntTargets(bot, information.friends)) {
