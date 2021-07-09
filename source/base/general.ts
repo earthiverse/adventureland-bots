@@ -60,7 +60,7 @@ export const ITEMS_TO_BUY: Set<ALM.ItemName> = new Set([
     // Offhands
     "exoarm", "wbook0", "wbook1",
     // Shields
-    "t2quiver", "lantern", "mshield", "quiver", "sshield", "xshield",
+    "t2quiver", "lantern", "mshield", /*"quiver",*/ "sshield", "xshield",
     // Capes
     "angelwings", "bcape", "cape", "ecape", "fcape", "stealthcape", "vcape",
     // Shoes
@@ -104,6 +104,14 @@ export const ITEMS_TO_SELL: ItemLevelInfo = {
     "fieldgen0": 999,
     // Snowballs
     "snowball": 999
+}
+
+// Sanity check
+for (const itemName in ITEMS_TO_SELL) {
+    if (ITEMS_TO_BUY.has(itemName as ALM.ItemName)) {
+        console.warn(`Removing ${itemName} from ITEMS_TO_BUY because it's in ITEMS_TO_SELL.`)
+        delete ITEMS_TO_SELL[itemName]
+    }
 }
 
 export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
