@@ -8,12 +8,18 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
     targetingPlayer?: string
 }): Promise<void> {
     if (bot.c.town) return // Don't attack if teleporting
+    const willDie: string[] = []
     const attackPriority = (a: AL.Entity, b: AL.Entity): boolean => {
         // Order in array
         const a_index = types.indexOf(a.type)
         const b_index = types.indexOf(b.type)
         if (a_index < b_index) return true
         else if (a_index > b_index) return false
+
+        const a_willDie = willDie.includes(a.id)
+        const b_willDie = willDie.includes(b.id)
+        if (!a_willDie && b_willDie) return true
+        else if (a_willDie && !b_willDie) return false
 
         // Has a target -> higher priority
         if (a.target && !b.target) return true
@@ -54,6 +60,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
 
         if (targets.length) {
             const target = targets[0]
+            willDie.push(target.id)
             for (const friend of friends) {
                 if (!friend) continue // No friend
                 if (friend.id == bot.id) continue // Don't delete it from our own list
@@ -80,6 +87,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
         if (!target) return // No target
 
         if (bot.canKillInOneShot(target)) {
+            willDie.push(target.id)
             for (const friend of friends) {
                 if (!friend) continue // No friend
                 if (friend.id == bot.id) continue // Don't delete it from our own list
@@ -122,6 +130,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
         if (!target) return // No target
 
         if (bot.canKillInOneShot(target, "quickpunch")) {
+            willDie.push(target.id)
             for (const friend of friends) {
                 if (!friend) continue // No friend
                 if (friend.id == bot.id) continue // Don't delete it from our own list
@@ -149,6 +158,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
         if (!target) return // No target
 
         if (bot.canKillInOneShot(target, "quickstab")) {
+            willDie.push(target.id)
             for (const friend of friends) {
                 if (!friend) continue // No friend
                 if (friend.id == bot.id) continue // Don't delete it from our own list
