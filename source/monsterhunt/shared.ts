@@ -64,7 +64,7 @@ export async function getTarget(bot: AL.Character, strategy: Strategy, informati
 
     // NOTE: TEMPORARY FOR FARMING MUMMIES
     if (MY_CHARACTERS.includes(bot.id) && strategy.mummy) {
-        return "mummy"
+        return "minimush"
     } else if (ANNOUNCEMENT_CHARACTERS.includes(bot.id) && strategy.bee) {
         return "bee"
     } else if (LOLWUTPEAR_CHARACTERS.includes(bot.id) && strategy.crab) {
