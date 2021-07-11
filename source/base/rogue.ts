@@ -1,5 +1,6 @@
 import AL from "alclient-mongo"
 import FastPriorityQueue from "fastpriorityqueue"
+import { LOOP_MS } from "./general.js"
 
 export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName[], friends: AL.Character[] = [], options?: {
     disableMentalBurst?: boolean
@@ -159,4 +160,19 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
 
         if (target) await bot.quickStab(target.id)
     }
+}
+
+export function startRSpeedLoop(bot: AL.Rogue): void {
+    async function rspeedLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            if (!bot.s.rspeed && bot.canUse("rspeed")) await bot.rspeed(bot.id)
+        } catch (e) {
+            console.error(e)
+        }
+
+        bot.timeouts.set("rspeedloop", setTimeout(async () => { rspeedLoop() }, Math.max(LOOP_MS, bot.getCooldown("rspeed"))))
+    }
+    rspeedLoop()
 }

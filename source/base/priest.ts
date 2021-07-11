@@ -138,7 +138,6 @@ export function startDarkBlessingLoop(bot: AL.Priest): void {
         bot.timeouts.set("darkblessingloop", setTimeout(async () => { darkBlessingLoop() }, Math.max(LOOP_MS, bot.getCooldown("darkblessing"))))
     }
     darkBlessingLoop()
-
 }
 
 export function startPartyHealLoop(bot: AL.Priest, friends: AL.Character[]): void {
