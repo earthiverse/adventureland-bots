@@ -69,7 +69,7 @@ async function run() {
 
     // Start all characters
     console.log("Connecting...")
-    const startRogueLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startWarriorLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
         const connectLoop = async () => {
             try {
                 warrior = await AL.Game.startWarrior(name, region, identifier)
@@ -97,6 +97,6 @@ async function run() {
         setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
         setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
     }
-    startRogueLoop(warriorName, region, identifier)
+    startWarriorLoop(warriorName, region, identifier)
 }
 run()

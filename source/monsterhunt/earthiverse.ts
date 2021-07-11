@@ -576,7 +576,8 @@ function prepareRanger(bot: AL.Ranger) {
                 } else {
                     await goToSpecialMonster(bot, "franky")
                 }
-            }
+            },
+            requireCtype: "priest"
         },
         fvampire: {
             attack: async () => { return attackTheseTypesRanger(bot, ["fvampire"], information.friends) },
@@ -934,6 +935,7 @@ function prepareWarrior(bot: AL.Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["nerfedmummy", "franky"], information.friends) },
             equipment: { mainhand: "basher", orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "franky") },
+            requireCtype: "priest"
         },
         fvampire: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["fvampire"], information.friends) },

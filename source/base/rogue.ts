@@ -56,7 +56,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
             const target = targets[0]
             for (const friend of friends) {
                 if (!friend) continue // No friend
-                // if (friend.id == bot.id) continue // Don't delete it from our own list
+                if (friend.id == bot.id) continue // Don't delete it from our own list
                 if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
                 friend.deleteEntity(target.id)
             }
@@ -82,7 +82,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
         if (bot.canKillInOneShot(target)) {
             for (const friend of friends) {
                 if (!friend) continue // No friend
-                // if (friend.id == bot.id) continue // Don't delete it from our own list
+                if (friend.id == bot.id) continue // Don't delete it from our own list
                 if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
                 friend.deleteEntity(target.id)
             }
@@ -93,7 +93,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
             for (const friend of friends) {
                 if (!friend) continue // No friend
                 if (friend.socket.disconnected) continue // Friend is disconnected
-                // if (friend.id == bot.id) continue // Can't energize ourselves
+                if (friend.id == bot.id) continue // Can't energize ourselves
                 if (AL.Tools.distance(bot, friend) > bot.G.skills.energize.range) continue // Too far away
                 if (!friend.canUse("energize")) continue // Friend can't use energize
 
@@ -124,7 +124,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
         if (bot.canKillInOneShot(target, "quickpunch")) {
             for (const friend of friends) {
                 if (!friend) continue // No friend
-                // if (friend.id == bot.id) continue // Don't delete it from our own list
+                if (friend.id == bot.id) continue // Don't delete it from our own list
                 if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
                 friend.deleteEntity(target.id)
             }
@@ -151,7 +151,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
         if (bot.canKillInOneShot(target, "quickstab")) {
             for (const friend of friends) {
                 if (!friend) continue // No friend
-                // if (friend.id == bot.id) continue // Don't delete it from our own list
+                if (friend.id == bot.id) continue // Don't delete it from our own list
                 if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
                 friend.deleteEntity(target.id)
             }
