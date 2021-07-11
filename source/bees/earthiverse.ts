@@ -1,7 +1,7 @@
 import AL from "alclient-mongo"
 import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, goToNearestWalkableToMonster, ITEMS_TO_SELL } from "../base/general.js"
 import { mainBeesNearTunnel } from "../base/locations.js"
-import { attackTheseTypesRogue } from "../base/rogue.js"
+import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
 
 /** Config */
 const rogue1Name = "earthRog"
@@ -17,6 +17,7 @@ async function startRogue(bot: AL.Rogue, positionOffset: { x: number, y: number 
     startHealLoop(bot)
     startLootLoop(bot)
     startSellLoop(bot, { ...ITEMS_TO_SELL, "hpamulet": 2, "hpbelt": 2, "quiver": 2, "ringsj": 2, "stinger": 2 })
+    startRSpeedLoop(bot)
 
     async function attackLoop() {
         try {
