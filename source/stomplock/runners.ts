@@ -3,7 +3,7 @@ import FastPriorityQueue from "fastpriorityqueue"
 import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startTrackerLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop } from "../base/general.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
-import { partyLeader, partyMembers } from "./party.js"
+import { stompPartyLeader, stompPartyMembers } from "../base/party.js"
 
 export const region: AL.ServerRegion = "US"
 export const identifier: AL.ServerIdentifier = "II"
@@ -32,7 +32,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
             ready: bot.canUse("stomp"),
             type: "ready"
         }
-        bot.sendCM([partyLeader], stompReadyCM)
+        bot.sendCM([stompPartyLeader], stompReadyCM)
     }
 
     startAvoidStacking(bot)
@@ -43,7 +43,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
     startExchangeLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)
-    startPartyLoop(bot, partyLeader, partyMembers)
+    startPartyLoop(bot, stompPartyLeader, stompPartyMembers)
     startPontyLoop(bot)
     startSellLoop(bot, { "hpamulet": 2, "hpbelt": 2, "ringsj": 2, "shield": 2, "wcap": 2, "wshoes": 2 })
     startUpgradeLoop(bot)
@@ -106,7 +106,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
     scareLoop()
 
     bot.socket.on("cm", async (data: AL.CMData) => {
-        if (!partyMembers.includes(data.name)) return // Discard messages from other players
+        if (!stompPartyMembers.includes(data.name)) return // Discard messages from other players
 
         try {
             const decodedMessage: CM = JSON.parse(data.message)
@@ -243,7 +243,7 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
     startTrackerLoop(bot)
 
     bot.socket.on("cm", async (data: AL.CMData) => {
-        if (!partyMembers.includes(data.name)) return // Discard messages from other players
+        if (!stompPartyMembers.includes(data.name)) return // Discard messages from other players
 
         try {
             const decodedMessage: CM = JSON.parse(data.message)
@@ -286,7 +286,7 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
                 playerOrder: [...readyToStomp],
                 type: "stompOrder"
             }
-            bot.sendCM([...partyMembers], stompOrder)
+            bot.sendCM([...stompPartyMembers], stompOrder)
         } catch (e) {
             console.error(e)
         }

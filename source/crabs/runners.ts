@@ -1,6 +1,6 @@
 import AL from "alclient-mongo"
 import { startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToPoitonSellerIfLow, goToBankIfFull } from "../base/general.js"
-import { partyLeader, partyMembers } from "./party.js"
+import { partyLeader, partyMembers } from "../base/party.js"
 
 export type Boundary = { x: [number, number], y: [number, number] }
 

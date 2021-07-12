@@ -1,11 +1,11 @@
 import AL from "alclient-mongo"
 import { startPontyLoop, LOOP_MS, startCompoundLoop, startHealLoop, startLootLoop, startScareLoop, startSellLoop, startUpgradeLoop, startExchangeLoop } from "../base/general.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
-import { partyLeader } from "./party.js"
+import { stompPartyLeader } from "../base/party.js"
 import { identifier, region, startLeader, startShared } from "./runners.js"
 
 /** Config */
-const leaderName = partyLeader
+const leaderName = stompPartyLeader
 const follower1Name = "earthWar2"
 const follower2Name = "earthWar3"
 const merchantName = "earthMer"

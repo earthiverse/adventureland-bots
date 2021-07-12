@@ -6,7 +6,7 @@ import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } fro
 import { attackTheseTypesRanger } from "../base/ranger.js"
 import { attackTheseTypesWarrior, startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { Information, Strategy } from "../definitions/bot.js"
-import { partyLeader, partyMembers } from "./party.js"
+import { stompPartyLeader, stompPartyMembers } from "../base/party.js"
 
 const DEFAULT_TARGET: AL.MonsterName = "crab"
 
@@ -563,7 +563,7 @@ export async function startWarrior(bot: AL.Warrior, information: Information, st
 
 export async function startShared(bot: AL.Character, strategy: Strategy, information: Information): Promise<void> {
     bot.socket.on("magiport", async (data: { name: string }) => {
-        if (partyMembers.includes(data.name)) {
+        if (stompPartyMembers.includes(data.name)) {
             if (bot.c?.town) await bot.stopWarpToTown()
             await bot.acceptMagiport(data.name)
             return
@@ -580,10 +580,10 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
     startHealLoop(bot)
     startLootLoop(bot)
     if (bot.ctype !== "merchant") {
-        if (bot.id == partyLeader) {
-            startPartyLoop(bot, partyLeader, partyMembers)
+        if (bot.id == stompPartyLeader) {
+            startPartyLoop(bot, stompPartyLeader, stompPartyMembers)
         } else {
-            bot.timeouts.set("partyloop", setTimeout(async () => { startPartyLoop(bot, partyLeader, partyMembers) }, 2000))
+            bot.timeouts.set("partyloop", setTimeout(async () => { startPartyLoop(bot, stompPartyLeader, stompPartyMembers) }, 2000))
         }
     }
     startScareLoop(bot)
