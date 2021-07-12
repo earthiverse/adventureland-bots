@@ -1,11 +1,13 @@
 import AL from "alclient-mongo"
 import FastPriorityQueue from "fastpriorityqueue"
 
-export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterName[], friends: AL.Character[] = [], options?: {
+export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterName[], friends: AL.Character[] = [], options: {
     disableHuntersMark?: boolean
     disableSupershot?: boolean
     targetingPlayer?: string
-}): Promise<void> {
+} = {}): Promise<void> {
+    console.log("well we made it in to here")
+
     if (!bot.canUse("attack")) return // We can't attack
     if (bot.c.town) return // Don't attack if teleporting
 
@@ -74,7 +76,7 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
     const fiveShotTargets = new FastPriorityQueue<AL.Entity>(priority)
     for (const entity of bot.getEntities({
         couldGiveCredit: true,
-        targetingPlayer: options?.targetingPlayer,
+        targetingPlayer: options.targetingPlayer,
         typeList: types,
         willDieToProjectiles: false,
         withinRange: bot.range
@@ -138,7 +140,7 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
     const target = targets.peek()
 
     // Apply huntersmark if we can't kill it in one shot and we have enough MP
-    if (bot.canUse("huntersmark") && !options?.disableHuntersMark && bot.mp > (bot.mp_cost + bot.G.skills.huntersmark.mp) && !bot.canKillInOneShot(target)) {
+    if (bot.canUse("huntersmark") && !options.disableHuntersMark && bot.mp > (bot.mp_cost + bot.G.skills.huntersmark.mp) && !bot.canKillInOneShot(target)) {
         bot.huntersMark(target.id).catch((e) => { console.error(e) })
     }
 
@@ -214,7 +216,7 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
     const supershotTargets = new FastPriorityQueue<AL.Entity>(priority)
     for (const entity of bot.getEntities({
         couldGiveCredit: true,
-        targetingPlayer: options?.targetingPlayer,
+        targetingPlayer: options.targetingPlayer,
         typeList: types,
         willDieToProjectiles: false,
         withinRange: bot.range * bot.G.skills.supershot.range_multiplier
