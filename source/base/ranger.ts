@@ -6,8 +6,6 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
     disableSupershot?: boolean
     targetingPlayer?: string
 } = {}): Promise<void> {
-    console.log("well we made it in to here")
-
     if (!bot.canUse("attack")) return // We can't attack
 
     console.log("we can attack")
