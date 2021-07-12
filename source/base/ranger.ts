@@ -9,6 +9,9 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
     console.log("well we made it in to here")
 
     if (!bot.canUse("attack")) return // We can't attack
+
+    console.log("we can attack")
+
     if (bot.c.town) return // Don't attack if teleporting
 
     console.log("uhh can we attack")
