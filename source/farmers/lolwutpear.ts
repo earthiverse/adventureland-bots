@@ -1,41 +1,44 @@
 import AL from "alclient-mongo"
-import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, ITEMS_TO_SELL, startElixirLoop } from "../base/general.js"
-import { mainCrabs } from "../base/locations.js"
+import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, ITEMS_TO_SELL, startElixirLoop, goToBankIfFull, goToNearestWalkableToMonster } from "../base/general.js"
+import { mainBeesNearTunnel } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { doBanking, startMluckLoop } from "../base/merchant.js"
+import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
 import { partyLeader, partyMembers } from "./party.js"
 
 /** Config */
 const merchantName = "orlyowl"
 const mage1Name = "lolwutpear"
 const mage2Name = "ytmnd"
-const mage3Name = "shoopdawhoop"
+const rogueNamae = "rule34"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "II"
-const targets: AL.MonsterName[] = ["phoenix", "crab", "squig", "squigtoad", "tortoise", "crabx", "frog"]
-const defaultLocation: AL.IPosition = mainCrabs
+const targets: AL.MonsterName[] = ["cutebee", "bee"]
+const defaultLocation: AL.IPosition = mainBeesNearTunnel
 
 let merchant: AL.Merchant
 let mage1: AL.Mage
 let mage2: AL.Mage
-let mage3: AL.Mage
+let rogue: AL.Rogue
 
 async function startShared(bot: AL.Character) {
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
-    startSellLoop(bot, { ...ITEMS_TO_SELL, "hpamulet": 2, "hpbelt": 2, "quiver": 2, "ringsj": 2, "stinger": 2 })
+    startSellLoop(bot, { ...ITEMS_TO_SELL })
+    if (bot.ctype !== "merchant") {
+        startElixirLoop(bot, "elixirluck")
+        startSendStuffDenylistLoop(bot, merchantName)
+        startPartyLoop(bot, partyLeader, partyMembers)
+    }
 }
 
 async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
-    startElixirLoop(bot, "elixirluck")
-    startPartyLoop(bot, partyLeader, partyMembers)
-    startSendStuffDenylistLoop(bot, merchantName)
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            await attackTheseTypesMage(bot, targets, [mage1, mage2, mage3], { cburstWhenHPLessThan: 100 })
+            await attackTheseTypesMage(bot, targets, [mage1, mage2, rogue], { cburstWhenHPLessThan: 100, disableEnergize: true })
         } catch (e) {
             console.error(e)
         }
@@ -99,6 +102,45 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
     moveLoop()
 }
 
+async function startRogue(bot: AL.Rogue, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
+    startRSpeedLoop(bot)
+
+    async function attackLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+            await attackTheseTypesRogue(bot, targets)
+        } catch (e) {
+            console.error(e)
+        }
+
+        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, Math.min(bot.getCooldown("attack"), bot.getCooldown("quickstab"), bot.getCooldown("mentalburst")))))
+    }
+    attackLoop()
+
+    async function moveLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            // If we are dead, respawn
+            if (bot.rip) {
+                await bot.respawn()
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                return
+            }
+
+            await goToPoitonSellerIfLow(bot)
+            await goToBankIfFull(bot)
+
+            await goToNearestWalkableToMonster(bot, targets, { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y })
+        } catch (e) {
+            console.error(e)
+        }
+
+        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+    }
+    moveLoop()
+}
+
 async function startMerchant(bot: AL.Merchant) {
     startCompoundLoop(bot)
     startUpgradeLoop(bot)
@@ -143,7 +185,7 @@ async function startMerchant(bot: AL.Merchant) {
 
             // mluck our friends
             if (bot.canUse("mluck")) {
-                for (const friend of [mage1, mage2, mage3]) {
+                for (const friend of [mage1, mage2, rogue]) {
                     if (!friend) continue
                     if (!friend.s.mluck || !friend.s.mluck.strong || friend.s.mluck.ms < 120000) {
                         // Move to them, and we'll automatically mluck them
@@ -262,7 +304,7 @@ async function run() {
                 if (mage1) await mage1.disconnect()
                 mage1 = await AL.Game.startMage(name, region, identifier)
                 startShared(mage1)
-                startMage(mage1)
+                startMage(mage1, { x: 50, y: 50 })
                 startTrackerLoop(mage1)
                 mage1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
@@ -308,18 +350,18 @@ async function run() {
     }
     startMage2Loop(mage2Name, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startMage3Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startRogueLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (mage3) await mage3.disconnect()
-                mage3 = await AL.Game.startMage(name, region, identifier)
-                startShared(mage3)
-                startMage(mage3, { x: 50, y: 50 })
-                mage3.socket.on("disconnect", async () => { loopBot() })
+                if (rogue) await rogue.disconnect()
+                rogue = await AL.Game.startRogue(name, region, identifier)
+                startShared(rogue)
+                startRogue(rogue)
+                rogue.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (mage3) await mage3.disconnect()
+                if (rogue) await rogue.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -332,6 +374,6 @@ async function run() {
         }
         loopBot()
     }
-    startMage3Loop(mage3Name, region, identifier).catch(() => { /* ignore errors */ })
+    startRogueLoop(rogueNamae, region, identifier).catch(() => { /* ignore errors */ })
 }
 run()

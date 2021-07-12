@@ -62,13 +62,9 @@ export async function getTarget(bot: AL.Character, strategy: Strategy, informati
         }
     }
 
-    // NOTE: TEMPORARY FOR FARMING MUMMIES
+    // NOTE: TEMPORARY FOR FARMING MINIMUSH
     if (MY_CHARACTERS.includes(bot.id) && strategy.minimush) {
         return "minimush"
-    } else if (ANNOUNCEMENT_CHARACTERS.includes(bot.id) && strategy.bee) {
-        return "bee"
-    } else if (LOLWUTPEAR_CHARACTERS.includes(bot.id) && strategy.crab) {
-        return "crab"
     }
 
     for (const type of await getMonsterHuntTargets(bot, information.friends)) {
@@ -572,7 +568,6 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
 
     startAvoidStacking(bot)
     startBuyLoop(bot)
-    startBuyLoop(bot, new Set())
     startCompoundLoop(bot)
     if (bot.ctype !== "merchant") startElixirLoop(bot, "elixirluck")
     startEventLoop(bot)
@@ -604,7 +599,7 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
                     return
                 }
 
-                // NOTE: TEMPORARY FOR FARMING MUMMIES
+                // NOTE: TEMPORARY FOR FARMING MINIMUSH
                 // // Get a MH if we're on the default server and we don't have one
                 // if (!bot.s.monsterhunt && bot.server.name == DEFAULT_IDENTIFIER && bot.server.region == DEFAULT_REGION) {
                 //     await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
@@ -617,7 +612,7 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
                 if (bot.s.monsterhunt && bot.s.monsterhunt.c == 0) {
                     await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
                     await bot.finishMonsterHuntQuest()
-                    // NOTE: TEMPORARY FOR FARMING MUMMIES
+                    // NOTE: TEMPORARY FOR FARMING MINIMUSH
                     // await bot.getMonsterHuntQuest()
                     bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
                     return

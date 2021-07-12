@@ -3,10 +3,11 @@ import FastPriorityQueue from "fastpriorityqueue"
 
 const CBURST_WHEN_HP_LESS_THAN = 200
 
-export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[], friends: AL.Character[] = [], options?: {
+export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[], friends: AL.Character[] = [], options: {
     cburstWhenHPLessThan?: number
+    disableEnergize?: boolean
     targetingPlayer?: string
-}): Promise<void> {
+} = {}): Promise<void> {
     if (bot.c.town) return // Don't attack if teleporting
     if (bot.canUse("attack")) {
         const attackPriority = (a: AL.Entity, b: AL.Entity): boolean => {
@@ -43,7 +44,7 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
         const targets = new FastPriorityQueue<AL.Entity>(attackPriority)
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
-            targetingPlayer: options?.targetingPlayer,
+            targetingPlayer: options.targetingPlayer,
             typeList: types,
             willDieToProjectiles: false,
             withinRange: bot.range
@@ -64,7 +65,7 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
         }
 
         // Use our friends to energize
-        if (!bot.s.energized) {
+        if (!bot.s.energized && !options.disableEnergize) {
             for (const friend of friends) {
                 if (!friend) continue // Friend is missing
                 if (friend.socket.disconnected) continue // Friend is disconnected
@@ -86,12 +87,12 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
         let mpNeeded = bot.G.skills.cburst.mp
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
-            targetingPlayer: options?.targetingPlayer,
+            targetingPlayer: options.targetingPlayer,
             typeList: types,
             willDieToProjectiles: false,
             withinRange: bot.range
         })) {
-            if (options?.cburstWhenHPLessThan) {
+            if (options.cburstWhenHPLessThan) {
                 if (entity.hp >= options.cburstWhenHPLessThan) continue
             } else if (entity.hp >= CBURST_WHEN_HP_LESS_THAN) continue // Lots of HP
             if (AL.Constants.SPECIAL_MONSTERS.includes(entity.type)) continue // Don't cburst special monsters

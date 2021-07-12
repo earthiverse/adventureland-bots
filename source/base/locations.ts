@@ -2,6 +2,7 @@ import AL from "alclient-mongo"
 
 // Main
 export const mainBeesNearTunnel: AL.IPosition = { map: "main", x: 152, y: 1487 }
+export const mainBeesNearGoos: AL.IPosition = { map: "main", x: 546, y: 1059 }
 export const mainCrabs: AL.IPosition = { map: "main", x: -1202.5, y: -66 }
 export const mainGoos: AL.IPosition = { map: "main", x: -64, y: 787 }
 export const mainPoisios: AL.IPosition = { map: "main", x: -121, y: 1360 }

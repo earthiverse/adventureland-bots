@@ -6,7 +6,7 @@ export const partyMembers = [
     // Kouin's characters
     "bataxedude", "cclair", "fathergreen", "kakaka", "kekeke", "kukuku", "piredude",
     // Lolwutpear's characters
-    "fgsfds", "fsjal", "funny", "lolwutpear", "shoopdawhoop", "ytmnd",
+    "fgsfds", "fsjal", "funny", "lolwutpear", "rule34", "shoopdawhoop", "ytmnd",
     // Announcement's characters
     "announcement", "battleworthy", "charmingness", "enlightening", "facilitating", "gratuitously", "hypothesized"
 ]
