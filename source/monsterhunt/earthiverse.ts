@@ -38,7 +38,7 @@ const information: Information = {
 function prepareMage(bot: AL.Mage) {
     const strategy: Strategy = {
         minimush: {
-            attack: async () => { await attackTheseTypesMage(bot, ["minimush"], information.friends) },
+            attack: async () => { await attackTheseTypesMage(bot, ["minimush"], information.friends, { disableEnergize: true }) },
             attackWhileIdle: true,
             equipment: { mainhand: "wand" },
             move: async () => {
