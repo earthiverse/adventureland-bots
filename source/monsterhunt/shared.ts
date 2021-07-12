@@ -669,15 +669,15 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
                 information.bot1.target = newTarget
             } else if (bot.id == information.bot2.name) {
                 if (newTarget !== information.bot2.target) bot.stopSmartMove()
-                if (newTarget !== information.bot1.target) console.log(`changing ${information.bot2.name}'s target from ${information.bot2.target} to ${newTarget}`)
+                if (newTarget !== information.bot2.target) console.log(`changing ${information.bot2.name}'s target from ${information.bot2.target} to ${newTarget}`)
                 information.bot2.target = newTarget
             } else if (bot.id == information.bot3.name) {
                 if (newTarget !== information.bot3.target) bot.stopSmartMove()
-                if (newTarget !== information.bot3.target) console.log(`changing ${information.bot1.name}'s target from ${information.bot3.target} to ${newTarget}`)
+                if (newTarget !== information.bot3.target) console.log(`changing ${information.bot3.name}'s target from ${information.bot3.target} to ${newTarget}`)
                 information.bot3.target = newTarget
             } else if (bot.id == information.merchant.target) {
                 if (newTarget !== information.merchant.target) bot.stopSmartMove()
-                if (newTarget !== information.bot1.target) console.log(`changing ${information.merchant.name}'s target from ${information.merchant.target} to ${newTarget}`)
+                if (newTarget !== information.merchant.target) console.log(`changing ${information.merchant.name}'s target from ${information.merchant.target} to ${newTarget}`)
                 information.merchant.target = newTarget
             }
         } catch (e) {
