@@ -8,12 +8,6 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
 } = {}): Promise<void> {
     if (!bot.canUse("attack")) return // We can't attack
 
-    console.log("we can attack")
-
-    if (bot.c.town) return // Don't attack if teleporting
-
-    console.log("uhh can we attack")
-
     const priority = (a: AL.Entity, b: AL.Entity): boolean => {
         // Order in array
         const a_index = types.indexOf(a.type)
