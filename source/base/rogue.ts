@@ -168,6 +168,20 @@ export function startRSpeedLoop(bot: AL.Rogue): void {
             if (!bot.socket || bot.socket.disconnected) return
 
             if (!bot.s.rspeed && bot.canUse("rspeed")) await bot.rspeed(bot.id)
+
+            // Give rogue speed to friends
+            // TODO: Add an option argument to disable this
+            if (bot.canUse("rspeed")) {
+                for (const [, player] of bot.players) {
+                    if (player.s.rspeed && player.s.rspeed.ms > 300_000) continue // Already has rogue speed
+                    if (bot.party !== player.party && bot.owner !== player.owner) continue // Not a friend
+                    if (AL.Tools.distance(bot, player) > bot.G.skills.rspeed.range) continue // Too far away
+
+                    await bot.rspeed(player.id)
+                }
+            }
+
+            // TODO: Give rogue speed to randos
         } catch (e) {
             console.error(e)
         }
