@@ -37,6 +37,18 @@ const information: Information = {
 
 function prepareMage(bot: AL.Mage) {
     const strategy: Strategy = {
+        goo: {
+            attack: async () => { await attackTheseTypesMage(bot, ["goo"], information.friends, { disableEnergize: true }) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "wand" },
+            move: async () => {
+                if (bot.id == "earthMag") {
+                    await bot.smartMove({ map: "main", x: -132, y: 787 })
+                } else if (bot.id == "earthMag2") {
+                    await bot.smartMove({ map: "main", x: 68, y: 787 })
+                }
+            }
+        },
         minimush: {
             attack: async () => { await attackTheseTypesMage(bot, ["minimush"], information.friends, { disableEnergize: true }) },
             attackWhileIdle: true,
