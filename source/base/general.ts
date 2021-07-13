@@ -241,7 +241,7 @@ export async function getMonsterHuntTargets(bot: ALM.Character, friends: ALM.Cha
         }
     }
 
-    if (lookupOthers){
+    if (lookupOthers) {
         for (const player of await ALM.PlayerModel.aggregate([
             {
                 $match: {
@@ -1146,7 +1146,8 @@ export function startSendStuffDenylistLoop(bot: ALM.Character, sendTo: string, i
     sendStuffLoop()
 }
 
-export function startServerPartyInviteLoop(bot: ALM.Character, ignore = [bot.id]): void {
+export function startServerPartyInviteLoop(bot: ALM.Character, ignore = [bot.id], sendInviteEveryMS = 300_000): void {
+    const lastInvites = new Map<string, number>()
     async function serverPartyInviteLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -1159,13 +1160,18 @@ export function startServerPartyInviteLoop(bot: ALM.Character, ignore = [bot.id]
                 if (ignore.includes(player.party)) continue // Ignore
                 if (bot.partyData?.list?.length >= 9) break // We're full
 
+                const lastInvite = lastInvites.get(player.name)
+                if (lastInvite && lastInvite > Date.now() - sendInviteEveryMS) continue // Don't spam invites
+
                 if (bot.party) {
                     // We have a party, let's invite more!
                     await bot.sendPartyInvite(player.name)
+                    lastInvites.set(player.name, Date.now())
                 } else {
                     // We don't have a party, let's invite more, or request to join theirs!
                     await bot.sendPartyInvite(player.name)
                     if (player.party) await bot.sendPartyRequest(player.name)
+                    lastInvites.set(player.name, Date.now())
                 }
 
                 await sleep(1000)
