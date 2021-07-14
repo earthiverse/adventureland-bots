@@ -328,7 +328,7 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
 export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], holdPosition: AL.IPosition): Promise<void> {
     startHealLoop(bot)
     startMluckLoop(bot)
-    startUpgradeLoop(bot)
+    startUpgradeLoop(bot, { ... ITEMS_TO_SELL, "stick": 100 }) // Don't upgrade sticks
     startCompoundLoop(bot)
     startLootLoop(bot)
     startScareLoop(bot)
