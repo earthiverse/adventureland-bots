@@ -1,6 +1,6 @@
-import AL from "alclient-mongo"
+import AL, { Tools, TradeSlotType } from "alclient-mongo"
 import FastPriorityQueue from "fastpriorityqueue"
-import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startTrackerLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop } from "../base/general.js"
+import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startTrackerLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, ITEMS_TO_SELL } from "../base/general.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { stompPartyLeader, stompPartyMembers } from "../base/party.js"
@@ -45,10 +45,40 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
     startLootLoop(bot)
     startPartyLoop(bot, stompPartyLeader, stompPartyMembers)
     startPontyLoop(bot)
-    startSellLoop(bot, { "hpamulet": 2, "hpbelt": 2, "ringsj": 2, "shield": 2, "wcap": 2, "wshoes": 2 })
-    startUpgradeLoop(bot)
+    startSellLoop(bot)
+    startUpgradeLoop(bot, { ... ITEMS_TO_SELL, "stick": 100 }) // Don't upgrade sticks
     startWarcryLoop(bot)
     startSendStuffDenylistLoop(bot, merchantName)
+
+    // NOTE: Temporary for Kouin
+    async function sellToKouinLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            const sticks = bot.locateItems("stick", bot.items, { level: 0 })
+            const kouin = bot.players.get("kouin")
+
+            if (sticks && sticks.length > 0
+                && kouin && AL.Tools.distance(bot, kouin) < AL.Constants.NPC_INTERACTION_DISTANCE) {
+                for (const stick of sticks) {
+                    for (const slotName in kouin.slots) {
+                        const slot: AL.ItemDataTrade = kouin.slots[slotName]
+                        if (!slot || !slot.b) continue
+                        if (slot.name !== "stick") continue
+                        if (slot.price < 2_000_000) continue
+
+                        await bot.sellToMerchant("kouin", slotName as TradeSlotType, slot.rid, 1)
+                    }
+                }
+            }
+
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { sellToKouinLoop() }, 1000)
+    }
+    sellToKouinLoop()
 
     async function attackLoop() {
         try {
