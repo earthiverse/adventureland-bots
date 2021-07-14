@@ -1,67 +1,30 @@
 import AL from "alclient-mongo"
 import { goToPoitonSellerIfLow, startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startAvoidStacking, goToNearestWalkableToMonster, goToBankIfFull } from "../base/general.js"
 import { mainGoos } from "../base/locations.js"
-import { attackTheseTypesPaladin } from "../base/paladin.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 
 /** Config */
-const partyLeader = "earthPal"
-const partyMembers = ["earthPal", "earthRan2", "earthRan3"]
-const paladinName = "earthPal"
-const ranger1Name = "earthRan2"
-const ranger2Name = "earthRan3"
+const servers: [AL.ServerRegion, AL.ServerIdentifier][] = [
+    ["ASIA", "I"],
+    ["US", "I"],
+    // ["US", "II"],
+    ["US", "III"],
+    ["US", "PVP"],
+    ["EU", "I"],
+    ["EU", "II"],
+    ["EU", "PVP"]
+]
+const partyLeader = "earthiverse"
+const partyMembers = ["earthiverse", "earthRan2", "earthRan3"]
+const ranger1Name = "earthiverse"
+const ranger2Name = "earthRan2"
+const ranger3Name = "earthRan3"
 const targets: AL.MonsterName[] = ["goo"]
 const defaultLocation: AL.IPosition = mainGoos
 
-let paladin: AL.Paladin
 let ranger1: AL.Ranger
 let ranger2: AL.Ranger
-
-async function startPaladin(bot: AL.Paladin, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
-    startBuyLoop(bot, new Set())
-    startElixirLoop(bot, "elixirluck")
-    startHealLoop(bot)
-    startLootLoop(bot)
-    startPartyLoop(bot, partyLeader, partyMembers)
-    startSellLoop(bot)
-
-    async function attackLoop() {
-        try {
-            if (!bot.socket || bot.socket.disconnected) return
-            await attackTheseTypesPaladin(bot, targets, [paladin, ranger1, ranger2])
-        } catch (e) {
-            console.error(e)
-        }
-
-        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
-    }
-    attackLoop()
-
-    startAvoidStacking(bot)
-
-    async function moveLoop() {
-        try {
-            if (!bot.socket || bot.socket.disconnected) return
-
-            // If we are dead, respawn
-            if (bot.rip) {
-                await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
-                return
-            }
-
-            await goToPoitonSellerIfLow(bot)
-            await goToBankIfFull(bot)
-
-            await goToNearestWalkableToMonster(bot, targets, { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y })
-        } catch (e) {
-            console.error(e)
-        }
-
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
-    }
-    moveLoop()
-}
+let ranger3: AL.Ranger
 
 async function startRanger(bot: AL.Ranger, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
     startBuyLoop(bot, new Set())
@@ -74,7 +37,7 @@ async function startRanger(bot: AL.Ranger, positionOffset: { x: number, y: numbe
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
-            await attackTheseTypesRanger(bot, targets, [paladin, ranger1, ranger2])
+            await attackTheseTypesRanger(bot, targets, [ranger1, ranger2, ranger3])
         } catch (e) {
             console.error(e)
         }
@@ -99,7 +62,7 @@ async function startRanger(bot: AL.Ranger, positionOffset: { x: number, y: numbe
             await goToPoitonSellerIfLow(bot)
             await goToBankIfFull(bot)
 
-            await goToNearestWalkableToMonster(bot, targets, { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y })
+            await bot.smartMove({ map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y })
         } catch (e) {
             console.error(e)
         }
@@ -114,96 +77,85 @@ async function run() {
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
     await AL.Pathfinder.prepare(AL.Game.G)
 
-    // Start all characters
-    console.log("Connecting...")
-    const startWarrior1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
-        const connectLoop = async () => {
-            try {
-                paladin = await AL.Game.startPaladin(name, region, identifier)
-                startPaladin(paladin)
-            } catch (e) {
-                console.error(e)
-                if (paladin) await paladin.disconnect()
-            }
-            const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
+    const connectLoop1 = async () => {
+        try {
+            const server = servers[(Math.floor(Date.now() / 1000 / 60) + 1) % servers.length]
+            ranger1 = await AL.Game.startRanger(ranger1Name, server[0], server[1])
+            startRanger(ranger1)
+        } catch (e) {
+            console.error(e)
+            if (ranger1) await ranger1.disconnect()
         }
-
-        const disconnectLoop = async () => {
-            try {
-                if (paladin) await paladin.disconnect()
-                paladin = undefined
-            } catch (e) {
-                console.error(e)
-            }
-            const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
-        }
-
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
-        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        setTimeout(async () => { connectLoop1() }, msToNextMinute + 10000)
     }
-    startWarrior1Loop(paladinName, "EU", "PVP")
 
-    const startwarrior2Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
-        const connectLoop = async () => {
-            try {
-                ranger1 = await AL.Game.startRanger(name, region, identifier)
-                startRanger(ranger1)
-            } catch (e) {
-                console.error(e)
-                if (ranger1) await ranger1.disconnect()
-            }
-            const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
+    const disconnectLoop1 = async () => {
+        try {
+            if (ranger1) await ranger1.disconnect()
+            ranger1 = undefined
+        } catch (e) {
+            console.error(e)
         }
-
-        const disconnectLoop = async () => {
-            try {
-                if (ranger1) await ranger1.disconnect()
-                ranger1 = undefined
-            } catch (e) {
-                console.error(e)
-            }
-            const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
-        }
-
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
-        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        setTimeout(async () => { disconnectLoop1() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
     }
-    startwarrior2Loop(ranger1Name, "US", "PVP")
+    let msToNextMinute = 60_000 - (Date.now() % 60_000)
+    setTimeout(async () => { connectLoop1() }, msToNextMinute + 10000)
+    setTimeout(async () => { disconnectLoop1() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
 
-    const startwarrior3Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
-        const connectLoop = async () => {
-            try {
-                ranger2 = await AL.Game.startRanger(name, region, identifier)
-                startRanger(ranger2)
-            } catch (e) {
-                console.error(e)
-                if (ranger2) await ranger2.disconnect()
-            }
-            const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
+    const connectLoop2 = async () => {
+        try {
+            const server = servers[(Math.floor(Date.now() / 1000 / 60) + 1) % servers.length]
+            ranger2 = await AL.Game.startRanger(ranger2Name, server[0], server[1])
+            startRanger(ranger2, { x: -50, y: 0 })
+        } catch (e) {
+            console.error(e)
+            if (ranger2) await ranger2.disconnect()
         }
-
-        const disconnectLoop = async () => {
-            try {
-                if (ranger2) await ranger2.disconnect()
-                ranger2 = undefined
-            } catch (e) {
-                console.error(e)
-            }
-            const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
-        }
-
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
-        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        setTimeout(async () => { connectLoop2() }, msToNextMinute + 10000)
     }
-    startwarrior3Loop(ranger2Name, "ASIA", "I")
+
+    const disconnectLoop2 = async () => {
+        try {
+            if (ranger2) await ranger2.disconnect()
+            ranger2 = undefined
+        } catch (e) {
+            console.error(e)
+        }
+        const msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { disconnectLoop2() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+    }
+    msToNextMinute = 60_000 - (Date.now() % 60_000)
+    setTimeout(async () => { connectLoop2() }, msToNextMinute + 10000)
+    setTimeout(async () => { disconnectLoop2() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+
+    const connectLoop3 = async () => {
+        try {
+            const server = servers[(Math.floor(Date.now() / 1000 / 60) + 1) % servers.length]
+            ranger3 = await AL.Game.startRanger(ranger3Name, server[0], server[1])
+            startRanger(ranger3, { x: 50, y: 0 })
+        } catch (e) {
+            console.error(e)
+            if (ranger3) await ranger3.disconnect()
+        }
+        const msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { connectLoop3() }, msToNextMinute + 10000)
+    }
+
+    const disconnectLoop3 = async () => {
+        try {
+            if (ranger3) await ranger3.disconnect()
+            ranger3 = undefined
+        } catch (e) {
+            console.error(e)
+        }
+        const msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { disconnectLoop3() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+    }
+    msToNextMinute = 60_000 - (Date.now() % 60_000)
+    setTimeout(async () => { connectLoop3() }, msToNextMinute + 10000)
+    setTimeout(async () => { disconnectLoop3() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
 }
 run()
