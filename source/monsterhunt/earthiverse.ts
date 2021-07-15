@@ -161,7 +161,11 @@ function preparePriest(bot: AL.Priest) {
             attack: async () => {
                 // Get the bscorpion to target us if it's attacking a friend
                 const bscorpion = bot.getNearestMonster("bscorpion")?.monster
-                if (bscorpion && bscorpion.target !== bot.id && bscorpion.couldGiveCreditForKill(bot)) {
+                if (!bscorpion) {
+                    console.log("no nearby bscorpion")
+                    return
+                }
+                if (bscorpion.target !== bot.id && bscorpion.couldGiveCreditForKill(bot)) {
                     await bot.absorbSins(bscorpion.target)
                 }
 
@@ -173,12 +177,13 @@ function preparePriest(bot: AL.Priest) {
                     if (bot.slots.shoes?.name !== "wshoes" && bot.hasItem("wshoes")) await bot.equip(bot.locateItem("wshoes"))
                 } else {
                     // Equip items that do more damage
-                    if (bot.slots.mainhand?.name !== "firestaff") await bot.equip(bot.locateItem("firestaff"))
+                    if (bot.slots.mainhand?.name !== "firestaff" && bot.hasItem("firestaff")) await bot.equip(bot.locateItem("firestaff"))
                     if (bot.slots.orb?.name !== "orbofint" && bot.hasItem("orbofint")) await bot.equip(bot.locateItem("orbofint"))
                     if (bot.slots.offhand?.name !== "wbook1" && bot.hasItem("wbook1")) await bot.equip(bot.locateItem("wbook1"))
                     if (bot.slots.shoes?.name !== "wingedboots" && bot.hasItem("wingedboots")) await bot.equip(bot.locateItem("wingedboots"))
                 }
 
+                console.log("attacking")
                 await attackTheseTypesPriest(bot, ["bscorpion"], information.friends)
             },
             equipment: { /** We have custom equipment in the attack loop above */ },
