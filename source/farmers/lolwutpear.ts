@@ -109,7 +109,7 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
             await goToNPCShopIfFull(bot)
 
             const destination: AL.IPosition = { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y }
-            if (AL.Tools.distance(bot, destination) > 1) await bot.smartMove(destination, { useBlink: true })
+            if (AL.Tools.distance(bot, destination) > 1) await bot.smartMove(destination)
         } catch (e) {
             console.error(e)
         }
