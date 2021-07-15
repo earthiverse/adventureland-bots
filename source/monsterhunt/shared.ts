@@ -142,6 +142,17 @@ export async function startMage(bot: AL.Mage, information: Information, strategy
 
             // Idle strategy
             await attackTheseTypesMage(bot, idleTargets, information.friends)
+
+            // Attack things targeting us
+            if (bot.canUse("attack")) {
+                for (const [, entity] of bot.entities) {
+                    if (entity.target !== bot.id) continue // Not targeting us
+                    if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far away
+
+                    await bot.basicAttack(entity.id)
+                    break
+                }
+            }
         } catch (e) {
             console.error(e)
         }
@@ -389,6 +400,17 @@ export async function startPriest(bot: AL.Priest, information: Information, stra
 
             // Idle strategy
             await attackTheseTypesPriest(bot, idleTargets, information.friends)
+
+            // Attack things targeting us
+            if (bot.canUse("attack")) {
+                for (const [, entity] of bot.entities) {
+                    if (entity.target !== bot.id) continue // Not targeting us
+                    if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far away
+
+                    await bot.basicAttack(entity.id)
+                    break
+                }
+            }
         } catch (e) {
             console.error(e)
         }
@@ -465,6 +487,17 @@ export async function startRanger(bot: AL.Ranger, information: Information, stra
 
             // Idle strategy
             await attackTheseTypesRanger(bot, idleTargets, information.friends)
+
+            // Attack things targeting us
+            if (bot.canUse("attack")) {
+                for (const [, entity] of bot.entities) {
+                    if (entity.target !== bot.id) continue // Not targeting us
+                    if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far away
+
+                    await bot.basicAttack(entity.id)
+                    break
+                }
+            }
         } catch (e) {
             console.error(e)
         }
@@ -544,6 +577,17 @@ export async function startWarrior(bot: AL.Warrior, information: Information, st
 
             // Idle strategy
             await attackTheseTypesWarrior(bot, idleTargets, information.friends, { disableAgitate: true })
+
+            // Attack things targeting us
+            if (bot.canUse("attack")) {
+                for (const [, entity] of bot.entities) {
+                    if (entity.target !== bot.id) continue // Not targeting us
+                    if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far away
+
+                    await bot.basicAttack(entity.id)
+                    break
+                }
+            }
         } catch (e) {
             console.error(e)
         }

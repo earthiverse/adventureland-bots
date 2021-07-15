@@ -1,4 +1,4 @@
-import AL from "alclient-mongo"
+import AL, { Tools } from "alclient-mongo"
 import { goToAggroMonster, goToNearestWalkableToMonster, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { attackTheseTypesMerchant } from "../base/merchant.js"
@@ -427,13 +427,13 @@ function preparePriest(bot: AL.Priest) {
             move: async () => { await bot.smartMove({ map: "main", x: 968, y: -144 }) },
         },
         squig: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["squig"], information.friends) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["squig", "squigtoad"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "main", x: -1155, y: 422 }) },
         },
         squigtoad: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["squigtoad"], information.friends) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["squigtoad", "squig"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "main", x: -1155, y: 422 }) },
@@ -762,7 +762,7 @@ function prepareRanger(bot: AL.Ranger) {
             move: async () => { await bot.smartMove({ map: "main", x: 1578, y: -168 }) },
         },
         skeletor: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["skeletor"], information.friends, { targetingPlayer: information.bot3.name }) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["skeletor"], information.friends) },
             equipment: { mainhand: "firebow", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "arena", x: 380, y: -575 }) },
             requireCtype: "priest",
@@ -786,13 +786,13 @@ function prepareRanger(bot: AL.Ranger) {
             move: async () => { await bot.smartMove({ map: "main", x: 948, y: -144 }) },
         },
         squig: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["squig"], information.friends) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["squig", "squigtoad"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "crossbow", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "main", x: -1175, y: 422 }) },
         },
         squigtoad: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["squigtoad"], information.friends) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["squigtoad", "squig"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "crossbow", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "main", x: -1175, y: 422 }) },
@@ -1024,7 +1024,24 @@ function prepareWarrior(bot: AL.Warrior) {
             move: async () => { await goToNearestWalkableToMonster(bot, ["minimush"], { map: "halloween", x: -18, y: 631 }) },
         },
         mole: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["mole"], information.friends, { maximumTargets: 3 }) },
+            attack: async () => {
+                // Agitate low level monsters that we can tank so the ranger can kill them quickly with 3shot and 5shot.
+                let shouldAgitate = true
+                const toAgitate = []
+                for (const [, entity] of bot.entities) {
+                    if (Tools.distance(bot, entity) > bot.G.skills.agitate.range) continue // Too far to agitate
+                    if (entity.target == bot.name) continue // Already targeting us
+                    if (entity.type !== "mole" || entity.level > 3) {
+                        // Only agitate low level moles
+                        shouldAgitate = false
+                        break
+                    }
+                    toAgitate.push(entity)
+                }
+                if (shouldAgitate && toAgitate.length > 0) await bot.agitate()
+
+                await attackTheseTypesWarrior(bot, ["mole"], information.friends, { maximumTargets: 3 })
+            },
             equipment: { mainhand: "basher", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "tunnel", x: 5, y: -329 }) },
             requireCtype: "priest"
@@ -1168,7 +1185,7 @@ function prepareWarrior(bot: AL.Warrior) {
             move: async () => { await goToNearestWalkableToMonster(bot, ["spider"], { map: "main", x: 928, y: -144 }) },
         },
         squig: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["squig"], information.friends) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["squig", "squigtoad"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "bataxe", orb: "test_orb" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["squig"], { map: "main", x: -1195, y: 422 }) },
@@ -1177,7 +1194,7 @@ function prepareWarrior(bot: AL.Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["squigtoad", "squig"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "bataxe", orb: "test_orb" },
-            move: async () => { await goToNearestWalkableToMonster(bot, ["squigtoad"], { map: "main", x: -1195, y: 422 }) },
+            move: async () => { await goToNearestWalkableToMonster(bot, ["squigtoad", "squig"], { map: "main", x: -1195, y: 422 }) },
         },
         stoneworm: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["stoneworm"], information.friends, { disableAgitate: true }) },
