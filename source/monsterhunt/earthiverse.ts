@@ -1026,19 +1026,21 @@ function prepareWarrior(bot: AL.Warrior) {
         mole: {
             attack: async () => {
                 // Agitate low level monsters that we can tank so the ranger can kill them quickly with 3shot and 5shot.
-                let shouldAgitate = true
-                const toAgitate = []
-                for (const [, entity] of bot.entities) {
-                    if (Tools.distance(bot, entity) > bot.G.skills.agitate.range) continue // Too far to agitate
-                    if (entity.target == bot.name) continue // Already targeting us
-                    if (entity.type !== "mole" || entity.level > 3) {
+                if (bot.canUse("agitate")) {
+                    let shouldAgitate = true
+                    const toAgitate = []
+                    for (const [, entity] of bot.entities) {
+                        if (Tools.distance(bot, entity) > bot.G.skills.agitate.range) continue // Too far to agitate
+                        if (entity.target == bot.name) continue // Already targeting us
+                        if (entity.type !== "mole" || entity.level > 3) {
                         // Only agitate low level moles
-                        shouldAgitate = false
-                        break
+                            shouldAgitate = false
+                            break
+                        }
+                        toAgitate.push(entity)
                     }
-                    toAgitate.push(entity)
+                    if (shouldAgitate && toAgitate.length > 0) await bot.agitate()
                 }
-                if (shouldAgitate && toAgitate.length > 0) await bot.agitate()
 
                 await attackTheseTypesWarrior(bot, ["mole"], information.friends, { maximumTargets: 3 })
             },
