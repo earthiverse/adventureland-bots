@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { startPontyLoop, LOOP_MS, startCompoundLoop, startHealLoop, startLootLoop, startScareLoop, startSellLoop, startUpgradeLoop, startExchangeLoop } from "../base/general.js"
+import { startPontyLoop, LOOP_MS, startCompoundLoop, startHealLoop, startLootLoop, startScareLoop, startSellLoop, startUpgradeLoop, startExchangeLoop, ITEMS_TO_SELL } from "../base/general.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
 import { stompPartyLeader } from "../base/party.js"
 import { identifier, region, startLeader, startShared } from "./runners.js"
@@ -20,7 +20,7 @@ async function startMerchant(bot: AL.Merchant, friends: AL.Character[], holdPosi
     startHealLoop(bot)
     startMluckLoop(bot)
     startPontyLoop(bot)
-    startUpgradeLoop(bot)
+    startUpgradeLoop(bot, { ... ITEMS_TO_SELL, "stick": 100 })
     startCompoundLoop(bot)
     startExchangeLoop(bot)
     startLootLoop(bot)
