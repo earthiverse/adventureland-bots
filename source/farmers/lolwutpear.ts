@@ -86,6 +86,8 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
 
             if (!bot.slots.elixir && bot.gold > bot.G.items.elixirluck.g) {
                 await bot.smartMove("elixirluck", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                return
             }
 
             // Get a MH if we're on the default server and we don't have one

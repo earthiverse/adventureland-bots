@@ -165,7 +165,7 @@ function preparePriest(bot: AL.Priest) {
                     console.log("no nearby bscorpion")
                     return
                 }
-                if (bscorpion.target !== bot.id && bscorpion.couldGiveCreditForKill(bot)) {
+                if (bscorpion.target && bscorpion.target !== bot.id && bscorpion.couldGiveCreditForKill(bot)) {
                     await bot.absorbSins(bscorpion.target)
                 }
 
@@ -183,7 +183,6 @@ function preparePriest(bot: AL.Priest) {
                     if (bot.slots.shoes?.name !== "wingedboots" && bot.hasItem("wingedboots")) await bot.equip(bot.locateItem("wingedboots"))
                 }
 
-                console.log("attacking")
                 await attackTheseTypesPriest(bot, ["bscorpion"], information.friends)
             },
             equipment: { /** We have custom equipment in the attack loop above */ },
