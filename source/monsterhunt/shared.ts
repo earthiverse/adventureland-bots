@@ -20,7 +20,7 @@ export async function getTarget(bot: AL.Character, strategy: Strategy, informati
             !((information.bot1.bot?.ctype == strategy[entity.type].requireCtype && information.bot1.target == entity.type)
             || (information.bot2.bot?.ctype == strategy[entity.type].requireCtype && information.bot2.target == entity.type)
             || (information.bot3.bot?.ctype == strategy[entity.type].requireCtype && information.bot3.target == entity.type))) continue
-        const realEntity = bot.entities.get(entity.name)
+        const realEntity = bot.entities.get(entity.name) || bot.entities.get((entity as AL.Entity).id)
         if (realEntity) {
             return realEntity.type
         } else {
@@ -41,7 +41,7 @@ export async function getTarget(bot: AL.Character, strategy: Strategy, informati
             !((information.bot1.bot?.ctype == strategy[entity.type].requireCtype && information.bot1.target == entity.type)
             || (information.bot2.bot?.ctype == strategy[entity.type].requireCtype && information.bot2.target == entity.type)
             || (information.bot3.bot?.ctype == strategy[entity.type].requireCtype && information.bot3.target == entity.type))) continue
-        const realEntity = bot.entities.get(entity.name)
+        const realEntity = bot.entities.get(entity.name) || bot.entities.get((entity as AL.Entity).id)
         if (realEntity) {
             if (realEntity.couldGiveCreditForKill(bot)) return realEntity.type
 
