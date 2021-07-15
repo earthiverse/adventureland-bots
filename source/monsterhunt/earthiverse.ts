@@ -162,7 +162,6 @@ function preparePriest(bot: AL.Priest) {
                 // Get the bscorpion to target us if it's attacking a friend
                 const bscorpion = bot.getNearestMonster("bscorpion")?.monster
                 if (!bscorpion) {
-                    console.log("no nearby bscorpion")
                     return
                 }
                 if (bscorpion.target && bscorpion.target !== bot.id && bscorpion.couldGiveCreditForKill(bot)) {
