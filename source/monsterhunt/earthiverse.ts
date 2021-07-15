@@ -1239,58 +1239,58 @@ async function run() {
     // Start all characters
     console.log("Connecting...")
 
-    const startMage1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
-        // Start the characters
-        const loopBot = async () => {
-            try {
-                if (information.bot1.bot) await information.bot1.bot.disconnect()
-                information.bot1.bot = await AL.Game.startMage(name, region, identifier)
-                information.friends[1] = information.bot1.bot
-                prepareMage(information.bot1.bot as AL.Mage)
-                startTrackerLoop(information.bot1.bot)
-                information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
-            } catch (e) {
-                console.error(e)
-                if (information.bot1.bot) await information.bot1.bot.disconnect()
-                const wait = /wait_(\d+)_second/.exec(e)
-                if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
-                } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
-                } else {
-                    setTimeout(async () => { loopBot() }, 10000)
-                }
-            }
-        }
-        loopBot()
-    }
-    startMage1Loop(information.bot1.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
+    // const startMage1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    //     // Start the characters
+    //     const loopBot = async () => {
+    //         try {
+    //             if (information.bot1.bot) await information.bot1.bot.disconnect()
+    //             information.bot1.bot = await AL.Game.startMage(name, region, identifier)
+    //             information.friends[1] = information.bot1.bot
+    //             prepareMage(information.bot1.bot as AL.Mage)
+    //             startTrackerLoop(information.bot1.bot)
+    //             information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
+    //         } catch (e) {
+    //             console.error(e)
+    //             if (information.bot1.bot) await information.bot1.bot.disconnect()
+    //             const wait = /wait_(\d+)_second/.exec(e)
+    //             if (wait && wait[1]) {
+    //                 setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+    //             } else if (/limits/.test(e)) {
+    //                 setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+    //             } else {
+    //                 setTimeout(async () => { loopBot() }, 10000)
+    //             }
+    //         }
+    //     }
+    //     loopBot()
+    // }
+    // startMage1Loop(information.bot1.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
 
-    const startMage2Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
-        // Start the characters
-        const loopBot = async () => {
-            try {
-                if (information.bot3.bot) await information.bot3.bot.disconnect()
-                information.bot3.bot = await AL.Game.startMage(name, region, identifier)
-                information.friends[2] = information.bot3.bot
-                prepareMage(information.bot3.bot as AL.Mage)
-                information.bot3.bot.socket.on("disconnect", async () => { loopBot() })
-            } catch (e) {
-                console.error(e)
-                if (information.bot3.bot) await information.bot3.bot.disconnect()
-                const wait = /wait_(\d+)_second/.exec(e)
-                if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
-                } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
-                } else {
-                    setTimeout(async () => { loopBot() }, 10000)
-                }
-            }
-        }
-        loopBot()
-    }
-    startMage2Loop(information.bot3.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
+    // const startMage2Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    //     // Start the characters
+    //     const loopBot = async () => {
+    //         try {
+    //             if (information.bot3.bot) await information.bot3.bot.disconnect()
+    //             information.bot3.bot = await AL.Game.startMage(name, region, identifier)
+    //             information.friends[2] = information.bot3.bot
+    //             prepareMage(information.bot3.bot as AL.Mage)
+    //             information.bot3.bot.socket.on("disconnect", async () => { loopBot() })
+    //         } catch (e) {
+    //             console.error(e)
+    //             if (information.bot3.bot) await information.bot3.bot.disconnect()
+    //             const wait = /wait_(\d+)_second/.exec(e)
+    //             if (wait && wait[1]) {
+    //                 setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+    //             } else if (/limits/.test(e)) {
+    //                 setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+    //             } else {
+    //                 setTimeout(async () => { loopBot() }, 10000)
+    //             }
+    //         }
+    //     }
+    //     loopBot()
+    // }
+    // startMage2Loop(information.bot3.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
 
     const startMerchantLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
         // Start the characters
@@ -1318,31 +1318,31 @@ async function run() {
     }
     startMerchantLoop(information.merchant.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
 
-    // const startPriestLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
-    //     // Start the characters
-    //     const loopBot = async () => {
-    //         try {
-    //             if (information.bot1.bot) await information.bot1.bot.disconnect()
-    //             information.bot1.bot = await AL.Game.startPriest(name, region, identifier)
-    //             information.friends[1] = information.bot1.bot
-    //             preparePriest(information.bot1.bot as AL.Priest)
-    //             information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
-    //         } catch (e) {
-    //             console.error(e)
-    //             if (information.bot1.bot) await information.bot1.bot.disconnect()
-    //             const wait = /wait_(\d+)_second/.exec(e)
-    //             if (wait && wait[1]) {
-    //                 setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
-    //             } else if (/limits/.test(e)) {
-    //                 setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
-    //             } else {
-    //                 setTimeout(async () => { loopBot() }, 10000)
-    //             }
-    //         }
-    //     }
-    //     loopBot()
-    // }
-    // startPriestLoop(information.bot1.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
+    const startPriestLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+        // Start the characters
+        const loopBot = async () => {
+            try {
+                if (information.bot1.bot) await information.bot1.bot.disconnect()
+                information.bot1.bot = await AL.Game.startPriest(name, region, identifier)
+                information.friends[1] = information.bot1.bot
+                preparePriest(information.bot1.bot as AL.Priest)
+                information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
+            } catch (e) {
+                console.error(e)
+                if (information.bot1.bot) await information.bot1.bot.disconnect()
+                const wait = /wait_(\d+)_second/.exec(e)
+                if (wait && wait[1]) {
+                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                } else if (/limits/.test(e)) {
+                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                } else {
+                    setTimeout(async () => { loopBot() }, 10000)
+                }
+            }
+        }
+        loopBot()
+    }
+    startPriestLoop(information.bot1.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
 
     const startRangerLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
         // Start the characters
@@ -1371,31 +1371,31 @@ async function run() {
     }
     startRangerLoop(information.bot2.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
 
-    // const startWarriorLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
-    //     // Start the characters
-    //     const loopBot = async () => {
-    //         try {
-    //             if (information.bot3.bot) await information.bot3.bot.disconnect()
-    //             information.bot3.bot = await AL.Game.startWarrior(name, region, identifier)
-    //             information.friends[3] = information.bot3.bot
-    //             prepareWarrior(information.bot3.bot as AL.Warrior)
-    //             information.bot3.bot.socket.on("disconnect", async () => { loopBot() })
-    //         } catch (e) {
-    //             console.error(e)
-    //             if (information.bot3.bot) await information.bot3.bot.disconnect()
-    //             const wait = /wait_(\d+)_second/.exec(e)
-    //             if (wait && wait[1]) {
-    //                 setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
-    //             } else if (/limits/.test(e)) {
-    //                 setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
-    //             } else {
-    //                 setTimeout(async () => { loopBot() }, 10000)
-    //             }
-    //         }
-    //     }
-    //     loopBot()
-    // }
-    // startWarriorLoop(information.bot3.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
+    const startWarriorLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+        // Start the characters
+        const loopBot = async () => {
+            try {
+                if (information.bot3.bot) await information.bot3.bot.disconnect()
+                information.bot3.bot = await AL.Game.startWarrior(name, region, identifier)
+                information.friends[3] = information.bot3.bot
+                prepareWarrior(information.bot3.bot as AL.Warrior)
+                information.bot3.bot.socket.on("disconnect", async () => { loopBot() })
+            } catch (e) {
+                console.error(e)
+                if (information.bot3.bot) await information.bot3.bot.disconnect()
+                const wait = /wait_(\d+)_second/.exec(e)
+                if (wait && wait[1]) {
+                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                } else if (/limits/.test(e)) {
+                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                } else {
+                    setTimeout(async () => { loopBot() }, 10000)
+                }
+            }
+        }
+        loopBot()
+    }
+    startWarriorLoop(information.bot3.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
 
     // const startMerchantLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
     //     const connectLoop = async () => {

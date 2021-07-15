@@ -62,11 +62,6 @@ export async function getTarget(bot: AL.Character, strategy: Strategy, informati
         }
     }
 
-    // NOTE: TEMPORARY FOR FARMING ARCTIC BEES
-    if (MY_CHARACTERS.includes(bot.id) && strategy.arcticbee) {
-        return "arcticbee"
-    }
-
     for (const type of await getMonsterHuntTargets(bot, information.friends)) {
         if (!strategy[type]) continue // No strategy
         if (strategy[type].requireCtype &&
@@ -599,21 +594,19 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
                     return
                 }
 
-                // NOTE: TEMPORARY FOR FARMING ARCTIC BEES
-                // // Get a MH if we're on the default server and we don't have one
-                // if (!bot.s.monsterhunt && bot.server.name == DEFAULT_IDENTIFIER && bot.server.region == DEFAULT_REGION) {
-                //     await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
-                //     await bot.getMonsterHuntQuest()
-                //     bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
-                //     return
-                // }
+                // Get a MH if we're on the default server and we don't have one
+                if (!bot.s.monsterhunt && bot.server.name == DEFAULT_IDENTIFIER && bot.server.region == DEFAULT_REGION) {
+                    await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
+                    await bot.getMonsterHuntQuest()
+                    bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
+                    return
+                }
 
                 // Turn in our monsterhunt if we can
                 if (bot.s.monsterhunt && bot.s.monsterhunt.c == 0) {
                     await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
                     await bot.finishMonsterHuntQuest()
-                    // NOTE: TEMPORARY FOR FARMING ARCTIC BEES
-                    // await bot.getMonsterHuntQuest()
+                    await bot.getMonsterHuntQuest()
                     bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
                     return
                 }
