@@ -93,7 +93,7 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
     const canKill = bot.canKillInOneShot(target)
 
     // Apply curse if we can't kill it in one shot and we have enough MP
-    if (bot.canUse("curse") && bot.mp > (bot.mp_cost + bot.G.skills.curse.mp) && !canKill) {
+    if (bot.canUse("curse") && bot.mp > (bot.mp_cost + bot.G.skills.curse.mp) && !canKill && !target.immune) {
         bot.curse(target.id).catch((e) => { console.error(e) })
     }
 
