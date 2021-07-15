@@ -1,4 +1,4 @@
-import AL, { Tools, TradeSlotType } from "alclient-mongo"
+import AL from "alclient-mongo"
 import FastPriorityQueue from "fastpriorityqueue"
 import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startTrackerLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, ITEMS_TO_SELL } from "../base/general.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
@@ -46,7 +46,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
     startPartyLoop(bot, stompPartyLeader, stompPartyMembers)
     startPontyLoop(bot)
     startSellLoop(bot)
-    startUpgradeLoop(bot, { ... ITEMS_TO_SELL, "stick": 100 }) // Don't upgrade sticks
+    startUpgradeLoop(bot, { ...ITEMS_TO_SELL, "stick": 100 }) // Don't upgrade sticks
     startWarcryLoop(bot)
     startSendStuffDenylistLoop(bot, merchantName)
 
@@ -67,7 +67,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
                         if (slot.name !== "stick") continue
                         if (slot.price < 2_000_000) continue
 
-                        await bot.sellToMerchant("kouin", slotName as TradeSlotType, slot.rid, 1)
+                        await bot.sellToMerchant("kouin", slotName as AL.TradeSlotType, slot.rid, 1)
                     }
                 }
             }
@@ -328,7 +328,7 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
 export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], holdPosition: AL.IPosition): Promise<void> {
     startHealLoop(bot)
     startMluckLoop(bot)
-    startUpgradeLoop(bot, { ... ITEMS_TO_SELL, "stick": 100 }) // Don't upgrade sticks
+    startUpgradeLoop(bot, { ...ITEMS_TO_SELL, "stick": 100 }) // Don't upgrade sticks
     startCompoundLoop(bot)
     startLootLoop(bot)
     startScareLoop(bot)
@@ -352,7 +352,7 @@ export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], h
                         if (slot.name !== "stick") continue
                         if (slot.price < 2_000_000) continue
 
-                        await bot.sellToMerchant("kouin", slotName as TradeSlotType, slot.rid, 1)
+                        await bot.sellToMerchant("kouin", slotName as AL.TradeSlotType, slot.rid, 1)
                     }
                 }
             }

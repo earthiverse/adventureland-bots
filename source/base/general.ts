@@ -639,7 +639,7 @@ export function startCompoundLoop(bot: ALM.Character, itemsToSell: ItemLevelInfo
             if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.q.compound) {
-                // We are upgrading, we have to wait
+                // We are compounding, we have to wait
                 bot.timeouts.set("compoundloop", setTimeout(async () => { compoundLoop() }, bot.q.compound.ms))
                 return
             }
@@ -678,7 +678,7 @@ export function startCompoundLoop(bot: ALM.Character, itemsToSell: ItemLevelInfo
 
             // At this point, 'duplicates' only contains arrays of 3 items.
             for (const iN in duplicates) {
-                // Check if item is upgradable, or if we want to upgrade it
+                // Check if item is compoundable, or if we want to compound it
                 const itemName = iN as ALM.ItemName
                 const gInfo = bot.G.items[itemName]
                 if (gInfo.compound == undefined) continue // Not compoundable
@@ -688,7 +688,7 @@ export function startCompoundLoop(bot: ALM.Character, itemsToSell: ItemLevelInfo
                 if (itemInfo.level >= 4 - level0Grade) continue // We don't want to compound higher level items automatically.
                 if (itemsToSell[itemName] && !itemInfo.p && itemInfo.level <= itemsToSell[itemName]) continue // Don't compound items we want to sell unless they're special
 
-                // Figure out the scroll we need to upgrade
+                // Figure out the scroll we need to compound
                 const grade = await bot.calculateItemGrade(itemInfo)
                 const cscrollName = `cscroll${grade}` as ALM.ItemName
                 let cscrollPos = bot.locateItem(cscrollName)
@@ -699,12 +699,12 @@ export function startCompoundLoop(bot: ALM.Character, itemsToSell: ItemLevelInfo
 
                     if ((ITEMS_TO_PRIMLING[itemName] && itemInfo.level >= ITEMS_TO_PRIMLING[itemName])
                         || ((level0Grade == 0 && itemInfo.level >= 3) || (level0Grade == 1 && itemInfo.level >= 2) || (level0Grade == 2 && itemInfo.level >= 1))) {
-                        // We want to use a primling to upgrade these
+                        // We want to use a primling to compound these
                         if (primlingPos == undefined) continue // We don't have any primlings
                         if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as ALM.Merchant).massProduction()
                         await bot.compound(itemPoss[0], itemPoss[1], itemPoss[2], cscrollPos, primlingPos)
                     } else {
-                        // We don't want to use a primling to upgrade these
+                        // We don't want to use a primling to compound these
                         if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as ALM.Merchant).massProduction()
                         await bot.compound(itemPoss[0], itemPoss[1], itemPoss[2], cscrollPos)
                     }
