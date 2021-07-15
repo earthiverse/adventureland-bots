@@ -11,3 +11,6 @@ export const mainSpiders: AL.IPosition = { map: "main", x: 948, y: -144 }
 
 // Halloween
 export const halloweenSafeSnakes: AL.IPosition = { map: "halloween", x: 346.5, y: -747 }
+
+// Winterland
+export const winterlandArcticBees: AL.IPosition = { map: "winterland", x: 1082, y: -873 }

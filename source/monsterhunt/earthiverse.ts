@@ -37,6 +37,18 @@ const information: Information = {
 
 function prepareMage(bot: AL.Mage) {
     const strategy: Strategy = {
+        arcticbee: {
+            attack: async () => { await attackTheseTypesMage(bot, ["arcticbee"], information.friends, { disableEnergize: true }) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "wand" },
+            move: async () => {
+                if (bot.id == "earthMag") {
+                    await bot.smartMove({ map: "winterland", x: 1082, y: -883 })
+                } else if (bot.id == "earthMag2") {
+                    await bot.smartMove({ map: "winterland", x: 1082, y: -863 })
+                }
+            }
+        },
         goo: {
             attack: async () => { await attackTheseTypesMage(bot, ["goo"], information.friends, { disableEnergize: true }) },
             attackWhileIdle: true,

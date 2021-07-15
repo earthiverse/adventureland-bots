@@ -1,6 +1,6 @@
 import AL from "alclient-mongo"
 import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, ITEMS_TO_SELL, startElixirLoop, goToBankIfFull, goToNearestWalkableToMonster } from "../base/general.js"
-import { mainBeesNearTunnel } from "../base/locations.js"
+import { winterlandArcticBees } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { doBanking, startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
@@ -13,8 +13,8 @@ const mage2Name = "ytmnd"
 const rogueNamae = "rule34"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "II"
-const targets: AL.MonsterName[] = ["cutebee", "bee"]
-const defaultLocation: AL.IPosition = mainBeesNearTunnel
+const targets: AL.MonsterName[] = ["arcticbee"]
+const defaultLocation: AL.IPosition = winterlandArcticBees
 
 let merchant: AL.Merchant
 let mage1: AL.Mage
@@ -25,7 +25,7 @@ async function startShared(bot: AL.Character) {
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
-    startSellLoop(bot, { ...ITEMS_TO_SELL })
+    startSellLoop(bot)
     if (bot.ctype !== "merchant") {
         startElixirLoop(bot, "elixirluck")
         startSendStuffDenylistLoop(bot, merchantName)
@@ -304,7 +304,7 @@ async function run() {
                 if (mage1) await mage1.disconnect()
                 mage1 = await AL.Game.startMage(name, region, identifier)
                 startShared(mage1)
-                startMage(mage1, { x: 50, y: 50 })
+                startMage(mage1, { x: -225, y: -10 })
                 startTrackerLoop(mage1)
                 mage1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
@@ -331,7 +331,7 @@ async function run() {
                 if (mage2) await mage2.disconnect()
                 mage2 = await AL.Game.startMage(name, region, identifier)
                 startShared(mage2)
-                startMage(mage2, { x: -50, y: -50 })
+                startMage(mage2, { x: -225, y: 10 })
                 mage2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -357,7 +357,7 @@ async function run() {
                 if (rogue) await rogue.disconnect()
                 rogue = await AL.Game.startRogue(name, region, identifier)
                 startShared(rogue)
-                startRogue(rogue)
+                startRogue(rogue, { x: -225, y: 0 })
                 rogue.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
