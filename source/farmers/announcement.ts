@@ -85,12 +85,12 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
             }
 
             if (!bot.slots.elixir && bot.gold > bot.G.items.elixirluck.g) {
-                await bot.smartMove("elixirluck")
+                await bot.smartMove("elixirluck", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1, useBlink: true })
             }
 
             // Get a MH if we're on the default server and we don't have one
             if (!bot.s.monsterhunt && bot.server.name == identifier && bot.server.region == region) {
-                await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
+                await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1, useBlink: true })
                 await bot.getMonsterHuntQuest()
                 bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                 return
@@ -98,7 +98,7 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
 
             // Turn in our monsterhunt if we can
             if (bot.s.monsterhunt && bot.s.monsterhunt.c == 0) {
-                await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
+                await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1, useBlink: true })
                 await bot.finishMonsterHuntQuest()
                 await bot.getMonsterHuntQuest()
                 bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
@@ -109,7 +109,7 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
             await goToNPCShopIfFull(bot)
 
             const destination: AL.IPosition = { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y }
-            if (AL.Tools.distance(bot, destination) > 1) await bot.smartMove(destination)
+            if (AL.Tools.distance(bot, destination) > 1) await bot.smartMove(destination, { useBlink: true })
         } catch (e) {
             console.error(e)
         }
