@@ -13,8 +13,8 @@ const information: Information = {
     // eslint-disable-next-line sort-keys
     bot1: {
         bot: undefined,
-        // name: "earthPri",
-        name: "earthMag",
+        name: "earthPri",
+        // name: "earthMag",
         target: undefined
     },
     bot2: {
@@ -24,8 +24,8 @@ const information: Information = {
     },
     bot3: {
         bot: undefined,
-        // name: "earthWar",
-        name: "earthMag2",
+        name: "earthWar",
+        // name: "earthMag2",
         target: undefined
     },
     merchant: {
