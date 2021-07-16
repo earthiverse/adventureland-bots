@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, goToBankIfFull, LOOP_MS, MY_CHARACTERS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startEventLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startServerPartyInviteLoop, startUpgradeLoop } from "../base/general.js"
+import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, goToBankIfFull, ITEMS_TO_HOLD, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startEventLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startServerPartyInviteLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { attackTheseTypesMerchant, doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
@@ -622,7 +622,7 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
     }
     startScareLoop(bot)
     startSellLoop(bot)
-    if (bot.ctype !== "merchant") startSendStuffDenylistLoop(bot, information.merchant.name)
+    if (bot.ctype !== "merchant") startSendStuffDenylistLoop(bot, information.merchant.name, ITEMS_TO_HOLD, 10_000_000)
     startUpgradeLoop(bot)
 
     if (bot.ctype !== "merchant") {
