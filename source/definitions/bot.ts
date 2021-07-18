@@ -20,6 +20,7 @@ export type Information = {
     merchant: {
         bot: AL.Merchant
         name: string
+        nameAlt: string
         target: AL.MonsterName
     }
     bot1: {

@@ -31,6 +31,7 @@ const information: Information = {
     merchant: {
         bot: undefined,
         name: "earthMer",
+        nameAlt: "earthMer2",
         target: undefined
     }
 }
@@ -1224,7 +1225,11 @@ async function run() {
         const loopBot = async () => {
             try {
                 if (information.merchant.bot) await information.merchant.bot.disconnect()
-                information.merchant.bot = await AL.Game.startMerchant(information.merchant.name, TARGET_REGION, TARGET_IDENTIFIER)
+                if (TARGET_REGION == DEFAULT_REGION && TARGET_IDENTIFIER == DEFAULT_IDENTIFIER) {
+                    information.merchant.bot = await AL.Game.startMerchant(information.merchant.name, TARGET_REGION, TARGET_IDENTIFIER)
+                } else {
+                    information.merchant.bot = await AL.Game.startMerchant(information.merchant.nameAlt, TARGET_REGION, TARGET_IDENTIFIER)
+                }
                 information.friends[0] = information.merchant.bot
                 prepareMerchant(information.merchant.bot)
                 information.merchant.bot.socket.on("disconnect", async () => { loopBot() })
@@ -1327,19 +1332,16 @@ async function run() {
     let lastServerChangeTime = Date.now()
     const serverLoop = async () => {
         try {
-            console.log("Server loop! Yeah!")
             if (lastServerChangeTime > Date.now() - 60_000) {
             // Don't change servers too fast
                 setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime - Date.now() - 60_000))
                 return
             }
-            console.log("It's been over a minute since we last changed servers! Yeah!")
             if (!information.bot1) {
             // We haven't logged in yet
                 setTimeout(async () => { serverLoop() }, 1000)
                 return
             }
-            console.log("We've logged in! Yeah!")
             if (AL.Constants.SPECIAL_MONSTERS.includes(information.bot1.target)
         || AL.Constants.SPECIAL_MONSTERS.includes(information.bot2.target)
         || AL.Constants.SPECIAL_MONSTERS.includes(information.bot3.target)) {
@@ -1347,7 +1349,6 @@ async function run() {
                 setTimeout(async () => { serverLoop() }, 1000)
                 return
             }
-            console.log("We're not doing any special monsters! Yeah!")
 
             const currentRegion = information.bot1.bot.server.region
             const currentIdentifier = information.bot1.bot.server.name
@@ -1375,8 +1376,6 @@ async function run() {
                     return
                 }
 
-                console.log("We're switching for a priority 1 monster! Yeah!")
-
                 // Change servers to attack this entity
                 TARGET_REGION = entity.serverRegion
                 TARGET_IDENTIFIER = entity.serverIdentifier
@@ -1394,11 +1393,6 @@ async function run() {
                     information.bot3.bot.disconnect(),
                     information.merchant.bot.disconnect()
                 ])
-                if (TARGET_REGION == DEFAULT_REGION && TARGET_IDENTIFIER == DEFAULT_IDENTIFIER) {
-                    information.merchant.name = "earthMer"
-                } else {
-                    information.merchant.name = "earthMer2"
-                }
                 await sleep(5000)
                 lastServerChangeTime = Date.now()
                 setTimeout(async () => { serverLoop() }, 1000)
@@ -1432,8 +1426,6 @@ async function run() {
                     return
                 }
 
-                console.log("We're switching for a priority 2 monster! Yeah!")
-
                 // Change servers to attack this entity
                 TARGET_REGION = entity.serverRegion
                 TARGET_IDENTIFIER = entity.serverIdentifier
@@ -1451,11 +1443,6 @@ async function run() {
                     information.bot3.bot.disconnect(),
                     information.merchant.bot.disconnect()
                 ])
-                if (TARGET_REGION == DEFAULT_REGION && TARGET_IDENTIFIER == DEFAULT_IDENTIFIER) {
-                    information.merchant.name = "earthMer"
-                } else {
-                    information.merchant.name = "earthMer2"
-                }
                 await sleep(5000)
                 lastServerChangeTime = Date.now()
                 setTimeout(async () => { serverLoop() }, 1000)
@@ -1469,8 +1456,6 @@ async function run() {
                 TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
                 console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${TARGET_REGION} ${TARGET_IDENTIFIER}`)
 
-                console.log("We're switching back! Yeah!")
-
                 // Loot all of our remaining chests
                 await sleep(1000)
                 for (const [, chest] of information.bot1.bot.chests) await information.bot1.bot.openChest(chest.id)
@@ -1483,7 +1468,6 @@ async function run() {
                     information.bot3.bot.disconnect(),
                     information.merchant.bot.disconnect()
                 ])
-                information.merchant.name = "earthMer"
                 await sleep(5000)
                 lastServerChangeTime = Date.now()
                 setTimeout(async () => { serverLoop() }, 1000)
