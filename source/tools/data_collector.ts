@@ -1,6 +1,5 @@
 import axios from "axios"
 import AL from "alclient-mongo"
-import { sleep } from "../base/general.js"
 import { getTargetServer, SERVER_HOP_SERVERS } from "../base/serverhop.js"
 
 const servers = SERVER_HOP_SERVERS
@@ -13,7 +12,7 @@ const PEEK_CHARS = ["earthRan2", "earthRan3", "earthMag2", "earthWar2", "earthWa
 
 async function run() {
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
-    await AL.Pathfinder.prepare(AL.Game.G)
+    if (PEEK) await AL.Pathfinder.prepare(AL.Game.G)
 
     for (const [region, identifier] of servers) {
         console.log(`Starting ${region} ${identifier} ALData logger`)
