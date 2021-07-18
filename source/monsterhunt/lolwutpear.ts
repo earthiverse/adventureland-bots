@@ -25,6 +25,7 @@ const information: Information = {
     merchant: {
         bot: undefined,
         name: "orlyowl",
+        nameAlt: "orlyowl",
         target: undefined
     }
 }
