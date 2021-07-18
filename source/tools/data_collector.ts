@@ -100,7 +100,7 @@ async function run() {
         let mvampireChecker: AL.Character
         const start_mvampireCheck = async () => {
             try {
-                const botName = PEEK_CHARS[0]
+                const botName = PEEK_CHARS[1]
                 if (!botName) return
                 const server = getTargetServer(1, true)
                 console.log(`Checking for mvampire on ${server[0]} ${server[1]}...`)
@@ -135,7 +135,7 @@ async function run() {
         let mvampireChecker2: AL.Character
         const start_mvampireCheck2 = async () => {
             try {
-                const botName = PEEK_CHARS[0]
+                const botName = PEEK_CHARS[2]
                 if (!botName) return
                 const server = getTargetServer(1, true)
                 console.log(`Checking for mvampire on ${server[0]} ${server[1]}...`)
@@ -170,7 +170,7 @@ async function run() {
         let fvampireChecker: AL.Character
         const start_fvampireCheck = async () => {
             try {
-                const botName = PEEK_CHARS[0]
+                const botName = PEEK_CHARS[3]
                 if (!botName) return
                 const server = getTargetServer(2, true)
                 console.log(`Checking for fvampire on ${server[0]} ${server[1]}...`)
@@ -205,7 +205,7 @@ async function run() {
         let greenjrChecker: AL.Character
         const start_greenjrCheck = async () => {
             try {
-                const botName = PEEK_CHARS[0]
+                const botName = PEEK_CHARS[4]
                 if (!botName) return
                 const server = getTargetServer(2, true)
                 console.log(`Checking for greenjr on ${server[0]} ${server[1]}...`)
@@ -240,7 +240,7 @@ async function run() {
         let jrChecker: AL.Character
         const start_jrCheck = async () => {
             try {
-                const botName = PEEK_CHARS[0]
+                const botName = PEEK_CHARS[5]
                 if (!botName) return
                 const server = getTargetServer(2, true)
                 console.log(`Checking for jr on ${server[0]} ${server[1]}...`)
@@ -275,7 +275,7 @@ async function run() {
         let stompyChecker: AL.Character
         const start_stompyCheck = async () => {
             try {
-                const botName = PEEK_CHARS[0]
+                const botName = PEEK_CHARS[6]
                 if (!botName) return
                 const server = getTargetServer(3, true)
                 console.log(`Checking for stompy on ${server[0]} ${server[1]}...`)
