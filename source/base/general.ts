@@ -174,7 +174,7 @@ export async function getPriority2Entities(bot: ALM.Character): Promise<ALM.Enti
         // Event Monsters
         "pinkgoo", "wabbit",
         // Rare Monsters
-        "greenjr", "jr", "skeletor", "mvampire", "fvampire", "stompy", "snowman"
+        "greenjr", "jr", "skeletor", "mvampire", "fvampire", "snowman", "stompy"
     ]
     const nearby = bot.getEntities({
         couldGiveCredit: true,

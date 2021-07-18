@@ -296,7 +296,7 @@ function preparePriest(bot: AL.Priest) {
             move: async () => { await bot.smartMove({ map: "spookytown", x: 270, y: -1129 }) },
         },
         mvampire: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["mvampire"], information.friends) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["mvampire", "bat"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "mvampire") },
@@ -371,7 +371,7 @@ function preparePriest(bot: AL.Priest) {
             move: async () => { await bot.smartMove({ map: "main", x: 1598, y: -168 }) },
         },
         skeletor: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["skeletor"], information.friends) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["skeletor", "cgoo"], information.friends) },
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "arena", x: 400, y: -575 }) },
         },
@@ -659,7 +659,7 @@ function prepareRanger(bot: AL.Ranger) {
             requireCtype: "priest"
         },
         mvampire: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["mvampire"], information.friends) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["mvampire", "bat"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "firebow", orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "mvampire") },
@@ -739,7 +739,7 @@ function prepareRanger(bot: AL.Ranger) {
             move: async () => { await bot.smartMove({ map: "main", x: 1578, y: -168 }) },
         },
         skeletor: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["skeletor"], information.friends) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["skeletor", "cgoo"], information.friends) },
             equipment: { mainhand: "firebow", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "arena", x: 380, y: -575 }) },
             requireCtype: "priest",
@@ -1062,9 +1062,9 @@ function prepareWarrior(bot: AL.Warrior) {
             requireCtype: "priest"
         },
         mvampire: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["mvampire"], information.friends) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["mvampire", "bat"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
+            equipment: { mainhand: "bataxe", orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "mvampire") },
         },
         nerfedmummy: {
@@ -1128,7 +1128,7 @@ function prepareWarrior(bot: AL.Warrior) {
             move: async () => { await goToNearestWalkableToMonster(bot, ["scorpion"], { map: "main", x: 1558, y: -168 }) },
         },
         skeletor: {
-            attack: async () => { return await attackTheseTypesWarrior(bot, ["skeletor"], information.friends) },
+            attack: async () => { return await attackTheseTypesWarrior(bot, ["skeletor", "cgoo"], information.friends) },
             equipment: { mainhand: "basher", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "arena", x: 360, y: -575 }) },
             requireCtype: "priest"
@@ -1381,7 +1381,7 @@ async function run() {
 
             // Priority #1: Special co-op monsters that take a team effort
             const coop: AL.MonsterName[] = [
-                "dragold", "grinch", "mrgreen", "mrpumpkin", "franky"
+                "dragold", "grinch", "icegolem", "mrgreen", "mrpumpkin", "franky"
             ]
             const coopEntities: AL.IEntity[] = await AL.EntityModel.aggregate([
                 {
@@ -1431,7 +1431,7 @@ async function run() {
                 // Event Monsters
                 "pinkgoo", "wabbit",
                 // // Rare Monsters
-                "greenjr", "jr", "skeletor", "mvampire", "fvampire", "snowman"
+                "greenjr", "jr", "skeletor", "mvampire", "fvampire", "snowman", "stompy"
             ]
             const soloEntities: AL.IEntity[] = await AL.EntityModel.aggregate([
                 {
