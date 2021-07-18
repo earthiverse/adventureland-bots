@@ -1,12 +1,14 @@
 import AL, { Tools } from "alclient-mongo"
-import { goToAggroMonster, goToNearestWalkableToMonster, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, startTrackerLoop } from "../base/general.js"
-import { attackTheseTypesMage } from "../base/mage.js"
+import { goToAggroMonster, goToNearestWalkableToMonster, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, sleep, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesMerchant } from "../base/merchant.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 import { attackTheseTypesWarrior } from "../base/warrior.js"
 import { Information, Strategy } from "../definitions/bot.js"
-import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMage, startMerchant, startPriest, startRanger, startWarrior } from "./shared.js"
+import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMerchant, startPriest, startRanger, startWarrior } from "./shared.js"
+
+let TARGET_REGION = DEFAULT_REGION
+let TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
 
 const information: Information = {
     friends: [undefined, undefined, undefined, undefined],
@@ -14,7 +16,6 @@ const information: Information = {
     bot1: {
         bot: undefined,
         name: "earthPri",
-        // name: "earthMag",
         target: undefined
     },
     bot2: {
@@ -25,7 +26,6 @@ const information: Information = {
     bot3: {
         bot: undefined,
         name: "earthWar",
-        // name: "earthMag2",
         target: undefined
     },
     merchant: {
@@ -33,48 +33,6 @@ const information: Information = {
         name: "earthMer",
         target: undefined
     }
-}
-
-function prepareMage(bot: AL.Mage) {
-    const strategy: Strategy = {
-        arcticbee: {
-            attack: async () => { await attackTheseTypesMage(bot, ["arcticbee"], information.friends, { disableEnergize: true }) },
-            attackWhileIdle: true,
-            equipment: { mainhand: "wand" },
-            move: async () => {
-                if (bot.id == "earthMag") {
-                    await bot.smartMove({ map: "winterland", x: 1082, y: -883 })
-                } else if (bot.id == "earthMag2") {
-                    await bot.smartMove({ map: "winterland", x: 1082, y: -863 })
-                }
-            }
-        },
-        goo: {
-            attack: async () => { await attackTheseTypesMage(bot, ["goo"], information.friends, { disableEnergize: true }) },
-            attackWhileIdle: true,
-            equipment: { mainhand: "wand" },
-            move: async () => {
-                if (bot.id == "earthMag") {
-                    await bot.smartMove({ map: "main", x: -132, y: 787 })
-                } else if (bot.id == "earthMag2") {
-                    await bot.smartMove({ map: "main", x: 68, y: 787 })
-                }
-            }
-        },
-        minimush: {
-            attack: async () => { await attackTheseTypesMage(bot, ["minimush", "phoenix"], information.friends, { disableEnergize: true }) },
-            attackWhileIdle: true,
-            equipment: { mainhand: "wand" },
-            move: async () => {
-                if (bot.id == "earthMag") {
-                    await bot.smartMove({ map: "halloween", x: 8, y: 731 })
-                } else if (bot.id == "earthMag2") {
-                    await bot.smartMove({ map: "halloween", x: 8, y: 531 })
-                }
-            }
-        }
-    }
-    startMage(bot, information, strategy)
 }
 
 function prepareMerchant(bot: AL.Merchant) {
@@ -1261,65 +1219,12 @@ async function run() {
     // Start all characters
     console.log("Connecting...")
 
-    // const startMage1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
-    //     // Start the characters
-    //     const loopBot = async () => {
-    //         try {
-    //             if (information.bot1.bot) await information.bot1.bot.disconnect()
-    //             information.bot1.bot = await AL.Game.startMage(name, region, identifier)
-    //             information.friends[1] = information.bot1.bot
-    //             prepareMage(information.bot1.bot as AL.Mage)
-    //             startTrackerLoop(information.bot1.bot)
-    //             information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
-    //         } catch (e) {
-    //             console.error(e)
-    //             if (information.bot1.bot) await information.bot1.bot.disconnect()
-    //             const wait = /wait_(\d+)_second/.exec(e)
-    //             if (wait && wait[1]) {
-    //                 setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
-    //             } else if (/limits/.test(e)) {
-    //                 setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
-    //             } else {
-    //                 setTimeout(async () => { loopBot() }, 10000)
-    //             }
-    //         }
-    //     }
-    //     loopBot()
-    // }
-    // startMage1Loop(information.bot1.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
-
-    // const startMage2Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
-    //     // Start the characters
-    //     const loopBot = async () => {
-    //         try {
-    //             if (information.bot3.bot) await information.bot3.bot.disconnect()
-    //             information.bot3.bot = await AL.Game.startMage(name, region, identifier)
-    //             information.friends[2] = information.bot3.bot
-    //             prepareMage(information.bot3.bot as AL.Mage)
-    //             information.bot3.bot.socket.on("disconnect", async () => { loopBot() })
-    //         } catch (e) {
-    //             console.error(e)
-    //             if (information.bot3.bot) await information.bot3.bot.disconnect()
-    //             const wait = /wait_(\d+)_second/.exec(e)
-    //             if (wait && wait[1]) {
-    //                 setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
-    //             } else if (/limits/.test(e)) {
-    //                 setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
-    //             } else {
-    //                 setTimeout(async () => { loopBot() }, 10000)
-    //             }
-    //         }
-    //     }
-    //     loopBot()
-    // }
-    // startMage2Loop(information.bot3.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
-
-    const startMerchantLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startMerchantLoop = async () => {
         // Start the characters
         const loopBot = async () => {
             try {
                 if (information.merchant.bot) await information.merchant.bot.disconnect()
-                information.merchant.bot = await AL.Game.startMerchant(name, region, identifier)
+                information.merchant.bot = await AL.Game.startMerchant(information.merchant.name, TARGET_REGION, TARGET_IDENTIFIER)
                 information.friends[0] = information.merchant.bot
                 prepareMerchant(information.merchant.bot)
                 information.merchant.bot.socket.on("disconnect", async () => { loopBot() })
@@ -1338,14 +1243,14 @@ async function run() {
         }
         loopBot()
     }
-    startMerchantLoop(information.merchant.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
+    startMerchantLoop().catch(() => { /* ignore errors */ })
 
-    const startPriestLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startPriestLoop = async () => {
         // Start the characters
         const loopBot = async () => {
             try {
                 if (information.bot1.bot) await information.bot1.bot.disconnect()
-                information.bot1.bot = await AL.Game.startPriest(name, region, identifier)
+                information.bot1.bot = await AL.Game.startPriest(information.bot1.name, TARGET_REGION, TARGET_IDENTIFIER)
                 information.friends[1] = information.bot1.bot
                 preparePriest(information.bot1.bot as AL.Priest)
                 information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
@@ -1364,14 +1269,14 @@ async function run() {
         }
         loopBot()
     }
-    startPriestLoop(information.bot1.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
+    startPriestLoop().catch(() => { /* ignore errors */ })
 
-    const startRangerLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startRangerLoop = async () => {
         // Start the characters
         const loopBot = async () => {
             try {
                 if (information.bot2.bot) await information.bot2.bot.disconnect()
-                information.bot2.bot = await AL.Game.startRanger(name, region, identifier)
+                information.bot2.bot = await AL.Game.startRanger(information.bot2.name, TARGET_REGION, TARGET_IDENTIFIER)
                 information.friends[2] = information.bot2.bot
                 prepareRanger(information.bot2.bot as AL.Ranger)
                 startTrackerLoop(information.bot2.bot)
@@ -1391,14 +1296,14 @@ async function run() {
         }
         loopBot()
     }
-    startRangerLoop(information.bot2.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
+    startRangerLoop().catch(() => { /* ignore errors */ })
 
-    const startWarriorLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startWarriorLoop = async () => {
         // Start the characters
         const loopBot = async () => {
             try {
                 if (information.bot3.bot) await information.bot3.bot.disconnect()
-                information.bot3.bot = await AL.Game.startWarrior(name, region, identifier)
+                information.bot3.bot = await AL.Game.startWarrior(information.bot3.name, TARGET_REGION, TARGET_IDENTIFIER)
                 information.friends[3] = information.bot3.bot
                 prepareWarrior(information.bot3.bot as AL.Warrior)
                 information.bot3.bot.socket.on("disconnect", async () => { loopBot() })
@@ -1417,134 +1322,179 @@ async function run() {
         }
         loopBot()
     }
-    startWarriorLoop(information.bot3.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
+    startWarriorLoop().catch(() => { /* ignore errors */ })
 
-    // const startMerchantLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
-    //     const connectLoop = async () => {
-    //         try {
-    //             information.merchant.bot = await AL.Game.startMerchant(name, region, identifier)
-    //             information.friends[0] = information.merchant.bot
-    //             prepareMerchant(information.merchant.bot)
-    //         } catch (e) {
-    //             console.error(e)
-    //             if (information.merchant.bot) await information.merchant.bot.disconnect()
-    //         }
-    //         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-    //         setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
-    //     }
+    let lastServerChangeTime = Date.now()
+    const serverLoop = async () => {
+        try {
+            console.log("Server loop! Yeah!")
+            if (lastServerChangeTime > Date.now() - 60_000) {
+            // Don't change servers too fast
+                setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime - Date.now() - 60_000))
+                return
+            }
+            console.log("It's been over a minute since we last changed servers! Yeah!")
+            if (!information.bot1) {
+            // We haven't logged in yet
+                setTimeout(async () => { serverLoop() }, 1000)
+                return
+            }
+            console.log("We've logged in! Yeah!")
+            if (AL.Constants.SPECIAL_MONSTERS.includes(information.bot1.target)
+        || AL.Constants.SPECIAL_MONSTERS.includes(information.bot2.target)
+        || AL.Constants.SPECIAL_MONSTERS.includes(information.bot3.target)) {
+            // We're currently attacking something special, don't change servers.
+                setTimeout(async () => { serverLoop() }, 1000)
+                return
+            }
+            console.log("We're not doing any special monsters! Yeah!")
 
-    //     const disconnectLoop = async () => {
-    //         try {
-    //             if (information.merchant.bot) await information.merchant.bot.disconnect()
-    //             information.merchant.bot = undefined
-    //             information.friends[0] = undefined
-    //         } catch (e) {
-    //             console.error(e)
-    //         }
-    //         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-    //         setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
-    //     }
+            const currentRegion = information.bot1.bot.server.region
+            const currentIdentifier = information.bot1.bot.server.name
+            const G = information.bot1.bot.G
 
-    //     const msToNextMinute = 60_000 - (Date.now() % 60_000)
-    //     setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
-    //     setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
-    // }
-    // startMerchantLoop(information.merchant.name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
+            // Priority #1: Special co-op monsters that take a team effort
+            const coop: AL.MonsterName[] = [
+                "dragold", "grinch", "mrgreen", "mrpumpkin", "franky"
+            ]
+            const coopEntities: AL.IEntity[] = await AL.EntityModel.aggregate([
+                {
+                    $match: {
+                        lastSeen: { $gt: Date.now() - 30_000 },
+                        serverIdentifier: { $nin: ["PVP"] },
+                        target: { $ne: undefined }, // We only want to do these if others are doing them, too.
+                        type: { $in: coop }
+                    }
+                },
+                { $addFields: { __order: { $indexOfArray: [coop, "$type"] } } },
+                { $sort: { "__order": 1, "hp": 1 } }]).exec()
+            for (const entity of coopEntities) {
+                if (currentRegion == entity.serverRegion && currentIdentifier == entity.serverIdentifier) {
+                // We're already on the correct server
+                    setTimeout(async () => { serverLoop() }, 1000)
+                    return
+                }
 
-    // const startPriestLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
-    //     const connectLoop = async () => {
-    //         try {
-    //             information.bot1.bot = await AL.Game.startPriest(name, region, identifier)
-    //             information.friends[1] = information.bot1.bot
-    //             preparePriest(information.bot1.bot as AL.Priest)
-    //         } catch (e) {
-    //             console.error(e)
-    //             if (information.bot1.bot) await information.bot1.bot.disconnect()
-    //         }
-    //         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-    //         setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
-    //     }
+                console.log("We're switching for a priority 1 monster! Yeah!")
 
-    //     const disconnectLoop = async () => {
-    //         try {
-    //             if (information.bot1.bot) await information.bot1.bot.disconnect()
-    //             information.bot1.bot = undefined
-    //             information.friends[1] = undefined
-    //         } catch (e) {
-    //             console.error(e)
-    //         }
-    //         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-    //         setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
-    //     }
+                // Change servers to attack this entity
+                TARGET_REGION = entity.serverRegion
+                TARGET_IDENTIFIER = entity.serverIdentifier
+                console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${TARGET_REGION} ${TARGET_IDENTIFIER}`)
 
-    //     const msToNextMinute = 60_000 - (Date.now() % 60_000)
-    //     setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
-    //     setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
-    // }
-    // startPriestLoop(information.bot1.name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
+                // Loot all of our remaining chests
+                await sleep(1000)
+                for (const [, chest] of information.bot1.bot.chests) await information.bot1.bot.openChest(chest.id)
+                await sleep(1000)
 
-    // const startRangerLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
-    //     const connectLoop = async () => {
-    //         try {
-    //             information.bot2.bot = await AL.Game.startRanger(name, region, identifier)
-    //             information.friends[2] = information.bot2.bot
-    //             prepareRanger(information.bot2.bot as AL.Ranger)
-    //         } catch (e) {
-    //             console.error(e)
-    //             if (information.bot2.bot) await information.bot2.bot.disconnect()
-    //         }
-    //         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-    //         setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
-    //     }
+                // Disconnect everyone
+                await Promise.allSettled([
+                    information.bot1.bot.disconnect(),
+                    information.bot2.bot.disconnect(),
+                    information.bot3.bot.disconnect(),
+                    information.merchant.bot.disconnect()
+                ])
+                if (TARGET_REGION == DEFAULT_REGION && TARGET_IDENTIFIER == DEFAULT_IDENTIFIER) {
+                    information.merchant.name = "earthMer"
+                } else {
+                    information.merchant.name = "earthMer2"
+                }
+                await sleep(5000)
+                lastServerChangeTime = Date.now()
+                setTimeout(async () => { serverLoop() }, 1000)
+                return
+            }
 
-    //     const disconnectLoop = async () => {
-    //         try {
-    //             if (information.bot2.bot) await information.bot2.bot.disconnect()
-    //             information.bot2.bot = undefined
-    //             information.friends[2] = undefined
-    //         } catch (e) {
-    //             console.error(e)
-    //         }
-    //         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-    //         setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
-    //     }
+            // Priority #2: Special monsters that we can defeat by ourselves
+            const solo: AL.MonsterName[] = [
+            // Very Rare Monsters
+                "goldenbat", "tinyp", "cutebee",
+                // Event Monsters
+                "pinkgoo", "wabbit",
+                // // Rare Monsters
+                "greenjr", "jr", "skeletor", "mvampire", "fvampire", "snowman"
+            ]
+            const soloEntities: AL.IEntity[] = await AL.EntityModel.aggregate([
+                {
+                    $match: {
+                        lastSeen: { $gt: Date.now() - 30_000 },
+                        serverIdentifier: { $nin: ["PVP"] },
+                        type: { $in: solo },
+                    }
+                },
+                { $addFields: { __order: { $indexOfArray: [solo, "$type"] } } },
+                { $sort: { "__order": 1, "hp": 1 } }]).exec()
+            for (const entity of soloEntities) {
+                if ((currentRegion == entity.serverRegion && currentIdentifier == entity.serverIdentifier) // We're already on the correct server
+                        || (!G.monsters[entity.type].cooperative && entity.target)) // The target isn't cooperative, and someone is already attacking it
+                {
+                    setTimeout(async () => { serverLoop() }, 1000)
+                    return
+                }
 
-    //     const msToNextMinute = 60_000 - (Date.now() % 60_000)
-    //     setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
-    //     setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
-    // }
-    // startRangerLoop(information.bot2.name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
+                console.log("We're switching for a priority 2 monster! Yeah!")
 
-    // const startWarriorLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
-    //     const connectLoop = async () => {
-    //         try {
-    //             information.bot3.bot = await AL.Game.startWarrior(name, region, identifier)
-    //             information.friends[3] = information.bot3.bot
-    //             prepareWarrior(information.bot3.bot as AL.Warrior)
-    //         } catch (e) {
-    //             console.error(e)
-    //             if (information.bot3.bot) await information.bot3.bot.disconnect()
-    //         }
-    //         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-    //         setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
-    //     }
+                // Change servers to attack this entity
+                TARGET_REGION = entity.serverRegion
+                TARGET_IDENTIFIER = entity.serverIdentifier
+                console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${TARGET_REGION} ${TARGET_IDENTIFIER}`)
 
-    //     const disconnectLoop = async () => {
-    //         try {
-    //             if (information.bot3.bot) await information.bot3.bot.disconnect()
-    //             information.bot3.bot = undefined
-    //             information.friends[3] = undefined
-    //         } catch (e) {
-    //             console.error(e)
-    //         }
-    //         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-    //         setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
-    //     }
+                // Loot all of our remaining chests
+                await sleep(1000)
+                for (const [, chest] of information.bot1.bot.chests) await information.bot1.bot.openChest(chest.id)
+                await sleep(1000)
 
-    //     const msToNextMinute = 60_000 - (Date.now() % 60_000)
-    //     setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
-    //     setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
-    // }
-    // startWarriorLoop(information.bot3.name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
+                // Disconnect everyone
+                await Promise.allSettled([
+                    information.bot1.bot.disconnect(),
+                    information.bot2.bot.disconnect(),
+                    information.bot3.bot.disconnect(),
+                    information.merchant.bot.disconnect()
+                ])
+                if (TARGET_REGION == DEFAULT_REGION && TARGET_IDENTIFIER == DEFAULT_IDENTIFIER) {
+                    information.merchant.name = "earthMer"
+                } else {
+                    information.merchant.name = "earthMer2"
+                }
+                await sleep(5000)
+                lastServerChangeTime = Date.now()
+                setTimeout(async () => { serverLoop() }, 1000)
+                return
+            }
+
+            // Priority #3: Default Server
+            if (currentRegion !== DEFAULT_REGION || currentIdentifier !== DEFAULT_IDENTIFIER) {
+            // Change servers to our default server
+                TARGET_REGION = DEFAULT_REGION
+                TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
+                console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${TARGET_REGION} ${TARGET_IDENTIFIER}`)
+
+                console.log("We're switching back! Yeah!")
+
+                // Loot all of our remaining chests
+                await sleep(1000)
+                for (const [, chest] of information.bot1.bot.chests) await information.bot1.bot.openChest(chest.id)
+                await sleep(1000)
+
+                // Disconnect everyone
+                await Promise.allSettled([
+                    information.bot1.bot.disconnect(),
+                    information.bot2.bot.disconnect(),
+                    information.bot3.bot.disconnect(),
+                    information.merchant.bot.disconnect()
+                ])
+                information.merchant.name = "earthMer"
+                await sleep(5000)
+                lastServerChangeTime = Date.now()
+                setTimeout(async () => { serverLoop() }, 1000)
+                return
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { serverLoop() }, 1000)
+    }
+    serverLoop()
 }
 run()
