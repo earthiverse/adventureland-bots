@@ -1,18 +1,9 @@
 import AL from "alclient-mongo"
 import { goToBankIfFull, goToPoitonSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
+import { getTargetServer } from "../base/serverhop.js"
 
 /** Config */
-const servers: [AL.ServerRegion, AL.ServerIdentifier][] = [
-    ["ASIA", "I"],
-    ["US", "I"],
-    // ["US", "II"],
-    ["US", "III"],
-    ["US", "PVP"],
-    ["EU", "I"],
-    ["EU", "II"],
-    ["EU", "PVP"]
-]
 const mageName = "earthMag3"
 
 /** Characters */
@@ -124,7 +115,7 @@ async function run() {
 
     const connectLoop = async () => {
         try {
-            const server = servers[Math.floor(Date.now() / 1000 / 60) % servers.length]
+            const server = getTargetServer()
             mage = await AL.Game.startMage(mageName, server[0], server[1])
             startMage(mage)
         } catch (e) {

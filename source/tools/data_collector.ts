@@ -1,24 +1,15 @@
 import axios from "axios"
 import AL from "alclient-mongo"
 import { sleep } from "../base/general.js"
+import { getTargetServer, SERVER_HOP_SERVERS } from "../base/serverhop.js"
 
-const servers: [AL.ServerRegion, AL.ServerIdentifier][] = [
-    ["ASIA", "I"],
-    ["US", "I"],
-    ["US", "II"],
-    ["US", "III"],
-    ["US", "PVP"],
-    ["EU", "I"],
-    ["EU", "II"],
-    ["EU", "PVP"]
-]
+const servers = SERVER_HOP_SERVERS
 
 const SEND_ALDATA = false
 const NOTABLE_NPCS: string[] = ["Angel", "Kane"]
 
 const PEEK = true
-const PEEK_MS = 40000
-const PEEK_CHARS = ["earthMag", "earthMag2", "earthMag3", "earthRan2", "earthRan3", "earthRog", "earthRog2"]
+const PEEK_CHARS = ["earthRan2", "earthRan3", "earthMag2", "earthWar2", "earthWar3", "earthRog", "earthRog2"]
 
 async function run() {
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
@@ -71,153 +62,249 @@ async function run() {
 
     if (PEEK) {
         // Look for `skeletor`
-        const skeletorCheck = async () => {
-            const character = PEEK_CHARS[0]
-            if (!character) return
-            for (const [region, identifier] of servers) {
-                if (identifier == "PVP") continue // Don't peek PVP
-                try {
-                    await sleep(PEEK_MS)
-                    console.log(`Checking for skeletor on ${region} ${identifier}...`)
-                    const bot = await AL.Game.startCharacter(character, region, identifier)
-                    if (bot.rip) await bot.respawn()
-                    await Promise.all([bot.smartMove({ map: "arena", x: 379.5, y: -671.5 }).catch(() => { /* Suppress Errors */ }), bot.regenHP()])
-                    await bot.disconnect()
-                } catch (e) {
-                    console.log(e)
-                }
+        let skeletorChecker: AL.Character
+        const start_skeletorCheck = async () => {
+            try {
+                const botName = PEEK_CHARS[0]
+                if (!botName) return
+                const server = getTargetServer(1, true)
+                console.log(`Checking for skeletor on ${server[0]} ${server[1]}...`)
+                skeletorChecker = await AL.Game.startCharacter(botName, server[0], server[1])
+
+                if (skeletorChecker.rip) await skeletorChecker.respawn()
+                await Promise.all([skeletorChecker.smartMove({ map: "arena", x: 379.5, y: -671.5 }).catch(() => { /* Suppress Errors */ }), skeletorChecker.regenHP()])
+                await skeletorChecker.disconnect()
+                skeletorChecker = undefined
+            } catch (e) {
+                console.error(e)
+                if (skeletorChecker) skeletorChecker.disconnect()
             }
-            skeletorCheck()
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { start_skeletorCheck() }, msToNextMinute + 10000)
         }
-        skeletorCheck()
+        const stop_skeletorCheck = async () => {
+            try {
+                if (skeletorChecker) await skeletorChecker.disconnect()
+                skeletorChecker = undefined
+            } catch (e) {
+                console.error(e)
+            }
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { stop_skeletorCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        }
+        let msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { start_skeletorCheck() }, msToNextMinute + 10000)
+        setTimeout(async () => { stop_skeletorCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
 
         // Look for `mvampire` in place #1
-        const mvampireCheck1 = async () => {
-            const character = PEEK_CHARS[1]
-            if (!character) return
-            for (const [region, identifier] of servers) {
-                if (identifier == "PVP") continue // Don't peek PVP
-                try {
-                    await sleep(PEEK_MS)
-                    console.log(`Checking for mvampire (1) on ${region} ${identifier}...`)
-                    const bot = await AL.Game.startCharacter(character, region, identifier)
-                    if (bot.rip) await bot.respawn()
-                    await Promise.all([bot.smartMove({ map: "cave", x: -190.5, y: -1176.5 }).catch(() => { /* Suppress Errors */ }), bot.regenHP()])
-                    await bot.disconnect()
-                } catch (e) {
-                    console.log(e)
-                }
-            }
-            mvampireCheck1()
-        }
-        mvampireCheck1()
+        let mvampireChecker: AL.Character
+        const start_mvampireCheck = async () => {
+            try {
+                const botName = PEEK_CHARS[0]
+                if (!botName) return
+                const server = getTargetServer(1, true)
+                console.log(`Checking for mvampire on ${server[0]} ${server[1]}...`)
+                mvampireChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
-        // Look for `mvampire` in place #2
-        const mvampireCheck2 = async () => {
-            const character = PEEK_CHARS[2]
-            if (!character) return
-            for (const [region, identifier] of servers) {
-                if (identifier == "PVP") continue // Don't peek PVP
-                try {
-                    await sleep(PEEK_MS)
-                    console.log(`Checking for mvampire (2) on ${region} ${identifier}...`)
-                    const bot = await AL.Game.startCharacter(character, region, identifier)
-                    if (bot.rip) await bot.respawn()
-                    await Promise.all([bot.smartMove({ map: "cave", x: 1244, y: -22.5 }).catch(() => { /* Suppress Errors */ }), bot.regenHP()])
-                    await bot.disconnect()
-                } catch (e) {
-                    console.log(e)
-                }
+                if (mvampireChecker.rip) await mvampireChecker.respawn()
+                await Promise.all([mvampireChecker.smartMove({ map: "cave", x: -190.5, y: -1176.5 }).catch(() => { /* Suppress Errors */ }), mvampireChecker.regenHP()])
+                await mvampireChecker.disconnect()
+                mvampireChecker = undefined
+            } catch (e) {
+                console.error(e)
+                if (mvampireChecker) mvampireChecker.disconnect()
             }
-            mvampireCheck2()
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { start_mvampireCheck() }, msToNextMinute + 10000)
         }
-        mvampireCheck2()
+        const stop_mvampireCheck = async () => {
+            try {
+                if (mvampireChecker) await mvampireChecker.disconnect()
+                mvampireChecker = undefined
+            } catch (e) {
+                console.error(e)
+            }
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { stop_mvampireCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        }
+        msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { start_mvampireCheck() }, msToNextMinute + 10000)
+        setTimeout(async () => { stop_mvampireCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
 
-        await sleep(PEEK_MS)
-        // Look for `fvampire`
-        const fvampireCheck = async () => {
-            const character = PEEK_CHARS[3]
-            if (!character) return
-            for (const [region, identifier] of servers) {
-                if (identifier == "PVP") continue // Don't peek PVP
-                try {
-                    await sleep(PEEK_MS)
-                    console.log(`Checking for fvampire on ${region} ${identifier}...`)
-                    const bot = await AL.Game.startCharacter(character, region, identifier)
-                    if (bot.rip) await bot.respawn()
-                    await Promise.all([bot.smartMove({ map: "halloween", x: -405.5, y: -1642.5 }).catch(() => { /* Suppress Errors */ }), bot.regenHP()])
-                    await bot.disconnect()
-                } catch (e) {
-                    console.log(e)
-                }
-            }
-            fvampireCheck()
-        }
-        fvampireCheck()
+        // Look for `mvampire` in place #1
+        let mvampireChecker2: AL.Character
+        const start_mvampireCheck2 = async () => {
+            try {
+                const botName = PEEK_CHARS[0]
+                if (!botName) return
+                const server = getTargetServer(1, true)
+                console.log(`Checking for mvampire on ${server[0]} ${server[1]}...`)
+                mvampireChecker2 = await AL.Game.startCharacter(botName, server[0], server[1])
 
-        // Look for `greenjr`
-        const greenjrCheck = async () => {
-            const character = PEEK_CHARS[4]
-            if (!character) return
-            for (const [region, identifier] of servers) {
-                if (identifier == "PVP") continue // Don't peek PVP
-                try {
-                    await sleep(PEEK_MS)
-                    console.log(`Checking for greenjr on ${region} ${identifier}...`)
-                    const bot = await AL.Game.startCharacter(character, region, identifier)
-                    if (bot.rip) await bot.respawn()
-                    await Promise.all([bot.smartMove({ map: "halloween", x: -569, y: -511.5 }).catch(() => { /* Suppress Errors */ }), bot.regenHP()])
-                    await bot.disconnect()
-                } catch (e) {
-                    console.log(e)
-                }
+                if (mvampireChecker2.rip) await mvampireChecker2.respawn()
+                await Promise.all([mvampireChecker2.smartMove({ map: "cave", x: 1244, y: -22.5 }).catch(() => { /* Suppress Errors */ }), mvampireChecker2.regenHP()])
+                await mvampireChecker2.disconnect()
+                mvampireChecker2 = undefined
+            } catch (e) {
+                console.error(e)
+                if (mvampireChecker2) mvampireChecker2.disconnect()
             }
-            greenjrCheck()
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { start_mvampireCheck2() }, msToNextMinute + 10000)
         }
-        greenjrCheck()
+        const stop_mvampireCheck2 = async () => {
+            try {
+                if (mvampireChecker2) await mvampireChecker2.disconnect()
+                mvampireChecker2 = undefined
+            } catch (e) {
+                console.error(e)
+            }
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { stop_mvampireCheck2() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        }
+        msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { start_mvampireCheck2() }, msToNextMinute + 10000)
+        setTimeout(async () => { stop_mvampireCheck2() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
 
-        // Look for `jr`
-        const jrCheck = async () => {
-            const character = PEEK_CHARS[5]
-            if (!character) return
-            for (const [region, identifier] of servers) {
-                if (identifier == "PVP") continue // Don't peek PVP
-                try {
-                    await sleep(PEEK_MS)
-                    console.log(`Checking for jr on ${region} ${identifier}...`)
-                    const bot = await AL.Game.startCharacter(character, region, identifier)
-                    if (bot.rip) await bot.respawn()
-                    await Promise.all([bot.smartMove({ map: "spookytown", x: -783.5, y: -301 }).catch(() => { /* Suppress Errors */ }), bot.regenHP()])
-                    await bot.disconnect()
-                } catch (e) {
-                    console.log(e)
-                }
-            }
-            jrCheck()
-        }
-        jrCheck()
+        // Look for `fvampire` in place #1
+        let fvampireChecker: AL.Character
+        const start_fvampireCheck = async () => {
+            try {
+                const botName = PEEK_CHARS[0]
+                if (!botName) return
+                const server = getTargetServer(2, true)
+                console.log(`Checking for fvampire on ${server[0]} ${server[1]}...`)
+                fvampireChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
-        await sleep(PEEK_MS)
-        // Look for `jr`
-        const stompyCheck = async () => {
-            const character = PEEK_CHARS[6]
-            if (!character) return
-            for (const [region, identifier] of servers) {
-                if (identifier == "PVP") continue // Don't peek PVP
-                try {
-                    await sleep(PEEK_MS)
-                    console.log(`Checking for stompy on ${region} ${identifier}...`)
-                    const bot = await AL.Game.startCharacter(character, region, identifier)
-                    if (bot.rip) await bot.respawn()
-                    await Promise.all([bot.smartMove({ map: "winterland", x: 433, y: -2745 }).catch(() => { /* Suppress Errors */ }), bot.regenHP()])
-                    await bot.disconnect()
-                } catch (e) {
-                    console.log(e)
-                }
+                if (fvampireChecker.rip) await fvampireChecker.respawn()
+                await Promise.all([fvampireChecker.smartMove({ map: "halloween", x: -405.5, y: -1642.5 }).catch(() => { /* Suppress Errors */ }), fvampireChecker.regenHP()])
+                await fvampireChecker.disconnect()
+                fvampireChecker = undefined
+            } catch (e) {
+                console.error(e)
+                if (fvampireChecker) fvampireChecker.disconnect()
             }
-            stompyCheck()
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { start_fvampireCheck() }, msToNextMinute + 10000)
         }
-        stompyCheck()
+        const stop_fvampireCheck = async () => {
+            try {
+                if (fvampireChecker) await fvampireChecker.disconnect()
+                fvampireChecker = undefined
+            } catch (e) {
+                console.error(e)
+            }
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { stop_fvampireCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        }
+        msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { start_fvampireCheck() }, msToNextMinute + 10000)
+        setTimeout(async () => { stop_fvampireCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+
+        // Look for `greenjr` in place #1
+        let greenjrChecker: AL.Character
+        const start_greenjrCheck = async () => {
+            try {
+                const botName = PEEK_CHARS[0]
+                if (!botName) return
+                const server = getTargetServer(2, true)
+                console.log(`Checking for greenjr on ${server[0]} ${server[1]}...`)
+                greenjrChecker = await AL.Game.startCharacter(botName, server[0], server[1])
+
+                if (greenjrChecker.rip) await greenjrChecker.respawn()
+                await Promise.all([greenjrChecker.smartMove({ map: "halloween", x: -569, y: -511.5 }).catch(() => { /* Suppress Errors */ }), greenjrChecker.regenHP()])
+                await greenjrChecker.disconnect()
+                greenjrChecker = undefined
+            } catch (e) {
+                console.error(e)
+                if (greenjrChecker) greenjrChecker.disconnect()
+            }
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { start_greenjrCheck() }, msToNextMinute + 10000)
+        }
+        const stop_greenjrCheck = async () => {
+            try {
+                if (greenjrChecker) await greenjrChecker.disconnect()
+                greenjrChecker = undefined
+            } catch (e) {
+                console.error(e)
+            }
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { stop_greenjrCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        }
+        msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { start_greenjrCheck() }, msToNextMinute + 10000)
+        setTimeout(async () => { stop_greenjrCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+
+        // Look for `jr` in place #1
+        let jrChecker: AL.Character
+        const start_jrCheck = async () => {
+            try {
+                const botName = PEEK_CHARS[0]
+                if (!botName) return
+                const server = getTargetServer(2, true)
+                console.log(`Checking for jr on ${server[0]} ${server[1]}...`)
+                jrChecker = await AL.Game.startCharacter(botName, server[0], server[1])
+
+                if (jrChecker.rip) await jrChecker.respawn()
+                await Promise.all([jrChecker.smartMove({ map: "spookytown", x: -783.5, y: -301 }).catch(() => { /* Suppress Errors */ }), jrChecker.regenHP()])
+                await jrChecker.disconnect()
+                jrChecker = undefined
+            } catch (e) {
+                console.error(e)
+                if (jrChecker) jrChecker.disconnect()
+            }
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { start_jrCheck() }, msToNextMinute + 10000)
+        }
+        const stop_jrCheck = async () => {
+            try {
+                if (jrChecker) await jrChecker.disconnect()
+                jrChecker = undefined
+            } catch (e) {
+                console.error(e)
+            }
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { stop_jrCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        }
+        msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { start_jrCheck() }, msToNextMinute + 10000)
+        setTimeout(async () => { stop_jrCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+
+        // Look for `stompy` in place #1
+        let stompyChecker: AL.Character
+        const start_stompyCheck = async () => {
+            try {
+                const botName = PEEK_CHARS[0]
+                if (!botName) return
+                const server = getTargetServer(3, true)
+                console.log(`Checking for stompy on ${server[0]} ${server[1]}...`)
+                stompyChecker = await AL.Game.startCharacter(botName, server[0], server[1])
+
+                if (stompyChecker.rip) await stompyChecker.respawn()
+                await Promise.all([stompyChecker.smartMove({ map: "winterland", x: 433, y: -2745 }).catch(() => { /* Suppress Errors */ }), stompyChecker.regenHP()])
+                await stompyChecker.disconnect()
+                stompyChecker = undefined
+            } catch (e) {
+                console.error(e)
+                if (stompyChecker) stompyChecker.disconnect()
+            }
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { start_stompyCheck() }, msToNextMinute + 10000)
+        }
+        const stop_stompyCheck = async () => {
+            try {
+                if (stompyChecker) await stompyChecker.disconnect()
+                stompyChecker = undefined
+            } catch (e) {
+                console.error(e)
+            }
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { stop_stompyCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        }
+        msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { start_stompyCheck() }, msToNextMinute + 10000)
+        setTimeout(async () => { stop_stompyCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
     }
 }
 run()

@@ -1,18 +1,9 @@
 import AL from "alclient-mongo"
 import { goToBankIfFull, goToPoitonSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
+import { getTargetServer, SERVER_HOP_SERVERS } from "../base/serverhop.js"
 
 /** Config */
-const servers: [AL.ServerRegion, AL.ServerIdentifier][] = [
-    ["ASIA", "I"],
-    ["US", "I"],
-    // ["US", "II"],
-    ["US", "III"],
-    ["US", "PVP"],
-    ["EU", "I"],
-    ["EU", "II"],
-    ["EU", "PVP"]
-]
 const priestName = "earthPri2"
 
 /** Characters */
@@ -125,7 +116,7 @@ async function run() {
 
     const connectLoop = async () => {
         try {
-            const server = servers[Math.floor(Date.now() / 1000 / 60) % servers.length]
+            const server = getTargetServer()
             priest = await AL.Game.startPriest(priestName, server[0], server[1])
             startPriest(priest)
         } catch (e) {
