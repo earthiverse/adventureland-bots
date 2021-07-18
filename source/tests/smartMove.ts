@@ -18,9 +18,9 @@ async function run() {
         console.log(data2)
         data2 = await bot.move(-280, -123)
         console.log(data2)
-        data2 = await bot.smartMove("elixirluck", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
-        console.log(data2)
-        data2 = await bot.smartMove({ map: "main", x: 127, y: -416 })
+        // data2 = await bot.smartMove("elixirluck", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
+        // console.log(data2)
+        data2 = await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
         console.log(data2)
     } catch (e) {
         console.error(e)

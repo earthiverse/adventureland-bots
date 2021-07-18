@@ -3,7 +3,7 @@ import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLo
 import { winterlandArcticBees } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { doBanking, startMluckLoop } from "../base/merchant.js"
-import { partyLeader, partyMembers } from "./party.js"
+import { partyLeader, partyMembers } from "../base/party.js"
 
 /** Config */
 const merchantName = "decisiveness"
