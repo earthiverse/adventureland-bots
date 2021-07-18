@@ -777,7 +777,8 @@ function prepareRanger(bot: AL.Ranger) {
         stompy: {
             attack: async () => { return attackTheseTypesRanger(bot, ["stompy"], information.friends, { targetingPlayer: information.bot3.name }) },
             equipment: { mainhand: "firebow", orb: "test_orb" },
-            move: async () => { await goToSpecialMonster(bot, "stompy") }
+            move: async () => { await goToSpecialMonster(bot, "stompy") },
+            requireCtype: "priest"
         },
         stoneworm: {
             attack: async () => { return attackTheseTypesRanger(bot, ["stoneworm"], information.friends) },
@@ -1183,7 +1184,8 @@ function prepareWarrior(bot: AL.Warrior) {
         stompy: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["stompy"], information.friends, { disableAgitate: true }) },
             equipment: { mainhand: "basher", orb: "test_orb" },
-            move: async () => { await goToSpecialMonster(bot, "stompy") }
+            move: async () => { await goToSpecialMonster(bot, "stompy") },
+            requireCtype: "priest"
         },
         stoneworm: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["stoneworm"], information.friends, { disableAgitate: true }) },
@@ -1444,9 +1446,9 @@ async function run() {
                 { $addFields: { __order: { $indexOfArray: [solo, "$type"] } } },
                 { $sort: { "__order": 1, "hp": 1 } }]).exec()
             for (const entity of soloEntities) {
-                if ((currentRegion == entity.serverRegion && currentIdentifier == entity.serverIdentifier) // We're already on the correct server
-                        || (!G.monsters[entity.type].cooperative && entity.target)) // The target isn't cooperative, and someone is already attacking it
-                {
+                if (!G.monsters[entity.type].cooperative && entity.target) continue // The target isn't cooperative, and someone is already attacking it
+                if ((currentRegion == entity.serverRegion && currentIdentifier == entity.serverIdentifier)) {
+                    // We're already on the correct server
                     setTimeout(async () => { serverLoop() }, 1000)
                     return
                 }

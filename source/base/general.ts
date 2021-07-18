@@ -1000,11 +1000,18 @@ export function startScareLoop(bot: ALM.Character): void {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
+            let incomingDamage = 0
+            for (const [, entity] of bot.entities) {
+                if (entity.target !== bot.id) continue
+                incomingDamage += entity.calculateDamageRange(bot)[1]
+            }
+
             if (bot.canUse("scare", { ignoreEquipped: true }) && (
                 bot.isScared() // We are scared
                 || (bot.s.burned && bot.s.burned.intensity > bot.max_hp / 5) // We are burning pretty badly
                 || (bot.targets > 0 && bot.c.town) // We are teleporting
                 || (bot.targets > 0 && bot.hp < bot.max_hp * 0.25) // We are low on HP
+                || (incomingDamage > bot.hp) // We could literally die with the next attack
             )) {
                 // Equip the jacko if we need to
                 let inventoryPos: number
