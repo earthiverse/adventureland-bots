@@ -405,6 +405,11 @@ function preparePriest(bot: AL.Priest) {
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "main", x: -1155, y: 422 }) },
         },
+        stompy: {
+            attack: async () => { await attackTheseTypesPriest(bot, ["stompy"], information.friends, { targetingPlayer: information.bot3.name }) },
+            equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "test_orb" },
+            move: async () => { await goToSpecialMonster(bot, "stompy") }
+        },
         stoneworm: {
             attack: async () => { await attackTheseTypesPriest(bot, ["stoneworm"], information.friends) },
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "test_orb" },
@@ -768,6 +773,11 @@ function prepareRanger(bot: AL.Ranger) {
             attackWhileIdle: true,
             equipment: { mainhand: "crossbow", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "main", x: -1175, y: 422 }) },
+        },
+        stompy: {
+            attack: async () => { return attackTheseTypesRanger(bot, ["stompy"], information.friends, { targetingPlayer: information.bot3.name }) },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
+            move: async () => { await goToSpecialMonster(bot, "stompy") }
         },
         stoneworm: {
             attack: async () => { return attackTheseTypesRanger(bot, ["stoneworm"], information.friends) },
@@ -1169,6 +1179,11 @@ function prepareWarrior(bot: AL.Warrior) {
             attackWhileIdle: true,
             equipment: { mainhand: "bataxe", orb: "test_orb" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["squigtoad", "squig"], { map: "main", x: -1195, y: 422 }) },
+        },
+        stompy: {
+            attack: async () => { await attackTheseTypesWarrior(bot, ["stompy"], information.friends, { disableAgitate: true }) },
+            equipment: { mainhand: "basher", orb: "test_orb" },
+            move: async () => { await goToSpecialMonster(bot, "stompy") }
         },
         stoneworm: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["stoneworm"], information.friends, { disableAgitate: true }) },
