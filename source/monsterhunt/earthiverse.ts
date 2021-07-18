@@ -253,6 +253,11 @@ function preparePriest(bot: AL.Priest) {
             equipment: { mainhand: "wand", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "main", x: -41.5, y: -282 }) },
         },
+        icegolem: {
+            attack: async () => { await attackTheseTypesPriest(bot, ["icegolem"], information.friends) },
+            equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "test_orb" },
+            move: async () => { await bot.smartMove({ map: "winterland", x: 815, y: 261 }) },
+        },
         iceroamer: {
             attack: async () => { await attackTheseTypesPriest(bot, ["iceroamer"], information.friends) },
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "test_orb" },
@@ -600,6 +605,11 @@ function prepareRanger(bot: AL.Ranger) {
             attackWhileIdle: true,
             equipment: { mainhand: "hbow", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "main", x: -61.5, y: -282 }) },
+        },
+        icegolem: {
+            attack: async () => { return attackTheseTypesRanger(bot, ["icegolem"], information.friends) },
+            equipment: { mainhand: "crossbow", orb: "test_orb" },
+            move: async () => { await bot.smartMove({ map: "winterland", x: 783, y: 277 }) },
         },
         iceroamer: {
             attack: async () => { return attackTheseTypesRanger(bot, ["iceroamer"], information.friends) },
