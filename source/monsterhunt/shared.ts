@@ -4,7 +4,7 @@ import { attackTheseTypesMage } from "../base/mage.js"
 import { attackTheseTypesMerchant, doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
-import { attackTheseTypesWarrior, startChargeLoop, startWarcryLoop } from "../base/warrior.js"
+import { attackTheseTypesWarrior, startChargeLoop, startHardshellLoop, startWarcryLoop } from "../base/warrior.js"
 import { Information, Strategy } from "../definitions/bot.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 
@@ -510,6 +510,7 @@ export async function startWarrior(bot: AL.Warrior, information: Information, st
     startShared(bot, strategy, information)
 
     startChargeLoop(bot)
+    startHardshellLoop(bot)
     startWarcryLoop(bot)
 
     const idleTargets: AL.MonsterName[] = []

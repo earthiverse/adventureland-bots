@@ -295,6 +295,33 @@ export function startChargeLoop(bot: AL.Warrior): void {
     chargeLoop()
 }
 
+export function startHardshellLoop(bot: AL.Warrior): void {
+    async function hardshellLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            if (bot.hp < bot.max_hp * 0.75
+                && bot.canUse("hardshell")) {
+                let isBeingAttackedByPhysicalMonster = false
+                for (const [, entity] of bot.entities) {
+                    if (entity.target !== bot.id) continue // Not targeting us
+                    if (entity.damage_type !== "physical") continue // Not physical
+
+                    isBeingAttackedByPhysicalMonster = true
+                    break
+                }
+
+                if (isBeingAttackedByPhysicalMonster) await bot.hardshell()
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        bot.timeouts.set("hardshellloop", setTimeout(async () => { hardshellLoop() }, Math.max(LOOP_MS, bot.getCooldown("hardshell"))))
+    }
+    hardshellLoop()
+}
+
 export function startWarcryLoop(bot: AL.Warrior): void {
     async function warcryLoop() {
         try {

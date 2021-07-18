@@ -576,7 +576,7 @@ function prepareRanger(bot: AL.Ranger) {
             requireCtype: "priest"
         },
         fvampire: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["fvampire"], information.friends) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["fvampire", "ghost"], information.friends) },
             equipment: { mainhand: "firebow", orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "fvampire") },
             requireCtype: "priest"
