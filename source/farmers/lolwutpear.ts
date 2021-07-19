@@ -84,7 +84,7 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
             }
 
             if (!bot.slots.elixir && bot.gold > bot.G.items.elixirluck.g) {
-                await bot.smartMove("elixirluck", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
+                await bot.smartMove("elixirluck", { getWithin: 100 })
                 bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
