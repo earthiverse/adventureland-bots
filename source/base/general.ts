@@ -66,7 +66,7 @@ export const ITEMS_TO_BUY: Set<ALM.ItemName> = new Set([
     // Shoes
     "eslippers", "hboots", "mrnboots", "mwboots", /*"shoes1",*/ "vboots", "wingedboots", "wshoes", "xboots",
     // Pants
-    "frankypants", "hpants", "mrnpants", "mwpants", /*"pants1",*/ "starkillers", "wbreeches", "xpants",
+    /*"frankypants",*/ "hpants", "mrnpants", "mwpants", /*"pants1",*/ "starkillers", "wbreeches", "xpants",
     // Armor
     "cdragon", /*"coat1",*/ "harmor", "luckyt", "mcape", "mrnarmor", "mwarmor", "tshirt0", "tshirt1", "tshirt2", "tshirt3", "tshirt4", "tshirt6", "tshirt7", "tshirt8", "tshirt88", "tshirt9", "vattire", "warpvest", "wattire", "xarmor",
     // Helmets
@@ -95,7 +95,7 @@ export const ITEMS_TO_BUY: Set<ALM.ItemName> = new Set([
 
 export const ITEMS_TO_SELL: ItemLevelInfo = {
     // Things that accumulate
-    "crabclaw": 2, "hpamulet": 2, "hpbelt": 2, "quiver": 2, "ringsj": 2, "slimestaff": 2, "stinger": 2,
+    "crabclaw": 2, "hpamulet": 2, "hpbelt": 2, "quiver": 2, "ringsj": 2, "slimestaff": 2, "stinger": 2, "frankypants": 2,
     // Default clothing
     "shoes": 2, "pants": 2, "coat": 2, "helmet": 2, "gloves": 2,
     // Heavy things
