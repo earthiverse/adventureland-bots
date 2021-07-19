@@ -8,7 +8,7 @@ const SEND_ALDATA = false
 const NOTABLE_NPCS: string[] = ["Angel", "Kane"]
 
 const PEEK = true
-const PEEK_CHARS = ["earthRan2", "earthRan3", "earthMag2", "earthWar2", "earthWar3", "earthRog", "earthRog2"]
+const PEEK_CHARS = ["earthRan2", "earthRan3", "earthMag2", "earthWar2", "earthWar3", "earthRog", "earthRog2", "earthPal"]
 
 async function run() {
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
@@ -130,7 +130,7 @@ async function run() {
         setTimeout(async () => { start_mvampireCheck() }, msToNextMinute + 10000)
         setTimeout(async () => { stop_mvampireCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
 
-        // Look for `mvampire` in place #1
+        // Look for `mvampire` in place #2
         let mvampireChecker2: AL.Character
         const start_mvampireCheck2 = async () => {
             try {
@@ -304,6 +304,41 @@ async function run() {
         msToNextMinute = 60_000 - (Date.now() % 60_000)
         setTimeout(async () => { start_stompyCheck() }, msToNextMinute + 10000)
         setTimeout(async () => { stop_stompyCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+
+        // Look for `newPlayers` in place #1
+        let newPlayersChecker: AL.Character
+        const start_newPlayersCheck = async () => {
+            try {
+                const botName = PEEK_CHARS[7]
+                if (!botName) return
+                const server = getTargetServer(3, true)
+                console.log(`Checking for newPlayers on ${server[0]} ${server[1]}...`)
+                newPlayersChecker = await AL.Game.startCharacter(botName, server[0], server[1])
+
+                if (newPlayersChecker.rip) await newPlayersChecker.respawn()
+                await Promise.all([newPlayersChecker.smartMove({ map: "main", x: -32, y: -787 }).catch(() => { /* Suppress Errors */ }), newPlayersChecker.regenHP()])
+                await newPlayersChecker.disconnect()
+                newPlayersChecker = undefined
+            } catch (e) {
+                console.error(e)
+                if (newPlayersChecker) newPlayersChecker.disconnect()
+            }
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { start_newPlayersCheck() }, msToNextMinute + 10000)
+        }
+        const stop_newPlayersCheck = async () => {
+            try {
+                if (newPlayersChecker) await newPlayersChecker.disconnect()
+                newPlayersChecker = undefined
+            } catch (e) {
+                console.error(e)
+            }
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { stop_newPlayersCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        }
+        msToNextMinute = 60_000 - (Date.now() % 60_000)
+        setTimeout(async () => { start_newPlayersCheck() }, msToNextMinute + 10000)
+        setTimeout(async () => { stop_newPlayersCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
     }
 }
 run()

@@ -3,7 +3,7 @@ import AL from "alclient-mongo"
 export const SERVER_HOP_SERVERS: [AL.ServerRegion, AL.ServerIdentifier][] = [
     ["ASIA", "I"],
     ["US", "I"],
-    // ["US", "II"],
+    ["US", "II"],
     ["US", "III"],
     ["EU", "I"],
     ["EU", "II"],
