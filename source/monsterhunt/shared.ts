@@ -723,5 +723,5 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
         }
         setTimeout(async () => { await targetLoop() }, 1000)
     }
-    setTimeout(async () => { await targetLoop() }, 10000) // Offset by a few seconds so characters can load
+    setTimeout(async () => { await targetLoop() }, 2500) // Offset by a few seconds so characters can load
 }
