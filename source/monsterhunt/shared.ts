@@ -723,5 +723,9 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
         }
         setTimeout(async () => { await targetLoop() }, 1000)
     }
-    setTimeout(async () => { await targetLoop() }, 2500) // Offset by a few seconds so characters can load
+    if (bot.server.region == DEFAULT_REGION && bot.server.name == DEFAULT_IDENTIFIER) {
+        setTimeout(async () => { await targetLoop() }, 2500) // Offset by a few seconds so characters can load
+    } else {
+        await targetLoop() // We're on a different server, which means there's special monsters, get to them ASAP.
+    }
 }

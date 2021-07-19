@@ -613,7 +613,7 @@ function prepareRanger(bot: AL.Ranger) {
         },
         icegolem: {
             attack: async () => { return attackTheseTypesRanger(bot, ["icegolem"], information.friends) },
-            equipment: { mainhand: "crossbow", orb: "test_orb" },
+            equipment: { mainhand: "firebow", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "winterland", x: 783, y: 277 }) },
         },
         iceroamer: {
