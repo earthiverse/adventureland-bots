@@ -665,11 +665,21 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
 
                 // Get some buffs from rogues
                 if (!bot.s.rspeed) {
-                    const friendlyRogue = await AL.PlayerModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 120000 }, name: { $in: friendlyRogues } }).lean().exec()
+                    const friendlyRogue = await AL.PlayerModel.findOne({ lastSeen: { $gt: Date.now() - 120_000 }, name: { $in: friendlyRogues }, serverIdentifier: bot.server.name, serverRegion: bot.server.region }).lean().exec()
                     if (friendlyRogue) {
                         await bot.smartMove(friendlyRogue, { getWithin: 20 })
                         if (!bot.s.rspeed) await sleep(2500)
                         if (!bot.s.rspeed) friendlyRogues.splice(friendlyRogues.indexOf(friendlyRogue.id), 1) // They're not giving rspeed, remove them from our list
+                        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
+                        return
+                    }
+                }
+
+                // Get some newcomersblessing
+                if (!bot.s.newcomersblessing) {
+                    const newPlayer = await AL.PlayerModel.findOne({ $expr: { $eq: ["$name", "$s.newcomersblessing.f"] }, lastSeen: { $gt: Date.now() - 120_000 }, serverIdentifier: bot.server.name, serverRegion: bot.server.region }).lean().exec()
+                    if (newPlayer) {
+                        await bot.smartMove(newPlayer, { getWithin: 20 })
                         bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
                         return
                     }
