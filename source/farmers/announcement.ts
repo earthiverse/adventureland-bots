@@ -83,6 +83,9 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
                 return
             }
 
+            await goToBankIfFull(bot)
+
+            // Get a luck elixir if we don't have one
             if (!bot.slots.elixir && bot.gold > bot.G.items.elixirluck.g) {
                 await bot.smartMove("elixirluck", { getWithin: 100 })
                 bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
@@ -101,13 +104,12 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
             if (bot.s.monsterhunt && bot.s.monsterhunt.c == 0) {
                 await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
                 await bot.finishMonsterHuntQuest()
-                await bot.getMonsterHuntQuest()
+                await bot.getMonsterHuntQuest() // Get a new one
                 bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
             await goToPoitonSellerIfLow(bot)
-            await goToNPCShopIfFull(bot)
 
             const destination: AL.IPosition = { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y }
             if (AL.Tools.distance(bot, destination) > 1) await bot.smartMove(destination)
