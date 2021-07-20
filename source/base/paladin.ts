@@ -1,12 +1,13 @@
 import AL from "alclient-mongo"
 import FastPriorityQueue from "fastpriorityqueue"
 
-export async function attackTheseTypesPaladin(bot: AL.Paladin, types: AL.MonsterName[], friends: AL.Character[] = [], options?: {
+export async function attackTheseTypesPaladin(bot: AL.Paladin, types: AL.MonsterName[], friends: AL.Character[] = [], options: {
     disableMentalBurst?: boolean
     disableQuickPunch?: boolean
     disableQuickStab?: boolean
+    targetingPartyMember?: boolean
     targetingPlayer?: string
-}): Promise<void> {
+} = {}): Promise<void> {
     if (bot.c.town) return // Don't attack if teleporting
     const attackPriority = (a: AL.Entity, b: AL.Entity): boolean => {
         // Order in array
@@ -43,7 +44,8 @@ export async function attackTheseTypesPaladin(bot: AL.Paladin, types: AL.Monster
         const targets = new FastPriorityQueue<AL.Entity>(attackPriority)
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
-            targetingPlayer: options?.targetingPlayer,
+            targetingPartyMember: options.targetingPartyMember,
+            targetingPlayer: options.targetingPlayer,
             typeList: types,
             willDieToProjectiles: false,
             withinRange: bot.range

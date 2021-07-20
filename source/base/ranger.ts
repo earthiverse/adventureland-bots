@@ -4,9 +4,13 @@ import FastPriorityQueue from "fastpriorityqueue"
 export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterName[], friends: AL.Character[] = [], options: {
     disableHuntersMark?: boolean
     disableSupershot?: boolean
+    targetingPartyMember?: boolean
     targetingPlayer?: string
 } = {}): Promise<void> {
     if (!bot.canUse("attack")) return // We can't attack
+
+    // Adjust options
+    if (options.targetingPlayer && options.targetingPlayer == bot.id) options.targetingPlayer = undefined
 
     const priority = (a: AL.Entity, b: AL.Entity): boolean => {
         // Order in array
@@ -40,37 +44,14 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
     }
 
     // Calculate how much courage we have left to spare
-    let numPhysicalTargetingMe = 0
-    let numPureTargetingMe = 0
-    let numMagicalTargetingMe = 0
-    for (const entity of bot.getEntities({
-        targetingMe: true
-    })) {
-        switch (entity.damage_type) {
-        case "magical":
-            numMagicalTargetingMe += 1
-            break
-        case "physical":
-            numPhysicalTargetingMe += 1
-            break
-        case "pure":
-            numPureTargetingMe += 1
-            break
-        }
-    }
-    if ((numPhysicalTargetingMe + numPureTargetingMe + numMagicalTargetingMe) < bot.targets) {
-        // Something else is targeting us, assume they're the same type
-        const difference = bot.targets - (numPhysicalTargetingMe + numPureTargetingMe + numMagicalTargetingMe)
-        numPhysicalTargetingMe += difference
-        numPureTargetingMe += difference
-        numMagicalTargetingMe += difference
-    }
+    const targetingMe = bot.calculateTargets()
 
     const targets = new FastPriorityQueue<AL.Entity>(priority)
     const threeShotTargets = new FastPriorityQueue<AL.Entity>(priority)
     const fiveShotTargets = new FastPriorityQueue<AL.Entity>(priority)
     for (const entity of bot.getEntities({
         couldGiveCredit: true,
+        targetingPartyMember: options.targetingPartyMember,
         targetingPlayer: options.targetingPlayer,
         typeList: types,
         willDieToProjectiles: false,
@@ -101,29 +82,29 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
 
         switch (entity.damage_type) {
         case "magical":
-            if (bot.mcourage > numMagicalTargetingMe) {
+            if (bot.mcourage > targetingMe.magical) {
                 // We can tank one more magical monster
                 if (!addedToThreeShotTargets) threeShotTargets.add(entity)
                 fiveShotTargets.add(entity)
-                numMagicalTargetingMe += 1
+                targetingMe.magical += 1
                 continue
             }
             break
         case "physical":
-            if (bot.courage > numPhysicalTargetingMe) {
+            if (bot.courage > targetingMe.physical) {
                 // We can tank one more physical monster
                 if (!addedToThreeShotTargets)threeShotTargets.add(entity)
                 fiveShotTargets.add(entity)
-                numPhysicalTargetingMe += 1
+                targetingMe.physical += 1
                 continue
             }
             break
         case "pure":
-            if (bot.pcourage > numPureTargetingMe) {
+            if (bot.pcourage > targetingMe.pure) {
                 // We can tank one more pure monster
                 if (!addedToThreeShotTargets)threeShotTargets.add(entity)
                 fiveShotTargets.add(entity)
-                numPureTargetingMe += 1
+                targetingMe.pure += 1
                 continue
             }
             break
@@ -211,6 +192,7 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
     const supershotTargets = new FastPriorityQueue<AL.Entity>(priority)
     for (const entity of bot.getEntities({
         couldGiveCredit: true,
+        targetingPartyMember: options.targetingPartyMember,
         targetingPlayer: options.targetingPlayer,
         typeList: types,
         willDieToProjectiles: false,

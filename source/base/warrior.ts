@@ -3,6 +3,7 @@ import FastPriorityQueue from "fastpriorityqueue"
 import { LOOP_MS } from "./general.js"
 
 export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.MonsterName[], friends: AL.Character[] = [], options: {
+    targetingPartyMember?: boolean
     targetingPlayer?: string
     disableAgitate?: boolean
     disableCleave?: boolean
@@ -17,31 +18,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
 
     if (bot.canUse("cleave") && !options.disableCleave) {
         // Calculate how much courage we have left to spare
-        let numPhysicalTargetingMe = 0
-        let numPureTargetingMe = 0
-        let numMagicalTargetingMe = 0
-        for (const entity of bot.getEntities({
-            targetingMe: true
-        })) {
-            switch (entity.damage_type) {
-            case "magical":
-                numMagicalTargetingMe += 1
-                break
-            case "physical":
-                numPhysicalTargetingMe += 1
-                break
-            case "pure":
-                numPureTargetingMe += 1
-                break
-            }
-        }
-        if ((numPhysicalTargetingMe + numPureTargetingMe + numMagicalTargetingMe) < bot.targets) {
-        // Something else is targeting us, assume they're the same type
-            const difference = bot.targets - (numPhysicalTargetingMe + numPureTargetingMe + numMagicalTargetingMe)
-            numPhysicalTargetingMe += difference
-            numPureTargetingMe += difference
-            numMagicalTargetingMe += difference
-        }
+        const targetingMe = bot.calculateTargets()
 
         const cleaveTargets: AL.Entity[] = []
         let couldCleaveNearby = false
@@ -67,7 +44,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
 
             switch (entity.damage_type) {
             case "magical":
-                if (bot.mcourage > numMagicalTargetingMe) numMagicalTargetingMe += 1 // We can tank one more magical monster
+                if (bot.mcourage > targetingMe.magical) targetingMe.magical += 1 // We can tank one more magical monster
                 else {
                     // We can't tank any more, don't cleave
                     avoidCleave = true
@@ -75,7 +52,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
                 }
                 break
             case "physical":
-                if (bot.courage > numPhysicalTargetingMe) numPhysicalTargetingMe += 1 // We can tank one more physical monster
+                if (bot.courage > targetingMe.physical) targetingMe.physical += 1 // We can tank one more physical monster
                 else {
                     // We can't tank any more, don't cleave
                     avoidCleave = true
@@ -83,7 +60,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
                 }
                 break
             case "pure":
-                if (bot.pcourage > numPureTargetingMe) numPureTargetingMe += 1 // We can tank one more pure monster
+                if (bot.pcourage > targetingMe.pure) targetingMe.pure += 1 // We can tank one more pure monster
                 else {
                     // We can't tank any more, don't cleave
                     avoidCleave = true
@@ -117,31 +94,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
 
     if (bot.canUse("agitate") && !options.disableAgitate) {
         // Calculate how much courage we have left to spare
-        let numPhysicalTargetingMe = 0
-        let numPureTargetingMe = 0
-        let numMagicalTargetingMe = 0
-        for (const entity of bot.getEntities({
-            targetingMe: true
-        })) {
-            switch (entity.damage_type) {
-            case "magical":
-                numMagicalTargetingMe += 1
-                break
-            case "physical":
-                numPhysicalTargetingMe += 1
-                break
-            case "pure":
-                numPureTargetingMe += 1
-                break
-            }
-        }
-        if ((numPhysicalTargetingMe + numPureTargetingMe + numMagicalTargetingMe) < bot.targets) {
-        // Something else is targeting us, assume they're the same type
-            const difference = bot.targets - (numPhysicalTargetingMe + numPureTargetingMe + numMagicalTargetingMe)
-            numPhysicalTargetingMe += difference
-            numPureTargetingMe += difference
-            numMagicalTargetingMe += difference
-        }
+        const targetingMe = bot.calculateTargets()
 
         const agitateTargets: AL.Entity[] = []
         let avoidAgitate = false
@@ -158,7 +111,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
 
             switch (entity.damage_type) {
             case "magical":
-                if (bot.mcourage > numMagicalTargetingMe) numMagicalTargetingMe += 1 // We can tank one more magical monster
+                if (bot.mcourage > targetingMe.magical) targetingMe.magical += 1 // We can tank one more magical monster
                 else {
                 // We can't tank any more, don't agitate
                     avoidAgitate = true
@@ -166,7 +119,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
                 }
                 break
             case "physical":
-                if (bot.courage > numPhysicalTargetingMe) numPhysicalTargetingMe += 1 // We can tank one more physical monster
+                if (bot.courage > targetingMe.physical) targetingMe.physical += 1 // We can tank one more physical monster
                 else {
                 // We can't tank any more, don't agitate
                     avoidAgitate = true
@@ -174,7 +127,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
                 }
                 break
             case "pure":
-                if (bot.pcourage > numPureTargetingMe) numPureTargetingMe += 1 // We can tank one more pure monster
+                if (bot.pcourage > targetingMe.pure) targetingMe.pure += 1 // We can tank one more pure monster
                 else {
                 // We can't tank any more, don't agitate
                     avoidAgitate = true

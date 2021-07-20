@@ -3,9 +3,14 @@ import FastPriorityQueue from "fastpriorityqueue"
 import { LOOP_MS } from "./general.js"
 
 export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterName[], friends: AL.Character[] = [], options?: {
+    targetingPartyMember?: boolean
     targetingPlayer?: string
 }): Promise<void> {
     if (!bot.canUse("attack")) return // We can't attack
+
+    // Adjust options
+    if (options.targetingPlayer && options.targetingPlayer == bot.id) options.targetingPlayer = undefined
+
     if (bot.c.town) return // Don't attack if teleporting
 
     const healPriority = (a: AL.Player, b: AL.Player) => {
@@ -80,6 +85,7 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
     const targets = new FastPriorityQueue<AL.Entity>(attackPriority)
     for (const entity of bot.getEntities({
         couldGiveCredit: true,
+        targetingPartyMember: options.targetingPartyMember,
         targetingPlayer: options?.targetingPlayer,
         typeList: types,
         willDieToProjectiles: false,

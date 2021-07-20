@@ -6,6 +6,7 @@ const CBURST_WHEN_HP_LESS_THAN = 200
 export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[], friends: AL.Character[] = [], options: {
     cburstWhenHPLessThan?: number
     disableEnergize?: boolean
+    targetingPartyMember?: boolean
     targetingPlayer?: string
 } = {}): Promise<void> {
     if (bot.c.town) return // Don't attack if teleporting
@@ -44,6 +45,7 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
         const targets = new FastPriorityQueue<AL.Entity>(attackPriority)
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
+            targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,
             willDieToProjectiles: false,
@@ -87,6 +89,7 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
         let mpNeeded = bot.G.skills.cburst.mp
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
+            targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,
             willDieToProjectiles: false,

@@ -6,9 +6,14 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
     disableMentalBurst?: boolean
     disableQuickPunch?: boolean
     disableQuickStab?: boolean
+    targetingPartyMember?: boolean
     targetingPlayer?: string
 }): Promise<void> {
     if (bot.c.town) return // Don't attack if teleporting
+
+    // Adjust options
+    if (options.targetingPlayer && options.targetingPlayer == bot.id) options.targetingPlayer = undefined
+
     const attackPriority = (a: AL.Entity, b: AL.Entity): boolean => {
         // Order in array
         const a_index = types.indexOf(a.type)
@@ -44,6 +49,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
         const targets: AL.Entity[] = []
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
+            targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options?.targetingPlayer,
             typeList: types,
             willDieToProjectiles: false,
@@ -69,6 +75,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
         const targets = new FastPriorityQueue<AL.Entity>(attackPriority)
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
+            targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options?.targetingPlayer,
             typeList: types,
             willDieToProjectiles: false,
@@ -111,6 +118,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
         const targets = new FastPriorityQueue<AL.Entity>(attackPriority)
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
+            targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options?.targetingPlayer,
             typeList: types,
             willDieToProjectiles: false,
@@ -138,6 +146,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
         const targets = new FastPriorityQueue<AL.Entity>(attackPriority)
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
+            targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options?.targetingPlayer,
             typeList: types,
             willDieToProjectiles: false,
