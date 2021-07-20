@@ -316,7 +316,7 @@ async function run() {
                 newPlayersChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
                 if (newPlayersChecker.rip) await newPlayersChecker.respawn()
-                await Promise.all([newPlayersChecker.smartMove({ map: "main", x: -32, y: -787 }).catch(() => { /* Suppress Errors */ }), newPlayersChecker.regenHP()])
+                await Promise.all([newPlayersChecker.smartMove({ map: "main", x: -32, y: 787 }).catch(() => { /* Suppress Errors */ }), newPlayersChecker.regenHP()])
                 await newPlayersChecker.disconnect()
                 newPlayersChecker = undefined
             } catch (e) {
