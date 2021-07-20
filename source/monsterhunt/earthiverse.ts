@@ -775,7 +775,7 @@ function prepareRanger(bot: AL.Ranger) {
             move: async () => { await bot.smartMove({ map: "main", x: -1175, y: 422 }) },
         },
         stompy: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["stompy"], information.friends, { targetingPlayer: information.bot3.name }) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["stompy", "wolf"], information.friends, { targetingPlayer: information.bot3.name }) },
             equipment: { mainhand: "firebow", orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "stompy") },
             requireCtype: "priest"
