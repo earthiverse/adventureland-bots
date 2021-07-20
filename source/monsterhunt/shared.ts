@@ -145,10 +145,10 @@ export async function startMage(bot: AL.Mage, information: Information, strategy
 
             // Attack things targeting us
             if (bot.canUse("attack")) {
-                for (const [, entity] of bot.entities) {
-                    if (entity.target !== bot.id) continue // Not targeting us
-                    if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far away
-
+                for (const entity of bot.getEntities({
+                    targetingPartyMember: true,
+                    withinRange: bot.range
+                })) {
                     await bot.basicAttack(entity.id)
                     break
                 }
@@ -403,10 +403,10 @@ export async function startPriest(bot: AL.Priest, information: Information, stra
 
             // Attack things targeting us
             if (bot.canUse("attack")) {
-                for (const [, entity] of bot.entities) {
-                    if (entity.target !== bot.id) continue // Not targeting us
-                    if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far away
-
+                for (const entity of bot.getEntities({
+                    targetingPartyMember: true,
+                    withinRange: bot.range
+                })) {
                     await bot.basicAttack(entity.id)
                     break
                 }
@@ -490,10 +490,10 @@ export async function startRanger(bot: AL.Ranger, information: Information, stra
 
             // Attack things targeting us
             if (bot.canUse("attack")) {
-                for (const [, entity] of bot.entities) {
-                    if (entity.target !== bot.id) continue // Not targeting us
-                    if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far away
-
+                for (const entity of bot.getEntities({
+                    targetingPartyMember: true,
+                    withinRange: bot.range
+                })) {
                     await bot.basicAttack(entity.id)
                     break
                 }
@@ -581,10 +581,10 @@ export async function startWarrior(bot: AL.Warrior, information: Information, st
 
             // Attack things targeting us
             if (bot.canUse("attack")) {
-                for (const [, entity] of bot.entities) {
-                    if (entity.target !== bot.id) continue // Not targeting us
-                    if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far away
-
+                for (const entity of bot.getEntities({
+                    targetingPartyMember: true,
+                    withinRange: bot.range
+                })) {
                     await bot.basicAttack(entity.id)
                     break
                 }
