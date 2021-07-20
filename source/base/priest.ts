@@ -2,10 +2,10 @@ import AL from "alclient-mongo"
 import FastPriorityQueue from "fastpriorityqueue"
 import { LOOP_MS } from "./general.js"
 
-export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterName[], friends: AL.Character[] = [], options?: {
+export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterName[], friends: AL.Character[] = [], options: {
     targetingPartyMember?: boolean
     targetingPlayer?: string
-}): Promise<void> {
+} = {}): Promise<void> {
     if (!bot.canUse("attack")) return // We can't attack
 
     // Adjust options
@@ -86,7 +86,7 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
     for (const entity of bot.getEntities({
         couldGiveCredit: true,
         targetingPartyMember: options.targetingPartyMember,
-        targetingPlayer: options?.targetingPlayer,
+        targetingPlayer: options.targetingPlayer,
         typeList: types,
         willDieToProjectiles: false,
         withinRange: bot.range
