@@ -1,4 +1,4 @@
-import ALM, { MonsterName } from "alclient-mongo"
+import ALM from "alclient-mongo"
 import { ItemLevelInfo } from "../definitions/bot.js"
 
 export const LOOP_MS = 100
@@ -212,7 +212,7 @@ export async function getMonsterHuntTargets(bot: ALM.Character, friends: ALM.Cha
     }
 
     const data: {
-        id: MonsterName
+        id: ALM.MonsterName
         ms: number
     }[] = []
 
@@ -1032,6 +1032,29 @@ export function startScareLoop(bot: ALM.Character): void {
 
         bot.timeouts.set("scareloop", setTimeout(async () => { scareLoop() }, Math.max(250, bot.getCooldown("scare"))))
     }
+
+    // If we have too many targets, we can't go through doors.
+    bot.socket.on("game_response", (data: ALM.GameResponseData) => {
+        if (typeof data == "string") {
+            if (data == "cant_escape") {
+                if (bot.isScared() || bot.targets >= 5) {
+                    // Equip the jacko if we need to
+                    let inventoryPos: number
+                    if (!bot.canUse("scare") && bot.hasItem("jacko")) {
+                        inventoryPos = bot.locateItem("jacko")
+                        bot.equip(inventoryPos)
+                    }
+
+                    // Scare, because we are scared
+                    bot.scare()
+
+                    // Re-equip our orb
+                    if (inventoryPos !== undefined) bot.equip(inventoryPos)
+                }
+            }
+        }
+    })
+
     scareLoop()
 }
 
