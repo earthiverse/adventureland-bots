@@ -1384,10 +1384,7 @@ async function run() {
             const currentIdentifier = information.bot1.bot.server.name
             const G = information.bot1.bot.G
 
-            const targetServer = getTargetServerFromMonsters(G, DEFAULT_REGION, DEFAULT_IDENTIFIER)
-            console.log("targetServer")
-            console.log(targetServer)
-            console.log("-------------------------------")
+            const targetServer = await getTargetServerFromMonsters(G, DEFAULT_REGION, DEFAULT_IDENTIFIER)
             if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
                 // We're already on the correct server
                 setTimeout(async () => { serverLoop() }, 1000)
