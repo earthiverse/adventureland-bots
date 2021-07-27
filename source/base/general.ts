@@ -153,7 +153,7 @@ export async function getPriority1Entities(bot: ALM.Character): Promise<ALM.Enti
                 target: { $ne: undefined }, // We only want to do these if others are doing them, too.
                 serverRegion: bot.server.region,
                 serverIdentifier: bot.server.name,
-                lastSeen: { $gt: Date.now() - 120000 }
+                lastSeen: { $gt: Date.now() - 120_000 }
             }
         },
         { $addFields: { __order: { $indexOfArray: [coop, "$type"] } } },
@@ -189,7 +189,7 @@ export async function getPriority2Entities(bot: ALM.Character): Promise<ALM.Enti
                 type: { $in: solo },
                 serverRegion: bot.server.region,
                 serverIdentifier: bot.server.name,
-                lastSeen: { $gt: Date.now() - 120000 }
+                lastSeen: { $gt: Date.now() - 120_000 }
             }
         },
         {
