@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, ITEMS_TO_SELL, startElixirLoop, goToBankIfFull, goToNearestWalkableToMonster } from "../base/general.js"
+import { goToPoitonSellerIfLow, startBuyLoop, startCompoundLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, ITEMS_TO_SELL, startElixirLoop, goToBankIfFull, goToNearestWalkableToMonster } from "../base/general.js"
 import { winterlandArcticBees } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { doBanking, startMluckLoop } from "../base/merchant.js"
@@ -27,7 +27,7 @@ async function startShared(bot: AL.Character) {
     startSellLoop(bot)
     if (bot.ctype !== "merchant") {
         startElixirLoop(bot, "elixirluck")
-        startSendStuffDenylistLoop(bot, merchantName)
+        startSendStuffDenylistLoop(bot, [merchantName])
         startPartyLoop(bot, partyLeader, partyMembers)
     }
 }

@@ -623,7 +623,7 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
     }
     startScareLoop(bot)
     startSellLoop(bot)
-    if (bot.ctype !== "merchant") startSendStuffDenylistLoop(bot, information.merchant.name, ITEMS_TO_HOLD, 10_000_000)
+    if (bot.ctype !== "merchant") startSendStuffDenylistLoop(bot, [information.merchant.name, information.merchant.nameAlt], ITEMS_TO_HOLD, 10_000_000)
     startUpgradeLoop(bot)
 
     if (bot.ctype !== "merchant") {
@@ -675,15 +675,17 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
                     }
                 }
 
-                // Get some newcomersblessing
-                if (!bot.s.newcomersblessing) {
-                    const newPlayer = await AL.PlayerModel.findOne({ $expr: { $eq: ["$name", "$s.newcomersblessing.f"] }, lastSeen: { $gt: Date.now() - 120_000 }, serverIdentifier: bot.server.name, serverRegion: bot.server.region }).lean().exec()
-                    if (newPlayer) {
-                        await bot.smartMove(newPlayer, { getWithin: 20 })
-                        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
-                        return
-                    }
-                }
+                // NOTE: I don't know if it's implemented incorrectly, but @Wizard implied that it no longer (never in the first place?)
+                //       gives blessing to other players, only your own.
+                // // Get some newcomersblessing
+                // if (!bot.s.newcomersblessing) {
+                //     const newPlayer = await AL.PlayerModel.findOne({ $expr: { $eq: ["$name", "$s.newcomersblessing.f"] }, lastSeen: { $gt: Date.now() - 120_000 }, serverIdentifier: bot.server.name, serverRegion: bot.server.region }).lean().exec()
+                //     if (newPlayer) {
+                //         await bot.smartMove(newPlayer, { getWithin: 20 })
+                //         bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
+                //         return
+                //     }
+                // }
 
                 // Get a luck elixir
                 if (!bot.slots.elixir && !bot.hasItem("computer") && bot.gold > bot.G.items.elixirluck.g) {

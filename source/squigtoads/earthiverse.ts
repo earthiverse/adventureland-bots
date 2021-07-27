@@ -1,7 +1,7 @@
 import AL from "alclient-mongo"
 import { goToBankIfFull, goToPoitonSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
-import { getTargetServer, SERVER_HOP_SERVERS } from "../base/serverhop.js"
+import { getTargetServerFromDate } from "../base/serverhop.js"
 
 /** Config */
 const priestName = "earthPri2"
@@ -116,7 +116,7 @@ async function run() {
 
     const connectLoop = async () => {
         try {
-            const server = getTargetServer()
+            const server = getTargetServerFromDate()
             priest = await AL.Game.startPriest(priestName, server[0], server[1])
             startPriest(priest)
         } catch (e) {

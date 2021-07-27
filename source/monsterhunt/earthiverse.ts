@@ -3,6 +3,7 @@ import { goToAggroMonster, goToNearestWalkableToMonster, goToPriestIfHurt, goToS
 import { attackTheseTypesMerchant } from "../base/merchant.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
+import { getTargetServerFromMonsters } from "../base/serverhop.js"
 import { attackTheseTypesWarrior } from "../base/warrior.js"
 import { Information, Strategy } from "../definitions/bot.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMerchant, startPriest, startRanger, startWarrior } from "./shared.js"
@@ -1359,20 +1360,22 @@ async function run() {
     let lastServerChangeTime = Date.now()
     const serverLoop = async () => {
         try {
-            if (lastServerChangeTime > Date.now() - 60_000) {
-            // Don't change servers too fast
-                setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime - Date.now() - 60_000))
-                return
-            }
-            if (!information.bot1) {
             // We haven't logged in yet
+            if (!information.bot1) {
                 setTimeout(async () => { serverLoop() }, 1000)
                 return
             }
+
+            // Don't change servers too fast
+            if (lastServerChangeTime > Date.now() - 60_000) {
+                setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime - Date.now() - 60_000))
+                return
+            }
+
+            // Don't change servers if we're currently attacking something special.
             if (AL.Constants.SPECIAL_MONSTERS.includes(information.bot1.target)
-        || AL.Constants.SPECIAL_MONSTERS.includes(information.bot2.target)
-        || AL.Constants.SPECIAL_MONSTERS.includes(information.bot3.target)) {
-            // We're currently attacking something special, don't change servers.
+                || AL.Constants.SPECIAL_MONSTERS.includes(information.bot2.target)
+                || AL.Constants.SPECIAL_MONSTERS.includes(information.bot3.target)) {
                 setTimeout(async () => { serverLoop() }, 1000)
                 return
             }
@@ -1381,125 +1384,32 @@ async function run() {
             const currentIdentifier = information.bot1.bot.server.name
             const G = information.bot1.bot.G
 
-            // Priority #1: Special co-op monsters that take a team effort
-            const coop: AL.MonsterName[] = [
-                "dragold", "grinch", "icegolem", "mrgreen", "mrpumpkin", "franky"
-            ]
-            const coopEntities: AL.IEntity[] = await AL.EntityModel.aggregate([
-                {
-                    $match: {
-                        lastSeen: { $gt: Date.now() - 30_000 },
-                        serverIdentifier: { $nin: ["PVP"] },
-                        target: { $ne: undefined }, // We only want to do these if others are doing them, too.
-                        type: { $in: coop }
-                    }
-                },
-                { $addFields: { __order: { $indexOfArray: [coop, "$type"] } } },
-                { $sort: { "__order": 1, "hp": 1 } }]).exec()
-            for (const entity of coopEntities) {
-                if (currentRegion == entity.serverRegion && currentIdentifier == entity.serverIdentifier) {
+            const targetServer = getTargetServerFromMonsters(G, DEFAULT_REGION, DEFAULT_IDENTIFIER)
+            if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
                 // We're already on the correct server
-                    setTimeout(async () => { serverLoop() }, 1000)
-                    return
-                }
-
-                // Change servers to attack this entity
-                TARGET_REGION = entity.serverRegion
-                TARGET_IDENTIFIER = entity.serverIdentifier
-                console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${TARGET_REGION} ${TARGET_IDENTIFIER}`)
-
-                // Loot all of our remaining chests
-                await sleep(1000)
-                for (const [, chest] of information.bot1.bot.chests) await information.bot1.bot.openChest(chest.id)
-                await sleep(1000)
-
-                // Disconnect everyone
-                await Promise.allSettled([
-                    information.bot1.bot.disconnect(),
-                    information.bot2.bot.disconnect(),
-                    information.bot3.bot.disconnect(),
-                    information.merchant.bot.disconnect()
-                ])
-                await sleep(5000)
-                lastServerChangeTime = Date.now()
                 setTimeout(async () => { serverLoop() }, 1000)
                 return
             }
 
-            // Priority #2: Special monsters that we can defeat by ourselves
-            const solo: AL.MonsterName[] = [
-            // Very Rare Monsters
-                "goldenbat", "tinyp", "cutebee",
-                // Event Monsters
-                "pinkgoo", "wabbit",
-                // // Rare Monsters
-                "greenjr", "jr", "skeletor", "mvampire", "fvampire", "snowman", "stompy"
-            ]
-            const soloEntities: AL.IEntity[] = await AL.EntityModel.aggregate([
-                {
-                    $match: {
-                        lastSeen: { $gt: Date.now() - 30_000 },
-                        serverIdentifier: { $nin: ["PVP"] },
-                        type: { $in: solo },
-                    }
-                },
-                { $addFields: { __order: { $indexOfArray: [solo, "$type"] } } },
-                { $sort: { "__order": 1, "hp": 1 } }]).exec()
-            for (const entity of soloEntities) {
-                if (!G.monsters[entity.type].cooperative && entity.target) continue // The target isn't cooperative, and someone is already attacking it
-                if ((currentRegion == entity.serverRegion && currentIdentifier == entity.serverIdentifier)) {
-                    // We're already on the correct server
-                    setTimeout(async () => { serverLoop() }, 1000)
-                    return
-                }
+            // Change servers to attack this entity
+            TARGET_REGION = targetServer[0]
+            TARGET_IDENTIFIER = targetServer[1]
+            console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${TARGET_REGION} ${TARGET_IDENTIFIER}`)
 
-                // Change servers to attack this entity
-                TARGET_REGION = entity.serverRegion
-                TARGET_IDENTIFIER = entity.serverIdentifier
-                console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${TARGET_REGION} ${TARGET_IDENTIFIER}`)
+            // Loot all of our remaining chests
+            await sleep(1000)
+            for (const [, chest] of information.bot1.bot.chests) await information.bot1.bot.openChest(chest.id)
+            await sleep(1000)
 
-                // Loot all of our remaining chests
-                await sleep(1000)
-                for (const [, chest] of information.bot1.bot.chests) await information.bot1.bot.openChest(chest.id)
-                await sleep(1000)
-
-                // Disconnect everyone
-                await Promise.allSettled([
-                    information.bot1.bot.disconnect(),
-                    information.bot2.bot.disconnect(),
-                    information.bot3.bot.disconnect(),
-                    information.merchant.bot.disconnect()
-                ])
-                await sleep(5000)
-                lastServerChangeTime = Date.now()
-                setTimeout(async () => { serverLoop() }, 1000)
-                return
-            }
-
-            // Priority #3: Default Server
-            if (currentRegion !== DEFAULT_REGION || currentIdentifier !== DEFAULT_IDENTIFIER) {
-            // Change servers to our default server
-                TARGET_REGION = DEFAULT_REGION
-                TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
-                console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${TARGET_REGION} ${TARGET_IDENTIFIER}`)
-
-                // Loot all of our remaining chests
-                await sleep(1000)
-                for (const [, chest] of information.bot1.bot.chests) await information.bot1.bot.openChest(chest.id)
-                await sleep(1000)
-
-                // Disconnect everyone
-                await Promise.allSettled([
-                    information.bot1.bot.disconnect(),
-                    information.bot2.bot.disconnect(),
-                    information.bot3.bot.disconnect(),
-                    information.merchant.bot.disconnect()
-                ])
-                await sleep(5000)
-                lastServerChangeTime = Date.now()
-                setTimeout(async () => { serverLoop() }, 1000)
-                return
-            }
+            // Disconnect everyone
+            await Promise.allSettled([
+                information.bot1.bot.disconnect(),
+                information.bot2.bot.disconnect(),
+                information.bot3.bot.disconnect(),
+                information.merchant.bot.disconnect()
+            ])
+            await sleep(5000)
+            lastServerChangeTime = Date.now()
         } catch (e) {
             console.error(e)
         }

@@ -48,7 +48,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
     startSellLoop(bot)
     startUpgradeLoop(bot, { ...ITEMS_TO_SELL, "stick": 100 }) // Don't upgrade sticks
     startWarcryLoop(bot)
-    startSendStuffDenylistLoop(bot, merchantName)
+    startSendStuffDenylistLoop(bot, [merchantName])
 
     // NOTE: Temporary for Kouin
     async function sellToKouinLoop() {

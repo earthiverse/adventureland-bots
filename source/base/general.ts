@@ -1138,11 +1138,15 @@ export function startSendStuffAllowlistLoop(bot: ALM.Character, sendTo: string, 
  * @param itemsToHold
  * @param goldToHold
  */
-export function startSendStuffDenylistLoop(bot: ALM.Character, sendTo: string, itemsToHold = ITEMS_TO_HOLD, goldToHold = 1_000_000): void {
+export function startSendStuffDenylistLoop(bot: ALM.Character, sendTo: string[], itemsToHold = ITEMS_TO_HOLD, goldToHold = 1_000_000): void {
     async function sendStuffLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
-            const sendToPlayer = bot.players.get(sendTo)
+            let sendToPlayer: ALM.Player
+            for (const sendToName of sendTo) {
+                sendToPlayer = bot.players.get(sendToName)
+                if (sendToPlayer) break
+            }
 
             if (!sendToPlayer) {
                 bot.timeouts.set("sendstuffdenylistloop", setTimeout(async () => { sendStuffLoop() }, 10000))
@@ -1151,7 +1155,7 @@ export function startSendStuffDenylistLoop(bot: ALM.Character, sendTo: string, i
 
             if (ALM.Tools.distance(bot, sendToPlayer) < ALM.Constants.NPC_INTERACTION_DISTANCE) {
                 const extraGold = bot.gold - goldToHold
-                if (extraGold > 0) await bot.sendGold(sendTo, extraGold)
+                if (extraGold > 0) await bot.sendGold(sendToPlayer.id, extraGold)
                 for (let i = 0; i < bot.items.length; i++) {
                     const item = bot.items[i]
                     if (!item) continue // No item
@@ -1159,7 +1163,7 @@ export function startSendStuffDenylistLoop(bot: ALM.Character, sendTo: string, i
                     if (itemsToHold.has(item.name)) continue // Don't send important items
 
                     try {
-                        await bot.sendItem(sendTo, i, item.q)
+                        await bot.sendItem(sendToPlayer.id, i, item.q)
                     } catch (e) {
                         // They're probably full
                         bot.timeouts.set("sendstuffdenylistloop", setTimeout(async () => { sendStuffLoop() }, 5000))

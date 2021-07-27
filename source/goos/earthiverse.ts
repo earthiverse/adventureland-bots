@@ -2,7 +2,7 @@ import AL from "alclient-mongo"
 import { goToPoitonSellerIfLow, startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startAvoidStacking, goToNearestWalkableToMonster, goToBankIfFull } from "../base/general.js"
 import { mainGoos } from "../base/locations.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
-import { getTargetServer } from "../base/serverhop.js"
+import { getTargetServerFromDate } from "../base/serverhop.js"
 
 /** Config */
 const partyLeader = "earthiverse"
@@ -70,7 +70,7 @@ async function run() {
 
     const connectLoop1 = async () => {
         try {
-            const server = getTargetServer(1)
+            const server = getTargetServerFromDate(1)
             ranger1 = await AL.Game.startRanger(ranger1Name, server[0], server[1])
             startRanger(ranger1)
         } catch (e) {
@@ -97,7 +97,7 @@ async function run() {
 
     const connectLoop2 = async () => {
         try {
-            const server = getTargetServer(1)
+            const server = getTargetServerFromDate(1)
             ranger2 = await AL.Game.startRanger(ranger2Name, server[0], server[1])
             startRanger(ranger2, { x: -50, y: 0 })
         } catch (e) {
@@ -124,7 +124,7 @@ async function run() {
 
     const connectLoop3 = async () => {
         try {
-            const server = getTargetServer(1)
+            const server = getTargetServerFromDate(1)
             ranger3 = await AL.Game.startRanger(ranger3Name, server[0], server[1])
             startRanger(ranger3, { x: 50, y: 0 })
         } catch (e) {

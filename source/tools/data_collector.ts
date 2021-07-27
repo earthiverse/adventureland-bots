@@ -1,6 +1,6 @@
 import axios from "axios"
 import AL from "alclient-mongo"
-import { getTargetServer, SERVER_HOP_SERVERS } from "../base/serverhop.js"
+import { getTargetServerFromDate, SERVER_HOP_SERVERS } from "../base/serverhop.js"
 
 const servers = SERVER_HOP_SERVERS
 
@@ -66,7 +66,7 @@ async function run() {
             try {
                 const botName = PEEK_CHARS[0]
                 if (!botName) return
-                const server = getTargetServer(1, true)
+                const server = getTargetServerFromDate(1, true)
                 console.log(`Checking for skeletor on ${server[0]} ${server[1]}...`)
                 skeletorChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
@@ -101,7 +101,7 @@ async function run() {
             try {
                 const botName = PEEK_CHARS[1]
                 if (!botName) return
-                const server = getTargetServer(1, true)
+                const server = getTargetServerFromDate(1, true)
                 console.log(`Checking for mvampire on ${server[0]} ${server[1]}...`)
                 mvampireChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
@@ -136,7 +136,7 @@ async function run() {
             try {
                 const botName = PEEK_CHARS[2]
                 if (!botName) return
-                const server = getTargetServer(1, true)
+                const server = getTargetServerFromDate(1, true)
                 console.log(`Checking for mvampire on ${server[0]} ${server[1]}...`)
                 mvampireChecker2 = await AL.Game.startCharacter(botName, server[0], server[1])
 
@@ -171,7 +171,7 @@ async function run() {
             try {
                 const botName = PEEK_CHARS[3]
                 if (!botName) return
-                const server = getTargetServer(2, true)
+                const server = getTargetServerFromDate(2, true)
                 console.log(`Checking for fvampire on ${server[0]} ${server[1]}...`)
                 fvampireChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
@@ -206,7 +206,7 @@ async function run() {
             try {
                 const botName = PEEK_CHARS[4]
                 if (!botName) return
-                const server = getTargetServer(2, true)
+                const server = getTargetServerFromDate(2, true)
                 console.log(`Checking for greenjr on ${server[0]} ${server[1]}...`)
                 greenjrChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
@@ -241,7 +241,7 @@ async function run() {
             try {
                 const botName = PEEK_CHARS[5]
                 if (!botName) return
-                const server = getTargetServer(2, true)
+                const server = getTargetServerFromDate(2, true)
                 console.log(`Checking for jr on ${server[0]} ${server[1]}...`)
                 jrChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
@@ -276,7 +276,7 @@ async function run() {
             try {
                 const botName = PEEK_CHARS[6]
                 if (!botName) return
-                const server = getTargetServer(3, true)
+                const server = getTargetServerFromDate(3, true)
                 console.log(`Checking for stompy on ${server[0]} ${server[1]}...`)
                 stompyChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
@@ -311,7 +311,7 @@ async function run() {
             try {
                 const botName = PEEK_CHARS[7]
                 if (!botName) return
-                const server = getTargetServer(3, true)
+                const server = getTargetServerFromDate(3, true)
                 console.log(`Checking for newPlayers on ${server[0]} ${server[1]}...`)
                 newPlayersChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 

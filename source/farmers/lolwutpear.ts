@@ -27,7 +27,7 @@ async function startShared(bot: AL.Character) {
     startSellLoop(bot)
     if (bot.ctype !== "merchant") {
         startElixirLoop(bot, "elixirluck")
-        startSendStuffDenylistLoop(bot, merchantName)
+        startSendStuffDenylistLoop(bot, [merchantName])
         startPartyLoop(bot, partyLeader, partyMembers)
     }
 }
