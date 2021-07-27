@@ -8,7 +8,7 @@ import { attackTheseTypesWarrior, startChargeLoop, startHardshellLoop, startWarc
 import { Information, Strategy } from "../definitions/bot.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 
-const DEFAULT_TARGET: AL.MonsterName = "bscorpion"
+const DEFAULT_TARGET: AL.MonsterName = "osnake"
 
 export const DEFAULT_REGION: AL.ServerRegion = "US"
 export const DEFAULT_IDENTIFIER: AL.ServerIdentifier = "II"

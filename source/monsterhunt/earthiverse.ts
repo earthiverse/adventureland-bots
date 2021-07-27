@@ -1238,7 +1238,7 @@ function prepareWarrior(bot: AL.Warrior) {
             requireCtype: "priest"
         },
         xscorpion: {
-            attack: async () => { return await attackTheseTypesWarrior(bot, ["xscorpion"], information.friends, { maximumTargets: 1 }) },
+            attack: async () => { return await attackTheseTypesWarrior(bot, ["xscorpion"], information.friends, { maximumTargets: 3 }) },
             equipment: { mainhand: "basher", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "halloween", x: -325, y: 750 }) },
             requireCtype: "priest"
