@@ -2,13 +2,13 @@ import AL from "alclient-mongo"
 import FastPriorityQueue from "fastpriorityqueue"
 import { LOOP_MS } from "./general.js"
 
-export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName[], friends: AL.Character[] = [], options?: {
+export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName[], friends: AL.Character[] = [], options: {
     disableMentalBurst?: boolean
     disableQuickPunch?: boolean
     disableQuickStab?: boolean
     targetingPartyMember?: boolean
     targetingPlayer?: string
-}): Promise<void> {
+} = {}): Promise<void> {
     if (bot.c.town) return // Don't attack if teleporting
 
     // Adjust options
@@ -50,7 +50,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
-            targetingPlayer: options?.targetingPlayer,
+            targetingPlayer: options.targetingPlayer,
             typeList: types,
             willDieToProjectiles: false,
             withinRange: (bot.range * bot.G.skills.mentalburst.range_multiplier) + bot.G.skills.mentalburst.range_bonus
@@ -76,7 +76,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
-            targetingPlayer: options?.targetingPlayer,
+            targetingPlayer: options.targetingPlayer,
             typeList: types,
             willDieToProjectiles: false,
             withinRange: bot.range
@@ -114,12 +114,12 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
         await bot.basicAttack(target.id)
     }
 
-    if (!options?.disableQuickPunch && bot.canUse("quickpunch")) {
+    if (!options.disableQuickPunch && bot.canUse("quickpunch")) {
         const targets = new FastPriorityQueue<AL.Entity>(attackPriority)
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
-            targetingPlayer: options?.targetingPlayer,
+            targetingPlayer: options.targetingPlayer,
             typeList: types,
             willDieToProjectiles: false,
             withinRange: bot.range
@@ -142,12 +142,12 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
         if (target) await bot.quickPunch(target.id)
     }
 
-    if (!options?.disableQuickStab && bot.canUse("quickstab")) {
+    if (!options.disableQuickStab && bot.canUse("quickstab")) {
         const targets = new FastPriorityQueue<AL.Entity>(attackPriority)
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
-            targetingPlayer: options?.targetingPlayer,
+            targetingPlayer: options.targetingPlayer,
             typeList: types,
             willDieToProjectiles: false,
             withinRange: bot.range
@@ -171,7 +171,11 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
     }
 }
 
-export function startRSpeedLoop(bot: AL.Rogue): void {
+export function startRSpeedLoop(bot: AL.Rogue, options: {
+        disableGiveToFriends?: boolean,
+        enableGiveToStrangers?: boolean,
+        giveToThesePlayers?: string[]
+    } = {}): void {
     async function rspeedLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -179,18 +183,39 @@ export function startRSpeedLoop(bot: AL.Rogue): void {
             if (!bot.s.rspeed && bot.canUse("rspeed")) await bot.rspeed(bot.id)
 
             // Give rogue speed to friends
-            // TODO: Add an option argument to disable this
-            if (bot.canUse("rspeed")) {
+            if (!options.disableGiveToFriends && bot.canUse("rspeed")) {
                 for (const [, player] of bot.players) {
                     if (player.s.rspeed && player.s.rspeed.ms > 300_000) continue // Already has rogue speed
                     if (bot.party !== player.party && bot.owner !== player.owner) continue // Not a friend
                     if (AL.Tools.distance(bot, player) > bot.G.skills.rspeed.range) continue // Too far away
 
                     await bot.rspeed(player.id)
+                    break
                 }
             }
 
-            // TODO: Give rogue speed to randos
+            // Give rogue speed to random players
+            if (!options.enableGiveToStrangers && bot.canUse("rspeed")) {
+                for (const [, player] of bot.players) {
+                    if (player.s.rspeed && player.s.rspeed.ms > 300_000) continue // Already has rogue speed
+                    if (AL.Tools.distance(bot, player) > bot.G.skills.rspeed.range) continue // Too far away
+
+                    await bot.rspeed(player.id)
+                    break
+                }
+            }
+
+            // Give rogue speed to specific players
+            if (options.giveToThesePlayers && bot.canUse("rspeed")) {
+                for (const [, player] of bot.players) {
+                    if (!options.giveToThesePlayers.includes(player.id)) continue // Not in the list
+                    if (player.s.rspeed && player.s.rspeed.ms > 300_000) continue // Already has rogue speed
+                    if (AL.Tools.distance(bot, player) > bot.G.skills.rspeed.range) continue // Too far away
+
+                    await bot.rspeed(player.id)
+                    break
+                }
+            }
         } catch (e) {
             console.error(e)
         }
