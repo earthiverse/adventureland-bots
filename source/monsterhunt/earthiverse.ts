@@ -1089,7 +1089,7 @@ function prepareWarrior(bot: AL.Warrior) {
             requireCtype: "priest"
         },
         osnake: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["osnake", "snake"], information.friends) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["osnake", "snake"], information.friends, { disableAgitate: true }) },
             attackWhileIdle: true,
             equipment: { mainhand: "bataxe", orb: "test_orb" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["osnake", "snake"], { map: "halloween", x: 347, y: -747 }) },
