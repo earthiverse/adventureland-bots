@@ -876,7 +876,7 @@ function prepareWarrior(bot: AL.Warrior) {
             requireCtype: "priest"
         },
         bscorpion: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["bscorpion"], information.friends, { targetingPartyMember: true }) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["bscorpion"], information.friends, { disableAgitate: true, targetingPartyMember: true }) },
             equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => {
                 const nearest = bot.getNearestMonster("bscorpion")
