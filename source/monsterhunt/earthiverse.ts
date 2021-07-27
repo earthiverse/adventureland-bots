@@ -878,7 +878,14 @@ function prepareWarrior(bot: AL.Warrior) {
         bscorpion: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["bscorpion"], information.friends, { targetingPartyMember: true }) },
             equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
-            move: async () => { await goToNearestWalkableToMonster(bot, ["bscorpion"], bscorpionSpawn) },
+            move: async () => {
+                const nearest = bot.getNearestMonster("bscorpion")
+                if (nearest && nearest.monster.target && nearest.monster.couldGiveCreditForKill(bot)) {
+                    await goToNearestWalkableToMonster(bot, ["bscorpion"], bscorpionSpawn)
+                } else {
+                    await kiteInCircle(bot, "bscorpion", bscorpionSpawn)
+                }
+            },
             requireCtype: "priest"
         },
         cgoo: {
