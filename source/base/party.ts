@@ -4,7 +4,7 @@ export const partyMembers = [
     // Earthiverse's characters
     "earthiverse", "earthMag", "earthMag2", "earthMag3", "earthPal", "earthPri", "earthPri2", "earthRan2", "earthRan3", "earthRog", "earthRog2", "earthWar", "earthWar2", "earthWar3",
     // Kouin's characters
-    "bataxedude", "cclair", "fathergreen", "kakaka", "kekeke", "kukuku", "piredude",
+    // "bataxedude", "cclair", "fathergreen", "kakaka", "kekeke", "kukuku", "piredude",
     // Lolwutpear's characters
     "fgsfds", "fsjal", "funny", "lolwutpear", "rule34", "shoopdawhoop", "ytmnd",
     // Announcement's characters

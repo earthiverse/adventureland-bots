@@ -27,35 +27,35 @@ async function startMerchant(bot: AL.Merchant, friends: AL.Character[], holdPosi
     startScareLoop(bot)
     startSellLoop(bot)
 
-    // NOTE: Temporary for Kouin
-    async function sellToKouinLoop() {
-        try {
-            if (!bot.socket || bot.socket.disconnected) return
+    // // NOTE: Temporary for Kouin
+    // async function sellToKouinLoop() {
+    //     try {
+    //         if (!bot.socket || bot.socket.disconnected) return
 
-            const sticks = bot.locateItems("stick", bot.items, { level: 0 })
-            const kouin = bot.players.get("kouin")
+    //         const sticks = bot.locateItems("stick", bot.items, { level: 0 })
+    //         const kouin = bot.players.get("kouin")
 
-            if (sticks && sticks.length > 0
-                && kouin && AL.Tools.distance(bot, kouin) < AL.Constants.NPC_INTERACTION_DISTANCE) {
-                for (const stick of sticks) {
-                    for (const slotName in kouin.slots) {
-                        const slot: AL.ItemDataTrade = kouin.slots[slotName]
-                        if (!slot || !slot.b) continue
-                        if (slot.name !== "stick") continue
-                        if (slot.price < 2_000_000) continue
+    //         if (sticks && sticks.length > 0
+    //             && kouin && AL.Tools.distance(bot, kouin) < AL.Constants.NPC_INTERACTION_DISTANCE) {
+    //             for (const stick of sticks) {
+    //                 for (const slotName in kouin.slots) {
+    //                     const slot: AL.ItemDataTrade = kouin.slots[slotName]
+    //                     if (!slot || !slot.b) continue
+    //                     if (slot.name !== "stick") continue
+    //                     if (slot.price < 2_000_000) continue
 
-                        await bot.sellToMerchant("kouin", slotName as AL.TradeSlotType, slot.rid, 1)
-                    }
-                }
-            }
+    //                     await bot.sellToMerchant("kouin", slotName as AL.TradeSlotType, slot.rid, 1)
+    //                 }
+    //             }
+    //         }
 
-        } catch (e) {
-            console.error(e)
-        }
+    //     } catch (e) {
+    //         console.error(e)
+    //     }
 
-        setTimeout(async () => { sellToKouinLoop() }, 1000)
-    }
-    sellToKouinLoop()
+    //     setTimeout(async () => { sellToKouinLoop() }, 1000)
+    // }
+    // sellToKouinLoop()
 
     let lastBankVisit = Number.MIN_VALUE
     async function moveLoop() {
