@@ -32,6 +32,7 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
             opts.color = "red"
             break
         }
+        // eslint-disable-next-line sort-keys
         info.addRow({ name: character.name, type: character.type, level: character.level, online: character.online ? "online" : undefined }, opts)
     }
     info.printTable()
