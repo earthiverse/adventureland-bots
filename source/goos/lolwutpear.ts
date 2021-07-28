@@ -69,6 +69,11 @@ async function run() {
         const connectLoop = async () => {
             try {
                 const bestServer = await getTargetServerFromMonsters(AL.Game.G, default_region, default_identifier)
+                if ((bestServer[0] == "US" && bestServer[1] == "II")
+                    || (bestServer[0] == "US" && bestServer[1] == "I")) {
+                    bestServer[0] = default_region
+                    bestServer[1] = default_identifier
+                }
                 rogue1 = await AL.Game.startRogue(name, bestServer[0], bestServer[1])
                 startRogue(rogue1)
             } catch (e) {
