@@ -12,7 +12,7 @@ const mage2Name = "ytmnd"
 const mage3Name = "shoopdawhoop"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "II"
-const targets: AL.MonsterName[] = ["arcticbee"]
+const targets: AL.MonsterName[] = ["boar", "arcticbee"]
 const defaultLocation: AL.IPosition = winterlandArcticBees
 
 let merchant: AL.Merchant
