@@ -238,7 +238,10 @@ export function startChargeLoop(bot: AL.Warrior): void {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            if (bot.canUse("charge")) await bot.charge()
+            if (bot.canUse("charge")
+                && !bot.s.hardshell) { // Don't charge if we have hardshell active, because it sets the speed
+                await bot.charge()
+            }
         } catch (e) {
             console.error(e)
         }
