@@ -180,14 +180,14 @@ export async function startMerchant(bot: AL.Merchant, information: Information, 
             if (
                 bot.rip // We are dead
                 || bot.c.town // We are teleporting to town
-                || bot.isOnCooldown("scare") // We don't have scare ready
             ) {
                 // We are dead
                 bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
                 return
             }
 
-            if (information.merchant.target) {
+            if (information.merchant.target
+                && !bot.isOnCooldown("scare")) {
                 // Equipment
                 if (strategy[information.merchant.target].equipment) {
                     for (const s in strategy[information.merchant.target].equipment) {
@@ -364,7 +364,8 @@ export async function startPriest(bot: AL.Priest, information: Information, stra
                 target = information.bot3.target
             }
 
-            if (target) {
+            if (target
+                && !bot.isOnCooldown("scare")) {
                 // Equipment
                 if (strategy[target].equipment) {
                     for (const s in strategy[target].equipment) {
@@ -435,7 +436,6 @@ export async function startRanger(bot: AL.Ranger, information: Information, stra
             if (
                 bot.rip // We are dead
                 || bot.c.town // We are teleporting to town
-                || bot.isOnCooldown("scare") // We don't have scare ready
             ) {
                 // We are dead
                 bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
@@ -451,7 +451,8 @@ export async function startRanger(bot: AL.Ranger, information: Information, stra
                 target = information.bot3.target
             }
 
-            if (target) {
+            if (target
+                && !bot.isOnCooldown("scare")) {
                 // Equipment
                 if (strategy[target].equipment) {
                     for (const s in strategy[target].equipment) {
@@ -526,7 +527,6 @@ export async function startWarrior(bot: AL.Warrior, information: Information, st
             if (
                 bot.rip // We are dead
                 || bot.c.town // We are teleporting to town
-                || bot.isOnCooldown("scare") // We don't have scare ready
             ) {
                 // We are dead
                 bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
@@ -542,7 +542,8 @@ export async function startWarrior(bot: AL.Warrior, information: Information, st
                 target = information.bot3.target
             }
 
-            if (target) {
+            if (target
+                && !bot.isOnCooldown("scare")) {
                 // Equipment
                 if (strategy[target].equipment) {
                     for (const s in strategy[target].equipment) {
