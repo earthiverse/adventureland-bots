@@ -34,7 +34,7 @@ export function getTargetServerFromDate(offset = 0, avoidPVP = false): [AL.Serve
  * @param defaultIdentifier The default identifier to hang out on if no special monsters are found
  * @returns
  */
-export async function getTargetServerFromMonsters(G: AL.GData2, defaultRegion: AL.ServerRegion, defaultIdentifier: AL.ServerIdentifier): Promise<[AL.ServerRegion, AL.ServerIdentifier]> {
+export async function getTargetServerFromMonsters(G: AL.GData, defaultRegion: AL.ServerRegion, defaultIdentifier: AL.ServerIdentifier): Promise<[AL.ServerRegion, AL.ServerIdentifier]> {
     // Priority #1: Special co-op monsters that take a team effort
     const coop: AL.MonsterName[] = [
         "dragold", "grinch", "icegolem", "mrgreen", "mrpumpkin", "franky"
