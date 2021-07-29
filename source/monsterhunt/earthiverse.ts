@@ -1273,9 +1273,11 @@ async function run() {
                 if (information.merchant.bot) await information.merchant.bot.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
                     setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                } else if (e == "ingame") {
+                    setTimeout(async () => { loopBot() }, 500)
                 } else {
                     setTimeout(async () => { loopBot() }, 10000)
                 }
@@ -1299,9 +1301,11 @@ async function run() {
                 if (information.bot1.bot) await information.bot1.bot.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
                     setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                } else if (e == "ingame") {
+                    setTimeout(async () => { loopBot() }, 500)
                 } else {
                     setTimeout(async () => { loopBot() }, 10000)
                 }
@@ -1326,9 +1330,11 @@ async function run() {
                 if (information.bot2.bot) await information.bot2.bot.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
                     setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                } else if (e == "ingame") {
+                    setTimeout(async () => { loopBot() }, 500)
                 } else {
                     setTimeout(async () => { loopBot() }, 10000)
                 }
@@ -1352,9 +1358,11 @@ async function run() {
                 if (information.bot3.bot) await information.bot3.bot.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
                     setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                } else if (e == "ingame") {
+                    setTimeout(async () => { loopBot() }, 500)
                 } else {
                     setTimeout(async () => { loopBot() }, 10000)
                 }
