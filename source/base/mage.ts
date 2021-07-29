@@ -66,7 +66,7 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
             }
         }
 
-        // Use our friends to energize
+        // Use our friends to energize for the attack speed boost
         if (!bot.s.energized && !options.disableEnergize) {
             for (const friend of friends) {
                 if (!friend) continue // Friend is missing
@@ -76,7 +76,7 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
                 if (!friend.canUse("energize")) continue // Friend can't use energize
 
                 // Energize!
-                (friend as AL.Mage).energize(bot.id)
+                (friend as AL.Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp)))
                 break
             }
         }
