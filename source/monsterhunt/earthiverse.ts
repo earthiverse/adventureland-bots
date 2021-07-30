@@ -1276,7 +1276,7 @@ async function run() {
                     setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
                     setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
-                } else if (e == "ingame") {
+                } else if (/ingame/.test(e)) {
                     setTimeout(async () => { loopBot() }, 500)
                 } else {
                     setTimeout(async () => { loopBot() }, 10000)
@@ -1304,7 +1304,7 @@ async function run() {
                     setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
                     setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
-                } else if (e == "ingame") {
+                } else if (/ingame/.test(e)) {
                     setTimeout(async () => { loopBot() }, 500)
                 } else {
                     setTimeout(async () => { loopBot() }, 10000)
@@ -1333,7 +1333,7 @@ async function run() {
                     setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
                     setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
-                } else if (e == "ingame") {
+                } else if (/ingame/.test(e)) {
                     setTimeout(async () => { loopBot() }, 500)
                 } else {
                     setTimeout(async () => { loopBot() }, 10000)
@@ -1361,7 +1361,7 @@ async function run() {
                     setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
                     setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
-                } else if (e == "ingame") {
+                } else if (/ingame/.test(e)) {
                     setTimeout(async () => { loopBot() }, 500)
                 } else {
                     setTimeout(async () => { loopBot() }, 10000)
