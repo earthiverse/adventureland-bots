@@ -6,7 +6,7 @@
   "type": "module",
   "dependencies": {
     "alclient": "^0.5.36",
-    "alclient-mongo": "^0.5.47",
+    "alclient-mongo": "^0.5.48",
     "axios": "^0.21.1",
     "console-table-printer": "^2.9.0",
     "fastpriorityqueue": "^0.7.1"
