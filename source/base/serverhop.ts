@@ -42,7 +42,6 @@ export async function getTargetServerFromMonsters(G: AL.GData, defaultRegion: AL
     const coopEntities: AL.IEntity[] = await AL.EntityModel.aggregate([
         {
             $match: {
-                lastSeen: { $gt: Date.now() - 30_000 },
                 serverIdentifier: { $nin: ["PVP"] },
                 target: { $ne: undefined }, // We only want to do these if others are doing them, too.
                 type: { $in: coop }
@@ -64,7 +63,6 @@ export async function getTargetServerFromMonsters(G: AL.GData, defaultRegion: AL
     const soloEntities: AL.IEntity[] = await AL.EntityModel.aggregate([
         {
             $match: {
-                lastSeen: { $gt: Date.now() - 30_000 },
                 serverIdentifier: { $nin: ["PVP"] },
                 type: { $in: solo },
             }

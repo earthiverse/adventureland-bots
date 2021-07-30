@@ -1395,6 +1395,13 @@ async function run() {
                 return
             }
 
+            // Don't change servers if we're running a crypt
+            const merchantMap: AL.GMap = AL.Game.G.maps[information.merchant?.bot?.map]
+            if (merchantMap && merchantMap.instance) {
+                setTimeout(async () => { serverLoop() }, 1000)
+                return
+            }
+
             const currentRegion = information.bot1.bot.server.region
             const currentIdentifier = information.bot1.bot.server.name
             const G = information.bot1.bot.G
