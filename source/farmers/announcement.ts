@@ -1,6 +1,6 @@
 import AL from "alclient-mongo"
 import { goToPoitonSellerIfLow, startBuyLoop, startCompoundLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, ITEMS_TO_SELL, startElixirLoop, goToBankIfFull, goToNearestWalkableToMonster } from "../base/general.js"
-import { winterlandArcticBees } from "../base/locations.js"
+import { mainGoos } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { doBanking, startMluckLoop } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "../base/party.js"
@@ -12,8 +12,8 @@ const mage2Name = "gratuitously"
 const mage3Name = "hypothesized"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "II"
-const targets: AL.MonsterName[] = ["boar", "arcticbee"]
-const defaultLocation: AL.IPosition = winterlandArcticBees
+const targets: AL.MonsterName[] = ["cutebee", "goo"]
+const defaultLocation: AL.IPosition = mainGoos
 
 let merchant: AL.Merchant
 let mage1: AL.Mage
@@ -312,7 +312,7 @@ async function run() {
                 if (mage2) await mage2.disconnect()
                 mage2 = await AL.Game.startMage(name, region, identifier)
                 startShared(mage2)
-                startMage(mage2, { x: 150, y: 0 })
+                startMage(mage2, { x: 100, y: 0 })
                 mage2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -338,7 +338,7 @@ async function run() {
                 if (mage3) await mage3.disconnect()
                 mage3 = await AL.Game.startMage(name, region, identifier)
                 startShared(mage3)
-                startMage(mage3, { x: 250, y: 0 })
+                startMage(mage3, { x: 150, y: 0 })
                 mage3.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
