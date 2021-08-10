@@ -165,7 +165,7 @@ export async function startMerchant(bot: AL.Merchant, information: Information, 
     startShared(bot, strategy, information)
     startMluckLoop(bot)
     startPartyLoop(bot, bot.id)
-    startServerPartyInviteLoop(bot)
+    // startServerPartyInviteLoop(bot)
 
     const idleTargets: AL.MonsterName[] = []
     for (const t in strategy) {
