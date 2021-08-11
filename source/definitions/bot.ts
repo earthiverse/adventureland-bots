@@ -44,3 +44,11 @@ export type ItemLevelInfo = {
     /** Items this level and under will be sold */
     [T in AL.ItemName]?: number
 }
+
+export type CryptData = {
+    instance: string
+    remaining: {
+        /** How many of the given monsters are left? */
+        [T in AL.MonsterName]?: number
+    }
+}

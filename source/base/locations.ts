@@ -9,6 +9,12 @@ export const mainPoisios: AL.IPosition = { map: "main", x: -121, y: 1360 }
 export const mainScorpions: AL.IPosition = { map: "main", x: 1577.5, y: -168 }
 export const mainSpiders: AL.IPosition = { map: "main", x: 948, y: -144 }
 
+// Bat Cave
+export const batCaveCryptEntrance: AL.IPosition = { map: "cave", x: -193.41, y: -1295.83 }
+
+// Crypt
+export const cryptWaitingSpot: AL.IPosition = { map: "crypt", x: 100, y: 50 }
+
 // Halloween
 export const halloweenSafeSnakes: AL.IPosition = { map: "halloween", x: 346.5, y: -747 }
 
