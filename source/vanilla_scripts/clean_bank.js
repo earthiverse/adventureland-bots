@@ -40,10 +40,10 @@ for (const itemName in stackList) {
 // Find things we can stack
 for (const itemName in stackList) {
     const stacks = stackList[itemName]
+    const stackLimit = G.items[itemName].s
     for (let j = 0; j < stacks.length - 1; j++) {
         const stack1 = stacks[j]
         const stack2 = stacks[j + 1]
-        const stackLimit = G.items[itemName].s
         if (stack1[2] + stack2[2] > stackLimit) continue // Can't stack, too much
 
         // TODO: If we have a stand or computer with an empty space, use it to help create full stacks
