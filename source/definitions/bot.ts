@@ -46,7 +46,10 @@ export type ItemLevelInfo = {
 }
 
 export type CryptData = {
+    /** Name of the instance, for entering */
     instance: string
+    /** How far along the path we are */
+    position: number
     remaining: {
         /** How many of the given monsters are left? */
         [T in AL.MonsterName]?: number
