@@ -307,6 +307,7 @@ export const cryptPath: AL.IPosition[] = [
 export function startCrypt(instance: string): CryptData {
     const data: CryptData = {
         instance: instance,
+        path: cryptPath,
         position: 0,
         remaining: {}
     }

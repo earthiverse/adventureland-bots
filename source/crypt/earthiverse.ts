@@ -112,6 +112,20 @@ async function startPriest(bot: AL.Priest) {
     }
     attackLoop()
 
+    async function moveLoop() {
+        try {
+            if (bot.map == "crypt") {
+                const position = cryptData.path[cryptData.position]
+                position.x += 8
+                position.y += 8
+                await bot.smartMove(position)
+                // do stuff
+            }
+        } catch (e) {
+            console.error(e)
+        }
+    }
+    moveLoop()
     // TODO: Enter crypt if merchant is inside, otherwise farm bats
 }
 
