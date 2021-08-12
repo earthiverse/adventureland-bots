@@ -158,10 +158,11 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
 
             if (stompOrder[0] == bot.id) {
                 // Equip the basher if we're the next to bash
-                if (bot.slots?.mainhand.name !== "basher" && bot.hasItem("basher")) {
-                    if (bot.slots.offhand) await bot.unequip("offhand")
+                const promises: Promise<unknown>[] = []
+                if (bot.slots.mainhand?.name !== "basher" && bot.hasItem("basher")) {
+                    if (bot.slots.offhand) promises.push(bot.unequip("offhand").catch((e) => { console.error(e) }))
                     const basher = bot.locateItem("basher")
-                    if (basher !== undefined) await bot.equip(basher, "mainhand")
+                    if (basher !== undefined) promises.push(bot.equip(basher, "mainhand").catch((e) => { console.error(e) }))
                 }
 
                 if (!bot.canUse("stomp")) {
@@ -180,10 +181,11 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
                     // It's our turn to stomp!
                     await bot.stomp()
                     sendStompReady()
+                    await Promise.allSettled(promises)
                     break
                 }
             } else {
-                if (bot.slots?.mainhand.name == "basher") {
+                if (bot.slots.mainhand?.name == "basher") {
                     const fireblades = bot.locateItems("fireblade")
                     if (fireblades && fireblades[0] !== undefined) await bot.equip(fireblades[0], "mainhand")
                     if (fireblades && fireblades[1] !== undefined) await bot.equip(fireblades[1], "offhand")
