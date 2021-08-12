@@ -1138,8 +1138,8 @@ function prepareWarrior(bot: AL.Warrior) {
         },
         skeletor: {
             attack: async () => { return await attackTheseTypesWarrior(bot, ["skeletor", "cgoo"], information.friends) },
-            equipment: { mainhand: "basher", orb: "test_orb" },
-            move: async () => { await bot.smartMove({ map: "arena", x: 360, y: -575 }) },
+            equipment: { mainhand: "bataxe", orb: "test_orb" },
+            move: async () => { await goToNearestWalkableToMonster(bot, ["skeletor"], { map: "arena", x: 360, y: -575 }) },
             requireCtype: "priest"
         },
         snake: {
@@ -1191,7 +1191,7 @@ function prepareWarrior(bot: AL.Warrior) {
         },
         stompy: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["stompy"], information.friends, { disableAgitate: true }) },
-            equipment: { mainhand: "basher", orb: "test_orb" },
+            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "stompy") },
             requireCtype: "priest"
         },
