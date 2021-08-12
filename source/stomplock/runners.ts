@@ -97,7 +97,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
                     const entity = bot.entities.get(entityID)
                     if (!entity) continue // Entity died?
                     if (AL.Tools.distance(bot, entity) > bot.range) break // Too far
-                    if (!entity.s.stunned || entity.s.stunned.ms < ((LOOP_MS + Math.max(...bot.pings)) * 4)) break // Enemy is not stunned, or is about to be free, don't attack!
+                    if (!entity.s.stunned || entity.s.stunned.ms < ((LOOP_MS + Math.max(...bot.pings)) * 3)) break // Enemy is not stunned, or is about to be free, don't attack!
 
                     await bot.basicAttack(entity.id)
                     break
@@ -175,7 +175,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
                 for (const entityID of entityOrder) {
                     const entity = bot.entities.get(entityID)
                     if (!entity) continue // Entity died?
-                    if (entity.s.stunned && entity.s.stunned.ms >= (LOOP_MS + Math.min(...bot.pings)) * 5) break // Enemy is still stunned long enough
+                    if (entity.s.stunned && entity.s.stunned.ms >= (LOOP_MS + Math.min(...bot.pings)) * 3) break // Enemy is still stunned long enough
                     if (AL.Tools.distance(bot, entity) > bot.G.skills.stomp.range) break // Too far to stomp
 
                     // It's our turn to stomp!
