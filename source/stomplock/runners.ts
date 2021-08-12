@@ -165,7 +165,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
                     if (basher !== undefined) promises.push(bot.equip(basher, "mainhand").catch((e) => { console.error(e) }))
                 }
 
-                if (!bot.canUse("stomp")) {
+                if (!bot.canUse("stomp", { ignoreEquipped: true })) {
                     // Uhh... it's our turn, but we're not ready?
                     sendStompReady()
                     setTimeout(async () => { stompLoop() }, Math.max(LOOP_MS, bot.getCooldown("stomp")))
