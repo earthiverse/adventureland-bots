@@ -97,7 +97,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
                     const entity = bot.entities.get(entityID)
                     if (!entity) continue // Entity died?
                     if (AL.Tools.distance(bot, entity) > bot.range) break // Too far
-                    if (!entity.s.stunned || entity.s.stunned.ms < ((LOOP_MS + Math.max(...bot.pings)) * 3)) break // Enemy is not stunned, or is about to be free, don't attack!
+                    if (!entity.s.stunned || entity.s.stunned.ms < ((LOOP_MS + Math.max(...bot.pings)) * 4)) break // Enemy is not stunned, or is about to be free, don't attack!
 
                     await bot.basicAttack(entity.id)
                     break
@@ -157,6 +157,13 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
             if (!bot.socket || bot.socket.disconnected) return
 
             if (stompOrder[0] == bot.id) {
+                // Equip the basher if we're the next to bash
+                if (bot.slots?.mainhand.name !== "basher" && bot.hasItem("basher")) {
+                    if (bot.slots.offhand) await bot.unequip("offhand")
+                    const basher = bot.locateItem("basher")
+                    if (basher !== undefined) await bot.equip(basher, "mainhand")
+                }
+
                 if (!bot.canUse("stomp")) {
                     // Uhh... it's our turn, but we're not ready?
                     sendStompReady()
@@ -174,6 +181,12 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
                     await bot.stomp()
                     sendStompReady()
                     break
+                }
+            } else {
+                if (bot.slots?.mainhand.name == "basher") {
+                    const fireblades = bot.locateItems("fireblade")
+                    if (fireblades && fireblades[0] !== undefined) await bot.equip(fireblades[0], "mainhand")
+                    if (fireblades && fireblades[1] !== undefined) await bot.equip(fireblades[1], "offhand")
                 }
             }
         } catch (e) {
