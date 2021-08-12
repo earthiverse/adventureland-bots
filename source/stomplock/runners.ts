@@ -8,7 +8,7 @@ import { stompPartyLeader, stompPartyMembers } from "../base/party.js"
 export const region: AL.ServerRegion = "US"
 export const identifier: AL.ServerIdentifier = "II"
 
-const targets: AL.MonsterName[] = ["bluefairy"]
+const targets: AL.MonsterName[] = ["greenfairy", "bluefairy", "redfairy"]
 const LOOP_MS = 10
 
 /** CM Types */
@@ -22,6 +22,37 @@ type StompOrderCM = {
     entityOrder: string[]
 }
 type CM = StompOrderCM | StompReadyCM
+
+export async function startSellSticksToMerchantsLoop(bot: AL.Character): Promise<void> {
+    async function sellToMerchants() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            for (const [, player] of bot.players) {
+                if (!player) continue
+                if (AL.Tools.distance(bot, player) > AL.Constants.NPC_INTERACTION_DISTANCE) continue
+
+                const sticks = bot.locateItems("stick", bot.items, { level: 0 })
+                if (!sticks || sticks.length == 0) break // No more sticks
+
+                for (const slotName in player.slots) {
+                    const slot: AL.ItemDataTrade = player.slots[slotName]
+                    if (!slot || !slot.b) continue // They aren't buying anything in this slot
+                    if (slot.name !== "stick") continue // They aren't buying sticks
+                    if (slot.price < 2_500_000) continue // They aren't paying enough
+
+                    await bot.sellToMerchant(player.id, slotName as AL.TradeSlotType, slot.rid, 1)
+                }
+            }
+
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { sellToMerchants() }, 1000)
+    }
+    sellToMerchants()
+}
 
 export async function startShared(bot: AL.Warrior, merchantName: string): Promise<void> {
     let stompOrder: string[] = []
@@ -50,35 +81,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
     startWarcryLoop(bot)
     startSendStuffDenylistLoop(bot, [merchantName])
 
-    // // NOTE: Temporary for Kouin
-    // async function sellToKouinLoop() {
-    //     try {
-    //         if (!bot.socket || bot.socket.disconnected) return
-
-    //         const sticks = bot.locateItems("stick", bot.items, { level: 0 })
-    //         const kouin = bot.players.get("kouin")
-
-    //         if (sticks && sticks.length > 0
-    //             && kouin && AL.Tools.distance(bot, kouin) < AL.Constants.NPC_INTERACTION_DISTANCE) {
-    //             for (const stick of sticks) {
-    //                 for (const slotName in kouin.slots) {
-    //                     const slot: AL.ItemDataTrade = kouin.slots[slotName]
-    //                     if (!slot || !slot.b) continue
-    //                     if (slot.name !== "stick") continue
-    //                     if (slot.price < 2_000_000) continue
-
-    //                     await bot.sellToMerchant("kouin", slotName as AL.TradeSlotType, slot.rid, 1)
-    //                 }
-    //             }
-    //         }
-
-    //     } catch (e) {
-    //         console.error(e)
-    //     }
-
-    //     setTimeout(async () => { sellToKouinLoop() }, 1000)
-    // }
-    // sellToKouinLoop()
+    startSellSticksToMerchantsLoop(bot)
 
     async function attackLoop() {
         try {
@@ -335,35 +338,7 @@ export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], h
     startSellLoop(bot)
     startExchangeLoop(bot)
 
-    // // NOTE: Temporary for Kouin
-    // async function sellToKouinLoop() {
-    //     try {
-    //         if (!bot.socket || bot.socket.disconnected) return
-
-    //         const sticks = bot.locateItems("stick", bot.items, { level: 0 })
-    //         const kouin = bot.players.get("kouin")
-
-    //         if (sticks && sticks.length > 0
-    //             && kouin && AL.Tools.distance(bot, kouin) < AL.Constants.NPC_INTERACTION_DISTANCE) {
-    //             for (const stick of sticks) {
-    //                 for (const slotName in kouin.slots) {
-    //                     const slot: AL.ItemDataTrade = kouin.slots[slotName]
-    //                     if (!slot || !slot.b) continue
-    //                     if (slot.name !== "stick") continue
-    //                     if (slot.price < 2_000_000) continue
-
-    //                     await bot.sellToMerchant("kouin", slotName as AL.TradeSlotType, slot.rid, 1)
-    //                 }
-    //             }
-    //         }
-
-    //     } catch (e) {
-    //         console.error(e)
-    //     }
-
-    //     setTimeout(async () => { sellToKouinLoop() }, 1000)
-    // }
-    // sellToKouinLoop()
+    startSellSticksToMerchantsLoop(bot)
 
     let lastBankVisit = Number.MIN_VALUE
     async function moveLoop() {
