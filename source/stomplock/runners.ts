@@ -167,7 +167,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
             await goToPoitonSellerIfLow(bot)
             await goToBankIfFull(bot)
 
-            await goToNearestWalkableToMonster(bot, targets, spawn)
+            await goToNearestWalkableToMonster(bot, targets, spawn, 0)
         } catch (e) {
             console.error(e)
         }

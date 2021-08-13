@@ -425,7 +425,7 @@ export async function goToNPCShopIfFull(bot: ALM.Character, itemsToSell = ITEMS_
     await sleep(1000)
 }
 
-export async function goToNearestWalkableToMonster(bot: ALM.Character, types: ALM.MonsterName[], defaultPosition?: ALM.IPosition): Promise<unknown> {
+export async function goToNearestWalkableToMonster(bot: ALM.Character, types: ALM.MonsterName[], defaultPosition?: ALM.IPosition, getWithin = bot.range): Promise<unknown> {
     let nearest: ALM.IPosition
     let distance = Number.MAX_VALUE
     for (const entity of bot.getEntities({
@@ -442,51 +442,90 @@ export async function goToNearestWalkableToMonster(bot: ALM.Character, types: AL
         }
     }
 
-    if (nearest && distance > bot.range) {
+    if (nearest && distance > getWithin) {
         const destination = { map: nearest.map, x: nearest.x, y: nearest.y }
 
         // Offset our position based on our party, so we don't get stacking damage
         if (bot.party) {
             switch (bot.partyData.list.indexOf(bot.id)) {
             case 1:
-                destination.x += 6
+                destination.x += 10
                 break
             case 2:
-                destination.x -= 6
+                destination.x -= 10
                 break
             case 3:
-                destination.y += 6
+                destination.y += 10
                 break
             case 4:
-                destination.y -= 6
+                destination.y -= 10
                 break
             case 5:
-                destination.x += 6
-                destination.y += 6
+                destination.x += 10
+                destination.y += 10
                 break
             case 6:
-                destination.x += 6
-                destination.y -= 6
+                destination.x += 10
+                destination.y -= 10
                 break
             case 7:
-                destination.x -= 6
-                destination.y += 6
+                destination.x -= 10
+                destination.y += 10
                 break
             case 8:
-                destination.x -= 6
-                destination.y -= 6
+                destination.x -= 10
+                destination.y -= 10
                 break
             case 9:
-                destination.x += 12
+                destination.x += 20
                 break
             }
         }
         bot.move(destination.x, destination.y).catch(() => { /* Suppress errors */ })
     } else if (!nearest && defaultPosition) {
-        if (ALM.Pathfinder.canWalkPath(bot, defaultPosition)) {
-            bot.move(defaultPosition.x, defaultPosition.y).catch(() => { /* Suppress errors */ })
+        const destination = { map: defaultPosition.map, x: defaultPosition.x, y: defaultPosition.y }
+
+        // Offset our position based on our party, so we don't get stacking damage
+        if (bot.party) {
+            switch (bot.partyData.list.indexOf(bot.id)) {
+            case 1:
+                destination.x += 10
+                break
+            case 2:
+                destination.x -= 10
+                break
+            case 3:
+                destination.y += 10
+                break
+            case 4:
+                destination.y -= 10
+                break
+            case 5:
+                destination.x += 10
+                destination.y += 10
+                break
+            case 6:
+                destination.x += 10
+                destination.y -= 10
+                break
+            case 7:
+                destination.x -= 10
+                destination.y += 10
+                break
+            case 8:
+                destination.x -= 10
+                destination.y -= 10
+                break
+            case 9:
+                destination.x += 20
+                break
+            }
+        }
+
+        if (ALM.Pathfinder.canWalkPath(bot, destination)) {
+            bot.move(destination.x, destination.y).catch(() => { /* Suppress errors */ })
         } else {
-            return bot.smartMove(defaultPosition)
+            return bot.smartMove(destination)
         }
     }
 }
