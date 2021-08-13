@@ -72,7 +72,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
                 for (const [, entity] of bot.entities) {
                     if (!entity) continue // Entity died?
                     if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
-                    if (!entity.s.stunned || entity.s.stunned.ms < ((LOOP_MS + Math.max(...bot.pings)) * 3)) continue // Enemy is not stunned, or is about to be free, don't attack!
+                    if (!entity.s.stunned || entity.s.stunned.ms < ((LOOP_MS + Math.max(...bot.pings)) * 4)) continue // Enemy is not stunned, or is about to be free, don't attack!
 
                     await bot.basicAttack(entity.id)
                     break
@@ -97,7 +97,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
                 for (const [, entity] of bot.entities) {
                     if (!entity) continue // Entity died?
                     if (!entity.target || entity.target != bot.id) continue // Not targeting us
-                    if (entity.s.stunned && entity.s.stunned.ms > ((LOOP_MS + Math.min(...bot.pings)) * 3)) continue // Enemy is still stunned
+                    if (entity.s.stunned && entity.s.stunned.ms > ((LOOP_MS + Math.min(...bot.pings)) * 4)) continue // Enemy is still stunned
 
                     // Scare, because it is, or will soon be, no longer stunned.
                     await bot.scare()
