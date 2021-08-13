@@ -370,7 +370,7 @@ export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], h
             // If we are full, let's go to the bank
             if (bot.isFull() || lastBankVisit < Date.now() - 120000 || bot.hasPvPMarkedItem()) {
                 lastBankVisit = Date.now()
-                await doBanking(bot)
+                await doBanking(bot, 600_000_000)
                 bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
@@ -399,7 +399,7 @@ export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], h
                 if (friend.isFull()) {
                     await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                     lastBankVisit = Date.now()
-                    await doBanking(bot)
+                    await doBanking(bot, 600_000_000)
                     bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                     return
                 }
