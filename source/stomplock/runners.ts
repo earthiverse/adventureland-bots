@@ -1,6 +1,5 @@
 import AL from "alclient-mongo"
-import FastPriorityQueue from "fastpriorityqueue"
-import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startTrackerLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, ITEMS_TO_SELL } from "../base/general.js"
+import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_SELL, goToNearestWalkableToMonster } from "../base/general.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { stompPartyLeader, stompPartyMembers } from "../base/party.js"
@@ -10,18 +9,6 @@ export const identifier: AL.ServerIdentifier = "II"
 
 const targets: AL.MonsterName[] = ["greenfairy", "bluefairy", "redfairy"]
 const LOOP_MS = 10
-
-/** CM Types */
-type StompReadyCM = {
-    type: "ready"
-    ready: boolean
-}
-type StompOrderCM = {
-    type: "stompOrder"
-    playerOrder: string[]
-    entityOrder: string[]
-}
-type CM = StompOrderCM | StompReadyCM
 
 export async function startSellSticksToMerchantsLoop(bot: AL.Character): Promise<void> {
     async function sellToMerchants() {
@@ -55,17 +42,6 @@ export async function startSellSticksToMerchantsLoop(bot: AL.Character): Promise
 }
 
 export async function startShared(bot: AL.Warrior, merchantName: string): Promise<void> {
-    let stompOrder: string[] = []
-    let entityOrder: string[] = []
-
-    function sendStompReady() {
-        const stompReadyCM: StompReadyCM = {
-            ready: bot.canUse("stomp"),
-            type: "ready"
-        }
-        bot.sendCM([stompPartyLeader], stompReadyCM)
-    }
-
     startAvoidStacking(bot)
     startBuyLoop(bot, new Set())
     startChargeLoop(bot)
@@ -93,11 +69,10 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
             }
 
             if (bot.canUse("attack")) {
-                for (const entityID of entityOrder) {
-                    const entity = bot.entities.get(entityID)
+                for (const [, entity] of bot.entities) {
                     if (!entity) continue // Entity died?
-                    if (AL.Tools.distance(bot, entity) > bot.range) break // Too far
-                    if (!entity.s.stunned || entity.s.stunned.ms < ((LOOP_MS + Math.max(...bot.pings)) * 3)) break // Enemy is not stunned, or is about to be free, don't attack!
+                    if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
+                    if (!entity.s.stunned || entity.s.stunned.ms < ((LOOP_MS + Math.max(...bot.pings)) * 3)) continue // Enemy is not stunned, or is about to be free, don't attack!
 
                     await bot.basicAttack(entity.id)
                     break
@@ -119,13 +94,12 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
                 // Scare, because we are scared
                 await bot.scare()
             } else if (bot.targets > 0 && bot.canUse("scare")) {
-                for (const entityID of entityOrder) {
-                    const entity = bot.entities.get(entityID)
+                for (const [, entity] of bot.entities) {
                     if (!entity) continue // Entity died?
                     if (!entity.target || entity.target != bot.id) continue // Not targeting us
-                    if (entity.s.stunned && entity.s.stunned.ms >= ((LOOP_MS + Math.min(...bot.pings)) * 3)) continue // Enemy is still stunned
+                    if (entity.s.stunned && entity.s.stunned.ms > ((LOOP_MS + Math.min(...bot.pings)) * 3)) continue // Enemy is still stunned
 
-                    // Scare, because we might run out of stun soon!
+                    // Scare, because it is, or will soon be, no longer stunned.
                     await bot.scare()
                     break
                 }
@@ -138,77 +112,45 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
     }
     scareLoop()
 
-    bot.socket.on("cm", async (data: AL.CMData) => {
-        if (!stompPartyMembers.includes(data.name)) return // Discard messages from other players
-
-        try {
-            const decodedMessage: CM = JSON.parse(data.message)
-            if (decodedMessage.type == "stompOrder") {
-                stompOrder = decodedMessage.playerOrder
-                entityOrder = decodedMessage.entityOrder
-            }
-        } catch (e) {
-            console.error(e)
-        }
-    })
-
     async function stompLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            if (stompOrder[0] == bot.id) {
-                // Equip the basher if we're the next to bash
+            // Equip the basher if we don't have one equipped
+            if ((!bot.slots.mainhand || bot.slots.mainhand.name !== "basher") && bot.hasItem("basher")) {
                 const promises: Promise<unknown>[] = []
-                if (bot.slots.mainhand?.name !== "basher" && bot.hasItem("basher")) {
-                    if (bot.slots.offhand) promises.push(bot.unequip("offhand").catch((e) => { console.error(e) }))
-                    const basher = bot.locateItem("basher")
-                    if (basher !== undefined) promises.push(bot.equip(basher, "mainhand").catch((e) => { console.error(e) }))
-                }
-
-                if (!bot.canUse("stomp", { ignoreEquipped: true })) {
-                    // Uhh... it's our turn, but we're not ready?
-                    sendStompReady()
-                    setTimeout(async () => { stompLoop() }, Math.max(LOOP_MS, bot.getCooldown("stomp")))
-                    return
-                }
-
-                for (const entityID of entityOrder) {
-                    const entity = bot.entities.get(entityID)
-                    if (!entity) continue // Entity died?
-                    if (entity.s.stunned && entity.s.stunned.ms >= (LOOP_MS + Math.min(...bot.pings)) * 3) break // Enemy is still stunned long enough
-                    if (AL.Tools.distance(bot, entity) > bot.G.skills.stomp.range) break // Too far to stomp
-
-                    // It's our turn to stomp!
-                    await bot.stomp()
-                    sendStompReady()
-                    await Promise.allSettled(promises)
-                    break
-                }
-            } else {
-                if (bot.slots.mainhand?.name == "basher") {
-                    const fireblades = bot.locateItems("fireblade")
-                    if (fireblades && fireblades[0] !== undefined) await bot.equip(fireblades[0], "mainhand")
-                    if (fireblades && fireblades[1] !== undefined) await bot.equip(fireblades[1], "offhand")
-                }
+                if (bot.slots.offhand) promises.push(bot.unequip("offhand"))
+                promises.push(bot.equip(bot.locateItem("basher")))
+                await Promise.all(promises)
             }
+
+            // Stomp if we can
+            if (bot.canUse("stomp")) {
+                await bot.stomp()
+            }
+
+            // Equip fireblades if we have two
+            if (bot.slots.mainhand?.name == "basher" && bot.countItem("fireblade") >= 2) {
+                if (bot.hasItem("fireblade")) await bot.equip(bot.locateItem("fireblade"), "mainhand")
+                if (bot.hasItem("fireblade")) await bot.equip(bot.locateItem("fireblade"), "offhand")
+            }
+
+            // Queue up the next stomp
+            const now = Date.now()
+            const numPartyMembers = bot.partyData ? bot.partyData.list ? bot.partyData.list.length : 1 : 1
+            const partyMemberIndex = bot.partyData ? bot.partyData.list ? bot.partyData.list.indexOf(bot.id) : 0 : 0
+            const cooldown = AL.Game.G.skills.stomp.cooldown
+            const nextInterval = (cooldown - now % cooldown)
+            const offset = partyMemberIndex * (cooldown / numPartyMembers)
+
+            setTimeout(async () => { stompLoop() }, nextInterval + offset)
+            return
         } catch (e) {
             console.error(e)
         }
         setTimeout(async () => { stompLoop() }, Math.max(LOOP_MS, bot.getCooldown("stomp")))
     }
     stompLoop()
-
-    function sendStompReadyLoop() {
-        try {
-            if (!bot.socket || bot.socket.disconnected) return
-
-            sendStompReady()
-        } catch (e) {
-            console.error(e)
-        }
-        setTimeout(() => { sendStompReadyLoop() }, bot.G.skills.stomp.duration * 0.9)
-    }
-    sendStompReadyLoop()
 
     const spawn = bot.locateMonster(targets[0])[0]
     async function moveLoop() {
@@ -225,57 +167,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
             await goToPoitonSellerIfLow(bot)
             await goToBankIfFull(bot)
 
-            let next: AL.Entity
-            for (const entityID of entityOrder) {
-                const entity = bot.entities.get(entityID)
-                if (!entity) continue // Entity died?
-                if (!AL.Pathfinder.canWalkPath(bot, entity)) continue // Can't simply walk to entity
-                if (entity.willBurnToDeath()) continue // Will burn to death shortly
-
-                next = entity
-                break
-            }
-
-            let destination: AL.IPosition = { ...spawn }
-            if (next) destination = { map: next.map, x: next.x, y: next.y }
-            if (bot.party) {
-                // Avoid stacking on party members
-                switch (bot.partyData.list.indexOf(bot.id)) {
-                case 1:
-                    destination.x += 10
-                    break
-                case 2:
-                    destination.x -= 10
-                    break
-                case 3:
-                    destination.y += 10
-                    break
-                case 4:
-                    destination.y -= 10
-                    break
-                case 5:
-                    destination.x += 10
-                    destination.y += 10
-                    break
-                case 6:
-                    destination.x += 10
-                    destination.y -= 10
-                    break
-                case 7:
-                    destination.x -= 10
-                    destination.y += 10
-                    break
-                case 8:
-                    destination.x -= 10
-                    destination.y -= 10
-                    break
-                case 9:
-                    destination.x += 20
-                    break
-                }
-            }
-            if (!next) await bot.smartMove(destination)
-            else bot.smartMove(destination).catch(() => { /* Suppress errors */ })
+            await goToNearestWalkableToMonster(bot, targets, spawn)
         } catch (e) {
             console.error(e)
         }
@@ -283,64 +175,6 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
         bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
-}
-
-export async function startLeader(bot: AL.Warrior): Promise<void> {
-    const readyToStomp: string[] = []
-
-    startTrackerLoop(bot)
-
-    bot.socket.on("cm", async (data: AL.CMData) => {
-        if (!stompPartyMembers.includes(data.name)) return // Discard messages from other players
-
-        try {
-            const decodedMessage: CM = JSON.parse(data.message)
-            if (decodedMessage.type == "ready") {
-                if (decodedMessage.ready) {
-                    if (!readyToStomp.includes(data.name)) readyToStomp.push(data.name)
-                } else {
-                    if (readyToStomp.includes(data.name)) readyToStomp.splice(readyToStomp.indexOf(data.name), 1)
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-    })
-
-    async function sendStompOrderLoop() {
-        try {
-            if (!bot.socket || bot.socket.disconnected) return
-
-            const priority = (a: AL.Entity, b: AL.Entity): boolean => {
-                // Older -> higher priority
-                return a.id < b.id
-            }
-            const entities = new FastPriorityQueue<AL.Entity>(priority)
-            for (const entity of bot.getEntities({
-                couldGiveCredit: true,
-                typeList: targets,
-                willDieToProjectiles: false,
-            })) {
-                entities.add(entity)
-            }
-
-            const entityOrder: string[] = []
-            while (entities.size > 0) {
-                entityOrder.push(entities.poll().id)
-            }
-
-            const stompOrder: StompOrderCM = {
-                entityOrder: entityOrder,
-                playerOrder: [...readyToStomp],
-                type: "stompOrder"
-            }
-            bot.sendCM([...stompPartyMembers], stompOrder)
-        } catch (e) {
-            console.error(e)
-        }
-        setTimeout(async () => { sendStompOrderLoop() }, (bot.G.skills.stomp.duration * 0.9) / 3)
-    }
-    sendStompOrderLoop()
 }
 
 export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], holdPosition: AL.IPosition): Promise<void> {
