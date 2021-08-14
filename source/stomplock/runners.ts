@@ -127,26 +127,26 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
             // Stomp if we can
             if (bot.canUse("stomp")) {
                 await bot.stomp()
+
+                // Equip fireblades if we have two
+                if (bot.slots.mainhand?.name == "basher" && bot.countItem("fireblade") >= 2) {
+                    const promises: Promise<unknown>[] = []
+                    if (bot.hasItem("fireblade")) promises.push(bot.equip(bot.locateItem("fireblade"), "mainhand"))
+                    if (bot.hasItem("fireblade")) promises.push(bot.equip(bot.locateItem("fireblade"), "offhand"))
+                    await Promise.all(promises)
+                }
+
+                // Queue up the next stomp
+                const now = Date.now()
+                const numPartyMembers = bot.partyData ? bot.partyData.list ? bot.partyData.list.length : 1 : 1
+                const partyMemberIndex = bot.partyData ? bot.partyData.list ? bot.partyData.list.indexOf(bot.id) : 0 : 0
+                const cooldown = AL.Game.G.skills.stomp.cooldown
+                const nextInterval = (cooldown - now % cooldown)
+                const offset = partyMemberIndex * (cooldown / numPartyMembers)
+
+                setTimeout(async () => { stompLoop() }, nextInterval + offset)
+                return
             }
-
-            // Equip fireblades if we have two
-            if (bot.slots.mainhand?.name == "basher" && bot.countItem("fireblade") >= 2) {
-                const promises: Promise<unknown>[] = []
-                if (bot.hasItem("fireblade")) promises.push(bot.equip(bot.locateItem("fireblade"), "mainhand"))
-                if (bot.hasItem("fireblade")) promises.push(bot.equip(bot.locateItem("fireblade"), "offhand"))
-                await Promise.all(promises)
-            }
-
-            // Queue up the next stomp
-            const now = Date.now()
-            const numPartyMembers = bot.partyData ? bot.partyData.list ? bot.partyData.list.length : 1 : 1
-            const partyMemberIndex = bot.partyData ? bot.partyData.list ? bot.partyData.list.indexOf(bot.id) : 0 : 0
-            const cooldown = AL.Game.G.skills.stomp.cooldown
-            const nextInterval = (cooldown - now % cooldown)
-            const offset = partyMemberIndex * (cooldown / numPartyMembers)
-
-            setTimeout(async () => { stompLoop() }, nextInterval + offset)
-            return
         } catch (e) {
             console.error(e)
         }
