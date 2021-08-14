@@ -136,18 +136,18 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
                     if (bot.hasItem("fireblade")) promises.push(bot.equip(fireblades[1], "offhand"))
                     await Promise.all(promises)
                 }
-
-                // Queue up the next stomp
-                const now = Date.now()
-                const numPartyMembers = bot.partyData ? bot.partyData.list ? bot.partyData.list.length : 1 : 1
-                const partyMemberIndex = bot.partyData ? bot.partyData.list ? bot.partyData.list.indexOf(bot.id) : 0 : 0
-                const cooldown = AL.Game.G.skills.stomp.cooldown + 500
-                const nextInterval = (cooldown - now % cooldown)
-                const offset = partyMemberIndex * (cooldown / numPartyMembers)
-
-                setTimeout(async () => { stompLoop() }, nextInterval + offset)
-                return
             }
+
+            // Queue up the next stomp
+            const now = Date.now()
+            const numPartyMembers = bot.partyData ? bot.partyData.list ? bot.partyData.list.length : 1 : 1
+            const partyMemberIndex = bot.partyData ? bot.partyData.list ? bot.partyData.list.indexOf(bot.id) : 0 : 0
+            const cooldown = AL.Game.G.skills.stomp.cooldown + 500
+            const nextInterval = (cooldown - now % cooldown)
+            const offset = partyMemberIndex * (cooldown / numPartyMembers)
+
+            setTimeout(async () => { stompLoop() }, nextInterval + offset)
+            return
         } catch (e) {
             console.error(e)
         }
