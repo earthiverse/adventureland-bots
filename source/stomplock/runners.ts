@@ -131,8 +131,10 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
 
             // Equip fireblades if we have two
             if (bot.slots.mainhand?.name == "basher" && bot.countItem("fireblade") >= 2) {
-                if (bot.hasItem("fireblade")) await bot.equip(bot.locateItem("fireblade"), "mainhand")
-                if (bot.hasItem("fireblade")) await bot.equip(bot.locateItem("fireblade"), "offhand")
+                const promises: Promise<unknown>[] = []
+                if (bot.hasItem("fireblade")) promises.push(bot.equip(bot.locateItem("fireblade"), "mainhand"))
+                if (bot.hasItem("fireblade")) promises.push(bot.equip(bot.locateItem("fireblade"), "offhand"))
+                await Promise.all(promises)
             }
 
             // Queue up the next stomp
@@ -204,7 +206,7 @@ export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], h
             // If we are full, let's go to the bank
             if (bot.isFull() || lastBankVisit < Date.now() - 120000 || bot.hasPvPMarkedItem()) {
                 lastBankVisit = Date.now()
-                await doBanking(bot, 600_000_000)
+                await doBanking(bot)
                 bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
@@ -233,7 +235,7 @@ export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], h
                 if (friend.isFull()) {
                     await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                     lastBankVisit = Date.now()
-                    await doBanking(bot, 600_000_000)
+                    await doBanking(bot)
                     bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                     return
                 }
