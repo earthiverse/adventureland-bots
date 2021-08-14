@@ -142,7 +142,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
                 const now = Date.now()
                 const numPartyMembers = bot.partyData ? bot.partyData.list ? bot.partyData.list.length : 1 : 1
                 const partyMemberIndex = bot.partyData ? bot.partyData.list ? bot.partyData.list.indexOf(bot.id) : 0 : 0
-                const cooldown = AL.Game.G.skills.stomp.cooldown
+                const cooldown = AL.Game.G.skills.stomp.cooldown + 500
                 const nextInterval = (cooldown - now % cooldown)
                 const offset = partyMemberIndex * (cooldown / numPartyMembers)
 
