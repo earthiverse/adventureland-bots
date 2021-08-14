@@ -28,10 +28,9 @@ export async function startSellSticksToMerchantsLoop(bot: AL.Character): Promise
                     if (slot.name !== "stick") continue // They aren't buying sticks
                     if (slot.price < 2_500_000) continue // They aren't paying enough
 
-                    await bot.sellToMerchant(player.id, slotName as AL.TradeSlotType, slot.rid, 1)
+                    await bot.sellToMerchant(player.id, slotName as AL.TradeSlotType, slot.rid, 1).catch((e) => { console.error(e) })
                 }
             }
-
         } catch (e) {
             console.error(e)
         }
