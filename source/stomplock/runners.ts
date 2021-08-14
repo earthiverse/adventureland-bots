@@ -115,6 +115,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
     async function stompLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
+            console.log(`It's ${bot.id}'s turn to stomp. (${Date.now()})`)
 
             // Equip the basher if we don't have one equipped
             if ((!bot.slots.mainhand || bot.slots.mainhand.name !== "basher") && bot.hasItem("basher")) {
