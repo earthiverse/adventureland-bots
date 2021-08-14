@@ -7,7 +7,7 @@ const servers = SERVER_HOP_SERVERS
 const SEND_ALDATA = false
 const NOTABLE_NPCS: string[] = ["Angel", "Kane"]
 
-const PEEK = true
+const PEEK = false
 const PEEK_CHARS = ["earthRan2", "earthRan3", "earthMag2", "earthWar2", "earthWar3", "earthRog", "earthRog2", "earthPal"]
 
 async function run() {
