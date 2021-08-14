@@ -111,6 +111,17 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
     }
     scareLoop()
 
+    function getNextStunTime() {
+        const now = Date.now()
+        const numPartyMembers = bot.partyData ? bot.partyData.list ? bot.partyData.list.length : 1 : 1
+        const partyMemberIndex = bot.partyData ? bot.partyData.list ? bot.partyData.list.indexOf(bot.id) : 0 : 0
+        const cooldown = AL.Game.G.skills.stomp.cooldown + 500
+        const nextInterval = (cooldown - now % cooldown)
+        const offset = partyMemberIndex * (cooldown / numPartyMembers)
+
+        return nextInterval + offset
+    }
+
     async function stompLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -137,23 +148,12 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
                     await Promise.all(promises)
                 }
             }
-
-            // Queue up the next stomp
-            const now = Date.now()
-            const numPartyMembers = bot.partyData ? bot.partyData.list ? bot.partyData.list.length : 1 : 1
-            const partyMemberIndex = bot.partyData ? bot.partyData.list ? bot.partyData.list.indexOf(bot.id) : 0 : 0
-            const cooldown = AL.Game.G.skills.stomp.cooldown + 500
-            const nextInterval = (cooldown - now % cooldown)
-            const offset = partyMemberIndex * (cooldown / numPartyMembers)
-
-            setTimeout(async () => { stompLoop() }, nextInterval + offset)
-            return
         } catch (e) {
             console.error(e)
         }
-        setTimeout(async () => { stompLoop() }, Math.max(LOOP_MS, bot.getCooldown("stomp")))
+        setTimeout(async () => { stompLoop() }, Math.max(LOOP_MS, bot.getCooldown("stomp"), getNextStunTime()))
     }
-    stompLoop()
+    setTimeout(async () => { stompLoop() }, Math.max(getNextStunTime()))
 
     const spawn = bot.locateMonster(targets[0])[0]
     async function moveLoop() {
