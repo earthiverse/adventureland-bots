@@ -129,10 +129,11 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
                 await bot.stomp()
 
                 // Equip fireblades if we have two
-                if (bot.slots.mainhand?.name == "basher" && bot.countItem("fireblade") >= 2) {
+                if ((!bot.slots.mainhand || bot.slots.mainhand.name == "basher") && bot.countItem("fireblade") >= 2) {
                     const promises: Promise<unknown>[] = []
-                    if (bot.hasItem("fireblade")) promises.push(bot.equip(bot.locateItem("fireblade"), "mainhand"))
-                    if (bot.hasItem("fireblade")) promises.push(bot.equip(bot.locateItem("fireblade"), "offhand"))
+                    const fireblades = bot.locateItems("fireblade")
+                    if (bot.hasItem("fireblade")) promises.push(bot.equip(fireblades[0], "mainhand"))
+                    if (bot.hasItem("fireblade")) promises.push(bot.equip(fireblades[1], "offhand"))
                     await Promise.all(promises)
                 }
 
