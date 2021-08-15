@@ -68,9 +68,13 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
             }
 
             if (bot.canUse("attack")) {
-                for (const [, entity] of bot.entities) {
+                for (const entity of bot.getEntities({
+                    couldGiveCredit: true,
+                    typeList: targets,
+                    willDieToProjectiles: false,
+                    withinRange: bot.range
+                })) {
                     if (!entity) continue // Entity died?
-                    if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
                     if (!entity.s.stunned || entity.s.stunned.ms < ((LOOP_MS + Math.max(...bot.pings)) * 4)) continue // Enemy is not stunned, or is about to be free, don't attack!
 
                     await bot.basicAttack(entity.id)
