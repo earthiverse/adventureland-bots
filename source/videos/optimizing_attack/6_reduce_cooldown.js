@@ -29,7 +29,7 @@ async function attackLoop() {
             set_message("Attacking")
             await attack(nearest)
             /** NOTE: We're now reducing the cooldown based on the ping */
-            reduce_cooldown("attack", Math.min(...parent.pings))
+            reduce_cooldown("attack", Math.min(...pings2))
         }
     } catch (e) {
         console.error(e)

@@ -31,8 +31,8 @@ async function attackLoop() {
 
         if (can_attack(nearest)) {
             set_message("Attacking")
-            const minPing = Math.min(...parent.pings)
-            const maxPing = Math.max(...parent.pings)
+            const minPing = Math.min(pings2)
+            const maxPing = Math.max(pings2)
             const pingVariance = maxPing - minPing
             for (let i = 1; i < NUM_ATTACKS; i++) {
                 if (i == NUM_ATTACKS - 1) {
@@ -42,11 +42,11 @@ async function attackLoop() {
                         reduce_cooldown("attack", maxPing) // We're reducing by the max ping now, because we're sending multiple attacks
                     }, i * (pingVariance / NUM_ATTACKS))
                 } else {
-                    setTimeout(() => { attack(nearest).catch(() => { /** Ignore Errors */ }) }, i * (pingVariance / NUM_ATTACKS))
+                    setTimeout(() => { parent.socket.emit("attack", { id: nearest.id }) }, i * (pingVariance / NUM_ATTACKS))
                 }
             }
-            await attack(nearest).catch(() => { /** Ignore Errors */ })
-            parent.skill_timeout("attack", maxPing) // Set the timeout to maxPing. Our calls to attack() will set the actual timeout.
+            parent.socket.emit("attack", { id: nearest.id })
+            parent.skill_timeout("attack", 1000 / character.frequency) // Set the timeout to the theoretical maximum. Our calls to attack() will set the actual timeout.
         }
     } catch (e) {
         console.error(e)

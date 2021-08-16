@@ -7,6 +7,14 @@ function ms_to_next_skill(skill) {
     return parent.next_skill[skill].getTime() - Date.now()
 }
 
+/** We are going to track our own pings, because there's some problems with the built-in parent.pings. */
+const MAX_PINGS = 10
+var pings2 = [character.ping]
+parent.socket.on("pong", (ms) => {
+    pings2.unshift(ms) // Add new ping
+    pings2.splice(MAX_PINGS) // Delete older pings
+})
+
 async function moveLoop() {
     try {
         let nearest = get_nearest_monster()
@@ -46,11 +54,11 @@ async function regenLoop() {
         if (mp_ratio < hp_ratio && can_use("regen_mp")) {
             // We have less MP than HP, so let's regen some MP.
             await use_skill("regen_mp")
-            reduce_cooldown("regen_mp", Math.min(...parent.pings))
+            reduce_cooldown("regen_mp", Math.min(...pings2))
         } else if (can_use("regen_hp")) {
             // We have less HP than MP, so let's regen some HP.
             await use_skill("regen_hp")
-            reduce_cooldown("regen_hp", Math.min(...parent.pings))
+            reduce_cooldown("regen_hp", Math.min(...pings2))
         }
     } catch (e) {
         console.error(e)
