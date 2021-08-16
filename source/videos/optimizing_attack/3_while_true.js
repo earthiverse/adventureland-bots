@@ -13,7 +13,7 @@ while (true) {
     numCalls += 1
     if (started == undefined) started = Date.now()
     if (Date.now() > started + TenMinutesInMs) {
-        show_json(`We killed ${numKilled} monsters.\nWe called this function ${numCalls} times.`)
+        show_json(`We killed ${numKilled} monsters. We called this function ${numCalls} times.`)
         started = Date.now()
         numKilled = 0
         numCalls = 0
