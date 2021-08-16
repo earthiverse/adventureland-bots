@@ -46,7 +46,7 @@ async function attackLoop() {
                 }
             }
             await attack(nearest).catch(() => { /** Ignore Errors */ })
-            parent.skill_timeout(maxPing) // Set the timeout to maxPing. Our calls to attack() will set the actual timeout.
+            parent.skill_timeout("attack", maxPing) // Set the timeout to maxPing. Our calls to attack() will set the actual timeout.
         }
     } catch (e) {
         console.error(e)
