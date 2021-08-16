@@ -1,4 +1,28 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-undef */
+
+function ms_to_next_skill(skill) {
+    next_skill = parent.next_skill[skill]
+    if (next_skill == undefined) return 0
+    return parent.next_skill[skill].getTime() - Date.now()
+}
+
+async function moveLoop() {
+    try {
+        let nearest = get_nearest_monster()
+        if (!is_in_range(nearest)) {
+            // Move closer
+            move(
+                character.x + (nearest.x - character.x) / 2,
+                character.y + (nearest.y - character.y) / 2
+            )
+        }
+    } catch (e) {
+        console.error(e)
+    }
+    setTimeout(async () => { moveLoop() }, 250)
+}
+moveLoop()
 
 async function lootLoop() {
     try {
@@ -31,6 +55,6 @@ async function regenLoop() {
     } catch (e) {
         console.error(e)
     }
-    setTimeout(async () => { regenLoop() }, Math.max(100, parent.next_skill["use_hp"].getTime() - Date.now()))
+    setTimeout(async () => { regenLoop() }, Math.max(100, ms_to_next_skill("use_hp")))
 }
 regenLoop()
