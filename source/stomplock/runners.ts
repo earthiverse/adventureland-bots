@@ -211,7 +211,8 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
                     const promises: Promise<unknown>[] = []
                     const fireblades = bot.locateItems("fireblade")
                     if (bot.hasItem("fireblade")) promises.push(bot.equip(fireblades[0], "mainhand"))
-                    if (bot.hasItem("fireblade")) promises.push(bot.equip(fireblades[1], "offhand"))
+                    if (bot.hasItem("mshield")) promises.push(bot.equip(bot.locateItem("mshield"), "offhand"))
+                    else if (!bot.slots.offhand && bot.hasItem("fireblade")) promises.push(bot.equip(fireblades[1], "offhand"))
                     await Promise.all(promises)
                 }
             }
