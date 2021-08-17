@@ -2,7 +2,7 @@ import AL from "alclient-mongo"
 import { startPontyLoop, LOOP_MS, startCompoundLoop, startHealLoop, startLootLoop, startScareLoop, startSellLoop, startUpgradeLoop, startExchangeLoop, ITEMS_TO_SELL, startTrackerLoop } from "../base/general.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
 import { stompPartyLeader } from "../base/party.js"
-import { identifier, region, startSellSticksToMerchantsLoop, startShared } from "./runners.js"
+import { identifier, region, startLeader, startSellSticksToMerchantsLoop, startShared } from "./runners.js"
 
 /** Config */
 const leaderName = stompPartyLeader
@@ -139,8 +139,8 @@ async function run() {
             try {
                 if (leader) await leader.disconnect()
                 leader = await AL.Game.startWarrior(name, region, identifier)
+                startLeader(leader)
                 startShared(leader, merchantName)
-                startTrackerLoop(leader)
                 leader.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)

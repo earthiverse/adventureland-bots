@@ -1,5 +1,5 @@
 import AL from "alclient-mongo"
-import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_SELL, goToNearestWalkableToMonster } from "../base/general.js"
+import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_SELL, goToNearestWalkableToMonster, startTrackerLoop } from "../base/general.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { stompPartyLeader, stompPartyMembers } from "../base/party.js"
@@ -38,6 +38,69 @@ export async function startSellSticksToMerchantsLoop(bot: AL.Character): Promise
         setTimeout(async () => { sellToMerchants() }, 1000)
     }
     sellToMerchants()
+}
+
+export async function startLeader(bot: AL.Warrior): Promise<void> {
+    startTrackerLoop(bot)
+
+    async function tauntLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            if (bot.canUse("attack")) {
+                for (const entity of bot.getEntities({
+                    couldGiveCredit: true,
+                    typeList: targets,
+                    willDieToProjectiles: false,
+                    withinRange: bot.range
+                })) {
+                    if (!entity) continue // Entity died?
+                    if (entity.target == bot.name) continue // Already targeting us
+                    if (!entity.s.stunned || entity.s.stunned.ms < ((LOOP_MS + Math.max(...bot.pings)) * 4)) continue // Enemy is not stunned, or is about to be free, don't taunt!
+
+                    await bot.taunt(entity.id)
+                    break
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        setTimeout(async () => { tauntLoop() }, Math.max(LOOP_MS, bot.getCooldown("taunt")))
+    }
+    tauntLoop()
+
+    async function equipLuckStuffLoop() {
+        try {
+            const promises: Promise<unknown>[] = []
+
+            // TODO: Improve so we have other stuff equipped until we're close to killing our target
+
+            // Wanderer's Set (+16% luck)
+            if (bot.hasItem("wcap")) promises.push(bot.equip(bot.locateItem("wcap"), "helmet"))
+            if (bot.hasItem("wattire")) promises.push(bot.equip(bot.locateItem("wattire"), "chest"))
+            if (bot.hasItem("wbreeches")) promises.push(bot.equip(bot.locateItem("wbreeches"), "pants"))
+            if (bot.hasItem("wshoes")) promises.push(bot.equip(bot.locateItem("wshoes"), "shoes"))
+            if (bot.hasItem("wgloves")) promises.push(bot.equip(bot.locateItem("wgloves"), "gloves"))
+
+            // Rabbit's Foot (+10% luck)
+            if (bot.hasItem("rabbitsfoot")) promises.push(bot.equip(bot.locateItem("rabbitsfoot"), "orb"))
+
+            // Enchanted Earring (+2% luck)
+            if (bot.hasItem("dexearringx")) {
+                if (bot.slots.earring1?.name == "dexearringx") promises.push(bot.equip(bot.locateItem("dexearringx"), "earring2"))
+                else promises.push(bot.equip(bot.locateItem("dexearringx"), "earring1"))
+            }
+
+            // Shield M (+15% luck)
+            if (bot.hasItem("mshield")) promises.push(bot.equip(bot.locateItem("mshield"), "offhand"))
+
+            await Promise.all(promises)
+        } catch (e) {
+            console.error(e)
+        }
+        setTimeout(async () => { tauntLoop() }, Math.max(LOOP_MS, 500))
+    }
+    equipLuckStuffLoop()
 }
 
 export async function startShared(bot: AL.Warrior, merchantName: string): Promise<void> {

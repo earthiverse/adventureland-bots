@@ -10,6 +10,7 @@ character.on("target_hit", (data) => { if (data.kill) numKilled += 1 })
 /** NOTE: This is a bad idea, and eslint tells us that, but we're going to ignore the warnings */
 // eslint-disable-next-line no-constant-condition
 while (true) {
+    /** NOTE: We added a try/catch, so the loop continues to run */
     try {
         numCalls += 1
         if (started == undefined) started = Date.now()
