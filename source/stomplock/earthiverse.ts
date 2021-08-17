@@ -20,7 +20,7 @@ async function startMerchant(bot: AL.Merchant, friends: AL.Character[], holdPosi
     startHealLoop(bot)
     startMluckLoop(bot)
     startPontyLoop(bot)
-    startUpgradeLoop(bot, { ... ITEMS_TO_SELL, "stick": 100 })
+    startUpgradeLoop(bot, { ... ITEMS_TO_SELL })
     startCompoundLoop(bot)
     startExchangeLoop(bot)
     startLootLoop(bot)
