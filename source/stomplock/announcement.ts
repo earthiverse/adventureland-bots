@@ -99,7 +99,7 @@ async function run() {
             try {
                 if (merchant) await merchant.disconnect()
                 merchant = await AL.Game.startMerchant(name, region, identifier)
-                startMerchant(merchant, [follower1, follower2, follower3], { map: "main", x: -250, y: -100 })
+                startMerchant(merchant, [follower1, follower2, follower3], { map: "level2e", x: 600, y: 100 })
                 merchant.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -116,10 +116,6 @@ async function run() {
         }
         loopBot()
     }
-    if (identifier == "PVP") {
-        startMerchantLoop(merchantName, "US", "II").catch(() => { /* ignore errors */ })
-    } else {
-        startMerchantLoop(merchantName, region, identifier).catch(() => { /* ignore errors */ })
-    }
+    startMerchantLoop(merchantName, region, identifier).catch(() => { /* ignore errors */ })
 }
 run()

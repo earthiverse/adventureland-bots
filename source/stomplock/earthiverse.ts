@@ -8,7 +8,7 @@ import { identifier, region, startLeader, startSellSticksToMerchantsLoop, startS
 const leaderName = stompPartyLeader
 const follower1Name = "earthWar2"
 const follower2Name = "earthWar3"
-const merchantName = "earthMer"
+const merchantName = "earthMer2"
 
 /** Characters */
 let leader: AL.Warrior
@@ -125,7 +125,8 @@ async function startMerchant(bot: AL.Merchant, friends: AL.Character[], holdPosi
 
         bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
     }
-    moveLoop()
+    if (identifier !== "PVP") moveLoop()
+    else await bot.smartMove(holdPosition)
 }
 
 async function run() {
@@ -215,7 +216,7 @@ async function run() {
             try {
                 if (merchant) await merchant.disconnect()
                 merchant = await AL.Game.startMerchant(name, region, identifier)
-                startMerchant(merchant, [leader, follower1, follower2], { map: "main", x: -210, y: -100 })
+                startMerchant(merchant, [leader, follower1, follower2], { map: "level2e", x: 600, y: 125 })
                 merchant.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -232,10 +233,6 @@ async function run() {
         }
         loopBot()
     }
-    if (identifier == "PVP") {
-        startMerchantLoop(merchantName, "US", "II").catch(() => { /* ignore errors */ })
-    } else {
-        startMerchantLoop(merchantName, region, identifier).catch(() => { /* ignore errors */ })
-    }
+    startMerchantLoop(merchantName, region, identifier).catch(() => { /* ignore errors */ })
 }
 run()

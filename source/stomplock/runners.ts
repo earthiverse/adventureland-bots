@@ -364,5 +364,6 @@ export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], h
 
         bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
     }
-    moveLoop()
+    if (identifier !== "PVP") moveLoop()
+    else await bot.smartMove(holdPosition)
 }
