@@ -7,8 +7,9 @@ function ms_to_next_skill(skill) {
     return parent.next_skill[skill].getTime() - Date.now()
 }
 
-/** We are going to track our own pings, because there's some problems with the built-in parent.pings. */
-const MAX_PINGS = 10
+/** We are going to track our own pings, because there's some problems with the built-in parent.pings
+ *  when you send a lot of attacks at the same time. */
+const MAX_PINGS = 50
 var pings2 = [character.ping]
 parent.socket.on("pong", (ms) => {
     pings2.unshift(ms) // Add new ping

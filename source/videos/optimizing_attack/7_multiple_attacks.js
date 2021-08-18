@@ -9,7 +9,8 @@ let numCalls = 0
 character.on("target_hit", (data) => { if (data.kill) numKilled += 1 })
 
 /** Code to control multiple attacks */
-const NUM_ATTACKS = 5
+const NUM_ATTACKS = 10
+const ADDITIONAL_PING_PADDING_MS = 2
 
 async function attackLoop() {
     try {
@@ -31,18 +32,19 @@ async function attackLoop() {
 
         if (can_attack(nearest)) {
             set_message("Attacking")
-            const minPing = Math.min(pings2)
-            const maxPing = Math.max(pings2)
+            const minPing = Math.min(pings2) + ADDITIONAL_PING_PADDING_MS // NOTE: pings2 is from base.js
+            const maxPing = Math.max(pings2) - ADDITIONAL_PING_PADDING_MS
             const pingVariance = maxPing - minPing
-            for (let i = 1; i < NUM_ATTACKS; i++) {
-                if (i == NUM_ATTACKS - 1) {
+            const numLoops = Math.min(NUM_ATTACKS, pingVariance) // If our ping is really really low, we might not have to send 10 attacks.
+            for (let i = 1; i < numLoops; i++) {
+                if (i == numLoops - 1) {
                     // It's our last attack, let's reduce_cooldown on this one
                     setTimeout(async () => {
                         await attack(nearest).catch(() => { /** Ignore Errors */ })
                         reduce_cooldown("attack", maxPing) // We're reducing by the max ping now, because we're sending multiple attacks
-                    }, i * (pingVariance / NUM_ATTACKS))
+                    }, i * (pingVariance / numLoops))
                 } else {
-                    setTimeout(() => { parent.socket.emit("attack", { id: nearest.id }) }, i * (pingVariance / NUM_ATTACKS))
+                    setTimeout(() => { parent.socket.emit("attack", { id: nearest.id }) }, i * (pingVariance / numLoops))
                 }
             }
             parent.socket.emit("attack", { id: nearest.id })
@@ -51,6 +53,6 @@ async function attackLoop() {
     } catch (e) {
         console.error(e)
     }
-    setTimeout(async () => { attackLoop() }, Math.max(1, ms_to_next_skill("attack"))) // ms_to_next_skill is from base.js
+    setTimeout(async () => { attackLoop() }, Math.max(1, ms_to_next_skill("attack")))
 }
 attackLoop()
