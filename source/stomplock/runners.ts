@@ -5,7 +5,7 @@ import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { stompPartyLeader, stompPartyMembers } from "../base/party.js"
 
 export const region: AL.ServerRegion = "US"
-export const identifier: AL.ServerIdentifier = "II"
+export const identifier: AL.ServerIdentifier = "PVP"
 
 const targets: AL.MonsterName[] = ["pinkgoblin"]
 const LOOP_MS = 10
