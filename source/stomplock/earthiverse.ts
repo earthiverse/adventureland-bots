@@ -232,7 +232,9 @@ async function run() {
         }
         loopBot()
     }
-    if (identifier !== "PVP") {
+    if (identifier == "PVP") {
+        startMerchantLoop(merchantName, "US", "II").catch(() => { /* ignore errors */ })
+    } else {
         startMerchantLoop(merchantName, region, identifier).catch(() => { /* ignore errors */ })
     }
 }
