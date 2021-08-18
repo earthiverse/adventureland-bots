@@ -156,27 +156,66 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            if (bot.isScared() && bot.canUse("scare")) {
-                // Scare, because we are scared
-                await bot.scare()
-            } else if (bot.targets > 0 && bot.canUse("scare")) {
-                for (const [, entity] of bot.entities) {
-                    if (!entity) continue // Entity died?
-                    if (!entity.target || entity.target != bot.id) continue // Not targeting us
-                    if (entity.s.stunned && entity.s.stunned.ms > ((LOOP_MS + Math.min(...bot.pings)) * 4)) continue // Enemy is still stunned
+            let incomingDamage = 0
+            let stunned = true
+            for (const [, entity] of bot.entities) {
+                if (entity.target !== bot.id) continue
+                if (!entity.s.stunned || entity.s.stunned.ms <= ((LOOP_MS + Math.min(...bot.pings)) * 4)) stunned = false
+                incomingDamage += entity.calculateDamageRange(bot)[1]
+            }
 
-                    // Scare, because it is, or will soon be, no longer stunned.
-                    await bot.scare()
-                    break
+            if (bot.canUse("scare", { ignoreEquipped: true }) && (
+                bot.isScared() // We are scared
+                || !stunned // Target is not stunned
+                || (bot.s.burned && bot.s.burned.intensity > bot.max_hp / 5) // We are burning pretty badly
+                || (bot.targets > 0 && bot.c.town) // We are teleporting
+                || (bot.targets > 0 && bot.hp < bot.max_hp * 0.25) // We are low on HP
+                || (incomingDamage > bot.hp) // We could literally die with the next attack
+            )) {
+                // Equip the jacko if we need to
+                let inventoryPos: number
+                if (!bot.canUse("scare") && bot.hasItem("jacko")) {
+                    inventoryPos = bot.locateItem("jacko")
+                    bot.equip(inventoryPos)
                 }
+
+                // Scare, because we are scared
+                bot.scare()
+
+                // Re-equip our orb
+                if (inventoryPos !== undefined) bot.equip(inventoryPos)
             }
         } catch (e) {
             console.error(e)
         }
 
-        setTimeout(async () => { scareLoop() }, Math.max(LOOP_MS, bot.getCooldown("scare")))
+        bot.timeouts.set("scareloop", setTimeout(async () => { scareLoop() }, Math.max(250, bot.getCooldown("scare"))))
     }
+
+    // If we have too many targets, we can't go through doors.
+    bot.socket.on("game_response", (data: AL.GameResponseData) => {
+        if (typeof data == "string") {
+            if (data == "cant_escape") {
+                if (bot.isScared() || bot.targets >= 5) {
+                    // Equip the jacko if we need to
+                    let inventoryPos: number
+                    if (!bot.canUse("scare") && bot.hasItem("jacko")) {
+                        inventoryPos = bot.locateItem("jacko")
+                        bot.equip(inventoryPos)
+                    }
+
+                    // Scare, because we are scared
+                    bot.scare()
+
+                    // Re-equip our orb
+                    if (inventoryPos !== undefined) bot.equip(inventoryPos)
+                }
+            }
+        }
+    })
+
     scareLoop()
+
 
     function getNextStunTime() {
         const now = Date.now()
