@@ -10,7 +10,7 @@ const mage1Name = "facilitating"
 const mage2Name = "gratuitously"
 const mage3Name = "hypothesized"
 const region: AL.ServerRegion = "US"
-const identifier: AL.ServerIdentifier = "I"
+const identifier: AL.ServerIdentifier = "II"
 const targets: AL.MonsterName[] = ["cutebee", "bee"]
 const defaultLocation: AL.IPosition = mainBeesNearTunnel
 

@@ -4,8 +4,8 @@ import { mainBeesNearTunnel } from "../base/locations.js"
 import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
 
 /** Config */
-const rogue1Name = "enlightening"
-const region: AL.ServerRegion = "EU"
+const rogue1Name = "rule34"
+const region: AL.ServerRegion = "ASIA"
 const identifier: AL.ServerIdentifier = "I"
 const targets: AL.MonsterName[] = ["cutebee", "bee"]
 const defaultLocation: AL.IPosition = mainBeesNearTunnel
@@ -27,7 +27,7 @@ async function startRogue(bot: AL.Rogue, positionOffset: { x: number, y: number 
             console.error(e)
         }
 
-        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, Math.min(bot.getCooldown("attack"), bot.getCooldown("quickstab"), bot.getCooldown("mentalburst")))))
+        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, Math.min(bot.getCooldown("attack"), bot.getCooldown("quickpunch"), bot.getCooldown("quickstab")))))
     }
     attackLoop()
 
