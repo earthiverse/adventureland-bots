@@ -1,7 +1,6 @@
 /* eslint-disable no-undef */
-load_code("base") // Performs the healing and looting for us
+load_code("base")
 
-/** Code for showing statistics every 10 minutes */
 const TenMinutesInMs = 10 * 60 * 1000
 let started
 let numKilled = 0

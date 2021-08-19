@@ -2,9 +2,10 @@
 /* eslint-disable no-undef */
 
 function ms_to_next_skill(skill) {
-    next_skill = parent.next_skill[skill]
+    const next_skill = parent.next_skill[skill]
     if (next_skill == undefined) return 0
-    return parent.next_skill[skill].getTime() - Date.now()
+    const ms = parent.next_skill[skill].getTime() - Date.now()
+    return ms < 0 ? 0 : ms
 }
 
 /** We are going to track our own pings, because there's some problems with the built-in parent.pings
