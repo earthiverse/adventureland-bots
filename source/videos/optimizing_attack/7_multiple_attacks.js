@@ -9,7 +9,7 @@ let numCalls = 0
 character.on("target_hit", (data) => { if (data.kill) numKilled += 1 })
 
 /** Code to control multiple attacks */
-const NUM_ATTACKS = 10
+const NUM_ATTACKS = 5
 const ADDITIONAL_PING_PADDING_MS = 2
 
 async function attackLoop() {
@@ -35,7 +35,7 @@ async function attackLoop() {
             const minPing = Math.min(pings2) - ADDITIONAL_PING_PADDING_MS // NOTE: pings2 is from base.js
             const maxPing = Math.max(pings2) + ADDITIONAL_PING_PADDING_MS
             const pingVariance = maxPing - minPing
-            const numLoops = Math.min(NUM_ATTACKS, pingVariance) // If our ping is really really low, we might not have to send 10 attacks.
+            const numLoops = Math.min(NUM_ATTACKS, pingVariance) // If our ping is really really low, we might not have to send all of the attacks.
             for (let i = 1; i < numLoops; i++) {
                 if (i == numLoops - 1) {
                     // It's our last attack, let's reduce_cooldown on this one
