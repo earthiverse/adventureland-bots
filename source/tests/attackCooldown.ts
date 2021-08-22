@@ -7,7 +7,7 @@ async function run() {
     await AL.Pathfinder.prepare(AL.Game.G)
 
     /** 1: Login */
-    const bot = await AL.Game.startRanger("attacking", "ASIA", "I")
+    const bot = await AL.Game.startRanger("attacking", "US", "II")
 
     /** 2: Move to goos */
     await bot.smartMove("goo")
