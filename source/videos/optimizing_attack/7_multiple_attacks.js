@@ -1,7 +1,6 @@
 /* eslint-disable no-undef */
-load_code("base") // Performs the healing and looting for us
+load_code("base")
 
-/** Code for showing statistics every 10 minutes */
 const TenMinutesInMs = 10 * 60 * 1000
 let started
 let numKilled = 0
@@ -9,16 +8,21 @@ let numCalls = 0
 character.on("target_hit", (data) => { if (data.kill) numKilled += 1 })
 
 /** Code to control multiple attacks */
-const NUM_ATTACKS = 5
-const ADDITIONAL_PING_PADDING_MS = 2
+const NUM_ATTACKS = 9
 
 async function attackLoop() {
     try {
-        /** Code for showing statistics every 10 minutes */
         numCalls += 1
         if (started == undefined) started = Date.now()
         if (Date.now() > started + TenMinutesInMs) {
-            show_json(`We killed ${numKilled} monsters. We called this function ${numCalls} times.`)
+            show_json({
+                script: "multiple_attacks",
+                numKilled: numKilled,
+                numCalls: numCalls,
+                pings: pings2,
+                level: character.level,
+                server: server
+            })
             started = Date.now()
             numKilled = 0
             numCalls = 0
@@ -32,23 +36,26 @@ async function attackLoop() {
 
         if (can_attack(nearest)) {
             set_message("Attacking")
-            const minPing = Math.min(pings2) - ADDITIONAL_PING_PADDING_MS // NOTE: pings2 is from base.js
-            const maxPing = Math.max(pings2) + ADDITIONAL_PING_PADDING_MS
-            const pingVariance = maxPing - minPing
-            const numLoops = Math.min(NUM_ATTACKS, pingVariance) // If our ping is really really low, we might not have to send all of the attacks.
-            for (let i = 1; i < numLoops; i++) {
-                if (i == numLoops - 1) {
-                    // It's our last attack, let's reduce_cooldown on this one
-                    setTimeout(async () => {
-                        await attack(nearest).catch(() => { /** Ignore Errors */ })
-                        reduce_cooldown("attack", maxPing) // We're reducing by the max ping now, because we're sending multiple attacks
-                    }, i * (pingVariance / numLoops))
-                } else {
-                    setTimeout(() => { parent.socket.emit("attack", { id: nearest.id }) }, i * (pingVariance / numLoops))
+            let numLoops = NUM_ATTACKS
+            /** NOTE: We create an interval that sends 1 attack per ms for the number of attacks. */
+            /** NOTE: The interval running every 1ms isn't guaranteed.  */
+            const interval = setInterval(async () => {
+                try {
+                    if (numLoops <= 0) {
+                        clearInterval(interval)
+                        return
+                    } else {
+                        numLoops -= 1
+                    }
+                    await attack(nearest)
+                    reduce_cooldown("attack", Math.min(...pings2) + Math.floor(NUM_ATTACKS / 2))
+                } catch (e) {
+                    console.error(e)
                 }
-            }
-            parent.socket.emit("attack", { id: nearest.id })
-            parent.skill_timeout("attack", (1000 / character.frequency) - maxPing) // Set the timeout to the theoretical maximum. Our calls to attack() will set the actual timeout.
+            }, 1)
+
+            await attack(nearest)
+            reduce_cooldown("attack", Math.min(...pings2) + Math.floor(NUM_ATTACKS / 2))
         }
     } catch (e) {
         console.error(e)
