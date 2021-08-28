@@ -1,4 +1,4 @@
-import AL from "alclient-mongo"
+import AL from "alclient"
 import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, goToNearestWalkableToMonster, ITEMS_TO_SELL, startPartyLoop } from "../base/general.js"
 import { mainGoos } from "../base/locations.js"
 import { partyLeader } from "../base/party.js"

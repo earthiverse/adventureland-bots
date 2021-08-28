@@ -1,4 +1,4 @@
-import AL from "alclient-mongo"
+import AL from "alclient"
 
 AL.Game.loginJSONFile("../../credentials.json").then(async () => {
     console.log("Finding players with active MHs...")

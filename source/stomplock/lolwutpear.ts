@@ -1,4 +1,4 @@
-import AL from "alclient-mongo"
+import AL from "alclient"
 import { identifier, region, startMerchant, startShared } from "./runners.js"
 
 /** Config */

@@ -1,4 +1,4 @@
-import AL from "alclient-mongo"
+import AL from "alclient"
 import { startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { Information, Strategy } from "../definitions/bot.js"

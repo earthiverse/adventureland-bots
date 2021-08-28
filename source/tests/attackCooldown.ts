@@ -1,4 +1,4 @@
-import AL from "alclient-mongo"
+import AL from "alclient"
 import { startHealLoop, startLootLoop } from "../base/general.js"
 
 async function run() {

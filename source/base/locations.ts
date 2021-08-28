@@ -1,4 +1,4 @@
-import AL from "alclient-mongo"
+import AL from "alclient"
 
 // Main
 export const mainBeesNearTunnel: AL.IPosition = { map: "main", x: 152, y: 1487 }

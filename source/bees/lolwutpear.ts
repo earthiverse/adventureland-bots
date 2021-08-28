@@ -1,4 +1,4 @@
-import AL from "alclient-mongo"
+import AL from "alclient"
 import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL } from "../base/general.js"
 import { mainBeesNearTunnel } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"

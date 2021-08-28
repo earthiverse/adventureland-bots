@@ -1,4 +1,4 @@
-import AL, { Tools } from "alclient-mongo"
+import AL from "alclient"
 import { goToAggroMonster, goToNearestWalkableToMonster, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, sleep, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesMerchant } from "../base/merchant.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
@@ -1021,7 +1021,7 @@ function prepareWarrior(bot: AL.Warrior) {
                     let shouldAgitate = true
                     const toAgitate = []
                     for (const [, entity] of bot.entities) {
-                        if (Tools.distance(bot, entity) > bot.G.skills.agitate.range) continue // Too far to agitate
+                        if (AL.Tools.distance(bot, entity) > bot.G.skills.agitate.range) continue // Too far to agitate
                         if (entity.target == bot.name) continue // Already targeting us
                         if (entity.type !== "mole" || entity.level > 3) {
                         // Only agitate low level moles

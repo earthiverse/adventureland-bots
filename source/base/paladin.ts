@@ -1,4 +1,4 @@
-import AL from "alclient-mongo"
+import AL from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 
 export async function attackTheseTypesPaladin(bot: AL.Paladin, types: AL.MonsterName[], friends: AL.Character[] = [], options: {

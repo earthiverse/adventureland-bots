@@ -1,4 +1,4 @@
-import AL from "alclient-mongo"
+import AL from "alclient"
 import { startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToPoitonSellerIfLow, goToBankIfFull } from "../base/general.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 

@@ -1,4 +1,4 @@
-import AL from "alclient-mongo"
+import AL from "alclient"
 
 export const SERVER_HOP_SERVERS: [AL.ServerRegion, AL.ServerIdentifier][] = [
     ["ASIA", "I"],

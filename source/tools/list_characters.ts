@@ -1,4 +1,4 @@
-import AL from "alclient-mongo"
+import AL from "alclient"
 import { Table } from "console-table-printer"
 import { RowOptionsRaw } from "console-table-printer/dist/src/utils/table-helpers"
 

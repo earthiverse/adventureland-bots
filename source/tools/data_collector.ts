@@ -1,5 +1,5 @@
 import axios from "axios"
-import AL from "alclient-mongo"
+import AL from "alclient"
 import { getTargetServerFromDate, SERVER_HOP_SERVERS } from "../base/serverhop.js"
 
 const servers = SERVER_HOP_SERVERS

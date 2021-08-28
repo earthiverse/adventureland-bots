@@ -1,4 +1,4 @@
-import AL from "alclient-mongo"
+import AL from "alclient"
 import { CryptData } from "../definitions/bot"
 
 export const cryptPath: AL.IPosition[] = [

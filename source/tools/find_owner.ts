@@ -1,4 +1,4 @@
-import AL from "alclient-mongo"
+import AL from "alclient"
 import { sleep } from "../base/general.js"
 
 AL.Game.loginJSONFile("../../credentials.json").then(async () => {

@@ -1,4 +1,4 @@
-import AL, { Tools } from "alclient-mongo"
+import AL from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { LOOP_MS } from "./general.js"
 
@@ -144,7 +144,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
             bot.mp -= bot.G.skills.agitate.mp
         } else if (bot.canUse("taunt") && !(options.maximumTargets && bot.targets + 1 > options.maximumTargets)) {
             for (const target of agitateTargets) {
-                if (Tools.distance(bot, target) > bot.G.skills.taunt.range) continue // Too far
+                if (AL.Tools.distance(bot, target) > bot.G.skills.taunt.range) continue // Too far
                 bot.taunt(target.id).catch((e) => { console.error(e) })
                 bot.mp -= bot.G.skills.taunt.mp
                 break

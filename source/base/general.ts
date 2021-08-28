@@ -1,4 +1,4 @@
-import ALM from "alclient-mongo"
+import AL from "alclient"
 import { ItemLevelInfo } from "../definitions/bot.js"
 
 export const LOOP_MS = 100
@@ -14,7 +14,7 @@ export const ANNOUNCEMENT_CHARACTERS = ["announcement", "battleworthy", "charmin
 export const KOUIN_CHARACTERS = ["bataxedude", "cclair", "fathergreen", "kakaka", "kekeke", "kouin", "kukuku", "mule0", "mule1", "mule2", "mule3", "mule5", "mule6", "mule7", "mule8", "mule9", "mule10", "piredude"]
 export const LOLWUTPEAR_CHARACTERS = ["fgsfds", "fsjal", "funny", "lolwutpear", "orlyowl", "shoopdawhoop", "ytmnd"]
 
-export const ITEMS_TO_HOLD: Set<ALM.ItemName> = new Set([
+export const ITEMS_TO_HOLD: Set<AL.ItemName> = new Set([
     // Things we keep on ourselves
     "computer", "tracker", "xptome",
     // Boosters
@@ -23,7 +23,7 @@ export const ITEMS_TO_HOLD: Set<ALM.ItemName> = new Set([
     "hpot0", "hpot1", "mpot0", "mpot1"
 ])
 
-export const ITEMS_TO_EXCHANGE: Set<ALM.ItemName> = new Set([
+export const ITEMS_TO_EXCHANGE: Set<AL.ItemName> = new Set([
     // General exchangables
     "5bucks", "gem0", "gem1",
     // Gem Fragments for t2 amulets
@@ -44,7 +44,7 @@ export const ITEMS_TO_EXCHANGE: Set<ALM.ItemName> = new Set([
     "armorbox", "bugbountybox", "gift0", "gift1", "mysterybox", "weaponbox", "xbox"
 ])
 
-export const ITEMS_TO_BUY: Set<ALM.ItemName> = new Set([
+export const ITEMS_TO_BUY: Set<AL.ItemName> = new Set([
     // Exchangeables
     ...ITEMS_TO_EXCHANGE,
     // Belts
@@ -108,7 +108,7 @@ export const ITEMS_TO_SELL: ItemLevelInfo = {
 
 // Sanity check
 for (const itemName in ITEMS_TO_SELL) {
-    if (ITEMS_TO_BUY.has(itemName as ALM.ItemName)) {
+    if (ITEMS_TO_BUY.has(itemName as AL.ItemName)) {
         console.warn(`Removing ${itemName} from ITEMS_TO_BUY because it's in ITEMS_TO_SELL.`)
         delete ITEMS_TO_SELL[itemName]
     }
@@ -118,7 +118,7 @@ export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
     "cyber": 1, "exoarm": 1, "fury": 1, "gstaff": 1, "starkillers": 1, "suckerpunch": 1, "t3bow": 1
 }
 
-export const REPLENISHABLES_TO_BUY: [ALM.ItemName, number][] = [
+export const REPLENISHABLES_TO_BUY: [AL.ItemName, number][] = [
     ["hpot1", 1000],
     ["mpot1", 1000],
     ["xptome", 1]
@@ -131,9 +131,9 @@ export const REPLENISHABLES_TO_BUY: [ALM.ItemName, number][] = [
  * @param bot
  * @returns
  */
-export async function getPriority1Entities(bot: ALM.Character): Promise<ALM.Entity[] | ALM.IEntity[]> {
+export async function getPriority1Entities(bot: AL.Character): Promise<AL.Entity[] | AL.IEntity[]> {
     // NOTE: This list is ordered higher -> lower priority
-    const coop: ALM.MonsterName[] = [
+    const coop: AL.MonsterName[] = [
         // Event-based
         "dragold", "grinch", "mrgreen", "mrpumpkin",
         // Year-round
@@ -146,7 +146,7 @@ export async function getPriority1Entities(bot: ALM.Character): Promise<ALM.Enti
         nearby.push(entity)
     }
     if (nearby.length > 0) return nearby
-    return await ALM.EntityModel.aggregate([
+    return await AL.EntityModel.aggregate([
         {
             $match: {
                 type: { $in: coop },
@@ -164,9 +164,9 @@ export async function getPriority1Entities(bot: ALM.Character): Promise<ALM.Enti
  * @param bot
  * @returns
  */
-export async function getPriority2Entities(bot: ALM.Character): Promise<ALM.Entity[] | ALM.IEntity[]> {
+export async function getPriority2Entities(bot: AL.Character): Promise<AL.Entity[] | AL.IEntity[]> {
     // NOTE: This list is ordered higher -> lower priority
-    const solo: ALM.MonsterName[] = [
+    const solo: AL.MonsterName[] = [
         "goldenbat",
         // Very Rare Monsters
         "tinyp", "cutebee",
@@ -182,7 +182,7 @@ export async function getPriority2Entities(bot: ALM.Character): Promise<ALM.Enti
     if (nearby.length > 0) return nearby
     let partyList = [bot.id]
     if (bot.party) partyList = bot.partyData.list
-    return await ALM.EntityModel.aggregate([
+    return await AL.EntityModel.aggregate([
         {
             $match: {
                 type: { $in: solo },
@@ -202,7 +202,7 @@ export async function getPriority2Entities(bot: ALM.Character): Promise<ALM.Enti
         { $sort: { "__order": 1 } }]).exec()
 }
 
-export async function getMonsterHuntTargets(bot: ALM.Character, friends: ALM.Character[]): Promise<(ALM.MonsterName)[]> {
+export async function getMonsterHuntTargets(bot: AL.Character, friends: AL.Character[]): Promise<(AL.MonsterName)[]> {
     if (!bot.party) {
         // We have no party, we're doing MHs solo
         if (bot.s.monsterhunt && bot.s.monsterhunt.c > 0) return [bot.s.monsterhunt.id] // We have an active MH
@@ -210,7 +210,7 @@ export async function getMonsterHuntTargets(bot: ALM.Character, friends: ALM.Cha
     }
 
     const data: {
-        id: ALM.MonsterName
+        id: AL.MonsterName
         ms: number
     }[] = []
 
@@ -240,7 +240,7 @@ export async function getMonsterHuntTargets(bot: ALM.Character, friends: ALM.Cha
     }
 
     if (lookupOthers) {
-        for (const player of await ALM.PlayerModel.aggregate([
+        for (const player of await AL.PlayerModel.aggregate([
             {
                 $match: {
                     $and: [
@@ -283,7 +283,7 @@ export async function getMonsterHuntTargets(bot: ALM.Character, friends: ALM.Cha
     data.sort((a, b) => {
         return a.ms - b.ms
     })
-    const targets: (ALM.MonsterName)[] = []
+    const targets: (AL.MonsterName)[] = []
     for (const datum of data) {
         targets.push(datum.id)
     }
@@ -291,23 +291,23 @@ export async function getMonsterHuntTargets(bot: ALM.Character, friends: ALM.Cha
     return targets
 }
 
-export async function goToAggroMonster(bot: ALM.Character, entity: ALM.Entity): Promise<unknown> {
+export async function goToAggroMonster(bot: AL.Character, entity: AL.Entity): Promise<unknown> {
     if (entity.target) return // It's already aggro'd
 
     if (entity.going_x !== undefined && entity.going_y !== undefined) {
-        const distanceToTravel = ALM.Tools.distance({ x: entity.x, y: entity.y }, { x: entity.going_x, y: entity.going_y })
+        const distanceToTravel = AL.Tools.distance({ x: entity.x, y: entity.y }, { x: entity.going_x, y: entity.going_y })
         const lead = 20 + (LOOP_MS / 1000) * entity.speed
         if (distanceToTravel >= lead) {
             const angle = Math.atan2(entity.going_y - entity.y, entity.going_x - entity.x)
             const destination = { map: entity.map, x: entity.x + Math.cos(angle) * lead, y: entity.y + Math.sin(angle) * lead }
-            if (ALM.Pathfinder.canWalkPath(bot, destination)) {
+            if (AL.Pathfinder.canWalkPath(bot, destination)) {
                 bot.move(destination.x, destination.y).catch(() => { /* Suppress errors */ })
             } else {
                 return bot.smartMove(destination)
             }
         } else {
-            const destination: ALM.IPosition = { map: entity.map, x: entity.going_x, y: entity.going_y }
-            if (ALM.Pathfinder.canWalkPath(bot, destination)) {
+            const destination: AL.IPosition = { map: entity.map, x: entity.going_x, y: entity.going_y }
+            if (AL.Pathfinder.canWalkPath(bot, destination)) {
                 bot.move(destination.x, destination.y).catch(() => { /* Suppress errors */ })
             } else {
                 return bot.smartMove(destination)
@@ -316,7 +316,7 @@ export async function goToAggroMonster(bot: ALM.Character, entity: ALM.Entity): 
     }
 }
 
-export async function goToBankIfFull(bot: ALM.Character, itemsToHold = ITEMS_TO_HOLD, goldToHold = GOLD_TO_HOLD): Promise<void> {
+export async function goToBankIfFull(bot: AL.Character, itemsToHold = ITEMS_TO_HOLD, goldToHold = GOLD_TO_HOLD): Promise<void> {
     if (!bot.isFull()) return // We aren't full
 
     await bot.smartMove("fancypots") // Move to potion seller to give the sell loop a chance to sell things
@@ -338,14 +338,14 @@ export async function goToBankIfFull(bot: ALM.Character, itemsToHold = ITEMS_TO_
     if (bot.gold > goldToHold) await bot.depositGold(bot.gold - goldToHold)
 }
 
-export async function goToPriestIfHurt(bot: ALM.Character, priest: ALM.Character): Promise<ALM.IPosition> {
+export async function goToPriestIfHurt(bot: AL.Character, priest: AL.Character): Promise<AL.IPosition> {
     if (bot.hp > bot.max_hp / 2) return // We still have over half our HP
     if (!priest) return // Priest is not available
 
     return bot.smartMove(priest, { getWithin: priest.range })
 }
 
-export async function goToSpecialMonster(bot: ALM.Character, type: ALM.MonsterName): Promise<unknown> {
+export async function goToSpecialMonster(bot: AL.Character, type: AL.MonsterName): Promise<unknown> {
     // Look for it nearby
     let nearby = bot.getNearestMonster(type)
     if (nearby) {
@@ -354,12 +354,12 @@ export async function goToSpecialMonster(bot: ALM.Character, type: ALM.MonsterNa
 
     // Look for it in the server data
     if (bot.S && bot.S[type] && bot.S[type].live) {
-        const destination = bot.S[type] as ALM.ServerInfoDataLive
-        if (ALM.Tools.distance(bot, destination) > bot.range) return bot.smartMove(destination, { getWithin: bot.range - 10 })
+        const destination = bot.S[type] as AL.ServerInfoDataLive
+        if (AL.Tools.distance(bot, destination) > bot.range) return bot.smartMove(destination, { getWithin: bot.range - 10 })
     }
 
     // Look for it in our database
-    const special = await ALM.EntityModel.findOne({ serverIdentifier: bot.server.name, serverRegion: bot.server.region, type: type }).lean().exec()
+    const special = await AL.EntityModel.findOne({ serverIdentifier: bot.server.name, serverRegion: bot.server.region, type: type }).lean().exec()
     if (special) {
         return bot.smartMove(special, { getWithin: bot.range - 10 })
     }
@@ -384,7 +384,7 @@ export async function goToSpecialMonster(bot: ALM.Character, type: ALM.MonsterNa
  * @param minMpPots
  * @returns
  */
-export async function goToPoitonSellerIfLow(bot: ALM.Character, minHpPots = 100, minMpPots = 100): Promise<void> {
+export async function goToPoitonSellerIfLow(bot: AL.Character, minHpPots = 100, minMpPots = 100): Promise<void> {
     if (bot.hasItem("computer")) return // Don't need to move if we have a computer
 
     const currentHpPots = bot.countItem("hpot1")
@@ -393,7 +393,7 @@ export async function goToPoitonSellerIfLow(bot: ALM.Character, minHpPots = 100,
     if (currentHpPots >= minHpPots && currentMpPots >= minMpPots) return // We don't need any more.
 
     // We're under the minimum, go buy potions
-    await bot.smartMove("fancypots", { getWithin: ALM.Constants.NPC_INTERACTION_DISTANCE / 2 })
+    await bot.smartMove("fancypots", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
     await sleep(1000)
 }
 
@@ -405,7 +405,7 @@ export async function goToPoitonSellerIfLow(bot: ALM.Character, minHpPots = 100,
  * @param itemsToSell
  * @returns
  */
-export async function goToNPCShopIfFull(bot: ALM.Character, itemsToSell = ITEMS_TO_SELL): Promise<void> {
+export async function goToNPCShopIfFull(bot: AL.Character, itemsToSell = ITEMS_TO_SELL): Promise<void> {
     if (!bot.isFull()) return // Not full
     if (bot.hasItem("computer")) return // We don't need to move if we have a computer
 
@@ -421,12 +421,12 @@ export async function goToNPCShopIfFull(bot: ALM.Character, itemsToSell = ITEMS_
     if (!hasSellableItem) return // We don't have anything to sell
 
     // TODO: Find the closest shop
-    await bot.smartMove("fancypots", { getWithin: ALM.Constants.NPC_INTERACTION_DISTANCE / 2 })
+    await bot.smartMove("fancypots", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
     await sleep(1000)
 }
 
-export async function goToNearestWalkableToMonster(bot: ALM.Character, types: ALM.MonsterName[], defaultPosition?: ALM.IPosition, getWithin = bot.range): Promise<unknown> {
-    let nearest: ALM.IPosition
+export async function goToNearestWalkableToMonster(bot: AL.Character, types: AL.MonsterName[], defaultPosition?: AL.IPosition, getWithin = bot.range): Promise<unknown> {
+    let nearest: AL.IPosition
     let distance = Number.MAX_VALUE
     for (const entity of bot.getEntities({
         canWalkTo: true,
@@ -435,7 +435,7 @@ export async function goToNearestWalkableToMonster(bot: ALM.Character, types: AL
         willBurnToDeath: false,
         willDieToProjectiles: false
     })) {
-        const d = ALM.Tools.distance(bot, entity)
+        const d = AL.Tools.distance(bot, entity)
         if (d < distance) {
             nearest = entity
             distance = d
@@ -522,7 +522,7 @@ export async function goToNearestWalkableToMonster(bot: ALM.Character, types: AL
             }
         }
 
-        if (ALM.Pathfinder.canWalkPath(bot, destination)) {
+        if (AL.Pathfinder.canWalkPath(bot, destination)) {
             bot.move(destination.x, destination.y).catch(() => { /* Suppress errors */ })
         } else {
             return bot.smartMove(destination)
@@ -530,8 +530,8 @@ export async function goToNearestWalkableToMonster(bot: ALM.Character, types: AL
     }
 }
 
-export function kiteInCircle(bot: ALM.Character, type: ALM.MonsterName, center: ALM.IPosition, radius = 125, angle = Math.PI / 2.5): Promise<ALM.IPosition> {
-    if (ALM.Pathfinder.canWalkPath(bot, center)) {
+export function kiteInCircle(bot: AL.Character, type: AL.MonsterName, center: AL.IPosition, radius = 125, angle = Math.PI / 2.5): Promise<AL.IPosition> {
+    if (AL.Pathfinder.canWalkPath(bot, center)) {
         const nearest = bot.getNearestMonster(type)?.monster
         if (nearest) {
             // There's a monster nearby
@@ -551,8 +551,8 @@ export function kiteInCircle(bot: ALM.Character, type: ALM.MonsterName, center: 
     }
 }
 
-export function moveInCircle(bot: ALM.Character, center: ALM.IPosition, radius = 125, angle = Math.PI / 2.5): Promise<ALM.IPosition> {
-    if (ALM.Pathfinder.canWalkPath(bot, center)) {
+export function moveInCircle(bot: AL.Character, center: AL.IPosition, radius = 125, angle = Math.PI / 2.5): Promise<AL.IPosition> {
+    if (AL.Pathfinder.canWalkPath(bot, center)) {
         const angleFromCenterToCurrent = Math.atan2(bot.y - center.y, bot.x - center.x)
         const endGoalAngle = angleFromCenterToCurrent + angle
         const endGoal = { x: center.x + radius * Math.cos(endGoalAngle), y: center.y + radius * Math.sin(endGoalAngle) }
@@ -568,8 +568,8 @@ export function sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-export function startAvoidStacking(bot: ALM.Character): void {
-    bot.socket.on("hit", async (data: ALM.HitData) => {
+export function startAvoidStacking(bot: AL.Character): void {
+    bot.socket.on("hit", async (data: AL.HitData) => {
         if (data.id !== bot.id) return // Not for us
         if (!data.stacked) return
         if (!data.stacked.includes(bot.id)) return // We're not the ones that are stacked
@@ -582,7 +582,7 @@ export function startAvoidStacking(bot: ALM.Character): void {
     })
 }
 
-export function startBuyLoop(bot: ALM.Character, itemsToBuy = ITEMS_TO_BUY, replenishablesToBuy = REPLENISHABLES_TO_BUY): void {
+export function startBuyLoop(bot: AL.Character, itemsToBuy = ITEMS_TO_BUY, replenishablesToBuy = REPLENISHABLES_TO_BUY): void {
     const pontyLocations = bot.locateNPC("secondhands")
     let lastPonty = 0
     async function buyLoop() {
@@ -599,7 +599,7 @@ export function startBuyLoop(bot: ALM.Character, itemsToBuy = ITEMS_TO_BUY, repl
             // Buy things from Ponty
             if (Date.now() - CHECK_PONTY_EVERY_MS > lastPonty) {
                 for (const ponty of pontyLocations) {
-                    if (ALM.Tools.distance(bot, ponty) > ALM.Constants.NPC_INTERACTION_DISTANCE) continue
+                    if (AL.Tools.distance(bot, ponty) > AL.Constants.NPC_INTERACTION_DISTANCE) continue
                     const pontyItems = await bot.getPontyItems()
                     lastPonty = Date.now()
                     for (const item of pontyItems) {
@@ -619,10 +619,10 @@ export function startBuyLoop(bot: ALM.Character, itemsToBuy = ITEMS_TO_BUY, repl
             // Buy things from other merchants
             for (const [, player] of bot.players) {
                 if (!player.stand) continue // Not selling anything
-                if (ALM.Tools.distance(bot, player) > ALM.Constants.NPC_INTERACTION_DISTANCE) continue // Too far away
+                if (AL.Tools.distance(bot, player) > AL.Constants.NPC_INTERACTION_DISTANCE) continue // Too far away
 
                 for (const s in player.slots) {
-                    const slot = s as ALM.TradeSlotType
+                    const slot = s as AL.TradeSlotType
                     const item = player.slots[slot]
                     if (!item) continue // Nothing in the slot
                     if (!item.rid) continue // Not a trade item
@@ -632,14 +632,14 @@ export function startBuyLoop(bot: ALM.Character, itemsToBuy = ITEMS_TO_BUY, repl
 
                     // Join new giveaways if we're a merchant
                     if (item.giveaway && bot.ctype == "merchant" && (!item.list || !item.list.includes(bot.id))) {
-                        await (bot as ALM.Merchant).joinGiveaway(slot, player.id, item.rid)
+                        await (bot as AL.Merchant).joinGiveaway(slot, player.id, item.rid)
                         continue
                     }
 
                     // Buy if we can resell to NPC for more money
                     const cost = bot.calculateItemCost(item)
                     if ((item.price < cost * 0.6) // Item is lower price than G, which means we could sell it to an NPC straight away and make a profit...
-                        || (itemsToBuy.has(item.name) && item.price <= cost * ALM.Constants.PONTY_MARKUP) // Item is the same, or lower price than Ponty would sell it for, and we want it.
+                        || (itemsToBuy.has(item.name) && item.price <= cost * AL.Constants.PONTY_MARKUP) // Item is the same, or lower price than Ponty would sell it for, and we want it.
                     ) {
                         await bot.buyFromMerchant(player.id, slot, item.rid, q)
                         continue
@@ -654,7 +654,7 @@ export function startBuyLoop(bot: ALM.Character, itemsToBuy = ITEMS_TO_BUY, repl
     buyLoop()
 }
 
-export function startBuyToUpgradeLoop(bot: ALM.Character, item: ALM.ItemName, quantity: number): void {
+export function startBuyToUpgradeLoop(bot: AL.Character, item: AL.ItemName, quantity: number): void {
     async function buyToUpgradeLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -670,7 +670,7 @@ export function startBuyToUpgradeLoop(bot: ALM.Character, item: ALM.ItemName, qu
     buyToUpgradeLoop()
 }
 
-export function startCompoundLoop(bot: ALM.Character, itemsToSell: ItemLevelInfo = ITEMS_TO_SELL): void {
+export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo = ITEMS_TO_SELL): void {
     async function compoundLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -688,7 +688,7 @@ export function startCompoundLoop(bot: ALM.Character, itemsToSell: ItemLevelInfo
 
             const duplicates = bot.locateDuplicateItems()
             for (const iN in duplicates) {
-                const itemName = iN as ALM.ItemName
+                const itemName = iN as AL.ItemName
                 const numDuplicates = duplicates[iN].length
 
                 // Check if there's enough to compound
@@ -716,7 +716,7 @@ export function startCompoundLoop(bot: ALM.Character, itemsToSell: ItemLevelInfo
             // At this point, 'duplicates' only contains arrays of 3 items.
             for (const iN in duplicates) {
                 // Check if item is compoundable, or if we want to compound it
-                const itemName = iN as ALM.ItemName
+                const itemName = iN as AL.ItemName
                 const gInfo = bot.G.items[itemName]
                 if (gInfo.compound == undefined) continue // Not compoundable
                 const level0Grade = gInfo.grades.lastIndexOf(0) + 1
@@ -727,7 +727,7 @@ export function startCompoundLoop(bot: ALM.Character, itemsToSell: ItemLevelInfo
 
                 // Figure out the scroll we need to compound
                 const grade = await bot.calculateItemGrade(itemInfo)
-                const cscrollName = `cscroll${grade}` as ALM.ItemName
+                const cscrollName = `cscroll${grade}` as AL.ItemName
                 let cscrollPos = bot.locateItem(cscrollName)
                 const primlingPos = bot.locateItem("offeringp")
                 try {
@@ -738,11 +738,11 @@ export function startCompoundLoop(bot: ALM.Character, itemsToSell: ItemLevelInfo
                         || ((level0Grade == 0 && itemInfo.level >= 3) || (level0Grade == 1 && itemInfo.level >= 2) || (level0Grade == 2 && itemInfo.level >= 1))) {
                         // We want to use a primling to compound these
                         if (primlingPos == undefined) continue // We don't have any primlings
-                        if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as ALM.Merchant).massProduction()
+                        if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as AL.Merchant).massProduction()
                         await bot.compound(itemPoss[0], itemPoss[1], itemPoss[2], cscrollPos, primlingPos)
                     } else {
                         // We don't want to use a primling to compound these
-                        if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as ALM.Merchant).massProduction()
+                        if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as AL.Merchant).massProduction()
                         await bot.compound(itemPoss[0], itemPoss[1], itemPoss[2], cscrollPos)
                     }
                 } catch (e) {
@@ -758,7 +758,7 @@ export function startCompoundLoop(bot: ALM.Character, itemsToSell: ItemLevelInfo
     compoundLoop()
 }
 
-export function startElixirLoop(bot: ALM.Character, elixir: ALM.ItemName): void {
+export function startElixirLoop(bot: AL.Character, elixir: AL.ItemName): void {
     async function elixirLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -777,7 +777,7 @@ export function startElixirLoop(bot: ALM.Character, elixir: ALM.ItemName): void 
     elixirLoop()
 }
 
-export function startEventLoop(bot: ALM.Character): void {
+export function startEventLoop(bot: AL.Character): void {
     const newYearTrees = bot.locateNPC("newyear_tree")
     async function eventLoop() {
         try {
@@ -787,7 +787,7 @@ export function startEventLoop(bot: ALM.Character): void {
             if (bot.S && bot.S.holidayseason && !bot.s.holidayspirit) {
                 // Get the holiday buff
                 for (const tree of newYearTrees) {
-                    if (ALM.Tools.distance(bot, tree) > ALM.Constants.NPC_INTERACTION_DISTANCE) continue
+                    if (AL.Tools.distance(bot, tree) > AL.Constants.NPC_INTERACTION_DISTANCE) continue
                     // TODO: Improve ALClient by making this a function
                     bot.socket.emit("interaction", { type: "newyear_tree" })
                 }
@@ -800,13 +800,13 @@ export function startEventLoop(bot: ALM.Character): void {
     eventLoop()
 }
 
-export function startExchangeLoop(bot: ALM.Character, itemsToExchange = ITEMS_TO_EXCHANGE): void {
+export function startExchangeLoop(bot: AL.Character, itemsToExchange = ITEMS_TO_EXCHANGE): void {
     async function exchangeLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.esize > 10 /** Only exchange if we have plenty of space */
-                && !(bot.G.maps[bot.map] as ALM.GMap).mount /** Don't exchange in the bank */) {
+                && !(bot.G.maps[bot.map] as AL.GMap).mount /** Don't exchange in the bank */) {
                 for (let i = 0; i < bot.items.length; i++) {
                     const item = bot.items[i]
                     if (!item) continue
@@ -825,7 +825,7 @@ export function startExchangeLoop(bot: ALM.Character, itemsToExchange = ITEMS_TO
     exchangeLoop()
 }
 
-export function startHealLoop(bot: ALM.Character): void {
+export function startHealLoop(bot: AL.Character): void {
     async function healLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -880,13 +880,13 @@ export function startHealLoop(bot: ALM.Character): void {
     healLoop()
 }
 
-export function startLootLoop(bot: ALM.Character): void {
+export function startLootLoop(bot: AL.Character): void {
     async function lootLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
             for (const [, chest] of bot.chests) {
-                if (ALM.Tools.distance(bot, chest) > 800) continue
+                if (AL.Tools.distance(bot, chest) > 800) continue
                 await bot.openChest(chest.id)
             }
         } catch (e) {
@@ -898,7 +898,7 @@ export function startLootLoop(bot: ALM.Character): void {
     lootLoop()
 }
 
-export function startPartyLoop(bot: ALM.Character, leader: string, partyMembers?: string[]): void {
+export function startPartyLoop(bot: AL.Character, leader: string, partyMembers?: string[]): void {
     if (bot.id == leader) {
         // Have the leader accept party requests
         bot.socket.on("request", async (data: { name: string }) => {
@@ -991,7 +991,7 @@ export function startPartyLoop(bot: ALM.Character, leader: string, partyMembers?
     partyLoop()
 }
 
-export function startPartyInviteLoop(bot: ALM.Character, player: string): void {
+export function startPartyInviteLoop(bot: AL.Character, player: string): void {
     async function partyInviteLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -1009,13 +1009,13 @@ export function startPartyInviteLoop(bot: ALM.Character, player: string): void {
     partyInviteLoop()
 }
 
-export function startPontyLoop(bot: ALM.Character, itemsToBuy = ITEMS_TO_BUY): void {
+export function startPontyLoop(bot: AL.Character, itemsToBuy = ITEMS_TO_BUY): void {
     const ponty = bot.locateNPC("secondhands")[0]
     async function pontyLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            if (ALM.Tools.distance(bot, ponty) < ALM.Constants.NPC_INTERACTION_DISTANCE) {
+            if (AL.Tools.distance(bot, ponty) < AL.Constants.NPC_INTERACTION_DISTANCE) {
                 const pontyData = await bot.getPontyItems()
                 for (const item of pontyData) {
                     if (itemsToBuy.has(item.name)) {
@@ -1032,7 +1032,7 @@ export function startPontyLoop(bot: ALM.Character, itemsToBuy = ITEMS_TO_BUY): v
     pontyLoop()
 }
 
-export function startScareLoop(bot: ALM.Character): void {
+export function startScareLoop(bot: AL.Character): void {
     async function scareLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -1071,7 +1071,7 @@ export function startScareLoop(bot: ALM.Character): void {
     }
 
     // If we have too many targets, we can't go through doors.
-    bot.socket.on("game_response", (data: ALM.GameResponseData) => {
+    bot.socket.on("game_response", (data: AL.GameResponseData) => {
         if (typeof data == "string") {
             if (data == "cant_escape") {
                 if (bot.isScared() || bot.targets >= 5) {
@@ -1095,7 +1095,7 @@ export function startScareLoop(bot: ALM.Character): void {
     scareLoop()
 }
 
-export function startSellLoop(bot: ALM.Character, itemsToSell: ItemLevelInfo = ITEMS_TO_SELL): void {
+export function startSellLoop(bot: AL.Character, itemsToSell: ItemLevelInfo = ITEMS_TO_SELL): void {
     async function sellLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -1130,7 +1130,7 @@ export function startSellLoop(bot: ALM.Character, itemsToSell: ItemLevelInfo = I
  * @param itemsToSend
  * @param goldToHold
  */
-export function startSendStuffAllowlistLoop(bot: ALM.Character, sendTo: string, itemsToSend: (ALM.ItemName)[], goldToHold = GOLD_TO_HOLD): void {
+export function startSendStuffAllowlistLoop(bot: AL.Character, sendTo: string, itemsToSend: (AL.ItemName)[], goldToHold = GOLD_TO_HOLD): void {
     async function sendStuffLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -1141,7 +1141,7 @@ export function startSendStuffAllowlistLoop(bot: ALM.Character, sendTo: string, 
                 return
             }
 
-            if (ALM.Tools.distance(bot, sendToPlayer) < ALM.Constants.NPC_INTERACTION_DISTANCE) {
+            if (AL.Tools.distance(bot, sendToPlayer) < AL.Constants.NPC_INTERACTION_DISTANCE) {
                 const extraGold = bot.gold - goldToHold
                 if (extraGold > 0) await bot.sendGold(sendTo, extraGold)
                 for (let i = 0; i < bot.items.length; i++) {
@@ -1175,11 +1175,11 @@ export function startSendStuffAllowlistLoop(bot: ALM.Character, sendTo: string, 
  * @param itemsToHold
  * @param goldToHold
  */
-export function startSendStuffDenylistLoop(bot: ALM.Character, sendTo: string[], itemsToHold = ITEMS_TO_HOLD, goldToHold = 1_000_000): void {
+export function startSendStuffDenylistLoop(bot: AL.Character, sendTo: string[], itemsToHold = ITEMS_TO_HOLD, goldToHold = 1_000_000): void {
     async function sendStuffLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
-            let sendToPlayer: ALM.Player
+            let sendToPlayer: AL.Player
             for (const sendToName of sendTo) {
                 sendToPlayer = bot.players.get(sendToName)
                 if (sendToPlayer) break
@@ -1190,7 +1190,7 @@ export function startSendStuffDenylistLoop(bot: ALM.Character, sendTo: string[],
                 return
             }
 
-            if (ALM.Tools.distance(bot, sendToPlayer) < ALM.Constants.NPC_INTERACTION_DISTANCE) {
+            if (AL.Tools.distance(bot, sendToPlayer) < AL.Constants.NPC_INTERACTION_DISTANCE) {
                 const extraGold = bot.gold - goldToHold
                 if (extraGold > 0) await bot.sendGold(sendToPlayer.id, extraGold)
                 for (let i = 0; i < bot.items.length; i++) {
@@ -1217,7 +1217,7 @@ export function startSendStuffDenylistLoop(bot: ALM.Character, sendTo: string[],
     sendStuffLoop()
 }
 
-export function startServerPartyInviteLoop(bot: ALM.Character, ignore = [bot.id], sendInviteEveryMS = 300_000): void {
+export function startServerPartyInviteLoop(bot: AL.Character, ignore = [bot.id], sendInviteEveryMS = 300_000): void {
     const lastInvites = new Map<string, number>()
     async function serverPartyInviteLoop() {
         try {
@@ -1255,7 +1255,7 @@ export function startServerPartyInviteLoop(bot: ALM.Character, ignore = [bot.id]
     serverPartyInviteLoop()
 }
 
-export function startTrackerLoop(bot: ALM.Character): void {
+export function startTrackerLoop(bot: AL.Character): void {
     async function trackerLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -1272,7 +1272,7 @@ export function startTrackerLoop(bot: ALM.Character): void {
     trackerLoop()
 }
 
-export function startUpgradeLoop(bot: ALM.Character, itemsToSell: ItemLevelInfo = ITEMS_TO_SELL): void {
+export function startUpgradeLoop(bot: AL.Character, itemsToSell: ItemLevelInfo = ITEMS_TO_SELL): void {
     async function upgradeLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -1292,7 +1292,7 @@ export function startUpgradeLoop(bot: ALM.Character, itemsToSell: ItemLevelInfo 
             const duplicates = bot.locateDuplicateItems()
             for (const iN in duplicates) {
                 // Check if item is upgradable, or if we want to upgrade it
-                const itemName = iN as ALM.ItemName
+                const itemName = iN as AL.ItemName
                 const gInfo = bot.G.items[itemName]
                 if (gInfo.upgrade == undefined) continue // Not upgradable
                 const level0Grade = gInfo.grades.lastIndexOf(0) + 1
@@ -1303,7 +1303,7 @@ export function startUpgradeLoop(bot: ALM.Character, itemsToSell: ItemLevelInfo 
 
                 // Figure out the scroll we need to upgrade
                 const grade = await bot.calculateItemGrade(itemInfo)
-                const scrollName = `scroll${grade}` as ALM.ItemName
+                const scrollName = `scroll${grade}` as AL.ItemName
                 let scrollPos = bot.locateItem(scrollName)
                 const primlingPos = bot.locateItem("offeringp")
                 try {
@@ -1314,11 +1314,11 @@ export function startUpgradeLoop(bot: ALM.Character, itemsToSell: ItemLevelInfo 
                         || ((level0Grade == 0 && itemInfo.level >= 8) || (level0Grade == 1 && itemInfo.level >= 6) || (level0Grade == 2 && itemInfo.level >= 4))) {
                         // We want to use a primling to upgrade these
                         if (primlingPos == undefined) continue // We don't have any primlings
-                        if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as ALM.Merchant).massProduction()
+                        if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as AL.Merchant).massProduction()
                         await bot.upgrade(itemPos, scrollPos, primlingPos)
                     } else {
                         // We don't want to use a primling to upgrade these
-                        if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as ALM.Merchant).massProduction()
+                        if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as AL.Merchant).massProduction()
                         await bot.upgrade(itemPos, scrollPos)
                     }
                 } catch (e) {

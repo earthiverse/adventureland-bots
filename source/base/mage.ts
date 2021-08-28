@@ -1,4 +1,4 @@
-import AL from "alclient-mongo"
+import AL from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 
 const CBURST_WHEN_HP_LESS_THAN = 200

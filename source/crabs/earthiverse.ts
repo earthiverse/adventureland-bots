@@ -1,4 +1,4 @@
-import AL from "alclient-mongo"
+import AL from "alclient"
 import { startTrackerLoop } from "../base/general.js"
 import { partyLeader } from "../base/party.js"
 import { identifier, region, startShared, targets } from "./runners.js"
