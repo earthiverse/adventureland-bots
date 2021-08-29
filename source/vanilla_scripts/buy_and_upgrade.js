@@ -13,7 +13,11 @@ async function buyAndUpgradeLoop() {
             if (item.name !== ITEM_TO_BUY_AND_UPGRADE) continue // Not the item we're looking for
             numItems += 1
         }
-        if (numItems < NUM_TO_BUY) await buy(ITEM_TO_BUY_AND_UPGRADE)
+        if (numItems < NUM_TO_BUY) {
+            await buy(ITEM_TO_BUY_AND_UPGRADE)
+            continue
+        }
+        if (numItems == 1) return // No more to upgrade
 
         /** Find the lowest level item, we'll upgrade that one */
         let lowestLevel = Number.MAX_SAFE_INTEGER
