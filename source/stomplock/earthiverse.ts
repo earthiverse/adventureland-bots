@@ -125,11 +125,17 @@ async function startMerchant(bot: AL.Merchant, friends: AL.Character[], holdPosi
 
         bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
     }
-    if (identifier !== "PVP") moveLoop()
-    else {
-        await bot.closeMerchantStand()
-        await bot.smartMove(holdPosition)
+    async function pvpMoveLoop() {
+        try {
+            await bot.closeMerchantStand()
+            await bot.smartMove(holdPosition)
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("pvpMoveLoop", setTimeout(async () => { pvpMoveLoop() }, LOOP_MS))
     }
+    if (identifier !== "PVP") moveLoop()
+    else pvpMoveLoop()
 }
 
 async function run() {
