@@ -15,7 +15,8 @@ async function buyAndUpgradeLoop() {
         }
         if (numItems < NUM_TO_BUY) {
             await buy(ITEM_TO_BUY_AND_UPGRADE)
-            continue
+            buyAndUpgradeLoop()
+            return
         }
         if (numItems == 1) return // No more to upgrade
 

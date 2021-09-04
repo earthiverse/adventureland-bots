@@ -534,6 +534,8 @@ export function kiteInCircle(bot: AL.Character, type: AL.MonsterName, center: AL
     if (AL.Pathfinder.canWalkPath(bot, center)) {
         const nearest = bot.getNearestMonster(type)?.monster
         if (nearest) {
+            // TODO: Improve to move either clockwise or counter-clockwise
+
             // There's a monster nearby
             const angleFromCenterToMonsterGoing = Math.atan2(nearest.going_y - center.y, nearest.going_x - center.x)
             const endGoalAngle = angleFromCenterToMonsterGoing + angle
@@ -686,67 +688,58 @@ export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo 
                 return
             }
 
-            const duplicates = bot.locateDuplicateItems()
-            for (const iN in duplicates) {
-                const itemName = iN as AL.ItemName
-                const numDuplicates = duplicates[iN].length
-
-                // Check if there's enough to compound
-                if (numDuplicates < 3) {
-                    delete duplicates[itemName]
-                    continue
-                }
-
-                // Check if there's three with the same level. If there is, set the array to those three
-                let found = false
-                for (let i = 0; i < numDuplicates - 2; i++) {
-                    const item1 = bot.items[duplicates[itemName][i]]
-                    const item2 = bot.items[duplicates[itemName][i + 1]]
-                    const item3 = bot.items[duplicates[itemName][i + 2]]
-
-                    if (item1.level == item2.level && item1.level == item3.level) {
-                        duplicates[itemName] = duplicates[itemName].splice(i, 3)
-                        found = true
-                        break
-                    }
-                }
-                if (!found) delete duplicates[itemName]
-            }
-
-            // At this point, 'duplicates' only contains arrays of 3 items.
-            for (const iN in duplicates) {
-                // Check if item is compoundable, or if we want to compound it
-                const itemName = iN as AL.ItemName
+            const itemsByLevel = bot.locateItemsByLevel(bot.items, { excludeSpecialItems: true })
+            for (const dName in itemsByLevel) {
+                const itemName = dName as AL.ItemName
                 const gInfo = bot.G.items[itemName]
-                if (gInfo.compound == undefined) continue // Not compoundable
                 const level0Grade = gInfo.grades.lastIndexOf(0) + 1
-                const itemPoss = duplicates[itemName]
-                const itemInfo = bot.items[itemPoss[0]]
-                if (itemInfo.level >= 4 - level0Grade) continue // We don't want to compound higher level items automatically.
-                if (itemsToSell[itemName] && !itemInfo.p && itemInfo.level <= itemsToSell[itemName]) continue // Don't compound items we want to sell unless they're special
+                if (gInfo.compound == undefined) continue // Not compoundable
+                let foundOne = false
+                for (let dLevel = 7; dLevel >= 0; dLevel--) {
+                    const items = itemsByLevel[itemName][dLevel]
+                    if (items == undefined) continue // No items of this type at this level
+                    if (itemsToSell[itemName] && dLevel <= itemsToSell[itemName]) continue // We don't want to upgrade items we want to sell
 
-                // Figure out the scroll we need to compound
-                const grade = await bot.calculateItemGrade(itemInfo)
-                const cscrollName = `cscroll${grade}` as AL.ItemName
-                let cscrollPos = bot.locateItem(cscrollName)
-                const primlingPos = bot.locateItem("offeringp")
-                try {
-                    if (cscrollPos == undefined && !bot.canBuy(cscrollName)) continue // We can't buy a scroll for whatever reason :(
-                    else if (cscrollPos == undefined) cscrollPos = await bot.buy(cscrollName)
+                    const grade = await bot.calculateItemGrade({ level: dLevel, name: itemName })
+                    const cscrollName = `cscroll${grade}` as AL.ItemName
 
-                    if ((ITEMS_TO_PRIMLING[itemName] && itemInfo.level >= ITEMS_TO_PRIMLING[itemName])
-                        || ((level0Grade == 0 && itemInfo.level >= 3) || (level0Grade == 1 && itemInfo.level >= 2) || (level0Grade == 2 && itemInfo.level >= 1))) {
-                        // We want to use a primling to compound these
-                        if (primlingPos == undefined) continue // We don't have any primlings
-                        if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as AL.Merchant).massProduction()
-                        await bot.compound(itemPoss[0], itemPoss[1], itemPoss[2], cscrollPos, primlingPos)
+                    if (dLevel >= 4 - level0Grade) {
+                        // We don't want to compound high level items automatically
+                        if (!foundOne) foundOne = true
                     } else {
-                        // We don't want to use a primling to compound these
-                        if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as AL.Merchant).massProduction()
-                        await bot.compound(itemPoss[0], itemPoss[1], itemPoss[2], cscrollPos)
+                        if (!foundOne && items.length < 3) continue // Not enough to compound
+                        else if (!foundOne && items.length < 4) {
+                            foundOne = true
+                            continue // Not enough to compound
+                        }
+                        for (let i = 0; i < items.length; i++) {
+                            if (!foundOne) {
+                                foundOne = true
+                                continue
+                            }
+
+                            let cscrollPos = bot.locateItem(cscrollName)
+                            const primlingPos = bot.locateItem("offeringp")
+                            try {
+                                if (cscrollPos == undefined && !bot.canBuy(cscrollName)) continue // We can't buy a scroll for whatever reason :(
+                                else if (cscrollPos == undefined) cscrollPos = await bot.buy(cscrollName)
+
+                                if ((ITEMS_TO_PRIMLING[itemName] && dLevel >= ITEMS_TO_PRIMLING[itemName])
+                                    || ((level0Grade == 0 && dLevel >= 3) || (level0Grade == 1 && dLevel >= 2) || (level0Grade == 2 && dLevel >= 1))) {
+                                    // We want to use a primling to upgrade these
+                                    if (primlingPos == undefined) continue // We don't have any primlings
+                                    if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as AL.Merchant).massProduction()
+                                    await bot.compound(items[0], items[1], items[2], cscrollPos, primlingPos)
+                                } else {
+                                    // We don't want to use a primling to upgrade these
+                                    if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as AL.Merchant).massProduction()
+                                    await bot.compound(items[0], items[1], items[2], cscrollPos)
+                                }
+                            } catch (e) {
+                                console.error(e)
+                            }
+                        }
                     }
-                } catch (e) {
-                    console.error(e)
                 }
             }
         } catch (e) {
@@ -1288,41 +1281,54 @@ export function startUpgradeLoop(bot: AL.Character, itemsToSell: ItemLevelInfo =
                 return
             }
 
-            // Find items that we have two (or more) of, and upgrade them if we can
-            const duplicates = bot.locateDuplicateItems()
-            for (const iN in duplicates) {
-                // Check if item is upgradable, or if we want to upgrade it
-                const itemName = iN as AL.ItemName
+            const itemsByLevel = bot.locateItemsByLevel(bot.items, { excludeSpecialItems: true })
+            for (const dName in itemsByLevel) {
+                const itemName = dName as AL.ItemName
                 const gInfo = bot.G.items[itemName]
-                if (gInfo.upgrade == undefined) continue // Not upgradable
                 const level0Grade = gInfo.grades.lastIndexOf(0) + 1
-                const itemPos = duplicates[itemName][0]
-                const itemInfo = bot.items[itemPos]
-                if (itemInfo.level >= 9 - level0Grade) continue // We don't want to upgrade harder to get items too much.
-                if (itemsToSell[itemName] && !itemInfo.p && itemInfo.level <= itemsToSell[itemName]) continue // Don't upgrade items we want to sell unless it's special
+                if (gInfo.upgrade == undefined) continue // Not upgradable
+                let foundOne = false
+                for (let dLevel = 12; dLevel >= 0; dLevel--) {
+                    const items = itemsByLevel[itemName][dLevel]
+                    if (items == undefined) continue // No items of this type at this level
+                    if (itemsToSell[itemName] && dLevel <= itemsToSell[itemName]) continue // We don't want to upgrade items we want to sell
 
-                // Figure out the scroll we need to upgrade
-                const grade = await bot.calculateItemGrade(itemInfo)
-                const scrollName = `scroll${grade}` as AL.ItemName
-                let scrollPos = bot.locateItem(scrollName)
-                const primlingPos = bot.locateItem("offeringp")
-                try {
-                    if (scrollPos == undefined && !bot.canBuy(scrollName)) continue // We can't buy a scroll for whatever reason :(
-                    else if (scrollPos == undefined) scrollPos = await bot.buy(scrollName)
+                    const grade = await bot.calculateItemGrade({ level: dLevel, name: itemName })
+                    const scrollName = `scroll${grade}` as AL.ItemName
 
-                    if ((ITEMS_TO_PRIMLING[itemName] && itemInfo.level >= ITEMS_TO_PRIMLING[itemName])
-                        || ((level0Grade == 0 && itemInfo.level >= 8) || (level0Grade == 1 && itemInfo.level >= 6) || (level0Grade == 2 && itemInfo.level >= 4))) {
-                        // We want to use a primling to upgrade these
-                        if (primlingPos == undefined) continue // We don't have any primlings
-                        if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as AL.Merchant).massProduction()
-                        await bot.upgrade(itemPos, scrollPos, primlingPos)
+                    if (dLevel >= 9 - level0Grade) {
+                        // We don't want to upgrade high level items automatically
+                        if (!foundOne) foundOne = true
                     } else {
-                        // We don't want to use a primling to upgrade these
-                        if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as AL.Merchant).massProduction()
-                        await bot.upgrade(itemPos, scrollPos)
+                        for (let i = 0; i < items.length; i++) {
+                            const slot = items[i]
+                            if (!foundOne) {
+                                foundOne = true
+                                continue
+                            }
+
+                            let scrollPos = bot.locateItem(scrollName)
+                            const primlingPos = bot.locateItem("offeringp")
+                            try {
+                                if (scrollPos == undefined && !bot.canBuy(scrollName)) continue // We can't buy a scroll for whatever reason :(
+                                else if (scrollPos == undefined) scrollPos = await bot.buy(scrollName)
+
+                                if ((ITEMS_TO_PRIMLING[itemName] && dLevel >= ITEMS_TO_PRIMLING[itemName])
+                                    || ((level0Grade == 0 && dLevel >= 8) || (level0Grade == 1 && dLevel >= 6) || (level0Grade == 2 && dLevel >= 4))) {
+                                    // We want to use a primling to upgrade these
+                                    if (primlingPos == undefined) continue // We don't have any primlings
+                                    if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as AL.Merchant).massProduction()
+                                    await bot.upgrade(slot, scrollPos, primlingPos)
+                                } else {
+                                    // We don't want to use a primling to upgrade these
+                                    if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as AL.Merchant).massProduction()
+                                    await bot.upgrade(slot, scrollPos)
+                                }
+                            } catch (e) {
+                                console.error(e)
+                            }
+                        }
                     }
-                } catch (e) {
-                    console.error(e)
                 }
             }
         } catch (e) {
