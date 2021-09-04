@@ -40,6 +40,25 @@ export async function startSellSticksToMerchantsLoop(bot: AL.Character): Promise
     sellToMerchants()
 }
 
+export async function startMailBankKeysToEarthiverseLoop(bot: AL.Character): Promise<void> {
+    async function mailBankKeys() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            const bankKey = bot.locateItem("bkey")
+            if (bankKey !== undefined) {
+                // TODO: Implement these in ALClient
+                bot.socket.emit("imove", { "a": 0, "b": bankKey })
+                bot.socket.emit("mail", { item: true, message: "sell it", subject: "bank key!", to: "earthiverse", })
+            }
+        } catch (e) {
+            console.error
+        }
+        setTimeout(async () => { mailBankKeys() }, 5000)
+    }
+    mailBankKeys()
+}
+
 export async function startLeader(bot: AL.Warrior): Promise<void> {
     startTrackerLoop(bot)
 
@@ -297,7 +316,8 @@ export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], h
     startSellLoop(bot)
     startExchangeLoop(bot)
 
-    startSellSticksToMerchantsLoop(bot)
+    // startSellSticksToMerchantsLoop(bot)
+    startMailBankKeysToEarthiverseLoop(bot)
 
     let lastBankVisit = Number.MIN_VALUE
     async function moveLoop() {

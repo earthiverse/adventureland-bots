@@ -2,7 +2,7 @@ import AL from "alclient"
 import { startPontyLoop, LOOP_MS, startCompoundLoop, startHealLoop, startLootLoop, startScareLoop, startSellLoop, startUpgradeLoop, startExchangeLoop, ITEMS_TO_SELL, startTrackerLoop } from "../base/general.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
 import { stompPartyLeader } from "../base/party.js"
-import { identifier, region, startLeader, startSellSticksToMerchantsLoop, startShared } from "./runners.js"
+import { identifier, region, startLeader, startMailBankKeysToEarthiverseLoop, startSellSticksToMerchantsLoop, startShared } from "./runners.js"
 
 /** Config */
 const leaderName = stompPartyLeader
@@ -27,7 +27,8 @@ async function startMerchant(bot: AL.Merchant, friends: AL.Character[], holdPosi
     startScareLoop(bot)
     startSellLoop(bot)
 
-    startSellSticksToMerchantsLoop(bot)
+    // startSellSticksToMerchantsLoop(bot)
+    startMailBankKeysToEarthiverseLoop(bot)
 
     let lastBankVisit = Number.MIN_VALUE
     async function moveLoop() {
