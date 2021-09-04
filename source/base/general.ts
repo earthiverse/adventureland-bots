@@ -692,8 +692,8 @@ export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo 
             for (const dName in itemsByLevel) {
                 const itemName = dName as AL.ItemName
                 const gInfo = bot.G.items[itemName]
-                const level0Grade = gInfo.grades.lastIndexOf(0) + 1
                 if (gInfo.compound == undefined) continue // Not compoundable
+                const level0Grade = gInfo.grades.lastIndexOf(0) + 1
                 let foundOne = false
                 for (let dLevel = 7; dLevel >= 0; dLevel--) {
                     const items = itemsByLevel[itemName][dLevel]
@@ -1285,8 +1285,8 @@ export function startUpgradeLoop(bot: AL.Character, itemsToSell: ItemLevelInfo =
             for (const dName in itemsByLevel) {
                 const itemName = dName as AL.ItemName
                 const gInfo = bot.G.items[itemName]
-                const level0Grade = gInfo.grades.lastIndexOf(0) + 1
                 if (gInfo.upgrade == undefined) continue // Not upgradable
+                const level0Grade = gInfo.grades.lastIndexOf(0) + 1
                 let foundOne = false
                 for (let dLevel = 12; dLevel >= 0; dLevel--) {
                     const items = itemsByLevel[itemName][dLevel]
