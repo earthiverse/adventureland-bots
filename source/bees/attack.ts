@@ -1,6 +1,6 @@
 import AL from "alclient"
 import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, ITEMS_TO_HOLD, startSendStuffAllowlistLoop } from "../base/general.js"
-import { mainBeesNearGoos } from "../base/locations.js"
+import { mainBeesNearTunnel } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 
 /** Config */
@@ -12,7 +12,7 @@ const mage3Name = "attackMag3"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "PVP"
 const targets: AL.MonsterName[] = ["bee"]
-const defaultLocation: AL.IPosition = mainBeesNearGoos
+const defaultLocation: AL.IPosition = mainBeesNearTunnel
 
 let mage1: AL.Mage
 let mage2: AL.Mage
