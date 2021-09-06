@@ -1,5 +1,5 @@
 import AL from "alclient"
-import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, ITEMS_TO_HOLD } from "../base/general.js"
+import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, ITEMS_TO_HOLD, startSendStuffAllowlistLoop } from "../base/general.js"
 import { mainBeesNearGoos } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 
@@ -24,7 +24,10 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
     startHealLoop(bot)
     startLootLoop(bot)
     startPartyLoop(bot, partyLeader, partyMembers)
-    startSellLoop(bot, { ...ITEMS_TO_SELL, "hpamulet": 2, "hpbelt": 2, "ringsj": 2, "stinger": 2 })
+    startSellLoop(bot, { ...ITEMS_TO_SELL, "beewings": 9999, "hpamulet": 2, "hpbelt": 2, "ringsj": 2, "stinger": 2 })
+
+    // Send kouin wanderers things
+    startSendStuffAllowlistLoop(bot, "kouin", ["wcap", "wshoes"], 999_999_999)
 
     async function attackLoop() {
         try {
