@@ -374,7 +374,7 @@ function preparePriest(bot: AL.Priest) {
         skeletor: {
             attack: async () => { await attackTheseTypesPriest(bot, ["skeletor", "cgoo"], information.friends) },
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "test_orb" },
-            move: async () => { await bot.smartMove({ map: "arena", x: 400, y: -575 }) },
+            move: async () => { await goToNearestWalkableToMonster(bot, ["skeletor"], { map: "arena", x: 400, y: -575 }) },
         },
         snake: {
             attack: async () => { await attackTheseTypesPriest(bot, ["snake", "osnake"], information.friends) },
@@ -742,7 +742,7 @@ function prepareRanger(bot: AL.Ranger) {
         skeletor: {
             attack: async () => { return attackTheseTypesRanger(bot, ["skeletor", "cgoo"], information.friends) },
             equipment: { mainhand: "firebow", orb: "test_orb" },
-            move: async () => { await bot.smartMove({ map: "arena", x: 380, y: -575 }) },
+            move: async () => { await goToNearestWalkableToMonster(bot, ["skeletor"], { map: "arena", x: 380, y: -575 }) },
             requireCtype: "priest",
         },
         snake: {
