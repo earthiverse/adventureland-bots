@@ -96,7 +96,7 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
         const item = bankItems[i]
         if (!item) continue // No item
 
-        if (!MERCHANT_ITEMS_TO_HOLD.has(item.name)) continue // We don't want to hold this item
+        if (!itemsToHold.has(item.name)) continue // We don't want to hold this item
         if (bot.hasItem(item.name)) {
             const gInfo = bot.G.items[item.name]
             if (!gInfo.s) continue // Not stackable
@@ -122,11 +122,11 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
         if (gInfo.grades == undefined) continue
         const level0Grade = gInfo.grades.lastIndexOf(0) + 1
 
-        if (gInfo.upgrade && freeSpaces > 2) {
+        if (gInfo.upgrade && freeSpaces > 3) {
             // Item is upgradable, withdraw lower level items to upgrade
             let firstItemSlot: number
             let firstItemWithdrawn = false
-            for (let dLevel = 12; dLevel >= 0 && freeSpaces > 2; dLevel--) {
+            for (let dLevel = 12; dLevel >= 0 && freeSpaces > 3; dLevel--) {
                 const items = itemsByLevel[itemName][dLevel]
                 if (items == undefined) continue // No items of this type at this level
                 if (dLevel >= 9 - level0Grade) {
@@ -155,11 +155,11 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
                     }
                 }
             }
-        } else if (gInfo.compound && freeSpaces > 4) {
+        } else if (gInfo.compound && freeSpaces > 5) {
             // Item is compoundable, withdraw lower level items to compound
             let firstItemSlot: number
             let firstItemWithdrawn = false
-            for (let dLevel = 7; dLevel >= 0 && freeSpaces > 4; dLevel--) {
+            for (let dLevel = 7; dLevel >= 0 && freeSpaces > 5; dLevel--) {
                 const items = itemsByLevel[itemName][dLevel]
                 if (items == undefined) continue // No items of this type at this level
                 if (dLevel >= 4 - level0Grade) {
@@ -171,7 +171,7 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
                         firstItemSlot = items[0]
                         continue // Not enough to compound
                     }
-                    for (let i = 0; i < items.length && freeSpaces > 4; i++) {
+                    for (let i = 0; i < items.length && freeSpaces > 5; i++) {
                         const slot1 = items[i]
                         if (firstItemSlot == undefined) {
                             firstItemSlot = slot1
