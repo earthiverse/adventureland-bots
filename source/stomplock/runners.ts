@@ -88,30 +88,68 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
     }
     tauntLoop()
 
-    async function equipLuckStuffLoop() {
+    async function swapLuckStuffLoop() {
         try {
             const promises: Promise<unknown>[] = []
 
-            // TODO: Improve so we have other stuff equipped until we're close to killing our target
+            const entity = bot.entities.get(bot.target)
+            if (entity && entity.hp < 50_000) { // Entity has low hp, let's equip our luck stuff
+                // Wanderer's Set (+16% luck)
+                const helmet = bot.locateItem("wcap", bot.items, { locked: true })
+                const chest = bot.locateItem("wattire", bot.items, { locked: true })
+                const pants = bot.locateItem("wbreeches", bot.items, { locked: true })
+                const shoes = bot.locateItem("wshoes", bot.items, { locked: true })
+                const gloves = bot.locateItem("wgloves", bot.items, { locked: true })
+                if (helmet !== undefined) promises.push(bot.equip(helmet, "helmet"))
+                if (chest !== undefined) promises.push(bot.equip(chest, "chest"))
+                if (pants !== undefined) promises.push(bot.equip(pants, "pants"))
+                if (shoes !== undefined) promises.push(bot.equip(shoes, "shoes"))
+                if (gloves !== undefined) promises.push(bot.equip(gloves, "gloves"))
 
-            // Wanderer's Set (+16% luck)
-            if (bot.hasItem("wcap")) promises.push(bot.equip(bot.locateItem("wcap"), "helmet"))
-            if (bot.hasItem("wattire")) promises.push(bot.equip(bot.locateItem("wattire"), "chest"))
-            if (bot.hasItem("wbreeches")) promises.push(bot.equip(bot.locateItem("wbreeches"), "pants"))
-            if (bot.hasItem("wshoes")) promises.push(bot.equip(bot.locateItem("wshoes"), "shoes"))
-            if (bot.hasItem("wgloves")) promises.push(bot.equip(bot.locateItem("wgloves"), "gloves"))
+                // Rabbit's Foot (+10% luck)
+                const orb = bot.locateItem("rabbitsfoot", bot.items, { locked: true })
+                if (orb !== undefined) promises.push(bot.equip(orb, "orb"))
 
-            // Rabbit's Foot (+10% luck)
-            if (bot.hasItem("rabbitsfoot")) promises.push(bot.equip(bot.locateItem("rabbitsfoot"), "orb"))
+                // Enchanted Earrings (+2% luck each)
+                const earrings = bot.locateItems("dexearringx", bot.items, { locked: true })
+                if (earrings.length > 0) {
+                    if (earrings.length == 2) promises.push(bot.equip(earrings[1], "earring2"))
+                    if (bot.slots.earring1?.name == "dexearringx") promises.push(bot.equip(earrings[0], "earring2"))
+                    else promises.push(bot.equip(earrings[0], "earring1"))
+                }
 
-            // Enchanted Earring (+2% luck)
-            if (bot.hasItem("dexearringx")) {
-                if (bot.slots.earring1?.name == "dexearringx") promises.push(bot.equip(bot.locateItem("dexearringx"), "earring2"))
-                else promises.push(bot.equip(bot.locateItem("dexearringx"), "earring1"))
+                // Shield M (+15% luck)
+                const offhand = bot.locateItem("mshield", bot.items, { locked: true })
+                if (offhand !== undefined) promises.push(bot.equip(offhand, "offhand"))
+            } else { // Entity has high hp, let's equip stuff that does a lot of damage
+                // Rugged Set with Winged Boots
+                const helmet = bot.locateItem("helmet1", bot.items, { locked: true })
+                const chest = bot.locateItem("coat1", bot.items, { locked: true })
+                const pants = bot.locateItem("pants1", bot.items, { locked: true })
+                const shoes = bot.locateItem("wingedboots", bot.items, { locked: true })
+                const gloves = bot.locateItem("gloves1", bot.items, { locked: true })
+                if (helmet !== undefined) promises.push(bot.equip(helmet, "helmet"))
+                if (chest !== undefined) promises.push(bot.equip(chest, "chest"))
+                if (pants !== undefined) promises.push(bot.equip(pants, "pants"))
+                if (shoes !== undefined) promises.push(bot.equip(shoes, "shoes"))
+                if (gloves !== undefined) promises.push(bot.equip(gloves, "gloves"))
+
+                // Orb of Testing
+                const orb = bot.locateItem("test_orb", bot.items, { locked: true })
+                if (orb !== undefined) promises.push(bot.equip(orb, "orb"))
+
+                // Strength Earrings
+                const earrings = bot.locateItems("strearring", bot.items, { locked: true })
+                if (earrings.length > 0) {
+                    if (earrings.length == 2) promises.push(bot.equip(earrings[1], "earring2"))
+                    if (bot.slots.earring1?.name == "strearring") promises.push(bot.equip(earrings[0], "earring2"))
+                    else promises.push(bot.equip(earrings[0], "earring1"))
+                }
+
+                // Fireblades
+                const offhand = bot.locateItem("fireblade", bot.items, { locked: true })
+                if (offhand !== undefined) promises.push(bot.equip(offhand, "offhand"))
             }
-
-            // Shield M (+15% luck)
-            if (bot.hasItem("mshield")) promises.push(bot.equip(bot.locateItem("mshield"), "offhand"))
 
             await Promise.all(promises)
         } catch (e) {
@@ -119,7 +157,7 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
         }
         setTimeout(async () => { tauntLoop() }, Math.max(LOOP_MS, 500))
     }
-    equipLuckStuffLoop()
+    swapLuckStuffLoop()
 }
 
 export async function startShared(bot: AL.Warrior, merchantName: string): Promise<void> {
