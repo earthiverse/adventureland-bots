@@ -45,7 +45,6 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
                 // Delete this hourly data
                 console.log(`deleting ${achievement.name} @ ${achievement.date} (within 1 month, same day)`)
                 await AL.AchievementModel.deleteOne({ date: achievement.date, name: achievement.name }).exec()
-                // await await AL.AchievementModel.deleteOne()
             } else {
                 lastDate = achievement.date
                 console.log(`keeping ${achievement.name} @ ${achievement.date} (within 1 month, different day)`)

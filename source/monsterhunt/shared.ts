@@ -28,7 +28,7 @@ export async function getTarget(bot: AL.Character, strategy: Strategy, informati
 
                 // We're close, but we can't see the entity. It's probably dead
                 AL.Database.lastMongoUpdate.delete(entity.name)
-                await AL.EntityModel.deleteOne({ name: entity.name, serverIdentifier: bot.serverData.name, serverRegion: bot.serverData.region })
+                await AL.EntityModel.deleteOne({ name: entity.name, serverIdentifier: bot.serverData.name, serverRegion: bot.serverData.region }).exec()
             } else {
                 return entity.type
             }
@@ -56,7 +56,7 @@ export async function getTarget(bot: AL.Character, strategy: Strategy, informati
 
                 // We're close, but we can't see the entity. It's probably dead
                 AL.Database.lastMongoUpdate.delete(entity.name)
-                await AL.EntityModel.deleteOne({ name: entity.name, serverIdentifier: bot.serverData.name, serverRegion: bot.serverData.region })
+                await AL.EntityModel.deleteOne({ name: entity.name, serverIdentifier: bot.serverData.name, serverRegion: bot.serverData.region }).exec()
             }
             return entity.type
         }
