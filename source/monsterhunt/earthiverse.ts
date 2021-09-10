@@ -1211,7 +1211,6 @@ function prepareWarrior(bot: AL.Warrior) {
                     if (!nearby.monster.s.stunned && bot.canUse("stomp") && AL.Tools.distance(bot, nearby.monster) < bot.range) {
                         // Stun before attacking
                         await bot.stomp()
-                        await attackTheseTypesWarrior(bot, ["tinyp"], information.friends, { disableAgitate: true })
                     } else if (nearby.monster.s.stunned) {
                         await attackTheseTypesWarrior(bot, ["tinyp"], information.friends, { disableAgitate: true })
                     }
