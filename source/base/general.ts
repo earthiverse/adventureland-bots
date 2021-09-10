@@ -707,8 +707,10 @@ export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo 
                         // We don't want to compound high level items automatically
                         if (!foundOne) foundOne = true
                     } else {
-                        if (!foundOne && items.length < 3) continue // Not enough to compound
-                        else if (!foundOne && items.length < 4) {
+                        if (!foundOne && items.length < 3) {
+                            foundOne = true
+                            continue // Not enough to compound
+                        } else if (!foundOne && items.length < 4) {
                             foundOne = true
                             continue // Not enough to compound
                         }
