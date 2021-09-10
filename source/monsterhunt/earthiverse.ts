@@ -941,7 +941,7 @@ function prepareWarrior(bot: AL.Warrior) {
             },
         },
         fireroamer: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["fireroamer"], information.friends, { targetingPartyMember: true }) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["fireroamer"], information.friends, { disableAgitate: true, targetingPartyMember: true }) },
             equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "desertland", x: 200, y: -675 }) },
             requireCtype: "priest"

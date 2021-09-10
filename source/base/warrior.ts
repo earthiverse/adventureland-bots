@@ -187,6 +187,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
         const targets = new FastPriorityQueue<AL.Entity>(priority)
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
+            targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,
             willDieToProjectiles: false,
