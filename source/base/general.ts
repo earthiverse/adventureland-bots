@@ -737,6 +737,7 @@ export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo 
                                     if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as AL.Merchant).massProduction()
                                     await bot.compound(items[0], items[1], items[2], cscrollPos)
                                 }
+                                i += 2
                             } catch (e) {
                                 console.error(e)
                             }
