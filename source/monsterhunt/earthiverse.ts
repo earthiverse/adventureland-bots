@@ -1206,7 +1206,16 @@ function prepareWarrior(bot: AL.Warrior) {
         },
         tinyp: {
             attack: async () => {
-                await attackTheseTypesWarrior(bot, ["tinyp"], information.friends, { disableAgitate: true })
+                const nearby = bot.getNearestMonster("tinyp")
+                if (nearby?.monster) {
+                    if (!nearby.monster.s.stunned && bot.canUse("stomp") && AL.Tools.distance(bot, nearby.monster) < bot.range) {
+                        // Stun before attacking
+                        await bot.stomp()
+                        await attackTheseTypesWarrior(bot, ["tinyp"], information.friends, { disableAgitate: true })
+                    } else if (nearby.monster.s.stunned) {
+                        await attackTheseTypesWarrior(bot, ["tinyp"], information.friends, { disableAgitate: true })
+                    }
+                }
             },
             equipment: { mainhand: "basher", orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "tinyp") },
