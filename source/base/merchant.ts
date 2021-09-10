@@ -200,6 +200,7 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
                         const realSlot3 = slot3 % 42
                         await bot.withdrawItem(realPack3, realSlot3)
                         freeSpaces--
+                        i += 2
                     }
                 }
             }
