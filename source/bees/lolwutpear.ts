@@ -1,5 +1,5 @@
 import AL from "alclient"
-import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startSendStuffAllowlistLoop, ITEMS_TO_HOLD } from "../base/general.js"
+import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startSendStuffAllowlistLoop, ITEMS_TO_HOLD, startTrackerLoop } from "../base/general.js"
 import { mainBeesNearGoos } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 
@@ -78,7 +78,8 @@ async function run() {
                 if (mage1) await mage1.disconnect()
                 mage1 = await AL.Game.startMage(name, region, identifier)
                 friends[0] = mage1
-                startMage(mage1)
+                startMage(mage1, { x: 0, y: -50 })
+                startTrackerLoop(mage1)
                 mage1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -104,7 +105,7 @@ async function run() {
                 if (mage2) await mage2.disconnect()
                 mage2 = await AL.Game.startMage(name, region, identifier)
                 friends[1] = mage2
-                startMage(mage2, { x: 25, y: 0 })
+                startMage(mage2, { x: 25, y: -50 })
                 mage2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -130,7 +131,7 @@ async function run() {
                 if (mage3) await mage3.disconnect()
                 mage3 = await AL.Game.startMage(name, region, identifier)
                 friends[2] = mage3
-                startMage(mage3, { x: -25, y: 0 })
+                startMage(mage3, { x: -25, y: -50 })
                 mage3.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
