@@ -1,6 +1,6 @@
 import AL from "alclient"
-import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL } from "../base/general.js"
-import { mainBeesNearTunnel } from "../base/locations.js"
+import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startSendStuffAllowlistLoop, ITEMS_TO_HOLD } from "../base/general.js"
+import { mainBeesNearGoos } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 
 /** Config */
@@ -10,9 +10,9 @@ const mage1Name = "lolwutpear"
 const mage2Name = "shoopdawhoop"
 const mage3Name = "ytmnd"
 const region: AL.ServerRegion = "US"
-const identifier: AL.ServerIdentifier = "I"
-const targets: AL.MonsterName[] = ["cutebee", "bee"]
-const defaultLocation: AL.IPosition = mainBeesNearTunnel
+const identifier: AL.ServerIdentifier = "PVP"
+const targets: AL.MonsterName[] = ["bee"]
+const defaultLocation: AL.IPosition = mainBeesNearGoos
 
 let mage1: AL.Mage
 let mage2: AL.Mage
@@ -24,12 +24,15 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
     startHealLoop(bot)
     startLootLoop(bot)
     startPartyLoop(bot, partyLeader, partyMembers)
-    startSellLoop(bot, { ...ITEMS_TO_SELL, "hpamulet": 2, "hpbelt": 2, "quiver": 2, "ringsj": 2, "stinger": 2 })
+    startSellLoop(bot, { ...ITEMS_TO_SELL, "beewings": 9999, "hpamulet": 2, "hpbelt": 2, "ringsj": 2, "stinger": 2 })
+
+    // Send kouin wanderers things
+    startSendStuffAllowlistLoop(bot, "kouin", ["wcap", "wshoes"], 999_999_999)
 
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
-            await attackTheseTypesMage(bot, targets, friends)
+            await attackTheseTypesMage(bot, targets, friends, { cburstWhenHPLessThan: 301 })
         } catch (e) {
             console.error(e)
         }
@@ -50,7 +53,7 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
             }
 
             await goToPoitonSellerIfLow(bot)
-            await goToBankIfFull(bot)
+            await goToBankIfFull(bot, ITEMS_TO_HOLD, 0)
 
             const destination: AL.IPosition = { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y }
             if (AL.Tools.distance(bot, destination) > 1) await bot.smartMove(destination)
@@ -68,102 +71,82 @@ async function run() {
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
     await AL.Pathfinder.prepare(AL.Game.G)
 
-    // Start all characters
-    console.log("Connecting...")
-    const startMage1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
-        const connectLoop = async () => {
+    const startmage1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+        // Start the characters
+        const loopBot = async () => {
             try {
+                if (mage1) await mage1.disconnect()
                 mage1 = await AL.Game.startMage(name, region, identifier)
                 friends[0] = mage1
                 startMage(mage1)
+                mage1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
                 if (mage1) await mage1.disconnect()
+                const wait = /wait_(\d+)_second/.exec(e)
+                if (wait && wait[1]) {
+                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                } else if (/limits/.test(e)) {
+                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                } else {
+                    setTimeout(async () => { loopBot() }, 10000)
+                }
             }
-            const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
         }
-
-        const disconnectLoop = async () => {
-            try {
-                if (mage1) await mage1.disconnect()
-                mage1 = undefined
-                friends[0] = undefined
-            } catch (e) {
-                console.error(e)
-            }
-            const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
-        }
-
-        const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
-        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        loopBot()
     }
-    startMage1Loop(mage1Name, region, identifier)
+    startmage1Loop(mage1Name, region, identifier).catch(() => { /* ignore errors */ })
 
     const startmage2Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
-        const connectLoop = async () => {
+        // Start the characters
+        const loopBot = async () => {
             try {
+                if (mage2) await mage2.disconnect()
                 mage2 = await AL.Game.startMage(name, region, identifier)
                 friends[1] = mage2
                 startMage(mage2, { x: 25, y: 0 })
+                mage2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
                 if (mage2) await mage2.disconnect()
+                const wait = /wait_(\d+)_second/.exec(e)
+                if (wait && wait[1]) {
+                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                } else if (/limits/.test(e)) {
+                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                } else {
+                    setTimeout(async () => { loopBot() }, 10000)
+                }
             }
-            const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
         }
-
-        const disconnectLoop = async () => {
-            try {
-                if (mage2) await mage2.disconnect()
-                mage2 = undefined
-                friends[1] = undefined
-            } catch (e) {
-                console.error(e)
-            }
-            const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
-        }
-
-        const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
-        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        loopBot()
     }
-    startmage2Loop(mage2Name, region, identifier)
+    startmage2Loop(mage2Name, region, identifier).catch(() => { /* ignore errors */ })
 
     const startmage3Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
-        const connectLoop = async () => {
+        // Start the characters
+        const loopBot = async () => {
             try {
+                if (mage3) await mage3.disconnect()
                 mage3 = await AL.Game.startMage(name, region, identifier)
                 friends[2] = mage3
                 startMage(mage3, { x: -25, y: 0 })
+                mage3.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
                 if (mage3) await mage3.disconnect()
+                const wait = /wait_(\d+)_second/.exec(e)
+                if (wait && wait[1]) {
+                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                } else if (/limits/.test(e)) {
+                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                } else {
+                    setTimeout(async () => { loopBot() }, 10000)
+                }
             }
-            const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
         }
-
-        const disconnectLoop = async () => {
-            try {
-                if (mage3) await mage3.disconnect()
-                friends[2] = undefined
-                mage3 = undefined
-            } catch (e) {
-                console.error(e)
-            }
-            const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
-        }
-
-        const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { connectLoop() }, msToNextMinute + 10000)
-        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        loopBot()
     }
-    startmage3Loop(mage3Name, region, identifier)
+    startmage3Loop(mage3Name, region, identifier).catch(() => { /* ignore errors */ })
 }
 run()

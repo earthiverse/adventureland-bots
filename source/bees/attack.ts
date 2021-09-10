@@ -32,7 +32,7 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
-            await attackTheseTypesMage(bot, targets, friends)
+            await attackTheseTypesMage(bot, targets, friends, { cburstWhenHPLessThan: 301 })
         } catch (e) {
             console.error(e)
         }

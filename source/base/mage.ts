@@ -86,7 +86,7 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
     if (bot.canUse("cburst")) {
         // Cburst low HP monsters
         const targets: [string, number][] = []
-        let mpNeeded = bot.G.skills.cburst.mp
+        let mpNeeded = bot.G.skills.cburst.mp + bot.mp_cost
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
@@ -99,9 +99,12 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
                 if (entity.hp >= options.cburstWhenHPLessThan) continue
             } else if (entity.hp >= CBURST_WHEN_HP_LESS_THAN) continue // Lots of HP
             if (AL.Constants.SPECIAL_MONSTERS.includes(entity.type)) continue // Don't cburst special monsters
-            targets.push([entity.id, entity.hp / bot.G.skills.cburst.ratio])
-            mpNeeded += entity.hp / bot.G.skills.cburst.ratio
+            const extraMP = entity.hp / bot.G.skills.cburst.ratio
+            if (mpNeeded + extraMP > bot.mp) break // We can't cburst anything more
+            targets.push([entity.id, extraMP])
+            mpNeeded += extraMP
         }
+
         if (targets.length && bot.mp >= mpNeeded) {
             // Remove them from our friends' entities list, since we're going to kill them
             for (const [id] of targets) {
