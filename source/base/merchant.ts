@@ -119,6 +119,7 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
     for (const dName in itemsByLevel) {
         const itemName = dName as AL.ItemName
         const gInfo = bot.G.items[itemName]
+        if (gInfo.grades == undefined) continue
         const level0Grade = gInfo.grades.lastIndexOf(0) + 1
 
         if (gInfo.upgrade && freeSpaces > 2) {
