@@ -844,7 +844,7 @@ function prepareWarrior(bot: AL.Warrior) {
         },
         bbpompom: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["bbpompom"], information.friends, { disableAgitate: true }) },
-            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
+            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToNearestWalkableToMonster(bot, ["bbpompom"], { map: "winter_cave", x: 31, y: -164 })
@@ -954,7 +954,7 @@ function prepareWarrior(bot: AL.Warrior) {
         },
         fvampire: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["fvampire"], information.friends) },
-            equipment: { mainhand: "basher", orb: "test_orb" },
+            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToSpecialMonster(bot, "fvampire")
@@ -964,7 +964,7 @@ function prepareWarrior(bot: AL.Warrior) {
         ghost: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["ghost"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
+            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToNearestWalkableToMonster(bot, ["ghost"], { map: "halloween", x: 236, y: -1224 })
@@ -996,7 +996,7 @@ function prepareWarrior(bot: AL.Warrior) {
         },
         iceroamer: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["iceroamer"], information.friends) },
-            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
+            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToNearestWalkableToMonster(bot, ["iceroamer"], { map: "winterland", x: 1532, y: 104 })
@@ -1041,13 +1041,13 @@ function prepareWarrior(bot: AL.Warrior) {
         },
         mrgreen: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["mrgreen"], information.friends) },
-            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
+            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "mrgreen") },
             requireCtype: "priest"
         },
         mrpumpkin: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["mrpumpkin"], information.friends) },
-            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
+            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "mrpumpkin") },
             requireCtype: "priest"
         },
@@ -1097,7 +1097,7 @@ function prepareWarrior(bot: AL.Warrior) {
         phoenix: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
+            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "phoenix") },
         },
         plantoid: {
@@ -1197,7 +1197,7 @@ function prepareWarrior(bot: AL.Warrior) {
         },
         stoneworm: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["stoneworm"], information.friends, { disableAgitate: true }) },
-            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "test_orb" },
+            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToNearestWalkableToMonster(bot, ["stoneworm"], { map: "spookytown", x: 717, y: 129 })

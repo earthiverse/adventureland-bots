@@ -7,8 +7,8 @@ import { getTargetServerFromMonsters } from "../base/serverhop.js"
 
 /** Config */
 const rogue1Name = "rule34"
-const default_region: AL.ServerRegion = "ASIA"
-const default_identifier: AL.ServerIdentifier = "I"
+const default_region: AL.ServerRegion = "US"
+const default_identifier: AL.ServerIdentifier = "III"
 const targets: AL.MonsterName[] = ["cutebee", "goo"]
 const defaultLocation: AL.IPosition = mainGoos
 
@@ -19,7 +19,7 @@ async function startRogue(bot: AL.Rogue, positionOffset: { x: number, y: number 
     startHealLoop(bot)
     startLootLoop(bot)
     startSellLoop(bot, { ...ITEMS_TO_SELL, "hpamulet": 2, "hpbelt": 2, "quiver": 2, "ringsj": 2, "slimestaff": 2, "stinger": 2 })
-    startRSpeedLoop(bot)
+    startRSpeedLoop(bot, { enableGiveToStrangers: true })
     startPartyLoop(bot, partyLeader)
 
     async function attackLoop() {
