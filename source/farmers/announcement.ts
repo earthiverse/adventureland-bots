@@ -243,7 +243,7 @@ async function run() {
                 if (mage1) await mage1.disconnect()
                 mage1 = await AL.Game.startMage(name, region, identifier)
                 startShared(mage1)
-                startMage(mage1, { x: 50, y: 0 })
+                startMage(mage1, { x: 150, y: 0 })
                 startTrackerLoop(mage1)
                 mage1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
@@ -270,7 +270,7 @@ async function run() {
                 if (mage2) await mage2.disconnect()
                 mage2 = await AL.Game.startMage(name, region, identifier)
                 startShared(mage2)
-                startMage(mage2, { x: 100, y: 0 })
+                startMage(mage2, { x: -150, y: 0 })
                 mage2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
