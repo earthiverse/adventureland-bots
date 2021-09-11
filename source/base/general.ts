@@ -833,7 +833,7 @@ export function startHealLoop(bot: AL.Character): void {
                 const mpot1 = bot.locateItem("mpot1")
                 const mpot0 = bot.locateItem("mpot0")
                 if (hpRatio < mpRatio) {
-                    if (bot.c.town) {
+                    if (bot.c.town || bot.s.fishing) {
                         await bot.regenHP()
                     } else if (missingHP >= 400 && hpot1 !== undefined) {
                         await bot.useHPPot(hpot1)
@@ -843,7 +843,7 @@ export function startHealLoop(bot: AL.Character): void {
                         await bot.regenHP()
                     }
                 } else if (mpRatio < hpRatio) {
-                    if (bot.c.town) {
+                    if (bot.c.town || bot.s.fishing) {
                         await bot.regenHP()
                     } else if (missingMP >= 500 && mpot1 !== undefined) {
                         await bot.useMPPot(mpot1)
@@ -853,7 +853,7 @@ export function startHealLoop(bot: AL.Character): void {
                         await bot.regenMP()
                     }
                 } else if (hpRatio < 1) {
-                    if (bot.c.town) {
+                    if (bot.c.town || bot.s.fishing) {
                         await bot.regenHP()
                     } else if (missingHP >= 400 && hpot1 !== undefined) {
                         await bot.useHPPot(hpot1)
