@@ -1,6 +1,6 @@
 import AL from "alclient"
 import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, goToNearestWalkableToMonster, ITEMS_TO_SELL } from "../base/general.js"
-import { mainBeesNearTunnel } from "../base/locations.js"
+import { mainBeesNearTunnel, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
 
 /** Config */
@@ -45,7 +45,7 @@ async function startRogue(bot: AL.Rogue, positionOffset: { x: number, y: number 
             await goToPoitonSellerIfLow(bot)
             await goToBankIfFull(bot)
 
-            await goToNearestWalkableToMonster(bot, targets, { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y })
+            await goToNearestWalkableToMonster(bot, targets, offsetPosition(defaultLocation, positionOffset.x, positionOffset.y))
         } catch (e) {
             console.error(e)
         }

@@ -1,6 +1,6 @@
 import AL from "alclient"
-import { goToPoitonSellerIfLow, startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startAvoidStacking, goToNearestWalkableToMonster, goToBankIfFull } from "../base/general.js"
-import { mainGoos } from "../base/locations.js"
+import { goToPoitonSellerIfLow, startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startAvoidStacking, goToBankIfFull } from "../base/general.js"
+import { mainGoos, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 import { getTargetServerFromDate } from "../base/serverhop.js"
 
@@ -53,7 +53,7 @@ async function startRanger(bot: AL.Ranger, positionOffset: { x: number, y: numbe
             await goToPoitonSellerIfLow(bot)
             await goToBankIfFull(bot)
 
-            await bot.smartMove({ map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y })
+            await bot.smartMove(offsetPosition(defaultLocation, positionOffset.x, positionOffset.y))
         } catch (e) {
             console.error(e)
         }

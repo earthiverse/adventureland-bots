@@ -1,6 +1,6 @@
 import AL from "alclient"
 import { goToPoitonSellerIfLow, startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startAvoidStacking, goToNearestWalkableToMonster, goToBankIfFull } from "../base/general.js"
-import { mainScorpions } from "../base/locations.js"
+import { mainScorpions, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesWarrior, startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 
 /** Config */
@@ -55,7 +55,7 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
             await goToPoitonSellerIfLow(bot)
             await goToBankIfFull(bot)
 
-            await goToNearestWalkableToMonster(bot, targets, { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y })
+            await goToNearestWalkableToMonster(bot, targets, offsetPosition(defaultLocation, positionOffset.x, positionOffset.y))
         } catch (e) {
             console.error(e)
         }

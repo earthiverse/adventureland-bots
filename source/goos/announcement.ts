@@ -1,6 +1,6 @@
 import AL from "alclient"
 import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, goToNearestWalkableToMonster, ITEMS_TO_SELL, startPartyLoop } from "../base/general.js"
-import { mainGoos } from "../base/locations.js"
+import { mainGoos, offsetPosition } from "../base/locations.js"
 import { partyLeader } from "../base/party.js"
 import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
 import { getTargetServerFromMonsters } from "../base/serverhop.js"
@@ -48,7 +48,7 @@ async function startRogue(bot: AL.Rogue, positionOffset: { x: number, y: number 
             await goToPoitonSellerIfLow(bot)
             await goToBankIfFull(bot)
 
-            goToNearestWalkableToMonster(bot, targets, { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y }).catch(e => console.error(e))
+            goToNearestWalkableToMonster(bot, targets, offsetPosition(defaultLocation, positionOffset.x, positionOffset.y)).catch(e => console.error(e))
         } catch (e) {
             console.error(e)
         }

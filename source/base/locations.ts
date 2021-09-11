@@ -22,3 +22,7 @@ export const halloweenSafeSnakes: AL.IPosition = { map: "halloween", x: 346.5, y
 
 // Winterland
 export const winterlandArcticBees: AL.IPosition = { map: "winterland", x: 1082, y: -873 }
+
+export function offsetPosition(position: AL.IPosition, x: number, y: number): AL.IPosition {
+    return { in: position.in, map: position.map, x: position.x + x, y: position.y + y }
+}

@@ -1,6 +1,6 @@
 import AL from "alclient"
 import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startSendStuffAllowlistLoop, ITEMS_TO_HOLD, startTrackerLoop } from "../base/general.js"
-import { mainBeesNearGoos } from "../base/locations.js"
+import { mainBeesNearGoos, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 
 /** Config */
@@ -55,7 +55,7 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
             await goToPoitonSellerIfLow(bot)
             await goToBankIfFull(bot, ITEMS_TO_HOLD, 0)
 
-            const destination: AL.IPosition = { map: defaultLocation.map, x: defaultLocation.x + positionOffset.x, y: defaultLocation.y + positionOffset.y }
+            const destination: AL.IPosition = offsetPosition(defaultLocation, positionOffset.x, positionOffset.y)
             if (AL.Tools.distance(bot, destination) > 1) await bot.smartMove(destination)
         } catch (e) {
             console.error(e)
