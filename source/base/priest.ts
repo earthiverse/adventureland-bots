@@ -100,7 +100,7 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
 
     // Apply curse if we can't kill it in one shot and we have enough MP
     if (bot.canUse("curse") && bot.mp > (bot.mp_cost + bot.G.skills.curse.mp) && !canKill && !target.immune) {
-        bot.curse(target.id).catch((e) => { console.error(e) })
+        bot.curse(target.id).catch(e => console.error(e))
     }
 
     // Use our friends to energize for the attack speed boost

@@ -117,7 +117,7 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
 
     // Apply huntersmark if we can't kill it in one shot and we have enough MP
     if (bot.canUse("huntersmark") && !options.disableHuntersMark && bot.mp > (bot.mp_cost + bot.G.skills.huntersmark.mp) && !bot.canKillInOneShot(target)) {
-        bot.huntersMark(target.id).catch((e) => { console.error(e) })
+        bot.huntersMark(target.id).catch(e => console.error(e))
     }
 
     // Use our friends to energize for the attack speed boost

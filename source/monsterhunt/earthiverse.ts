@@ -1190,7 +1190,18 @@ function prepareWarrior(bot: AL.Warrior) {
             move: async () => { await goToNearestWalkableToMonster(bot, ["squigtoad", "squig"], { map: "main", x: -1195, y: 422 }) },
         },
         stompy: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["stompy"], information.friends, { disableAgitate: true }) },
+            attack: async () => {
+                // Taunt extra wolves so the ranger can 3shot
+                const stompy = bot.getNearestMonster("stompy")?.monster
+                if (stompy && stompy.level == 0 && bot.canUse("taunt")) {
+                    const wolvesTargettingMe = bot.getEntities({ targetingMe: true, type: "wolf" })
+                    const wolvesToTarget = bot.getEntities({ couldGiveCredit: true, targetingMe: false, type: "wolf", withinRange: bot.G.skills.taunt.range })
+                    if (wolvesTargettingMe.length < 2) {
+                        bot.taunt(wolvesToTarget[0].id).catch(e => console.error(e))
+                    }
+                }
+                await attackTheseTypesWarrior(bot, ["stompy"], information.friends, { disableAgitate: true })
+            },
             equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "stompy") },
             requireCtype: "priest"

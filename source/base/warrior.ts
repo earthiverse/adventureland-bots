@@ -140,12 +140,12 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
         }
         if (options.maximumTargets && bot.targets + agitateTargets.length > options.maximumTargets) avoidAgitate = true
         if (!avoidAgitate && agitateTargets.length > 1) {
-            bot.agitate().catch((e) => { console.error(e) })
+            bot.agitate().catch(e => console.error(e))
             bot.mp -= bot.G.skills.agitate.mp
         } else if (bot.canUse("taunt") && !(options.maximumTargets && bot.targets + 1 > options.maximumTargets)) {
             for (const target of agitateTargets) {
                 if (AL.Tools.distance(bot, target) > bot.G.skills.taunt.range) continue // Too far
-                bot.taunt(target.id).catch((e) => { console.error(e) })
+                bot.taunt(target.id).catch(e => console.error(e))
                 bot.mp -= bot.G.skills.taunt.mp
                 break
             }
@@ -200,7 +200,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
             const canKill = bot.canKillInOneShot(entity)
 
             if (!canKill && !options.disableStomp && bot.canUse("stomp") && bot.mp > bot.G.skills.stomp.mp + bot.mp_cost) {
-                bot.stomp().catch((e) => { console.error(e) })
+                bot.stomp().catch(e => console.error(e))
                 bot.mp -= bot.G.skills.stomp.mp
             }
 

@@ -84,9 +84,9 @@ async function startRanger(bot: AL.Ranger) {
             } else if (targets.length && bot.canUse("attack")) {
                 if (!bot.s.energized) {
                     if (mage1.socket.connected && mage1.canUse("energize")) {
-                        mage1.energize(bot.id).catch((e) => { console.error(e) })
+                        mage1.energize(bot.id).catch(e => console.error(e))
                     } else if (mage2.socket.connected && mage2.canUse("energize")) {
-                        mage2.energize(bot.id).catch((e) => { console.error(e) })
+                        mage2.energize(bot.id).catch(e => console.error(e))
                     }
                 }
 
