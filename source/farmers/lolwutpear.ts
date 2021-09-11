@@ -37,7 +37,7 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            await attackTheseTypesMage(bot, targets, [mage1, mage2, mage3], { cburstWhenHPLessThan: 100, disableEnergize: true })
+            await attackTheseTypesMage(bot, targets, [mage1, mage2, mage3], { cburstWhenHPLessThan: 101 })
         } catch (e) {
             console.error(e)
         }

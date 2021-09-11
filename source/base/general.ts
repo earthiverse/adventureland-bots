@@ -661,7 +661,7 @@ export function startBuyToUpgradeLoop(bot: AL.Character, item: AL.ItemName, quan
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            for (let i = bot.countItem(item); i < quantity; i++) {
+            for (let i = bot.countItem(item); i < quantity && bot.esize > 2; i++) {
                 if (bot.canBuy(item)) await bot.buy(item)
             }
         } catch (e) {

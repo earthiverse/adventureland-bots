@@ -1,5 +1,5 @@
 import AL from "alclient"
-import { goToPoitonSellerIfLow, startBuyLoop, startCompoundLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, ITEMS_TO_SELL, startElixirLoop, goToBankIfFull, goToNearestWalkableToMonster } from "../base/general.js"
+import { goToPoitonSellerIfLow, startBuyLoop, startCompoundLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, ITEMS_TO_SELL, startElixirLoop, goToBankIfFull, goToNearestWalkableToMonster, startBuyToUpgradeLoop } from "../base/general.js"
 import { mainGoos } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { doBanking, startMluckLoop } from "../base/merchant.js"
@@ -37,7 +37,7 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            await attackTheseTypesMage(bot, targets, [mage1, mage2, mage3], { cburstWhenHPLessThan: 100, disableEnergize: true })
+            await attackTheseTypesMage(bot, targets, [mage1, mage2, mage3], { cburstWhenHPLessThan: 101 })
         } catch (e) {
             console.error(e)
         }
@@ -126,6 +126,8 @@ async function startMerchant(bot: AL.Merchant) {
     startCompoundLoop(bot)
     startUpgradeLoop(bot)
     startPartyLoop(bot, bot.id) // Let anyone who wants to party with me do so
+
+    startBuyToUpgradeLoop(bot, "wand", 4) // Start upgrading wands
 
     startMluckLoop(bot)
 
