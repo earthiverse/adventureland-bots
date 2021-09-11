@@ -2,7 +2,7 @@ import AL from "alclient"
 import { goToPoitonSellerIfLow, goToNPCShopIfFull, startBuyLoop, startCompoundLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, ITEMS_TO_SELL, startElixirLoop, goToBankIfFull, goToNearestWalkableToMonster } from "../base/general.js"
 import { mainGoos } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
-import { doBanking, startMluckLoop } from "../base/merchant.js"
+import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 
 /** Config */
@@ -183,54 +183,10 @@ async function startMerchant(bot: AL.Merchant) {
             }
 
             // Go fishing if we can
-            if (bot.getCooldown("fishing") == 0 /* Fishing is available */
-                && (bot.hasItem("rod") || bot.isEquipped("rod")) /* We have a rod */) {
-                let wasEquippedMainhand = bot.slots.mainhand
-                let wasEquippedOffhand = bot.slots.offhand
-                if (wasEquippedOffhand) await bot.unequip("offhand") // rod is a 2-handed weapon, so we need to unequip our offhand if we have something equipped
-                else if (bot.hasItem("wbook1")) wasEquippedOffhand = { name: "wbook1" } // We want to equip a wbook1 by default if we have one after we go fishing
-                if (wasEquippedMainhand) {
-                    if (wasEquippedMainhand.name !== "rod") {
-                        // We didn't have a rod equipped before, let's equip one now
-                        await bot.unequip("mainhand")
-                        await bot.equip(bot.locateItem("rod"))
-                    }
-                } else {
-                    // We didn't have anything equipped before
-                    if (bot.hasItem("dartgun")) wasEquippedMainhand = { name: "dartgun" } // We want to equip a dartgun by default if we have one after we go fishing
-                    await bot.equip(bot.locateItem("rod")) // Equip the rod
-                }
-                bot.closeMerchantStand()
-                await bot.smartMove({ map: "main", x: -1368, y: 0 }) // Move to fishing sppot
-                await bot.fish()
-                if (wasEquippedMainhand) await bot.equip(bot.locateItem(wasEquippedMainhand.name))
-                if (wasEquippedOffhand) await bot.equip(bot.locateItem(wasEquippedOffhand.name))
-            }
+            await goFishing(bot)
 
             // Go mining if we can
-            if (bot.getCooldown("mining") == 0 /* Mining is available */
-                && (bot.hasItem("pickaxe") || bot.isEquipped("pickaxe")) /* We have a pickaxe */) {
-                let wasEquippedMainhand = bot.slots.mainhand
-                let wasEquippedOffhand = bot.slots.offhand
-                if (wasEquippedOffhand) await bot.unequip("offhand") // pickaxe is a 2-handed weapon, so we need to unequip our offhand if we have something equipped
-                else if (bot.hasItem("wbook1")) wasEquippedOffhand = { name: "wbook1" } // We want to equip a wbook1 by default if we have one after we go mining
-                if (wasEquippedMainhand) {
-                    if (wasEquippedMainhand.name !== "pickaxe") {
-                        // We didn't have a pickaxe equipped before, let's equip one now
-                        await bot.unequip("mainhand")
-                        await bot.equip(bot.locateItem("pickaxe"))
-                    }
-                } else {
-                    // We didn't have anything equipped before
-                    if (bot.hasItem("dartgun")) wasEquippedMainhand = { name: "dartgun" } // We want to equip a dartgun by default if we have one after we go mining
-                    await bot.equip(bot.locateItem("pickaxe")) // Equip the pickaxe
-                }
-                bot.closeMerchantStand()
-                await bot.smartMove({ map: "tunnel", x: -280, y: -10 }) // Move to mining sppot
-                await bot.mine()
-                if (wasEquippedMainhand) await bot.equip(bot.locateItem(wasEquippedMainhand.name))
-                if (wasEquippedOffhand) await bot.equip(bot.locateItem(wasEquippedOffhand.name))
-            }
+            await goMining(bot)
 
             // Hang out in town
             await bot.smartMove({ map: "main", x: -230, y: -100 })

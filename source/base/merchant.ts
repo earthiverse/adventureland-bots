@@ -1,5 +1,6 @@
 import AL from "alclient"
 import { ITEMS_TO_EXCHANGE, ITEMS_TO_HOLD, ITEMS_TO_SELL, LOOP_MS } from "./general.js"
+import { mainFishingSpot } from "./locations.js"
 
 export const MERCHANT_GOLD_TO_HOLD = 100_000_000
 export const MERCHANT_ITEMS_TO_HOLD: Set<AL.ItemName> = new Set([
@@ -250,7 +251,7 @@ export async function goFishing(bot: AL.Merchant): Promise<void> {
         await bot.equip(bot.locateItem("rod")) // Equip the rod
     }
     bot.closeMerchantStand()
-    await bot.smartMove({ map: "main", x: -1368, y: 0 }) // Move to fishing sppot
+    await bot.smartMove(mainFishingSpot) // Move to fishing sppot
     await bot.fish()
     if (wasEquippedMainhand) await bot.equip(bot.locateItem(wasEquippedMainhand.name))
     if (wasEquippedOffhand) await bot.equip(bot.locateItem(wasEquippedOffhand.name))
