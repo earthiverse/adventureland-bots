@@ -5,9 +5,9 @@ import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { stompPartyLeader, stompPartyMembers } from "../base/party.js"
 
 export const region: AL.ServerRegion = "US"
-export const identifier: AL.ServerIdentifier = "PVP"
+export const identifier: AL.ServerIdentifier = "II"
 
-const targets: AL.MonsterName[] = ["pinkgoblin"]
+const targets: AL.MonsterName[] = ["franky"]
 const LOOP_MS = 10
 
 export async function startSellSticksToMerchantsLoop(bot: AL.Character): Promise<void> {

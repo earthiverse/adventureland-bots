@@ -226,7 +226,7 @@ async function run() {
             try {
                 if (merchant) await merchant.disconnect()
                 merchant = await AL.Game.startMerchant(name, region, identifier)
-                startMerchant(merchant, [leader, follower1, follower2], { map: "level2e", x: 600, y: 125 })
+                startMerchant(merchant, [leader, follower1, follower2], { map: "main", x: 0, y: 0 })
                 merchant.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
