@@ -806,6 +806,12 @@ export function startExchangeLoop(bot: AL.Character, itemsToExchange = ITEMS_TO_
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
+            if (bot.q.exchange) {
+                // We are exchanging, we have to wait
+                bot.timeouts.set("exchangeloop", setTimeout(async () => { exchangeLoop() }, bot.q.exchange.ms))
+                return
+            }
+
             if (bot.esize > 10 /** Only exchange if we have plenty of space */
                 && !(bot.G.maps[bot.map] as AL.GMap).mount /** Don't exchange in the bank */) {
                 for (let i = 0; i < bot.items.length; i++) {
