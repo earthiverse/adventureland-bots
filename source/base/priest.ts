@@ -39,7 +39,7 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
         if (player.hp / player.max_hp > 0.8) continue // Player still has a lot of hp
 
         const isFriend = friends.some((friend) => { friend?.id == bot.id })
-        if (!isFriend && bot.party && bot.partyData.list && !bot.partyData.list.includes(player.id)) continue // They're not our friend, and not in our party
+        if (!isFriend && bot.party && bot.party !== player.party) continue // They're not our friend, and not in our party
 
         players.add(player)
     }

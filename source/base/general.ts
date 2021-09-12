@@ -124,6 +124,14 @@ export const REPLENISHABLES_TO_BUY: [AL.ItemName, number][] = [
     ["xptome", 1]
 ]
 
+export function getFirstEmptyInventorySlot(items = this.items): number {
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        if (!item) return i
+    }
+    return undefined
+}
+
 /**
  * These are cooperative entities that don't spawn very often.
  * We only want to do them when others are attacking them, too.

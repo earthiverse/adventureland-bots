@@ -2,18 +2,20 @@ import AL from "alclient"
 import { startPontyLoop, LOOP_MS, startCompoundLoop, startHealLoop, startLootLoop, startScareLoop, startSellLoop, startUpgradeLoop, startExchangeLoop, ITEMS_TO_SELL, startTrackerLoop } from "../base/general.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
 import { stompPartyLeader } from "../base/party.js"
-import { identifier, region, startLeader, startMailBankKeysToEarthiverseLoop, startSellSticksToMerchantsLoop, startShared } from "./runners.js"
+import { identifier, region, startLeader, startMailBankKeysToEarthiverseLoop, startPriest, startSellSticksToMerchantsLoop, startShared } from "./runners.js"
 
 /** Config */
 const leaderName = stompPartyLeader
 const follower1Name = "earthWar2"
-const follower2Name = "earthWar3"
+// const follower2Name = "earthWar3"
+const follower2Name = "earthPri"
 const merchantName = "earthMer2"
 
 /** Characters */
 let leader: AL.Warrior
 let follower1: AL.Warrior
-let follower2: AL.Warrior
+// let follower2: AL.Warrior
+let follower2: AL.Priest
 let merchant: AL.Merchant
 
 async function startMerchant(bot: AL.Merchant, friends: AL.Character[], holdPosition: AL.IPosition): Promise<void> {
@@ -195,13 +197,38 @@ async function run() {
     }
     startFollower1Loop(follower1Name, region, identifier).catch(() => { /* ignore errors */ })
 
+    // const startFollower2Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    //     // Start the characters
+    //     const loopBot = async () => {
+    //         try {
+    //             if (follower2) await follower2.disconnect()
+    //             follower2 = await AL.Game.startWarrior(name, region, identifier)
+    //             startShared(follower2, merchantName)
+    //             follower2.socket.on("disconnect", async () => { loopBot() })
+    //         } catch (e) {
+    //             console.error(e)
+    //             if (follower2) await follower2.disconnect()
+    //             const wait = /wait_(\d+)_second/.exec(e)
+    //             if (wait && wait[1]) {
+    //                 setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+    //             } else if (/limits/.test(e)) {
+    //                 setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+    //             } else {
+    //                 setTimeout(async () => { loopBot() }, 10000)
+    //             }
+    //         }
+    //     }
+    //     loopBot()
+    // }
+    // startFollower2Loop(follower2Name, region, identifier).catch(() => { /* ignore errors */ })
+
     const startFollower2Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
                 if (follower2) await follower2.disconnect()
-                follower2 = await AL.Game.startWarrior(name, region, identifier)
-                startShared(follower2, merchantName)
+                follower2 = await AL.Game.startPriest(name, region, identifier)
+                startPriest(follower2, merchantName)
                 follower2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
