@@ -321,11 +321,15 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
         const now = Date.now()
 
         let numStompers = 0
-        let partyMemberIndex: number
-        for (const id of bot.partyData?.list) {
-            const member = bot.partyData.party[id]
-            if (id == bot.id) partyMemberIndex = numStompers
-            if (member.type == "warrior") numStompers++
+        let partyMemberIndex = 0
+        if (bot.partyData && bot.partyData.list) {
+            for (const id of bot.partyData.list) {
+                const member = bot.partyData.party[id]
+                if (id == bot.id) partyMemberIndex = numStompers
+                if (member.type == "warrior") numStompers++
+            }
+        } else {
+            numStompers = 1
         }
 
         const cooldown = AL.Game.G.skills.stomp.cooldown + 250
