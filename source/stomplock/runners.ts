@@ -1,13 +1,14 @@
-import AL from "alclient"
+import AL, { ServerInfoDataLive } from "alclient"
 import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_SELL, goToNearestWalkableToMonster, startTrackerLoop } from "../base/general.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { stompPartyLeader, stompPartyMembers } from "../base/party.js"
+import { mainGoos } from "../base/locations.js"
 
 export const region: AL.ServerRegion = "US"
 export const identifier: AL.ServerIdentifier = "II"
 
-const targets: AL.MonsterName[] = ["franky"]
+const targets: AL.MonsterName[] = ["franky", "goo"]
 const LOOP_MS = 10
 
 export async function startSellSticksToMerchantsLoop(bot: AL.Character): Promise<void> {
@@ -318,7 +319,8 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
     }
     setTimeout(async () => { stompLoop() }, Math.max(getNextStunTime()))
 
-    const spawn = bot.locateMonster(targets[0])[0]
+    const spawn: AL.IPosition = bot.S.franky as ServerInfoDataLive || mainGoos
+
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
