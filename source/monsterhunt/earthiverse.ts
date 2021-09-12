@@ -1193,7 +1193,7 @@ function prepareWarrior(bot: AL.Warrior) {
             attack: async () => {
                 // Taunt extra wolves so the ranger can 3shot
                 const stompy = bot.getNearestMonster("stompy")?.monster
-                if (stompy && stompy.level == 0 && bot.canUse("taunt")) {
+                if (stompy && stompy.level <= 1 && bot.canUse("taunt")) {
                     const wolvesTargettingMe = bot.getEntities({ targetingMe: true, type: "wolf" })
                     const wolvesToTarget = bot.getEntities({ couldGiveCredit: true, targetingMe: false, type: "wolf", withinRange: bot.G.skills.taunt.range })
                     if (wolvesTargettingMe.length < 2) {
