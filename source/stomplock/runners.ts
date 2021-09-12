@@ -322,13 +322,13 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
 
         let numStompers = 0
         let partyMemberIndex: number
-        for (const id in bot.partyData?.party) {
+        for (const id of bot.partyData?.list) {
             const member = bot.partyData.party[id]
             if (id == bot.id) partyMemberIndex = numStompers
             if (member.type == "warrior") numStompers++
         }
 
-        const cooldown = AL.Game.G.skills.stomp.cooldown + 500
+        const cooldown = AL.Game.G.skills.stomp.cooldown + 250
         const nextInterval = (cooldown - now % cooldown)
         const offset = partyMemberIndex * (cooldown / numStompers)
 
