@@ -296,7 +296,7 @@ async function run() {
                 if (mage3) await mage3.disconnect()
                 mage3 = await AL.Game.startMage(name, region, identifier)
                 startShared(mage3)
-                startMage(mage3, { x: 150, y: 0 })
+                startMage(mage3, { x: 0, y: 0 })
                 mage3.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
