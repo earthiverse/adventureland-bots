@@ -1,4 +1,4 @@
-import AL, { ServerInfoDataLive } from "alclient"
+import AL, { Character, ServerInfoDataLive } from "alclient"
 import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_SELL, goToNearestWalkableToMonster, startTrackerLoop, getFirstEmptyInventorySlot } from "../base/general.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
@@ -321,12 +321,13 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
         const now = Date.now()
 
         let numStompers = 0
-        for (const id in bot.partyData.party) {
+        let partyMemberIndex: number
+        for (const id in bot.partyData?.party) {
             const member = bot.partyData.party[id]
+            if (id == bot.id) partyMemberIndex = numStompers
             if (member.type == "warrior") numStompers++
         }
 
-        const partyMemberIndex = bot.partyData ? bot.partyData.list ? bot.partyData.list.indexOf(bot.id) : 0 : 0
         const cooldown = AL.Game.G.skills.stomp.cooldown + 500
         const nextInterval = (cooldown - now % cooldown)
         const offset = partyMemberIndex * (cooldown / numStompers)
