@@ -146,7 +146,7 @@ export function startDarkBlessingLoop(bot: AL.Priest): void {
     darkBlessingLoop()
 }
 
-export function startPartyHealLoop(bot: AL.Priest, friends: AL.Character[]): void {
+export function startPartyHealLoop(bot: AL.Priest, friends: AL.Character[] = []): void {
     async function partyHealLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -156,12 +156,27 @@ export function startPartyHealLoop(bot: AL.Priest, friends: AL.Character[]): voi
                 return
             }
 
+            // Check provided characters (we can heal them wherever they are, we just need to know if they're hurt)
             if (bot.canUse("partyheal")) {
                 for (const friend of friends) {
                     if (!friend) continue // No friend
                     if (friend.party !== bot.party) continue // Our priest isn't in the same party!?
                     if (friend.rip) continue // Party member is already dead
                     if (friend.hp < friend.max_hp * 0.5) {
+                        // Someone in our party has low HP
+                        await bot.partyHeal()
+                        break
+                    }
+                }
+            }
+
+            // Check characters around us
+            if (bot.canUse("partyheal")) {
+                for (const [, player] of bot.players) {
+                    if (!player) // No player
+                        if (player.party !== bot.party) continue // Not in the same party
+                    if (player.rip) continue // Player is already dead
+                    if (player.hp < player.max_hp * 0.5) {
                         // Someone in our party has low HP
                         await bot.partyHeal()
                         break
