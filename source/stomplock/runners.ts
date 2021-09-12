@@ -319,8 +319,6 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
     }
     setTimeout(async () => { stompLoop() }, Math.max(getNextStunTime()))
 
-    const spawn: AL.IPosition = bot.S.franky as ServerInfoDataLive || mainGoos
-
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -334,6 +332,8 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
 
             await goToPoitonSellerIfLow(bot)
             await goToBankIfFull(bot)
+
+            const spawn: AL.IPosition = bot.S.franky as ServerInfoDataLive || mainGoos
 
             await goToNearestWalkableToMonster(bot, targets, spawn, 0)
         } catch (e) {
