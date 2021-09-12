@@ -124,7 +124,7 @@ export const REPLENISHABLES_TO_BUY: [AL.ItemName, number][] = [
     ["xptome", 1]
 ]
 
-export function getFirstEmptyInventorySlot(items = this.items): number {
+export function getFirstEmptyInventorySlot(items: AL.ItemData[]): number {
     for (let i = 0; i < items.length; i++) {
         const item = items[i]
         if (!item) return i

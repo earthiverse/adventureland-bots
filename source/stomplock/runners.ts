@@ -225,7 +225,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
                         const promises: Promise<unknown>[] = []
 
                         if (bot.slots.offhand) {
-                            offhandSlot = getFirstEmptyInventorySlot()
+                            offhandSlot = getFirstEmptyInventorySlot(bot.items)
                             promises.push(bot.unequip("offhand"))
                         }
                         if (bot.slots.mainhand?.name !== "bataxe") {
