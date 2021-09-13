@@ -98,8 +98,6 @@ export const ITEMS_TO_SELL: ItemLevelInfo = {
     "crabclaw": 2, "hpamulet": 2, "hpbelt": 2, "quiver": 2, "ringsj": 2, "slimestaff": 2, "stinger": 2, "frankypants": 2,
     // Default clothing
     "shoes": 2, "pants": 2, "coat": 2, "helmet": 2, "gloves": 2,
-    // Heavy things
-    "shoes1": 2, "pants1": 2, "coat1": 2, "helmet1": 2, "gloves1": 2,
     // Field generators
     "fieldgen0": 999,
     // Snowballs
