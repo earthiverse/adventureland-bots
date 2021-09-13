@@ -696,7 +696,7 @@ export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo 
                 return
             }
 
-            const itemsByLevel = bot.locateItemsByLevel(bot.items, { excludeSpecialItems: true })
+            const itemsByLevel = bot.locateItemsByLevel()
             for (const dName in itemsByLevel) {
                 const itemName = dName as AL.ItemName
                 const gInfo = bot.G.items[itemName]
@@ -1295,7 +1295,7 @@ export function startUpgradeLoop(bot: AL.Character, itemsToSell: ItemLevelInfo =
                 return
             }
 
-            const itemsByLevel = bot.locateItemsByLevel(bot.items, { excludeSpecialItems: true })
+            const itemsByLevel = bot.locateItemsByLevel()
             for (const dName in itemsByLevel) {
                 const itemName = dName as AL.ItemName
                 const gInfo = bot.G.items[itemName]
@@ -1320,6 +1320,8 @@ export function startUpgradeLoop(bot: AL.Character, itemsToSell: ItemLevelInfo =
                                 foundOne = true
                                 continue
                             }
+                            const itemInfo = bot.items[slot]
+                            if (itemInfo.l) continue // Can't upgrade locked items
 
                             let scrollPos = bot.locateItem(scrollName)
                             const primlingPos = bot.locateItem("offeringp")
