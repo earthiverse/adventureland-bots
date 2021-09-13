@@ -116,7 +116,7 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
     }
 
     // Withdraw compoundable & upgradable things
-    const itemsByLevel = bot.locateItemsByLevel(bankItems, { excludeSpecialItems: true })
+    const itemsByLevel = bot.locateItemsByLevel(bankItems)
     for (const dName in itemsByLevel) {
         const itemName = dName as AL.ItemName
         const gInfo = bot.G.items[itemName]
