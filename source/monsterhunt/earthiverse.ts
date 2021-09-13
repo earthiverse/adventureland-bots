@@ -1196,7 +1196,7 @@ function prepareWarrior(bot: AL.Warrior) {
                 if (stompy && stompy.level <= 1 && bot.canUse("taunt")) {
                     const wolvesTargettingMe = bot.getEntities({ targetingMe: true, type: "wolf" })
                     const wolvesToTarget = bot.getEntities({ couldGiveCredit: true, targetingMe: false, type: "wolf", withinRange: bot.G.skills.taunt.range })
-                    if (wolvesTargettingMe.length < 2) {
+                    if (wolvesTargettingMe.length < 2 && wolvesToTarget.length > 0) {
                         bot.taunt(wolvesToTarget[0].id).catch(e => console.error(e))
                     }
                 }
