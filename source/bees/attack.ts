@@ -2,7 +2,6 @@ import AL from "alclient"
 import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, ITEMS_TO_HOLD, startSendStuffDenylistLoop } from "../base/general.js"
 import { mainBeesNearTunnel, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
-import { doBanking } from "../base/merchant.js"
 import { ItemLevelInfo } from "../definitions/bot.js"
 
 /** Config */
@@ -87,10 +86,8 @@ async function startMerchant(bot: AL.Merchant, holdPosition: AL.IPosition) {
                 return
             }
 
+            await goToPoitonSellerIfLow(bot)
             await goToBankIfFull(bot, ITEMS_TO_HOLD, 2_000_000)
-            if (bot.gold > 25_000_000) {
-                await doBanking(bot, 2_000_000, ITEMS_TO_HOLD, SELL_THESE)
-            }
 
             if (AL.Tools.distance(bot, holdPosition) > 1) await bot.smartMove(holdPosition)
         } catch (e) {
