@@ -1,10 +1,9 @@
-import AL, { Character, ServerInfoDataLive } from "alclient"
-import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_SELL, goToNearestWalkableToMonster, startTrackerLoop, getFirstEmptyInventorySlot } from "../base/general.js"
+import AL from "alclient"
+import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_SELL, goToNearestWalkableToMonster, startTrackerLoop, getFirstEmptyInventorySlot, startBuyFriendsReplenishablesLoop } from "../base/general.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { stompPartyLeader, stompPartyMembers } from "../base/party.js"
-import { mainGoos } from "../base/locations.js"
-import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
+import { startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 import FastPriorityQueue from "fastpriorityqueue"
 
 export const region: AL.ServerRegion = "US"
@@ -78,7 +77,7 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
                 })) {
                     if (!entity) continue // Entity died?
                     if (entity.target == bot.name) continue // Already targeting us
-                    if (!entity.s.stunned || entity.s.stunned.ms < ((LOOP_MS + Math.max(...bot.pings)) * 4)) continue // Enemy is not stunned, or is about to be free, don't taunt!
+                    if (!entity.s.stunned || entity.s.stunned.ms <= ((LOOP_MS + Math.max(...bot.pings)) * 2)) continue // Enemy is not stunned, or is about to be free, don't taunt!
 
                     await bot.taunt(entity.id)
                     break
@@ -198,7 +197,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
                     withinRange: bot.range
                 })) {
                     if (!entity) continue // Entity died?
-                    if (!entity.s.stunned || entity.s.stunned.ms < ((LOOP_MS + Math.max(...bot.pings)) * 4)) continue // Enemy is not stunned, or is about to be free, don't attack!
+                    if (!entity.s.stunned || entity.s.stunned.ms <= ((LOOP_MS + Math.max(...bot.pings)) * 2)) continue // Enemy is not stunned, or is about to be free, don't attack!
 
                     await bot.basicAttack(entity.id)
                     break
@@ -212,7 +211,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
                     withinRange: bot.G.skills.stomp.range
                 })) {
                     if (!entity) continue // Entity died?
-                    if (!entity.s.stunned || entity.s.stunned.ms < ((LOOP_MS + Math.max(...bot.pings)) * 4)) {
+                    if (!entity.s.stunned || entity.s.stunned.ms <= ((LOOP_MS + Math.max(...bot.pings)) * 2)) {
                         allStomped = false
                         break
                     }
@@ -261,7 +260,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
             let stunned = true
             for (const [, entity] of bot.entities) {
                 if (entity.target !== bot.id) continue
-                if (!entity.s.stunned || entity.s.stunned.ms <= ((LOOP_MS + Math.min(...bot.pings)) * 4)) stunned = false
+                if (!entity.s.stunned || entity.s.stunned.ms <= ((LOOP_MS + Math.min(...bot.pings)) * 2)) stunned = false
                 incomingDamage += entity.calculateDamageRange(bot)[1]
             }
 
@@ -317,7 +316,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
 
     scareLoop()
 
-    function getNextStunTime() {
+    function getMSToNextStun() {
         const now = Date.now()
 
         let numStompers = 0
@@ -332,7 +331,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
             numStompers = 1
         }
 
-        const cooldown = AL.Game.G.skills.stomp.cooldown + 250
+        const cooldown = AL.Game.G.skills.stomp.cooldown + 100
         const nextInterval = (cooldown - now % cooldown)
         const offset = partyMemberIndex * (cooldown / numStompers)
 
@@ -369,9 +368,12 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
         } catch (e) {
             console.error(e)
         }
-        setTimeout(async () => { stompLoop() }, Math.max(LOOP_MS, bot.getCooldown("stomp"), getNextStunTime()))
+        setTimeout(async () => { stompLoop() }, Math.max(LOOP_MS, bot.getCooldown("stomp"), getMSToNextStun()))
     }
-    setTimeout(async () => { stompLoop() }, Math.max(getNextStunTime()))
+    setTimeout(async () => {
+        // Start our stomp loop in 5s, after we have a party
+        setTimeout(async () => { stompLoop() }, Math.max(getMSToNextStun()))
+    }, 5000)
 
     const spawn = bot.locateMonster(targets[0])[0]
     async function moveLoop() {
@@ -463,7 +465,7 @@ export async function startPriest(bot: AL.Priest, merchantName: string): Promise
                     withinRange: bot.range
                 })) {
                     if (!entity) continue // Entity died?
-                    if (!entity.s.stunned || entity.s.stunned.ms < ((LOOP_MS + Math.max(...bot.pings)) * 4)) continue // Enemy is not stunned, or is about to be free, don't attack!
+                    if (!entity.s.stunned || entity.s.stunned.ms <= ((LOOP_MS + Math.max(...bot.pings)) * 2)) continue // Enemy is not stunned, or is about to be free, don't attack!
 
                     await bot.basicAttack(entity.id)
                     break
@@ -485,7 +487,7 @@ export async function startPriest(bot: AL.Priest, merchantName: string): Promise
             let stunned = true
             for (const [, entity] of bot.entities) {
                 if (entity.target !== bot.id) continue
-                if (!entity.s.stunned || entity.s.stunned.ms <= ((LOOP_MS + Math.min(...bot.pings)) * 4)) stunned = false
+                if (!entity.s.stunned || entity.s.stunned.ms <= ((LOOP_MS + Math.min(...bot.pings)) * 2)) stunned = false
                 incomingDamage += entity.calculateDamageRange(bot)[1]
             }
 
@@ -569,6 +571,7 @@ export async function startPriest(bot: AL.Priest, merchantName: string): Promise
 }
 
 export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], holdPosition: AL.IPosition): Promise<void> {
+    startBuyFriendsReplenishablesLoop(bot, friends)
     startHealLoop(bot)
     startMluckLoop(bot)
     startUpgradeLoop(bot, { ...ITEMS_TO_SELL, "stick": 100 }) // Don't upgrade sticks

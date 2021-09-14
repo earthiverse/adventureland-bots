@@ -1,8 +1,8 @@
 import AL from "alclient"
-import { startPontyLoop, LOOP_MS, startCompoundLoop, startHealLoop, startLootLoop, startScareLoop, startSellLoop, startUpgradeLoop, startExchangeLoop, ITEMS_TO_SELL, startTrackerLoop } from "../base/general.js"
+import { startPontyLoop, LOOP_MS, startCompoundLoop, startHealLoop, startLootLoop, startScareLoop, startSellLoop, startUpgradeLoop, startExchangeLoop, ITEMS_TO_SELL } from "../base/general.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
 import { stompPartyLeader } from "../base/party.js"
-import { identifier, region, startLeader, startMailBankKeysToEarthiverseLoop, startPriest, startSellSticksToMerchantsLoop, startShared } from "./runners.js"
+import { identifier, region, startLeader, startMailBankKeysToEarthiverseLoop, startPriest, startShared } from "./runners.js"
 
 /** Config */
 const leaderName = stompPartyLeader

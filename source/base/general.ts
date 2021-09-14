@@ -662,6 +662,46 @@ export function startBuyLoop(bot: AL.Character, itemsToBuy = ITEMS_TO_BUY, reple
     buyLoop()
 }
 
+export function startBuyFriendsReplenishablesLoop(bot: AL.Character, friends: AL.Character[], replenishablesToBuy = REPLENISHABLES_TO_BUY): void {
+    async function buyFriendsReplenishablesLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            if (!bot.hasItem("computer")) return // We can't buy potions anywhere, don't run this loop
+
+            for (let i = 0; i < friends.length; i++) {
+                const friend = friends[i]
+
+                if (bot.esize == 0) break // We are full
+                if (friend.hasItem("computer")) continue // They can buy their own potions.
+                if (AL.Tools.distance(bot, friend) > AL.Constants.NPC_INTERACTION_DISTANCE) continue // Friend is too far away
+
+                for (const replenishableToBuy of replenishablesToBuy) {
+                    const item = replenishableToBuy[0]
+                    const holdThisMany = replenishableToBuy[1]
+                    const numOnFriend = friend.countItem(item)
+                    if (numOnFriend >= holdThisMany) continue // They have enough already
+                    if (numOnFriend == 0 && friend.esize == 0) continue // They don't have any space for this item
+                    const numOnUs = bot.countItem(item)
+                    const sendThisMany = holdThisMany - numOnFriend
+                    const buyThisMany = sendThisMany + holdThisMany - numOnUs
+
+                    if (sendThisMany > 0) {
+                        let itemPos: number
+                        if (buyThisMany > 0) itemPos = await bot.buy(item, buyThisMany)
+                        else itemPos = bot.locateItem(item, bot.items, { quantityGreaterThan: sendThisMany - 1 })
+                        await bot.sendItem(friend.id, itemPos, sendThisMany)
+                    }
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("buyfriendspotionsloop", setTimeout(async () => { buyFriendsReplenishablesLoop() }, LOOP_MS))
+    }
+    buyFriendsReplenishablesLoop()
+}
+
 export function startBuyToUpgradeLoop(bot: AL.Character, item: AL.ItemName, quantity: number): void {
     async function buyToUpgradeLoop() {
         try {
