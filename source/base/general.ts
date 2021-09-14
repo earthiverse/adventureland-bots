@@ -325,8 +325,8 @@ export async function goToAggroMonster(bot: AL.Character, entity: AL.Entity): Pr
 export async function goToBankIfFull(bot: AL.Character, itemsToHold = ITEMS_TO_HOLD, goldToHold = GOLD_TO_HOLD): Promise<void> {
     if (!bot.isFull()) return // We aren't full
 
-    await bot.smartMove("fancypots") // Move to potion seller to give the sell loop a chance to sell things
-    await bot.smartMove("items0") // Move to bank teller to give bank time to get ready
+    await bot.smartMove("fancypots", { avoidTownWarps: true }) // Move to potion seller to give the sell loop a chance to sell things
+    await bot.smartMove("items0", { avoidTownWarps: true }) // Move to bank teller to give bank time to get ready
 
     for (let i = 0; i < bot.isize; i++) {
         const item = bot.items[i]
