@@ -1,7 +1,9 @@
 import AL from "alclient"
-import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, ITEMS_TO_HOLD, startSendStuffAllowlistLoop } from "../base/general.js"
+import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, ITEMS_TO_HOLD, startSendStuffDenylistLoop } from "../base/general.js"
 import { mainBeesNearTunnel, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
+import { doBanking } from "../base/merchant.js"
+import { ItemLevelInfo } from "../definitions/bot.js"
 
 /** Config */
 const partyLeader = "attackMag"
@@ -9,6 +11,7 @@ const partyMembers = ["attackMag", "attackMag2", "attackMag3"]
 const mage1Name = "attackMag"
 const mage2Name = "attackMag2"
 const mage3Name = "attackMag3"
+const merchantName = "attackMer"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "PVP"
 const targets: AL.MonsterName[] = ["bee"]
@@ -17,17 +20,23 @@ const defaultLocation: AL.IPosition = mainBeesNearTunnel
 let mage1: AL.Mage
 let mage2: AL.Mage
 let mage3: AL.Mage
+let merchant: AL.Merchant
 const friends: [AL.Mage, AL.Mage, AL.Mage] = [undefined, undefined, undefined]
 
-async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
+const SELL_THESE: ItemLevelInfo = { ...ITEMS_TO_SELL, "beewings": 9999, "hpamulet": 2, "hpbelt": 2, "ringsj": 2, "stinger": 2, "wcap": 2, "wshoes": 2 }
+
+async function startShared(bot: AL.Character) {
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
-    startPartyLoop(bot, partyLeader, partyMembers)
-    startSellLoop(bot, { ...ITEMS_TO_SELL, "beewings": 9999, "hpamulet": 2, "hpbelt": 2, "ringsj": 2, "stinger": 2 })
+    startSellLoop(bot, SELL_THESE)
+}
 
-    // Send kouin wanderers things
-    startSendStuffAllowlistLoop(bot, "kouin", ["wcap", "wshoes"], 999_999_999)
+async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
+    startPartyLoop(bot, partyLeader, partyMembers)
+
+    // Send merchant stuff
+    startSendStuffDenylistLoop(bot, [merchantName], ITEMS_TO_HOLD, 2_000_000)
 
     async function attackLoop() {
         try {
@@ -53,10 +62,37 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
             }
 
             await goToPoitonSellerIfLow(bot)
-            await goToBankIfFull(bot, ITEMS_TO_HOLD, 0)
+            await goToBankIfFull(bot, ITEMS_TO_HOLD, 2_000_000)
 
             const destination: AL.IPosition = offsetPosition(defaultLocation, positionOffset.x, positionOffset.y)
             if (AL.Tools.distance(bot, destination) > 1) await bot.smartMove(destination)
+        } catch (e) {
+            console.error(e)
+        }
+
+        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+    }
+    moveLoop()
+}
+
+async function startMerchant(bot: AL.Merchant, holdPosition: AL.IPosition) {
+    async function moveLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            // If we are dead, respawn
+            if (bot.rip) {
+                await bot.respawn()
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                return
+            }
+
+            await goToBankIfFull(bot, ITEMS_TO_HOLD, 2_000_000)
+            if (bot.gold > 25_000_000) {
+                await doBanking(bot, 2_000_000, ITEMS_TO_HOLD, SELL_THESE)
+            }
+
+            if (AL.Tools.distance(bot, holdPosition) > 1) await bot.smartMove(holdPosition)
         } catch (e) {
             console.error(e)
         }
@@ -81,6 +117,7 @@ async function run() {
                 if (mage1) await mage1.disconnect()
                 mage1 = await AL.Game.startMage(name, region, identifier)
                 friends[0] = mage1
+                startShared(mage1)
                 startMage(mage1)
                 mage1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
@@ -107,6 +144,7 @@ async function run() {
                 if (mage2) await mage2.disconnect()
                 mage2 = await AL.Game.startMage(name, region, identifier)
                 friends[1] = mage2
+                startShared(mage2)
                 startMage(mage2, { x: 25, y: 0 })
                 mage2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
@@ -133,6 +171,7 @@ async function run() {
                 if (mage3) await mage3.disconnect()
                 mage3 = await AL.Game.startMage(name, region, identifier)
                 friends[2] = mage3
+                startShared(mage3)
                 startMage(mage3, { x: -25, y: 0 })
                 mage3.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
@@ -151,5 +190,31 @@ async function run() {
         loopBot()
     }
     startmage3Loop(mage3Name, region, identifier).catch(() => { /* ignore errors */ })
+
+    const startmerchantLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+        // Start the characters
+        const loopBot = async () => {
+            try {
+                if (merchant) await merchant.disconnect()
+                merchant = await AL.Game.startMerchant(name, region, identifier)
+                startShared(merchant)
+                startMerchant(merchant, { map: "main", x: 375, y: 1050 })
+                merchant.socket.on("disconnect", async () => { loopBot() })
+            } catch (e) {
+                console.error(e)
+                if (merchant) await merchant.disconnect()
+                const wait = /wait_(\d+)_second/.exec(e)
+                if (wait && wait[1]) {
+                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                } else if (/limits/.test(e)) {
+                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                } else {
+                    setTimeout(async () => { loopBot() }, 10000)
+                }
+            }
+        }
+        loopBot()
+    }
+    startmerchantLoop(merchantName, region, identifier).catch(() => { /* ignore errors */ })
 }
 run()
