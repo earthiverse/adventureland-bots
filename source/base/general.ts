@@ -1031,7 +1031,7 @@ export function startPartyLoop(bot: AL.Character, leader: string, partyMembers?:
             console.error(e)
         }
 
-        bot.timeouts.set("partyloop", setTimeout(async () => { partyLoop() }, 10000))
+        bot.timeouts.set("partyloop", setTimeout(async () => { partyLoop() }, 1000))
     }
     partyLoop()
 }
