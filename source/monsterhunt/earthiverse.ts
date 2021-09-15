@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL, { IPosition } from "alclient"
 import { goToAggroMonster, goToNearestWalkableToMonster, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, sleep, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesMerchant } from "../base/merchant.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
@@ -257,7 +257,16 @@ function preparePriest(bot: AL.Priest) {
         icegolem: {
             attack: async () => { await attackTheseTypesPriest(bot, ["icegolem"], information.friends) },
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "test_orb" },
-            move: async () => { await bot.smartMove({ map: "winterland", x: 815, y: 261 }) },
+            move: async () => {
+                const iceGolem = bot.getNearestMonster("icegolem")?.monster
+                if (!iceGolem) await bot.smartMove({ map: "winterland", x: 783, y: 277 })
+                if (iceGolem && !AL.Pathfinder.canWalkPath(bot, iceGolem)) {
+                    // Cheat and walk across the water.
+                    await bot.move(iceGolem.x, iceGolem.y, { disableSafetyCheck: true })
+                } else if (iceGolem) {
+                    await goToNearestWalkableToMonster(bot, ["icegolem"])
+                }
+            },
         },
         iceroamer: {
             attack: async () => { await attackTheseTypesPriest(bot, ["iceroamer"], information.friends) },
@@ -615,7 +624,16 @@ function prepareRanger(bot: AL.Ranger) {
         icegolem: {
             attack: async () => { return attackTheseTypesRanger(bot, ["icegolem"], information.friends) },
             equipment: { mainhand: "firebow", orb: "test_orb" },
-            move: async () => { await bot.smartMove({ map: "winterland", x: 783, y: 277 }) },
+            move: async () => {
+                const iceGolem = bot.getNearestMonster("icegolem")?.monster
+                if (!iceGolem) await bot.smartMove({ map: "winterland", x: 783, y: 277 })
+                if (iceGolem && !AL.Pathfinder.canWalkPath(bot, iceGolem)) {
+                    // Cheat and walk across the water.
+                    await bot.move(iceGolem.x, iceGolem.y, { disableSafetyCheck: true })
+                } else if (iceGolem) {
+                    await goToNearestWalkableToMonster(bot, ["icegolem"])
+                }
+            },
         },
         iceroamer: {
             attack: async () => { return attackTheseTypesRanger(bot, ["iceroamer"], information.friends) },
@@ -993,6 +1011,20 @@ function prepareWarrior(bot: AL.Warrior) {
             attackWhileIdle: true,
             equipment: { mainhand: "bataxe", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "main", x: -81.5, y: -282 }) },
+        },
+        icegolem: {
+            attack: async () => { await attackTheseTypesWarrior(bot, ["icegolem"], information.friends) },
+            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
+            move: async () => {
+                const iceGolem = bot.getNearestMonster("icegolem")?.monster
+                if (!iceGolem) await bot.smartMove({ map: "winterland", x: 783, y: 277 })
+                if (iceGolem && !AL.Pathfinder.canWalkPath(bot, iceGolem)) {
+                    // Cheat and walk across the water.
+                    await bot.move(iceGolem.x, iceGolem.y, { disableSafetyCheck: true })
+                } else if (iceGolem) {
+                    await goToNearestWalkableToMonster(bot, ["icegolem"])
+                }
+            },
         },
         iceroamer: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["iceroamer"], information.friends) },
