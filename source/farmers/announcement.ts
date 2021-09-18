@@ -1,8 +1,8 @@
 import AL from "alclient"
-import { goToPoitonSellerIfLow, startBuyLoop, startCompoundLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, ITEMS_TO_SELL, startElixirLoop, goToBankIfFull, goToNearestWalkableToMonster, startBuyToUpgradeLoop, startBuyFriendsReplenishablesLoop, startExchangeLoop } from "../base/general.js"
+import { goToPoitonSellerIfLow, startBuyLoop, startCompoundLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, startElixirLoop, goToBankIfFull, startBuyFriendsReplenishablesLoop, startExchangeLoop } from "../base/general.js"
 import { mainGoos, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
-import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
+import { doBanking, goFishing, goMining } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 
 /** Config */
@@ -19,6 +19,7 @@ let merchant: AL.Merchant
 let mage1: AL.Mage
 let mage2: AL.Mage
 let mage3: AL.Mage
+const friends: AL.Character[] = [undefined, undefined, undefined, undefined]
 
 async function startShared(bot: AL.Character) {
     startBuyLoop(bot, new Set())
@@ -216,6 +217,7 @@ async function run() {
             try {
                 if (mage1) await mage1.disconnect()
                 mage1 = await AL.Game.startMage(name, region, identifier)
+                friends[0] = mage1
                 startShared(mage1)
                 startMage(mage1, { x: 150, y: 0 })
                 startTrackerLoop(mage1)
@@ -243,6 +245,7 @@ async function run() {
             try {
                 if (mage2) await mage2.disconnect()
                 mage2 = await AL.Game.startMage(name, region, identifier)
+                friends[1] = mage2
                 startShared(mage2)
                 startMage(mage2, { x: -150, y: 0 })
                 mage2.socket.on("disconnect", async () => { loopBot() })
@@ -269,6 +272,7 @@ async function run() {
             try {
                 if (mage3) await mage3.disconnect()
                 mage3 = await AL.Game.startMage(name, region, identifier)
+                friends[2] = mage3
                 startShared(mage3)
                 startMage(mage3, { x: 0, y: 0 })
                 mage3.socket.on("disconnect", async () => { loopBot() })
@@ -295,8 +299,9 @@ async function run() {
             try {
                 if (merchant) await merchant.disconnect()
                 merchant = await AL.Game.startMerchant(name, region, identifier)
+                friends[3] = merchant
                 startShared(merchant)
-                startMerchant(merchant, [mage1, mage2, mage3])
+                startMerchant(merchant, friends)
                 merchant.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)

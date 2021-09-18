@@ -118,7 +118,9 @@ export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
 
 export const UPGRADE_COMPOUND_LIMIT: ItemLevelInfo = {
     "lostearring": 2, // Level 2 is the best for exchanging
-    "vitring": 2 // Level 2 vitrings are useful for crafting
+    "test_orb": 0, // No advantages for leveling this item
+    "vitring": 2, // Level 2 vitrings are useful for crafting
+    "vorb": 0 // No advantages for leveling this item
 }
 
 export const REPLENISHABLES_TO_BUY: [AL.ItemName, number][] = [
@@ -672,6 +674,7 @@ export function startBuyFriendsReplenishablesLoop(bot: AL.Character, friends: AL
 
             for (let i = 0; i < friends.length; i++) {
                 const friend = friends[i]
+                if (!friend) continue
 
                 if (bot.esize == 0) break // We are full
                 if (friend.hasItem("computer")) continue // They can buy their own potions.
