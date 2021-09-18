@@ -104,7 +104,6 @@ async function startPriest(bot: AL.Priest) {
 
             // Idle strategy
             await attackTheseTypesPriest(bot, targets, [merchant, priest, ranger, warrior])
-
         } catch (e) {
             console.error(e)
         }
@@ -115,10 +114,6 @@ async function startPriest(bot: AL.Priest) {
     async function moveLoop() {
         try {
             if (bot.map == "crypt") {
-                const position = cryptData.path[cryptData.position]
-                position.x += 8
-                position.y += 8
-                await bot.smartMove(position)
                 // do stuff
             }
         } catch (e) {
@@ -178,7 +173,6 @@ async function startWarrior(bot: AL.Warrior) {
 
             // Idle strategy
             await attackTheseTypesWarrior(bot, targets, [merchant, priest, ranger, warrior])
-
         } catch (e) {
             console.error(e)
         }

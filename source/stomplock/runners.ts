@@ -180,6 +180,28 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
 
     startSellSticksToMerchantsLoop(bot)
 
+    function getMSToNextStun() {
+        const now = Date.now()
+
+        let numStompers = 0
+        let partyMemberIndex = 0
+        if (bot.partyData && bot.partyData.list) {
+            for (const id of bot.partyData.list) {
+                const member = bot.partyData.party[id]
+                if (id == bot.id) partyMemberIndex = numStompers
+                if (member.type == "warrior") numStompers++
+            }
+        } else {
+            numStompers = 1
+        }
+
+        const cooldown = AL.Game.G.skills.stomp.cooldown + 5
+        const nextInterval = (cooldown - now % cooldown)
+        const offset = partyMemberIndex * (cooldown / numStompers)
+
+        return (nextInterval + offset) % cooldown
+    }
+
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -204,7 +226,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
                 }
             }
 
-            if (!bot.canUse("stomp") && bot.canUse("cleave", { ignoreEquipped: true }) && (bot.hasItem("bataxe") || bot.slots.mainhand?.name == "bataxe")) {
+            if (getMSToNextStun() > 10000 && bot.canUse("cleave", { ignoreEquipped: true }) && (bot.hasItem("bataxe") || bot.slots.mainhand?.name == "bataxe")) {
                 let allStomped = true
                 for (const entity of bot.getEntities({
                     typeList: targets,
@@ -313,30 +335,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
             }
         }
     })
-
     scareLoop()
-
-    function getMSToNextStun() {
-        const now = Date.now()
-
-        let numStompers = 0
-        let partyMemberIndex = 0
-        if (bot.partyData && bot.partyData.list) {
-            for (const id of bot.partyData.list) {
-                const member = bot.partyData.party[id]
-                if (id == bot.id) partyMemberIndex = numStompers
-                if (member.type == "warrior") numStompers++
-            }
-        } else {
-            numStompers = 1
-        }
-
-        const cooldown = AL.Game.G.skills.stomp.cooldown + 100
-        const nextInterval = (cooldown - now % cooldown)
-        const offset = partyMemberIndex * (cooldown / numStompers)
-
-        return nextInterval + offset
-    }
 
     async function stompLoop() {
         try {
@@ -371,7 +370,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
         setTimeout(async () => { stompLoop() }, Math.max(LOOP_MS, bot.getCooldown("stomp"), getMSToNextStun()))
     }
     setTimeout(async () => {
-        // Start our stomp loop in 5s, after we have a party
+        // Start our stomp loop in 5s, after we have a party setup
         setTimeout(async () => { stompLoop() }, Math.max(getMSToNextStun()))
     }, 5000)
 
