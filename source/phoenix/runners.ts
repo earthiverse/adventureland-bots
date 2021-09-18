@@ -68,7 +68,7 @@ export async function startPhoenixFarmer(bot: AL.Mage, friends: AL.Character[], 
             if (bot.party) index = bot.partyData.list.indexOf(bot.id)
             await bot.smartMove(phoenixSpawns[index % phoenixSpawns.length], {
                 getWithin: 50,
-                useBlink: true
+                /* useBlink: true */
             })
         } catch (e) {
             console.error(e)
