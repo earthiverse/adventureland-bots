@@ -86,6 +86,7 @@ export async function startPhoenixFarmer(bot: AL.Mage, friends: AL.Character[], 
         } catch (e) {
             console.error(e)
         }
+        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
     }
     attackLoop()
 }
