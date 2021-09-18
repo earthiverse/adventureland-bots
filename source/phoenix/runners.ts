@@ -53,7 +53,7 @@ export async function startPhoenixFarmer(bot: AL.Mage, friends: AL.Character[], 
             if (dbPhoenix) {
                 await bot.smartMove(dbPhoenix, { getWithin: bot.range - 50, useBlink: true })
 
-                if (AL.Tools.distance(bot, dbPhoenix) < 50) {
+                if (AL.Tools.distance(bot, dbPhoenix) < AL.Constants.MAX_VISIBLE_RANGE / 2) {
                     // If we're near the database entry, but we don't see it, delete it.
                     const nearbyPhoenix = bot.getNearestMonster("phoenix")?.monster
                     if (!nearbyPhoenix) await AL.EntityModel.deleteOne({ serverIdentifier: bot.server.name, serverRegion: bot.server.region, type: "phoenix" }).exec()
