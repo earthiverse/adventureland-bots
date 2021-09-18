@@ -99,11 +99,18 @@ export async function startPhoenixFarmer(bot: AL.Mage, friends: AL.Character[], 
 }
 
 export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], hold: AL.IPosition): Promise<void> {
+    startAvoidStacking(bot)
+    startBuyLoop(bot)
     startBuyFriendsReplenishablesLoop(bot, friends)
     startCompoundLoop(bot)
+    startEventLoop(bot)
     startExchangeLoop(bot)
-    startUpgradeLoop(bot)
+    startHealLoop(bot)
+    startLootLoop(bot)
     startPartyLoop(bot, bot.id) // Let anyone who wants to party with me do so
+    startScareLoop(bot)
+    startSellLoop(bot)
+    startUpgradeLoop(bot)
 
     let lastBankVisit = Number.MIN_VALUE
     async function moveLoop() {
