@@ -43,7 +43,7 @@ export async function startPhoenixFarmer(bot: AL.Mage, friends: AL.Character[], 
             // Look for nearby phoenixes
             const nearbyPhoenix = bot.getNearestMonster("phoenix")
             if (nearbyPhoenix) {
-                await bot.smartMove(nearbyPhoenix.monster, { getWithin: bot.range - 50/* , useBlink: true */ })
+                await bot.smartMove(nearbyPhoenix.monster, { getWithin: bot.range - 50, useBlink: true })
                 bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
@@ -51,7 +51,7 @@ export async function startPhoenixFarmer(bot: AL.Mage, friends: AL.Character[], 
             // Look for phoenix in the database
             const dbPhoenix = await AL.EntityModel.findOne({ serverIdentifier: bot.server.name, serverRegion: bot.server.region, type: "phoenix" }).lean().exec()
             if (dbPhoenix) {
-                await bot.smartMove(dbPhoenix, { getWithin: bot.range - 50/* , useBlink: true */ })
+                await bot.smartMove(dbPhoenix, { getWithin: bot.range - 50, useBlink: true })
 
                 if (AL.Tools.distance(bot, dbPhoenix) < 50) {
                     // If we're near the database entry, but we don't see it, delete it.
@@ -68,7 +68,7 @@ export async function startPhoenixFarmer(bot: AL.Mage, friends: AL.Character[], 
             if (bot.party) index = bot.partyData.list.indexOf(bot.id)
             await bot.smartMove(phoenixSpawns[index % phoenixSpawns.length], {
                 getWithin: 50,
-                /* useBlink: true */
+                useBlink: true
             })
         } catch (e) {
             console.error(e)
