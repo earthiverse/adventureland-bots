@@ -1,7 +1,7 @@
 import AL from "alclient"
 import { goToBankIfFull, goToPoitonSellerIfLow, LOOP_MS, startAvoidStacking, startBuyFriendsReplenishablesLoop, startBuyLoop, startCompoundLoop, startEventLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
-import { doBanking, goFishing, goMining } from "../base/merchant.js"
+import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 
 export const DEFAULT_REGION: AL.ServerRegion = "US"
 export const DEFAULT_IDENTIFIER: AL.ServerIdentifier = "II"
@@ -107,6 +107,7 @@ export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], h
     startExchangeLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)
+    startMluckLoop(bot)
     startPartyLoop(bot, bot.id) // Let anyone who wants to party with me do so
     startScareLoop(bot)
     startSellLoop(bot)
