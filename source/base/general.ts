@@ -116,6 +116,11 @@ export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
     "cyber": 1, "exoarm": 1, "fury": 1, "gstaff": 1, "starkillers": 1, "suckerpunch": 1, "t3bow": 1
 }
 
+export const UPGRADE_COMPOUND_LIMIT: ItemLevelInfo = {
+    "lostearring": 2, // Level 2 is the best for exchanging
+    "vitring": 2 // Level 2 vitrings are useful for crafting
+}
+
 export const REPLENISHABLES_TO_BUY: [AL.ItemName, number][] = [
     ["hpot1", 1000],
     ["mpot1", 1000],
@@ -744,7 +749,8 @@ export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo 
                 for (let dLevel = 7; dLevel >= 0; dLevel--) {
                     const items = itemsByLevel[itemName][dLevel]
                     if (items == undefined) continue // No items of this type at this level
-                    if (itemsToSell[itemName] && dLevel <= itemsToSell[itemName]) continue // We don't want to upgrade items we want to sell
+                    if (dLevel <= itemsToSell[itemName]) continue // We don't want to compound items we want to sell
+                    if (dLevel > UPGRADE_COMPOUND_LIMIT[itemName]) continue // We don't want to compound certain items too much
 
                     const grade = await bot.calculateItemGrade({ level: dLevel, name: itemName })
                     const cscrollName = `cscroll${grade}` as AL.ItemName
