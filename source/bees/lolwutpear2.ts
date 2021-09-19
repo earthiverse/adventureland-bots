@@ -1,7 +1,6 @@
 import AL from "alclient"
 import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, goToNearestWalkableToMonster, ITEMS_TO_SELL, startPartyLoop } from "../base/general.js"
 import { mainBeesNearTunnel, offsetPosition } from "../base/locations.js"
-import { partyLeader, partyMembers } from "../base/party.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
@@ -24,7 +23,7 @@ async function startRanger(bot: AL.Ranger, positionOffset: { x: number, y: numbe
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
-    startPartyLoop(bot, partyLeader, partyMembers)
+    startPartyLoop(bot, rogue1Name, [rogue1Name, priest1Name, ranger1Name])
     startSellLoop(bot, { ...ITEMS_TO_SELL, "hpamulet": 2, "hpbelt": 2, "quiver": 2, "ringsj": 2, "stinger": 2 })
 
     async function attackLoop() {
@@ -68,7 +67,7 @@ async function startPriest(bot: AL.Priest, positionOffset: { x: number, y: numbe
     startDarkBlessingLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)
-    startPartyLoop(bot, partyLeader, partyMembers)
+    startPartyLoop(bot, rogue1Name, [rogue1Name, priest1Name, ranger1Name])
     startSellLoop(bot, { ...ITEMS_TO_SELL, "hpamulet": 2, "hpbelt": 2, "quiver": 2, "ringsj": 2, "stinger": 2 })
     startPartyHealLoop(bot)
 
@@ -112,7 +111,7 @@ async function startRogue(bot: AL.Rogue, positionOffset: { x: number, y: number 
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
-    startPartyLoop(bot, partyLeader, partyMembers)
+    startPartyLoop(bot, rogue1Name, [rogue1Name, priest1Name, ranger1Name])
     startSellLoop(bot, { ...ITEMS_TO_SELL, "hpamulet": 2, "hpbelt": 2, "quiver": 2, "ringsj": 2, "stinger": 2 })
     startRSpeedLoop(bot, { enableGiveToStrangers: true })
 
