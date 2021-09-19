@@ -242,7 +242,6 @@ export async function startMerchant(bot: AL.Merchant, information: Information, 
             }
 
             // If we are full, let's go to the bank
-            await goToBankIfFull(bot)
             if (bot.isFull() || lastBankVisit < Date.now() - 120000 || bot.hasPvPMarkedItem()) {
                 lastBankVisit = Date.now()
                 await doBanking(bot)
