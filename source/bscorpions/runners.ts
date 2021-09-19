@@ -67,7 +67,7 @@ export async function startBscorpionMageFarmer(bot: AL.Mage, friends: AL.Charact
             }
 
             // Idle strategy
-            await attackTheseTypesMage(bot, targets, friends, { targetingPlayer: bscorpionPartyLeader })
+            await attackTheseTypesMage(bot, targets, friends, { targetingPartyMember: true })
         } catch (e) {
             console.error(e)
         }
