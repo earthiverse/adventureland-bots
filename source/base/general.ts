@@ -664,7 +664,7 @@ export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo 
                 return
             }
 
-            const itemsByLevel = bot.locateItemsByLevel()
+            const itemsByLevel = bot.locateItemsByLevel(bot.items, { excludeLockedItems: true })
             for (const dName in itemsByLevel) {
                 const itemName = dName as AL.ItemName
                 const gInfo = bot.G.items[itemName]
@@ -1264,7 +1264,7 @@ export function startUpgradeLoop(bot: AL.Character, itemsToSell: ItemLevelInfo =
                 return
             }
 
-            const itemsByLevel = bot.locateItemsByLevel()
+            const itemsByLevel = bot.locateItemsByLevel(bot.items, { excludeLockedItems: true })
             for (const dName in itemsByLevel) {
                 const itemName = dName as AL.ItemName
                 const gInfo = bot.G.items[itemName]
@@ -1290,7 +1290,6 @@ export function startUpgradeLoop(bot: AL.Character, itemsToSell: ItemLevelInfo =
                                 continue
                             }
                             const itemInfo = bot.items[slot]
-                            if (itemInfo.l) continue // Can't upgrade locked items
                             if (!itemInfo.p && dLevel <= itemsToSell[itemName]) continue // We don't want to upgrade items we want to sell
 
                             let scrollPos = bot.locateItem(scrollName)
