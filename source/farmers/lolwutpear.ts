@@ -33,6 +33,11 @@ async function startShared(bot: AL.Character) {
 }
 
 async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
+    const wand = bot.locateItem("wand", bot.items, { locked: true })
+    if (wand !== undefined) await bot.equip(wand, "mainhand")
+    const orb = bot.locateItem("test_orb", bot.items, { locked: true })
+    if (orb !== undefined) await bot.equip(orb, "orb")
+
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
