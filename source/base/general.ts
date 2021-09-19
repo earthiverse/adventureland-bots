@@ -1,5 +1,6 @@
 import AL from "alclient"
 import { ItemLevelInfo } from "../definitions/bot.js"
+import { offsetPositionParty } from "./locations.js"
 
 export const LOOP_MS = 100
 export const CHECK_PONTY_EVERY_MS = 10_000 /** 10 seconds */
@@ -351,12 +352,6 @@ export async function goToBankIfFull(bot: AL.Character, itemsToHold = ITEMS_TO_H
     if (bot.gold > goldToHold) await bot.depositGold(bot.gold - goldToHold)
 }
 
-export async function goToKiteTarget(bot: AL.Character, target: AL.Entity | AL.Player): Promise<void> {
-    if (!target) return
-
-
-}
-
 export async function goToPriestIfHurt(bot: AL.Character, priest: AL.Character): Promise<AL.IPosition> {
     if (bot.hp > bot.max_hp / 2) return // We still have over half our HP
     if (!priest) return // Priest is not available
@@ -458,85 +453,10 @@ export async function goToNearestWalkableToMonster(bot: AL.Character, types: AL.
     }
 
     if (nearest && distance > getWithin) {
-        const destination = { map: nearest.map, x: nearest.x, y: nearest.y }
-
-        // Offset our position based on our party, so we don't get stacking damage
-        if (bot.party) {
-            switch (bot.partyData.list.indexOf(bot.id)) {
-            case 1:
-                destination.x += 10
-                break
-            case 2:
-                destination.x -= 10
-                break
-            case 3:
-                destination.y += 10
-                break
-            case 4:
-                destination.y -= 10
-                break
-            case 5:
-                destination.x += 10
-                destination.y += 10
-                break
-            case 6:
-                destination.x += 10
-                destination.y -= 10
-                break
-            case 7:
-                destination.x -= 10
-                destination.y += 10
-                break
-            case 8:
-                destination.x -= 10
-                destination.y -= 10
-                break
-            case 9:
-                destination.x += 20
-                break
-            }
-        }
+        const destination = offsetPositionParty(nearest, bot)
         bot.move(destination.x, destination.y).catch(() => { /* Suppress errors */ })
     } else if (!nearest && defaultPosition) {
-        const destination = { map: defaultPosition.map, x: defaultPosition.x, y: defaultPosition.y }
-
-        // Offset our position based on our party, so we don't get stacking damage
-        if (bot.party) {
-            switch (bot.partyData.list.indexOf(bot.id)) {
-            case 1:
-                destination.x += 10
-                break
-            case 2:
-                destination.x -= 10
-                break
-            case 3:
-                destination.y += 10
-                break
-            case 4:
-                destination.y -= 10
-                break
-            case 5:
-                destination.x += 10
-                destination.y += 10
-                break
-            case 6:
-                destination.x += 10
-                destination.y -= 10
-                break
-            case 7:
-                destination.x -= 10
-                destination.y += 10
-                break
-            case 8:
-                destination.x -= 10
-                destination.y -= 10
-                break
-            case 9:
-                destination.x += 20
-                break
-            }
-        }
-
+        const destination = offsetPositionParty(defaultPosition, bot)
         if (AL.Pathfinder.canWalkPath(bot, destination)) {
             bot.move(destination.x, destination.y).catch(() => { /* Suppress errors */ })
         } else {
@@ -545,7 +465,7 @@ export async function goToNearestWalkableToMonster(bot: AL.Character, types: AL.
     }
 }
 
-export function kiteInCircle(bot: AL.Character, type: AL.MonsterName, center: AL.IPosition, radius = 125, angle = Math.PI / 2.5): Promise<AL.IPosition> {
+export function kiteInCircle(bot: AL.Character, type: AL.MonsterName, center: AL.IPosition, radius = 100, angle = Math.PI / 2.5): Promise<AL.IPosition> {
     if (AL.Pathfinder.canWalkPath(bot, center)) {
         const nearest = bot.getNearestMonster(type)?.monster
         if (nearest) {
@@ -554,12 +474,12 @@ export function kiteInCircle(bot: AL.Character, type: AL.MonsterName, center: AL
             // There's a monster nearby
             const angleFromCenterToMonsterGoing = Math.atan2(nearest.going_y - center.y, nearest.going_x - center.x)
             const endGoalAngle = angleFromCenterToMonsterGoing + angle
-            const endGoal = { x: center.x + radius * Math.cos(endGoalAngle), y: center.y + radius * Math.sin(endGoalAngle) }
+            const endGoal = offsetPositionParty({ x: center.x + radius * Math.cos(endGoalAngle), y: center.y + radius * Math.sin(endGoalAngle) }, bot)
             return bot.move(endGoal.x, endGoal.y)
         } else {
             // There isn't a monster nearby
             const angleFromSpawnToBot = Math.atan2(bot.y - center.y, bot.x - center.x)
-            const endGoal = { x: center.x + radius * Math.cos(angleFromSpawnToBot), y: center.y + radius * Math.sin(angleFromSpawnToBot) }
+            const endGoal = offsetPositionParty({ x: center.x + radius * Math.cos(angleFromSpawnToBot), y: center.y + radius * Math.sin(angleFromSpawnToBot) }, bot)
             return bot.move(endGoal.x, endGoal.y)
         }
     } else {
