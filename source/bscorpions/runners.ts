@@ -2,16 +2,17 @@ import AL from "alclient"
 import { startAvoidStacking, startBuyLoop, startBuyFriendsReplenishablesLoop, startCompoundLoop, startEventLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startUpgradeLoop, goToBankIfFull, goToPoitonSellerIfLow, LOOP_MS, startSendStuffDenylistLoop, kiteInCircle } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
+import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 
 export const DEFAULT_REGION: AL.ServerRegion = "US"
 export const DEFAULT_IDENTIFIER: AL.ServerIdentifier = "III"
 
-const phoenixPartyLeader = "facilitating"
-const phoenixPartyMembers = ["facilitating", "gratuitously", "hypothesized", "lolwutpear", "shoopdawhoop", "ytmnd"]
+const bscorpionPartyLeader = "over9000"
+const bscorpionPartyMembers = ["facilitating", "gratuitously", "hypothesized", "lolwutpear", "shoopdawhoop", "over9000"]
 
 const targets: AL.MonsterName[] = ["bscorpion"]
 
-export async function startPhoenixFarmer(bot: AL.Mage, friends: AL.Character[], merchant: string): Promise<void> {
+export async function startBscorpionMageFarmer(bot: AL.Mage, friends: AL.Character[], merchant: string): Promise<void> {
     startAvoidStacking(bot)
     startBuyLoop(bot)
     startCompoundLoop(bot)
@@ -22,7 +23,7 @@ export async function startPhoenixFarmer(bot: AL.Mage, friends: AL.Character[], 
     startScareLoop(bot)
     startSellLoop(bot)
     startSendStuffDenylistLoop(bot, [merchant])
-    startPartyLoop(bot, phoenixPartyLeader, phoenixPartyMembers)
+    startPartyLoop(bot, bscorpionPartyLeader, bscorpionPartyMembers)
     startUpgradeLoop(bot)
 
     const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
@@ -66,7 +67,73 @@ export async function startPhoenixFarmer(bot: AL.Mage, friends: AL.Character[], 
             }
 
             // Idle strategy
-            await attackTheseTypesMage(bot, targets, friends)
+            await attackTheseTypesMage(bot, targets, friends, { targetingPlayer: bscorpionPartyLeader })
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+    }
+    attackLoop()
+}
+
+export async function startBscorpionPriestFarmer(bot: AL.Priest, friends: AL.Character[], merchant: string): Promise<void> {
+    startAvoidStacking(bot)
+    startBuyLoop(bot)
+    startCompoundLoop(bot)
+    startDarkBlessingLoop(bot)
+    startEventLoop(bot)
+    startExchangeLoop(bot)
+    startHealLoop(bot)
+    startLootLoop(bot)
+    startPartyHealLoop(bot)
+    startScareLoop(bot)
+    startSellLoop(bot)
+    startSendStuffDenylistLoop(bot, [merchant])
+    startPartyLoop(bot, bscorpionPartyLeader, bscorpionPartyMembers)
+    startUpgradeLoop(bot)
+
+    const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
+    async function moveLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            // If we are dead, respawn
+            if (bot.rip) {
+                await bot.respawn()
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                return
+            }
+
+            await goToPoitonSellerIfLow(bot)
+            await goToBankIfFull(bot)
+
+            // Kite the scorpion
+            await kiteInCircle(bot, "bscorpion", bscorpionSpawn)
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+    }
+    moveLoop()
+
+    async function attackLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            // If we are dead, respawn
+            if (bot.rip || bot.c.town) {
+                await bot.respawn()
+                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                return
+            }
+
+            if (!bot.canUse("scare", { ignoreEquipped: true })) {
+                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                return
+            }
+
+            // Idle strategy
+            await attackTheseTypesPriest(bot, targets, friends)
         } catch (e) {
             console.error(e)
         }

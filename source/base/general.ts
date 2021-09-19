@@ -12,7 +12,7 @@ export const FRIENDLY_ROGUES = ["copper", "Bjarna", "RisingVanir"]
 export const MY_CHARACTERS = ["earthiverse", "earthMag", "earthMag2", "earthMag3", "earthMer", "earthMer2", "earthMer3", "earthMer4", "earthPal", "earthPri", "earthPri2", "earthRan2", "earthRan3", "earthRog", "earthRog2", "earthWar", "earthWar2", "earthWar3"]
 export const ANNOUNCEMENT_CHARACTERS = ["announcement", "battleworthy", "charmingness", "decisiveness", "enlightening", "facilitating", "gratuitously", "hypothesized"]
 export const KOUIN_CHARACTERS = ["bataxedude", "cclair", "fathergreen", "kakaka", "kekeke", "kouin", "kukuku", "mule0", "mule1", "mule2", "mule3", "mule5", "mule6", "mule7", "mule8", "mule9", "mule10", "piredude"]
-export const LOLWUTPEAR_CHARACTERS = ["fgsfds", "fsjal", "funny", "lolwutpear", "orlyowl", "shoopdawhoop", "ytmnd"]
+export const LOLWUTPEAR_CHARACTERS = ["fgsfds", "fsjal", "funny", "lolwutpear", "orlyowl", "over9000", "shoopdawhoop", "ytmnd"]
 
 export const ITEMS_TO_HOLD: Set<AL.ItemName> = new Set([
     // Things we keep on ourselves
@@ -349,6 +349,12 @@ export async function goToBankIfFull(bot: AL.Character, itemsToHold = ITEMS_TO_H
     }
 
     if (bot.gold > goldToHold) await bot.depositGold(bot.gold - goldToHold)
+}
+
+export async function goToKiteTarget(bot: AL.Character, target: AL.Entity | AL.Player): Promise<void> {
+    if (!target) return
+
+
 }
 
 export async function goToPriestIfHurt(bot: AL.Character, priest: AL.Character): Promise<AL.IPosition> {

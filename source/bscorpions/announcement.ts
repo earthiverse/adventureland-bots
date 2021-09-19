@@ -1,7 +1,7 @@
 import AL from "alclient"
 import { startTrackerLoop } from "../base/general.js"
 import { Information } from "../definitions/bot.js"
-import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMerchant, startPhoenixFarmer } from "./runners.js"
+import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMerchant, startBscorpionMageFarmer } from "./runners.js"
 
 /** Config */
 const information: Information = {
@@ -73,7 +73,7 @@ async function run() {
                 if (information.bot1.bot) await information.bot1.bot.disconnect()
                 information.bot1.bot = await AL.Game.startMage(name, region, identifier)
                 information.friends[1] = information.bot1.bot
-                startPhoenixFarmer(information.bot1.bot as AL.Mage, information.friends, information.merchant.name)
+                startBscorpionMageFarmer(information.bot1.bot as AL.Mage, information.friends, information.merchant.name)
                 startTrackerLoop(information.bot1.bot)
                 information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
@@ -100,7 +100,7 @@ async function run() {
                 if (information.bot2.bot) await information.bot2.bot.disconnect()
                 information.bot2.bot = await AL.Game.startMage(name, region, identifier)
                 information.friends[2] = information.bot2.bot
-                startPhoenixFarmer(information.bot2.bot as AL.Mage, information.friends, information.merchant.name)
+                startBscorpionMageFarmer(information.bot2.bot as AL.Mage, information.friends, information.merchant.name)
                 information.bot2.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -126,7 +126,7 @@ async function run() {
                 if (information.bot3.bot) await information.bot3.bot.disconnect()
                 information.bot3.bot = await AL.Game.startMage(name, region, identifier)
                 information.friends[3] = information.bot3.bot
-                startPhoenixFarmer(information.bot3.bot as AL.Mage, information.friends, information.merchant.name)
+                startBscorpionMageFarmer(information.bot3.bot as AL.Mage, information.friends, information.merchant.name)
                 information.bot3.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
