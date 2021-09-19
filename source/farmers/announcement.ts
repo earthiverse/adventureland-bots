@@ -152,21 +152,6 @@ async function startMerchant(bot: AL.Merchant, friends: AL.Character[]) {
                 return
             }
 
-            // MLuck people if there is a server info target
-            for (const mN in bot.S) {
-                const type = mN as AL.MonsterName
-                if (bot.S[type].live) continue
-                if (!(bot.S[type] as AL.ServerInfoDataLive).target) continue
-
-                if (AL.Tools.distance(bot, (bot.S[type] as AL.ServerInfoDataLive)) > 100) {
-                    await bot.closeMerchantStand()
-                    await bot.smartMove((bot.S[type] as AL.ServerInfoDataLive), { getWithin: 100 })
-                }
-
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
-                return
-            }
-
             // mluck our friends
             if (bot.canUse("mluck")) {
                 for (const friend of [mage1, mage2, mage3]) {
@@ -219,7 +204,7 @@ async function run() {
                 mage1 = await AL.Game.startMage(name, region, identifier)
                 friends[0] = mage1
                 startShared(mage1)
-                startMage(mage1, { x: 150, y: 0 })
+                startMage(mage1, { x: 250, y: 0 })
                 startTrackerLoop(mage1)
                 mage1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
@@ -247,7 +232,7 @@ async function run() {
                 mage2 = await AL.Game.startMage(name, region, identifier)
                 friends[1] = mage2
                 startShared(mage2)
-                startMage(mage2, { x: -150, y: 0 })
+                startMage(mage2, { x: 150, y: 0 })
                 mage2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -266,7 +251,7 @@ async function run() {
     }
     startMage2Loop(mage2Name, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startRogueLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startMage3Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -274,7 +259,7 @@ async function run() {
                 mage3 = await AL.Game.startMage(name, region, identifier)
                 friends[2] = mage3
                 startShared(mage3)
-                startMage(mage3, { x: 0, y: 0 })
+                startMage(mage3, { x: 50, y: 0 })
                 mage3.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -291,7 +276,7 @@ async function run() {
         }
         loopBot()
     }
-    startRogueLoop(mage3Name, region, identifier).catch(() => { /* ignore errors */ })
+    startMage3Loop(mage3Name, region, identifier).catch(() => { /* ignore errors */ })
 
     const startMerchantLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
         // Start the characters
