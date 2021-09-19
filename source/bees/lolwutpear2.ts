@@ -114,7 +114,7 @@ async function startRogue(bot: AL.Rogue, positionOffset: { x: number, y: number 
     startLootLoop(bot)
     startPartyLoop(bot, partyLeader, partyMembers)
     startSellLoop(bot, { ...ITEMS_TO_SELL, "hpamulet": 2, "hpbelt": 2, "quiver": 2, "ringsj": 2, "stinger": 2 })
-    startRSpeedLoop(bot)
+    startRSpeedLoop(bot, { enableGiveToStrangers: true })
 
     async function attackLoop() {
         try {
