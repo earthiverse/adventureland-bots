@@ -64,6 +64,8 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
     // Un-PVP Items
     for (let i = 0; i < bot.items.length; i++) {
         const item = bot.items[i]
+        if (!item) continue
+
         if (item.v) {
             // Swap to remove PvP, then swap again
             await bot.depositItem(i, "items0", 0)
