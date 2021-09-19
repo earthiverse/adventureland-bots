@@ -61,17 +61,25 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
         await bot.withdrawGold(Math.min(bot.bank.gold, -excessGold))
     }
 
+    // Un-PVP Items
+    for (let i = 0; i < bot.items.length; i++) {
+        const item = bot.items[i]
+        if (item.v) {
+            // Swap to remove PvP, then swap again
+            await bot.depositItem(i, "items0", 0)
+            await bot.depositItem(i, "items0", 0)
+        }
+    }
+
     // Deposit items
     for (let i = 0; i < bot.items.length; i++) {
         const item = bot.items[i]
         if (!item) continue
-        if (item.v == undefined) {
-            if (itemsToHold.has(item.name)) continue // We want to hold it
-            if (item.l == "l") continue // We want to hold it
-            if (itemsToSell[item.name]) {
-                if (item.level !== undefined && item.level <= itemsToSell[item.name]) continue // We want to sell it
-                else if (item.level == undefined) continue // We want to sell it
-            }
+        if (itemsToHold.has(item.name)) continue // We want to hold it
+        if (item.l == "l") continue // We want to hold it
+        if (itemsToSell[item.name]) {
+            if (item.level !== undefined && item.level <= itemsToSell[item.name]) continue // We want to sell it
+            else if (item.level == undefined) continue // We want to sell it
         }
         try {
             // Deposit it in the bank
