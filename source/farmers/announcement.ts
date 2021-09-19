@@ -2,7 +2,7 @@ import AL from "alclient"
 import { goToPoitonSellerIfLow, startBuyLoop, startCompoundLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, startElixirLoop, goToBankIfFull, startBuyFriendsReplenishablesLoop, startExchangeLoop } from "../base/general.js"
 import { mainGoos, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
-import { doBanking, goFishing, goMining } from "../base/merchant.js"
+import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 
 /** Config */
