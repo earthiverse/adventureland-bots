@@ -748,7 +748,6 @@ export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo 
                 for (let dLevel = 7; dLevel >= 0; dLevel--) {
                     const items = itemsByLevel[itemName][dLevel]
                     if (items == undefined) continue // No items of this type at this level
-                    if (dLevel <= itemsToSell[itemName]) continue // We don't want to compound items we want to sell
                     if (dLevel > UPGRADE_COMPOUND_LIMIT[itemName]) continue // We don't want to compound certain items too much
 
                     const grade = await bot.calculateItemGrade({ level: dLevel, name: itemName })
@@ -767,6 +766,7 @@ export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo 
                                 foundOne = true
                                 continue
                             }
+                            if (dLevel <= itemsToSell[itemName]) continue // We don't want to compound items we want to sell
 
                             let cscrollPos = bot.locateItem(cscrollName)
                             const primlingPos = bot.locateItem("offeringp")
@@ -1348,7 +1348,6 @@ export function startUpgradeLoop(bot: AL.Character, itemsToSell: ItemLevelInfo =
                 for (let dLevel = 12; dLevel >= 0; dLevel--) {
                     const items = itemsByLevel[itemName][dLevel]
                     if (items == undefined) continue // No items of this type at this level
-                    if (dLevel <= itemsToSell[itemName]) continue // We don't want to upgrade items we want to sell
                     if (dLevel > UPGRADE_COMPOUND_LIMIT[itemName]) continue // We don't want to upgrade certain items past certain levels
 
                     const grade = await bot.calculateItemGrade({ level: dLevel, name: itemName })
@@ -1366,6 +1365,7 @@ export function startUpgradeLoop(bot: AL.Character, itemsToSell: ItemLevelInfo =
                             }
                             const itemInfo = bot.items[slot]
                             if (itemInfo.l) continue // Can't upgrade locked items
+                            if (!itemInfo.p && dLevel <= itemsToSell[itemName]) continue // We don't want to upgrade items we want to sell
 
                             let scrollPos = bot.locateItem(scrollName)
                             const primlingPos = bot.locateItem("offeringp")
