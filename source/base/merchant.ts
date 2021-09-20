@@ -229,7 +229,7 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
         const withdrawThese: [BankPackName, number][] = []
         let craftable = true
         for (const [requiredQuantity, requiredItem, requiredItemLevel] of gCraft.items) {
-            const slot = this.locateItem(requiredItem, bankItems, { level: requiredItemLevel, quantityGreaterThan: requiredQuantity - 1 })
+            const slot = bot.locateItem(requiredItem, bankItems, { level: requiredItemLevel, quantityGreaterThan: requiredQuantity - 1 })
             if (slot == undefined) {
                 // We don't have one of the items required to craft
                 craftable = false
