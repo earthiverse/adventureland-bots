@@ -45,6 +45,10 @@ export const ITEMS_TO_EXCHANGE: Set<AL.ItemName> = new Set([
     "armorbox", "bugbountybox", "gift0", "gift1", "mysterybox", "weaponbox", "xbox"
 ])
 
+export const ITEMS_TO_CRAFT: Set<AL.ItemName> = new Set([
+    "firestars", "resistancering", "wingedboots"
+])
+
 export const ITEMS_TO_BUY: Set<AL.ItemName> = new Set([
     // Exchangeables
     ...ITEMS_TO_EXCHANGE,
@@ -120,6 +124,7 @@ export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
 export const UPGRADE_COMPOUND_LIMIT: ItemLevelInfo = {
     "lostearring": 2, // Level 2 is the best for exchanging
     "test_orb": 0, // No advantages for leveling this item
+    "throwingstars": 0, // We're going to craft them in to firey throwing stars
     "vitring": 2, // Level 2 vitrings are useful for crafting
     "vorb": 0 // No advantages for leveling this item
 }
@@ -722,10 +727,27 @@ export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo 
         } catch (e) {
             console.error(e)
         }
-
         bot.timeouts.set("compoundloop", setTimeout(async () => { compoundLoop() }, LOOP_MS))
     }
     compoundLoop()
+}
+
+export function startCraftLoop(bot: AL.Character, itemsToCraft = ITEMS_TO_CRAFT): void {
+    async function craftLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            for (const iName of itemsToCraft) {
+                if (bot.canCraft(iName)) {
+                    await bot.craft(iName)
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("craftloop", setTimeout(async () => { craftLoop() }, 1000))
+    }
+    craftLoop()
 }
 
 export function startElixirLoop(bot: AL.Character, elixir: AL.ItemName): void {

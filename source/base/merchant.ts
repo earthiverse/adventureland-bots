@@ -1,5 +1,5 @@
-import AL from "alclient"
-import { ITEMS_TO_EXCHANGE, ITEMS_TO_HOLD, ITEMS_TO_SELL, LOOP_MS } from "./general.js"
+import AL, { BankPackName } from "alclient"
+import { ITEMS_TO_CRAFT, ITEMS_TO_EXCHANGE, ITEMS_TO_HOLD, ITEMS_TO_SELL, LOOP_MS } from "./general.js"
 import { mainFishingSpot } from "./locations.js"
 
 export const MERCHANT_GOLD_TO_HOLD = 100_000_000
@@ -49,7 +49,7 @@ export async function attackTheseTypesMerchant(bot: AL.Merchant, types: AL.Monst
     await bot.basicAttack(entity.id)
 }
 
-export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_HOLD, itemsToHold = MERCHANT_ITEMS_TO_HOLD, itemsToSell = ITEMS_TO_SELL): Promise<void> {
+export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_HOLD, itemsToHold = MERCHANT_ITEMS_TO_HOLD, itemsToSell = ITEMS_TO_SELL, itemsToCraft = ITEMS_TO_CRAFT, itemsToExchange = ITEMS_TO_EXCHANGE): Promise<void> {
     await bot.closeMerchantStand()
     await bot.smartMove("items1")
 
@@ -221,15 +221,56 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
         }
     }
 
+    // Withdraw items to craft with
+    for (const item of itemsToCraft) {
+        const gCraft = this.G.craft[item]
+        if (!gCraft) continue
+        if (freeSpaces <= gCraft.items.length) continue // Not enough space to craft
+        const withdrawThese: [BankPackName, number][] = []
+        let craftable = true
+        for (const [requiredQuantity, requiredItem, requiredItemLevel] of gCraft.items) {
+            const slot = this.locateItem(requiredItem, bankItems, { level: requiredItemLevel, quantityGreaterThan: requiredQuantity - 1 })
+            if (slot == undefined) {
+                // We don't have one of the items required to craft
+                craftable = false
+                break
+            }
+            const realPack = `items${Math.floor((slot) / 42)}` as Exclude<AL.BankPackName, "gold">
+            const realSlot = slot % 42
+            withdrawThese.push([realPack, realSlot])
+        }
+        if (craftable) {
+            for (const withdraw of withdrawThese) {
+                await bot.withdrawItem(withdraw[0], withdraw[1])
+                freeSpaces--
+            }
+        }
+    }
+
     // Withdraw exchangable items
     for (let i = 0; i < bankItems.length && freeSpaces > 2; i++) {
         const item = bankItems[i]
         if (!item) continue // No item
 
-        if (!ITEMS_TO_EXCHANGE.has(item.name)) continue // Not exchangable
+        if (!itemsToExchange.has(item.name)) continue // Not exchangable
 
         const gInfo = bot.G.items[item.name]
         if (item.q < gInfo.e) continue // Not enough to exchange
+
+        // Withdraw the item
+        const pack = `items${Math.floor(i / 42)}` as Exclude<AL.BankPackName, "gold">
+        const slot = i % 42
+        await bot.withdrawItem(pack, slot)
+        freeSpaces--
+    }
+
+    // Withdraw level 2 golden earrings
+    for (let i = 0; i < bankItems.length && freeSpaces > 2; i++) {
+        const item = bankItems[i]
+        if (!item) continue // No item
+
+        if (item.name !== "lostearring") continue
+        if (item.level !== 2) continue
 
         // Withdraw the item
         const pack = `items${Math.floor(i / 42)}` as Exclude<AL.BankPackName, "gold">
