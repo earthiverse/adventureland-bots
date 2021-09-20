@@ -679,7 +679,7 @@ export function startCompoundLoop(bot: AL.Character, itemsToSell: ItemLevelInfo 
                 for (let dLevel = 7; dLevel >= 0; dLevel--) {
                     const items = itemsByLevel[itemName][dLevel]
                     if (items == undefined) continue // No items of this type at this level
-                    if (dLevel > UPGRADE_COMPOUND_LIMIT[itemName]) continue // We don't want to compound certain items too much
+                    if (dLevel == UPGRADE_COMPOUND_LIMIT[itemName]) continue // We don't want to compound certain items too much. However, if it's already over that level, compound it.
 
                     const grade = await bot.calculateItemGrade({ level: dLevel, name: itemName })
                     const cscrollName = `cscroll${grade}` as AL.ItemName
@@ -1296,7 +1296,7 @@ export function startUpgradeLoop(bot: AL.Character, itemsToSell: ItemLevelInfo =
                 for (let dLevel = 12; dLevel >= 0; dLevel--) {
                     const items = itemsByLevel[itemName][dLevel]
                     if (items == undefined) continue // No items of this type at this level
-                    if (dLevel > UPGRADE_COMPOUND_LIMIT[itemName]) continue // We don't want to upgrade certain items past certain levels
+                    if (dLevel == UPGRADE_COMPOUND_LIMIT[itemName]) continue // We don't want to upgrade certain items past certain levels. However, if it's already over that level, upgrade it.
 
                     const grade = await bot.calculateItemGrade({ level: dLevel, name: itemName })
                     const scrollName = `scroll${grade}` as AL.ItemName
