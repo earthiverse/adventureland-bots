@@ -223,7 +223,7 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
 
     // Withdraw items to craft with
     for (const item of itemsToCraft) {
-        const gCraft = this.G.craft[item]
+        const gCraft = bot.G.craft[item]
         if (!gCraft) continue
         if (freeSpaces <= gCraft.items.length) continue // Not enough space to craft
         const withdrawThese: [BankPackName, number][] = []
