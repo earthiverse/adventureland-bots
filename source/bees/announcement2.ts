@@ -141,12 +141,12 @@ async function startRogue(bot: AL.Rogue, positionOffset: { x: number, y: number 
             await goToPoitonSellerIfLow(bot)
             await goToBankIfFull(bot)
 
-            await goToNearestWalkableToMonster(bot, targets, offsetPosition(defaultLocation, positionOffset.x, positionOffset.y))
+            goToNearestWalkableToMonster(bot, targets, offsetPosition(defaultLocation, positionOffset.x, positionOffset.y)).catch(e => console.error(e))
         } catch (e) {
             console.error(e)
         }
 
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }
