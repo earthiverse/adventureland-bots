@@ -611,7 +611,8 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
     startCraftLoop(bot)
     if (bot.ctype !== "merchant") startElixirLoop(bot, "elixirluck")
     startEventLoop(bot)
-    startExchangeLoop(bot)
+    // NOTE: Temporarily disable this for halloween preparations
+    // startExchangeLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)
     if (bot.ctype !== "merchant") {
