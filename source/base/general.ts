@@ -69,7 +69,7 @@ export const ITEMS_TO_BUY: Set<AL.ItemName> = new Set([
     // Capes
     "angelwings", "bcape", "cape", "ecape", "fcape", "stealthcape", "vcape",
     // Shoes
-    "eslippers", "hboots", "mrnboots", "mwboots", /*"shoes1",*/ "vboots", "wingedboots", "wshoes", "xboots",
+    "eslippers", "hboots", "mrnboots", "mwboots", "shoes1", "vboots", "wingedboots", "wshoes", "xboots",
     // Pants
     /*"frankypants",*/ "hpants", "mrnpants", "mwpants", /*"pants1",*/ "starkillers", "wbreeches", "xpants",
     // Armor
