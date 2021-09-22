@@ -182,7 +182,7 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
                         firstItemSlot = items[0]
                         continue // Not enough to compound
                     }
-                    for (let i = 0; i < items.length && freeSpaces > 5; i++) {
+                    for (let i = 0; i < items.length - 2 && freeSpaces > 5; i++) {
                         const slot1 = items[i]
                         if (firstItemSlot == undefined) {
                             firstItemSlot = slot1
