@@ -1,6 +1,6 @@
 import AL from "alclient"
 import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, goToNearestWalkableToMonster, ITEMS_TO_SELL, startPartyLoop } from "../base/general.js"
-import { mainBeesNearTunnel, offsetPosition } from "../base/locations.js"
+import { halloweenMiniMushes, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
@@ -11,8 +11,8 @@ const priest1Name = "over9000"
 const ranger1Name = "rickroll"
 const region: AL.ServerRegion = "US"
 const identifier: AL.ServerIdentifier = "III"
-const targets: AL.MonsterName[] = ["bee"]
-const defaultLocation: AL.IPosition = mainBeesNearTunnel
+const targets: AL.MonsterName[] = ["minimush", "phoenix"]
+const defaultLocation: AL.IPosition = halloweenMiniMushes
 
 let rogue1: AL.Rogue
 let priest1: AL.Priest
