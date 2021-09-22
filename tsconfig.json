@@ -1,6 +1,7 @@
 {
     "compileOnSave": true,
     "compilerOptions": {
+        "module": "esnext",
         "lib": [
             "ES2020",
             "DOM"

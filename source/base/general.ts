@@ -474,13 +474,11 @@ export function kiteInCircle(bot: AL.Character, type: AL.MonsterName, center: AL
     if (AL.Pathfinder.canWalkPath(bot, center)) {
         const nearest = bot.getNearestMonster(type)?.monster
         if (nearest) {
-            // TODO: Improve to move either clockwise or counter-clockwise
-
             // There's a monster nearby
             const angleFromCenterToMonsterGoing = Math.atan2(nearest.going_y - center.y, nearest.going_x - center.x)
             const endGoalAngle = angleFromCenterToMonsterGoing + angle
             const endGoal = offsetPositionParty({ x: center.x + radius * Math.cos(endGoalAngle), y: center.y + radius * Math.sin(endGoalAngle) }, bot)
-            return bot.move(endGoal.x, endGoal.y)
+            bot.move(endGoal.x, endGoal.y).catch(e => console.error(e))
         } else {
             // There isn't a monster nearby
             const angleFromSpawnToBot = Math.atan2(bot.y - center.y, bot.x - center.x)
