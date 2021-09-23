@@ -156,7 +156,7 @@ async function run() {
         const loopBot = async () => {
             try {
                 if (information.bot2.bot) await information.bot2.bot.disconnect()
-                information.bot2.bot = await AL.Game.startRanger(information.bot2.name, TARGET_REGION, TARGET_IDENTIFIER)
+                information.bot2.bot = await AL.Game.startMage(information.bot2.name, TARGET_REGION, TARGET_IDENTIFIER)
                 information.friends[2] = information.bot2.bot
                 prepareMage(information.bot2.bot as AL.Mage)
                 information.bot2.bot.socket.on("disconnect", async () => { loopBot() })
@@ -184,7 +184,7 @@ async function run() {
         const loopBot = async () => {
             try {
                 if (information.bot3.bot) await information.bot3.bot.disconnect()
-                information.bot3.bot = await AL.Game.startWarrior(information.bot3.name, TARGET_REGION, TARGET_IDENTIFIER)
+                information.bot3.bot = await AL.Game.startMage(information.bot3.name, TARGET_REGION, TARGET_IDENTIFIER)
                 information.friends[3] = information.bot3.bot
                 prepareMage(information.bot3.bot as AL.Mage)
                 information.bot3.bot.socket.on("disconnect", async () => { loopBot() })
