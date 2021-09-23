@@ -128,11 +128,21 @@ export async function startBscorpionPriestFarmer(bot: AL.Priest, friends: AL.Cha
             }
 
             if (!bot.canUse("scare", { ignoreEquipped: true })) {
+                // Only heal
+                await attackTheseTypesPriest(bot, [], friends)
                 bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
                 return
             }
 
-            // Idle strategy
+            const closest = bot.getNearestMonster("bscorpion")
+            if (closest && closest.monster.target == undefined && closest.distance <= bot.G.monsters.bscorpion.range) {
+                // Only heal
+                await attackTheseTypesPriest(bot, [], friends)
+                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                return
+            }
+
+            // Attack
             await attackTheseTypesPriest(bot, targets, friends)
         } catch (e) {
             console.error(e)
