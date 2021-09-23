@@ -302,7 +302,7 @@ export async function startMerchant(bot: AL.Merchant, information: Information, 
             }
 
             // Find other characters that need mluck and go find them
-            if (bot.canUse("mluck")) {
+            if ((bot.id == "earthMer" || bot.id == "earthMer2") && bot.canUse("mluck")) {
                 const charactersToMluck = await AL.PlayerModel.find({ $or: [{ "s.mluck": undefined }, { "s.mluck.f": { "$ne": bot.id }, "s.mluck.strong": undefined }], lastSeen: { $gt: Date.now() - 120000 }, serverIdentifier: bot.server.name, serverRegion: bot.server.region }).lean().exec()
                 for (const stranger of charactersToMluck) {
                     // Move to them, and we'll automatically mluck them
