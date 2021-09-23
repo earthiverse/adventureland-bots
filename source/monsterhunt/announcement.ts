@@ -6,8 +6,8 @@ import { getTargetServerFromMonsters } from "../base/serverhop.js"
 import { Information, Strategy } from "../definitions/bot.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMage, startMerchant } from "./shared.js"
 
-let TARGET_REGION = DEFAULT_REGION
-let TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
+const TARGET_REGION = DEFAULT_REGION
+const TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
 
 const information: Information = {
     friends: [undefined, undefined, undefined, undefined],
@@ -207,72 +207,72 @@ async function run() {
     }
     startMage3Loop().catch(() => { /* ignore errors */ })
 
-    let lastServerChangeTime = Date.now()
-    const serverLoop = async () => {
-        try {
-            // We haven't logged in yet
-            if (!information.bot1) {
-                setTimeout(async () => { serverLoop() }, 1000)
-                return
-            }
+    // let lastServerChangeTime = Date.now()
+    // const serverLoop = async () => {
+    //     try {
+    //         // We haven't logged in yet
+    //         if (!information.bot1) {
+    //             setTimeout(async () => { serverLoop() }, 1000)
+    //             return
+    //         }
 
-            // Don't change servers too fast
-            if (lastServerChangeTime > Date.now() - 60_000) {
-                setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime - Date.now() - 60_000))
-                return
-            }
+    //         // Don't change servers too fast
+    //         if (lastServerChangeTime > Date.now() - 60_000) {
+    //             setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime - Date.now() - 60_000))
+    //             return
+    //         }
 
-            // Don't change servers if we're currently attacking something special.
-            if (AL.Constants.SPECIAL_MONSTERS.includes(information.bot1.target)
-                || AL.Constants.SPECIAL_MONSTERS.includes(information.bot2.target)
-                || AL.Constants.SPECIAL_MONSTERS.includes(information.bot3.target)) {
-                setTimeout(async () => { serverLoop() }, 1000)
-                return
-            }
+    //         // Don't change servers if we're currently attacking something special.
+    //         if (AL.Constants.SPECIAL_MONSTERS.includes(information.bot1.target)
+    //             || AL.Constants.SPECIAL_MONSTERS.includes(information.bot2.target)
+    //             || AL.Constants.SPECIAL_MONSTERS.includes(information.bot3.target)) {
+    //             setTimeout(async () => { serverLoop() }, 1000)
+    //             return
+    //         }
 
-            // Don't change servers if we're running a crypt
-            const merchantMap: AL.GMap = AL.Game.G.maps[information.merchant?.bot?.map]
-            if (merchantMap && merchantMap.instance) {
-                setTimeout(async () => { serverLoop() }, 1000)
-                return
-            }
+    //         // Don't change servers if we're running a crypt
+    //         const merchantMap: AL.GMap = AL.Game.G.maps[information.merchant?.bot?.map]
+    //         if (merchantMap && merchantMap.instance) {
+    //             setTimeout(async () => { serverLoop() }, 1000)
+    //             return
+    //         }
 
-            const currentRegion = information.bot1.bot.server.region
-            const currentIdentifier = information.bot1.bot.server.name
-            const G = information.bot1.bot.G
+    //         const currentRegion = information.bot1.bot.server.region
+    //         const currentIdentifier = information.bot1.bot.server.name
+    //         const G = information.bot1.bot.G
 
-            const targetServer = await getTargetServerFromMonsters(G, DEFAULT_REGION, DEFAULT_IDENTIFIER)
-            if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
-                // We're already on the correct server
-                setTimeout(async () => { serverLoop() }, 1000)
-                return
-            }
+    //         const targetServer = await getTargetServerFromMonsters(G, DEFAULT_REGION, DEFAULT_IDENTIFIER)
+    //         if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
+    //             // We're already on the correct server
+    //             setTimeout(async () => { serverLoop() }, 1000)
+    //             return
+    //         }
 
-            // Change servers to attack this entity
-            TARGET_REGION = targetServer[0]
-            TARGET_IDENTIFIER = targetServer[1]
-            console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${TARGET_REGION} ${TARGET_IDENTIFIER}`)
+    //         // Change servers to attack this entity
+    //         TARGET_REGION = targetServer[0]
+    //         TARGET_IDENTIFIER = targetServer[1]
+    //         console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${TARGET_REGION} ${TARGET_IDENTIFIER}`)
 
-            // Loot all of our remaining chests
-            await sleep(1000)
-            for (const [, chest] of information.bot1.bot.chests) await information.bot1.bot.openChest(chest.id)
-            await sleep(1000)
+    //         // Loot all of our remaining chests
+    //         await sleep(1000)
+    //         for (const [, chest] of information.bot1.bot.chests) await information.bot1.bot.openChest(chest.id)
+    //         await sleep(1000)
 
-            // Disconnect everyone
-            await Promise.allSettled([
-                information.bot1.bot.disconnect(),
-                information.bot2.bot.disconnect(),
-                information.bot3.bot.disconnect(),
-                information.merchant.bot.disconnect()
-            ])
-            await sleep(5000)
-            lastServerChangeTime = Date.now()
-        } catch (e) {
-            console.error(e)
-        }
+    //         // Disconnect everyone
+    //         await Promise.allSettled([
+    //             information.bot1.bot.disconnect(),
+    //             information.bot2.bot.disconnect(),
+    //             information.bot3.bot.disconnect(),
+    //             information.merchant.bot.disconnect()
+    //         ])
+    //         await sleep(5000)
+    //         lastServerChangeTime = Date.now()
+    //     } catch (e) {
+    //         console.error(e)
+    //     }
 
-        setTimeout(async () => { serverLoop() }, 1000)
-    }
-    serverLoop()
+    //     setTimeout(async () => { serverLoop() }, 1000)
+    // }
+    // serverLoop()
 }
 run()
