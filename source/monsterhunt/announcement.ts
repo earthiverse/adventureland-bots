@@ -130,7 +130,7 @@ async function run() {
                 information.bot1.bot = await AL.Game.startMage(information.bot1.name, TARGET_REGION, TARGET_IDENTIFIER)
                 information.friends[1] = information.bot1.bot
                 prepareMage(information.bot1.bot as AL.Mage)
-                startTrackerLoop(information.bot2.bot)
+                startTrackerLoop(information.bot1.bot)
                 information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
