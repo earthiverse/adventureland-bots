@@ -1,5 +1,5 @@
 import AL from "alclient"
-import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, goToBankIfFull, ITEMS_TO_HOLD, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startEventLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
+import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, ITEMS_TO_HOLD, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { attackTheseTypesMerchant, doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
@@ -8,7 +8,7 @@ import { attackTheseTypesWarrior, startChargeLoop, startHardshellLoop, startWarc
 import { Information, Strategy } from "../definitions/bot.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 
-const DEFAULT_TARGET: AL.MonsterName = "osnake"
+const DEFAULT_TARGET: AL.MonsterName = "goo"
 
 export const DEFAULT_REGION: AL.ServerRegion = "US"
 export const DEFAULT_IDENTIFIER: AL.ServerIdentifier = "II"
@@ -500,7 +500,7 @@ export async function startRanger(bot: AL.Ranger, information: Information, stra
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
+        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("attack"), bot.getCooldown("supershot")))))
     }
     attackLoop()
 }
@@ -610,7 +610,6 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
     startCompoundLoop(bot)
     startCraftLoop(bot)
     if (bot.ctype !== "merchant") startElixirLoop(bot, "elixirluck")
-    startEventLoop(bot)
     // NOTE: Temporarily disable this for halloween preparations
     // startExchangeLoop(bot)
     startHealLoop(bot)
@@ -642,7 +641,7 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
 
                 // Get a MH if we're on the default server and we don't have one
                 if (!bot.s.monsterhunt && bot.server.name == DEFAULT_IDENTIFIER && bot.server.region == DEFAULT_REGION) {
-                    await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
+                    await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1, useBlink: true })
                     await bot.getMonsterHuntQuest()
                     bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
                     return
@@ -650,7 +649,7 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
 
                 // Turn in our monsterhunt if we can
                 if (bot.s.monsterhunt && bot.s.monsterhunt.c == 0) {
-                    await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1 })
+                    await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1, useBlink: true })
                     await bot.finishMonsterHuntQuest()
                     await bot.getMonsterHuntQuest()
                     bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
@@ -659,8 +658,10 @@ export async function startShared(bot: AL.Character, strategy: Strategy, informa
 
                 // Get some holiday spirit if it's Christmas
                 if (bot.S && bot.S.holidayseason && !bot.s.holidayspirit) {
-                    await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
-                    bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
+                    await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, useBlink: true })
+                    // TODO: Improve ALClient by making this a function
+                    bot.socket.emit("interaction", { type: "newyear_tree" })
+                    bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, Math.min(...bot.pings) * 2))
                     return
                 }
 
