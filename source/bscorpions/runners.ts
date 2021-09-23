@@ -1,5 +1,5 @@
 import AL from "alclient"
-import { startAvoidStacking, startBuyLoop, startBuyFriendsReplenishablesLoop, startCompoundLoop, startEventLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startUpgradeLoop, goToBankIfFull, goToPoitonSellerIfLow, LOOP_MS, startSendStuffDenylistLoop, kiteInCircle } from "../base/general.js"
+import { startAvoidStacking, startBuyLoop, startBuyFriendsReplenishablesLoop, startCompoundLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startUpgradeLoop, goToBankIfFull, goToPoitonSellerIfLow, LOOP_MS, startSendStuffDenylistLoop, kiteInCircle } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
@@ -16,7 +16,6 @@ export async function startBscorpionMageFarmer(bot: AL.Mage, friends: AL.Charact
     startAvoidStacking(bot)
     startBuyLoop(bot)
     startCompoundLoop(bot)
-    startEventLoop(bot)
     startExchangeLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)
@@ -81,7 +80,6 @@ export async function startBscorpionPriestFarmer(bot: AL.Priest, friends: AL.Cha
     startBuyLoop(bot)
     startCompoundLoop(bot)
     startDarkBlessingLoop(bot)
-    startEventLoop(bot)
     startExchangeLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)
@@ -157,7 +155,6 @@ export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], h
     startBuyLoop(bot)
     startBuyFriendsReplenishablesLoop(bot, friends)
     startCompoundLoop(bot)
-    startEventLoop(bot)
     startExchangeLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)

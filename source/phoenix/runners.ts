@@ -1,5 +1,5 @@
 import AL from "alclient"
-import { goToBankIfFull, goToPoitonSellerIfLow, LOOP_MS, startAvoidStacking, startBuyFriendsReplenishablesLoop, startBuyLoop, startCompoundLoop, startEventLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
+import { goToBankIfFull, goToPoitonSellerIfLow, LOOP_MS, startAvoidStacking, startBuyFriendsReplenishablesLoop, startBuyLoop, startCompoundLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 
@@ -15,7 +15,6 @@ export async function startPhoenixFarmer(bot: AL.Mage, friends: AL.Character[], 
     startAvoidStacking(bot)
     startBuyLoop(bot)
     startCompoundLoop(bot)
-    startEventLoop(bot)
     startExchangeLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)
@@ -103,7 +102,6 @@ export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], h
     startBuyLoop(bot)
     startBuyFriendsReplenishablesLoop(bot, friends)
     startCompoundLoop(bot)
-    startEventLoop(bot)
     startExchangeLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)

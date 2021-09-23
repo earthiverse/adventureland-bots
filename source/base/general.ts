@@ -767,29 +767,6 @@ export function startElixirLoop(bot: AL.Character, elixir: AL.ItemName): void {
     elixirLoop()
 }
 
-export function startEventLoop(bot: AL.Character): void {
-    const newYearTrees = bot.locateNPC("newyear_tree")
-    async function eventLoop() {
-        try {
-            if (!bot.socket || bot.socket.disconnected) return
-
-            // Winter event stuff
-            if (bot.S && bot.S.holidayseason && !bot.s.holidayspirit) {
-                // Get the holiday buff
-                for (const tree of newYearTrees) {
-                    if (AL.Tools.distance(bot, tree) > AL.Constants.NPC_INTERACTION_DISTANCE) continue
-                    // TODO: Improve ALClient by making this a function
-                    bot.socket.emit("interaction", { type: "newyear_tree" })
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-        bot.timeouts.set("eventloop", setTimeout(async () => { eventLoop() }, LOOP_MS))
-    }
-    eventLoop()
-}
-
 export function startExchangeLoop(bot: AL.Character, itemsToExchange = ITEMS_TO_EXCHANGE): void {
     async function exchangeLoop() {
         try {

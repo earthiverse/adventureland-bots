@@ -1,5 +1,5 @@
 import AL from "alclient"
-import { goToNearestWalkableToMonster, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startEventLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
+import { goToNearestWalkableToMonster, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
 import { batCaveCryptEntrance, cryptWaitingSpot } from "../base/locations.js"
 import { startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
@@ -33,7 +33,6 @@ async function startShared(bot: AL.Character) {
     startBuyLoop(bot)
     startCompoundLoop(bot)
     if (bot.ctype !== "merchant") startElixirLoop(bot, "elixirluck")
-    startEventLoop(bot)
     startExchangeLoop(bot)
     if (bot.id == partyLeader) {
         startPartyLoop(bot, partyLeader, partyMembers)
