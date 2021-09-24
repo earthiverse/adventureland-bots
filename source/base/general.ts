@@ -55,9 +55,9 @@ export const ITEMS_TO_BUY: Set<AL.ItemName> = new Set([
     // Belts
     "dexbelt", "intbelt", "strbelt",
     // Rings
-    "cring", "ctristone", "dexring", "goldring", "intring", "ringofluck", "strring", "suckerpunch", "trigger", "tristone", "vring",
+    "cring", "ctristone", /*"dexring",*/ "goldring", /*"intring",*/ "ringofluck", "strring", "suckerpunch", "trigger", "tristone", "vring",
     // Earrings
-    "cearring", "dexearring", "intearring", "lostearring", "strearring",
+    "cearring", "dexearring", /*"intearring",*/ "lostearring", /*"strearring",*/
     // Amulets
     "amuletofm", "dexamulet", "intamulet", "mpxamulet", "northstar", "snring", "stramulet", "t2dexamulet", "t2intamulet", "t2stramulet",
     // Orbs
@@ -103,6 +103,8 @@ export const ITEMS_TO_SELL: ItemLevelInfo = {
     "crabclaw": 2, "frankypants": 2, "hpamulet": 2, "hpbelt": 2, "quiver": 2, "ringsj": 2, "slimestaff": 2, "stinger": 2, "throwingstars": 2, "vitearring": 2,
     // Default clothing
     "shoes": 2, "pants": 2, "coat": 2, "helmet": 2, "gloves": 2,
+    // Things that are now obsolete
+    "dexring": 2, "intring": 2, "intearring": 2, "strearring": 2,
     // Field generators
     "fieldgen0": 999,
     // Snowballs
@@ -435,7 +437,6 @@ export async function goToNPCShopIfFull(bot: AL.Character, itemsToSell = ITEMS_T
     }
     if (!hasSellableItem) return // We don't have anything to sell
 
-    // TODO: Find the closest shop
     await bot.smartMove("fancypots", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
     await sleep(1000)
 }
@@ -881,32 +882,6 @@ export function startPartyLoop(bot: AL.Character, leader: string, partyMembers?:
 
                     // If there's an incoming request, and we're full, kick the lower priority characters
                     if (bot.partyData && bot.partyData.list.length >= 9) {
-                        // TODO: Confirm that this works.
-                        // NOTE: It might only work if the merchant belongs to one of the members of the party
-                        // We can fit 10 members if one of them is a merchant.
-                        let hasMerchant = false
-                        for (const partyMemberName in bot.partyData.party) {
-                            const partyMember = bot.partyData.party[partyMemberName]
-                            if (partyMember.type == "merchant") {
-                                hasMerchant = true
-                                break
-                            }
-                        }
-                        if (!hasMerchant) {
-                            const requestingPlayer = bot.players.get(data.name)
-                            if (requestingPlayer && requestingPlayer.ctype == "merchant") {
-                                // We can fit a 10th member
-                                console.log(await bot.acceptPartyRequest(data.name))
-                                return
-                            }
-                        } else {
-                            if (bot.partyData.list.length == 9) {
-                                // We can fit a 10th member
-                                console.log(await bot.acceptPartyRequest(data.name))
-                                return
-                            }
-                        }
-
                         const requestPriority = partyMembers.length - partyMembers.indexOf(data.name)
 
                         let toKickMember: string
