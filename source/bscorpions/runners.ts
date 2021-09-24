@@ -67,10 +67,18 @@ export async function startBscorpionMageFarmer(bot: AL.Mage, friends: AL.Charact
 
             // Idle strategy
             await attackTheseTypesMage(bot, targets, friends, { targetingPartyMember: true })
+
+            // Extra cburst damage
+            if (bot.canUse("cburst") && bot.mp > bot.max_mp - 500) {
+                const bscorp = bot.getNearestMonster("bscorpion")
+                if (bscorp && bscorp.distance < bot.range && bscorp.monster.isAttackingPartyMember(bot)) {
+                    await bot.cburst([[bscorp.monster.id, bot.mp / 2]])
+                }
+            }
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("cburst"), bot.getCooldown("attack")))))
     }
     attackLoop()
 }
@@ -145,7 +153,7 @@ export async function startBscorpionPriestFarmer(bot: AL.Priest, friends: AL.Cha
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
     }
     attackLoop()
 }
