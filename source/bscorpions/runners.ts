@@ -8,7 +8,7 @@ export const DEFAULT_REGION: AL.ServerRegion = "US"
 export const DEFAULT_IDENTIFIER: AL.ServerIdentifier = "III"
 
 const bscorpionPartyLeader = "over9000"
-const bscorpionPartyMembers = ["facilitating", "gratuitously", "hypothesized", "lolwutpear", "shoopdawhoop", "over9000"]
+const bscorpionPartyMembers = ["facilitating", "gratuitously", "illumination", "lolwutpear", "shoopdawhoop", "over9000"]
 
 const targets: AL.MonsterName[] = ["bscorpion"]
 
