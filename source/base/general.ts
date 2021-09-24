@@ -991,13 +991,15 @@ export function startScareLoop(bot: AL.Character): void {
                 incomingDamage += entity.calculateDamageRange(bot)[1]
             }
 
-            if (bot.canUse("scare", { ignoreEquipped: true }) && (
-                bot.isScared() // We are scared
-                || (bot.s.burned && bot.s.burned.intensity > bot.max_hp / 5) // We are burning pretty badly
-                || (bot.targets > 0 && bot.c.town) // We are teleporting
-                || (bot.targets > 0 && bot.hp < bot.max_hp * 0.25) // We are low on HP
-                || (incomingDamage > bot.hp) // We could literally die with the next attack
-            )) {
+            if (bot.canUse("scare", { ignoreEquipped: true })
+                && (bot.hasItem("jacko") || bot.isEquipped("jacko"))
+                && (
+                    bot.isScared() // We are scared
+                    || (bot.s.burned && bot.s.burned.intensity > bot.max_hp / 5) // We are burning pretty badly
+                    || (bot.targets > 0 && bot.c.town) // We are teleporting
+                    || (bot.targets > 0 && bot.hp < bot.max_hp * 0.25) // We are low on HP
+                    || (incomingDamage > bot.hp) // We could literally die with the next attack
+                )) {
                 // Equip the jacko if we need to
                 let inventoryPos: number
                 if (!bot.canUse("scare") && bot.hasItem("jacko")) {
