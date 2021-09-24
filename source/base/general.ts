@@ -359,6 +359,51 @@ export async function goToBankIfFull(bot: AL.Character, itemsToHold = ITEMS_TO_H
     if (bot.gold > goldToHold) await bot.depositGold(bot.gold - goldToHold)
 }
 
+export function goToKiteMonster(bot: AL.Character, options: {
+    stayWithinAttackingRange?: boolean
+    type?: AL.MonsterName
+    typeList?: AL.MonsterName[]
+}): void {
+    // Find the nearest entity
+    let nearest: AL.Entity
+    let distance: number = Number.MAX_VALUE
+    for (const entity of bot.getEntities(options)) {
+        const d = AL.Tools.distance(bot, entity)
+        if (d < distance) {
+            distance = d
+            nearest = entity
+        }
+    }
+
+    // If we're not near anything, don't move.
+    if (!nearest) return
+
+    // Stop smart moving when we can walk to the monster directly
+    if (bot.smartMoving && (AL.Pathfinder.canWalkPath(bot, nearest) || distance < bot.range)) bot.stopSmartMove().catch(e => console.error(e))
+
+    let kiteDistance = nearest.range + nearest.speed
+    if (options?.stayWithinAttackingRange) kiteDistance = Math.min(bot.range, nearest.range + nearest.speed)
+
+    const distanceToMove = kiteDistance - distance
+    const angleFromMonsterToBot = Math.atan2(bot.y - nearest.y, bot.x - nearest.x)
+    let potentialSpot: AL.IPosition = { x: bot.x + distanceToMove * Math.cos(angleFromMonsterToBot), y: bot.y + distanceToMove * Math.sin(angleFromMonsterToBot) }
+    let angle = 0
+    while (!AL.Pathfinder.canWalkPath(bot, potentialSpot) && angle < Math.PI) {
+        if (angle > 0) {
+            angle = -angle
+        } else {
+            angle -= Math.PI / 12 // Increase angle by 15 degrees
+            angle = -angle
+        }
+        potentialSpot = { x: bot.x + distanceToMove * Math.cos(angleFromMonsterToBot + angle), y: bot.y + distanceToMove * Math.sin(angleFromMonsterToBot + angle) }
+    }
+    if (AL.Pathfinder.canWalkPath(bot, potentialSpot)) {
+        bot.move(potentialSpot.x, potentialSpot.y).catch(e => console.error(e))
+    } else if (!bot.smartMoving) {
+        bot.smartMove(potentialSpot, { getWithin: kiteDistance }).catch(e => console.error(e))
+    }
+}
+
 export async function goToPriestIfHurt(bot: AL.Character, priest: AL.Character): Promise<AL.IPosition> {
     if (bot.hp > bot.max_hp / 2) return // We still have over half our HP
     if (!priest) return // Priest is not available
@@ -988,6 +1033,7 @@ export function startScareLoop(bot: AL.Character): void {
             let incomingDamage = 0
             for (const [, entity] of bot.entities) {
                 if (entity.target !== bot.id) continue
+                if (AL.Tools.distance(bot, entity) > entity.range + Math.min(...bot.pings) / 500 * entity.speed) continue // Too far away from us to attack us
                 incomingDamage += entity.calculateDamageRange(bot)[1]
             }
 
