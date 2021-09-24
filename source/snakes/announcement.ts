@@ -10,7 +10,7 @@ const warrior1Name = "announcement"
 const warrior2Name = "battleworthy"
 const warrior3Name = "charmingness"
 const region: AL.ServerRegion = "US"
-const identifier: AL.ServerIdentifier = "III"
+const identifier: AL.ServerIdentifier = "II"
 const targets: AL.MonsterName[] = ["snake"]
 const defaultLocation: AL.IPosition = mainSnakes
 
