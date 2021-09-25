@@ -229,7 +229,14 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
         const withdrawThese: [BankPackName, number][] = []
         let craftable = true
         for (const [requiredQuantity, requiredItem, requiredItemLevel] of gCraft.items) {
-            const slot = bot.locateItem(requiredItem, bankItems, { level: requiredItemLevel, quantityGreaterThan: requiredQuantity - 1 })
+            // If the item is compoundable or upgradable, the level needs to be 0
+            let fixedItemLevel = requiredItemLevel
+            if (requiredItemLevel === undefined) {
+                const gInfo = this.G.items[requiredItem]
+                if (gInfo.upgrade || gInfo.compound) fixedItemLevel = 0
+            }
+
+            const slot = bot.locateItem(requiredItem, bankItems, { level: fixedItemLevel, quantityGreaterThan: requiredQuantity - 1 })
             if (slot == undefined) {
                 // We don't have one of the items required to craft
                 craftable = false
