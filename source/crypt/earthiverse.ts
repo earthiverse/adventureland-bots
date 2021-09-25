@@ -1,6 +1,6 @@
 import AL from "alclient"
 import { goToKiteMonster, goToNearestWalkableToMonster, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
-import { batCaveCryptEntrance, cryptWaitingSpot } from "../base/locations.js"
+import { batCaveCryptEntrance, cryptEnd, cryptWaitingSpot } from "../base/locations.js"
 import { startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
@@ -281,7 +281,7 @@ async function startWarrior(bot: AL.Warrior) {
             const nearest = bot.getNearestMonster()?.monster
             if (!nearest && !bot.smartMoving) {
                 // No nearby monsters, go to the end of the crypt
-                bot.smartMove("a1").catch(e => console.error(e))
+                bot.smartMove(cryptEnd).catch(e => console.error(e))
             } else if (!nearest) {
                 // Wait for smartMove to bring us close to something
                 bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))

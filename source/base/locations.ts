@@ -17,6 +17,7 @@ export const batCaveCryptEntrance: AL.IPosition = { map: "cave", x: -193.41, y: 
 
 // Crypt
 export const cryptWaitingSpot: AL.IPosition = { map: "crypt", x: 100, y: 50 }
+export const cryptEnd: AL.IPosition = { map: "crypt", x: 2689.64, y: 505.06 }
 
 // Halloween
 export const halloweenSafeSnakes: AL.IPosition = { map: "halloween", x: 346.5, y: -747 }
