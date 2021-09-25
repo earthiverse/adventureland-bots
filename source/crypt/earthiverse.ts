@@ -96,7 +96,7 @@ async function startPriest(bot: AL.Priest) {
     if (firestaff !== undefined) await bot.equip(firestaff)
     const wbook1 = bot.locateItem("wbook1", bot.items, { locked: true })
     if (wbook1 !== undefined) await bot.equip(wbook1)
-    const jacko = bot.locateItem("jacko", this.items, { locked: true })
+    const jacko = bot.locateItem("jacko", bot.items, { locked: true })
     if (jacko !== undefined) await bot.equip(jacko)
 
     async function attackLoop() {
@@ -161,7 +161,7 @@ async function startRanger(bot: AL.Ranger) {
     if (bot.slots.offhand) await bot.unequip("offhand")
     const crossbow = bot.locateItem("crossbow", bot.items, { locked: true })
     if (crossbow !== undefined) await bot.equip(crossbow)
-    const jacko = bot.locateItem("jacko", this.items, { locked: true })
+    const jacko = bot.locateItem("jacko", bot.items, { locked: true })
     if (jacko !== undefined) await bot.equip(jacko)
 
     async function attackLoop() {
@@ -230,7 +230,7 @@ async function startWarrior(bot: AL.Warrior) {
     if (bot.slots.offhand) await bot.unequip("offhand")
     const bataxe = bot.locateItem("bataxe", bot.items, { locked: true })
     if (bataxe !== undefined) await bot.equip(bataxe)
-    const jacko = bot.locateItem("jacko", this.items, { locked: true })
+    const jacko = bot.locateItem("jacko", bot.items, { locked: true })
     if (jacko !== undefined) await bot.equip(jacko)
 
     async function attackLoop() {
