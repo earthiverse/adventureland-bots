@@ -360,6 +360,7 @@ export async function goToBankIfFull(bot: AL.Character, itemsToHold = ITEMS_TO_H
 }
 
 export function goToKiteMonster(bot: AL.Character, options: {
+    kiteDistance?: number
     stayWithinAttackingRange?: boolean
     type?: AL.MonsterName
     typeList?: AL.MonsterName[]
@@ -379,28 +380,31 @@ export function goToKiteMonster(bot: AL.Character, options: {
     if (!nearest) return
 
     // Stop smart moving when we can walk to the monster directly
-    if (bot.smartMoving && (AL.Pathfinder.canWalkPath(bot, nearest) || distance < bot.range)) bot.stopSmartMove().catch(e => console.error(e))
+    if (bot.smartMoving && (AL.Pathfinder.canWalkPath(bot, nearest) || distance < bot.range)) {
+        bot.stopSmartMove().catch(() => { /* Suppress errors */ })
+    }
 
     let kiteDistance = nearest.range + nearest.speed
-    if (options?.stayWithinAttackingRange) kiteDistance = Math.min(bot.range, nearest.range + nearest.speed)
+    if (options?.kiteDistance) kiteDistance = options.kiteDistance
+    if (options?.stayWithinAttackingRange) kiteDistance = Math.min(bot.range, kiteDistance)
 
-    const distanceToMove = kiteDistance - distance
-    const angleFromMonsterToBot = Math.atan2(bot.y - nearest.y, bot.x - nearest.x)
-    let potentialSpot: AL.IPosition = { x: bot.x + distanceToMove * Math.cos(angleFromMonsterToBot), y: bot.y + distanceToMove * Math.sin(angleFromMonsterToBot) }
+    const distanceToMove = distance - kiteDistance
+    const angleFromBotToMonster = Math.atan2(nearest.y - bot.y, nearest.x - bot.x)
+    let potentialSpot: AL.IPosition = { map: bot.map, x: bot.x + distanceToMove * Math.cos(angleFromBotToMonster), y: bot.y + distanceToMove * Math.sin(angleFromBotToMonster) }
     let angle = 0
-    while (!AL.Pathfinder.canWalkPath(bot, potentialSpot) && angle < Math.PI) {
+    while (!AL.Pathfinder.canStand(potentialSpot) && angle < Math.PI) {
         if (angle > 0) {
             angle = -angle
         } else {
-            angle -= Math.PI / 12 // Increase angle by 15 degrees
+            angle -= Math.PI / 180 // Increase angle by 1 degree
             angle = -angle
         }
-        potentialSpot = { x: bot.x + distanceToMove * Math.cos(angleFromMonsterToBot + angle), y: bot.y + distanceToMove * Math.sin(angleFromMonsterToBot + angle) }
+        potentialSpot = { map: bot.map, x: bot.x + distanceToMove * Math.cos(angleFromBotToMonster + angle), y: bot.y + distanceToMove * Math.sin(angleFromBotToMonster + angle) }
     }
     if (AL.Pathfinder.canWalkPath(bot, potentialSpot)) {
-        bot.move(potentialSpot.x, potentialSpot.y).catch(e => console.error(e))
-    } else if (!bot.smartMoving) {
-        bot.smartMove(potentialSpot, { getWithin: kiteDistance }).catch(e => console.error(e))
+        bot.move(potentialSpot.x, potentialSpot.y).catch(() => { /* Suppress errors */ })
+    } else if (AL.Pathfinder.canStand(potentialSpot) && !bot.smartMoving) {
+        bot.smartMove(potentialSpot).catch(() => { /* Suppress errors */ })
     }
 }
 
