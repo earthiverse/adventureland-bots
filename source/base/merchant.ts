@@ -79,7 +79,7 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
         if (!item) continue
         if (itemsToHold.has(item.name)) continue // We want to hold it
         if (item.l == "l") continue // We want to hold it
-        if (itemsToSell[item.name]) {
+        if (itemsToSell[item.name] && !item.p && !item.l) {
             if (item.level !== undefined && item.level <= itemsToSell[item.name]) continue // We want to sell it
             else if (item.level == undefined) continue // We want to sell it
         }
@@ -278,6 +278,22 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
 
         if (item.name !== "lostearring") continue
         if (item.level !== 2) continue
+
+        // Withdraw the item
+        const pack = `items${Math.floor(i / 42)}` as Exclude<AL.BankPackName, "gold">
+        const slot = i % 42
+        await bot.withdrawItem(pack, slot)
+        freeSpaces--
+    }
+
+    // Withdraw items to sell
+    for (let i = 0; i < bankItems.length && freeSpaces > 1; i++) {
+        const item = bankItems[i]
+        if (!item) continue // No item
+        if (item.l) continue // Item is locked
+        if (item.p) continue // Item is special
+        if (!itemsToSell[item.name]) continue // We don't want to sell this item
+        if (item.level !== undefined && item.level > itemsToSell[item.name]) continue // The item level is too high to sell
 
         // Withdraw the item
         const pack = `items${Math.floor(i / 42)}` as Exclude<AL.BankPackName, "gold">
