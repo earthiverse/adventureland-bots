@@ -59,7 +59,7 @@ export const ITEMS_TO_BUY: Set<AL.ItemName> = new Set([
     // Earrings
     "cearring", "dexearring", /*"intearring",*/ "lostearring", /*"strearring",*/
     // Amulets
-    "amuletofm", "dexamulet", "intamulet", "mpxamulet", "northstar", "snring", "stramulet", "t2dexamulet", "t2intamulet", "t2stramulet",
+    "amuletofm", "dexamulet", "intamulet", "mpxamulet", "northstar", "snring", /*"stramulet",*/ "t2dexamulet", "t2intamulet", "t2stramulet",
     // Orbs
     "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull", "vorb",
     // Offhands
