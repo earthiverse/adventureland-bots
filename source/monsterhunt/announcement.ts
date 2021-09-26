@@ -216,11 +216,12 @@ async function run() {
     //             return
     //         }
 
-    //         // Don't change servers too fast
-    //         if (lastServerChangeTime > Date.now() - 60_000) {
-    //             setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime - Date.now() - 60_000))
-    //             return
-    //         }
+    // // Don't change servers too fast
+    // if (lastServerChangeTime > Date.now() - 60_000) {
+    //     console.log("DEBUG: Don't change servers too fast")
+    //     setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime + AL.Constants.RECONNECT_TIMEOUT_MS - Date.now()))
+    //     return
+    // }
 
     //         // Don't change servers if we're currently attacking something special.
     //         if (AL.Constants.SPECIAL_MONSTERS.includes(information.bot1.target)

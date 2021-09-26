@@ -1428,7 +1428,7 @@ async function run() {
         try {
             console.log("DEBUG: Checking target server...")
             // We haven't logged in yet
-            if (!information.bot1) {
+            if (!information.bot1.bot) {
                 console.log("DEBUG: We haven't logged in yet")
                 setTimeout(async () => { serverLoop() }, 1000)
                 return
@@ -1483,9 +1483,9 @@ async function run() {
             // Disconnect everyone
             await Promise.race([Promise.allSettled([
                 information.bot1.bot.disconnect(),
-                information.bot2.bot.disconnect(),
-                information.bot3.bot.disconnect(),
-                information.merchant.bot.disconnect()
+                information.bot2.bot?.disconnect(),
+                information.bot3.bot?.disconnect(),
+                information.merchant.bot?.disconnect()
             ]), new Promise((_resolve, reject) => { setTimeout(reject, 30_000, "Bots didn't disconnect within 30s") })])
             await sleep(5000)
             lastServerChangeTime = Date.now()

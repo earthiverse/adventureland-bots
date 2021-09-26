@@ -77,3 +77,19 @@ export async function getTargetServerFromMonsters(G: AL.GData, defaultRegion: AL
     // Priority #3: Default Server
     return [defaultRegion, defaultIdentifier]
 }
+
+/**
+ *
+ * @param defaultRegion The default region to fall back to if the player can't be found
+ * @param defaultIdentifier The default identifier to fall back to if the player can't be found
+ * @param playerID The player ID to look for
+ * @param lastSeen How recently the player has to have been seen (in ms) to be considered active
+ * @returns The server/region the player is currently active on
+ */
+export async function getTargetServerFromPlayer(defaultRegion: AL.ServerRegion, defaultIdentifier: AL.ServerIdentifier, playerID: string, lastSeen = 120_000): Promise<[AL.ServerRegion, AL.ServerIdentifier]> {
+    const player = await AL.PlayerModel.findOne({ lastSeen: { $gt: Date.now() - lastSeen }, name: playerID }).lean().exec()
+    if (player) {
+        return [player.serverRegion, player.serverIdentifier]
+    }
+    return [defaultRegion, defaultIdentifier]
+}
