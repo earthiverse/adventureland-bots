@@ -839,6 +839,18 @@ export function startExchangeLoop(bot: AL.Character, itemsToExchange = ITEMS_TO_
                     await bot.exchange(i)
                 }
             }
+
+            // Exchange level 2 lostearrings
+            if (!(bot.G.maps[bot.map] as AL.GMap).mount /** Don't exchange in the bank */
+                && bot.canExchange("lostearring")) {
+                for (let i = 0; i < bot.items.length; i++) {
+                    const item = bot.items[i]
+                    if (!item) continue
+                    if (item.name !== "lostearring" || item.level !== 2) continue // Not a level 2 lost earring
+
+                    await bot.exchange(i)
+                }
+            }
         } catch (e) {
             console.error(e)
         }
