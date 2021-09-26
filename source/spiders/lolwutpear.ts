@@ -108,6 +108,7 @@ async function run() {
                 } catch (e) {
                     console.error(e)
                     if (information.bot1.bot) await information.bot1.bot.disconnect()
+                    information.bot1.bot = undefined
                 }
                 const msToNextMinute = 60_000 - (Date.now() % 60_000)
                 setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
@@ -144,6 +145,7 @@ async function run() {
                 } catch (e) {
                     console.error(e)
                     if (information.bot2.bot) await information.bot2.bot.disconnect()
+                    information.bot2.bot = undefined
                 }
                 const msToNextMinute = 60_000 - (Date.now() % 60_000)
                 setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
@@ -180,6 +182,7 @@ async function run() {
                 } catch (e) {
                     console.error(e)
                     if (information.bot3.bot) await information.bot3.bot.disconnect()
+                    information.bot3.bot = undefined
                 }
                 const msToNextMinute = 60_000 - (Date.now() % 60_000)
                 setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
