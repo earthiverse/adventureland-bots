@@ -1,38 +1,66 @@
-import AL from "alclient"
-import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, goToNearestWalkableToMonster, ITEMS_TO_SELL, startPartyLoop } from "../base/general.js"
-import { mainGoos, offsetPosition } from "../base/locations.js"
-import { partyLeader } from "../base/party.js"
-import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
-import { getTargetServerFromMonsters } from "../base/serverhop.js"
+import AL, { MonsterName } from "alclient"
+import { goToBankIfFull, goToNearestWalkableToMonster, goToPoitonSellerIfLow, startAvoidStacking, startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
+import { mainSpiders, offsetPosition } from "../base/locations.js"
+import { partyLeader, partyMembers } from "../base/party.js"
+import { getTargetServerFromPlayer } from "../base/serverhop.js"
+import { attackTheseTypesWarrior, startChargeLoop, startWarcryLoop } from "../base/warrior.js"
+import { Information } from "../definitions/bot.js"
+import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "../monsterhunt/shared.js"
 
-/** Config */
-const rogue1Name = "enlightening"
-const default_region: AL.ServerRegion = "US"
-const default_identifier: AL.ServerIdentifier = "III"
-const targets: AL.MonsterName[] = ["cutebee", "goo"]
-const defaultLocation: AL.IPosition = mainGoos
+let TARGET_REGION = DEFAULT_REGION
+let TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
+const TARGET_PLAYER = partyLeader
+const defaultLocation = mainSpiders
+const targets: MonsterName[] = ["goo"]
 
-let rogue1: AL.Rogue
+const information: Information = {
+    friends: [undefined, undefined, undefined, undefined],
+    // eslint-disable-next-line sort-keys
+    bot1: {
+        bot: undefined,
+        name: "announcement",
+        target: undefined
+    },
+    bot2: {
+        bot: undefined,
+        name: "battleworthy",
+        target: undefined
+    },
+    bot3: {
+        bot: undefined,
+        name: "charmingness",
+        target: undefined
+    },
+    merchant: {
+        bot: undefined,
+        name: "decisiveness",
+        nameAlt: "decisiveness",
+        target: undefined
+    }
+}
 
-async function startRogue(bot: AL.Rogue, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
+async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
     startBuyLoop(bot, new Set())
+    startElixirLoop(bot, "elixirluck")
     startHealLoop(bot)
     startLootLoop(bot)
-    startSellLoop(bot, { ...ITEMS_TO_SELL, "hpamulet": 2, "hpbelt": 2, "quiver": 2, "ringsj": 2, "slimestaff": 2, "stinger": 2 })
-    startRSpeedLoop(bot, { enableGiveToStrangers: true })
-    startPartyLoop(bot, partyLeader)
+    startPartyLoop(bot, partyLeader, partyMembers)
+    startSellLoop(bot)
 
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
-            await attackTheseTypesRogue(bot, targets, [rogue1])
+            await attackTheseTypesWarrior(bot, targets, information.friends)
         } catch (e) {
             console.error(e)
         }
 
-        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, Math.min(bot.getCooldown("attack"), bot.getCooldown("quickpunch"), bot.getCooldown("quickstab")))))
+        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
     }
     attackLoop()
+
+    startAvoidStacking(bot)
+    startChargeLoop(bot)
 
     async function moveLoop() {
         try {
@@ -48,14 +76,16 @@ async function startRogue(bot: AL.Rogue, positionOffset: { x: number, y: number 
             await goToPoitonSellerIfLow(bot)
             await goToBankIfFull(bot)
 
-            goToNearestWalkableToMonster(bot, targets, offsetPosition(defaultLocation, positionOffset.x, positionOffset.y)).catch(e => console.error(e))
+            await goToNearestWalkableToMonster(bot, targets, offsetPosition(defaultLocation, positionOffset.x, positionOffset.y))
         } catch (e) {
             console.error(e)
         }
 
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 500))
+        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
+
+    startWarcryLoop(bot)
 }
 
 async function run() {
@@ -65,40 +95,134 @@ async function run() {
 
     // Start all characters
     console.log("Connecting...")
-    const startRogue1Loop = async (name: string) => {
-        const connectLoop = async () => {
-            try {
-                const bestServer = await getTargetServerFromMonsters(AL.Game.G, default_region, default_identifier)
-                if ((bestServer[0] == "US" && bestServer[1] == "II")
-                    || (bestServer[0] == "US" && bestServer[1] == "I")) {
-                    bestServer[0] = default_region
-                    bestServer[1] = default_identifier
+
+    const startWarrior1Loop = async () => {
+        const loopBot = async () => {
+            const connectLoop = async () => {
+                try {
+                    if (information.bot1.bot) await information.bot1.bot.disconnect()
+                    information.bot1.bot = await AL.Game.startWarrior(information.bot1.name, TARGET_REGION, TARGET_IDENTIFIER)
+                    information.friends[1] = information.bot1.bot
+                    startWarrior(information.bot1.bot as AL.Warrior)
+                } catch (e) {
+                    console.error(e)
+                    if (information.bot1.bot) await information.bot1.bot.disconnect()
+                    information.bot1.bot = undefined
                 }
-                rogue1 = await AL.Game.startRogue(name, bestServer[0], bestServer[1])
-                startRogue(rogue1)
-            } catch (e) {
-                console.error(e)
-                if (rogue1) await rogue1.disconnect()
+                const msToNextMinute = 60_000 - (Date.now() % 60_000)
+                setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
             }
+
+            const disconnectLoop = async () => {
+                try {
+                    if (information.bot1.bot) await information.bot1.bot.disconnect()
+                    information.bot1.bot = undefined
+                } catch (e) {
+                    console.error(e)
+                }
+                const msToNextMinute = 60_000 - (Date.now() % 60_000)
+                setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+            }
+
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
             setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
-        }
-
-        const disconnectLoop = async () => {
-            try {
-                if (rogue1) await rogue1.disconnect()
-                rogue1 = undefined
-            } catch (e) {
-                console.error(e)
-            }
-            const msToNextMinute = 60_000 - (Date.now() % 60_000)
             setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
         }
-
-        const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
-        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+        loopBot()
     }
-    startRogue1Loop(rogue1Name)
+    startWarrior1Loop().catch(() => { /* ignore errors */ })
+
+    const startWarrior2Loop = async () => {
+        const loopBot = async () => {
+            const connectLoop = async () => {
+                try {
+                    if (information.bot2.bot) await information.bot2.bot.disconnect()
+                    information.bot2.bot = await AL.Game.startWarrior(information.bot2.name, TARGET_REGION, TARGET_IDENTIFIER)
+                    information.friends[2] = information.bot2.bot
+                    startWarrior(information.bot2.bot as AL.Warrior)
+                } catch (e) {
+                    console.error(e)
+                    if (information.bot2.bot) await information.bot2.bot.disconnect()
+                    information.bot2.bot = undefined
+                }
+                const msToNextMinute = 60_000 - (Date.now() % 60_000)
+                setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
+            }
+
+            const disconnectLoop = async () => {
+                try {
+                    if (information.bot2.bot) await information.bot2.bot.disconnect()
+                    information.bot2.bot = undefined
+                } catch (e) {
+                    console.error(e)
+                }
+                const msToNextMinute = 60_000 - (Date.now() % 60_000)
+                setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+            }
+
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
+            setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+        }
+        loopBot()
+    }
+    startWarrior2Loop().catch(() => { /* ignore errors */ })
+
+    const startWarrior3Loop = async () => {
+        const loopBot = async () => {
+            const connectLoop = async () => {
+                try {
+                    if (information.bot3.bot) await information.bot3.bot.disconnect()
+                    information.bot3.bot = await AL.Game.startWarrior(information.bot3.name, TARGET_REGION, TARGET_IDENTIFIER)
+                    information.friends[3] = information.bot3.bot
+                    startWarrior(information.bot3.bot as AL.Warrior)
+                } catch (e) {
+                    console.error(e)
+                    if (information.bot3.bot) await information.bot3.bot.disconnect()
+                    information.bot3.bot = undefined
+                }
+                const msToNextMinute = 60_000 - (Date.now() % 60_000)
+                setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
+            }
+
+            const disconnectLoop = async () => {
+                try {
+                    if (information.bot3.bot) await information.bot3.bot.disconnect()
+                    information.bot3.bot = undefined
+                } catch (e) {
+                    console.error(e)
+                }
+                const msToNextMinute = 60_000 - (Date.now() % 60_000)
+                setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+            }
+
+            const msToNextMinute = 60_000 - (Date.now() % 60_000)
+            setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
+            setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+        }
+        loopBot()
+    }
+    startWarrior3Loop().catch(() => { /* ignore errors */ })
+
+    const targetServerLoop = async () => {
+        try {
+            const targetServer = await getTargetServerFromPlayer(TARGET_REGION, TARGET_IDENTIFIER, TARGET_PLAYER)
+
+            if (targetServer[0] == "US" && targetServer[1] == "III") {
+                // Avoid this server
+                setTimeout(async () => { targetServerLoop() }, 1000)
+                return
+            }
+
+            // Change servers to attack this entity
+            TARGET_REGION = targetServer[0]
+            TARGET_IDENTIFIER = targetServer[1]
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { targetServerLoop() }, 1000)
+    }
+    targetServerLoop()
 }
 run()
