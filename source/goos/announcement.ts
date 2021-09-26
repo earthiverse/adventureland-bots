@@ -1,6 +1,6 @@
 import AL, { MonsterName } from "alclient"
 import { goToBankIfFull, goToNearestWalkableToMonster, goToPoitonSellerIfLow, startAvoidStacking, startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
-import { mainSpiders, offsetPosition } from "../base/locations.js"
+import { mainGoos, offsetPosition } from "../base/locations.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { getTargetServerFromPlayer } from "../base/serverhop.js"
 import { attackTheseTypesWarrior, startChargeLoop, startWarcryLoop } from "../base/warrior.js"
@@ -10,7 +10,7 @@ import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "../monsterhunt/shared.js"
 let TARGET_REGION = DEFAULT_REGION
 let TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
 const TARGET_PLAYER = partyLeader
-const defaultLocation = mainSpiders
+const defaultLocation = mainGoos
 const targets: MonsterName[] = ["goo"]
 
 const information: Information = {
