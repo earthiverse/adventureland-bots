@@ -232,7 +232,7 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
             // If the item is compoundable or upgradable, the level needs to be 0
             let fixedItemLevel = requiredItemLevel
             if (requiredItemLevel === undefined) {
-                const gInfo = this.G.items[requiredItem]
+                const gInfo = bot.G.items[requiredItem]
                 if (gInfo.upgrade || gInfo.compound) fixedItemLevel = 0
             }
 
