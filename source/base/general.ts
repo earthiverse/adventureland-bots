@@ -24,6 +24,7 @@ export const ITEMS_TO_HOLD: Set<AL.ItemName> = new Set([
     "hpot0", "hpot1", "mpot0", "mpot1"
 ])
 
+// NOTE: Level 2 lostearrings will also be exchanged in exchangeLoop
 export const ITEMS_TO_EXCHANGE: Set<AL.ItemName> = new Set([
     // General exchangables
     "5bucks", "gem0", "gem1",
