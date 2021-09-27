@@ -128,7 +128,7 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
             willDieToProjectiles: false,
             withinRange: bot.range
         })) {
-            await bot.cburst([[entity.id, Math.min(entity.hp / 2, bot.mp / 2)]])
+            await bot.cburst([[entity.id, Math.min(entity.hp * 2, bot.mp - 500)]])
         }
     }
 }
