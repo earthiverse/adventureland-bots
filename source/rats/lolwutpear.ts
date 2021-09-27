@@ -125,7 +125,7 @@ async function run() {
                 if (information.bot3.bot) await information.bot3.bot.disconnect()
                 information.bot3.bot = await AL.Game.startMage(name, region, identifier)
                 information.friends[3] = information.bot3.bot
-                startRatMageFarmer(information.bot3.bot as AL.Mage, information.friends, information.merchant.name, { map: "mansion", x: 223, y: 100 })
+                startRatMageFarmer(information.bot3.bot as AL.Mage, information.friends, information.merchant.name, { map: "mansion", x: 223, y: -100 })
                 information.bot3.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
