@@ -118,4 +118,17 @@ export async function attackTheseTypesMage(bot: AL.Mage, types: AL.MonsterName[]
             await bot.cburst(targets)
         }
     }
+
+    // Cburst when we have a lot of mp
+    if (bot.canUse("cburst") && bot.mp > bot.max_mp - 500) {
+        for (const entity of bot.getEntities({
+            couldGiveCredit: true,
+            typeList: types,
+            willBurnToDeath: false,
+            willDieToProjectiles: false,
+            withinRange: bot.range
+        })) {
+            await bot.cburst([[entity.id, Math.min(entity.hp / 2, bot.mp / 2)]])
+        }
+    }
 }

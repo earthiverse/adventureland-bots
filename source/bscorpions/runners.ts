@@ -67,14 +67,6 @@ export async function startBscorpionMageFarmer(bot: AL.Mage, friends: AL.Charact
 
             // Idle strategy
             await attackTheseTypesMage(bot, targets, friends, { targetingPartyMember: true })
-
-            // Extra cburst damage
-            if (bot.canUse("cburst") && bot.mp > bot.max_mp - 500) {
-                const bscorp = bot.getNearestMonster("bscorpion")
-                if (bscorp && bscorp.distance < bot.range && bscorp.monster.isAttackingPartyMember(bot)) {
-                    await bot.cburst([[bscorp.monster.id, bot.mp / 2]])
-                }
-            }
         } catch (e) {
             console.error(e)
         }

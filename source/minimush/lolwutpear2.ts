@@ -10,7 +10,7 @@ const rogue1Name = "rule34"
 const priest1Name = "over9000"
 const ranger1Name = "rickroll"
 const region: AL.ServerRegion = "US"
-const identifier: AL.ServerIdentifier = "III"
+const identifier: AL.ServerIdentifier = "II"
 const targets: AL.MonsterName[] = ["minimush", "phoenix"]
 const defaultLocation: AL.IPosition = halloweenMiniMushes
 
