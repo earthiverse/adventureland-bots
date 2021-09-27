@@ -19,7 +19,7 @@ const information: Information = {
     },
     bot3: {
         bot: undefined,
-        name: "illumination",
+        name: "hypothesized",
         target: undefined
     },
     merchant: {
