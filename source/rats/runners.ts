@@ -45,7 +45,7 @@ export async function startRatMageFarmer(bot: AL.Mage, friends: AL.Character[], 
             await goToBankIfFull(bot)
 
             // Kite the scorpion
-            await bot.smartMove(holdPosition)
+            await bot.smartMove(holdPosition, { useBlink: true })
         } catch (e) {
             console.error(e)
         }
