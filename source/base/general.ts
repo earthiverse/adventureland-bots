@@ -460,7 +460,7 @@ export async function goToPoitonSellerIfLow(bot: AL.Character, minHpPots = 100, 
     if (currentHpPots >= minHpPots && currentMpPots >= minMpPots) return // We don't need any more.
 
     // We're under the minimum, go buy potions
-    await bot.smartMove("fancypots", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, useBlink: true })
+    await bot.smartMove("fancypots", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
     await sleep(1000)
 }
 
