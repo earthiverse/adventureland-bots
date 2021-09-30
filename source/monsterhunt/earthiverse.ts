@@ -876,7 +876,7 @@ function prepareWarrior(bot: AL.Warrior) {
         },
         bigbird: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["bigbird"], information.friends) },
-            equipment: { mainhand: "basher", orb: "test_orb" },
+            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "main", x: 1323, y: 248 }) },
             requireCtype: "priest",
         },
@@ -889,7 +889,7 @@ function prepareWarrior(bot: AL.Warrior) {
         },
         booboo: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["booboo"], information.friends, { disableCleave: true, maximumTargets: 1 }) },
-            equipment: { mainhand: "basher", orb: "test_orb" },
+            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "spookytown", x: 265, y: -625 }) },
             requireCtype: "priest"
         },
@@ -908,7 +908,7 @@ function prepareWarrior(bot: AL.Warrior) {
         },
         cgoo: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["cgoo"], information.friends) },
-            equipment: { mainhand: "basher", orb: "test_orb" },
+            equipment: { mainhand: "bataxe", orb: "test_orb" },
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToNearestWalkableToMonster(bot, ["cgoo"], { map: "arena", x: 151.6, y: 40.82 })
@@ -1037,7 +1037,7 @@ function prepareWarrior(bot: AL.Warrior) {
         jr: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["jr"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "basher", orb: "test_orb" },
+            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "jr") },
         },
         minimush: {
@@ -1111,12 +1111,12 @@ function prepareWarrior(bot: AL.Warrior) {
         nerfedmummy: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["nerfedmummy"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "basher", orb: "test_orb" },
+            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "franky") },
         },
         oneeye: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["oneeye"], information.friends, { disableCleave: true, maximumTargets: 1 }) },
-            equipment: { mainhand: "basher", orb: "test_orb" },
+            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => { await bot.smartMove({ map: "level2w", x: -195, y: 0 }) },
             requireCtype: "priest"
         },
