@@ -48,9 +48,9 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
 
     // Default Equipment
     const fireBlade1 = bot.locateItem("fireblade", bot.items, { locked: true })
-    if (fireBlade1 !== undefined) await bot.equip(fireBlade1, "offhand")
+    if (fireBlade1 !== undefined) await bot.equip(fireBlade1, "mainhand")
     const fireBlade2 = bot.locateItem("fireblade", bot.items, { locked: true })
-    if (fireBlade2 !== undefined) await bot.equip(fireBlade2, "mainhand")
+    if (fireBlade2 !== undefined) await bot.equip(fireBlade2, "offhand")
     const testOrb = bot.locateItem("test_orb", bot.items)
     if (testOrb !== undefined) await bot.equip(testOrb, "orb")
 
