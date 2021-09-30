@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 const ITEM_TO_BUY_AND_UPGRADE = "helmet"
-const NUM_TO_BUY = 4
+const NUM_TO_KEEP = 4
+const NUM_TO_BUY = 5 // If this is less than NUM_TO_KEEP, we won't buy anything.
 const LEVEL_TO_UPGRADE_TO = 8
 
 async function buyAndUpgradeLoop() {
@@ -18,7 +19,7 @@ async function buyAndUpgradeLoop() {
             buyAndUpgradeLoop()
             return
         }
-        if (numItems == 1) return // No more to upgrade
+        if (numItems <= NUM_TO_KEEP) return // No more to upgrade
 
         /** Find the lowest level item, we'll upgrade that one */
         let lowestLevel = Number.MAX_SAFE_INTEGER
@@ -46,13 +47,16 @@ async function buyAndUpgradeLoop() {
             let scrollPosition = locate_item(scroll)
             if (scrollPosition == -1) scrollPosition = (await buy(scroll)).num
 
+            /** Speed up the upgrade if we can */
+            if (can_use("massproduction")) use_skill("massproduction")
+
             /** Upgrade! */
             await upgrade(lowestLevelPosition, scrollPosition)
         }
     } catch (e) {
         console.error(e)
     }
-    setTimeout(async () => { buyAndUpgradeLoop() }, 500)
+    buyAndUpgradeLoop()
 }
 buyAndUpgradeLoop()
 
