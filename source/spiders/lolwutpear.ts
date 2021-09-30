@@ -9,7 +9,6 @@ import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "../monsterhunt/shared.js"
 
 let TARGET_REGION = DEFAULT_REGION
 let TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
-const TARGET_PLAYER = partyLeader
 const defaultLocation = mainSpiders
 const targets: MonsterName[] = ["spider", "phoenix"]
 
@@ -47,10 +46,18 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
     startPartyLoop(bot, partyLeader, partyMembers)
     startSellLoop(bot)
 
+    // Default Equipment
+    const fireBlade1 = bot.locateItem("fireblade", bot.items, { locked: true })
+    if (fireBlade1 !== undefined) await bot.equip(fireBlade1, "offhand")
+    const fireBlade2 = bot.locateItem("fireblade", bot.items, { locked: true })
+    if (fireBlade2 !== undefined) await bot.equip(fireBlade2, "mainhand")
+    const testOrb = bot.locateItem("test_orb", bot.items)
+    if (testOrb !== undefined) await bot.equip(testOrb, "orb")
+
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
-            await attackTheseTypesWarrior(bot, targets, information.friends)
+            await attackTheseTypesWarrior(bot, targets, information.friends, { disableAgitate: true })
         } catch (e) {
             console.error(e)
         }
@@ -206,7 +213,7 @@ async function run() {
 
     const targetServerLoop = async () => {
         try {
-            const targetServer = await getTargetServerFromPlayer(TARGET_REGION, TARGET_IDENTIFIER, TARGET_PLAYER)
+            const targetServer = await getTargetServerFromPlayer(TARGET_REGION, TARGET_IDENTIFIER, partyLeader)
 
             if (targetServer[0] == "US" && targetServer[1] == "III") {
                 // Avoid this server

@@ -16,7 +16,11 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
     if (options.targetingPlayer && options.targetingPlayer == bot.id) options.targetingPlayer = undefined
     if (options.targetingPlayer) options.disableAgitate = true
 
-    if (bot.canUse("cleave") && !options.disableCleave) {
+    if (!options.disableCleave
+    && bot.mp > bot.G.skills.cleave.mp + bot.mp_cost
+    && bot.canUse("cleave", { ignoreEquipped: true })
+    && (bot.hasItem("bataxe") || bot.hasItem("scythe") || bot.isEquipped("bataxe") || bot.isEquipped("scythe")) // We have something to cleave with
+    ) {
         // Calculate how much courage we have left to spare
         const targetingMe = bot.calculateTargets()
 
@@ -87,8 +91,32 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
                 }
             }
 
+            // Equip to cleave if we don't have it already equipped
+            const mainhand = bot.slots.mainhand?.name
+            const offhand = bot.slots.offhand?.name
+            if (!bot.isEquipped("bataxe") && !bot.isEquipped("scythe")) {
+                const promises: Promise<unknown>[] = []
+                if (offhand) promises.push(bot.unequip("offhand"))
+                let cleaver = bot.locateItem("scythe", bot.items, { locked: true })
+                if (cleaver == undefined) cleaver = bot.locateItem("bataxe", bot.items, { locked: true })
+                promises.push(bot.equip(cleaver))
+                await Promise.all(promises)
+            }
+
             // We'll wait, there's a chance cleave could do a lot of damage and kill the entity, so we don't want to waste the attack
             await bot.cleave()
+
+            // Re-equip if we changed weapons
+            const promises: Promise<unknown>[] = []
+            if (bot.slots.mainhand?.name !== mainhand) {
+                const previousMainhand = bot.locateItem(mainhand, bot.items, { locked: true })
+                if (previousMainhand !== undefined) promises.push(bot.equip(previousMainhand, "mainhand"))
+            }
+            if (bot.slots.offhand?.name !== offhand) {
+                const previousOffhand = bot.locateItem(offhand, bot.items, { locked: true })
+                if (previousOffhand !== undefined) promises.push(bot.equip(previousOffhand, "offhand"))
+            }
+            await Promise.all(promises)
         }
     }
 
@@ -199,9 +227,37 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
             const entity = targets.peek()
             const canKill = bot.canKillInOneShot(entity)
 
-            if (!canKill && !options.disableStomp && bot.canUse("stomp") && bot.mp > bot.G.skills.stomp.mp + bot.mp_cost) {
+            if (!canKill && !options.disableStomp
+            && bot.mp > bot.G.skills.stomp.mp + bot.mp_cost
+            && bot.canUse("stomp", { ignoreEquipped: true })
+            && (bot.isEquipped("basher") || bot.isEquipped("wbasher") || bot.hasItem("basher") || bot.hasItem("wbasher"))) {
+
+                // Equip to cleave if we don't have it already equipped
+                const mainhand = bot.slots.mainhand?.name
+                const offhand = bot.slots.offhand?.name
+                if (!bot.isEquipped("basher") && !bot.isEquipped("wbasher")) {
+                    const promises: Promise<unknown>[] = []
+                    if (offhand) promises.push(bot.unequip("offhand"))
+                    let basher = bot.locateItem("basher", bot.items, { locked: true })
+                    if (basher == undefined) basher = bot.locateItem("wbasher", bot.items, { locked: true })
+                    promises.push(bot.equip(basher))
+                    await Promise.all(promises)
+                }
+
                 bot.stomp().catch(e => console.error(e))
                 bot.mp -= bot.G.skills.stomp.mp
+
+                // Re-equip if we changed weapons
+                const promises: Promise<unknown>[] = []
+                if (bot.slots.mainhand?.name !== mainhand) {
+                    const previousMainhand = bot.locateItem(mainhand, bot.items, { locked: true })
+                    if (previousMainhand !== undefined) promises.push(bot.equip(previousMainhand, "mainhand"))
+                }
+                if (bot.slots.offhand?.name !== offhand) {
+                    const previousOffhand = bot.locateItem(offhand, bot.items, { locked: true })
+                    if (previousOffhand !== undefined) promises.push(bot.equip(previousOffhand, "offhand"))
+                }
+                await Promise.all(promises)
             }
 
             // Remove them from our friends' entities list if we're going to kill it

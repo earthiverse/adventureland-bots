@@ -30,40 +30,40 @@ export function offsetPosition(position: AL.IPosition, x: number, y: number): AL
     return { in: position.in, map: position.map, x: position.x + x, y: position.y + y }
 }
 
-export function offsetPositionParty(position: AL.IPosition, bot: AL.Character): AL.IPosition {
+export function offsetPositionParty(position: AL.IPosition, bot: AL.Character, offsetAmount = 10): AL.IPosition {
     const offset = { x: 0, y: 0 }
     if (bot.party) {
         switch (bot.partyData.list.indexOf(bot.id)) {
         case 1:
-            offset.x = 10
+            offset.x = offsetAmount
             break
         case 2:
-            offset.x = -10
+            offset.x = -offsetAmount
             break
         case 3:
-            offset.y = 10
+            offset.y = offsetAmount
             break
         case 4:
-            offset.y = -10
+            offset.y = -offsetAmount
             break
         case 5:
-            offset.x = 10
-            offset.y = 10
+            offset.x = offsetAmount
+            offset.y = offsetAmount
             break
         case 6:
-            offset.x = 10
-            offset.y = -10
+            offset.x = offsetAmount
+            offset.y = -offsetAmount
             break
         case 7:
-            offset.x = -10
-            offset.y = 10
+            offset.x = -offsetAmount
+            offset.y = offsetAmount
             break
         case 8:
-            offset.x = -10
-            offset.y = -10
+            offset.x = -offsetAmount
+            offset.y = -offsetAmount
             break
         case 9:
-            offset.x = 20
+            offset.x = 2 * offsetAmount
             break
         }
     }
