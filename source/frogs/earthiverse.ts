@@ -117,7 +117,7 @@ async function run() {
 
     const connectLoop = async () => {
         try {
-            const avoidServer = getTargetServerFromPlayer("US", "I", partyLeader)
+            const avoidServer = getTargetServerFromPlayer(lastServer[0], lastServer[1], partyLeader)
             const targetServer = getTargetServerFromDate()
             if (targetServer[0] !== avoidServer[0] || targetServer[1] == avoidServer[1]) lastServer = targetServer
 
