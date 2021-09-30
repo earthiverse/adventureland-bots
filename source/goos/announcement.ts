@@ -50,7 +50,7 @@ async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: num
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
-            await attackTheseTypesWarrior(bot, targets, information.friends)
+            await attackTheseTypesWarrior(bot, targets, information.friends, { disableAgitate: true })
         } catch (e) {
             console.error(e)
         }
