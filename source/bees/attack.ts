@@ -6,7 +6,7 @@ import { ItemLevelInfo } from "../definitions/bot.js"
 
 /** Config */
 const partyLeader = "attackMag"
-const partyMembers = ["attackMag", "attackMag2", "attackMag3"]
+// const partyMembers = ["attackMag", "attackMag2", "attackMag3"]
 const mage1Name = "attackMag"
 const mage2Name = "attackMag2"
 const mage3Name = "attackMag3"
@@ -32,7 +32,7 @@ async function startShared(bot: AL.Character) {
 }
 
 async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
-    startPartyLoop(bot, partyLeader, partyMembers)
+    startPartyLoop(bot, partyLeader)
 
     // Send merchant stuff
     startSendStuffDenylistLoop(bot, [merchantName], ITEMS_TO_HOLD, 2_000_000)
