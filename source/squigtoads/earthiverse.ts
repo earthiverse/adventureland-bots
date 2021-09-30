@@ -126,7 +126,7 @@ async function run() {
             startPriest(priest)
         } catch (e) {
             console.error(e)
-            if (priest) await priest.disconnect()
+            if (priest) priest.disconnect()
         }
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
         setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
@@ -134,7 +134,7 @@ async function run() {
 
     const disconnectLoop = async () => {
         try {
-            if (priest) await priest.disconnect()
+            if (priest) priest.disconnect()
             priest = undefined
         } catch (e) {
             console.error(e)

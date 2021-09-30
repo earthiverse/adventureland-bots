@@ -64,7 +64,7 @@ async function run() {
             startRanger(ranger)
         } catch (e) {
             console.error(e)
-            if (ranger) await ranger.disconnect()
+            if (ranger) ranger.disconnect()
         }
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
         setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
@@ -72,7 +72,7 @@ async function run() {
 
     const disconnectLoop = async () => {
         try {
-            if (ranger) await ranger.disconnect()
+            if (ranger) ranger.disconnect()
             ranger = undefined
         } catch (e) {
             console.error(e)

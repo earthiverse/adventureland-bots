@@ -22,13 +22,13 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (follower1) await follower1.disconnect()
+                if (follower1) follower1.disconnect()
                 follower1 = await AL.Game.startWarrior(name, region, identifier)
                 startShared(follower1, merchantName)
                 follower1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (follower1) await follower1.disconnect()
+                if (follower1) follower1.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -47,13 +47,13 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (follower2) await follower2.disconnect()
+                if (follower2) follower2.disconnect()
                 follower2 = await AL.Game.startWarrior(name, region, identifier)
                 startShared(follower2, merchantName)
                 follower2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (follower2) await follower2.disconnect()
+                if (follower2) follower2.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -72,13 +72,13 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (follower3) await follower3.disconnect()
+                if (follower3) follower3.disconnect()
                 follower3 = await AL.Game.startWarrior(name, region, identifier)
                 startShared(follower3, merchantName)
                 follower3.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (follower3) await follower3.disconnect()
+                if (follower3) follower3.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -97,13 +97,13 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (merchant) await merchant.disconnect()
+                if (merchant) merchant.disconnect()
                 merchant = await AL.Game.startMerchant(name, region, identifier)
                 startMerchant(merchant, [follower1, follower2, follower3], { map: "main", x: 50, y: 0 })
                 merchant.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (merchant) await merchant.disconnect()
+                if (merchant) merchant.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)

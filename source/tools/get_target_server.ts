@@ -8,5 +8,5 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
 
     console.log(`The target server is ${targetServer[0]} ${targetServer[1]}`)
 
-    await AL.Database.disconnect()
+    AL.Database.disconnect()
 })

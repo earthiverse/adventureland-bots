@@ -75,14 +75,14 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (mage1) await mage1.disconnect()
+                if (mage1) mage1.disconnect()
                 mage1 = await AL.Game.startMage(name, region, identifier)
                 friends[0] = mage1
                 startMage(mage1)
                 mage1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (mage1) await mage1.disconnect()
+                if (mage1) mage1.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -101,14 +101,14 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (mage2) await mage2.disconnect()
+                if (mage2) mage2.disconnect()
                 mage2 = await AL.Game.startMage(name, region, identifier)
                 friends[1] = mage2
                 startMage(mage2, { x: 25, y: 0 })
                 mage2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (mage2) await mage2.disconnect()
+                if (mage2) mage2.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -127,14 +127,14 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (mage3) await mage3.disconnect()
+                if (mage3) mage3.disconnect()
                 mage3 = await AL.Game.startMage(name, region, identifier)
                 friends[2] = mage3
                 startMage(mage3, { x: -25, y: 0 })
                 mage3.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (mage3) await mage3.disconnect()
+                if (mage3) mage3.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)

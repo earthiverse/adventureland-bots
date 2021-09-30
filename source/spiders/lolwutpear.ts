@@ -107,13 +107,13 @@ async function run() {
         const loopBot = async () => {
             const connectLoop = async () => {
                 try {
-                    if (information.bot1.bot) await information.bot1.bot.disconnect()
+                    if (information.bot1.bot) information.bot1.bot.disconnect()
                     information.bot1.bot = await AL.Game.startWarrior(information.bot1.name, TARGET_REGION, TARGET_IDENTIFIER)
                     information.friends[1] = information.bot1.bot
                     startWarrior(information.bot1.bot as AL.Warrior)
                 } catch (e) {
                     console.error(e)
-                    if (information.bot1.bot) await information.bot1.bot.disconnect()
+                    if (information.bot1.bot) information.bot1.bot.disconnect()
                     information.bot1.bot = undefined
                 }
                 const msToNextMinute = 60_000 - (Date.now() % 60_000)
@@ -122,7 +122,7 @@ async function run() {
 
             const disconnectLoop = async () => {
                 try {
-                    if (information.bot1.bot) await information.bot1.bot.disconnect()
+                    if (information.bot1.bot) information.bot1.bot.disconnect()
                     information.bot1.bot = undefined
                 } catch (e) {
                     console.error(e)
@@ -143,13 +143,13 @@ async function run() {
         const loopBot = async () => {
             const connectLoop = async () => {
                 try {
-                    if (information.bot2.bot) await information.bot2.bot.disconnect()
+                    if (information.bot2.bot) information.bot2.bot.disconnect()
                     information.bot2.bot = await AL.Game.startWarrior(information.bot2.name, TARGET_REGION, TARGET_IDENTIFIER)
                     information.friends[2] = information.bot2.bot
                     startWarrior(information.bot2.bot as AL.Warrior)
                 } catch (e) {
                     console.error(e)
-                    if (information.bot2.bot) await information.bot2.bot.disconnect()
+                    if (information.bot2.bot) information.bot2.bot.disconnect()
                     information.bot2.bot = undefined
                 }
                 const msToNextMinute = 60_000 - (Date.now() % 60_000)
@@ -158,7 +158,7 @@ async function run() {
 
             const disconnectLoop = async () => {
                 try {
-                    if (information.bot2.bot) await information.bot2.bot.disconnect()
+                    if (information.bot2.bot) information.bot2.bot.disconnect()
                     information.bot2.bot = undefined
                 } catch (e) {
                     console.error(e)
@@ -179,13 +179,13 @@ async function run() {
         const loopBot = async () => {
             const connectLoop = async () => {
                 try {
-                    if (information.bot3.bot) await information.bot3.bot.disconnect()
+                    if (information.bot3.bot) information.bot3.bot.disconnect()
                     information.bot3.bot = await AL.Game.startWarrior(information.bot3.name, TARGET_REGION, TARGET_IDENTIFIER)
                     information.friends[3] = information.bot3.bot
                     startWarrior(information.bot3.bot as AL.Warrior)
                 } catch (e) {
                     console.error(e)
-                    if (information.bot3.bot) await information.bot3.bot.disconnect()
+                    if (information.bot3.bot) information.bot3.bot.disconnect()
                     information.bot3.bot = undefined
                 }
                 const msToNextMinute = 60_000 - (Date.now() % 60_000)
@@ -194,7 +194,7 @@ async function run() {
 
             const disconnectLoop = async () => {
                 try {
-                    if (information.bot3.bot) await information.bot3.bot.disconnect()
+                    if (information.bot3.bot) information.bot3.bot.disconnect()
                     information.bot3.bot = undefined
                 } catch (e) {
                     console.error(e)

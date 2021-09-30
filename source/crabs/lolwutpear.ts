@@ -23,14 +23,14 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (follower1) await follower1.disconnect()
+                if (follower1) follower1.disconnect()
                 follower1 = await AL.Game.startMage(name, region, identifier)
                 friends[0] = follower1
                 startShared(follower1, targets, friends)
                 follower1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (follower1) await follower1.disconnect()
+                if (follower1) follower1.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -49,14 +49,14 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (follower2) await follower2.disconnect()
+                if (follower2) follower2.disconnect()
                 follower2 = await AL.Game.startMage(name, region, identifier)
                 friends[1] = follower2
                 startShared(follower2, targets, friends)
                 follower2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (follower2) await follower2.disconnect()
+                if (follower2) follower2.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -75,14 +75,14 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (follower3) await follower3.disconnect()
+                if (follower3) follower3.disconnect()
                 follower3 = await AL.Game.startMage(name, region, identifier)
                 friends[2] = follower3
                 startShared(follower3, targets, friends)
                 follower3.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (follower3) await follower3.disconnect()
+                if (follower3) follower3.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)

@@ -341,14 +341,14 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (merchant) await merchant.disconnect()
+                if (merchant) merchant.disconnect()
                 merchant = await AL.Game.startMerchant(name, region, identifier)
                 friends[0] = merchant
                 startMerchant(merchant)
                 merchant.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (merchant) await merchant.disconnect()
+                if (merchant) merchant.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -367,14 +367,14 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (priest) await priest.disconnect()
+                if (priest) priest.disconnect()
                 priest = await AL.Game.startPriest(name, region, identifier)
                 friends[1] = priest
                 startPriest(priest)
                 priest.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (priest) await priest.disconnect()
+                if (priest) priest.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -393,7 +393,7 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (ranger) await ranger.disconnect()
+                if (ranger) ranger.disconnect()
                 ranger = await AL.Game.startRanger(name, region, identifier)
                 friends[2] = ranger
                 startRanger(ranger)
@@ -401,7 +401,7 @@ async function run() {
                 ranger.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (ranger) await ranger.disconnect()
+                if (ranger) ranger.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -420,14 +420,14 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (warrior) await warrior.disconnect()
+                if (warrior) warrior.disconnect()
                 warrior = await AL.Game.startWarrior(name, region, identifier)
                 friends[3] = warrior
                 startWarrior(warrior)
                 warrior.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (warrior) await warrior.disconnect()
+                if (warrior) warrior.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)

@@ -71,14 +71,14 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (mage1) await mage1.disconnect()
+                if (mage1) mage1.disconnect()
                 mage1 = await AL.Game.startMage(name, region, identifier)
                 friends[0] = mage1
                 startMage(mage1)
                 mage1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (mage1) await mage1.disconnect()
+                if (mage1) mage1.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)

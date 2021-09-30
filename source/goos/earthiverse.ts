@@ -75,7 +75,7 @@ async function run() {
             startRanger(ranger1)
         } catch (e) {
             console.error(e)
-            if (ranger1) await ranger1.disconnect()
+            if (ranger1) ranger1.disconnect()
         }
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
         setTimeout(async () => { connectLoop1() }, msToNextMinute + 10000)
@@ -83,7 +83,7 @@ async function run() {
 
     const disconnectLoop1 = async () => {
         try {
-            if (ranger1) await ranger1.disconnect()
+            if (ranger1) ranger1.disconnect()
             ranger1 = undefined
         } catch (e) {
             console.error(e)
@@ -102,7 +102,7 @@ async function run() {
             startRanger(ranger2, { x: -50, y: 0 })
         } catch (e) {
             console.error(e)
-            if (ranger2) await ranger2.disconnect()
+            if (ranger2) ranger2.disconnect()
         }
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
         setTimeout(async () => { connectLoop2() }, msToNextMinute + 10000)
@@ -110,7 +110,7 @@ async function run() {
 
     const disconnectLoop2 = async () => {
         try {
-            if (ranger2) await ranger2.disconnect()
+            if (ranger2) ranger2.disconnect()
             ranger2 = undefined
         } catch (e) {
             console.error(e)
@@ -129,7 +129,7 @@ async function run() {
             startRanger(ranger3, { x: 50, y: 0 })
         } catch (e) {
             console.error(e)
-            if (ranger3) await ranger3.disconnect()
+            if (ranger3) ranger3.disconnect()
         }
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
         setTimeout(async () => { connectLoop3() }, msToNextMinute + 10000)
@@ -137,7 +137,7 @@ async function run() {
 
     const disconnectLoop3 = async () => {
         try {
-            if (ranger3) await ranger3.disconnect()
+            if (ranger3) ranger3.disconnect()
             ranger3 = undefined
         } catch (e) {
             console.error(e)

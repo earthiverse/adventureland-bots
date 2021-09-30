@@ -74,7 +74,7 @@ async function run() {
                 startKite(bot)
             } catch (e) {
                 console.error(e)
-                if (bot) await bot.disconnect()
+                if (bot) bot.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
             setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
@@ -82,7 +82,7 @@ async function run() {
 
         const disconnectLoop = async () => {
             try {
-                if (bot) await bot.disconnect()
+                if (bot) bot.disconnect()
                 bot = undefined
             } catch (e) {
                 console.error(e)

@@ -1310,7 +1310,7 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (information.merchant.bot) await information.merchant.bot.disconnect()
+                if (information.merchant.bot) information.merchant.bot.disconnect()
                 if (TARGET_REGION == DEFAULT_REGION && TARGET_IDENTIFIER == DEFAULT_IDENTIFIER) {
                     information.merchant.bot = await AL.Game.startMerchant(information.merchant.name, TARGET_REGION, TARGET_IDENTIFIER)
                 } else {
@@ -1321,7 +1321,7 @@ async function run() {
                 information.merchant.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (information.merchant.bot) await information.merchant.bot.disconnect()
+                if (information.merchant.bot) information.merchant.bot.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
@@ -1342,14 +1342,14 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (information.bot1.bot) await information.bot1.bot.disconnect()
+                if (information.bot1.bot) information.bot1.bot.disconnect()
                 information.bot1.bot = await AL.Game.startPriest(information.bot1.name, TARGET_REGION, TARGET_IDENTIFIER)
                 information.friends[1] = information.bot1.bot
                 preparePriest(information.bot1.bot as AL.Priest)
                 information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (information.bot1.bot) await information.bot1.bot.disconnect()
+                if (information.bot1.bot) information.bot1.bot.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
@@ -1370,7 +1370,7 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (information.bot2.bot) await information.bot2.bot.disconnect()
+                if (information.bot2.bot) information.bot2.bot.disconnect()
                 information.bot2.bot = await AL.Game.startRanger(information.bot2.name, TARGET_REGION, TARGET_IDENTIFIER)
                 information.friends[2] = information.bot2.bot
                 prepareRanger(information.bot2.bot as AL.Ranger)
@@ -1378,7 +1378,7 @@ async function run() {
                 information.bot2.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (information.bot2.bot) await information.bot2.bot.disconnect()
+                if (information.bot2.bot) information.bot2.bot.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
@@ -1399,14 +1399,14 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (information.bot3.bot) await information.bot3.bot.disconnect()
+                if (information.bot3.bot) information.bot3.bot.disconnect()
                 information.bot3.bot = await AL.Game.startWarrior(information.bot3.name, TARGET_REGION, TARGET_IDENTIFIER)
                 information.friends[3] = information.bot3.bot
                 prepareWarrior(information.bot3.bot as AL.Warrior)
                 information.bot3.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (information.bot3.bot) await information.bot3.bot.disconnect()
+                if (information.bot3.bot) information.bot3.bot.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
@@ -1481,12 +1481,10 @@ async function run() {
             await sleep(1000)
 
             // Disconnect everyone
-            await Promise.race([Promise.allSettled([
-                information.bot1.bot.disconnect(),
-                information.bot2.bot?.disconnect(),
-                information.bot3.bot?.disconnect(),
-                information.merchant.bot?.disconnect()
-            ]), new Promise((_resolve, reject) => { setTimeout(reject, 30_000, "Bots didn't disconnect within 30s") })])
+            information.bot1.bot.disconnect(),
+            information.bot2.bot?.disconnect(),
+            information.bot3.bot?.disconnect(),
+            information.merchant.bot?.disconnect()
             await sleep(5000)
             lastServerChangeTime = Date.now()
         } catch (e) {

@@ -166,7 +166,7 @@ async function run() {
                 startRogue(rogue1)
             } catch (e) {
                 console.error(e)
-                if (rogue1) await rogue1.disconnect()
+                if (rogue1) rogue1.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
             setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
@@ -174,7 +174,7 @@ async function run() {
 
         const disconnectLoop = async () => {
             try {
-                if (rogue1) await rogue1.disconnect()
+                if (rogue1) rogue1.disconnect()
                 rogue1 = undefined
             } catch (e) {
                 console.error(e)
@@ -197,7 +197,7 @@ async function run() {
                 startPriest(priest1)
             } catch (e) {
                 console.error(e)
-                if (priest1) await priest1.disconnect()
+                if (priest1) priest1.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
             setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
@@ -205,7 +205,7 @@ async function run() {
 
         const disconnectLoop = async () => {
             try {
-                if (priest1) await priest1.disconnect()
+                if (priest1) priest1.disconnect()
                 priest1 = undefined
             } catch (e) {
                 console.error(e)
@@ -228,7 +228,7 @@ async function run() {
                 startRanger(ranger1)
             } catch (e) {
                 console.error(e)
-                if (ranger1) await ranger1.disconnect()
+                if (ranger1) ranger1.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
             setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
@@ -236,7 +236,7 @@ async function run() {
 
         const disconnectLoop = async () => {
             try {
-                if (ranger1) await ranger1.disconnect()
+                if (ranger1) ranger1.disconnect()
                 ranger1 = undefined
             } catch (e) {
                 console.error(e)

@@ -106,5 +106,5 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
         }
     }
 
-    await AL.Database.disconnect()
+    AL.Database.disconnect()
 })

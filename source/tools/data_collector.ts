@@ -72,7 +72,7 @@ async function run() {
 
                 if (skeletorChecker.rip) await skeletorChecker.respawn()
                 await Promise.all([skeletorChecker.smartMove({ map: "arena", x: 379.5, y: -671.5 }).catch(() => { /* Suppress Errors */ }), skeletorChecker.regenHP()])
-                await skeletorChecker.disconnect()
+                skeletorChecker.disconnect()
                 skeletorChecker = undefined
             } catch (e) {
                 console.error(e)
@@ -83,7 +83,7 @@ async function run() {
         }
         const stop_skeletorCheck = async () => {
             try {
-                if (skeletorChecker) await skeletorChecker.disconnect()
+                if (skeletorChecker) skeletorChecker.disconnect()
                 skeletorChecker = undefined
             } catch (e) {
                 console.error(e)
@@ -107,7 +107,7 @@ async function run() {
 
                 if (mvampireChecker.rip) await mvampireChecker.respawn()
                 await Promise.all([mvampireChecker.smartMove({ map: "cave", x: -190.5, y: -1176.5 }).catch(() => { /* Suppress Errors */ }), mvampireChecker.regenHP()])
-                await mvampireChecker.disconnect()
+                mvampireChecker.disconnect()
                 mvampireChecker = undefined
             } catch (e) {
                 console.error(e)
@@ -118,7 +118,7 @@ async function run() {
         }
         const stop_mvampireCheck = async () => {
             try {
-                if (mvampireChecker) await mvampireChecker.disconnect()
+                if (mvampireChecker) mvampireChecker.disconnect()
                 mvampireChecker = undefined
             } catch (e) {
                 console.error(e)
@@ -142,7 +142,7 @@ async function run() {
 
                 if (mvampireChecker2.rip) await mvampireChecker2.respawn()
                 await Promise.all([mvampireChecker2.smartMove({ map: "cave", x: 1244, y: -22.5 }).catch(() => { /* Suppress Errors */ }), mvampireChecker2.regenHP()])
-                await mvampireChecker2.disconnect()
+                mvampireChecker2.disconnect()
                 mvampireChecker2 = undefined
             } catch (e) {
                 console.error(e)
@@ -153,7 +153,7 @@ async function run() {
         }
         const stop_mvampireCheck2 = async () => {
             try {
-                if (mvampireChecker2) await mvampireChecker2.disconnect()
+                if (mvampireChecker2) mvampireChecker2.disconnect()
                 mvampireChecker2 = undefined
             } catch (e) {
                 console.error(e)
@@ -177,7 +177,7 @@ async function run() {
 
                 if (fvampireChecker.rip) await fvampireChecker.respawn()
                 await Promise.all([fvampireChecker.smartMove({ map: "halloween", x: -405.5, y: -1642.5 }).catch(() => { /* Suppress Errors */ }), fvampireChecker.regenHP()])
-                await fvampireChecker.disconnect()
+                fvampireChecker.disconnect()
                 fvampireChecker = undefined
             } catch (e) {
                 console.error(e)
@@ -188,7 +188,7 @@ async function run() {
         }
         const stop_fvampireCheck = async () => {
             try {
-                if (fvampireChecker) await fvampireChecker.disconnect()
+                if (fvampireChecker) fvampireChecker.disconnect()
                 fvampireChecker = undefined
             } catch (e) {
                 console.error(e)
@@ -212,7 +212,7 @@ async function run() {
 
                 if (greenjrChecker.rip) await greenjrChecker.respawn()
                 await Promise.all([greenjrChecker.smartMove({ map: "halloween", x: -569, y: -511.5 }).catch(() => { /* Suppress Errors */ }), greenjrChecker.regenHP()])
-                await greenjrChecker.disconnect()
+                greenjrChecker.disconnect()
                 greenjrChecker = undefined
             } catch (e) {
                 console.error(e)
@@ -223,7 +223,7 @@ async function run() {
         }
         const stop_greenjrCheck = async () => {
             try {
-                if (greenjrChecker) await greenjrChecker.disconnect()
+                if (greenjrChecker) greenjrChecker.disconnect()
                 greenjrChecker = undefined
             } catch (e) {
                 console.error(e)
@@ -247,7 +247,7 @@ async function run() {
 
                 if (jrChecker.rip) await jrChecker.respawn()
                 await Promise.all([jrChecker.smartMove({ map: "spookytown", x: -783.5, y: -301 }).catch(() => { /* Suppress Errors */ }), jrChecker.regenHP()])
-                await jrChecker.disconnect()
+                jrChecker.disconnect()
                 jrChecker = undefined
             } catch (e) {
                 console.error(e)
@@ -258,7 +258,7 @@ async function run() {
         }
         const stop_jrCheck = async () => {
             try {
-                if (jrChecker) await jrChecker.disconnect()
+                if (jrChecker) jrChecker.disconnect()
                 jrChecker = undefined
             } catch (e) {
                 console.error(e)
@@ -282,7 +282,7 @@ async function run() {
 
                 if (stompyChecker.rip) await stompyChecker.respawn()
                 await Promise.all([stompyChecker.smartMove({ map: "winterland", x: 433, y: -2745 }).catch(() => { /* Suppress Errors */ }), stompyChecker.regenHP()])
-                await stompyChecker.disconnect()
+                stompyChecker.disconnect()
                 stompyChecker = undefined
             } catch (e) {
                 console.error(e)
@@ -293,7 +293,7 @@ async function run() {
         }
         const stop_stompyCheck = async () => {
             try {
-                if (stompyChecker) await stompyChecker.disconnect()
+                if (stompyChecker) stompyChecker.disconnect()
                 stompyChecker = undefined
             } catch (e) {
                 console.error(e)
@@ -317,7 +317,7 @@ async function run() {
 
                 if (newPlayersChecker.rip) await newPlayersChecker.respawn()
                 await Promise.all([newPlayersChecker.smartMove({ map: "main", x: -32, y: 787 }).catch(() => { /* Suppress Errors */ }), newPlayersChecker.regenHP()])
-                await newPlayersChecker.disconnect()
+                newPlayersChecker.disconnect()
                 newPlayersChecker = undefined
             } catch (e) {
                 console.error(e)
@@ -328,7 +328,7 @@ async function run() {
         }
         const stop_newPlayersCheck = async () => {
             try {
-                if (newPlayersChecker) await newPlayersChecker.disconnect()
+                if (newPlayersChecker) newPlayersChecker.disconnect()
                 newPlayersChecker = undefined
             } catch (e) {
                 console.error(e)

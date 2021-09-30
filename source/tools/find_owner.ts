@@ -26,6 +26,6 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
         }
     }
 
-    await merchant.disconnect()
-    await AL.Database.disconnect()
+    merchant.disconnect()
+    AL.Database.disconnect()
 })

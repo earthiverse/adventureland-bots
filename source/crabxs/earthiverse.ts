@@ -76,7 +76,7 @@ async function run() {
                 startWarrior(warrior)
             } catch (e) {
                 console.error(e)
-                if (warrior) await warrior.disconnect()
+                if (warrior) warrior.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
             setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
@@ -84,7 +84,7 @@ async function run() {
 
         const disconnectLoop = async () => {
             try {
-                if (warrior) await warrior.disconnect()
+                if (warrior) warrior.disconnect()
                 warrior = undefined
             } catch (e) {
                 console.error(e)

@@ -337,14 +337,14 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (merchant) await merchant.disconnect()
+                if (merchant) merchant.disconnect()
                 merchant = await AL.Game.startMerchant(name, region, identifier)
                 startShared(merchant)
                 startMerchant(merchant)
                 merchant.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (merchant) await merchant.disconnect()
+                if (merchant) merchant.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -363,7 +363,7 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (ranger) await ranger.disconnect()
+                if (ranger) ranger.disconnect()
                 ranger = await AL.Game.startRanger(name, region, identifier)
                 startShared(ranger)
                 startRanger(ranger)
@@ -371,7 +371,7 @@ async function run() {
                 ranger.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (ranger) await ranger.disconnect()
+                if (ranger) ranger.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -390,14 +390,14 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (mage1) await mage1.disconnect()
+                if (mage1) mage1.disconnect()
                 mage1 = await AL.Game.startMage(name, region, identifier)
                 startShared(mage1)
                 startMage(mage1)
                 mage1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (mage1) await mage1.disconnect()
+                if (mage1) mage1.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -416,14 +416,14 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (mage2) await mage2.disconnect()
+                if (mage2) mage2.disconnect()
                 mage2 = await AL.Game.startMage(name, region, identifier)
                 startShared(mage2)
                 startMage(mage2)
                 mage2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (mage2) await mage2.disconnect()
+                if (mage2) mage2.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)

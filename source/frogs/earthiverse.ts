@@ -125,7 +125,7 @@ async function run() {
             startMage(mage)
         } catch (e) {
             console.error(e)
-            if (mage) await mage.disconnect()
+            if (mage) mage.disconnect()
         }
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
         setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
@@ -133,7 +133,7 @@ async function run() {
 
     const disconnectLoop = async () => {
         try {
-            if (mage) await mage.disconnect()
+            if (mage) mage.disconnect()
             mage = undefined
         } catch (e) {
             console.error(e)

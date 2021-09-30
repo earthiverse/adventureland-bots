@@ -81,7 +81,7 @@ async function run() {
                 startWarrior(warrior1)
             } catch (e) {
                 console.error(e)
-                if (warrior1) await warrior1.disconnect()
+                if (warrior1) warrior1.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
             setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
@@ -89,7 +89,7 @@ async function run() {
 
         const disconnectLoop = async () => {
             try {
-                if (warrior1) await warrior1.disconnect()
+                if (warrior1) warrior1.disconnect()
                 warrior1 = undefined
             } catch (e) {
                 console.error(e)
@@ -111,7 +111,7 @@ async function run() {
                 startWarrior(warrior2)
             } catch (e) {
                 console.error(e)
-                if (warrior2) await warrior2.disconnect()
+                if (warrior2) warrior2.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
             setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
@@ -119,7 +119,7 @@ async function run() {
 
         const disconnectLoop = async () => {
             try {
-                if (warrior2) await warrior2.disconnect()
+                if (warrior2) warrior2.disconnect()
                 warrior2 = undefined
             } catch (e) {
                 console.error(e)
@@ -141,7 +141,7 @@ async function run() {
                 startWarrior(warrior3)
             } catch (e) {
                 console.error(e)
-                if (warrior3) await warrior3.disconnect()
+                if (warrior3) warrior3.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
             setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
@@ -149,7 +149,7 @@ async function run() {
 
         const disconnectLoop = async () => {
             try {
-                if (warrior3) await warrior3.disconnect()
+                if (warrior3) warrior3.disconnect()
                 warrior3 = undefined
             } catch (e) {
                 console.error(e)

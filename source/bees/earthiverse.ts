@@ -69,7 +69,7 @@ async function run() {
                 startRogue(rogue1)
             } catch (e) {
                 console.error(e)
-                if (rogue1) await rogue1.disconnect()
+                if (rogue1) rogue1.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
             setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
@@ -77,7 +77,7 @@ async function run() {
 
         const disconnectLoop = async () => {
             try {
-                if (rogue1) await rogue1.disconnect()
+                if (rogue1) rogue1.disconnect()
                 rogue1 = undefined
             } catch (e) {
                 console.error(e)
@@ -99,7 +99,7 @@ async function run() {
                 startRogue(rogue2)
             } catch (e) {
                 console.error(e)
-                if (rogue2) await rogue2.disconnect()
+                if (rogue2) rogue2.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
             setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
@@ -107,7 +107,7 @@ async function run() {
 
         const disconnectLoop = async () => {
             try {
-                if (rogue2) await rogue2.disconnect()
+                if (rogue2) rogue2.disconnect()
                 rogue2 = undefined
             } catch (e) {
                 console.error(e)
