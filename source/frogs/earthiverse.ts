@@ -1,10 +1,12 @@
 import AL from "alclient"
 import { goToBankIfFull, goToPoitonSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
-import { getTargetServerFromDate } from "../base/serverhop.js"
+import { partyLeader } from "../base/party.js"
+import { getTargetServerFromDate, getTargetServerFromPlayer } from "../base/serverhop.js"
 
 /** Config */
 const mageName = "earthMag3"
+let lastServer: [AL.ServerRegion, AL.ServerIdentifier] = ["US", "II"]
 
 /** Characters */
 let mage: AL.Mage
@@ -115,8 +117,11 @@ async function run() {
 
     const connectLoop = async () => {
         try {
-            const server = getTargetServerFromDate()
-            mage = await AL.Game.startMage(mageName, server[0], server[1])
+            const avoidServer = getTargetServerFromPlayer("US", "I", partyLeader)
+            const targetServer = getTargetServerFromDate()
+            if (targetServer[0] !== avoidServer[0] || targetServer[1] == avoidServer[1]) lastServer = targetServer
+
+            mage = await AL.Game.startMage(mageName, lastServer[0], lastServer[1])
             startMage(mage)
         } catch (e) {
             console.error(e)

@@ -1,10 +1,12 @@
 import AL from "alclient"
 import { goToBankIfFull, goToPoitonSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
+import { partyLeader } from "../base/party.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
-import { getTargetServerFromDate } from "../base/serverhop.js"
+import { getTargetServerFromDate, getTargetServerFromPlayer } from "../base/serverhop.js"
 
 /** Config */
 const priestName = "earthPri2"
+let lastServer: [AL.ServerRegion, AL.ServerIdentifier] = ["US", "II"]
 
 /** Characters */
 let priest: AL.Priest
@@ -116,8 +118,11 @@ async function run() {
 
     const connectLoop = async () => {
         try {
-            const server = getTargetServerFromDate()
-            priest = await AL.Game.startPriest(priestName, server[0], server[1])
+            const avoidServer = getTargetServerFromPlayer("US", "I", partyLeader)
+            const targetServer = getTargetServerFromDate()
+            if (targetServer[0] !== avoidServer[0] || targetServer[1] == avoidServer[1]) lastServer = targetServer
+
+            priest = await AL.Game.startPriest(priestName, lastServer[0], lastServer[1])
             startPriest(priest)
         } catch (e) {
             console.error(e)
