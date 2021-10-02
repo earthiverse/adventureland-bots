@@ -304,7 +304,7 @@ export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOL
 }
 
 export async function goFishing(bot: Merchant): Promise<void> {
-    if (!bot.canUse("fishing", { ignoreCooldown: true, ignoreEquipped: true })) return
+    if (!bot.canUse("fishing", { ignoreEquipped: true })) return
     if (!bot.hasItem("rod") && !bot.isEquipped("rod")) return // We don't have a rod
 
     bot.closeMerchantStand()
@@ -337,7 +337,7 @@ export async function goFishing(bot: Merchant): Promise<void> {
 }
 
 export async function goMining(bot: Merchant): Promise<void> {
-    if (!bot.canUse("mining", { ignoreCooldown: true, ignoreEquipped: true })) return
+    if (!bot.canUse("mining", { ignoreEquipped: true })) return
     if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe")) return // We don't have a pickaxe
 
     bot.closeMerchantStand()
