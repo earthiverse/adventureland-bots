@@ -1,8 +1,8 @@
-import AL from "alclient"
+import AL, { Character, Constants, IPosition, Merchant, MonsterName, ServerIdentifier, ServerInfoDataLive, ServerRegion, Warrior } from "alclient"
 import { startPontyLoop, LOOP_MS, startCompoundLoop, startHealLoop, startLootLoop, startScareLoop, startSellLoop, startUpgradeLoop, startExchangeLoop, ITEMS_TO_SELL } from "../base/general.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
 import { stompPartyLeader } from "../base/party.js"
-import { identifier, region, startLeader, startMailBankKeysToEarthiverseLoop, startPriest, startShared } from "./runners.js"
+import { identifier, region, startLeader, startMailBankKeysToEarthiverseLoop, startShared } from "./runners.js"
 
 /** Config */
 const leaderName = stompPartyLeader
@@ -12,13 +12,13 @@ const follower2Name = "earthWar3"
 const merchantName = "earthMer2"
 
 /** Characters */
-let leader: AL.Warrior
-let follower1: AL.Warrior
-let follower2: AL.Warrior
-// let follower2: AL.Priest
-let merchant: AL.Merchant
+let leader: Warrior
+let follower1: Warrior
+let follower2: Warrior
+// let follower2: Priest
+let merchant: Merchant
 
-async function startMerchant(bot: AL.Merchant, friends: AL.Character[], holdPosition: AL.IPosition): Promise<void> {
+async function startMerchant(bot: Merchant, friends: Character[], holdPosition: IPosition): Promise<void> {
     startHealLoop(bot)
     startMluckLoop(bot)
     startPontyLoop(bot)
@@ -90,13 +90,13 @@ async function startMerchant(bot: AL.Merchant, friends: AL.Character[], holdPosi
 
             // MLuck people if there is a server info target
             for (const mN in bot.S) {
-                const type = mN as AL.MonsterName
+                const type = mN as MonsterName
                 if (!bot.S[type].live) continue
-                if (!(bot.S[type] as AL.ServerInfoDataLive).target) continue
+                if (!(bot.S[type] as ServerInfoDataLive).target) continue
 
-                if (AL.Tools.distance(bot, (bot.S[type] as AL.ServerInfoDataLive)) > 100) {
+                if (AL.Tools.distance(bot, (bot.S[type] as ServerInfoDataLive)) > 100) {
                     await bot.closeMerchantStand()
-                    await bot.smartMove((bot.S[type] as AL.ServerInfoDataLive), { getWithin: 100 })
+                    await bot.smartMove((bot.S[type] as ServerInfoDataLive), { getWithin: 100 })
                 }
 
                 bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
@@ -146,7 +146,7 @@ async function run() {
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
     await AL.Pathfinder.prepare(AL.Game.G)
 
-    const startLeaderLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startLeaderLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -172,7 +172,7 @@ async function run() {
     }
     startLeaderLoop(leaderName, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startFollower1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startFollower1Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -197,7 +197,7 @@ async function run() {
     }
     startFollower1Loop(follower1Name, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startFollower2Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startFollower2Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -222,7 +222,7 @@ async function run() {
     }
     startFollower2Loop(follower2Name, region, identifier).catch(() => { /* ignore errors */ })
 
-    // const startFollower2Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    // const startFollower2Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
     //     // Start the characters
     //     const loopBot = async () => {
     //         try {
@@ -247,7 +247,7 @@ async function run() {
     // }
     // startFollower2Loop(follower2Name, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startMerchantLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startMerchantLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {

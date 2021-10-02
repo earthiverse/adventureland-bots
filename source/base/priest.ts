@@ -1,8 +1,8 @@
-import AL from "alclient"
+import AL, { Character, Constants, Entity, Mage, MonsterName, Player, Priest, Tools } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { LOOP_MS } from "./general.js"
 
-export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterName[], friends: AL.Character[] = [], options: {
+export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], friends: Character[] = [], options: {
     targetingPartyMember?: boolean
     targetingPlayer?: string
 } = {}): Promise<void> {
@@ -13,7 +13,7 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
 
     if (bot.c.town) return // Don't attack if teleporting
 
-    const healPriority = (a: AL.Player, b: AL.Player) => {
+    const healPriority = (a: Player, b: Player) => {
         // Heal our friends first
         const a_isFriend = friends.some((friend) => { friend?.id == a.id })
         const b_isFriend = friends.some((friend) => { friend?.id == b.id })
@@ -29,7 +29,7 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
         // Heal closer players
         return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
     }
-    const players = new FastPriorityQueue<AL.Character | AL.Player>(healPriority)
+    const players = new FastPriorityQueue<Character | Player>(healPriority)
     // Potentially heal ourself
     if (bot.hp / bot.max_hp <= 0.8) players.add(bot)
     // Potentially heal others
@@ -51,7 +51,7 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
 
     if (bot.isOnCooldown("scare")) return
 
-    const attackPriority = (a: AL.Entity, b: AL.Entity): boolean => {
+    const attackPriority = (a: Entity, b: Entity): boolean => {
         // Order in array
         const a_index = types.indexOf(a.type)
         const b_index = types.indexOf(b.type)
@@ -82,7 +82,7 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
         return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
     }
 
-    const targets = new FastPriorityQueue<AL.Entity>(attackPriority)
+    const targets = new FastPriorityQueue<Entity>(attackPriority)
     for (const entity of bot.getEntities({
         couldGiveCredit: true,
         targetingPartyMember: options.targetingPartyMember,
@@ -113,7 +113,7 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
             if (!friend.canUse("energize")) continue // Friend can't use energize
 
             // Energize!
-            (friend as AL.Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp)))
+            (friend as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp)))
             break
         }
     }
@@ -131,7 +131,7 @@ export async function attackTheseTypesPriest(bot: AL.Priest, types: AL.MonsterNa
     await bot.basicAttack(target.id)
 }
 
-export function startDarkBlessingLoop(bot: AL.Priest): void {
+export function startDarkBlessingLoop(bot: Priest): void {
     async function darkBlessingLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -146,7 +146,7 @@ export function startDarkBlessingLoop(bot: AL.Priest): void {
     darkBlessingLoop()
 }
 
-export function startPartyHealLoop(bot: AL.Priest, friends: AL.Character[] = []): void {
+export function startPartyHealLoop(bot: Priest, friends: Character[] = []): void {
     async function partyHealLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return

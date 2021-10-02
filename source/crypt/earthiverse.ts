@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL, { Character, Constants, Mage, Merchant, MonsterName, Priest, Ranger, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { goToKiteMonster, goToNearestWalkableToMonster, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
 import { batCaveCryptEntrance, cryptEnd, cryptWaitingSpot } from "../base/locations.js"
 import { startMluckLoop } from "../base/merchant.js"
@@ -9,8 +9,8 @@ import { CryptData } from "../definitions/bot.js"
 import { isCryptFinished, startCrypt } from "./shared.js"
 
 /** Config */
-const region: AL.ServerRegion = "US"
-const identifier: AL.ServerIdentifier = "II"
+const region: ServerRegion = "US"
+const identifier: ServerIdentifier = "II"
 const merchantName = "earthMer"
 const mageName = "earthMag"
 const priestName = "earthPri"
@@ -18,17 +18,17 @@ const rangerName = "earthiverse"
 const warriorName = "earthWar"
 const partyLeader = merchantName
 const partyMembers = [merchantName, priestName, rangerName, mageName, warriorName]
-const targets: AL.MonsterName[] = ["goldenbat", "bat", "zapper0", "mvampire", "phoenix", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "vbat"]
+const targets: MonsterName[] = ["goldenbat", "bat", "zapper0", "mvampire", "phoenix", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "vbat"]
 
-let merchant: AL.Merchant
-let priest: AL.Priest
-let ranger: AL.Ranger
-let warrior: AL.Warrior
-const friends: [AL.Merchant, AL.Priest, AL.Ranger, AL.Mage | AL.Warrior] = [undefined, undefined, undefined, undefined]
+let merchant: Merchant
+let priest: Priest
+let ranger: Ranger
+let warrior: Warrior
+const friends: [Merchant, Priest, Ranger, Mage | Warrior] = [undefined, undefined, undefined, undefined]
 
 let cryptData: CryptData
 
-async function startShared(bot: AL.Character) {
+async function startShared(bot: Character) {
     startAvoidStacking(bot)
     startBuyLoop(bot)
     startCompoundLoop(bot)
@@ -47,7 +47,7 @@ async function startShared(bot: AL.Character) {
     startUpgradeLoop(bot)
 }
 
-async function startMerchant(bot: AL.Merchant) {
+async function startMerchant(bot: Merchant) {
     startShared(bot)
 
     startMluckLoop(bot)
@@ -85,7 +85,7 @@ async function startMerchant(bot: AL.Merchant) {
     moveLoop()
 }
 
-async function startPriest(bot: AL.Priest) {
+async function startPriest(bot: Priest) {
     startShared(bot)
 
     startDarkBlessingLoop(bot)
@@ -154,7 +154,7 @@ async function startPriest(bot: AL.Priest) {
     moveLoop()
 }
 
-async function startRanger(bot: AL.Ranger) {
+async function startRanger(bot: Ranger) {
     startShared(bot)
 
     // Equipment
@@ -219,7 +219,7 @@ async function startRanger(bot: AL.Ranger) {
     moveLoop()
 }
 
-async function startWarrior(bot: AL.Warrior) {
+async function startWarrior(bot: Warrior) {
     startShared(bot)
 
     startChargeLoop(bot)
@@ -337,7 +337,7 @@ async function run() {
     // Start all characters
     console.log("Connecting...")
 
-    const startMerchantLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startMerchantLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -363,7 +363,7 @@ async function run() {
     }
     startMerchantLoop(merchantName, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startPriestLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startPriestLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -389,7 +389,7 @@ async function run() {
     }
     startPriestLoop(priestName, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startRangerLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startRangerLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -416,7 +416,7 @@ async function run() {
     }
     startRangerLoop(rangerName, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startWarriorLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startWarriorLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {

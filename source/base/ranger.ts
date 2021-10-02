@@ -1,7 +1,7 @@
-import AL from "alclient"
+import AL, { Character, Constants, Entity, Mage, MonsterName, Ranger, Tools } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 
-export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterName[], friends: AL.Character[] = [], options: {
+export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], friends: Character[] = [], options: {
     disableHuntersMark?: boolean
     disableSupershot?: boolean
     targetingPartyMember?: boolean
@@ -12,7 +12,7 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
     // Adjust options
     if (options.targetingPlayer && options.targetingPlayer == bot.id) options.targetingPlayer = undefined
 
-    const priority = (a: AL.Entity, b: AL.Entity): boolean => {
+    const priority = (a: Entity, b: Entity): boolean => {
         // Order in array
         const a_index = types.indexOf(a.type)
         const b_index = types.indexOf(b.type)
@@ -46,9 +46,9 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
     // Calculate how much courage we have left to spare
     const targetingMe = bot.calculateTargets()
 
-    const targets = new FastPriorityQueue<AL.Entity>(priority)
-    const threeShotTargets = new FastPriorityQueue<AL.Entity>(priority)
-    const fiveShotTargets = new FastPriorityQueue<AL.Entity>(priority)
+    const targets = new FastPriorityQueue<Entity>(priority)
+    const threeShotTargets = new FastPriorityQueue<Entity>(priority)
+    const fiveShotTargets = new FastPriorityQueue<Entity>(priority)
     for (const entity of bot.getEntities({
         couldGiveCredit: true,
         targetingPartyMember: options.targetingPartyMember,
@@ -130,13 +130,13 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
             if (!friend.canUse("energize")) continue // Friend can't use energize
 
             // Energize!
-            (friend as AL.Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp)))
+            (friend as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp)))
             break
         }
     }
 
     if (bot.canUse("5shot") && fiveShotTargets.size >= 5) {
-        const entities: AL.Entity[] = []
+        const entities: Entity[] = []
         while (entities.length < 5) entities.push(fiveShotTargets.poll())
 
         // Remove them from our friends' entities list if we're going to kill it
@@ -153,7 +153,7 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
 
         await bot.fiveShot(entities[0].id, entities[1].id, entities[2].id, entities[3].id, entities[4].id)
     } else if (bot.canUse("3shot") && threeShotTargets.size >= 3) {
-        const entities: AL.Entity[] = []
+        const entities: Entity[] = []
         while (entities.length < 3) entities.push(threeShotTargets.poll())
 
         // Remove them from our friends' entities list if we're going to kill it
@@ -189,7 +189,7 @@ export async function attackTheseTypesRanger(bot: AL.Ranger, types: AL.MonsterNa
 
     if (!bot.canUse("supershot") || (options && options.disableSupershot)) return
 
-    const supershotTargets = new FastPriorityQueue<AL.Entity>(priority)
+    const supershotTargets = new FastPriorityQueue<Entity>(priority)
     for (const entity of bot.getEntities({
         couldGiveCredit: true,
         targetingPartyMember: options.targetingPartyMember,

@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL, { Constants, IPosition, Mage, MonsterName, ServerIdentifier, ServerRegion, Tools } from "alclient"
 import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startSendStuffAllowlistLoop, ITEMS_TO_HOLD } from "../base/general.js"
 import { mainBeesNearRats, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
@@ -9,17 +9,17 @@ const partyMembers = ["facilitating", "gratuitously", "hypothesized"]
 const mage1Name = "facilitating"
 const mage2Name = "gratuitously"
 const mage3Name = "hypothesized"
-const region: AL.ServerRegion = "US"
-const identifier: AL.ServerIdentifier = "PVP"
-const targets: AL.MonsterName[] = ["bee"]
-const defaultLocation: AL.IPosition = mainBeesNearRats
+const region: ServerRegion = "US"
+const identifier: ServerIdentifier = "PVP"
+const targets: MonsterName[] = ["bee"]
+const defaultLocation: IPosition = mainBeesNearRats
 
-let mage1: AL.Mage
-let mage2: AL.Mage
-let mage3: AL.Mage
-const friends: [AL.Mage, AL.Mage, AL.Mage] = [undefined, undefined, undefined]
+let mage1: Mage
+let mage2: Mage
+let mage3: Mage
+const friends: [Mage, Mage, Mage] = [undefined, undefined, undefined]
 
-async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
+async function startMage(bot: Mage, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
@@ -55,7 +55,7 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
             await goToPoitonSellerIfLow(bot)
             await goToBankIfFull(bot, ITEMS_TO_HOLD, 0)
 
-            const destination: AL.IPosition = offsetPosition(defaultLocation, positionOffset.x, positionOffset.y)
+            const destination: IPosition = offsetPosition(defaultLocation, positionOffset.x, positionOffset.y)
             if (AL.Tools.distance(bot, destination) > 1) await bot.smartMove(destination)
         } catch (e) {
             console.error(e)
@@ -71,7 +71,7 @@ async function run() {
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
     await AL.Pathfinder.prepare(AL.Game.G)
 
-    const startmage1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startmage1Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -97,7 +97,7 @@ async function run() {
     }
     startmage1Loop(mage1Name, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startmage2Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startmage2Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -123,7 +123,7 @@ async function run() {
     }
     startmage2Loop(mage2Name, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startmage3Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startmage3Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {

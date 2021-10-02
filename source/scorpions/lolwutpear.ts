@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL, { IPosition, MonsterName, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { goToPoitonSellerIfLow, startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startAvoidStacking, goToNearestWalkableToMonster, goToBankIfFull } from "../base/general.js"
 import { mainScorpions, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesWarrior, startChargeLoop, startWarcryLoop } from "../base/warrior.js"
@@ -9,16 +9,16 @@ const partyMembers = ["fgsfds", "fsjal", "funny"]
 const warrior1Name = "fgsfds"
 const warrior2Name = "fsjal"
 const warrior3Name = "funny"
-const region: AL.ServerRegion = "US"
-const identifier: AL.ServerIdentifier = "I"
-const targets: AL.MonsterName[] = ["scorpion"]
-const defaultLocation: AL.IPosition = mainScorpions
+const region: ServerRegion = "US"
+const identifier: ServerIdentifier = "I"
+const targets: MonsterName[] = ["scorpion"]
+const defaultLocation: IPosition = mainScorpions
 
-let warrior1: AL.Warrior
-let warrior2: AL.Warrior
-let warrior3: AL.Warrior
+let warrior1: Warrior
+let warrior2: Warrior
+let warrior3: Warrior
 
-async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
+async function startWarrior(bot: Warrior, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
     startBuyLoop(bot, new Set())
     startElixirLoop(bot, "elixirluck")
     startHealLoop(bot)
@@ -74,7 +74,7 @@ async function run() {
 
     // Start all characters
     console.log("Connecting...")
-    const startWarrior1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startWarrior1Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         const connectLoop = async () => {
             try {
                 warrior1 = await AL.Game.startWarrior(name, region, identifier)
@@ -104,7 +104,7 @@ async function run() {
     }
     startWarrior1Loop(warrior1Name, region, identifier)
 
-    const startwarrior2Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startwarrior2Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         const connectLoop = async () => {
             try {
                 warrior2 = await AL.Game.startWarrior(name, region, identifier)
@@ -134,7 +134,7 @@ async function run() {
     }
     startwarrior2Loop(warrior2Name, region, identifier)
 
-    const startwarrior3Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startwarrior3Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         const connectLoop = async () => {
             try {
                 warrior3 = await AL.Game.startWarrior(name, region, identifier)

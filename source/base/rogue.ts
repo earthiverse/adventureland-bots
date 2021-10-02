@@ -1,8 +1,8 @@
-import AL from "alclient"
+import AL, { Character, Entity, Mage, MonsterName, Rogue } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { LOOP_MS } from "./general.js"
 
-export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName[], friends: AL.Character[] = [], options: {
+export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], friends: Character[] = [], options: {
     disableMentalBurst?: boolean
     disableQuickPunch?: boolean
     disableQuickStab?: boolean
@@ -14,7 +14,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
     // Adjust options
     if (options.targetingPlayer && options.targetingPlayer == bot.id) options.targetingPlayer = undefined
 
-    const attackPriority = (a: AL.Entity, b: AL.Entity): boolean => {
+    const attackPriority = (a: Entity, b: Entity): boolean => {
         // Order in array
         const a_index = types.indexOf(a.type)
         const b_index = types.indexOf(b.type)
@@ -46,7 +46,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
     }
 
     if (bot.canUse("mentalburst")) {
-        const targets: AL.Entity[] = []
+        const targets: Entity[] = []
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
@@ -72,7 +72,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
     }
 
     if (bot.canUse("attack")) {
-        const targets = new FastPriorityQueue<AL.Entity>(attackPriority)
+        const targets = new FastPriorityQueue<Entity>(attackPriority)
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
@@ -106,7 +106,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
                 if (!friend.canUse("energize")) continue // Friend can't use energize
 
                 // Energize!
-                (friend as AL.Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp)))
+                (friend as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp)))
                 break
             }
         }
@@ -115,7 +115,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
     }
 
     if (!options.disableQuickPunch && bot.canUse("quickpunch")) {
-        const targets = new FastPriorityQueue<AL.Entity>(attackPriority)
+        const targets = new FastPriorityQueue<Entity>(attackPriority)
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
@@ -143,7 +143,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
     }
 
     if (!options.disableQuickStab && bot.canUse("quickstab")) {
-        const targets = new FastPriorityQueue<AL.Entity>(attackPriority)
+        const targets = new FastPriorityQueue<Entity>(attackPriority)
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
@@ -171,7 +171,7 @@ export async function attackTheseTypesRogue(bot: AL.Rogue, types: AL.MonsterName
     }
 }
 
-export function startRSpeedLoop(bot: AL.Rogue, options: {
+export function startRSpeedLoop(bot: Rogue, options: {
         disableGiveToFriends?: boolean,
         enableGiveToStrangers?: boolean,
         giveToThesePlayers?: string[]

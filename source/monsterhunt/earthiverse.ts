@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL, { Merchant, Priest, Ranger, Warrior, Constants, GMap } from "alclient"
 import { goToAggroMonster, goToNearestWalkableToMonster, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, sleep, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesMerchant } from "../base/merchant.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
@@ -37,7 +37,7 @@ const information: Information = {
     }
 }
 
-function prepareMerchant(bot: AL.Merchant) {
+function prepareMerchant(bot: Merchant) {
     const chickenCoop = bot.locateMonster("hen")[0]
     const goos = bot.locateMonster("goo")[0]
     const strategy: Strategy = {
@@ -69,7 +69,7 @@ function prepareMerchant(bot: AL.Merchant) {
     startMerchant(bot, information, strategy, { map: "main", x: 0, y: 0 })
 }
 
-function preparePriest(bot: AL.Priest) {
+function preparePriest(bot: Priest) {
     const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
     const strategy: Strategy = {
         arcticbee: {
@@ -461,7 +461,7 @@ function preparePriest(bot: AL.Priest) {
     startPriest(bot, information, strategy)
 }
 
-function prepareRanger(bot: AL.Ranger) {
+function prepareRanger(bot: Ranger) {
     const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
     const strategy: Strategy = {
         arcticbee: {
@@ -845,7 +845,7 @@ function prepareRanger(bot: AL.Ranger) {
     startRanger(bot, information, strategy)
 }
 
-function prepareWarrior(bot: AL.Warrior) {
+function prepareWarrior(bot: Warrior) {
     const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
     const strategy: Strategy = {
         arcticbee: {
@@ -1105,7 +1105,7 @@ function prepareWarrior(bot: AL.Warrior) {
         mvampire: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["mvampire", "bat"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "bataxe", orb: "test_orb" },
+            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "mvampire") },
         },
         nerfedmummy: {
@@ -1345,7 +1345,7 @@ async function run() {
                 if (information.bot1.bot) information.bot1.bot.disconnect()
                 information.bot1.bot = await AL.Game.startPriest(information.bot1.name, TARGET_REGION, TARGET_IDENTIFIER)
                 information.friends[1] = information.bot1.bot
-                preparePriest(information.bot1.bot as AL.Priest)
+                preparePriest(information.bot1.bot as Priest)
                 information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -1373,7 +1373,7 @@ async function run() {
                 if (information.bot2.bot) information.bot2.bot.disconnect()
                 information.bot2.bot = await AL.Game.startRanger(information.bot2.name, TARGET_REGION, TARGET_IDENTIFIER)
                 information.friends[2] = information.bot2.bot
-                prepareRanger(information.bot2.bot as AL.Ranger)
+                prepareRanger(information.bot2.bot as Ranger)
                 startTrackerLoop(information.bot2.bot)
                 information.bot2.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
@@ -1402,7 +1402,7 @@ async function run() {
                 if (information.bot3.bot) information.bot3.bot.disconnect()
                 information.bot3.bot = await AL.Game.startWarrior(information.bot3.name, TARGET_REGION, TARGET_IDENTIFIER)
                 information.friends[3] = information.bot3.bot
-                prepareWarrior(information.bot3.bot as AL.Warrior)
+                prepareWarrior(information.bot3.bot as Warrior)
                 information.bot3.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -1451,7 +1451,7 @@ async function run() {
             }
 
             // Don't change servers if we're running a crypt
-            const merchantMap: AL.GMap = AL.Game.G.maps[information.merchant?.bot?.map]
+            const merchantMap: GMap = AL.Game.G.maps[information.merchant?.bot?.map]
             if (merchantMap && merchantMap.instance) {
                 console.log("DEBUG: Merchant is in an instance")
                 setTimeout(async () => { serverLoop() }, 1000)

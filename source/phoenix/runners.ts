@@ -1,17 +1,18 @@
-import AL from "alclient"
+import AL, { Character, Constants, IPosition, Mage, Merchant, MonsterName, ServerIdentifier, ServerInfoDataLive, ServerRegion, Tools } from "alclient"
+import { EntityModel } from "alclient/build/database/Database"
 import { goToBankIfFull, goToPoitonSellerIfLow, LOOP_MS, startAvoidStacking, startBuyFriendsReplenishablesLoop, startBuyLoop, startCompoundLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 
-export const DEFAULT_REGION: AL.ServerRegion = "US"
-export const DEFAULT_IDENTIFIER: AL.ServerIdentifier = "II"
+export const DEFAULT_REGION: ServerRegion = "US"
+export const DEFAULT_IDENTIFIER: ServerIdentifier = "II"
 
 const phoenixPartyLeader = "facilitating"
 const phoenixPartyMembers = ["facilitating", "gratuitously", "hypothesized", "lolwutpear", "shoopdawhoop", "ytmnd"]
 
-const targets: AL.MonsterName[] = ["phoenix", "bat", "goo", "snake", "armadillo", "croc", "scorpion", "tortoise", "squig", "crab", "crabx", "bee", "spider", "minimush"]
+const targets: MonsterName[] = ["phoenix", "bat", "goo", "snake", "armadillo", "croc", "scorpion", "tortoise", "squig", "crab", "crabx", "bee", "spider", "minimush"]
 
-export async function startPhoenixFarmer(bot: AL.Mage, friends: AL.Character[], merchant: string): Promise<void> {
+export async function startPhoenixFarmer(bot: Mage, friends: Character[], merchant: string): Promise<void> {
     startAvoidStacking(bot)
     startBuyLoop(bot)
     startCompoundLoop(bot)
@@ -97,7 +98,7 @@ export async function startPhoenixFarmer(bot: AL.Mage, friends: AL.Character[], 
     attackLoop()
 }
 
-export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], hold: AL.IPosition): Promise<void> {
+export async function startMerchant(bot: Merchant, friends: Character[], hold: IPosition): Promise<void> {
     startAvoidStacking(bot)
     startBuyLoop(bot)
     startBuyFriendsReplenishablesLoop(bot, friends)
@@ -133,13 +134,13 @@ export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], h
 
             // MLuck people if there is a server info target
             for (const mN in bot.S) {
-                const type = mN as AL.MonsterName
+                const type = mN as MonsterName
                 if (bot.S[type].live) continue
-                if (!(bot.S[type] as AL.ServerInfoDataLive).target) continue
+                if (!(bot.S[type] as ServerInfoDataLive).target) continue
 
-                if (AL.Tools.distance(bot, (bot.S[type] as AL.ServerInfoDataLive)) > 100) {
+                if (AL.Tools.distance(bot, (bot.S[type] as ServerInfoDataLive)) > 100) {
                     await bot.closeMerchantStand()
-                    await bot.smartMove((bot.S[type] as AL.ServerInfoDataLive), { getWithin: 100 })
+                    await bot.smartMove((bot.S[type] as ServerInfoDataLive), { getWithin: 100 })
                 }
 
                 bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))

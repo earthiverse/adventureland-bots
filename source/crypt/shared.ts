@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL, { MonsterName } from "alclient"
 import { CryptData } from "../definitions/bot"
 
 export function startCrypt(instance: string): CryptData {
@@ -22,7 +22,7 @@ export function isCryptFinished(data: CryptData): boolean {
     if (data == undefined) return true // No crypt data, assume finished
 
     for (const m in data.remaining) {
-        if (data.remaining[m as AL.MonsterName] !== 0) return false // Something remains
+        if (data.remaining[m as MonsterName] !== 0) return false // Something remains
     }
     return true
 }

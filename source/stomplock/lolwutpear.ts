@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL, { Merchant, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { identifier, region, startMerchant, startShared } from "./runners.js"
 
 /** Config */
@@ -8,17 +8,17 @@ const follower3Name = "funny"
 const merchantName = "orlyowl"
 
 /** Characters */
-let follower1: AL.Warrior
-let follower2: AL.Warrior
-let follower3: AL.Warrior
-let merchant: AL.Merchant
+let follower1: Warrior
+let follower2: Warrior
+let follower3: Warrior
+let merchant: Merchant
 
 async function run() {
     // Login and prepare pathfinding
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
     await AL.Pathfinder.prepare(AL.Game.G)
 
-    const startFollower1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startFollower1Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -43,7 +43,7 @@ async function run() {
     }
     startFollower1Loop(follower1Name, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startFollower2Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startFollower2Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -68,7 +68,7 @@ async function run() {
     }
     startFollower2Loop(follower2Name, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startFollower3Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startFollower3Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -93,7 +93,7 @@ async function run() {
     }
     startFollower3Loop(follower3Name, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startMerchantLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startMerchantLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {

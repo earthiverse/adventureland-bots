@@ -1,5 +1,5 @@
 import axios from "axios"
-import AL from "alclient"
+import AL, { Character, NewMapData, ServerData } from "alclient"
 import { getTargetServerFromDate, SERVER_HOP_SERVERS } from "../base/serverhop.js"
 
 const servers = SERVER_HOP_SERVERS
@@ -20,7 +20,7 @@ async function run() {
 
         if (SEND_ALDATA) {
             // Server Status
-            observer.socket.on("server_info", async (data: AL.ServerData) => {
+            observer.socket.on("server_info", async (data: ServerData) => {
                 const statuses = Object.keys(data).filter(k => { typeof data[k] === "object" }).map(e => {
                     data[e].eventname = e
                     data[e].server_region = region
@@ -33,7 +33,7 @@ async function run() {
             })
 
             // NPCs
-            observer.socket.on("new_map", async (data: AL.NewMapData) => {
+            observer.socket.on("new_map", async (data: NewMapData) => {
                 // Help out super in his data gathering
                 const npcInfos = []
                 data.entities
@@ -61,7 +61,7 @@ async function run() {
 
     if (PEEK) {
         // Look for `skeletor`
-        let skeletorChecker: AL.Character
+        let skeletorChecker: Character
         const start_skeletorCheck = async () => {
             try {
                 const botName = PEEK_CHARS[0]
@@ -96,7 +96,7 @@ async function run() {
         setTimeout(async () => { stop_skeletorCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
 
         // Look for `mvampire` in place #1
-        let mvampireChecker: AL.Character
+        let mvampireChecker: Character
         const start_mvampireCheck = async () => {
             try {
                 const botName = PEEK_CHARS[1]
@@ -131,7 +131,7 @@ async function run() {
         setTimeout(async () => { stop_mvampireCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
 
         // Look for `mvampire` in place #2
-        let mvampireChecker2: AL.Character
+        let mvampireChecker2: Character
         const start_mvampireCheck2 = async () => {
             try {
                 const botName = PEEK_CHARS[2]
@@ -166,7 +166,7 @@ async function run() {
         setTimeout(async () => { stop_mvampireCheck2() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
 
         // Look for `fvampire` in place #1
-        let fvampireChecker: AL.Character
+        let fvampireChecker: Character
         const start_fvampireCheck = async () => {
             try {
                 const botName = PEEK_CHARS[3]
@@ -201,7 +201,7 @@ async function run() {
         setTimeout(async () => { stop_fvampireCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
 
         // Look for `greenjr` in place #1
-        let greenjrChecker: AL.Character
+        let greenjrChecker: Character
         const start_greenjrCheck = async () => {
             try {
                 const botName = PEEK_CHARS[4]
@@ -236,7 +236,7 @@ async function run() {
         setTimeout(async () => { stop_greenjrCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
 
         // Look for `jr` in place #1
-        let jrChecker: AL.Character
+        let jrChecker: Character
         const start_jrCheck = async () => {
             try {
                 const botName = PEEK_CHARS[5]
@@ -271,7 +271,7 @@ async function run() {
         setTimeout(async () => { stop_jrCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
 
         // Look for `stompy` in place #1
-        let stompyChecker: AL.Character
+        let stompyChecker: Character
         const start_stompyCheck = async () => {
             try {
                 const botName = PEEK_CHARS[6]
@@ -306,7 +306,7 @@ async function run() {
         setTimeout(async () => { stop_stompyCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
 
         // Look for `newPlayers` in place #1
-        let newPlayersChecker: AL.Character
+        let newPlayersChecker: Character
         const start_newPlayersCheck = async () => {
             try {
                 const botName = PEEK_CHARS[7]

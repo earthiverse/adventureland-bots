@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL, { Character, IPosition, MonsterName, Priest, Ranger, Rogue, ServerIdentifier, ServerRegion } from "alclient"
 import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, goToNearestWalkableToMonster, ITEMS_TO_SELL, startPartyLoop } from "../base/general.js"
 import { halloweenMiniMushes, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
@@ -9,17 +9,17 @@ import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
 const rogue1Name = "rule34"
 const priest1Name = "over9000"
 const ranger1Name = "rickroll"
-const region: AL.ServerRegion = "US"
-const identifier: AL.ServerIdentifier = "II"
-const targets: AL.MonsterName[] = ["minimush", "phoenix"]
-const defaultLocation: AL.IPosition = halloweenMiniMushes
+const region: ServerRegion = "US"
+const identifier: ServerIdentifier = "II"
+const targets: MonsterName[] = ["minimush", "phoenix"]
+const defaultLocation: IPosition = halloweenMiniMushes
 
-let rogue1: AL.Rogue
-let priest1: AL.Priest
-let ranger1: AL.Ranger
-const friends: AL.Character[] = [undefined, undefined, undefined]
+let rogue1: Rogue
+let priest1: Priest
+let ranger1: Ranger
+const friends: Character[] = [undefined, undefined, undefined]
 
-async function startRanger(bot: AL.Ranger, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
+async function startRanger(bot: Ranger, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
@@ -62,7 +62,7 @@ async function startRanger(bot: AL.Ranger, positionOffset: { x: number, y: numbe
     moveLoop()
 }
 
-async function startPriest(bot: AL.Priest, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
+async function startPriest(bot: Priest, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
     startBuyLoop(bot, new Set())
     startDarkBlessingLoop(bot)
     startHealLoop(bot)
@@ -107,7 +107,7 @@ async function startPriest(bot: AL.Priest, positionOffset: { x: number, y: numbe
     moveLoop()
 }
 
-async function startRogue(bot: AL.Rogue, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
+async function startRogue(bot: Rogue, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
@@ -158,7 +158,7 @@ async function run() {
 
     // Start all characters
     console.log("Connecting...")
-    const startRogue1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startRogue1Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         const connectLoop = async () => {
             try {
                 rogue1 = await AL.Game.startRogue(name, region, identifier)
@@ -189,7 +189,7 @@ async function run() {
     }
     startRogue1Loop(rogue1Name, region, identifier)
 
-    const startPriest1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startPriest1Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         const connectLoop = async () => {
             try {
                 priest1 = await AL.Game.startPriest(name, region, identifier)
@@ -220,7 +220,7 @@ async function run() {
     }
     startPriest1Loop(priest1Name, region, identifier)
 
-    const startRanger1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startRanger1Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         const connectLoop = async () => {
             try {
                 ranger1 = await AL.Game.startRanger(name, region, identifier)

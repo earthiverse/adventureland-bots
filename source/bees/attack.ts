@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL, { Character, Constants, IPosition, Mage, Merchant, MonsterName, ServerIdentifier, ServerRegion, Tools } from "alclient"
 import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, ITEMS_TO_HOLD, startSendStuffDenylistLoop } from "../base/general.js"
 import { mainBeesNearTunnel, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
@@ -11,27 +11,27 @@ const mage1Name = "attackMag"
 const mage2Name = "attackMag2"
 const mage3Name = "attackMag3"
 const merchantName = "attackMer"
-const region: AL.ServerRegion = "US"
-const identifier: AL.ServerIdentifier = "PVP"
-const targets: AL.MonsterName[] = ["bee"]
-const defaultLocation: AL.IPosition = mainBeesNearTunnel
+const region: ServerRegion = "US"
+const identifier: ServerIdentifier = "PVP"
+const targets: MonsterName[] = ["bee"]
+const defaultLocation: IPosition = mainBeesNearTunnel
 
-let mage1: AL.Mage
-let mage2: AL.Mage
-let mage3: AL.Mage
-let merchant: AL.Merchant
-const friends: [AL.Mage, AL.Mage, AL.Mage] = [undefined, undefined, undefined]
+let mage1: Mage
+let mage2: Mage
+let mage3: Mage
+let merchant: Merchant
+const friends: [Mage, Mage, Mage] = [undefined, undefined, undefined]
 
 const SELL_THESE: ItemLevelInfo = { ...ITEMS_TO_SELL, "beewings": 9999, "hpamulet": 2, "hpbelt": 2, "ringsj": 2, "stinger": 2, "wcap": 2, "wshoes": 2 }
 
-async function startShared(bot: AL.Character) {
+async function startShared(bot: Character) {
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
     startSellLoop(bot, SELL_THESE)
 }
 
-async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
+async function startMage(bot: Mage, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
     startPartyLoop(bot, partyLeader)
 
     // Send merchant stuff
@@ -63,7 +63,7 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
             await goToPoitonSellerIfLow(bot)
             await goToBankIfFull(bot, ITEMS_TO_HOLD, 2_000_000)
 
-            const destination: AL.IPosition = offsetPosition(defaultLocation, positionOffset.x, positionOffset.y)
+            const destination: IPosition = offsetPosition(defaultLocation, positionOffset.x, positionOffset.y)
             if (AL.Tools.distance(bot, destination) > 1) await bot.smartMove(destination)
         } catch (e) {
             console.error(e)
@@ -74,7 +74,7 @@ async function startMage(bot: AL.Mage, positionOffset: { x: number, y: number } 
     moveLoop()
 }
 
-async function startMerchant(bot: AL.Merchant, holdPosition: AL.IPosition) {
+async function startMerchant(bot: Merchant, holdPosition: IPosition) {
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -107,7 +107,7 @@ async function run() {
     // Start all characters
     console.log("Connecting...")
 
-    const startmage1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startmage1Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -134,7 +134,7 @@ async function run() {
     }
     startmage1Loop(mage1Name, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startmage2Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startmage2Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -161,7 +161,7 @@ async function run() {
     }
     startmage2Loop(mage2Name, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startmage3Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startmage3Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -188,7 +188,7 @@ async function run() {
     }
     startmage3Loop(mage3Name, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startmerchantLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startmerchantLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {

@@ -1,16 +1,16 @@
-import AL from "alclient"
+import AL, { MonsterName, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, goToNearestWalkableToMonster, ITEMS_TO_SELL, startScareLoop } from "../base/general.js"
 import { attackTheseTypesWarrior, startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 
 /** Config */
 const warriorName = "earthWar3"
-const region: AL.ServerRegion = "ASIA"
-const identifier: AL.ServerIdentifier = "I"
-const targets: AL.MonsterName[] = ["crabx"]
+const region: ServerRegion = "ASIA"
+const identifier: ServerIdentifier = "I"
+const targets: MonsterName[] = ["crabx"]
 
-let warrior: AL.Warrior
+let warrior: Warrior
 
-async function startWarrior(bot: AL.Warrior) {
+async function startWarrior(bot: Warrior) {
     startChargeLoop(bot)
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
@@ -69,7 +69,7 @@ async function run() {
 
     // Start all characters
     console.log("Connecting...")
-    const startWarriorLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startWarriorLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         const connectLoop = async () => {
             try {
                 warrior = await AL.Game.startWarrior(name, region, identifier)

@@ -1,16 +1,16 @@
-import AL from "alclient"
+import AL, { Ranger, ServerIdentifier, ServerRegion } from "alclient"
 import { goToBankIfFull, goToPoitonSellerIfLow, LOOP_MS, startBuyLoop, startHealLoop, startLootLoop, startSellLoop } from "../base/general.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 
 /** Config */
-const region: AL.ServerRegion = "EU"
-const identifier: AL.ServerIdentifier = "II"
+const region: ServerRegion = "EU"
+const identifier: ServerIdentifier = "II"
 const mageName = "earthRan2"
 
 /** Characters */
-let ranger: AL.Ranger
+let ranger: Ranger
 
-async function startRanger(bot: AL.Ranger) {
+async function startRanger(bot: Ranger) {
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)

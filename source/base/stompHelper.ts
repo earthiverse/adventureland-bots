@@ -1,4 +1,4 @@
-import AL, { CMData } from "alclient"
+import AL, { CMData, Warrior } from "alclient"
 import { LOOP_MS } from "./general"
 
 /**
@@ -6,7 +6,7 @@ import { LOOP_MS } from "./general"
  * The idea is to have one bot be a 'stompController' and have other bots be 'stompHelpers'.
  */
 
-export function startStompController(bot: AL.Warrior): void {
+export function startStompController(bot: Warrior): void {
     const numHelpers = 0
 
     async function stompControllerLoop() {
@@ -14,7 +14,7 @@ export function startStompController(bot: AL.Warrior): void {
     }
 }
 
-export function startStompHelper(bot: AL.Warrior, controller: string): void {
+export function startStompHelper(bot: Warrior, controller: string): void {
     // TODO: Get updated information from controller
     const stompSettings = {
         range: 100

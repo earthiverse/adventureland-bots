@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL, { Constants, Mage, ServerIdentifier, ServerRegion } from "alclient"
 import { identifier, region, startShared, targets } from "./runners.js"
 
 /** Config */
@@ -7,18 +7,18 @@ const follower2Name = "gratuitously"
 const follower3Name = "hypothesized"
 
 /** Characters */
-let follower1: AL.Mage
-let follower2: AL.Mage
-let follower3: AL.Mage
+let follower1: Mage
+let follower2: Mage
+let follower3: Mage
 
-const friends: AL.Mage[] = [follower3, follower1, follower2]
+const friends: Mage[] = [follower3, follower1, follower2]
 
 async function run() {
     // Login and prepare pathfinding
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
     await AL.Pathfinder.prepare(AL.Game.G)
 
-    const startFollower1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startFollower1Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -44,7 +44,7 @@ async function run() {
     }
     startFollower1Loop(follower1Name, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startFollower2Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startFollower2Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -70,7 +70,7 @@ async function run() {
     }
     startFollower2Loop(follower2Name, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startFollower3Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startFollower3Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {

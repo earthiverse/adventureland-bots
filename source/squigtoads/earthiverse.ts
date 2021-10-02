@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL, { Entity, Priest, ServerIdentifier, ServerRegion, Tools } from "alclient"
 import { goToBankIfFull, goToPoitonSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
 import { partyLeader } from "../base/party.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
@@ -6,12 +6,12 @@ import { getTargetServerFromDate, getTargetServerFromPlayer } from "../base/serv
 
 /** Config */
 const priestName = "earthPri2"
-let lastServer: [AL.ServerRegion, AL.ServerIdentifier] = ["US", "II"]
+let lastServer: [ServerRegion, ServerIdentifier] = ["US", "II"]
 
 /** Characters */
-let priest: AL.Priest
+let priest: Priest
 
-async function startPriest(bot: AL.Priest) {
+async function startPriest(bot: Priest) {
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
@@ -66,7 +66,7 @@ async function startPriest(bot: AL.Priest) {
             }
 
             // Look for frogs
-            let nearest: AL.Entity
+            let nearest: Entity
             let distance = Number.MAX_VALUE
             for (const squigtoad of bot.getEntities({
                 couldGiveCredit: true,

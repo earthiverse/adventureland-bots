@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL, { IPosition, MonsterName, Ranger } from "alclient"
 import { goToPoitonSellerIfLow, startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startAvoidStacking, goToBankIfFull } from "../base/general.js"
 import { mainGoos, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
@@ -10,14 +10,14 @@ const partyMembers = ["earthiverse", "earthRan2", "earthRan3"]
 const ranger1Name = "earthiverse"
 const ranger2Name = "earthRan2"
 const ranger3Name = "earthRan3"
-const targets: AL.MonsterName[] = ["goo"]
-const defaultLocation: AL.IPosition = mainGoos
+const targets: MonsterName[] = ["goo"]
+const defaultLocation: IPosition = mainGoos
 
-let ranger1: AL.Ranger
-let ranger2: AL.Ranger
-let ranger3: AL.Ranger
+let ranger1: Ranger
+let ranger2: Ranger
+let ranger3: Ranger
 
-async function startRanger(bot: AL.Ranger, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
+async function startRanger(bot: Ranger, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
     startBuyLoop(bot, new Set())
     startElixirLoop(bot, "elixirluck")
     startHealLoop(bot)

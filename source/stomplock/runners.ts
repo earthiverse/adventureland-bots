@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL, { Character, Constants, GameResponseData, IPosition, ItemDataTrade, Merchant, MonsterName, Player, Priest, ServerIdentifier, ServerRegion, TradeSlotType, Warrior } from "alclient"
 import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_SELL, goToNearestWalkableToMonster, startTrackerLoop, getFirstEmptyInventorySlot, startBuyFriendsReplenishablesLoop } from "../base/general.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
@@ -6,13 +6,13 @@ import { stompPartyLeader, stompPartyMembers } from "../base/party.js"
 import { startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 import FastPriorityQueue from "fastpriorityqueue"
 
-export const region: AL.ServerRegion = "US"
-export const identifier: AL.ServerIdentifier = "II"
+export const region: ServerRegion = "US"
+export const identifier: ServerIdentifier = "II"
 
-const targets: AL.MonsterName[] = ["bluefairy", "greenfairy", "redfairy"]
+const targets: MonsterName[] = ["bluefairy", "greenfairy", "redfairy"]
 const LOOP_MS = 10
 
-export async function startSellSticksToMerchantsLoop(bot: AL.Character): Promise<void> {
+export async function startSellSticksToMerchantsLoop(bot: Character): Promise<void> {
     async function sellToMerchants() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -25,12 +25,12 @@ export async function startSellSticksToMerchantsLoop(bot: AL.Character): Promise
                 if (!sticks || sticks.length == 0) break // No more sticks
 
                 for (const slotName in player.slots) {
-                    const slot: AL.ItemDataTrade = player.slots[slotName]
+                    const slot: ItemDataTrade = player.slots[slotName]
                     if (!slot || !slot.b) continue // They aren't buying anything in this slot
                     if (slot.name !== "stick") continue // They aren't buying sticks
                     if (slot.price < 2_500_000) continue // They aren't paying enough
 
-                    await bot.sellToMerchant(player.id, slotName as AL.TradeSlotType, slot.rid, 1).catch(e => console.error(e))
+                    await bot.sellToMerchant(player.id, slotName as TradeSlotType, slot.rid, 1).catch(e => console.error(e))
                 }
             }
         } catch (e) {
@@ -42,7 +42,7 @@ export async function startSellSticksToMerchantsLoop(bot: AL.Character): Promise
     sellToMerchants()
 }
 
-export async function startMailBankKeysToEarthiverseLoop(bot: AL.Character): Promise<void> {
+export async function startMailBankKeysToEarthiverseLoop(bot: Character): Promise<void> {
     async function mailBankKeys() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -61,7 +61,7 @@ export async function startMailBankKeysToEarthiverseLoop(bot: AL.Character): Pro
     mailBankKeys()
 }
 
-export async function startLeader(bot: AL.Warrior): Promise<void> {
+export async function startLeader(bot: Warrior): Promise<void> {
     startTrackerLoop(bot)
 
     async function tauntLoop() {
@@ -162,7 +162,7 @@ export async function startLeader(bot: AL.Warrior): Promise<void> {
     swapLuckStuffLoop()
 }
 
-export async function startShared(bot: AL.Warrior, merchantName: string): Promise<void> {
+export async function startShared(bot: Warrior, merchantName: string): Promise<void> {
     startAvoidStacking(bot)
     startBuyLoop(bot, new Set())
     startChargeLoop(bot)
@@ -315,7 +315,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
     }
 
     // If we have too many targets, we can't go through doors.
-    bot.socket.on("game_response", (data: AL.GameResponseData) => {
+    bot.socket.on("game_response", (data: GameResponseData) => {
         if (typeof data == "string") {
             if (data == "cant_escape") {
                 if (bot.isScared() || bot.targets >= 5) {
@@ -389,7 +389,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
             await goToPoitonSellerIfLow(bot)
             await goToBankIfFull(bot)
 
-            // const spawn: AL.IPosition = bot.S.franky as ServerInfoDataLive || mainGoos
+            // const spawn: IPosition = bot.S.franky as ServerInfoDataLive || mainGoos
 
             await goToNearestWalkableToMonster(bot, targets, spawn, 0)
         } catch (e) {
@@ -401,7 +401,7 @@ export async function startShared(bot: AL.Warrior, merchantName: string): Promis
     moveLoop()
 }
 
-export async function startPriest(bot: AL.Priest, merchantName: string): Promise<void> {
+export async function startPriest(bot: Priest, merchantName: string): Promise<void> {
     startAvoidStacking(bot)
     startBuyLoop(bot, new Set())
     startCompoundLoop(bot)
@@ -429,7 +429,7 @@ export async function startPriest(bot: AL.Priest, merchantName: string): Promise
             }
 
             if (bot.canUse("attack")) {
-                const healPriority = (a: AL.Player, b: AL.Player) => {
+                const healPriority = (a: Player, b: Player) => {
                     // Heal those with lower HP first
                     const a_hpRatio = a.hp / a.max_hp
                     const b_hpRatio = b.hp / b.max_hp
@@ -439,7 +439,7 @@ export async function startPriest(bot: AL.Priest, merchantName: string): Promise
                     // Heal closer players
                     return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
                 }
-                const players = new FastPriorityQueue<AL.Character | AL.Player>(healPriority)
+                const players = new FastPriorityQueue<Character | Player>(healPriority)
                 // Potentially heal ourself
                 if (bot.hp / bot.max_hp <= 0.8) players.add(bot)
                 // Potentially heal others
@@ -519,7 +519,7 @@ export async function startPriest(bot: AL.Priest, merchantName: string): Promise
     }
 
     // If we have too many targets, we can't go through doors.
-    bot.socket.on("game_response", (data: AL.GameResponseData) => {
+    bot.socket.on("game_response", (data: GameResponseData) => {
         if (typeof data == "string") {
             if (data == "cant_escape") {
                 if (bot.isScared() || bot.targets >= 5) {
@@ -557,7 +557,7 @@ export async function startPriest(bot: AL.Priest, merchantName: string): Promise
             await goToPoitonSellerIfLow(bot)
             await goToBankIfFull(bot)
 
-            // const spawn: AL.IPosition = bot.S.franky as ServerInfoDataLive || mainGoos
+            // const spawn: IPosition = bot.S.franky as ServerInfoDataLive || mainGoos
 
             await goToNearestWalkableToMonster(bot, targets, spawn, 0)
         } catch (e) {
@@ -569,7 +569,7 @@ export async function startPriest(bot: AL.Priest, merchantName: string): Promise
     moveLoop()
 }
 
-export async function startMerchant(bot: AL.Merchant, friends: AL.Character[], holdPosition: AL.IPosition): Promise<void> {
+export async function startMerchant(bot: Merchant, friends: Character[], holdPosition: IPosition): Promise<void> {
     startBuyFriendsReplenishablesLoop(bot, friends)
     startHealLoop(bot)
     startMluckLoop(bot)

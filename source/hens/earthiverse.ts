@@ -1,16 +1,16 @@
-import AL from "alclient"
+import AL, { Entity, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { goToBankIfFull, goToPoitonSellerIfLow, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
 import { attackTheseTypesWarrior } from "../base/warrior.js"
 
 /** Config */
-let region: AL.ServerRegion = "ASIA"
-let identifier: AL.ServerIdentifier = "I"
+let region: ServerRegion = "ASIA"
+let identifier: ServerIdentifier = "I"
 const warriorName = "earthWar3"
 
 /** Characters */
-let warrior: AL.Warrior
+let warrior: Warrior
 
-async function startWarrior(bot: AL.Warrior) {
+async function startWarrior(bot: Warrior) {
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
@@ -45,7 +45,7 @@ async function startWarrior(bot: AL.Warrior) {
             await goToBankIfFull(bot)
 
             // Look for roosters
-            let nearest: AL.Entity
+            let nearest: Entity
             let distance = Number.MAX_VALUE
             for (const rooster of bot.getEntities({
                 couldGiveCredit: true,

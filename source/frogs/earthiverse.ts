@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL, { Entity, Mage, ServerIdentifier, ServerRegion, Tools } from "alclient"
 import { goToBankIfFull, goToPoitonSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader } from "../base/party.js"
@@ -6,12 +6,12 @@ import { getTargetServerFromDate, getTargetServerFromPlayer } from "../base/serv
 
 /** Config */
 const mageName = "earthMag3"
-let lastServer: [AL.ServerRegion, AL.ServerIdentifier] = ["US", "II"]
+let lastServer: [ServerRegion, ServerIdentifier] = ["US", "II"]
 
 /** Characters */
-let mage: AL.Mage
+let mage: Mage
 
-async function startMage(bot: AL.Mage) {
+async function startMage(bot: Mage) {
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
@@ -65,7 +65,7 @@ async function startMage(bot: AL.Mage) {
             }
 
             // Look for frogs
-            let nearest: AL.Entity
+            let nearest: Entity
             let distance = Number.MAX_VALUE
             for (const frog of bot.getEntities({
                 couldGiveCredit: true,

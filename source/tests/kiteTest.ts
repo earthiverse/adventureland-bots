@@ -1,16 +1,16 @@
-import AL from "alclient"
+import AL, { Mage, MonsterName, ServerIdentifier, ServerRegion } from "alclient"
 import { startHealLoop, startLootLoop, startAvoidStacking, goToKiteMonster, LOOP_MS, startScareLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 
 /** Config */
 const mageName = "earthMag"
-const region: AL.ServerRegion = "US"
-const identifier: AL.ServerIdentifier = "PVP"
-const targets: AL.MonsterName[] = ["bscorpion"]
+const region: ServerRegion = "US"
+const identifier: ServerIdentifier = "PVP"
+const targets: MonsterName[] = ["bscorpion"]
 
-let bot: AL.Mage
+let bot: Mage
 
-async function startKite(bot: AL.Mage) {
+async function startKite(bot: Mage) {
     startHealLoop(bot)
     startLootLoop(bot)
     startScareLoop(bot)
@@ -67,7 +67,7 @@ async function run() {
 
     // Start all characters
     console.log("Connecting...")
-    const startWarriorLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startWarriorLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         const connectLoop = async () => {
             try {
                 bot = await AL.Game.startMage(name, region, identifier)

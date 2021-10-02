@@ -1,8 +1,8 @@
-import AL from "alclient"
+import AL, { Character, Constants, Entity, Mage, MonsterName, Warrior } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { LOOP_MS } from "./general.js"
 
-export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.MonsterName[], friends: AL.Character[] = [], options: {
+export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[], friends: Character[] = [], options: {
     targetingPartyMember?: boolean
     targetingPlayer?: string
     disableAgitate?: boolean
@@ -24,7 +24,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
         // Calculate how much courage we have left to spare
         const targetingMe = bot.calculateTargets()
 
-        const cleaveTargets: AL.Entity[] = []
+        const cleaveTargets: Entity[] = []
         let couldCleaveNearby = false
         let avoidCleave = false
         for (const entity of bot.getEntities({
@@ -124,7 +124,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
         // Calculate how much courage we have left to spare
         const targetingMe = bot.calculateTargets()
 
-        const agitateTargets: AL.Entity[] = []
+        const agitateTargets: Entity[] = []
         let avoidAgitate = false
         for (const entity of bot.getEntities({
             withinRange: bot.G.skills.agitate.range,
@@ -181,7 +181,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
     }
 
     if (bot.canUse("attack")) {
-        const priority = (a: AL.Entity, b: AL.Entity): boolean => {
+        const priority = (a: Entity, b: Entity): boolean => {
             // Order in array
             const a_index = types.indexOf(a.type)
             const b_index = types.indexOf(b.type)
@@ -212,7 +212,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
             return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
         }
 
-        const targets = new FastPriorityQueue<AL.Entity>(priority)
+        const targets = new FastPriorityQueue<Entity>(priority)
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
@@ -280,7 +280,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
                     if (!friend.canUse("energize")) continue // Friend can't use energize
 
                     // Energize!
-                    (friend as AL.Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp)))
+                    (friend as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp)))
                     break
                 }
             }
@@ -290,7 +290,7 @@ export async function attackTheseTypesWarrior(bot: AL.Warrior, types: AL.Monster
     }
 }
 
-export function startChargeLoop(bot: AL.Warrior): void {
+export function startChargeLoop(bot: Warrior): void {
     async function chargeLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -308,7 +308,7 @@ export function startChargeLoop(bot: AL.Warrior): void {
     chargeLoop()
 }
 
-export function startHardshellLoop(bot: AL.Warrior): void {
+export function startHardshellLoop(bot: Warrior): void {
     async function hardshellLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -335,7 +335,7 @@ export function startHardshellLoop(bot: AL.Warrior): void {
     hardshellLoop()
 }
 
-export function startWarcryLoop(bot: AL.Warrior): void {
+export function startWarcryLoop(bot: Warrior): void {
     async function warcryLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return

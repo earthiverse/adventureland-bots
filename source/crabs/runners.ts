@@ -1,21 +1,21 @@
-import AL from "alclient"
+import AL, { Constants, GMap, Mage, MapName, MonsterName, ServerIdentifier, ServerRegion, Tools } from "alclient"
 import { startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToPoitonSellerIfLow, goToBankIfFull } from "../base/general.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 
 export type Boundary = { x: [number, number], y: [number, number] }
 
-export const region: AL.ServerRegion = "US"
-export const identifier: AL.ServerIdentifier = "I"
-export const targets: AL.MonsterName[] = ["crab"]
+export const region: ServerRegion = "US"
+export const identifier: ServerIdentifier = "I"
+export const targets: MonsterName[] = ["crab"]
 const LOOP_MS = 10
 
-let map: AL.MapName
+let map: MapName
 let boundary: Boundary
-export async function startShared(bot: AL.Mage, targets: AL.MonsterName[], friends: AL.Mage[]): Promise<void> {
+export async function startShared(bot: Mage, targets: MonsterName[], friends: Mage[]): Promise<void> {
     if (!boundary) {
         for (const mapN in bot.G.maps) {
             if (boundary) break
-            const gmap = bot.G.maps[mapN] as AL.GMap
+            const gmap = bot.G.maps[mapN] as GMap
             if (gmap.ignore) continue
             for (const monster of gmap.monsters) {
                 if (monster.type == targets[0]) {
@@ -23,7 +23,7 @@ export async function startShared(bot: AL.Mage, targets: AL.MonsterName[], frien
                         x: [monster.boundary[0], monster.boundary[2]],
                         y: [monster.boundary[1], monster.boundary[1]]
                     }
-                    map = mapN as AL.MapName
+                    map = mapN as MapName
                 }
             }
         }

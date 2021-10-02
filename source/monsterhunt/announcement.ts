@@ -1,8 +1,7 @@
-import AL from "alclient"
-import { goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
+import AL, { Mage, Merchant } from "alclient"
+import { goToSpecialMonster, startTrackerLoop } from "../base/general.js"
 import { mainBeesNearTunnel, mainGoos, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
-import { getTargetServerFromMonsters } from "../base/serverhop.js"
 import { Information, Strategy } from "../definitions/bot.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMage, startMerchant } from "./shared.js"
 
@@ -35,7 +34,7 @@ const information: Information = {
     }
 }
 
-function prepareMage(bot: AL.Mage) {
+function prepareMage(bot: Mage) {
     const strategy: Strategy = {
         bee: {
             attack: async () => { await attackTheseTypesMage(bot, ["bee"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.bee.hp + 1 }) },
@@ -75,7 +74,7 @@ function prepareMage(bot: AL.Mage) {
     startMage(bot, information, strategy)
 }
 
-function prepareMerchant(bot: AL.Merchant) {
+function prepareMerchant(bot: Merchant) {
     const strategy: Strategy = {
     }
 
@@ -129,7 +128,7 @@ async function run() {
                 if (information.bot1.bot) information.bot1.bot.disconnect()
                 information.bot1.bot = await AL.Game.startMage(information.bot1.name, TARGET_REGION, TARGET_IDENTIFIER)
                 information.friends[1] = information.bot1.bot
-                prepareMage(information.bot1.bot as AL.Mage)
+                prepareMage(information.bot1.bot as Mage)
                 startTrackerLoop(information.bot1.bot)
                 information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
@@ -158,7 +157,7 @@ async function run() {
                 if (information.bot2.bot) information.bot2.bot.disconnect()
                 information.bot2.bot = await AL.Game.startMage(information.bot2.name, TARGET_REGION, TARGET_IDENTIFIER)
                 information.friends[2] = information.bot2.bot
-                prepareMage(information.bot2.bot as AL.Mage)
+                prepareMage(information.bot2.bot as Mage)
                 information.bot2.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -186,7 +185,7 @@ async function run() {
                 if (information.bot3.bot) information.bot3.bot.disconnect()
                 information.bot3.bot = await AL.Game.startMage(information.bot3.name, TARGET_REGION, TARGET_IDENTIFIER)
                 information.friends[3] = information.bot3.bot
-                prepareMage(information.bot3.bot as AL.Mage)
+                prepareMage(information.bot3.bot as Mage)
                 information.bot3.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -232,7 +231,7 @@ async function run() {
     //         }
 
     //         // Don't change servers if we're running a crypt
-    //         const merchantMap: AL.GMap = AL.Game.G.maps[information.merchant?.bot?.map]
+    //         const merchantMap: GMap = AL.Game.G.maps[information.merchant?.bot?.map]
     //         if (merchantMap && merchantMap.instance) {
     //             setTimeout(async () => { serverLoop() }, 1000)
     //             return

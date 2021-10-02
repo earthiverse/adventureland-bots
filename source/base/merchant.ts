@@ -1,9 +1,9 @@
-import AL, { BankPackName } from "alclient"
+import AL, { BankPackName, Character, Constants, Entity, ItemData, ItemName, Merchant, MonsterName, Tools } from "alclient"
 import { ITEMS_TO_CRAFT, ITEMS_TO_EXCHANGE, ITEMS_TO_HOLD, ITEMS_TO_SELL, LOOP_MS } from "./general.js"
 import { mainFishingSpot } from "./locations.js"
 
 export const MERCHANT_GOLD_TO_HOLD = 100_000_000
-export const MERCHANT_ITEMS_TO_HOLD: Set<AL.ItemName> = new Set([
+export const MERCHANT_ITEMS_TO_HOLD: Set<ItemName> = new Set([
     ...ITEMS_TO_HOLD,
     // Merchant Stand
     "stand0",
@@ -19,11 +19,11 @@ export const MERCHANT_ITEMS_TO_HOLD: Set<AL.ItemName> = new Set([
     "dartgun", "wbook1"
 ])
 
-export async function attackTheseTypesMerchant(bot: AL.Merchant, types: AL.MonsterName[], friends: AL.Character[] = []): Promise<void> {
+export async function attackTheseTypesMerchant(bot: Merchant, types: MonsterName[], friends: Character[] = []): Promise<void> {
     if (!bot.canUse("attack")) return // We can't attack
     if (bot.c.town) return // Don't attack if teleporting
 
-    const targets: AL.Entity[] = []
+    const targets: Entity[] = []
     for (const entity of bot.getEntities({
         couldGiveCredit: true,
         typeList: types,
@@ -49,7 +49,7 @@ export async function attackTheseTypesMerchant(bot: AL.Merchant, types: AL.Monst
     await bot.basicAttack(entity.id)
 }
 
-export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_HOLD, itemsToHold = MERCHANT_ITEMS_TO_HOLD, itemsToSell = ITEMS_TO_SELL, itemsToCraft = ITEMS_TO_CRAFT, itemsToExchange = ITEMS_TO_EXCHANGE): Promise<void> {
+export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOLD, itemsToHold = MERCHANT_ITEMS_TO_HOLD, itemsToSell = ITEMS_TO_SELL, itemsToCraft = ITEMS_TO_CRAFT, itemsToExchange = ITEMS_TO_EXCHANGE): Promise<void> {
     await bot.closeMerchantStand()
     await bot.smartMove("items1")
 
@@ -92,9 +92,9 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
     }
 
     // Store information about everything in our bank to use it later to find upgradable stuff
-    const bankItems: AL.ItemData[] = []
+    const bankItems: ItemData[] = []
     for (let i = 0; i <= 7; i++) {
-        const bankPack = `items${i}` as Exclude<AL.BankPackName, "gold">
+        const bankPack = `items${i}` as Exclude<BankPackName, "gold">
         if (!bot?.bank[bankPack]) continue // This bank slot isn't available
         for (const item of bot.bank[bankPack]) {
             bankItems.push(item)
@@ -113,13 +113,13 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
             if (!gInfo.s) continue // Not stackable
             if (bot.countItem(item.name) + item.q > gInfo.s) continue // We can't stack them in one spot
 
-            const pack = `items${Math.floor(i / 42)}` as Exclude<AL.BankPackName, "gold">
+            const pack = `items${Math.floor(i / 42)}` as Exclude<BankPackName, "gold">
             const slot = i % 42
             bot.withdrawItem(pack, slot)
             continue
         }
 
-        const pack = `items${Math.floor(i / 42)}` as Exclude<AL.BankPackName, "gold">
+        const pack = `items${Math.floor(i / 42)}` as Exclude<BankPackName, "gold">
         const slot = i % 42
         bot.withdrawItem(pack, slot)
         freeSpaces--
@@ -128,7 +128,7 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
     // Withdraw compoundable & upgradable things
     const itemsByLevel = bot.locateItemsByLevel(bankItems)
     for (const dName in itemsByLevel) {
-        const itemName = dName as AL.ItemName
+        const itemName = dName as ItemName
         const gInfo = bot.G.items[itemName]
         if (gInfo.grades == undefined) continue
         const level0Grade = gInfo.grades.lastIndexOf(0) + 1
@@ -152,14 +152,14 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
                         }
                         if (!firstItemWithdrawn) {
                             // Withdraw the first item, because our other upgrade logic will only upgrade if we have two items of the same type in our inventory
-                            const realPack = `items${Math.floor((firstItemSlot) / 42)}` as Exclude<AL.BankPackName, "gold">
+                            const realPack = `items${Math.floor((firstItemSlot) / 42)}` as Exclude<BankPackName, "gold">
                             const realSlot = firstItemSlot % 42
                             await bot.withdrawItem(realPack, realSlot)
                             freeSpaces--
                             firstItemWithdrawn = true
                         }
                         // Withdraw the item to upgrade
-                        const realPack = `items${Math.floor((slot) / 42)}` as Exclude<AL.BankPackName, "gold">
+                        const realPack = `items${Math.floor((slot) / 42)}` as Exclude<BankPackName, "gold">
                         const realSlot = slot % 42
                         await bot.withdrawItem(realPack, realSlot)
                         freeSpaces--
@@ -190,24 +190,24 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
                         }
                         if (!firstItemWithdrawn) {
                             // Withdraw the first item, because our other upgrade logic will only upgrade if we have two items of the same type in our inventory
-                            const realPack = `items${Math.floor((firstItemSlot) / 42)}` as Exclude<AL.BankPackName, "gold">
+                            const realPack = `items${Math.floor((firstItemSlot) / 42)}` as Exclude<BankPackName, "gold">
                             const realSlot = firstItemSlot % 42
                             await bot.withdrawItem(realPack, realSlot)
                             freeSpaces--
                             firstItemWithdrawn = true
                         }
                         // Withdraw the item to upgrade
-                        const realPack1 = `items${Math.floor((slot1) / 42)}` as Exclude<AL.BankPackName, "gold">
+                        const realPack1 = `items${Math.floor((slot1) / 42)}` as Exclude<BankPackName, "gold">
                         const realSlot1 = slot1 % 42
                         await bot.withdrawItem(realPack1, realSlot1)
                         freeSpaces--
                         const slot2 = items[i + 1]
-                        const realPack2 = `items${Math.floor((slot2) / 42)}` as Exclude<AL.BankPackName, "gold">
+                        const realPack2 = `items${Math.floor((slot2) / 42)}` as Exclude<BankPackName, "gold">
                         const realSlot2 = slot2 % 42
                         await bot.withdrawItem(realPack2, realSlot2)
                         freeSpaces--
                         const slot3 = items[i + 2]
-                        const realPack3 = `items${Math.floor((slot3) / 42)}` as Exclude<AL.BankPackName, "gold">
+                        const realPack3 = `items${Math.floor((slot3) / 42)}` as Exclude<BankPackName, "gold">
                         const realSlot3 = slot3 % 42
                         await bot.withdrawItem(realPack3, realSlot3)
                         freeSpaces--
@@ -242,7 +242,7 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
                 craftable = false
                 break
             }
-            const realPack = `items${Math.floor((slot) / 42)}` as Exclude<AL.BankPackName, "gold">
+            const realPack = `items${Math.floor((slot) / 42)}` as Exclude<BankPackName, "gold">
             const realSlot = slot % 42
             withdrawThese.push([realPack, realSlot])
         }
@@ -265,7 +265,7 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
         if (item.q < gInfo.e) continue // Not enough to exchange
 
         // Withdraw the item
-        const pack = `items${Math.floor(i / 42)}` as Exclude<AL.BankPackName, "gold">
+        const pack = `items${Math.floor(i / 42)}` as Exclude<BankPackName, "gold">
         const slot = i % 42
         await bot.withdrawItem(pack, slot)
         freeSpaces--
@@ -280,7 +280,7 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
         if (item.level !== 2) continue
 
         // Withdraw the item
-        const pack = `items${Math.floor(i / 42)}` as Exclude<AL.BankPackName, "gold">
+        const pack = `items${Math.floor(i / 42)}` as Exclude<BankPackName, "gold">
         const slot = i % 42
         await bot.withdrawItem(pack, slot)
         freeSpaces--
@@ -296,14 +296,14 @@ export async function doBanking(bot: AL.Merchant, goldToHold = MERCHANT_GOLD_TO_
         if (item.level !== undefined && item.level > itemsToSell[item.name]) continue // The item level is too high to sell
 
         // Withdraw the item
-        const pack = `items${Math.floor(i / 42)}` as Exclude<AL.BankPackName, "gold">
+        const pack = `items${Math.floor(i / 42)}` as Exclude<BankPackName, "gold">
         const slot = i % 42
         await bot.withdrawItem(pack, slot)
         freeSpaces--
     }
 }
 
-export async function goFishing(bot: AL.Merchant): Promise<void> {
+export async function goFishing(bot: Merchant): Promise<void> {
     if (bot.getCooldown("fishing") > 0) return // Fishing is on cooldown
     if (!bot.hasItem("rod") && !bot.isEquipped("rod")) return // We don't have a rod
 
@@ -331,7 +331,7 @@ export async function goFishing(bot: AL.Merchant): Promise<void> {
     if (wasEquippedOffhand) await bot.equip(bot.locateItem(wasEquippedOffhand.name))
 }
 
-export async function goMining(bot: AL.Merchant): Promise<void> {
+export async function goMining(bot: Merchant): Promise<void> {
     if (bot.getCooldown("mining") > 0) return // Mining is on cooldown
     if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe")) return // We don't have a pickaxe
 
@@ -359,7 +359,7 @@ export async function goMining(bot: AL.Merchant): Promise<void> {
     if (wasEquippedOffhand) await bot.equip(bot.locateItem(wasEquippedOffhand.name))
 }
 
-export function startMluckLoop(bot: AL.Merchant): void {
+export function startMluckLoop(bot: Merchant): void {
     async function mluckLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return

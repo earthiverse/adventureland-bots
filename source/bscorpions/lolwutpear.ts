@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL, { Constants, IPosition, Mage, Priest, ServerIdentifier, ServerRegion } from "alclient"
 import { startTrackerLoop } from "../base/general.js"
 import { Information } from "../definitions/bot.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMerchant, startBscorpionMageFarmer, startBscorpionPriestFarmer } from "./runners.js"
@@ -29,7 +29,7 @@ const information: Information = {
         target: undefined
     }
 }
-const merchantLocation: AL.IPosition = { map: "main", x: -50, y: 0 }
+const merchantLocation: IPosition = { map: "main", x: -50, y: 0 }
 
 
 async function run() {
@@ -40,7 +40,7 @@ async function run() {
     // Start all characters
     console.log("Connecting...")
 
-    const startMerchantLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startMerchantLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -66,14 +66,14 @@ async function run() {
     }
     startMerchantLoop(information.merchant.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
 
-    const startMage1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startMage1Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
                 if (information.bot1.bot) information.bot1.bot.disconnect()
                 information.bot1.bot = await AL.Game.startMage(name, region, identifier)
                 information.friends[1] = information.bot1.bot
-                startBscorpionMageFarmer(information.bot1.bot as AL.Mage, information.friends, information.merchant.name)
+                startBscorpionMageFarmer(information.bot1.bot as Mage, information.friends, information.merchant.name)
                 startTrackerLoop(information.bot1.bot)
                 information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
@@ -93,14 +93,14 @@ async function run() {
     }
     startMage1Loop(information.bot1.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
 
-    const startMage2Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startMage2Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
                 if (information.bot2.bot) information.bot2.bot.disconnect()
                 information.bot2.bot = await AL.Game.startMage(name, region, identifier)
                 information.friends[2] = information.bot2.bot
-                startBscorpionMageFarmer(information.bot2.bot as AL.Mage, information.friends, information.merchant.name)
+                startBscorpionMageFarmer(information.bot2.bot as Mage, information.friends, information.merchant.name)
                 information.bot2.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -119,14 +119,14 @@ async function run() {
     }
     startMage2Loop(information.bot2.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
 
-    const startPriestLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startPriestLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
                 if (information.bot3.bot) information.bot3.bot.disconnect()
                 information.bot3.bot = await AL.Game.startPriest(name, region, identifier)
                 information.friends[3] = information.bot3.bot
-                startBscorpionPriestFarmer(information.bot3.bot as AL.Priest, information.friends, information.merchant.name)
+                startBscorpionPriestFarmer(information.bot3.bot as Priest, information.friends, information.merchant.name)
                 information.bot3.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)

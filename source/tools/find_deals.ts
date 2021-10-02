@@ -1,11 +1,11 @@
-import AL from "alclient"
+import AL, { ItemName, MapName, TradeSlotType } from "alclient"
 import fs from "fs"
 
 type BuyData = {
-    itemName: AL.ItemName
+    itemName: ItemName
     itemLevel: number
     name: string
-    map: AL.MapName
+    map: MapName
     x: number
     y: number
     price: number
@@ -28,7 +28,7 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
     for (const merchant of merchantData) {
         num.merchants += 1
         for (const slotName in merchant.slots) {
-            const item = merchant.slots[slotName as AL.TradeSlotType]
+            const item = merchant.slots[slotName as TradeSlotType]
             const key = item.level == undefined ? item.name : `${item.name}_${item.level}`
 
             if (item.b) {

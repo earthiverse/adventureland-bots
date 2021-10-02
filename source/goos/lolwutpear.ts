@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL, { IPosition, MonsterName, Rogue, ServerIdentifier, ServerRegion } from "alclient"
 import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, goToNearestWalkableToMonster, ITEMS_TO_SELL, startPartyLoop } from "../base/general.js"
 import { mainGoos, offsetPosition } from "../base/locations.js"
 import { partyLeader } from "../base/party.js"
@@ -7,14 +7,14 @@ import { getTargetServerFromMonsters } from "../base/serverhop.js"
 
 /** Config */
 const rogue1Name = "rule34"
-const default_region: AL.ServerRegion = "US"
-const default_identifier: AL.ServerIdentifier = "III"
-const targets: AL.MonsterName[] = ["cutebee", "goo"]
-const defaultLocation: AL.IPosition = mainGoos
+const default_region: ServerRegion = "US"
+const default_identifier: ServerIdentifier = "III"
+const targets: MonsterName[] = ["cutebee", "goo"]
+const defaultLocation: IPosition = mainGoos
 
-let rogue1: AL.Rogue
+let rogue1: Rogue
 
-async function startRogue(bot: AL.Rogue, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
+async function startRogue(bot: Rogue, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)

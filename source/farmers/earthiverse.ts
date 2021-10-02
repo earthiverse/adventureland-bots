@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL, { Character, Constants, Entity, IPosition, Mage, Merchant, MonsterName, Ranger, ServerIdentifier, ServerInfoDataLive, ServerRegion, Tools } from "alclient"
 import { LOOP_MS, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "../base/party.js"
@@ -8,21 +8,21 @@ const merchantName = "earthMer"
 const rangerName = "earthiverse"
 const mage1Name = "earthMag"
 const mage2Name = "earthMag2"
-const region: AL.ServerRegion = "US"
-const identifier: AL.ServerIdentifier = "II"
+const region: ServerRegion = "US"
+const identifier: ServerIdentifier = "II"
 
-const rangerLocation: AL.IPosition = { map: "main", x: 1577.5, y: -168 }
-const mage1Location: AL.IPosition = { map: "main", x: 1577.5, y: -279 }
-const mage2Location: AL.IPosition = { map: "main", x: 1577.5, y: -57 }
+const rangerLocation: IPosition = { map: "main", x: 1577.5, y: -168 }
+const mage1Location: IPosition = { map: "main", x: 1577.5, y: -279 }
+const mage2Location: IPosition = { map: "main", x: 1577.5, y: -57 }
 const types = ["scorpion"]
 
 /** Characters */
-let merchant: AL.Merchant
-let ranger: AL.Ranger
-let mage1: AL.Mage
-let mage2: AL.Mage
+let merchant: Merchant
+let ranger: Ranger
+let mage1: Mage
+let mage2: Mage
 
-async function startShared(bot: AL.Character) {
+async function startShared(bot: Character) {
     startBuyLoop(bot)
     startCompoundLoop(bot)
     startElixirLoop(bot, "elixirluck")
@@ -40,7 +40,7 @@ async function startShared(bot: AL.Character) {
     startUpgradeLoop(bot)
 }
 
-async function startRanger(bot: AL.Ranger) {
+async function startRanger(bot: Ranger) {
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -50,7 +50,7 @@ async function startRanger(bot: AL.Ranger) {
                 return
             }
 
-            const targets: AL.Entity[] = []
+            const targets: Entity[] = []
             for (const [, entity] of bot.entities) {
                 if (!types.includes(entity.type)) continue // Not a good type
                 if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
@@ -130,7 +130,7 @@ async function startRanger(bot: AL.Ranger) {
     moveLoop()
 }
 
-async function startMage(bot: AL.Mage) {
+async function startMage(bot: Mage) {
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -221,7 +221,7 @@ async function startMage(bot: AL.Mage) {
     moveLoop()
 }
 
-async function startMerchant(bot: AL.Merchant) {
+async function startMerchant(bot: Merchant) {
     startPontyLoop(bot)
     startMluckLoop(bot)
     startPartyLoop(bot, bot.id) // Let anyone who wants to party with me do so
@@ -284,13 +284,13 @@ async function startMerchant(bot: AL.Merchant) {
 
             // MLuck people if there is a server info target
             for (const mN in bot.S) {
-                const type = mN as AL.MonsterName
+                const type = mN as MonsterName
                 if (!bot.S[type].live) continue
-                if (!(bot.S[type] as AL.ServerInfoDataLive).target) continue
+                if (!(bot.S[type] as ServerInfoDataLive).target) continue
 
-                if (AL.Tools.distance(merchant, (bot.S[type] as AL.ServerInfoDataLive)) > 100) {
+                if (AL.Tools.distance(merchant, (bot.S[type] as ServerInfoDataLive)) > 100) {
                     await bot.closeMerchantStand()
-                    await bot.smartMove((bot.S[type] as AL.ServerInfoDataLive), { getWithin: 100 })
+                    await bot.smartMove((bot.S[type] as ServerInfoDataLive), { getWithin: 100 })
                 }
 
                 bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
@@ -333,7 +333,7 @@ async function run() {
     // Start all characters
     console.log("Connecting...")
 
-    const startMerchantLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startMerchantLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -359,7 +359,7 @@ async function run() {
     }
     startMerchantLoop(merchantName, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startRangerLoop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startRangerLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -386,7 +386,7 @@ async function run() {
     }
     startRangerLoop(rangerName, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startMage1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startMage1Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -412,7 +412,7 @@ async function run() {
     }
     startMage1Loop(mage1Name, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startMage2Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startMage2Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {

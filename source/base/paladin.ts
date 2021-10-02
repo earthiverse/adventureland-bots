@@ -1,7 +1,7 @@
-import AL from "alclient"
+import AL, { Character, Constants, Entity, Mage, MonsterName, Paladin, Tools } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 
-export async function attackTheseTypesPaladin(bot: AL.Paladin, types: AL.MonsterName[], friends: AL.Character[] = [], options: {
+export async function attackTheseTypesPaladin(bot: Paladin, types: MonsterName[], friends: Character[] = [], options: {
     disableMentalBurst?: boolean
     disableQuickPunch?: boolean
     disableQuickStab?: boolean
@@ -9,7 +9,7 @@ export async function attackTheseTypesPaladin(bot: AL.Paladin, types: AL.Monster
     targetingPlayer?: string
 } = {}): Promise<void> {
     if (bot.c.town) return // Don't attack if teleporting
-    const attackPriority = (a: AL.Entity, b: AL.Entity): boolean => {
+    const attackPriority = (a: Entity, b: Entity): boolean => {
         // Order in array
         const a_index = types.indexOf(a.type)
         const b_index = types.indexOf(b.type)
@@ -41,7 +41,7 @@ export async function attackTheseTypesPaladin(bot: AL.Paladin, types: AL.Monster
     }
 
     if (bot.canUse("attack")) {
-        const targets = new FastPriorityQueue<AL.Entity>(attackPriority)
+        const targets = new FastPriorityQueue<Entity>(attackPriority)
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
@@ -75,7 +75,7 @@ export async function attackTheseTypesPaladin(bot: AL.Paladin, types: AL.Monster
                 if (!friend.canUse("energize")) continue // Friend can't use energize
 
                 // Energize!
-                (friend as AL.Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp)))
+                (friend as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp)))
                 break
             }
         }

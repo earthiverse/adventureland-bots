@@ -1,4 +1,4 @@
-import AL from "alclient"
+import AL, { IPosition, MonsterName, Rogue, ServerIdentifier, ServerRegion } from "alclient"
 import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, goToNearestWalkableToMonster, ITEMS_TO_SELL } from "../base/general.js"
 import { mainBeesNearTunnel, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
@@ -6,13 +6,13 @@ import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
 /** Config */
 const rogue1Name = "earthRog"
 const rogue2Name = "earthRog2"
-const targets: AL.MonsterName[] = ["cutebee", "bee"]
-const defaultLocation: AL.IPosition = mainBeesNearTunnel
+const targets: MonsterName[] = ["cutebee", "bee"]
+const defaultLocation: IPosition = mainBeesNearTunnel
 
-let rogue1: AL.Rogue
-let rogue2: AL.Rogue
+let rogue1: Rogue
+let rogue2: Rogue
 
-async function startRogue(bot: AL.Rogue, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
+async function startRogue(bot: Rogue, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
@@ -62,7 +62,7 @@ async function run() {
 
     // Start all characters
     console.log("Connecting...")
-    const startRogue1Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startRogue1Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         const connectLoop = async () => {
             try {
                 rogue1 = await AL.Game.startRogue(name, region, identifier)
@@ -92,7 +92,7 @@ async function run() {
     }
     startRogue1Loop(rogue1Name, "US", "I")
 
-    const startRogue2Loop = async (name: string, region: AL.ServerRegion, identifier: AL.ServerIdentifier) => {
+    const startRogue2Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         const connectLoop = async () => {
             try {
                 rogue2 = await AL.Game.startRogue(name, region, identifier)

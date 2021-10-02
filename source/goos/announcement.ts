@@ -1,4 +1,4 @@
-import AL, { MonsterName } from "alclient"
+import AL, { MonsterName, Warrior } from "alclient"
 import { goToBankIfFull, goToNearestWalkableToMonster, goToPoitonSellerIfLow, startAvoidStacking, startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
 import { mainGoos, offsetPosition } from "../base/locations.js"
 import { partyLeader, partyMembers } from "../base/party.js"
@@ -39,7 +39,7 @@ const information: Information = {
     }
 }
 
-async function startWarrior(bot: AL.Warrior, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
+async function startWarrior(bot: Warrior, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
     startBuyLoop(bot, new Set())
     startElixirLoop(bot, "elixirluck")
     startHealLoop(bot)
@@ -103,7 +103,7 @@ async function run() {
                     if (information.bot1.bot) information.bot1.bot.disconnect()
                     information.bot1.bot = await AL.Game.startWarrior(information.bot1.name, TARGET_REGION, TARGET_IDENTIFIER)
                     information.friends[1] = information.bot1.bot
-                    startWarrior(information.bot1.bot as AL.Warrior)
+                    startWarrior(information.bot1.bot as Warrior)
                 } catch (e) {
                     console.error(e)
                     if (information.bot1.bot) information.bot1.bot.disconnect()
@@ -139,7 +139,7 @@ async function run() {
                     if (information.bot2.bot) information.bot2.bot.disconnect()
                     information.bot2.bot = await AL.Game.startWarrior(information.bot2.name, TARGET_REGION, TARGET_IDENTIFIER)
                     information.friends[2] = information.bot2.bot
-                    startWarrior(information.bot2.bot as AL.Warrior)
+                    startWarrior(information.bot2.bot as Warrior)
                 } catch (e) {
                     console.error(e)
                     if (information.bot2.bot) information.bot2.bot.disconnect()
@@ -175,7 +175,7 @@ async function run() {
                     if (information.bot3.bot) information.bot3.bot.disconnect()
                     information.bot3.bot = await AL.Game.startWarrior(information.bot3.name, TARGET_REGION, TARGET_IDENTIFIER)
                     information.friends[3] = information.bot3.bot
-                    startWarrior(information.bot3.bot as AL.Warrior)
+                    startWarrior(information.bot3.bot as Warrior)
                 } catch (e) {
                     console.error(e)
                     if (information.bot3.bot) information.bot3.bot.disconnect()

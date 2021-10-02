@@ -1,5 +1,5 @@
-import AL from "alclient"
-import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, ITEMS_TO_HOLD, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
+import AL, { Character, Constants, Entity, IPosition, Mage, Merchant, MonsterName, Priest, Ranger, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Warrior } from "alclient"
+import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, ITEMS_TO_HOLD, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { attackTheseTypesMerchant, doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
@@ -8,19 +8,19 @@ import { attackTheseTypesWarrior, startChargeLoop, startHardshellLoop, startWarc
 import { Information, Strategy } from "../definitions/bot.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 
-const DEFAULT_TARGET: AL.MonsterName = "goo"
+const DEFAULT_TARGET: MonsterName = "goo"
 
-export const DEFAULT_REGION: AL.ServerRegion = "US"
-export const DEFAULT_IDENTIFIER: AL.ServerIdentifier = "II"
+export const DEFAULT_REGION: ServerRegion = "US"
+export const DEFAULT_IDENTIFIER: ServerIdentifier = "II"
 
-export async function getTarget(bot: AL.Character, strategy: Strategy, information: Information): Promise<AL.MonsterName> {
+export async function getTarget(bot: Character, strategy: Strategy, information: Information): Promise<MonsterName> {
     for (const entity of await getPriority1Entities(bot)) {
         if (!strategy[entity.type]) continue // No strategy
         if (strategy[entity.type].requireCtype &&
             !((information.bot1.bot?.ctype == strategy[entity.type].requireCtype && information.bot1.target == entity.type)
             || (information.bot2.bot?.ctype == strategy[entity.type].requireCtype && information.bot2.target == entity.type)
             || (information.bot3.bot?.ctype == strategy[entity.type].requireCtype && information.bot3.target == entity.type))) continue
-        const realEntity = bot.entities.get(entity.name) || bot.entities.get((entity as AL.Entity).id)
+        const realEntity = bot.entities.get(entity.name) || bot.entities.get((entity as Entity).id)
         if (realEntity) {
             return realEntity.type
         } else {
@@ -41,7 +41,7 @@ export async function getTarget(bot: AL.Character, strategy: Strategy, informati
             !((information.bot1.bot?.ctype == strategy[entity.type].requireCtype && information.bot1.target == entity.type)
             || (information.bot2.bot?.ctype == strategy[entity.type].requireCtype && information.bot2.target == entity.type)
             || (information.bot3.bot?.ctype == strategy[entity.type].requireCtype && information.bot3.target == entity.type))) continue
-        const realEntity = bot.entities.get(entity.name) || bot.entities.get((entity as AL.Entity).id)
+        const realEntity = bot.entities.get(entity.name) || bot.entities.get((entity as Entity).id)
         if (realEntity) {
             if (realEntity.couldGiveCreditForKill(bot)) return realEntity.type
 
@@ -75,13 +75,13 @@ export async function getTarget(bot: AL.Character, strategy: Strategy, informati
     return DEFAULT_TARGET
 }
 
-export async function startMage(bot: AL.Mage, information: Information, strategy: Strategy): Promise<void> {
+export async function startMage(bot: Mage, information: Information, strategy: Strategy): Promise<void> {
     startShared(bot, strategy, information)
 
-    const idleTargets: AL.MonsterName[] = []
+    const idleTargets: MonsterName[] = []
     for (const t in strategy) {
-        if (!strategy[t as AL.MonsterName].attackWhileIdle) continue
-        idleTargets.push(t as AL.MonsterName)
+        if (!strategy[t as MonsterName].attackWhileIdle) continue
+        idleTargets.push(t as MonsterName)
     }
 
     async function attackLoop() {
@@ -97,7 +97,7 @@ export async function startMage(bot: AL.Mage, information: Information, strategy
                 return
             }
 
-            let target: AL.MonsterName
+            let target: MonsterName
             if (bot.id == information.bot1.name) {
                 target = information.bot1.target
             } else if (bot.id == information.bot2.name) {
@@ -110,7 +110,7 @@ export async function startMage(bot: AL.Mage, information: Information, strategy
                 // Equipment
                 if (strategy[target].equipment) {
                     for (const s in strategy[target].equipment) {
-                        const slot = s as AL.SlotType
+                        const slot = s as SlotType
                         const itemName = strategy[target].equipment[slot]
                         const wType = bot.G.items[itemName].wtype
 
@@ -161,15 +161,15 @@ export async function startMage(bot: AL.Mage, information: Information, strategy
     attackLoop()
 }
 
-export async function startMerchant(bot: AL.Merchant, information: Information, strategy: Strategy, standPlace: AL.IPosition): Promise<void> {
+export async function startMerchant(bot: Merchant, information: Information, strategy: Strategy, standPlace: IPosition): Promise<void> {
     startShared(bot, strategy, information)
     startMluckLoop(bot)
     startPartyLoop(bot, bot.id)
 
-    const idleTargets: AL.MonsterName[] = []
+    const idleTargets: MonsterName[] = []
     for (const t in strategy) {
-        if (!strategy[t as AL.MonsterName].attackWhileIdle) continue
-        idleTargets.push(t as AL.MonsterName)
+        if (!strategy[t as MonsterName].attackWhileIdle) continue
+        idleTargets.push(t as MonsterName)
     }
 
     async function attackLoop() {
@@ -190,7 +190,7 @@ export async function startMerchant(bot: AL.Merchant, information: Information, 
                 // Equipment
                 if (strategy[information.merchant.target].equipment) {
                     for (const s in strategy[information.merchant.target].equipment) {
-                        const slot = s as AL.SlotType
+                        const slot = s as SlotType
                         const itemName = strategy[information.merchant.target].equipment[slot]
                         const wType = bot.G.items[itemName].wtype
 
@@ -288,13 +288,13 @@ export async function startMerchant(bot: AL.Merchant, information: Information, 
 
             // MLuck people if there is a server info target
             for (const mN in bot.S) {
-                const type = mN as AL.MonsterName
+                const type = mN as MonsterName
                 if (!bot.S[type].live) continue
-                if (!(bot.S[type] as AL.ServerInfoDataLive).target) continue
+                if (!(bot.S[type] as ServerInfoDataLive).target) continue
 
-                if (AL.Tools.distance(bot, (bot.S[type] as AL.ServerInfoDataLive)) > 100) {
+                if (AL.Tools.distance(bot, (bot.S[type] as ServerInfoDataLive)) > 100) {
                     await bot.closeMerchantStand()
-                    await bot.smartMove((bot.S[type] as AL.ServerInfoDataLive), { getWithin: 100 })
+                    await bot.smartMove((bot.S[type] as ServerInfoDataLive), { getWithin: 100 })
                 }
 
                 bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
@@ -329,15 +329,15 @@ export async function startMerchant(bot: AL.Merchant, information: Information, 
     moveLoop()
 }
 
-export async function startPriest(bot: AL.Priest, information: Information, strategy: Strategy): Promise<void> {
+export async function startPriest(bot: Priest, information: Information, strategy: Strategy): Promise<void> {
     startShared(bot, strategy, information)
     startDarkBlessingLoop(bot)
     startPartyHealLoop(bot, information.friends)
 
-    const idleTargets: AL.MonsterName[] = []
+    const idleTargets: MonsterName[] = []
     for (const t in strategy) {
-        if (!strategy[t as AL.MonsterName].attackWhileIdle) continue
-        idleTargets.push(t as AL.MonsterName)
+        if (!strategy[t as MonsterName].attackWhileIdle) continue
+        idleTargets.push(t as MonsterName)
     }
 
     async function attackLoop() {
@@ -353,7 +353,7 @@ export async function startPriest(bot: AL.Priest, information: Information, stra
                 return
             }
 
-            let target: AL.MonsterName
+            let target: MonsterName
             if (bot.id == information.bot1.name) {
                 target = information.bot1.target
             } else if (bot.id == information.bot2.name) {
@@ -367,7 +367,7 @@ export async function startPriest(bot: AL.Priest, information: Information, stra
                 // Equipment
                 if (strategy[target].equipment) {
                     for (const s in strategy[target].equipment) {
-                        const slot = s as AL.SlotType
+                        const slot = s as SlotType
                         const itemName = strategy[target].equipment[slot]
                         const wType = bot.G.items[itemName].wtype
 
@@ -418,13 +418,13 @@ export async function startPriest(bot: AL.Priest, information: Information, stra
     attackLoop()
 }
 
-export async function startRanger(bot: AL.Ranger, information: Information, strategy: Strategy): Promise<void> {
+export async function startRanger(bot: Ranger, information: Information, strategy: Strategy): Promise<void> {
     startShared(bot, strategy, information)
 
-    const idleTargets: AL.MonsterName[] = []
+    const idleTargets: MonsterName[] = []
     for (const t in strategy) {
-        if (!strategy[t as AL.MonsterName].attackWhileIdle) continue
-        idleTargets.push(t as AL.MonsterName)
+        if (!strategy[t as MonsterName].attackWhileIdle) continue
+        idleTargets.push(t as MonsterName)
     }
 
     async function attackLoop() {
@@ -440,7 +440,7 @@ export async function startRanger(bot: AL.Ranger, information: Information, stra
                 return
             }
 
-            let target: AL.MonsterName
+            let target: MonsterName
             if (bot.id == information.bot1.name) {
                 target = information.bot1.target
             } else if (bot.id == information.bot2.name) {
@@ -454,7 +454,7 @@ export async function startRanger(bot: AL.Ranger, information: Information, stra
                 // Equipment
                 if (strategy[target].equipment) {
                     for (const s in strategy[target].equipment) {
-                        const slot = s as AL.SlotType
+                        const slot = s as SlotType
                         const itemName = strategy[target].equipment[slot]
                         const wType = bot.G.items[itemName].wtype
 
@@ -505,17 +505,17 @@ export async function startRanger(bot: AL.Ranger, information: Information, stra
     attackLoop()
 }
 
-export async function startWarrior(bot: AL.Warrior, information: Information, strategy: Strategy): Promise<void> {
+export async function startWarrior(bot: Warrior, information: Information, strategy: Strategy): Promise<void> {
     startShared(bot, strategy, information)
 
     startChargeLoop(bot)
     startHardshellLoop(bot)
     startWarcryLoop(bot)
 
-    const idleTargets: AL.MonsterName[] = []
+    const idleTargets: MonsterName[] = []
     for (const t in strategy) {
-        if (!strategy[t as AL.MonsterName].attackWhileIdle) continue
-        idleTargets.push(t as AL.MonsterName)
+        if (!strategy[t as MonsterName].attackWhileIdle) continue
+        idleTargets.push(t as MonsterName)
     }
 
     async function attackLoop() {
@@ -531,7 +531,7 @@ export async function startWarrior(bot: AL.Warrior, information: Information, st
                 return
             }
 
-            let target: AL.MonsterName
+            let target: MonsterName
             if (bot.id == information.bot1.name) {
                 target = information.bot1.target
             } else if (bot.id == information.bot2.name) {
@@ -545,7 +545,7 @@ export async function startWarrior(bot: AL.Warrior, information: Information, st
                 // Equipment
                 if (strategy[target].equipment) {
                     for (const s in strategy[target].equipment) {
-                        const slot = s as AL.SlotType
+                        const slot = s as SlotType
                         const itemName = strategy[target].equipment[slot]
                         const wType = bot.G.items[itemName].wtype
 
@@ -596,7 +596,7 @@ export async function startWarrior(bot: AL.Warrior, information: Information, st
     attackLoop()
 }
 
-export async function startShared(bot: AL.Character, strategy: Strategy, information: Information): Promise<void> {
+export async function startShared(bot: Character, strategy: Strategy, information: Information): Promise<void> {
     bot.socket.on("magiport", async (data: { name: string }) => {
         if (partyMembers.includes(data.name)) {
             if (bot.c?.town) await bot.stopWarpToTown()

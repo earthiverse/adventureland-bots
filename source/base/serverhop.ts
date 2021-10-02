@@ -1,6 +1,6 @@
-import AL from "alclient"
+import AL, { GData, IEntity, MonsterName, ServerIdentifier, ServerRegion } from "alclient"
 
-export const SERVER_HOP_SERVERS: [AL.ServerRegion, AL.ServerIdentifier][] = [
+export const SERVER_HOP_SERVERS: [ServerRegion, ServerIdentifier][] = [
     ["ASIA", "I"],
     ["US", "I"],
     ["US", "II"],
@@ -18,7 +18,7 @@ const NUM_PVP = 2
  * @param avoidPVP Should we check, or avoid PvP servers?
  * @returns
  */
-export function getTargetServerFromDate(offset = 0, avoidPVP = false): [AL.ServerRegion, AL.ServerIdentifier] {
+export function getTargetServerFromDate(offset = 0, avoidPVP = false): [ServerRegion, ServerIdentifier] {
     let next = (Math.floor(Date.now() / 1000 / 60) + offset) % (SERVER_HOP_SERVERS.length)
     if (avoidPVP && next >= SERVER_HOP_SERVERS.length - NUM_PVP) next -= NUM_PVP
     if (avoidPVP) return SERVER_HOP_SERVERS[next]
@@ -34,12 +34,12 @@ export function getTargetServerFromDate(offset = 0, avoidPVP = false): [AL.Serve
  * @param defaultIdentifier The default identifier to hang out on if no special monsters are found
  * @returns
  */
-export async function getTargetServerFromMonsters(G: AL.GData, defaultRegion: AL.ServerRegion, defaultIdentifier: AL.ServerIdentifier): Promise<[AL.ServerRegion, AL.ServerIdentifier]> {
+export async function getTargetServerFromMonsters(G: GData, defaultRegion: ServerRegion, defaultIdentifier: ServerIdentifier): Promise<[ServerRegion, ServerIdentifier]> {
     // Priority #1: Special co-op monsters that take a team effort
-    const coop: AL.MonsterName[] = [
+    const coop: MonsterName[] = [
         "dragold", "grinch", "icegolem", "mrgreen", "mrpumpkin", "franky"
     ]
-    const coopEntities: AL.IEntity[] = await AL.EntityModel.aggregate([
+    const coopEntities: IEntity[] = await AL.EntityModel.aggregate([
         {
             $match: {
                 serverIdentifier: { $nin: ["PVP"] },
@@ -52,7 +52,7 @@ export async function getTargetServerFromMonsters(G: AL.GData, defaultRegion: AL
     for (const entity of coopEntities) return [entity.serverRegion, entity.serverIdentifier]
 
     // Priority #2: Special monsters that we can defeat by ourselves
-    const solo: AL.MonsterName[] = [
+    const solo: MonsterName[] = [
         // Very Rare Monsters
         "goldenbat", "tinyp", "cutebee",
         // Event Monsters
@@ -60,7 +60,7 @@ export async function getTargetServerFromMonsters(G: AL.GData, defaultRegion: AL
         // // Rare Monsters
         "greenjr", "jr", "skeletor", "mvampire", "fvampire", "snowman", "stompy"
     ]
-    const soloEntities: AL.IEntity[] = await AL.EntityModel.aggregate([
+    const soloEntities: IEntity[] = await AL.EntityModel.aggregate([
         {
             $match: {
                 serverIdentifier: { $nin: ["PVP"] },
@@ -86,7 +86,7 @@ export async function getTargetServerFromMonsters(G: AL.GData, defaultRegion: AL
  * @param lastSeen How recently the player has to have been seen (in ms) to be considered active
  * @returns The server/region the player is currently active on
  */
-export async function getTargetServerFromPlayer(defaultRegion: AL.ServerRegion, defaultIdentifier: AL.ServerIdentifier, playerID: string, lastSeen = 120_000): Promise<[AL.ServerRegion, AL.ServerIdentifier]> {
+export async function getTargetServerFromPlayer(defaultRegion: ServerRegion, defaultIdentifier: ServerIdentifier, playerID: string, lastSeen = 120_000): Promise<[ServerRegion, ServerIdentifier]> {
     const player = await AL.PlayerModel.findOne({ lastSeen: { $gt: Date.now() - lastSeen }, name: playerID }).lean().exec()
     if (player) {
         return [player.serverRegion, player.serverIdentifier]
