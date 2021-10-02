@@ -1,4 +1,4 @@
-import AL, { Character, Constants, Entity, IPosition, Mage, Merchant, MonsterName, Priest, Ranger, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Warrior } from "alclient"
+import AL, { Character, Entity, IPosition, Mage, Merchant, MonsterName, Priest, Ranger, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Warrior } from "alclient"
 import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, ITEMS_TO_HOLD, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { attackTheseTypesMerchant, doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
@@ -8,7 +8,7 @@ import { attackTheseTypesWarrior, startChargeLoop, startHardshellLoop, startWarc
 import { Information, Strategy } from "../definitions/bot.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 
-const DEFAULT_TARGET: MonsterName = "goo"
+const DEFAULT_TARGET: MonsterName = "armadillo"
 
 export const DEFAULT_REGION: ServerRegion = "US"
 export const DEFAULT_IDENTIFIER: ServerIdentifier = "II"

@@ -37,6 +37,20 @@ const information: Information = {
 
 function prepareMage(bot: Mage) {
     const strategy: Strategy = {
+        armadillo: {
+            attack: async () => { await attackTheseTypesMage(bot, ["armadillo", "phoenix"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
+            move: async () => {
+                if (bot.id == information.bot1.name) {
+                    await bot.smartMove({ map: "main", x: 451, y: 1921 }, { useBlink: true })
+                } else if (bot.id == information.bot2.name) {
+                    await bot.smartMove({ map: "main", x: 526, y: 1921 }, { useBlink: true })
+                } else if (bot.id == information.bot3.name) {
+                    await bot.smartMove({ map: "main", x: 601, y: 1921 }, { useBlink: true })
+                }
+            },
+        },
         bee: {
             attack: async () => { await attackTheseTypesMage(bot, ["bee"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.bee.hp + 1 }) },
             attackWhileIdle: true,

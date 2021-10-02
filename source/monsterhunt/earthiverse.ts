@@ -1235,7 +1235,10 @@ function prepareWarrior(bot: Warrior) {
                 await attackTheseTypesWarrior(bot, ["stompy"], information.friends, { disableAgitate: true, disableCleave: true })
             },
             equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
-            move: async () => { await goToSpecialMonster(bot, "stompy") },
+            move: async () => {
+                await goToPriestIfHurt(bot, information.bot1.bot)
+                await goToSpecialMonster(bot, "stompy")
+            },
             requireCtype: "priest"
         },
         stoneworm: {

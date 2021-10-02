@@ -37,6 +37,20 @@ const information: Information = {
 
 function prepareMage(bot: Mage) {
     const strategy: Strategy = {
+        armadillo: {
+            attack: async () => { await attackTheseTypesMage(bot, ["armadillo", "phoenix"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
+            move: async () => {
+                if (bot.id == information.bot1.name) {
+                    await bot.smartMove({ map: "main", x: 451, y: 1771 }, { useBlink: true })
+                } else if (bot.id == information.bot2.name) {
+                    await bot.smartMove({ map: "main", x: 526, y: 1771 }, { useBlink: true })
+                } else if (bot.id == information.bot3.name) {
+                    await bot.smartMove({ map: "main", x: 601, y: 1771 }, { useBlink: true })
+                }
+            },
+        },
         bee: {
             attack: async () => { await attackTheseTypesMage(bot, ["bee"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.bee.hp + 1 }) },
             attackWhileIdle: true,
@@ -321,7 +335,9 @@ async function run() {
             // Loot all of our remaining chests
             await sleep(1000)
             console.log("Looting remaining chests")
-            for (const [, chest] of information.bot1.bot.chests) await information.bot1.bot.openChest(chest.id)
+            for (const [, chest] of information.bot1.bot.chests) {
+                await information.bot1.bot.openChest(chest.id)
+            }
             await sleep(1000)
 
             // Disconnect everyone

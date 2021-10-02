@@ -920,7 +920,7 @@ export function startHealLoop(bot: Character): void {
 export function startLootLoop(bot: Character): void {
     // Loot chests as they come in
     const queue = new Queue({
-        concurrent: 4,
+        concurrent: 6,
         interval: AL.Constants.TIMEOUT,
         start: true
     })
