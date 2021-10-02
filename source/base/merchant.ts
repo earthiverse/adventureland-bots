@@ -318,7 +318,7 @@ export async function goFishing(bot: Merchant): Promise<void> {
     if (!bot.isEquipped("rod")) {
         const promises: Promise<unknown>[] = []
         if (offhand) promises.push(bot.unequip("offhand").then((i) => { offhandSlot = i }))
-        mainhandSlot = bot.locateItem("rod", bot.items, { locked: true })
+        mainhandSlot = bot.locateItem("rod", bot.items)
         promises.push(bot.equip(mainhandSlot))
         await Promise.all(promises)
     }
@@ -351,7 +351,7 @@ export async function goMining(bot: Merchant): Promise<void> {
     if (!bot.isEquipped("pickaxe")) {
         const promises: Promise<unknown>[] = []
         if (offhand) promises.push(bot.unequip("offhand").then((i) => { offhandSlot = i }))
-        mainhandSlot = bot.locateItem("pickaxe", bot.items, { locked: true })
+        mainhandSlot = bot.locateItem("pickaxe", bot.items)
         promises.push(bot.equip(mainhandSlot))
         await Promise.all(promises)
     }
