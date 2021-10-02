@@ -95,6 +95,7 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
             willDieToProjectiles: false,
             withinRange: bot.range
         })) {
+            if (entity.immune) continue // Entity won't take damage from cburst
             if (options.cburstWhenHPLessThan) {
                 if (entity.hp >= options.cburstWhenHPLessThan) continue
             } else if (entity.hp >= CBURST_WHEN_HP_LESS_THAN) continue // Lots of HP
@@ -128,6 +129,7 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
             willDieToProjectiles: false,
             withinRange: bot.range
         })) {
+            if (entity.immune) continue // Entity won't take damage from cburst
             await bot.cburst([[entity.id, Math.min(entity.hp * 2, bot.mp - 500)]])
         }
     }

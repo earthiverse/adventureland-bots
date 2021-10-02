@@ -55,6 +55,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
             willDieToProjectiles: false,
             withinRange: (bot.range * bot.G.skills.mentalburst.range_multiplier) + bot.G.skills.mentalburst.range_bonus
         })) {
+            if (entity.immune) continue // Entity won't take damage from mentalburst
             if (!bot.canKillInOneShot(entity, "mentalburst")) continue
             targets.push(entity)
         }
@@ -124,6 +125,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
             willDieToProjectiles: false,
             withinRange: bot.range
         })) {
+            if (entity.immune) continue // Entity won't take damage from quickpunch
             targets.add(entity)
         }
 
@@ -152,6 +154,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
             willDieToProjectiles: false,
             withinRange: bot.range
         })) {
+            if (entity.immune) continue // Entity won't take damage from quickstab
             targets.add(entity)
         }
 
