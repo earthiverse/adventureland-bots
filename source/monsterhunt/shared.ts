@@ -51,14 +51,18 @@ export async function getTarget(bot: Character, strategy: Strategy, information:
                 { hp: realEntity.hp, lastSeen: Date.now(), level: realEntity.level, map: realEntity.map, target: realEntity.target, x: realEntity.x, y: realEntity.y },
                 { upsert: true }).exec()
         } else {
-            if (bot.G.monsters[entity.type].cooperative !== true && entity.target && ![information.bot1.name, information.bot2.name, information.bot3.name].includes(entity.target)) continue // It's targeting someone else
             if (AL.Tools.distance(bot, entity) < AL.Constants.MAX_VISIBLE_RANGE / 2) {
-
                 // We're close, but we can't see the entity. It's probably dead
                 AL.Database.lastMongoUpdate.delete(entity.name)
                 await AL.EntityModel.deleteOne({ name: entity.name, serverIdentifier: bot.serverData.name, serverRegion: bot.serverData.region }).exec()
+                continue
             }
-            return entity.type
+            if (bot.G.monsters[entity.type].cooperative // Cooperative monsters always give credit
+                || !entity.target // It doesn't have a target yet
+                || [information.bot1.name, information.bot2.name, information.bot3.name].includes(entity.target)// It's attacking one of our players
+                || (bot.party && bot.partyData.list.includes(entity.target))) { // It's attacking one of our party members
+                return entity.type
+            }
         }
     }
 

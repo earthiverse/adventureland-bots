@@ -1072,6 +1072,8 @@ export function startScareLoop(bot: Character): void {
                 incomingDamage += entity.calculateDamageRange(bot)[1]
             }
 
+            // TODO: Check if any projectiles are coming from us to them. If they are, don't scare, wait for them to hit.
+
             if (bot.canUse("scare", { ignoreEquipped: true })
                 && (bot.hasItem("jacko") || bot.isEquipped("jacko"))
                 && (
