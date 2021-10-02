@@ -51,6 +51,19 @@ function prepareMage(bot: Mage) {
                 }
             }
         },
+        franky: {
+            attack: async () => { await attackTheseTypesMage(bot, ["nerfedmummy", "franky"], information.friends) },
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
+            move: async () => {
+                const nearest = bot.getNearestMonster("franky")
+                if (nearest && nearest.distance > 25) {
+                    // Move close to Franky because other characters might help blast away mummies
+                    await bot.smartMove(nearest.monster, { getWithin: 25 })
+                } else {
+                    await goToSpecialMonster(bot, "franky")
+                }
+            }
+        },
         goo: {
             attack: async () => { await attackTheseTypesMage(bot, ["goo"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.goo.hp + 1 }) },
             attackWhileIdle: true,
