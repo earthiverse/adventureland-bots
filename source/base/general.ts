@@ -419,7 +419,7 @@ export async function goToPriestIfHurt(bot: Character, priest: Character): Promi
 export async function goToSpecialMonster(bot: Character, type: MonsterName): Promise<unknown> {
     // Look for it nearby
     let nearby = bot.getNearestMonster(type)
-    if (nearby) return bot.smartMove(nearby.monster, { getWithin: bot.range - 10 })
+    if (nearby) return bot.smartMove(nearby.monster, { getWithin: bot.range - 10, useBlink: true })
 
     // Look for it in the server data
     if (bot.S && bot.S[type] && bot.S[type].live) {
@@ -429,7 +429,7 @@ export async function goToSpecialMonster(bot: Character, type: MonsterName): Pro
 
     // Look for it in our database
     const special = await AL.EntityModel.findOne({ serverIdentifier: bot.server.name, serverRegion: bot.server.region, type: type }).lean().exec()
-    if (special) return bot.smartMove(special, { getWithin: bot.range - 10 })
+    if (special) return bot.smartMove(special, { getWithin: bot.range - 10, useBlink: true })
 
     // Look for if there's a spawn for it
     for (const spawn of bot.locateMonster(type)) {
@@ -437,7 +437,7 @@ export async function goToSpecialMonster(bot: Character, type: MonsterName): Pro
         await bot.smartMove(spawn, { getWithin: bot.range - 10 })
 
         nearby = bot.getNearestMonster(type)
-        if (nearby) return bot.smartMove(nearby.monster, { getWithin: bot.range - 10 })
+        if (nearby) return bot.smartMove(nearby.monster, { getWithin: bot.range - 10, useBlink: true })
     }
 }
 

@@ -1435,7 +1435,7 @@ async function run() {
             }
 
             // Don't change servers too fast
-            if (lastServerChangeTime > Date.now() - 60_000) {
+            if (lastServerChangeTime > Date.now() - AL.Constants.RECONNECT_TIMEOUT_MS) {
                 console.log("DEBUG: Don't change servers too fast")
                 setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime + AL.Constants.RECONNECT_TIMEOUT_MS - Date.now()))
                 return

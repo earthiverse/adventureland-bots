@@ -250,7 +250,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
             }
 
             // mluck our friends
-            if (bot.canUse("mluck")) {
+            if (bot.canUse("mluck", { ignoreCooldown: true })) {
                 for (const friend of information.friends) {
                     if (!friend) continue
                     if (friend.id == bot.id) continue
@@ -286,23 +286,23 @@ export async function startMerchant(bot: Merchant, information: Information, str
             // Go mining if we can
             await goMining(bot)
 
-            // MLuck people if there is a server info target
-            for (const mN in bot.S) {
-                const type = mN as MonsterName
-                if (!bot.S[type].live) continue
-                if (!(bot.S[type] as ServerInfoDataLive).target) continue
+            if ((bot.id == "earthMer" || bot.id == "earthMer2") && bot.canUse("mluck", { ignoreCooldown: true })) {
+                // MLuck people if there is a server info target
+                for (const mN in bot.S) {
+                    const type = mN as MonsterName
+                    if (!bot.S[type].live) continue
+                    if (!(bot.S[type] as ServerInfoDataLive).target) continue
 
-                if (AL.Tools.distance(bot, (bot.S[type] as ServerInfoDataLive)) > 100) {
-                    await bot.closeMerchantStand()
-                    await bot.smartMove((bot.S[type] as ServerInfoDataLive), { getWithin: 100 })
+                    if (AL.Tools.distance(bot, (bot.S[type] as ServerInfoDataLive)) > 100) {
+                        await bot.closeMerchantStand()
+                        await bot.smartMove((bot.S[type] as ServerInfoDataLive), { getWithin: 100 })
+                    }
+
+                    bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                    return
                 }
 
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
-                return
-            }
-
-            // Find other characters that need mluck and go find them
-            if ((bot.id == "earthMer" || bot.id == "earthMer2") && bot.canUse("mluck")) {
+                // Find other characters that need mluck and go find them
                 const charactersToMluck = await AL.PlayerModel.find({ $or: [{ "s.mluck": undefined }, { "s.mluck.f": { "$ne": bot.id }, "s.mluck.strong": undefined }], lastSeen: { $gt: Date.now() - 120000 }, serverIdentifier: bot.server.name, serverRegion: bot.server.region }).lean().exec()
                 for (const stranger of charactersToMluck) {
                     // Move to them, and we'll automatically mluck them

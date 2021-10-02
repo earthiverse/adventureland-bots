@@ -1,12 +1,13 @@
-import AL, { Mage, Merchant } from "alclient"
-import { goToSpecialMonster, startTrackerLoop } from "../base/general.js"
+import AL, { GMap, Mage, Merchant } from "alclient"
+import { goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
 import { mainBeesNearTunnel, mainGoos, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
+import { getTargetServerFromMonsters } from "../base/serverhop.js"
 import { Information, Strategy } from "../definitions/bot.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMage, startMerchant } from "./shared.js"
 
-const TARGET_REGION = DEFAULT_REGION
-const TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
+let TARGET_REGION = DEFAULT_REGION
+let TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
 
 const information: Information = {
     friends: [undefined, undefined, undefined, undefined],
@@ -39,34 +40,69 @@ function prepareMage(bot: Mage) {
         bee: {
             attack: async () => { await attackTheseTypesMage(bot, ["bee"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.bee.hp + 1 }) },
             attackWhileIdle: true,
-            equipment: { mainhand: "wand", offhand: "wbook0" },
+            equipment: { mainhand: "wand", offhand: "wbook0", orb: "test_orb" },
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await bot.smartMove(offsetPosition(mainBeesNearTunnel, 25, 0))
+                    await bot.smartMove(offsetPosition(mainBeesNearTunnel, 25, 0), { useBlink: true })
                 } else if (bot.id == information.bot2.name) {
-                    await bot.smartMove(offsetPosition(mainBeesNearTunnel, 75, 0))
+                    await bot.smartMove(offsetPosition(mainBeesNearTunnel, 75, 0), { useBlink: true })
                 } else if (bot.id == information.bot3.name) {
-                    await bot.smartMove(offsetPosition(mainBeesNearTunnel, 125, 0))
+                    await bot.smartMove(offsetPosition(mainBeesNearTunnel, 125, 0), { useBlink: true })
                 }
             }
         },
         goo: {
             attack: async () => { await attackTheseTypesMage(bot, ["goo"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.goo.hp + 1 }) },
             attackWhileIdle: true,
-            equipment: { mainhand: "wand", offhand: "wbook0" },
+            equipment: { mainhand: "wand", offhand: "wbook0", orb: "test_orb" },
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await bot.smartMove(offsetPosition(mainGoos, 50, 0))
+                    await bot.smartMove(offsetPosition(mainGoos, 50, 0), { useBlink: true })
                 } else if (bot.id == information.bot2.name) {
-                    await bot.smartMove(offsetPosition(mainGoos, 150, 0))
+                    await bot.smartMove(offsetPosition(mainGoos, 150, 0), { useBlink: true })
                 } else if (bot.id == information.bot3.name) {
-                    await bot.smartMove(offsetPosition(mainGoos, 250, 0))
+                    await bot.smartMove(offsetPosition(mainGoos, 250, 0), { useBlink: true })
+                }
+            }
+        },
+        greenjr: {
+            attack: async () => { await attackTheseTypesMage(bot, ["greenjr", "snake", "osnake"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
+            move: async () => { await goToSpecialMonster(bot, "greenjr") },
+        },
+        jr: {
+            attack: async () => { await attackTheseTypesMage(bot, ["jr"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
+            move: async () => { await goToSpecialMonster(bot, "jr") },
+        },
+        mrgreen: {
+            attack: async () => { await attackTheseTypesMage(bot, ["mrgreen"], information.friends) },
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
+            move: async () => { await goToSpecialMonster(bot, "mrgreen") },
+        },
+        mrpumpkin: {
+            attack: async () => { await attackTheseTypesMage(bot, ["mrpumpkin"], information.friends) },
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
+            move: async () => { await goToSpecialMonster(bot, "mrpumpkin") },
+        },
+        rat: {
+            attack: async () => { await attackTheseTypesMage(bot, ["goo"], information.friends) }, attackWhileIdle: true,
+            equipment: { mainhand: "wand", offhand: "wbook0", orb: "test_orb" },
+            move: async () => {
+                if (bot.id == information.bot1.name) {
+                    await bot.smartMove({ map: "mansion", x: 240, y: -488 }, { useBlink: true })
+                } else if (bot.id == information.bot2.name) {
+                    await bot.smartMove({ map: "mansion", x: 223, y: -312 }, { useBlink: true })
+                } else if (bot.id == information.bot3.name) {
+                    await bot.smartMove({ map: "mansion", x: 223, y: -100 }, { useBlink: true })
                 }
             }
         },
         snowman: {
             attack: async () => { await attackTheseTypesMage(bot, ["snowman"], information.friends) },
-            equipment: { mainhand: "wand", offhand: "wbook0" },
+            equipment: { mainhand: "wand", offhand: "wbook0", orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "snowman") }
         }
     }
@@ -206,73 +242,75 @@ async function run() {
     }
     startMage3Loop().catch(() => { /* ignore errors */ })
 
-    // let lastServerChangeTime = Date.now()
-    // const serverLoop = async () => {
-    //     try {
-    //         // We haven't logged in yet
-    //         if (!information.bot1) {
-    //             setTimeout(async () => { serverLoop() }, 1000)
-    //             return
-    //         }
+    let lastServerChangeTime = Date.now()
+    const serverLoop = async () => {
+        try {
+            console.log("DEBUG: Checking target server...")
+            // We haven't logged in yet
+            if (!information.bot1.bot) {
+                console.log("DEBUG: We haven't logged in yet")
+                setTimeout(async () => { serverLoop() }, 1000)
+                return
+            }
 
-    // // Don't change servers too fast
-    // if (lastServerChangeTime > Date.now() - 60_000) {
-    //     console.log("DEBUG: Don't change servers too fast")
-    //     setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime + AL.Constants.RECONNECT_TIMEOUT_MS - Date.now()))
-    //     return
-    // }
+            // Don't change servers too fast
+            if (lastServerChangeTime > Date.now() - 60_000) {
+                console.log("DEBUG: Don't change servers too fast")
+                setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime + AL.Constants.RECONNECT_TIMEOUT_MS - Date.now()))
+                return
+            }
 
-    //         // Don't change servers if we're currently attacking something special.
-    //         if (AL.Constants.SPECIAL_MONSTERS.includes(information.bot1.target)
-    //             || AL.Constants.SPECIAL_MONSTERS.includes(information.bot2.target)
-    //             || AL.Constants.SPECIAL_MONSTERS.includes(information.bot3.target)) {
-    //             setTimeout(async () => { serverLoop() }, 1000)
-    //             return
-    //         }
+            // Don't change servers if we're currently attacking something special.
+            if (AL.Constants.SPECIAL_MONSTERS.includes(information.bot1.target)
+                || AL.Constants.SPECIAL_MONSTERS.includes(information.bot2.target)
+                || AL.Constants.SPECIAL_MONSTERS.includes(information.bot3.target)) {
+                console.log(`DEBUG: We are targeting something special (${information.bot1.target}, ${information.bot2.target}, ${information.bot3.target})`)
+                setTimeout(async () => { serverLoop() }, 1000)
+                return
+            }
 
-    //         // Don't change servers if we're running a crypt
-    //         const merchantMap: GMap = AL.Game.G.maps[information.merchant?.bot?.map]
-    //         if (merchantMap && merchantMap.instance) {
-    //             setTimeout(async () => { serverLoop() }, 1000)
-    //             return
-    //         }
+            // Don't change servers if we're running a crypt
+            const merchantMap: GMap = AL.Game.G.maps[information.merchant?.bot?.map]
+            if (merchantMap && merchantMap.instance) {
+                console.log("DEBUG: Merchant is in an instance")
+                setTimeout(async () => { serverLoop() }, 1000)
+                return
+            }
 
-    //         const currentRegion = information.bot1.bot.server.region
-    //         const currentIdentifier = information.bot1.bot.server.name
-    //         const G = information.bot1.bot.G
+            const currentRegion = information.bot1.bot.server.region
+            const currentIdentifier = information.bot1.bot.server.name
+            const G = information.bot1.bot.G
 
-    //         const targetServer = await getTargetServerFromMonsters(G, DEFAULT_REGION, DEFAULT_IDENTIFIER)
-    //         if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
-    //             // We're already on the correct server
-    //             setTimeout(async () => { serverLoop() }, 1000)
-    //             return
-    //         }
+            const targetServer = await getTargetServerFromMonsters(G, DEFAULT_REGION, DEFAULT_IDENTIFIER)
+            if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
+                // We're already on the correct server
+                console.log("DEBUG: We're already on the correct server")
+                setTimeout(async () => { serverLoop() }, 1000)
+                return
+            }
 
-    //         // Change servers to attack this entity
-    //         TARGET_REGION = targetServer[0]
-    //         TARGET_IDENTIFIER = targetServer[1]
-    //         console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${TARGET_REGION} ${TARGET_IDENTIFIER}`)
+            // Change servers to attack this entity
+            TARGET_REGION = targetServer[0]
+            TARGET_IDENTIFIER = targetServer[1]
+            console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${TARGET_REGION} ${TARGET_IDENTIFIER}`)
 
-    //         // Loot all of our remaining chests
-    //         await sleep(1000)
-    //         for (const [, chest] of information.bot1.bot.chests) await information.bot1.bot.openChest(chest.id)
-    //         await sleep(1000)
+            // Loot all of our remaining chests
+            await sleep(1000)
+            for (const [, chest] of information.bot1.bot.chests) await information.bot1.bot.openChest(chest.id)
+            await sleep(1000)
 
-    //         // Disconnect everyone
-    //         await Promise.allSettled([
-    //             information.bot1.bot.disconnect(),
-    //             information.bot2.bot.disconnect(),
-    //             information.bot3.bot.disconnect(),
-    //             information.merchant.bot.disconnect()
-    //         ])
-    //         await sleep(5000)
-    //         lastServerChangeTime = Date.now()
-    //     } catch (e) {
-    //         console.error(e)
-    //     }
-
-    //     setTimeout(async () => { serverLoop() }, 1000)
-    // }
-    // serverLoop()
+            // Disconnect everyone
+            information.bot1.bot.disconnect(),
+            information.bot2.bot?.disconnect(),
+            information.bot3.bot?.disconnect(),
+            information.merchant.bot?.disconnect()
+            await sleep(5000)
+            lastServerChangeTime = Date.now()
+        } catch (e) {
+            console.error(e)
+        }
+        setTimeout(async () => { serverLoop() }, 1000)
+    }
+    serverLoop()
 }
 run()
