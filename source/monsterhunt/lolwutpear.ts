@@ -2,7 +2,7 @@ import AL, { GMap, Mage, Merchant } from "alclient"
 import { goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
 import { mainBeesNearTunnel, mainGoos, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
-import { getTargetServerFromMonsters, getTargetServerFromPlayer } from "../base/serverhop.js"
+import { getTargetServerFromPlayer } from "../base/serverhop.js"
 import { Information, Strategy } from "../definitions/bot.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMage, startMerchant } from "./shared.js"
 
@@ -320,10 +320,12 @@ async function run() {
 
             // Loot all of our remaining chests
             await sleep(1000)
+            console.log("Looting remaining chests")
             for (const [, chest] of information.bot1.bot.chests) await information.bot1.bot.openChest(chest.id)
             await sleep(1000)
 
             // Disconnect everyone
+            console.log("Disconnecting characters")
             information.bot1.bot.disconnect(),
             information.bot2.bot?.disconnect(),
             information.bot3.bot?.disconnect(),

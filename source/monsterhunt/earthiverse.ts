@@ -1,4 +1,4 @@
-import AL, { Merchant, Priest, Ranger, Warrior, Constants, GMap } from "alclient"
+import AL, { Merchant, Priest, Ranger, Warrior, GMap } from "alclient"
 import { goToAggroMonster, goToNearestWalkableToMonster, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, sleep, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesMerchant } from "../base/merchant.js"
 import { attackTheseTypesPriest } from "../base/priest.js"

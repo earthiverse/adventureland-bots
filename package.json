@@ -8,7 +8,8 @@
     "alclient": "^0.8.4",
     "axios": "^0.21.1",
     "console-table-printer": "^2.10.0",
-    "fastpriorityqueue": "^0.7.1"
+    "fastpriorityqueue": "^0.7.1",
+    "queue-promise": "^2.2.1"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.29.3",

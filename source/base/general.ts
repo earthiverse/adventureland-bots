@@ -1,4 +1,5 @@
-import AL, { Character, Entity, GameResponseData, GMap, HitData, IEntity, IPosition, ItemData, ItemName, Merchant, MonsterName, Player, ServerInfoDataLive, TradeSlotType } from "alclient"
+import Queue from "queue-promise"
+import AL, { Character, ChestData, Entity, GameResponseData, GMap, HitData, IEntity, IPosition, ItemData, ItemName, Merchant, MonsterName, Player, ServerInfoDataLive, TradeSlotType } from "alclient"
 import { ItemLevelInfo } from "../definitions/bot.js"
 import { offsetPositionParty } from "./locations.js"
 
@@ -917,19 +918,36 @@ export function startHealLoop(bot: Character): void {
 }
 
 export function startLootLoop(bot: Character): void {
+    // Loot chests as they come in
+    const queue = new Queue({
+        concurrent: 4,
+        interval: AL.Constants.TIMEOUT,
+        start: true
+    })
+    bot.socket.on("drop", (chest: ChestData) => {
+        queue.enqueue(() => {
+            if (AL.Tools.distance(bot, chest) > 800) return
+            return bot.openChest(chest.id) })
+    })
+    bot.socket.on("disconnect", () => {
+        queue.stop()
+        queue.clear()
+    })
+
+    // Backup loot loop if we fail to open chests
     async function lootLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
             for (const [, chest] of bot.chests) {
                 if (AL.Tools.distance(bot, chest) > 800) continue
-                await bot.openChest(chest.id)
+                bot.openChest(chest.id)
             }
         } catch (e) {
             console.error(e)
         }
 
-        bot.timeouts.set("lootloop", setTimeout(async () => { lootLoop() }, LOOP_MS))
+        bot.timeouts.set("lootloop", setTimeout(async () => { lootLoop() }, 1000))
     }
     lootLoop()
 }

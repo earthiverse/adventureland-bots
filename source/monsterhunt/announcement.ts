@@ -2,7 +2,7 @@ import AL, { GMap, Mage, Merchant } from "alclient"
 import { goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
 import { mainBeesNearTunnel, mainGoos, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
-import { getTargetServerFromMonsters, getTargetServerFromPlayer } from "../base/serverhop.js"
+import { getTargetServerFromPlayer } from "../base/serverhop.js"
 import { Information, Strategy } from "../definitions/bot.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMage, startMerchant } from "./shared.js"
 
