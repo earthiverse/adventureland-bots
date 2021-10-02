@@ -1,6 +1,6 @@
-import AL, { BankPackName, Character, Constants, Entity, ItemData, ItemName, Merchant, MonsterName, Tools } from "alclient"
+import AL, { BankPackName, Character, Entity, ItemData, ItemName, Merchant, MonsterName } from "alclient"
 import { ITEMS_TO_CRAFT, ITEMS_TO_EXCHANGE, ITEMS_TO_HOLD, ITEMS_TO_SELL, LOOP_MS } from "./general.js"
-import { mainFishingSpot } from "./locations.js"
+import { mainFishingSpot, miningSpot } from "./locations.js"
 
 export const MERCHANT_GOLD_TO_HOLD = 100_000_000
 export const MERCHANT_ITEMS_TO_HOLD: Set<ItemName> = new Set([
@@ -304,59 +304,69 @@ export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOL
 }
 
 export async function goFishing(bot: Merchant): Promise<void> {
-    if (bot.getCooldown("fishing") > 0) return // Fishing is on cooldown
+    if (!bot.canUse("fishing", { ignoreCooldown: true, ignoreEquipped: true })) return
     if (!bot.hasItem("rod") && !bot.isEquipped("rod")) return // We don't have a rod
 
-    // TODO: Improve item equipping and unequipping
-
-    let wasEquippedMainhand = bot.slots.mainhand
-    let wasEquippedOffhand = bot.slots.offhand
-    if (wasEquippedOffhand) await bot.unequip("offhand") // rod is a 2-handed weapon, so we need to unequip our offhand if we have something equipped
-    else if (bot.hasItem("wbook1")) wasEquippedOffhand = { name: "wbook1" } // We want to equip a wbook1 by default if we have one after we go fishing
-    if (wasEquippedMainhand) {
-        if (wasEquippedMainhand.name !== "rod") {
-            // We didn't have a rod equipped before, let's equip one now
-            await bot.unequip("mainhand")
-            await bot.equip(bot.locateItem("rod"))
-        }
-    } else {
-        // We didn't have anything equipped before
-        if (bot.hasItem("dartgun")) wasEquippedMainhand = { name: "dartgun" } // We want to equip a dartgun by default if we have one after we go fishing
-        await bot.equip(bot.locateItem("rod")) // Equip the rod
-    }
     bot.closeMerchantStand()
     await bot.smartMove(mainFishingSpot) // Move to fishing sppot
+
+    // Equip fishing rod if we don't have it already equipped
+    const mainhand = bot.slots.mainhand?.name
+    let mainhandSlot: number
+    const offhand = bot.slots.offhand?.name
+    let offhandSlot: number
+    if (!bot.isEquipped("rod")) {
+        const promises: Promise<unknown>[] = []
+        if (offhand) promises.push(bot.unequip("offhand").then((i) => { offhandSlot = i }))
+        mainhandSlot = bot.locateItem("rod", bot.items, { locked: true })
+        promises.push(bot.equip(mainhandSlot))
+        await Promise.all(promises)
+    }
+
     await bot.fish()
-    if (wasEquippedMainhand) await bot.equip(bot.locateItem(wasEquippedMainhand.name))
-    if (wasEquippedOffhand) await bot.equip(bot.locateItem(wasEquippedOffhand.name))
+
+    // Re-equip if we changed weapons
+    const promises: Promise<unknown>[] = []
+    if (bot.slots.mainhand?.name !== mainhand) {
+        if (mainhandSlot !== undefined) promises.push(bot.equip(mainhandSlot, "mainhand"))
+    }
+    if (bot.slots.offhand?.name !== offhand) {
+        if (offhandSlot !== undefined) promises.push(bot.equip(offhandSlot, "offhand"))
+    }
+    await Promise.all(promises)
 }
 
 export async function goMining(bot: Merchant): Promise<void> {
-    if (bot.getCooldown("mining") > 0) return // Mining is on cooldown
+    if (!bot.canUse("mining", { ignoreCooldown: true, ignoreEquipped: true })) return
     if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe")) return // We don't have a pickaxe
 
-    // TODO: Improve item equipping and unequipping
-
-    let wasEquippedMainhand = bot.slots.mainhand
-    let wasEquippedOffhand = bot.slots.offhand
-    if (wasEquippedOffhand) await bot.unequip("offhand") // pickaxe is a 2-handed weapon, so we need to unequip our offhand if we have something equipped
-    else if (bot.hasItem("wbook1")) wasEquippedOffhand = { name: "wbook1" } // We want to equip a wbook1 by default if we have one after we go mining
-    if (wasEquippedMainhand) {
-        if (wasEquippedMainhand.name !== "pickaxe") {
-            // We didn't have a pickaxe equipped before, let's equip one now
-            await bot.unequip("mainhand")
-            await bot.equip(bot.locateItem("pickaxe"))
-        }
-    } else {
-        // We didn't have anything equipped before
-        if (bot.hasItem("dartgun")) wasEquippedMainhand = { name: "dartgun" } // We want to equip a dartgun by default if we have one after we go mining
-        await bot.equip(bot.locateItem("pickaxe")) // Equip the pickaxe
-    }
     bot.closeMerchantStand()
-    await bot.smartMove({ map: "tunnel", x: -280, y: -10 }) // Move to mining sppot
+    await bot.smartMove(miningSpot) // Move to mining sppot
+
+    // Equip pickaxe if we don't have it already equipped
+    const mainhand = bot.slots.mainhand?.name
+    let mainhandSlot: number
+    const offhand = bot.slots.offhand?.name
+    let offhandSlot: number
+    if (!bot.isEquipped("pickaxe")) {
+        const promises: Promise<unknown>[] = []
+        if (offhand) promises.push(bot.unequip("offhand").then((i) => { offhandSlot = i }))
+        mainhandSlot = bot.locateItem("pickaxe", bot.items, { locked: true })
+        promises.push(bot.equip(mainhandSlot))
+        await Promise.all(promises)
+    }
+
     await bot.mine()
-    if (wasEquippedMainhand) await bot.equip(bot.locateItem(wasEquippedMainhand.name))
-    if (wasEquippedOffhand) await bot.equip(bot.locateItem(wasEquippedOffhand.name))
+
+    // Re-equip if we changed weapons
+    const promises: Promise<unknown>[] = []
+    if (bot.slots.mainhand?.name !== mainhand) {
+        if (mainhandSlot !== undefined) promises.push(bot.equip(mainhandSlot, "mainhand"))
+    }
+    if (bot.slots.offhand?.name !== offhand) {
+        if (offhandSlot !== undefined) promises.push(bot.equip(offhandSlot, "offhand"))
+    }
+    await Promise.all(promises)
 }
 
 export function startMluckLoop(bot: Merchant): void {

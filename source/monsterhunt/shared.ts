@@ -172,6 +172,20 @@ export async function startMerchant(bot: Merchant, information: Information, str
         idleTargets.push(t as MonsterName)
     }
 
+    // Equip good weapons
+    try {
+        await bot.unequip("mainhand")
+        await bot.unequip("offhand")
+        const dartGun = bot.locateItem("dartgun", bot.items, { locked: true })
+        if (dartGun !== undefined) await bot.equip(dartGun)
+        const wbook0 = bot.locateItem("wbook0", bot.items, { locked: true })
+        const wbook1 = bot.locateItem("wbook1", bot.items, { locked: true })
+        if (wbook0 !== undefined) await bot.equip(wbook0)
+        else if (wbook1 !== undefined) await bot.equip(wbook1)
+    } catch (e) {
+        console.error(e)
+    }
+
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return // Stop if disconnected

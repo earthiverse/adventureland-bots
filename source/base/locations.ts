@@ -23,6 +23,9 @@ export const cryptEnd: IPosition = { map: "crypt", x: 2689.64, y: 505.06 }
 export const halloweenSafeSnakes: IPosition = { map: "halloween", x: 346.5, y: -747 }
 export const halloweenMiniMushes: IPosition = { map: "halloween", x: 16, y: 630.5 }
 
+// Tunnel
+export const miningSpot: IPosition = { map: "tunnel", x: -280, y: -10 }
+
 // Winterland
 export const winterlandArcticBees: IPosition = { map: "winterland", x: 1082, y: -873 }
 
