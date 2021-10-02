@@ -88,8 +88,6 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
  */
 export async function getTargetServerFromPlayer(defaultRegion: ServerRegion, defaultIdentifier: ServerIdentifier, playerID: string, lastSeen = 120_000): Promise<[ServerRegion, ServerIdentifier]> {
     const player = await AL.PlayerModel.findOne({ lastSeen: { $gt: Date.now() - lastSeen }, name: playerID }).lean().exec()
-    if (player) {
-        return [player.serverRegion, player.serverIdentifier]
-    }
+    if (player) return [player.serverRegion, player.serverIdentifier]
     return [defaultRegion, defaultIdentifier]
 }

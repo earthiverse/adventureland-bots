@@ -64,6 +64,12 @@ function prepareMage(bot: Mage) {
                 }
             }
         },
+        goldenbat: {
+            attack: async () => { await attackTheseTypesMage(bot, ["goldenbat"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
+            move: async () => { await goToSpecialMonster(bot, "goldenbat") },
+        },
         goo: {
             attack: async () => { await attackTheseTypesMage(bot, ["goo"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.goo.hp + 1 }) },
             attackWhileIdle: true,
@@ -99,6 +105,12 @@ function prepareMage(bot: Mage) {
             attack: async () => { await attackTheseTypesMage(bot, ["mrpumpkin"], information.friends) },
             equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "mrpumpkin") },
+        },
+        mvampire: {
+            attack: async () => { await attackTheseTypesMage(bot, ["mvampire", "bat"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
+            move: async () => { await goToSpecialMonster(bot, "mvampire") },
         },
         rat: {
             attack: async () => { await attackTheseTypesMage(bot, ["goo"], information.friends) }, attackWhileIdle: true,
@@ -267,7 +279,7 @@ async function run() {
             }
 
             // Don't change servers too fast
-            if (lastServerChangeTime > Date.now() - 60_000) {
+            if (lastServerChangeTime > Date.now() - AL.Constants.RECONNECT_TIMEOUT_MS) {
                 console.log("DEBUG: Don't change servers too fast")
                 setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime + AL.Constants.RECONNECT_TIMEOUT_MS - Date.now()))
                 return
