@@ -1,6 +1,6 @@
 import AL, { GMap, Mage, Merchant } from "alclient"
 import { goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
-import { mainBeesNearTunnel, mainGoos, offsetPosition } from "../base/locations.js"
+import { mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrocs, mainGoos, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { getTargetServerFromPlayer } from "../base/serverhop.js"
 import { Information, Strategy } from "../definitions/bot.js"
@@ -43,11 +43,11 @@ function prepareMage(bot: Mage) {
             equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await bot.smartMove({ map: "main", x: 451, y: 1771 }, { useBlink: true })
+                    await bot.smartMove(offsetPosition(mainArmadillos, -75, 75), { useBlink: true })
                 } else if (bot.id == information.bot2.name) {
-                    await bot.smartMove({ map: "main", x: 526, y: 1771 }, { useBlink: true })
+                    await bot.smartMove(offsetPosition(mainArmadillos, 0, 75), { useBlink: true })
                 } else if (bot.id == information.bot3.name) {
-                    await bot.smartMove({ map: "main", x: 601, y: 1771 }, { useBlink: true })
+                    await bot.smartMove(offsetPosition(mainArmadillos, 75, 75), { useBlink: true })
                 }
             },
         },
@@ -64,6 +64,34 @@ function prepareMage(bot: Mage) {
                     await bot.smartMove(offsetPosition(mainBeesNearTunnel, 125, 0), { useBlink: true })
                 }
             }
+        },
+        crab: {
+            attack: async () => { await attackTheseTypesMage(bot, ["crab", "phoenix"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "wand", offhand: "wbook0", orb: "test_orb" },
+            move: async () => {
+                if (bot.id == information.bot1.name) {
+                    await bot.smartMove(offsetPosition(mainCrabs, -75, 75), { useBlink: true })
+                } else if (bot.id == information.bot2.name) {
+                    await bot.smartMove(offsetPosition(mainCrabs, 0, 75), { useBlink: true })
+                } else if (bot.id == information.bot3.name) {
+                    await bot.smartMove(offsetPosition(mainCrabs, 75, 75), { useBlink: true })
+                }
+            },
+        },
+        croc: {
+            attack: async () => { await attackTheseTypesMage(bot, ["croc", "phoenix"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
+            move: async () => {
+                if (bot.id == information.bot1.name) {
+                    await bot.smartMove(offsetPosition(mainCrocs, 0, 25), { useBlink: true })
+                } else if (bot.id == information.bot2.name) {
+                    await bot.smartMove(offsetPosition(mainCrocs, 0, 75), { useBlink: true })
+                } else if (bot.id == information.bot3.name) {
+                    await bot.smartMove(offsetPosition(mainCrocs, 0, 125), { useBlink: true })
+                }
+            },
         },
         franky: {
             attack: async () => { await attackTheseTypesMage(bot, ["nerfedmummy", "franky"], information.friends) },

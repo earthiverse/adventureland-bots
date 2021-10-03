@@ -1,10 +1,12 @@
-import AL, { Character, IPosition } from "alclient"
+import { Character, IPosition } from "alclient"
 
 // Main
+export const mainArmadillos: IPosition = { map: "main", x: 526, y: 1846 }
 export const mainBeesNearTunnel: IPosition = { map: "main", x: 152, y: 1487 }
 export const mainBeesNearGoos: IPosition = { map: "main", x: 546, y: 1059 }
 export const mainBeesNearRats: IPosition = { map: "main", x: 625, y: 725 }
 export const mainCrabs: IPosition = { map: "main", x: -1202.5, y: -66 }
+export const mainCrocs: IPosition = { map: "main", x: 801, y: 1710 }
 export const mainFishingSpot: IPosition = { map: "main", x: -1198, y: -288 }
 export const mainGoos: IPosition = { map: "main", x: -64, y: 787 }
 export const mainPoisios: IPosition = { map: "main", x: -121, y: 1360 }
