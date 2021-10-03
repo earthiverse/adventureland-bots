@@ -48,7 +48,10 @@ export const ITEMS_TO_EXCHANGE: Set<ItemName> = new Set([
 ])
 
 export const ITEMS_TO_CRAFT: Set<ItemName> = new Set([
-    "firestars", "resistancering", "wingedboots"
+    // Good items
+    "firestars", "resistancering", "wingedboots", "frostbow",
+    // Wanderer's items
+    "wattire", "wshoes", "wbreeches", "wcap", "wgloves"
 ])
 
 export const ITEMS_TO_BUY: Set<ItemName> = new Set([

@@ -28,7 +28,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
         let couldCleaveNearby = false
         let avoidCleave = false
         for (const entity of bot.getEntities({
-            withinRange: bot.G.skills.cleave.range,
+            withinRange: bot.G.skills.cleave.range + bot.xrange,
         })) {
             if (options.targetingPlayer && !entity.target) {
                 // We don't want to aggro things
