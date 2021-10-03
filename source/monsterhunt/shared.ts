@@ -160,7 +160,7 @@ export async function startMage(bot: Mage, information: Information, strategy: S
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
+        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("attack"), bot.getCooldown("cburst")))))
     }
     attackLoop()
 }
@@ -178,8 +178,8 @@ export async function startMerchant(bot: Merchant, information: Information, str
 
     // Equip good weapons
     try {
-        await bot.unequip("mainhand")
-        await bot.unequip("offhand")
+        if (bot.slots.mainhand) await bot.unequip("mainhand")
+        if (bot.slots.offhand) await bot.unequip("offhand")
         const dartGun = bot.locateItem("dartgun", bot.items, { locked: true })
         if (dartGun !== undefined) await bot.equip(dartGun)
         const wbook0 = bot.locateItem("wbook0", bot.items, { locked: true })
@@ -609,7 +609,7 @@ export async function startWarrior(bot: Warrior, information: Information, strat
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
+        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("attack"), bot.getCooldown("stomp"), bot.getCooldown("cleave")))))
     }
     attackLoop()
 }

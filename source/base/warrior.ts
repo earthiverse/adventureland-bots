@@ -230,6 +230,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
             if (!canKill && !options.disableStomp
             && bot.mp > bot.G.skills.stomp.mp + bot.mp_cost
             && bot.canUse("stomp", { ignoreEquipped: true })
+            && (!entity.s.stunned || entity.s.stunned.ms < 250)
             && (bot.isEquipped("basher") || bot.isEquipped("wbasher") || bot.hasItem("basher") || bot.hasItem("wbasher"))) {
 
                 // Equip to bash if we don't have it already equipped
