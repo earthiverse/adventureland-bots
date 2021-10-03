@@ -425,7 +425,7 @@ export async function goToSpecialMonster(bot: Character, type: MonsterName): Pro
     // Look for it in the server data
     if (bot.S && bot.S[type] && bot.S[type].live) {
         const destination = bot.S[type] as ServerInfoDataLive
-        if (AL.Tools.distance(bot, destination) > bot.range) return bot.smartMove(destination, { getWithin: bot.range - 10 })
+        if (AL.Tools.distance(bot, destination) > bot.range) return bot.smartMove(destination, { getWithin: bot.range - 10, useBlink: true })
     }
 
     // Look for it in our database
