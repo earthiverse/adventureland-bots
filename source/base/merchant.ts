@@ -255,21 +255,22 @@ export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOL
     }
 
     // Withdraw exchangable items
-    for (let i = 0; i < bankItems.length && freeSpaces > 2; i++) {
-        const item = bankItems[i]
-        if (!item) continue // No item
+    // NOTE: Disabled for Halloween
+    // for (let i = 0; i < bankItems.length && freeSpaces > 2; i++) {
+    //     const item = bankItems[i]
+    //     if (!item) continue // No item
 
-        if (!itemsToExchange.has(item.name)) continue // Not exchangable
+    //     if (!itemsToExchange.has(item.name)) continue // Not exchangable
 
-        const gInfo = bot.G.items[item.name]
-        if (item.q < gInfo.e) continue // Not enough to exchange
+    //     const gInfo = bot.G.items[item.name]
+    //     if (item.q < gInfo.e) continue // Not enough to exchange
 
-        // Withdraw the item
-        const pack = `items${Math.floor(i / 42)}` as Exclude<BankPackName, "gold">
-        const slot = i % 42
-        await bot.withdrawItem(pack, slot)
-        freeSpaces--
-    }
+    //     // Withdraw the item
+    //     const pack = `items${Math.floor(i / 42)}` as Exclude<BankPackName, "gold">
+    //     const slot = i % 42
+    //     await bot.withdrawItem(pack, slot)
+    //     freeSpaces--
+    // }
 
     // Withdraw level 2 golden earrings
     for (let i = 0; i < bankItems.length && freeSpaces > 2; i++) {

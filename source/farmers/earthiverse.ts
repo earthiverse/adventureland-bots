@@ -299,7 +299,20 @@ async function startMerchant(bot: Merchant) {
 
             // Find other characters that need mluck and go find them
             if (bot.canUse("mluck")) {
-                const charactersToMluck = await AL.PlayerModel.find({ $or: [{ "s.mluck": undefined }, { "s.mluck.f": { "$ne": bot.id }, "s.mluck.strong": undefined }], lastSeen: { $gt: Date.now() - 120000 }, serverIdentifier: bot.server.name, serverRegion: bot.server.region }).lean().exec()
+                const charactersToMluck = await AL.PlayerModel.find({
+                    $or: [
+                        { "s.mluck": undefined },
+                        { "s.mluck.f": { "$ne": bot.id }, "s.mluck.strong": undefined }],
+                    lastSeen: { $gt: Date.now() - 120000 },
+                    serverIdentifier: bot.server.name,
+                    serverRegion: bot.server.region },
+                {
+                    _id: 0,
+                    map: 1,
+                    name: 1,
+                    x: 1,
+                    y: 1
+                }).lean().exec()
                 for (const stranger of charactersToMluck) {
                     // Move to them, and we'll automatically mluck them
                     if (AL.Tools.distance(bot, stranger) > bot.G.skills.mluck.range) {

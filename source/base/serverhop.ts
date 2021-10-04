@@ -48,7 +48,8 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
             }
         },
         { $addFields: { __order: { $indexOfArray: [coop, "$type"] } } },
-        { $sort: { "__order": 1, "hp": 1 } }]).exec()
+        { $sort: { "__order": 1, "hp": 1 } },
+        { $project: { "_id": 0, "serverIdentifier": 1, "serverRegion": 1 } }]).exec()
     for (const entity of coopEntities) return [entity.serverRegion, entity.serverIdentifier]
 
     // Priority #2: Special monsters that we can defeat by ourselves
@@ -68,7 +69,8 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
             }
         },
         { $addFields: { __order: { $indexOfArray: [solo, "$type"] } } },
-        { $sort: { "__order": 1, "hp": 1 } }]).exec()
+        { $sort: { "__order": 1, "hp": 1 } },
+        { $project: { "_id": 0, "serverIdentifier": 1, "serverRegion": 1, "target": 1, "type": 1 } }]).exec()
     for (const entity of soloEntities) {
         if (!G.monsters[entity.type].cooperative && entity.target) continue // The target isn't cooperative, and someone is already attacking it
         return [entity.serverRegion, entity.serverIdentifier]

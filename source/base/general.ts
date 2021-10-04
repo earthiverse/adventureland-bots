@@ -1,5 +1,5 @@
 import Queue from "queue-promise"
-import AL, { Character, ChestData, Entity, GameResponseData, GMap, HitData, IEntity, IPosition, ItemData, ItemName, Merchant, MonsterName, Player, ServerInfoDataLive, TradeSlotType } from "alclient"
+import AL, { Character, ChestData, Entity, GameResponseData, GMap, HitData, IEntity, IPosition, ItemData, ItemName, Merchant, MonsterName, Player, ServerInfoDataLive, Tools, TradeSlotType } from "alclient"
 import { ItemLevelInfo } from "../definitions/bot.js"
 import { offsetPositionParty } from "./locations.js"
 
@@ -175,14 +175,21 @@ export async function getPriority1Entities(bot: Character): Promise<Entity[] | I
     return await AL.EntityModel.aggregate([
         {
             $match: {
-                type: { $in: coop },
-                target: { $ne: undefined }, // We only want to do these if others are doing them, too.
+                serverIdentifier: bot.server.name,
                 serverRegion: bot.server.region,
-                serverIdentifier: bot.server.name
+                target: { $ne: undefined }, // We only want to do these if others are doing them, too.
+                type: { $in: coop }
             }
         },
         { $addFields: { __order: { $indexOfArray: [coop, "$type"] } } },
-        { $sort: { "__order": 1 } }]).exec()
+        { $sort: { "__order": 1 } },
+        {
+            __order: 0,
+            _id: 0,
+            lastSeen: 0,
+            serverIdentifier: 0,
+            serverRegion: 0
+        }]).exec()
 }
 
 /**
@@ -211,21 +218,24 @@ export async function getPriority2Entities(bot: Character): Promise<Entity[] | I
     return await AL.EntityModel.aggregate([
         {
             $match: {
-                type: { $in: solo },
-                serverRegion: bot.server.region,
-                serverIdentifier: bot.server.name
-            }
-        },
-        {
-            $match: {
                 $or: [
                     { target: undefined },
                     { target: { $in: partyList } }
-                ]
+                ],
+                serverIdentifier: bot.server.name,
+                serverRegion: bot.server.region,
+                type: { $in: solo }
             }
         },
         { $addFields: { __order: { $indexOfArray: [solo, "$type"] } } },
-        { $sort: { "__order": 1 } }]).exec()
+        { $sort: { "__order": 1 } },
+        { $project: {
+            __order: 0,
+            _id: 0,
+            lastSeen: 0,
+            serverIdentifier: 0,
+            serverRegion: 0
+        } }]).exec()
 }
 
 export async function getMonsterHuntTargets(bot: Character, friends: Character[]): Promise<(MonsterName)[]> {
@@ -294,6 +304,7 @@ export async function getMonsterHuntTargets(bot: Character, friends: Character[]
                 }
             }, {
                 $project: {
+                    _id: 0,
                     monster: 1,
                     timeLeft: 1
                 }
@@ -559,6 +570,25 @@ export function moveInCircle(bot: Character, center: IPosition, radius = 125, an
     }
 }
 
+export async function requestMagiportService(bot: Character, targetLocation: IPosition, within = 300): Promise<IPosition> {
+    // If we're already close, don't request anything
+    if (Tools.distance(bot, targetLocation) < within) return bot
+
+    // Get player locations
+    for (const player of await AL.PlayerModel.find({
+        name: { $in: ["Clarity"] },
+        serverIdentifier: bot.server.name,
+        serverRegion: bot.server.region }, {
+        _id: 0, map: 1, name: 1, x: 1, y: 1
+    }).lean().exec()) {
+        if (Tools.distance(player, targetLocation) <= within) {
+            if (player.name == "Clarity") {
+                await bot.sendCM(["Clarity"], "magiport_please_dad")
+            }
+        }
+    }
+}
+
 export function sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
@@ -791,6 +821,7 @@ export function startCraftLoop(bot: Character, itemsToCraft = ITEMS_TO_CRAFT): v
             if (!bot.socket || bot.socket.disconnected) return
 
             for (const iName of itemsToCraft) {
+                if (bot.esize < 5) break // Not a lot of empty space
                 if (bot.canCraft(iName)) {
                     await bot.craft(iName)
                 }

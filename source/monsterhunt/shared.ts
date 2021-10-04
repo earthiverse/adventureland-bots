@@ -28,7 +28,7 @@ export async function getTarget(bot: Character, strategy: Strategy, information:
 
                 // We're close, but we can't see the entity. It's probably dead
                 AL.Database.lastMongoUpdate.delete(entity.name)
-                await AL.EntityModel.deleteOne({ name: entity.name, serverIdentifier: bot.serverData.name, serverRegion: bot.serverData.region }).exec()
+                await AL.EntityModel.deleteOne({ name: entity.name, serverIdentifier: bot.serverData.name, serverRegion: bot.serverData.region }).lean().exec()
             } else {
                 return entity.type
             }
@@ -49,12 +49,12 @@ export async function getTarget(bot: Character, strategy: Strategy, information:
             AL.Database.lastMongoUpdate.set(realEntity.id, new Date())
             await AL.EntityModel.updateOne({ name: realEntity.id, serverIdentifier: bot.serverData.name, serverRegion: bot.serverData.region, type: realEntity.type },
                 { hp: realEntity.hp, lastSeen: Date.now(), level: realEntity.level, map: realEntity.map, target: realEntity.target, x: realEntity.x, y: realEntity.y },
-                { upsert: true }).exec()
+                { upsert: true }).lean().exec()
         } else {
             if (AL.Tools.distance(bot, entity) < AL.Constants.MAX_VISIBLE_RANGE / 2) {
                 // We're close, but we can't see the entity. It's probably dead
                 AL.Database.lastMongoUpdate.delete(entity.name)
-                await AL.EntityModel.deleteOne({ name: entity.name, serverIdentifier: bot.serverData.name, serverRegion: bot.serverData.region }).exec()
+                await AL.EntityModel.deleteOne({ name: entity.name, serverIdentifier: bot.serverData.name, serverRegion: bot.serverData.region }).lean().exec()
                 continue
             }
             if (bot.G.monsters[entity.type].cooperative // Cooperative monsters always give credit
@@ -321,7 +321,19 @@ export async function startMerchant(bot: Merchant, information: Information, str
                 }
 
                 // Find other characters that need mluck and go find them
-                const charactersToMluck = await AL.PlayerModel.find({ $or: [{ "s.mluck": undefined }, { "s.mluck.f": { "$ne": bot.id }, "s.mluck.strong": undefined }], lastSeen: { $gt: Date.now() - 120000 }, serverIdentifier: bot.server.name, serverRegion: bot.server.region }).lean().exec()
+                const charactersToMluck = await AL.PlayerModel.find({
+                    $or: [{ "s.mluck": undefined },
+                        { "s.mluck.f": { "$ne": bot.id }, "s.mluck.strong": undefined }],
+                    lastSeen: { $gt: Date.now() - 120000 },
+                    serverIdentifier: bot.server.name,
+                    serverRegion: bot.server.region },
+                {
+                    _id: 0,
+                    map: 1,
+                    name: 1,
+                    x: 1,
+                    y: 1
+                }).lean().exec()
                 for (const stranger of charactersToMluck) {
                     // Move to them, and we'll automatically mluck them
                     if (AL.Tools.distance(bot, stranger) > bot.G.skills.mluck.range) {
@@ -628,7 +640,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
     startCompoundLoop(bot)
     startCraftLoop(bot)
     if (bot.ctype !== "merchant") startElixirLoop(bot, "elixirluck")
-    // NOTE: Temporarily disable this for halloween preparations
+    // NOTE: Disabled for Halloween
     // startExchangeLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)
