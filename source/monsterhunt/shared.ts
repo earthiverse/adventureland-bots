@@ -300,9 +300,17 @@ export async function startMerchant(bot: Merchant, information: Information, str
 
             // Go fishing if we can
             await goFishing(bot)
+            if (!bot.isOnCooldown("fishing")) {
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                return
+            }
 
             // Go mining if we can
             await goMining(bot)
+            if (!bot.isOnCooldown("mining")) {
+                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                return
+            }
 
             if ((bot.id == "earthMer" || bot.id == "earthMer2") && bot.canUse("mluck", { ignoreCooldown: true })) {
                 // MLuck people if there is a server info target
