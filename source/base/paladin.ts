@@ -21,8 +21,8 @@ export async function attackTheseTypesPaladin(bot: Paladin, types: MonsterName[]
         else if (!a.target && b.target) return false
 
         // Could die -> lower priority
-        const a_couldDie = a.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)
-        const b_couldDie = b.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)
+        const a_couldDie = a.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)
+        const b_couldDie = b.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)
         if (!a_couldDie && b_couldDie) return true
         else if (a_couldDie && !b_couldDie) return false
 

@@ -55,7 +55,7 @@ async function startRanger(bot: Ranger) {
                 if (!types.includes(entity.type)) continue // Not a good type
                 if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
                 if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
-                if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
+                if (entity.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
 
                 targets.push(entity)
             }
@@ -144,7 +144,7 @@ async function startMage(bot: Mage) {
                 if (!types.includes(entity.type)) continue // Not a good type
                 if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
                 if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
-                if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
+                if (entity.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
 
                 if (bot.canUse("attack")) {
                     if (bot.canKillInOneShot(entity)) {
@@ -180,7 +180,7 @@ async function startMage(bot: Mage) {
                 if (!types.includes(entity.type)) continue // Not a good type
                 if (entity.target && !entity.isAttackingPartyMember(bot)) continue // Won't get credit for kill
                 if (AL.Tools.distance(bot, entity) > bot.range) continue // Too far
-                if (entity.couldDieToProjectiles(bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
+                if (entity.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)) continue // Death is imminent
                 if (entity.hp > 200) continue // We only want to use cburst to kill low hp monsters
 
                 targets.push([entity.id, entity.hp / bot.G.skills.cburst.ratio])
