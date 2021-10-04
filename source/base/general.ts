@@ -183,13 +183,13 @@ export async function getPriority1Entities(bot: Character): Promise<Entity[] | I
         },
         { $addFields: { __order: { $indexOfArray: [coop, "$type"] } } },
         { $sort: { "__order": 1 } },
-        {
+        { $project: {
             __order: 0,
             _id: 0,
             lastSeen: 0,
             serverIdentifier: 0,
             serverRegion: 0
-        }]).exec()
+        } }]).exec()
 }
 
 /**
