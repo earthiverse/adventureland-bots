@@ -71,7 +71,7 @@ async function run() {
                 skeletorChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
                 if (skeletorChecker.rip) await skeletorChecker.respawn()
-                await Promise.all([skeletorChecker.smartMove({ map: "arena", x: 379.5, y: -671.5 }).catch(() => { /* Suppress Errors */ }), skeletorChecker.regenHP()])
+                await Promise.all([skeletorChecker.smartMove({ map: "arena", x: 379.5, y: -671.5 }).catch(e => console.error(e)), skeletorChecker.regenHP()])
                 skeletorChecker.disconnect()
                 skeletorChecker = undefined
             } catch (e) {
@@ -79,7 +79,7 @@ async function run() {
                 if (skeletorChecker) skeletorChecker.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { start_skeletorCheck() }, msToNextMinute + 10000)
+            setTimeout(async () => { start_skeletorCheck() }, msToNextMinute + 5000)
         }
         const stop_skeletorCheck = async () => {
             try {
@@ -89,11 +89,11 @@ async function run() {
                 console.error(e)
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { stop_skeletorCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+            setTimeout(async () => { stop_skeletorCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
         }
         let msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { start_skeletorCheck() }, msToNextMinute + 10000)
-        setTimeout(async () => { stop_skeletorCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        setTimeout(async () => { start_skeletorCheck() }, msToNextMinute + 5000)
+        setTimeout(async () => { stop_skeletorCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
 
         // Look for `mvampire` in place #1
         let mvampireChecker: Character
@@ -106,7 +106,7 @@ async function run() {
                 mvampireChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
                 if (mvampireChecker.rip) await mvampireChecker.respawn()
-                await Promise.all([mvampireChecker.smartMove({ map: "cave", x: -190.5, y: -1176.5 }).catch(() => { /* Suppress Errors */ }), mvampireChecker.regenHP()])
+                await Promise.all([mvampireChecker.smartMove({ map: "cave", x: -190.5, y: -1176.5 }).catch(e => console.error(e)), mvampireChecker.regenHP()])
                 mvampireChecker.disconnect()
                 mvampireChecker = undefined
             } catch (e) {
@@ -114,7 +114,7 @@ async function run() {
                 if (mvampireChecker) mvampireChecker.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { start_mvampireCheck() }, msToNextMinute + 10000)
+            setTimeout(async () => { start_mvampireCheck() }, msToNextMinute + 5000)
         }
         const stop_mvampireCheck = async () => {
             try {
@@ -124,11 +124,11 @@ async function run() {
                 console.error(e)
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { stop_mvampireCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+            setTimeout(async () => { stop_mvampireCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
         }
         msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { start_mvampireCheck() }, msToNextMinute + 10000)
-        setTimeout(async () => { stop_mvampireCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        setTimeout(async () => { start_mvampireCheck() }, msToNextMinute + 5000)
+        setTimeout(async () => { stop_mvampireCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
 
         // Look for `mvampire` in place #2
         let mvampireChecker2: Character
@@ -141,7 +141,7 @@ async function run() {
                 mvampireChecker2 = await AL.Game.startCharacter(botName, server[0], server[1])
 
                 if (mvampireChecker2.rip) await mvampireChecker2.respawn()
-                await Promise.all([mvampireChecker2.smartMove({ map: "cave", x: 1244, y: -22.5 }).catch(() => { /* Suppress Errors */ }), mvampireChecker2.regenHP()])
+                await Promise.all([mvampireChecker2.smartMove({ map: "cave", x: 1244, y: -22.5 }).catch(e => console.error(e)), mvampireChecker2.regenHP()])
                 mvampireChecker2.disconnect()
                 mvampireChecker2 = undefined
             } catch (e) {
@@ -149,7 +149,7 @@ async function run() {
                 if (mvampireChecker2) mvampireChecker2.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { start_mvampireCheck2() }, msToNextMinute + 10000)
+            setTimeout(async () => { start_mvampireCheck2() }, msToNextMinute + 5000)
         }
         const stop_mvampireCheck2 = async () => {
             try {
@@ -159,11 +159,11 @@ async function run() {
                 console.error(e)
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { stop_mvampireCheck2() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+            setTimeout(async () => { stop_mvampireCheck2() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
         }
         msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { start_mvampireCheck2() }, msToNextMinute + 10000)
-        setTimeout(async () => { stop_mvampireCheck2() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        setTimeout(async () => { start_mvampireCheck2() }, msToNextMinute + 5000)
+        setTimeout(async () => { stop_mvampireCheck2() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
 
         // Look for `fvampire` in place #1
         let fvampireChecker: Character
@@ -176,7 +176,7 @@ async function run() {
                 fvampireChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
                 if (fvampireChecker.rip) await fvampireChecker.respawn()
-                await Promise.all([fvampireChecker.smartMove({ map: "halloween", x: -405.5, y: -1642.5 }).catch(() => { /* Suppress Errors */ }), fvampireChecker.regenHP()])
+                await Promise.all([fvampireChecker.smartMove({ map: "halloween", x: -405.5, y: -1642.5 }).catch(e => console.error(e)), fvampireChecker.regenHP()])
                 fvampireChecker.disconnect()
                 fvampireChecker = undefined
             } catch (e) {
@@ -184,7 +184,7 @@ async function run() {
                 if (fvampireChecker) fvampireChecker.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { start_fvampireCheck() }, msToNextMinute + 10000)
+            setTimeout(async () => { start_fvampireCheck() }, msToNextMinute + 5000)
         }
         const stop_fvampireCheck = async () => {
             try {
@@ -194,11 +194,11 @@ async function run() {
                 console.error(e)
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { stop_fvampireCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+            setTimeout(async () => { stop_fvampireCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
         }
         msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { start_fvampireCheck() }, msToNextMinute + 10000)
-        setTimeout(async () => { stop_fvampireCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        setTimeout(async () => { start_fvampireCheck() }, msToNextMinute + 5000)
+        setTimeout(async () => { stop_fvampireCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
 
         // Look for `greenjr` in place #1
         let greenjrChecker: Character
@@ -211,7 +211,7 @@ async function run() {
                 greenjrChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
                 if (greenjrChecker.rip) await greenjrChecker.respawn()
-                await Promise.all([greenjrChecker.smartMove({ map: "halloween", x: -569, y: -511.5 }).catch(() => { /* Suppress Errors */ }), greenjrChecker.regenHP()])
+                await Promise.all([greenjrChecker.smartMove({ map: "halloween", x: -569, y: -511.5 }).catch(e => console.error(e)), greenjrChecker.regenHP()])
                 greenjrChecker.disconnect()
                 greenjrChecker = undefined
             } catch (e) {
@@ -219,7 +219,7 @@ async function run() {
                 if (greenjrChecker) greenjrChecker.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { start_greenjrCheck() }, msToNextMinute + 10000)
+            setTimeout(async () => { start_greenjrCheck() }, msToNextMinute + 5000)
         }
         const stop_greenjrCheck = async () => {
             try {
@@ -229,11 +229,11 @@ async function run() {
                 console.error(e)
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { stop_greenjrCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+            setTimeout(async () => { stop_greenjrCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
         }
         msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { start_greenjrCheck() }, msToNextMinute + 10000)
-        setTimeout(async () => { stop_greenjrCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        setTimeout(async () => { start_greenjrCheck() }, msToNextMinute + 5000)
+        setTimeout(async () => { stop_greenjrCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
 
         // Look for `jr` in place #1
         let jrChecker: Character
@@ -246,7 +246,7 @@ async function run() {
                 jrChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
                 if (jrChecker.rip) await jrChecker.respawn()
-                await Promise.all([jrChecker.smartMove({ map: "spookytown", x: -783.5, y: -301 }).catch(() => { /* Suppress Errors */ }), jrChecker.regenHP()])
+                await Promise.all([jrChecker.smartMove({ map: "spookytown", x: -783.5, y: -301 }).catch(e => console.error(e)), jrChecker.regenHP()])
                 jrChecker.disconnect()
                 jrChecker = undefined
             } catch (e) {
@@ -254,7 +254,7 @@ async function run() {
                 if (jrChecker) jrChecker.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { start_jrCheck() }, msToNextMinute + 10000)
+            setTimeout(async () => { start_jrCheck() }, msToNextMinute + 5000)
         }
         const stop_jrCheck = async () => {
             try {
@@ -264,11 +264,11 @@ async function run() {
                 console.error(e)
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { stop_jrCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+            setTimeout(async () => { stop_jrCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
         }
         msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { start_jrCheck() }, msToNextMinute + 10000)
-        setTimeout(async () => { stop_jrCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        setTimeout(async () => { start_jrCheck() }, msToNextMinute + 5000)
+        setTimeout(async () => { stop_jrCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
 
         // Look for `stompy` in place #1
         let stompyChecker: Character
@@ -281,7 +281,7 @@ async function run() {
                 stompyChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
                 if (stompyChecker.rip) await stompyChecker.respawn()
-                await Promise.all([stompyChecker.smartMove({ map: "winterland", x: 433, y: -2745 }).catch(() => { /* Suppress Errors */ }), stompyChecker.regenHP()])
+                await Promise.all([stompyChecker.smartMove({ map: "winterland", x: 433, y: -2745 }).catch(e => console.error(e)), stompyChecker.regenHP()])
                 stompyChecker.disconnect()
                 stompyChecker = undefined
             } catch (e) {
@@ -289,7 +289,7 @@ async function run() {
                 if (stompyChecker) stompyChecker.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { start_stompyCheck() }, msToNextMinute + 10000)
+            setTimeout(async () => { start_stompyCheck() }, msToNextMinute + 5000)
         }
         const stop_stompyCheck = async () => {
             try {
@@ -299,11 +299,11 @@ async function run() {
                 console.error(e)
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { stop_stompyCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+            setTimeout(async () => { stop_stompyCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
         }
         msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { start_stompyCheck() }, msToNextMinute + 10000)
-        setTimeout(async () => { stop_stompyCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        setTimeout(async () => { start_stompyCheck() }, msToNextMinute + 5000)
+        setTimeout(async () => { stop_stompyCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
 
         // Look for `newPlayers` in place #1
         let newPlayersChecker: Character
@@ -316,7 +316,7 @@ async function run() {
                 newPlayersChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
                 if (newPlayersChecker.rip) await newPlayersChecker.respawn()
-                await Promise.all([newPlayersChecker.smartMove({ map: "main", x: -32, y: 787 }).catch(() => { /* Suppress Errors */ }), newPlayersChecker.regenHP()])
+                await Promise.all([newPlayersChecker.smartMove({ map: "main", x: -32, y: 787 }).catch(e => console.error(e)), newPlayersChecker.regenHP()])
                 newPlayersChecker.disconnect()
                 newPlayersChecker = undefined
             } catch (e) {
@@ -324,7 +324,7 @@ async function run() {
                 if (newPlayersChecker) newPlayersChecker.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { start_newPlayersCheck() }, msToNextMinute + 10000)
+            setTimeout(async () => { start_newPlayersCheck() }, msToNextMinute + 5000)
         }
         const stop_newPlayersCheck = async () => {
             try {
@@ -334,11 +334,11 @@ async function run() {
                 console.error(e)
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { stop_newPlayersCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+            setTimeout(async () => { stop_newPlayersCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
         }
         msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { start_newPlayersCheck() }, msToNextMinute + 10000)
-        setTimeout(async () => { stop_newPlayersCheck() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        setTimeout(async () => { start_newPlayersCheck() }, msToNextMinute + 5000)
+        setTimeout(async () => { stop_newPlayersCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
     }
 }
 run()

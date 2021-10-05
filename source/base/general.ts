@@ -577,7 +577,7 @@ export function requestMagiportService(bot: Character, targetLocation: IPosition
     // Get player locations
     AL.PlayerModel.find({
         lastSeen: { $gt: Date.now() - 30000 },
-        name: { $in: ["Clarity"] },
+        map: targetLocation.map,
         serverIdentifier: bot.server.name,
         serverRegion: bot.server.region }, {
         _id: 0, map: 1, name: 1, x: 1, y: 1
