@@ -37,7 +37,7 @@ export function getTargetServerFromDate(offset = 0, avoidPVP = false): [ServerRe
 export async function getTargetServerFromMonsters(G: GData, defaultRegion: ServerRegion, defaultIdentifier: ServerIdentifier): Promise<[ServerRegion, ServerIdentifier]> {
     // Priority #1: Special co-op monsters that take a team effort
     const coop: MonsterName[] = [
-        "dragold", "grinch", "icegolem", "mrgreen", "mrpumpkin", "franky"
+        "dragold", "grinch", "icegolem", "mrpumpkin", "mrgreen", "franky"
     ]
     const coopEntities: IEntity[] = await AL.EntityModel.aggregate([
         {
