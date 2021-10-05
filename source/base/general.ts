@@ -161,7 +161,7 @@ export async function getPriority1Entities(bot: Character): Promise<Entity[] | I
     // NOTE: This list is ordered higher -> lower priority
     const coop: MonsterName[] = [
         // Event-based
-        "dragold", "grinch", "mrgreen", "mrpumpkin",
+        "dragold", "grinch", "mrpumpkin", "mrgreen",
         // Year-round
         "franky", "icegolem"]
     const nearby = []
