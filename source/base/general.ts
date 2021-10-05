@@ -14,7 +14,7 @@ export const FRIENDLY_ROGUES = ["copper", "Bjarna", "RisingVanir"]
 export const MY_CHARACTERS = ["earthiverse", "earthMag", "earthMag2", "earthMag3", "earthMer", "earthMer2", "earthMer3", "earthMer4", "earthPal", "earthPri", "earthPri2", "earthRan2", "earthRan3", "earthRog", "earthRog2", "earthWar", "earthWar2", "earthWar3"]
 export const ANNOUNCEMENT_CHARACTERS = ["announcement", "battleworthy", "charmingness", "decisiveness", "enlightening", "facilitating", "gratuitously", "hypothesized", "illumination", "journalistic"]
 export const KOUIN_CHARACTERS = ["bataxedude", "cclair", "fathergreen", "kakaka", "kekeke", "kouin", "kukuku", "mule0", "mule1", "mule2", "mule3", "mule5", "mule6", "mule7", "mule8", "mule9", "mule10", "piredude"]
-export const LOLWUTPEAR_CHARACTERS = ["fgsfds", "fsjal", "funny", "lolwutpear", "orlyowl", "over9000", "rickroll", "rule34", "shoopdawhoop", "ytmnd"]
+export const LOLWUTPEAR_CHARACTERS = ["fgsfds", "fsjal", "funny", "gaben", "lolwutpear", "longcat", "orlyowl", "over9000", "rickroll", "rule34", "shoopdawhoop", "wombocombo", "ytmnd"]
 
 export const ITEMS_TO_HOLD: Set<ItemName> = new Set([
     // Things we keep on ourselves
@@ -570,23 +570,23 @@ export function moveInCircle(bot: Character, center: IPosition, radius = 125, an
     }
 }
 
-export async function requestMagiportService(bot: Character, targetLocation: IPosition, within = 300): Promise<IPosition> {
+export function requestMagiportService(bot: Character, targetLocation: IPosition, within = 300): void {
     // If we're already close, don't request anything
-    if (Tools.distance(bot, targetLocation) < within) return bot
+    if (Tools.distance(bot, targetLocation) < within) return
 
     // Get player locations
-    for (const player of await AL.PlayerModel.find({
+    AL.PlayerModel.find({
+        lastSeen: { $gt: Date.now() - 30000 },
         name: { $in: ["Clarity"] },
         serverIdentifier: bot.server.name,
         serverRegion: bot.server.region }, {
         _id: 0, map: 1, name: 1, x: 1, y: 1
-    }).lean().exec()) {
-        if (Tools.distance(player, targetLocation) <= within) {
-            if (player.name == "Clarity") {
-                await bot.sendCM(["Clarity"], "magiport_please_dad")
-            }
+    }).lean().exec().then((players) => {
+        for (const player of players) {
+            if (AL.Tools.distance(bot, player) > within) continue // Too far away
+            if (player.name == "Clarity") bot.sendCM(["Clarity"], "magiport_please_dad")
         }
-    }
+    })
 }
 
 export function sleep(ms: number): Promise<void> {
