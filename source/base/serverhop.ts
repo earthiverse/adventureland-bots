@@ -64,6 +64,10 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
     const soloEntities: IEntity[] = await AL.EntityModel.aggregate([
         {
             $match: {
+                $or: [
+                    { target: undefined },
+                    { type: { $in: ["pinkgoo", "snowman", "wabbit"] } } // Coop monsters will give credit
+                ],
                 serverIdentifier: { $nin: ["PVP"] },
                 type: { $in: solo },
             }

@@ -220,7 +220,8 @@ export async function getPriority2Entities(bot: Character): Promise<Entity[] | I
             $match: {
                 $or: [
                     { target: undefined },
-                    { target: { $in: partyList } }
+                    { target: { $in: partyList } },
+                    { type: { $in: ["pinkgoo", "snowman", "wabbit"] } } // Coop monsters will give credit
                 ],
                 serverIdentifier: bot.server.name,
                 serverRegion: bot.server.region,
@@ -578,13 +579,15 @@ export function requestMagiportService(bot: Character, targetLocation: IPosition
     AL.PlayerModel.find({
         lastSeen: { $gt: Date.now() - 30000 },
         map: targetLocation.map,
+        name: { $in: ["Bjarny", "Clarity"] },
         serverIdentifier: bot.server.name,
         serverRegion: bot.server.region }, {
         _id: 0, map: 1, name: 1, x: 1, y: 1
     }).lean().exec().then((players) => {
         for (const player of players) {
             if (AL.Tools.distance(bot, player) > within) continue // Too far away
-            if (player.name == "Clarity") bot.sendCM(["Clarity"], "magiport_please_dad")
+            if (player.name == "Bjarny") bot.sendCM(["Bjarny"], "magiport")
+            else if (player.name == "Clarity") bot.sendCM(["Clarity"], "magiport_please_dad")
         }
     })
 }
