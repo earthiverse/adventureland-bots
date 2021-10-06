@@ -173,8 +173,8 @@ export function startPartyHealLoop(bot: Priest, friends: Character[] = []): void
             // Check characters around us
             if (bot.canUse("partyheal")) {
                 for (const [, player] of bot.players) {
-                    if (!player) // No player
-                        if (player.party !== bot.party) continue // Not in the same party
+                    if (!player) continue // No player
+                    if (player.party !== bot.party) continue // Not in the same party
                     if (player.rip) continue // Player is already dead
                     if (player.hp < player.max_hp * 0.5) {
                         // Someone in our party has low HP
