@@ -1,4 +1,4 @@
-import AL, { GMap, Mage, Merchant } from "alclient"
+import AL, { GMap, Mage, Merchant, Player } from "alclient"
 import { goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
 import { mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrocs, mainGoos, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
@@ -113,14 +113,15 @@ function prepareMage(bot: Mage) {
 
                 // NOTE: TEMPORARY -- Energize kouin's rogues for extra gold
                 if (bot.canUse("energize")) {
+                    let lowest: Player
                     for (const [, player] of bot.players) {
                         if (AL.Tools.distance(bot, player) > bot.G.skills.energize.range) continue // Too far
                         if (player.mp > player.max_mp - 500) continue // They already have a lot of mp
                         if (!["kakaka", "kekeke"].includes(player.id)) continue // Only energize kouin's rogues
 
-                        await bot.energize(player.id, Math.min(player.max_mp - player.mp, bot.mp - 500))
-                        break
+                        if (!lowest || player.mp < lowest.mp) lowest = player
                     }
+                    await bot.energize(lowest.id, Math.min(lowest.max_mp - lowest.mp, bot.mp - 500))
                 }
             },
             equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
@@ -132,14 +133,15 @@ function prepareMage(bot: Mage) {
 
                 // NOTE: TEMPORARY -- Energize kouin's rogues for extra gold
                 if (bot.canUse("energize")) {
+                    let lowest: Player
                     for (const [, player] of bot.players) {
                         if (AL.Tools.distance(bot, player) > bot.G.skills.energize.range) continue // Too far
                         if (player.mp > player.max_mp - 500) continue // They already have a lot of mp
                         if (!["kakaka", "kekeke"].includes(player.id)) continue // Only energize kouin's rogues
 
-                        await bot.energize(player.id, Math.min(player.max_mp - player.mp, bot.mp - 500))
-                        break
+                        if (!lowest || player.mp < lowest.mp) lowest = player
                     }
+                    await bot.energize(lowest.id, Math.min(lowest.max_mp - lowest.mp, bot.mp - 500))
                 }
             },
             equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
