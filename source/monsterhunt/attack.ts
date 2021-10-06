@@ -2,7 +2,7 @@ import AL, { GMap, Mage, Merchant } from "alclient"
 import { goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
 import { mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrocs, mainGoos, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
-import { getTargetServerFromMonsters, getTargetServerFromPlayer } from "../base/serverhop.js"
+import { getTargetServerFromMonsters } from "../base/serverhop.js"
 import { Information, Strategy } from "../definitions/bot.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMage, startMerchant } from "./shared.js"
 
@@ -108,12 +108,40 @@ function prepareMage(bot: Mage) {
             }
         },
         mrgreen: {
-            attack: async () => { await attackTheseTypesMage(bot, ["mrgreen"], information.friends) },
+            attack: async () => {
+                await attackTheseTypesMage(bot, ["mrgreen"], information.friends, { disableEnergize: true })
+
+                // NOTE: TEMPORARY -- Energize kouin's rogues for extra gold
+                if (bot.canUse("energize")) {
+                    for (const [, player] of bot.players) {
+                        if (AL.Tools.distance(bot, player) > bot.G.skills.energize.range) continue // Too far
+                        if (player.s.energized) continue // They're already energized
+                        if (!["kakaka", "kekeke"].includes(player.id)) continue // Only energize kouin's rogues
+
+                        await bot.energize(player.id, Math.min(player.max_mp - player.mp, Math.max(1, bot.mp - 500)))
+                        break
+                    }
+                }
+            },
             equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "mrgreen") },
         },
         mrpumpkin: {
-            attack: async () => { await attackTheseTypesMage(bot, ["mrpumpkin"], information.friends) },
+            attack: async () => {
+                await attackTheseTypesMage(bot, ["mrpumpkin"], information.friends, { disableEnergize: true })
+
+                // NOTE: TEMPORARY -- Energize kouin's rogues for extra gold
+                if (bot.canUse("energize")) {
+                    for (const [, player] of bot.players) {
+                        if (AL.Tools.distance(bot, player) > bot.G.skills.energize.range) continue // Too far
+                        if (player.s.energized) continue // They're already energized
+                        if (!["kakaka", "kekeke"].includes(player.id)) continue // Only energize kouin's rogues
+
+                        await bot.energize(player.id, Math.min(player.max_mp - player.mp, Math.max(1, bot.mp - 500)))
+                        break
+                    }
+                }
+            },
             equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "mrpumpkin") },
         },
