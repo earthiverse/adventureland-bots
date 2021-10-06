@@ -1,4 +1,4 @@
-import AL, { Character, Entity, IPosition, Mage, Merchant, MonsterName, Priest, Ranger, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Warrior } from "alclient"
+import AL, { Character, CMData, Entity, IPosition, Mage, Merchant, MonsterName, Priest, Ranger, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Warrior } from "alclient"
 import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, ITEMS_TO_HOLD, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { attackTheseTypesMerchant, doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
@@ -645,6 +645,11 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
             await bot.acceptMagiport(data.name)
             return
         }
+    })
+
+    bot.socket.on("cm", async (data: CMData) => {
+        console.log(`~~~ CM from ${data.name} DEBUG ~~~`)
+        console.log(data)
     })
 
     startAvoidStacking(bot)
