@@ -395,6 +395,12 @@ function preparePriest(bot: Priest) {
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "test_orb" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["skeletor"], { map: "arena", x: 400, y: -575 }) },
         },
+        slenderman: {
+            attack: async () => { await attackTheseTypesPriest(bot, ["slenderman"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "wand", offhand: "wbook1", orb: "test_orb" },
+            move: async () => { await goToSpecialMonster(bot, "slenderman") },
+        },
         snake: {
             attack: async () => { await attackTheseTypesPriest(bot, ["snake", "osnake"], information.friends) },
             attackWhileIdle: true,
@@ -782,6 +788,12 @@ function prepareRanger(bot: Ranger) {
             equipment: { mainhand: "firebow", orb: "test_orb" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["skeletor"], { map: "arena", x: 380, y: -575 }) },
             requireCtype: "priest",
+        },
+        slenderman: {
+            attack: async () => { await attackTheseTypesRanger(bot, ["slenderman"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "hbow", orb: "test_orb" },
+            move: async () => { await goToSpecialMonster(bot, "slenderman") },
         },
         snake: {
             attack: async () => { return attackTheseTypesRanger(bot, ["snake", "osnake"], information.friends) },
@@ -1205,6 +1217,12 @@ function prepareWarrior(bot: Warrior) {
             equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["skeletor"], { map: "arena", x: 360, y: -575 }) },
             requireCtype: "priest"
+        },
+        slenderman: {
+            attack: async () => { await attackTheseTypesWarrior(bot, ["slenderman"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "bataxe", orb: "test_orb" },
+            move: async () => { await goToSpecialMonster(bot, "slenderman") },
         },
         snake: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["snake", "osnake"], information.friends, { disableAgitate: true }) },
