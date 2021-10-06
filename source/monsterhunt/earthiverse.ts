@@ -1476,10 +1476,11 @@ async function run() {
                 return
             }
 
-            // Don't change servers if we're currently attacking something special.
-            if (AL.Constants.SPECIAL_MONSTERS.includes(information.bot1.target)
+            // Don't change servers if we're currently attacking something special. (unless it's event season)
+            if ((!information.bot1.bot.S?.halloween || !information.bot1.bot.S?.holidayseason)
+                && (AL.Constants.SPECIAL_MONSTERS.includes(information.bot1.target)
                 || AL.Constants.SPECIAL_MONSTERS.includes(information.bot2.target)
-                || AL.Constants.SPECIAL_MONSTERS.includes(information.bot3.target)) {
+                || AL.Constants.SPECIAL_MONSTERS.includes(information.bot3.target))) {
                 console.log(`DEBUG: We are targeting something special (${information.bot1.target}, ${information.bot2.target}, ${information.bot3.target})`)
                 setTimeout(async () => { serverLoop() }, 1000)
                 return

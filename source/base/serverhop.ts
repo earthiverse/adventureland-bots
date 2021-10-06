@@ -46,45 +46,36 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
         // // Rare Monsters
         "greenjr", "jr", "skeletor", "mvampire", "fvampire", "snowman", "stompy"
     ]): Promise<[ServerRegion, ServerIdentifier]> {
-    // Priority #1: Special co-op monsters that take a team effort
+    // Look for entities in the database
     if (coop?.length) {
         const coopEntities: IEntity[] = await AL.EntityModel.aggregate([
             {
                 $match: {
-                    serverIdentifier: { $nin: ["PVP"] },
-                    target: { $ne: undefined }, // We only want to do these if others are doing them, too.
-                    type: { $in: coop }
+                    $or: [
+                        {
+                            serverIdentifier: { $nin: ["PVP"] },
+                            target: { $ne: undefined }, // We only want to do these if others are doing them, too.
+                            type: { $in: coop }
+                        },
+                        {
+                            $or: [
+                                { target: undefined },
+                                { type: { $in: ["pinkgoo", "snowman", "wabbit"] } } // Coop monsters will give credit
+                            ],
+                            serverIdentifier: { $nin: ["PVP"] },
+                            type: { $in: solo },
+
+                        }
+                    ],
                 }
             },
-            { $addFields: { __order: { $indexOfArray: [coop, "$type"] } } },
+            { $addFields: { __order: { $indexOfArray: [[...coop, ...solo], "$type"] } } },
             { $sort: { "__order": 1, "hp": 1 } },
             { $project: { "_id": 0, "serverIdentifier": 1, "serverRegion": 1 } }]).exec()
         for (const entity of coopEntities) return [entity.serverRegion, entity.serverIdentifier]
     }
 
-    // Priority #2: Special monsters that we can defeat by ourselves
-    if (solo?.length) {
-        const soloEntities: IEntity[] = await AL.EntityModel.aggregate([
-            {
-                $match: {
-                    $or: [
-                        { target: undefined },
-                        { type: { $in: ["pinkgoo", "snowman", "wabbit"] } } // Coop monsters will give credit
-                    ],
-                    serverIdentifier: { $nin: ["PVP"] },
-                    type: { $in: solo },
-                }
-            },
-            { $addFields: { __order: { $indexOfArray: [solo, "$type"] } } },
-            { $sort: { "__order": 1, "hp": 1 } },
-            { $project: { "_id": 0, "serverIdentifier": 1, "serverRegion": 1, "target": 1, "type": 1 } }]).exec()
-        for (const entity of soloEntities) {
-            if (!G.monsters[entity.type].cooperative && entity.target) continue // The target isn't cooperative, and someone is already attacking it
-            return [entity.serverRegion, entity.serverIdentifier]
-        }
-    }
-
-    // Priority #3: Default Server
+    // If there are none, use the default server
     return [defaultRegion, defaultIdentifier]
 }
 
