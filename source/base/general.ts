@@ -127,7 +127,13 @@ for (const itemName in ITEMS_TO_SELL) {
 }
 
 export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
-    "cyber": 1, "exoarm": 1, "fury": 1, "gstaff": 1, "starkillers": 1, "suckerpunch": 1, "t3bow": 1
+    "cyber": 1, "exoarm": 1, "fury": 1, "gstaff": 1, "starkillers": 1, "suckerpunch": 1, "t3bow": 1,
+    // Don't primling rugged stuff
+    "coat1": 8, "gloves1": 8, "helmet1": 8, "pants1": 8, "shoes1": 8,
+    // Don't primling wanderers stuff
+    "wattire": 9, "wbreeches": 9, "wcap": 9, "wgloves": 9, "wshoes": 9,
+    // Don't primling books
+    "wbook0": 4
 }
 
 export const UPGRADE_COMPOUND_LIMIT: ItemLevelInfo = {
@@ -794,7 +800,7 @@ export function startCompoundLoop(bot: Character, itemsToSell: ItemLevelInfo = I
                                 else if (cscrollPos == undefined) cscrollPos = await bot.buy(cscrollName)
 
                                 if ((ITEMS_TO_PRIMLING[itemName] && dLevel >= ITEMS_TO_PRIMLING[itemName])
-                                    || ((level0Grade == 0 && dLevel >= 3) || (level0Grade == 1 && dLevel >= 2) || (level0Grade == 2 && dLevel >= 1))) {
+                                    || (!ITEMS_TO_PRIMLING[itemName] && ((level0Grade == 0 && dLevel >= 3) || (level0Grade == 1 && dLevel >= 2) || (level0Grade == 2 && dLevel >= 1)))) {
                                     // We want to use a primling to upgrade these
                                     if (primlingPos == undefined) continue // We don't have any primlings
                                     if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as Merchant).massProduction()
@@ -1395,7 +1401,7 @@ export function startUpgradeLoop(bot: Character, itemsToSell: ItemLevelInfo = IT
                                 else if (scrollPos == undefined) scrollPos = await bot.buy(scrollName)
 
                                 if ((ITEMS_TO_PRIMLING[itemName] && dLevel >= ITEMS_TO_PRIMLING[itemName])
-                                    || ((level0Grade == 0 && dLevel >= 8) || (level0Grade == 1 && dLevel >= 6) || (level0Grade == 2 && dLevel >= 4))) {
+                                    || (!ITEMS_TO_PRIMLING[itemName] && ((level0Grade == 0 && dLevel >= 8) || (level0Grade == 1 && dLevel >= 6) || (level0Grade == 2 && dLevel >= 4)))) {
                                     // We want to use a primling to upgrade these
                                     if (primlingPos == undefined) continue // We don't have any primlings
                                     if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as Merchant).massProduction()
