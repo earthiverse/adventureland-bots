@@ -11,11 +11,31 @@ function ms_to_next_skill(skill) {
 /** We are going to track our own pings, because there's some problems with the built-in parent.pings
  *  when you send a lot of attacks at the same time. */
 const MAX_PINGS = 10
-var pings2 = [character.ping]
-parent.socket.on("pong", (ms) => {
-    pings2.unshift(ms) // Add new ping
-    pings2.splice(MAX_PINGS) // Delete older pings
+let pingNum = 1
+let pingIndex = 0
+const pingMap = new Map()
+var pings2 = []
+parent.socket.on("ping_ack", (data) => {
+    const ping = pingMap.get(data.id)
+    if (ping) {
+        // Add the new ping
+        const time = Date.now() - ping
+        pings2[pingIndex] = time
+        pingIndex = pingIndex % MAX_PINGS
+        console.log(`Ping: ${time}`)
+
+        // Remove the ping from the map
+        pingMap.delete(data.id)
+    }
 })
+const myPing = () => {
+    const pingID = pingNum.toString()
+    pingNum++
+    pingMap.set(pingID, Date.now())
+    parent.socket.emit("ping_trig", { id: pingID })
+}
+setInterval(() => { myPing() }, 5000)
+myPing()
 
 async function moveLoop() {
     try {
