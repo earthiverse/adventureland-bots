@@ -121,7 +121,7 @@ function prepareMage(bot: Mage) {
 
                         if (!lowest || player.mp < lowest.mp) lowest = player
                     }
-                    await bot.energize(lowest.id, Math.min(lowest.max_mp - lowest.mp, bot.mp - 500))
+                    if (lowest) await bot.energize(lowest.id, Math.min(lowest.max_mp - lowest.mp, bot.mp - 500))
                 }
             },
             equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
@@ -141,7 +141,7 @@ function prepareMage(bot: Mage) {
 
                         if (!lowest || player.mp < lowest.mp) lowest = player
                     }
-                    await bot.energize(lowest.id, Math.min(lowest.max_mp - lowest.mp, bot.mp - 500))
+                    if (lowest) await bot.energize(lowest.id, Math.min(lowest.max_mp - lowest.mp, bot.mp - 500))
                 }
             },
             equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
