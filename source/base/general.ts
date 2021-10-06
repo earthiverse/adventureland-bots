@@ -110,6 +110,8 @@ export const ITEMS_TO_SELL: ItemLevelInfo = {
     "shoes": 2, "pants": 2, "coat": 2, "helmet": 2, "gloves": 2,
     // Things that are now obsolete
     "dexring": 2, "intring": 2, "intearring": 2, "strearring": 2, "stramulet": 2,
+    // Things in abundance during halloween
+    "gphelmet": 2, "phelmet": 2,
     // Field generators
     "fieldgen0": 999,
     // Snowballs
