@@ -115,10 +115,10 @@ function prepareMage(bot: Mage) {
                 if (bot.canUse("energize")) {
                     for (const [, player] of bot.players) {
                         if (AL.Tools.distance(bot, player) > bot.G.skills.energize.range) continue // Too far
-                        if (player.s.energized) continue // They're already energized
+                        if (player.mp > player.max_mp - 500) continue // They already have a lot of mp
                         if (!["kakaka", "kekeke"].includes(player.id)) continue // Only energize kouin's rogues
 
-                        await bot.energize(player.id, Math.min(player.max_mp - player.mp, Math.max(1, bot.mp - 500)))
+                        await bot.energize(player.id, Math.min(player.max_mp - player.mp, bot.mp - 500))
                         break
                     }
                 }
@@ -134,10 +134,10 @@ function prepareMage(bot: Mage) {
                 if (bot.canUse("energize")) {
                     for (const [, player] of bot.players) {
                         if (AL.Tools.distance(bot, player) > bot.G.skills.energize.range) continue // Too far
-                        if (player.s.energized) continue // They're already energized
+                        if (player.mp > player.max_mp - 500) continue // They already have a lot of mp
                         if (!["kakaka", "kekeke"].includes(player.id)) continue // Only energize kouin's rogues
 
-                        await bot.energize(player.id, Math.min(player.max_mp - player.mp, Math.max(1, bot.mp - 500)))
+                        await bot.energize(player.id, Math.min(player.max_mp - player.mp, bot.mp - 500))
                         break
                     }
                 }
