@@ -334,7 +334,7 @@ async function run() {
             }
 
             // Don't change servers if we're currently attacking something special.
-            if ((!information.bot1.bot.S?.halloween || !information.bot1.bot.S?.holidayseason)
+            if ((!information.bot1.bot.S?.halloween && !information.bot1.bot.S?.holidayseason)
                 && (AL.Constants.SPECIAL_MONSTERS.includes(information.bot1.target)
                 || AL.Constants.SPECIAL_MONSTERS.includes(information.bot2.target)
                 || AL.Constants.SPECIAL_MONSTERS.includes(information.bot3.target))) {
