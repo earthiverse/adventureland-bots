@@ -635,8 +635,12 @@ export async function startWarrior(bot: Warrior, information: Information, strat
 }
 
 export async function startShared(bot: Character, strategy: Strategy, information: Information): Promise<void> {
+    const magiporters = new Set(["Bjarny", "Clarity", ...partyMembers])
+    // TODO: Find type information and add it to ALClient
     bot.socket.on("magiport", async (data: { name: string }) => {
-        if (partyMembers.includes(data.name)) {
+        console.log("~~~ Magiport Data DEBUG (add this type to ALClient) ~~~")
+        console.log(data)
+        if (magiporters.has(data.name)) {
             if (bot.c?.town) await bot.stopWarpToTown()
             await bot.acceptMagiport(data.name)
             return
