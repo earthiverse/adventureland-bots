@@ -20,7 +20,7 @@ parent.socket.on("ping_ack", (data) => {
     if (ping) {
         // Add the new ping
         const time = Date.now() - ping
-        pings2[pingIndex] = time
+        pings2[pingIndex++] = time
         pingIndex = pingIndex % MAX_PINGS
         console.log(`Ping: ${time}`)
 
