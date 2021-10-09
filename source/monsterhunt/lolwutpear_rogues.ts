@@ -1,5 +1,5 @@
-import AL, { GMap, Merchant, Rogue } from "alclient"
-import { goToNearestWalkableToMonster, goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
+import AL, { GMap, Merchant, Rogue, ServerInfoDataLive } from "alclient"
+import { goToNearestWalkableToMonster, goToSpecialMonster, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
 import { mainBeesNearTunnel } from "../base/locations.js"
 import { attackTheseTypesRogue } from "../base/rogue.js"
 import { getTargetServerFromPlayer } from "../base/serverhop.js"
@@ -66,6 +66,7 @@ function prepareRogue(bot: Rogue) {
                     // Move close to Franky because other characters might help blast away mummies
                     await bot.smartMove(nearest.monster, { getWithin: 25 })
                 } else {
+                    if (bot.S.franky as ServerInfoDataLive) requestMagiportService(bot, bot.S.franky as ServerInfoDataLive)
                     await goToSpecialMonster(bot, "franky")
                 }
             }
@@ -97,12 +98,18 @@ function prepareRogue(bot: Rogue) {
         mrgreen: {
             attack: async () => { await attackTheseTypesRogue(bot, ["mrgreen"], information.friends) },
             equipment: { orb: "test_orb" },
-            move: async () => { await goToSpecialMonster(bot, "mrgreen") },
+            move: async () => {
+                if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as ServerInfoDataLive)
+                await goToSpecialMonster(bot, "mrgreen")
+            },
         },
         mrpumpkin: {
             attack: async () => { await attackTheseTypesRogue(bot, ["mrpumpkin"], information.friends) },
             equipment: { orb: "test_orb" },
-            move: async () => { await goToSpecialMonster(bot, "mrpumpkin") },
+            move: async () => {
+                if (bot.S.mrpumpkin as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrpumpkin as ServerInfoDataLive)
+                await goToSpecialMonster(bot, "mrpumpkin")
+            },
         },
         mvampire: {
             attack: async () => { await attackTheseTypesRogue(bot, ["mvampire", "bat"], information.friends) },

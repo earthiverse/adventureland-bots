@@ -300,7 +300,7 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["mrgreen"], information.friends) },
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "test_orb" },
             move: async () => {
-                if (bot.S.franky as ServerInfoDataLive) requestMagiportService(bot, bot.S.franky as ServerInfoDataLive)
+                if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as ServerInfoDataLive)
                 await goToSpecialMonster(bot, "mrgreen")
             },
         },
@@ -687,7 +687,7 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { return attackTheseTypesRanger(bot, ["mrgreen"], information.friends) },
             equipment: { mainhand: "firebow", orb: "test_orb" },
             move: async () => {
-                if (bot.S.franky as ServerInfoDataLive) requestMagiportService(bot, bot.S.franky as ServerInfoDataLive)
+                if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as ServerInfoDataLive)
                 await goToSpecialMonster(bot, "mrgreen")
             },
             requireCtype: "priest"
@@ -1119,7 +1119,7 @@ function prepareWarrior(bot: Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["mrgreen"], information.friends) },
             equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => {
-                if (bot.S.franky as ServerInfoDataLive) requestMagiportService(bot, bot.S.franky as ServerInfoDataLive)
+                if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as ServerInfoDataLive)
                 await goToSpecialMonster(bot, "mrgreen")
             },
             requireCtype: "priest"
