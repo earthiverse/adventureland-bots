@@ -1,4 +1,4 @@
-import AL, { Character, CMData, Entity, IPosition, Mage, Merchant, MonsterName, Priest, Ranger, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Warrior } from "alclient"
+import AL, { Character, CMData, Entity, IPosition, Mage, Merchant, MonsterName, Priest, Ranger, Rogue, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Warrior } from "alclient"
 import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, ITEMS_TO_HOLD, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { attackTheseTypesMerchant, doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
@@ -7,8 +7,9 @@ import { attackTheseTypesRanger } from "../base/ranger.js"
 import { attackTheseTypesWarrior, startChargeLoop, startHardshellLoop, startWarcryLoop } from "../base/warrior.js"
 import { Information, Strategy } from "../definitions/bot.js"
 import { partyLeader, partyMembers } from "../base/party.js"
+import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
 
-const DEFAULT_TARGET: MonsterName = "armadillo"
+const DEFAULT_TARGET: MonsterName = "goo"
 
 export const DEFAULT_REGION: ServerRegion = "US"
 export const DEFAULT_IDENTIFIER: ServerIdentifier = "II"
@@ -76,7 +77,7 @@ export async function getTarget(bot: Character, strategy: Strategy, information:
         return type
     }
 
-    return DEFAULT_TARGET
+    return strategy.defaultTarget ?? DEFAULT_TARGET
 }
 
 export async function startMage(bot: Mage, information: Information, strategy: Strategy): Promise<void> {
@@ -539,6 +540,95 @@ export async function startRanger(bot: Ranger, information: Information, strateg
             console.error(e)
         }
         bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("attack"), bot.getCooldown("supershot")))))
+    }
+    attackLoop()
+}
+
+export async function startRogue(bot: Rogue, information: Information, strategy: Strategy): Promise<void> {
+    startShared(bot, strategy, information)
+
+    startRSpeedLoop(bot, { enableGiveToStrangers: true })
+
+    const idleTargets: MonsterName[] = []
+    for (const t in strategy) {
+        if (!strategy[t as MonsterName].attackWhileIdle) continue
+        idleTargets.push(t as MonsterName)
+    }
+
+    async function attackLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return // Stop if disconnected
+
+            if (
+                bot.rip // We are dead
+                || bot.c.town // We are teleporting to town
+            ) {
+                // We are dead
+                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                return
+            }
+
+            let target: MonsterName
+            if (bot.id == information.bot1.name) {
+                target = information.bot1.target
+            } else if (bot.id == information.bot2.name) {
+                target = information.bot2.target
+            } else if (bot.id == information.bot3.name) {
+                target = information.bot3.target
+            }
+
+            if (target
+                && !bot.isOnCooldown("scare")) {
+                // Equipment
+                if (strategy[target].equipment) {
+                    for (const s in strategy[target].equipment) {
+                        const slot = s as SlotType
+                        const itemName = strategy[target].equipment[slot]
+                        const wType = bot.G.items[itemName].wtype
+
+                        if (bot.G.classes[bot.ctype].doublehand[wType]) {
+                            // Check if we have something in our offhand, we need to unequip it.
+                            if (bot.slots.offhand) await bot.unequip("offhand")
+                        }
+
+                        if (slot == "offhand" && bot.slots["mainhand"]) {
+                            const mainhandItem = bot.slots["mainhand"].name
+                            const mainhandWType = bot.G.items[mainhandItem].wtype
+                            if (bot.G.classes[bot.ctype].doublehand[mainhandWType]) {
+                                // We're equipping an offhand item, but we have a doublehand item equipped in our mainhand.
+                                await bot.unequip("mainhand")
+                            }
+                        }
+
+                        if (!bot.slots[slot]
+                            || (bot.slots[slot] && bot.slots[slot].name !== itemName)) {
+                            const i = bot.locateItem(itemName)
+                            if (i !== undefined) await bot.equip(i, slot)
+                        }
+                    }
+                }
+
+                // Strategy
+                await strategy[target].attack()
+            }
+
+            // Idle strategy
+            await attackTheseTypesRogue(bot, idleTargets, information.friends)
+
+            // Attack things targeting us
+            if (bot.canUse("attack")) {
+                for (const entity of bot.getEntities({
+                    targetingPartyMember: true,
+                    withinRange: bot.range
+                })) {
+                    await bot.basicAttack(entity.id)
+                    break
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("attack"), bot.getCooldown("quickstab"), bot.getCooldown("mentalburst")))))
     }
     attackLoop()
 }

@@ -6,7 +6,7 @@ export const partyMembers = [
     // Lolwutpear's characters
     "fgsfds", "fsjal", "funny", "gaben", "lolwutpear", "over9000", "rickroll", "rule34", "shoopdawhoop", "wombocombo", "ytmnd",
     // Announcement's characters
-    "announcement", "battleworthy", "charmingness", "enlightening", "facilitating", "gratuitously", "hypothesized", "illumination", "journalistic"
+    "announcement", "battleworthy", "charmingness", "enlightening", "facilitating", "gratuitously", "hypothesized", "illumination", "journalistic", "kaleidoscope", "logistically"
 ]
 
 export const stompPartyLeader = "earthWar"

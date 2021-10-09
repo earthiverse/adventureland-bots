@@ -14,17 +14,17 @@ const information: Information = {
     // eslint-disable-next-line sort-keys
     bot1: {
         bot: undefined,
-        name: "lolwutpear",
+        name: "rule34",
         target: undefined
     },
     bot2: {
         bot: undefined,
-        name: "ytmnd",
+        name: "gaben",
         target: undefined
     },
     bot3: {
         bot: undefined,
-        name: "shoopdawhoop",
+        name: "wombocombo",
         target: undefined
     },
     merchant: {
@@ -37,6 +37,8 @@ const information: Information = {
 
 function prepareMage(bot: Mage) {
     const strategy: Strategy = {
+        defaultTarget: "armadillo",
+        // eslint-disable-next-line sort-keys
         armadillo: {
             attack: async () => { await attackTheseTypesMage(bot, ["armadillo", "phoenix"], information.friends) },
             attackWhileIdle: true,

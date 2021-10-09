@@ -1,10 +1,10 @@
-import AL, { GMap, Mage, Merchant, Player } from "alclient"
-import { goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
-import { mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrocs, mainGoos, offsetPosition } from "../base/locations.js"
-import { attackTheseTypesMage } from "../base/mage.js"
-import { getTargetServerFromMonsters } from "../base/serverhop.js"
+import AL, { GMap, Merchant, Rogue } from "alclient"
+import { goToNearestWalkableToMonster, goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
+import { mainBeesNearTunnel } from "../base/locations.js"
+import { attackTheseTypesRogue } from "../base/rogue.js"
+import { getTargetServerFromPlayer } from "../base/serverhop.js"
 import { Information, Strategy } from "../definitions/bot.js"
-import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMage, startMerchant } from "./shared.js"
+import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startRogue, startMerchant } from "./shared.js"
 
 let TARGET_REGION = DEFAULT_REGION
 let TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
@@ -14,167 +14,128 @@ const information: Information = {
     // eslint-disable-next-line sort-keys
     bot1: {
         bot: undefined,
-        name: "attackMag",
+        name: "enlightening",
         target: undefined
     },
     bot2: {
         bot: undefined,
-        name: "attackMag2",
+        name: "kaleidoscope",
         target: undefined
     },
     bot3: {
         bot: undefined,
-        name: "attackMag3",
+        name: "logistically",
         target: undefined
     },
     merchant: {
         bot: undefined,
-        name: "attackMer",
-        nameAlt: "attackMer",
+        name: "decisiveness",
+        nameAlt: "decisiveness",
         target: undefined
     }
 }
 
-function prepareMage(bot: Mage) {
+function prepareRogue(bot: Rogue) {
     const strategy: Strategy = {
-        defaultTarget: "crab",
+        defaultTarget: "goo",
         // eslint-disable-next-line sort-keys
-        armadillo: {
-            attack: async () => { await attackTheseTypesMage(bot, ["armadillo", "phoenix"], information.friends) },
-            attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
-            move: async () => {
-                if (bot.id == information.bot1.name) {
-                    await bot.smartMove(offsetPosition(mainArmadillos, -50, 0), { useBlink: true })
-                } else if (bot.id == information.bot2.name) {
-                    await bot.smartMove(offsetPosition(mainArmadillos, 0, 0), { useBlink: true })
-                } else if (bot.id == information.bot3.name) {
-                    await bot.smartMove(offsetPosition(mainArmadillos, 50, 0), { useBlink: true })
-                }
-            },
-        },
         bee: {
-            attack: async () => { await attackTheseTypesMage(bot, ["bee"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.bee.hp + 1 }) },
+            attack: async () => { await attackTheseTypesRogue(bot, ["bee"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "wand", offhand: "wbook0", orb: "test_orb" },
-            move: async () => {
-                if (bot.id == information.bot1.name) {
-                    await bot.smartMove(offsetPosition(mainBeesNearTunnel, -50, 0), { useBlink: true })
-                } else if (bot.id == information.bot2.name) {
-                    await bot.smartMove(offsetPosition(mainBeesNearTunnel, 0, 0), { useBlink: true })
-                } else if (bot.id == information.bot3.name) {
-                    await bot.smartMove(offsetPosition(mainBeesNearTunnel, 50, 0), { useBlink: true })
-                }
-            }
+            equipment: { orb: "test_orb" },
+            move: async () => { await goToNearestWalkableToMonster(bot, ["bee"], mainBeesNearTunnel) },
         },
         crab: {
-            attack: async () => { await attackTheseTypesMage(bot, ["crab", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesRogue(bot, ["crab"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "wand", offhand: "wbook0", orb: "test_orb" },
-            move: async () => {
-                if (bot.id == information.bot1.name) {
-                    await bot.smartMove(offsetPosition(mainCrabs, -50, 0), { useBlink: true })
-                } else if (bot.id == information.bot2.name) {
-                    await bot.smartMove(offsetPosition(mainCrabs, 0, 0), { useBlink: true })
-                } else if (bot.id == information.bot3.name) {
-                    await bot.smartMove(offsetPosition(mainCrabs, 50, 0), { useBlink: true })
-                }
-            },
+            equipment: { orb: "test_orb" },
+            move: async () => { await goToNearestWalkableToMonster(bot, ["crab"], mainBeesNearTunnel) },
         },
         croc: {
-            attack: async () => { await attackTheseTypesMage(bot, ["croc", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesRogue(bot, ["croc"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
-            move: async () => {
-                if (bot.id == information.bot1.name) {
-                    await bot.smartMove(offsetPosition(mainCrocs, 0, -50), { useBlink: true })
-                } else if (bot.id == information.bot2.name) {
-                    await bot.smartMove(offsetPosition(mainCrocs, 0, 0), { useBlink: true })
-                } else if (bot.id == information.bot3.name) {
-                    await bot.smartMove(offsetPosition(mainCrocs, 0, 50), { useBlink: true })
-                }
-            },
+            equipment: { orb: "test_orb" },
+            move: async () => { await goToNearestWalkableToMonster(bot, ["croc"], mainBeesNearTunnel) },
         },
-        goo: {
-            attack: async () => { await attackTheseTypesMage(bot, ["goo"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.goo.hp + 1 }) },
-            attackWhileIdle: true,
-            equipment: { mainhand: "wand", offhand: "wbook0", orb: "test_orb" },
+        franky: {
+            attack: async () => { await attackTheseTypesRogue(bot, ["nerfedmummy", "franky"], information.friends) },
+            equipment: { orb: "test_orb" },
             move: async () => {
-                if (bot.id == information.bot1.name) {
-                    await bot.smartMove(offsetPosition(mainGoos, -100, 0), { useBlink: true })
-                } else if (bot.id == information.bot2.name) {
-                    await bot.smartMove(offsetPosition(mainGoos, 0, 0), { useBlink: true })
-                } else if (bot.id == information.bot3.name) {
-                    await bot.smartMove(offsetPosition(mainGoos, 100, 0), { useBlink: true })
+                const nearest = bot.getNearestMonster("franky")
+                if (nearest && nearest.distance > 25) {
+                    // Move close to Franky because other characters might help blast away mummies
+                    await bot.smartMove(nearest.monster, { getWithin: 25 })
+                } else {
+                    await goToSpecialMonster(bot, "franky")
                 }
             }
         },
+        goldenbat: {
+            attack: async () => { await attackTheseTypesRogue(bot, ["goldenbat"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { orb: "test_orb" },
+            move: async () => { await goToSpecialMonster(bot, "goldenbat") },
+        },
+        goo: {
+            attack: async () => { await attackTheseTypesRogue(bot, ["goo"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { orb: "test_orb" },
+            move: async () => { await goToNearestWalkableToMonster(bot, ["goo"], mainBeesNearTunnel) },
+        },
+        greenjr: {
+            attack: async () => { await attackTheseTypesRogue(bot, ["greenjr", "snake", "osnake"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { orb: "test_orb" },
+            move: async () => { await goToSpecialMonster(bot, "greenjr") },
+        },
+        jr: {
+            attack: async () => { await attackTheseTypesRogue(bot, ["jr"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { orb: "test_orb" },
+            move: async () => { await goToSpecialMonster(bot, "jr") },
+        },
         mrgreen: {
-            attack: async () => {
-                await attackTheseTypesMage(bot, ["mrgreen"], information.friends, { disableEnergize: true })
-
-                // NOTE: TEMPORARY -- Energize kouin's rogues for extra gold
-                if (bot.canUse("energize")) {
-                    let lowest: Player
-                    for (const [, player] of bot.players) {
-                        if (AL.Tools.distance(bot, player) > bot.G.skills.energize.range) continue // Too far
-                        if (player.mp > player.max_mp - 500) continue // They already have a lot of mp
-                        if (!["kakaka", "kekeke"].includes(player.id)) continue // Only energize kouin's rogues
-
-                        if (!lowest || player.mp < lowest.mp) lowest = player
-                    }
-                    if (lowest) await bot.energize(lowest.id, Math.min(lowest.max_mp - lowest.mp, bot.mp - 500))
-                }
-            },
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
+            attack: async () => { await attackTheseTypesRogue(bot, ["mrgreen"], information.friends) },
+            equipment: { orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "mrgreen") },
         },
         mrpumpkin: {
-            attack: async () => {
-                await attackTheseTypesMage(bot, ["mrpumpkin"], information.friends, { disableEnergize: true })
-
-                // NOTE: TEMPORARY -- Energize kouin's rogues for extra gold
-                if (bot.canUse("energize")) {
-                    let lowest: Player
-                    for (const [, player] of bot.players) {
-                        if (AL.Tools.distance(bot, player) > bot.G.skills.energize.range) continue // Too far
-                        if (player.mp > player.max_mp - 500) continue // They already have a lot of mp
-                        if (!["kakaka", "kekeke"].includes(player.id)) continue // Only energize kouin's rogues
-
-                        if (!lowest || player.mp < lowest.mp) lowest = player
-                    }
-                    if (lowest) await bot.energize(lowest.id, Math.min(lowest.max_mp - lowest.mp, bot.mp - 500))
-                }
-            },
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
+            attack: async () => { await attackTheseTypesRogue(bot, ["mrpumpkin"], information.friends) },
+            equipment: { orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "mrpumpkin") },
         },
-        slenderman: {
-            attack: async () => { await attackTheseTypesMage(bot, ["slenderman"], information.friends) },
+        mvampire: {
+            attack: async () => { await attackTheseTypesRogue(bot, ["mvampire", "bat"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "wand", offhand: "wbook0", orb: "test_orb" },
+            equipment: { orb: "test_orb" },
+            move: async () => { await goToSpecialMonster(bot, "mvampire") },
+        },
+        slenderman: {
+            attack: async () => { await attackTheseTypesRogue(bot, ["slenderman"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "slenderman") },
         },
         snowman: {
-            attack: async () => { await attackTheseTypesMage(bot, ["snowman"], information.friends) },
-            equipment: { mainhand: "wand", offhand: "wbook0", orb: "test_orb" },
+            attack: async () => { await attackTheseTypesRogue(bot, ["snowman"], information.friends) },
+            equipment: { orb: "test_orb" },
             move: async () => { await goToSpecialMonster(bot, "snowman") }
         }
     }
 
-    startMage(bot, information, strategy)
+    startRogue(bot, information, strategy)
 }
 
 function prepareMerchant(bot: Merchant) {
     const strategy: Strategy = {
     }
 
-    startMerchant(bot, information, strategy, { map: "main", x: -250, y: -50 })
+    startMerchant(bot, information, strategy, { map: "main", x: -300, y: -100 })
 }
 
 async function run() {
     // Login and prepare pathfinding
-    await Promise.all([AL.Game.loginJSONFile("../../credentials_attack.json"), AL.Game.getGData(true)])
+    await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
     await AL.Pathfinder.prepare(AL.Game.G)
 
     // Start all characters
@@ -212,14 +173,14 @@ async function run() {
     }
     startMerchantLoop().catch(() => { /* ignore errors */ })
 
-    const startMage1Loop = async () => {
+    const startRogue1Loop = async () => {
         // Start the characters
         const loopBot = async () => {
             try {
                 if (information.bot1.bot) information.bot1.bot.disconnect()
-                information.bot1.bot = await AL.Game.startMage(information.bot1.name, TARGET_REGION, TARGET_IDENTIFIER)
+                information.bot1.bot = await AL.Game.startRogue(information.bot1.name, TARGET_REGION, TARGET_IDENTIFIER)
                 information.friends[1] = information.bot1.bot
-                prepareMage(information.bot1.bot as Mage)
+                prepareRogue(information.bot1.bot as Rogue)
                 startTrackerLoop(information.bot1.bot)
                 information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
@@ -239,16 +200,16 @@ async function run() {
         }
         loopBot()
     }
-    startMage1Loop().catch(() => { /* ignore errors */ })
+    startRogue1Loop().catch(() => { /* ignore errors */ })
 
-    const startMage2Loop = async () => {
+    const startRogue2Loop = async () => {
         // Start the characters
         const loopBot = async () => {
             try {
                 if (information.bot2.bot) information.bot2.bot.disconnect()
-                information.bot2.bot = await AL.Game.startMage(information.bot2.name, TARGET_REGION, TARGET_IDENTIFIER)
+                information.bot2.bot = await AL.Game.startRogue(information.bot2.name, TARGET_REGION, TARGET_IDENTIFIER)
                 information.friends[2] = information.bot2.bot
-                prepareMage(information.bot2.bot as Mage)
+                prepareRogue(information.bot2.bot as Rogue)
                 information.bot2.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -267,16 +228,16 @@ async function run() {
         }
         loopBot()
     }
-    startMage2Loop().catch(() => { /* ignore errors */ })
+    startRogue2Loop().catch(() => { /* ignore errors */ })
 
-    const startMage3Loop = async () => {
+    const startRogue3Loop = async () => {
         // Start the characters
         const loopBot = async () => {
             try {
                 if (information.bot3.bot) information.bot3.bot.disconnect()
-                information.bot3.bot = await AL.Game.startMage(information.bot3.name, TARGET_REGION, TARGET_IDENTIFIER)
+                information.bot3.bot = await AL.Game.startRogue(information.bot3.name, TARGET_REGION, TARGET_IDENTIFIER)
                 information.friends[3] = information.bot3.bot
-                prepareMage(information.bot3.bot as Mage)
+                prepareRogue(information.bot3.bot as Rogue)
                 information.bot3.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -295,7 +256,7 @@ async function run() {
         }
         loopBot()
     }
-    startMage3Loop().catch(() => { /* ignore errors */ })
+    startRogue3Loop().catch(() => { /* ignore errors */ })
 
     let lastServerChangeTime = Date.now()
     const serverLoop = async () => {
@@ -335,10 +296,8 @@ async function run() {
 
             const currentRegion = information.bot1.bot.server.region
             const currentIdentifier = information.bot1.bot.server.name
-            const G = information.bot1.bot.G
 
-            const targetServer = await getTargetServerFromMonsters(G, DEFAULT_REGION, DEFAULT_IDENTIFIER,
-                ["mrpumpkin", "mrgreen"])
+            const targetServer = await getTargetServerFromPlayer(currentRegion, currentIdentifier, "earthiverse")
             if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
                 // We're already on the correct server
                 console.log("DEBUG: We're already on the correct server")
@@ -354,7 +313,9 @@ async function run() {
             // Loot all of our remaining chests
             await sleep(1000)
             console.log("Looting remaining chests")
-            for (const [, chest] of information.bot1.bot.chests) await information.bot1.bot.openChest(chest.id)
+            for (const [, chest] of information.bot1.bot.chests) {
+                await information.bot1.bot.openChest(chest.id)
+            }
             await sleep(1000)
 
             // Disconnect everyone

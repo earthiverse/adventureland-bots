@@ -37,6 +37,8 @@ const information: Information = {
 
 function prepareMage(bot: Mage) {
     const strategy: Strategy = {
+        defaultTarget: "armadillo",
+        // eslint-disable-next-line sort-keys
         armadillo: {
             attack: async () => { await attackTheseTypesMage(bot, ["armadillo", "phoenix"], information.friends) },
             attackWhileIdle: true,

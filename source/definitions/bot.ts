@@ -1,4 +1,4 @@
-import AL, { Character, CharacterType, ItemName, Merchant, MonsterName, SlotType } from "alclient"
+import { Character, CharacterType, ItemName, Merchant, MonsterName, SlotType } from "alclient"
 
 export type Strategy = {
     [T in MonsterName]?: {
@@ -13,6 +13,8 @@ export type Strategy = {
         /** If set to true, we won't do it unless we also have a character of the given type targeting */
         requireCtype?: CharacterType
     }
+} & {
+    defaultTarget?: MonsterName
 }
 
 export type Information = {

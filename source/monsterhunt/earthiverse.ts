@@ -72,6 +72,8 @@ function prepareMerchant(bot: Merchant) {
 function preparePriest(bot: Priest) {
     const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
     const strategy: Strategy = {
+        defaultTarget: "spider",
+        // eslint-disable-next-line sort-keys
         arcticbee: {
             attack: async () => { await attackTheseTypesPriest(bot, ["arcticbee"], information.friends) },
             attackWhileIdle: true,
@@ -480,6 +482,8 @@ function preparePriest(bot: Priest) {
 function prepareRanger(bot: Ranger) {
     const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
     const strategy: Strategy = {
+        defaultTarget: "spider",
+        // eslint-disable-next-line sort-keys
         arcticbee: {
             attack: async () => { await attackTheseTypesRanger(bot, ["arcticbee"], information.friends) },
             attackWhileIdle: true,
@@ -880,6 +884,8 @@ function prepareRanger(bot: Ranger) {
 function prepareWarrior(bot: Warrior) {
     const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
     const strategy: Strategy = {
+        defaultTarget: "spider",
+        // eslint-disable-next-line sort-keys
         arcticbee: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["arcticbee"], information.friends) },
             attackWhileIdle: true,
