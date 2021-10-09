@@ -14,6 +14,9 @@ export const mainScorpions: IPosition = { map: "main", x: 1577.5, y: -168 }
 export const mainSnakes: IPosition = { map: "main", x: -82, y: 1901 }
 export const mainSpiders: IPosition = { map: "main", x: 948, y: -144 }
 
+// Bank
+export const bankingPosition: IPosition = { map: "bank", x: 0, y: -200 }
+
 // Bat Cave
 export const batCaveCryptEntrance: IPosition = { map: "cave", x: -193.41, y: -1295.83 }
 

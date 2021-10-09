@@ -1,5 +1,6 @@
 import AL, { Entity, Mage, ServerIdentifier, ServerRegion, Tools } from "alclient"
 import { goToBankIfFull, goToPoitonSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
+import { bankingPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader } from "../base/party.js"
 import { getTargetServerFromDate, getTargetServerFromPlayer } from "../base/serverhop.js"
@@ -46,7 +47,7 @@ async function startMage(bot: Mage) {
             await goToBankIfFull(bot)
 
             if (bot.countItem("seashell") > 1000 || bot.hasItem("gem0") || bot.gold > 5_000_000) {
-                await bot.smartMove("items0") // Move to bank teller to give bank time to get ready
+                await bot.smartMove(bankingPosition) // Move to bank teller to give bank time to get ready
 
                 for (let i = 0; i < bot.isize; i++) {
                     const item = bot.items[i]

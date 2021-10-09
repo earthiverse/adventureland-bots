@@ -1,6 +1,6 @@
 import AL, { BankPackName, Character, Entity, ItemData, ItemName, Merchant, MonsterName } from "alclient"
 import { ITEMS_TO_CRAFT, ITEMS_TO_EXCHANGE, ITEMS_TO_HOLD, ITEMS_TO_SELL, LOOP_MS } from "./general.js"
-import { mainFishingSpot, miningSpot } from "./locations.js"
+import { bankingPosition, mainFishingSpot, miningSpot } from "./locations.js"
 
 export const MERCHANT_GOLD_TO_HOLD = 100_000_000
 export const MERCHANT_ITEMS_TO_HOLD: Set<ItemName> = new Set([
@@ -51,7 +51,7 @@ export async function attackTheseTypesMerchant(bot: Merchant, types: MonsterName
 
 export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOLD, itemsToHold = MERCHANT_ITEMS_TO_HOLD, itemsToSell = ITEMS_TO_SELL, itemsToCraft = ITEMS_TO_CRAFT, itemsToExchange = ITEMS_TO_EXCHANGE): Promise<void> {
     await bot.closeMerchantStand()
-    await bot.smartMove("items1")
+    await bot.smartMove(bankingPosition)
 
     // Deposit extra gold, or get more gold
     const excessGold = bot.gold - goldToHold

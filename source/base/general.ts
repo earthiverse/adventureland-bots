@@ -1,7 +1,7 @@
 import Queue from "queue-promise"
 import AL, { Character, ChestData, Entity, GameResponseData, GMap, HitData, IEntity, IPosition, ItemData, ItemName, Merchant, MonsterName, Player, ServerInfoDataLive, Tools, TradeSlotType } from "alclient"
 import { ItemLevelInfo } from "../definitions/bot.js"
-import { offsetPositionParty } from "./locations.js"
+import { bankingPosition, offsetPositionParty } from "./locations.js"
 
 export const LOOP_MS = 100
 export const CHECK_PONTY_EVERY_MS = 10_000 /** 10 seconds */
@@ -368,7 +368,7 @@ export async function goToBankIfFull(bot: Character, itemsToHold = ITEMS_TO_HOLD
     if (!bot.isFull()) return // We aren't full
 
     await bot.smartMove("fancypots", { avoidTownWarps: true }) // Move to potion seller to give the sell loop a chance to sell things
-    await bot.smartMove("items0", { avoidTownWarps: true }) // Move to bank teller to give bank time to get ready
+    await bot.smartMove(bankingPosition, { avoidTownWarps: true }) // Move to bank teller to give bank time to get ready
 
     for (let i = 0; i < bot.isize; i++) {
         const item = bot.items[i]
