@@ -14,17 +14,17 @@ const information: Information = {
     // eslint-disable-next-line sort-keys
     bot1: {
         bot: undefined,
-        name: "rule34",
+        name: "lolwutpear",
         target: undefined
     },
     bot2: {
         bot: undefined,
-        name: "gaben",
+        name: "ytmnd",
         target: undefined
     },
     bot3: {
         bot: undefined,
-        name: "wombocombo",
+        name: "shoopdawhoop",
         target: undefined
     },
     merchant: {
