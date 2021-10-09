@@ -128,9 +128,11 @@ for (const itemName in ITEMS_TO_SELL) {
 
 export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
     "cyber": 1, "exoarm": 1, "fury": 1, "gstaff": 1, "starkillers": 1, "suckerpunch": 1, "t3bow": 1,
-    // Don't primling rugged stuff
+    // Don't primling rugged stuff (we get a lot from fishing)
     "coat1": 8, "gloves1": 8, "helmet1": 8, "pants1": 8, "shoes1": 8,
-    // Don't primling wanderers stuff
+    // Don't primling vampires attire (we get a lot from bosses)
+    "vattire": 7,
+    // Don't primling wanderers stuff (we get a lot from drops and crafting)
     "wattire": 9, "wbreeches": 9, "wcap": 9, "wgloves": 9, "wshoes": 9,
     // Don't primling books
     "wbook0": 4
@@ -593,7 +595,7 @@ export function requestMagiportService(bot: Character, targetLocation: IPosition
         _id: 0, map: 1, name: 1, x: 1, y: 1
     }).lean().exec().then((players) => {
         for (const player of players) {
-            if (AL.Tools.distance(bot, player) > within) continue // Too far away
+            if (AL.Tools.distance(targetLocation, player) > within) continue // Too far away from target
             if (player.name == "Bjarny") bot.sendCM(["Bjarny"], "magiport")
             else if (player.name == "Clarity") bot.sendCM(["Clarity"], "magiport_please_dad")
         }
