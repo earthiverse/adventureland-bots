@@ -128,13 +128,13 @@ for (const itemName in ITEMS_TO_SELL) {
 
 export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
     "cyber": 1, "exoarm": 1, "fury": 1, "gstaff": 1, "starkillers": 1, "suckerpunch": 1, "t3bow": 1,
-    // Don't primling rugged stuff (we get a lot from fishing)
+    // Don't use offeringp rugged stuff (we get a lot from fishing)
     "coat1": 8, "gloves1": 8, "helmet1": 8, "pants1": 8, "shoes1": 8,
-    // Don't primling vampires attire (we get a lot from bosses)
+    // Don't use offeringp vampires attire (we get a lot from bosses)
     "vattire": 7,
-    // Don't primling wanderers stuff (we get a lot from drops and crafting)
+    // Don't use offeringp wanderers stuff (we get a lot from drops and crafting)
     "wattire": 9, "wbreeches": 9, "wcap": 9, "wgloves": 9, "wshoes": 9,
-    // Don't primling books
+    // Don't use offeringp books
     "wbook0": 4
 }
 
@@ -803,12 +803,12 @@ export function startCompoundLoop(bot: Character, itemsToSell: ItemLevelInfo = I
 
                                 if ((ITEMS_TO_PRIMLING[itemName] && dLevel >= ITEMS_TO_PRIMLING[itemName])
                                     || (!ITEMS_TO_PRIMLING[itemName] && ((level0Grade == 0 && dLevel >= 3) || (level0Grade == 1 && dLevel >= 2) || (level0Grade == 2 && dLevel >= 1)))) {
-                                    // We want to use a primling to upgrade these
-                                    if (primlingPos == undefined) continue // We don't have any primlings
+                                    // We want to use an offeringp to upgrade these
+                                    if (primlingPos == undefined) continue // We don't have any offeringps
                                     if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as Merchant).massProduction()
                                     await bot.compound(items[0], items[1], items[2], cscrollPos, primlingPos)
                                 } else {
-                                    // We don't want to use a primling to upgrade these
+                                    // We don't want to use an offeringp to upgrade these
                                     if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as Merchant).massProduction()
                                     await bot.compound(items[0], items[1], items[2], cscrollPos)
                                 }
@@ -1404,12 +1404,12 @@ export function startUpgradeLoop(bot: Character, itemsToSell: ItemLevelInfo = IT
 
                                 if ((ITEMS_TO_PRIMLING[itemName] && dLevel >= ITEMS_TO_PRIMLING[itemName])
                                     || (!ITEMS_TO_PRIMLING[itemName] && ((level0Grade == 0 && dLevel >= 8) || (level0Grade == 1 && dLevel >= 6) || (level0Grade == 2 && dLevel >= 4)))) {
-                                    // We want to use a primling to upgrade these
+                                    // We want to use an offeringp to upgrade these
                                     if (primlingPos == undefined) continue // We don't have any primlings
                                     if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as Merchant).massProduction()
                                     await bot.upgrade(slot, scrollPos, primlingPos)
                                 } else {
-                                    // We don't want to use a primling to upgrade these
+                                    // We don't want to use an offeringp to upgrade these
                                     if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as Merchant).massProduction()
                                     await bot.upgrade(slot, scrollPos)
                                 }
