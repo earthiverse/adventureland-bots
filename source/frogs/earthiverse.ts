@@ -1,5 +1,5 @@
 import AL, { Entity, Mage, ServerIdentifier, ServerRegion, Tools } from "alclient"
-import { goToBankIfFull, goToPoitonSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
+import { goToBankIfFull, goToPotionSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
 import { bankingPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader } from "../base/party.js"
@@ -39,11 +39,11 @@ async function startMage(bot: Mage) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
                 return
             }
 
-            await goToPoitonSellerIfLow(bot)
+            await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot)
 
             if (bot.countItem("seashell") > 1000 || bot.hasItem("gem0") || bot.gold > 5_000_000) {
@@ -106,7 +106,7 @@ async function startMage(bot: Mage) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
     }
     moveLoop()
 }

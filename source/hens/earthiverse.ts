@@ -1,5 +1,5 @@
 import AL, { Entity, ServerIdentifier, ServerRegion, Warrior } from "alclient"
-import { goToBankIfFull, goToPoitonSellerIfLow, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
+import { goToBankIfFull, goToPotionSellerIfLow, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
 import { attackTheseTypesWarrior } from "../base/warrior.js"
 
 /** Config */
@@ -37,11 +37,11 @@ async function startWarrior(bot: Warrior) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
                 return
             }
 
-            await goToPoitonSellerIfLow(bot)
+            await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot)
 
             // Look for roosters
@@ -84,7 +84,7 @@ async function startWarrior(bot: Warrior) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
     }
     moveLoop()
 }

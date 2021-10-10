@@ -41,7 +41,7 @@ async function startKite(bot: Mage) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
@@ -55,7 +55,7 @@ async function startKite(bot: Mage) {
             console.error(e)
         }
 
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }

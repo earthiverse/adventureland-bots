@@ -1,5 +1,5 @@
 import AL, { IPosition, MonsterName, Rogue, ServerIdentifier, ServerRegion } from "alclient"
-import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, goToNearestWalkableToMonster, ITEMS_TO_SELL, startPartyLoop } from "../base/general.js"
+import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, goToNearestWalkableToMonster, ITEMS_TO_SELL, startPartyLoop } from "../base/general.js"
 import { mainGoos, offsetPosition } from "../base/locations.js"
 import { partyLeader } from "../base/party.js"
 import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
@@ -41,11 +41,11 @@ async function startRogue(bot: Rogue, positionOffset: { x: number, y: number } =
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
-            await goToPoitonSellerIfLow(bot)
+            await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot)
 
             goToNearestWalkableToMonster(bot, targets, offsetPosition(defaultLocation, positionOffset.x, positionOffset.y)).catch(e => console.error(e))
@@ -53,7 +53,7 @@ async function startRogue(bot: Rogue, positionOffset: { x: number, y: number } =
             console.error(e)
         }
 
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 500))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 500))
     }
     moveLoop()
 }

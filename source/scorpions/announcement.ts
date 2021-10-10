@@ -1,5 +1,5 @@
 import AL, { IPosition, MonsterName, ServerIdentifier, ServerRegion, Warrior } from "alclient"
-import { goToPoitonSellerIfLow, startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startAvoidStacking, goToNearestWalkableToMonster, goToBankIfFull } from "../base/general.js"
+import { goToPotionSellerIfLow, startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startAvoidStacking, goToNearestWalkableToMonster, goToBankIfFull } from "../base/general.js"
 import { mainScorpions, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesWarrior, startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 
@@ -48,11 +48,11 @@ async function startWarrior(bot: Warrior, positionOffset: { x: number, y: number
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
-            await goToPoitonSellerIfLow(bot)
+            await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot)
 
             await goToNearestWalkableToMonster(bot, targets, offsetPosition(defaultLocation, positionOffset.x, positionOffset.y))
@@ -60,7 +60,7 @@ async function startWarrior(bot: Warrior, positionOffset: { x: number, y: number
             console.error(e)
         }
 
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 

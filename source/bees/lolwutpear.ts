@@ -1,5 +1,5 @@
 import AL, { Constants, IPosition, Mage, MonsterName, ServerIdentifier, ServerRegion, Tools } from "alclient"
-import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startSendStuffAllowlistLoop, ITEMS_TO_HOLD, startTrackerLoop } from "../base/general.js"
+import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startSendStuffAllowlistLoop, ITEMS_TO_HOLD, startTrackerLoop } from "../base/general.js"
 import { mainBeesNearGoos, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 
@@ -48,11 +48,11 @@ async function startMage(bot: Mage, positionOffset: { x: number, y: number } = {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
-            await goToPoitonSellerIfLow(bot)
+            await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot, ITEMS_TO_HOLD, 0)
 
             const destination: IPosition = offsetPosition(defaultLocation, positionOffset.x, positionOffset.y)
@@ -61,7 +61,7 @@ async function startMage(bot: Mage, positionOffset: { x: number, y: number } = {
             console.error(e)
         }
 
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
     }
     moveLoop()
 }

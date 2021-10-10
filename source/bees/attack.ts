@@ -1,5 +1,5 @@
 import AL, { Character, Constants, IPosition, Mage, Merchant, MonsterName, ServerIdentifier, ServerRegion, Tools } from "alclient"
-import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, ITEMS_TO_HOLD, startSendStuffDenylistLoop } from "../base/general.js"
+import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, ITEMS_TO_HOLD, startSendStuffDenylistLoop } from "../base/general.js"
 import { mainBeesNearTunnel, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { ItemLevelInfo } from "../definitions/bot.js"
@@ -56,11 +56,11 @@ async function startMage(bot: Mage, positionOffset: { x: number, y: number } = {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
-            await goToPoitonSellerIfLow(bot)
+            await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot, ITEMS_TO_HOLD, 2_000_000)
 
             const destination: IPosition = offsetPosition(defaultLocation, positionOffset.x, positionOffset.y)
@@ -69,7 +69,7 @@ async function startMage(bot: Mage, positionOffset: { x: number, y: number } = {
             console.error(e)
         }
 
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
     }
     moveLoop()
 }
@@ -82,11 +82,11 @@ async function startMerchant(bot: Merchant, holdPosition: IPosition) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
-            await goToPoitonSellerIfLow(bot)
+            await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot, ITEMS_TO_HOLD, 2_000_000)
 
             if (AL.Tools.distance(bot, holdPosition) > 1) await bot.smartMove(holdPosition)
@@ -94,7 +94,7 @@ async function startMerchant(bot: Merchant, holdPosition: IPosition) {
             console.error(e)
         }
 
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
     }
     moveLoop()
 }

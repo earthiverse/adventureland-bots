@@ -1,5 +1,5 @@
 import AL, { ActionData, Character, Constants, IPosition, Mage, Merchant, MonsterName, ServerIdentifier, ServerRegion, Tools } from "alclient"
-import { goToPoitonSellerIfLow, startBuyLoop, startCompoundLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, startElixirLoop, goToBankIfFull, startBuyFriendsReplenishablesLoop, startExchangeLoop } from "../base/general.js"
+import { goToPotionSellerIfLow, startBuyLoop, startCompoundLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop, startElixirLoop, goToBankIfFull, startBuyFriendsReplenishablesLoop, startExchangeLoop } from "../base/general.js"
 import { mainGoos, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
@@ -84,7 +84,7 @@ async function startMage(bot: Mage, positionOffset: { x: number, y: number } = {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
@@ -93,7 +93,7 @@ async function startMage(bot: Mage, positionOffset: { x: number, y: number } = {
             // Get a luck elixir if we don't have one
             if (!bot.slots.elixir && bot.gold > bot.G.items.elixirluck.g) {
                 await bot.smartMove("elixirluck", { getWithin: 100 })
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -101,7 +101,7 @@ async function startMage(bot: Mage, positionOffset: { x: number, y: number } = {
             if (!bot.s.monsterhunt && bot.server.name == identifier && bot.server.region == region) {
                 await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1, useBlink: true })
                 await bot.getMonsterHuntQuest()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -110,11 +110,11 @@ async function startMage(bot: Mage, positionOffset: { x: number, y: number } = {
                 await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1, useBlink: true })
                 await bot.finishMonsterHuntQuest()
                 await bot.getMonsterHuntQuest() // Get a new one
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
-            await goToPoitonSellerIfLow(bot)
+            await goToPotionSellerIfLow(bot)
 
             const destination: IPosition = offsetPosition(defaultLocation, positionOffset.x, positionOffset.y)
             if (AL.Tools.distance(bot, destination) > 1) await bot.smartMove(destination, { useBlink: true })
@@ -122,7 +122,7 @@ async function startMage(bot: Mage, positionOffset: { x: number, y: number } = {
             console.error(e)
         }
 
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }
@@ -144,7 +144,7 @@ async function startMerchant(bot: Merchant, friends: Character[]) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
@@ -152,7 +152,7 @@ async function startMerchant(bot: Merchant, friends: Character[]) {
             if (bot.isFull() || lastBankVisit < Date.now() - 120000 || bot.hasPvPMarkedItem()) {
                 lastBankVisit = Date.now()
                 await doBanking(bot)
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -168,7 +168,7 @@ async function startMerchant(bot: Merchant, friends: Character[]) {
                             await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2 })
                         }
 
-                        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                         return
                     }
                 }
@@ -187,7 +187,7 @@ async function startMerchant(bot: Merchant, friends: Character[]) {
             console.error(e)
         }
 
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }

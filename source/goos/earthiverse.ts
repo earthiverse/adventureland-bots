@@ -1,5 +1,5 @@
 import AL, { IPosition, MonsterName, Ranger } from "alclient"
-import { goToPoitonSellerIfLow, startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startAvoidStacking, goToBankIfFull } from "../base/general.js"
+import { goToPotionSellerIfLow, startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startAvoidStacking, goToBankIfFull } from "../base/general.js"
 import { mainGoos, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 import { getTargetServerFromDate } from "../base/serverhop.js"
@@ -46,11 +46,11 @@ async function startRanger(bot: Ranger, positionOffset: { x: number, y: number }
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
-            await goToPoitonSellerIfLow(bot)
+            await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot)
 
             await bot.smartMove(offsetPosition(defaultLocation, positionOffset.x, positionOffset.y))
@@ -58,7 +58,7 @@ async function startRanger(bot: Ranger, positionOffset: { x: number, y: number }
             console.error(e)
         }
 
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }

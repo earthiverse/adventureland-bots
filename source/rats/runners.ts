@@ -1,5 +1,5 @@
 import AL, { Character, IPosition, Mage, Merchant, MonsterName, ServerIdentifier, ServerInfoDataLive, ServerRegion, Tools } from "alclient"
-import { startAvoidStacking, startBuyLoop, startBuyFriendsReplenishablesLoop, startCompoundLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startUpgradeLoop, goToBankIfFull, goToPoitonSellerIfLow, LOOP_MS, startSendStuffDenylistLoop } from "../base/general.js"
+import { startAvoidStacking, startBuyLoop, startBuyFriendsReplenishablesLoop, startCompoundLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startUpgradeLoop, goToBankIfFull, goToPotionSellerIfLow, LOOP_MS, startSendStuffDenylistLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
 
@@ -37,11 +37,11 @@ export async function startRatMageFarmer(bot: Mage, friends: Character[], mercha
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
-            await goToPoitonSellerIfLow(bot)
+            await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot)
 
             // Kite the scorpion
@@ -49,7 +49,7 @@ export async function startRatMageFarmer(bot: Mage, friends: Character[], mercha
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 
@@ -101,7 +101,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], holdPos
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
@@ -109,7 +109,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], holdPos
             if (bot.isFull() || lastBankVisit < Date.now() - 120000 || bot.hasPvPMarkedItem()) {
                 lastBankVisit = Date.now()
                 await doBanking(bot)
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -124,7 +124,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], holdPos
                     await bot.smartMove((bot.S[type] as ServerInfoDataLive), { getWithin: 100 })
                 }
 
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -140,7 +140,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], holdPos
                             await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2 })
                         }
 
-                        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                         return
                     }
                 }
@@ -159,7 +159,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], holdPos
             console.error(e)
         }
 
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }

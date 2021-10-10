@@ -1,5 +1,5 @@
 import AL, { Character, Constants, GameResponseData, IPosition, ItemDataTrade, Merchant, MonsterName, Player, Priest, ServerIdentifier, ServerRegion, TradeSlotType, Warrior } from "alclient"
-import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPoitonSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_SELL, goToNearestWalkableToMonster, startTrackerLoop, getFirstEmptyInventorySlot, startBuyFriendsReplenishablesLoop } from "../base/general.js"
+import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPotionSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_SELL, goToNearestWalkableToMonster, startTrackerLoop, getFirstEmptyInventorySlot, startBuyFriendsReplenishablesLoop } from "../base/general.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { stompPartyLeader, stompPartyMembers } from "../base/party.js"
@@ -382,11 +382,11 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
-            await goToPoitonSellerIfLow(bot)
+            await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot)
 
             // const spawn: IPosition = bot.S.franky as ServerInfoDataLive || mainGoos
@@ -396,7 +396,7 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
             console.error(e)
         }
 
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }
@@ -550,11 +550,11 @@ export async function startPriest(bot: Priest, merchantName: string): Promise<vo
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
-            await goToPoitonSellerIfLow(bot)
+            await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot)
 
             // const spawn: IPosition = bot.S.franky as ServerInfoDataLive || mainGoos
@@ -564,7 +564,7 @@ export async function startPriest(bot: Priest, merchantName: string): Promise<vo
             console.error(e)
         }
 
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }
@@ -591,7 +591,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], holdPos
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
@@ -599,7 +599,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], holdPos
             if (bot.isFull() || lastBankVisit < Date.now() - 120000 || bot.hasPvPMarkedItem()) {
                 lastBankVisit = Date.now()
                 await doBanking(bot)
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -615,7 +615,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], holdPos
                             await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2 })
                         }
 
-                        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                         return
                     }
                 }
@@ -628,7 +628,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], holdPos
                     await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                     lastBankVisit = Date.now()
                     await doBanking(bot)
-                    bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                     return
                 }
             }
@@ -646,7 +646,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], holdPos
             console.error(e)
         }
 
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
     }
     async function pvpMoveLoop() {
         try {

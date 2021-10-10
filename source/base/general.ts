@@ -141,7 +141,7 @@ export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
 export const UPGRADE_COMPOUND_LIMIT: ItemLevelInfo = {
     "lostearring": 2, // Level 2 is the best for exchanging
     "test_orb": 0, // No advantages for leveling this item
-    // "throwingstars": 0, // We're going to craft them in to firey throwing stars
+    // "throwingstars": 0, // We're going to craft them in to fiery throwing stars
     "vitring": 2, // Level 2 vitrings are useful for crafting
     "vorb": 0 // No advantages for leveling this item
 }
@@ -473,11 +473,11 @@ export async function goToSpecialMonster(bot: Character, type: MonsterName): Pro
  * NOTE: If you don't startBuyLoop() with a potion amount higher than minHpPots and minMpPots, we might get stuck!
  * NOTE: If you don't have enough gold, we might get stuck!
  * @param bot
- * @param minHpPotss
+ * @param minHpPots
  * @param minMpPots
  * @returns
  */
-export async function goToPoitonSellerIfLow(bot: Character, minHpPots = 100, minMpPots = 100): Promise<void> {
+export async function goToPotionSellerIfLow(bot: Character, minHpPots = 100, minMpPots = 100): Promise<void> {
     if (bot.hasItem("computer")) return // Don't need to move if we have a computer
 
     const currentHpPots = bot.countItem("hpot1")
@@ -574,7 +574,6 @@ export function moveInCircle(bot: Character, center: IPosition, radius = 125, an
         const endGoalAngle = angleFromCenterToCurrent + angle
         const endGoal = { x: center.x + radius * Math.cos(endGoalAngle), y: center.y + radius * Math.sin(endGoalAngle) }
         return bot.move(endGoal.x, endGoal.y)
-
     } else {
         // Move to where we can walk
         return bot.smartMove(center, { getWithin: radius })
@@ -1061,7 +1060,7 @@ export function startPartyLoop(bot: Character, leader: string, partyMembers?: st
             console.error(e)
         }
 
-        bot.timeouts.set("partyloop", setTimeout(async () => { partyLoop() }, 1000))
+        bot.timeouts.set("partyLoop", setTimeout(async () => { partyLoop() }, 1000))
     }
     partyLoop()
 }

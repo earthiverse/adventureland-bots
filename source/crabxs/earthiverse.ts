@@ -1,5 +1,5 @@
 import AL, { MonsterName, ServerIdentifier, ServerRegion, Warrior } from "alclient"
-import { goToPoitonSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, goToNearestWalkableToMonster, ITEMS_TO_SELL, startScareLoop } from "../base/general.js"
+import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, goToNearestWalkableToMonster, ITEMS_TO_SELL, startScareLoop } from "../base/general.js"
 import { attackTheseTypesWarrior, startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 
 /** Config */
@@ -45,11 +45,11 @@ async function startWarrior(bot: Warrior) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
-            await goToPoitonSellerIfLow(bot)
+            await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot)
 
             await goToNearestWalkableToMonster(bot, targets, crabXSpawn)
@@ -57,7 +57,7 @@ async function startWarrior(bot: Warrior) {
             console.error(e)
         }
 
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
     }
     moveLoop()
 }

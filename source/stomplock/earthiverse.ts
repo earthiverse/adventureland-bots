@@ -40,7 +40,7 @@ async function startMerchant(bot: Merchant, friends: Character[], holdPosition: 
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
@@ -48,7 +48,7 @@ async function startMerchant(bot: Merchant, friends: Character[], holdPosition: 
             if (bot.isFull() || lastBankVisit < Date.now() - 120000 || bot.hasPvPMarkedItem()) {
                 lastBankVisit = Date.now()
                 await doBanking(bot)
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -64,7 +64,7 @@ async function startMerchant(bot: Merchant, friends: Character[], holdPosition: 
                             await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2 })
                         }
 
-                        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                         return
                     }
                 }
@@ -77,7 +77,7 @@ async function startMerchant(bot: Merchant, friends: Character[], holdPosition: 
                     await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                     lastBankVisit = Date.now()
                     await doBanking(bot)
-                    bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                     return
                 }
             }
@@ -99,7 +99,7 @@ async function startMerchant(bot: Merchant, friends: Character[], holdPosition: 
                     await bot.smartMove((bot.S[type] as ServerInfoDataLive), { getWithin: 100 })
                 }
 
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -139,7 +139,7 @@ async function startMerchant(bot: Merchant, friends: Character[], holdPosition: 
             console.error(e)
         }
 
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
     }
     async function pvpMoveLoop() {
         try {

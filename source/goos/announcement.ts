@@ -1,5 +1,5 @@
 import AL, { MonsterName, Warrior } from "alclient"
-import { goToBankIfFull, goToNearestWalkableToMonster, goToPoitonSellerIfLow, startAvoidStacking, startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
+import { goToBankIfFull, goToNearestWalkableToMonster, goToPotionSellerIfLow, startAvoidStacking, startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
 import { mainGoos, offsetPosition } from "../base/locations.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { getTargetServerFromPlayer } from "../base/serverhop.js"
@@ -69,11 +69,11 @@ async function startWarrior(bot: Warrior, positionOffset: { x: number, y: number
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
-            await goToPoitonSellerIfLow(bot)
+            await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot)
 
             await goToNearestWalkableToMonster(bot, targets, offsetPosition(defaultLocation, positionOffset.x, positionOffset.y))
@@ -81,7 +81,7 @@ async function startWarrior(bot: Warrior, positionOffset: { x: number, y: number
             console.error(e)
         }
 
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 

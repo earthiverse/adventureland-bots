@@ -1,5 +1,5 @@
 import AL, { Entity, Priest, ServerIdentifier, ServerRegion, Tools } from "alclient"
-import { goToBankIfFull, goToPoitonSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
+import { goToBankIfFull, goToPotionSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
 import { bankingPosition } from "../base/locations.js"
 import { partyLeader } from "../base/party.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
@@ -39,11 +39,11 @@ async function startPriest(bot: Priest) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
                 return
             }
 
-            await goToPoitonSellerIfLow(bot)
+            await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot)
 
 
@@ -107,7 +107,7 @@ async function startPriest(bot: Priest) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
     }
     moveLoop()
 }

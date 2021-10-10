@@ -1,5 +1,5 @@
 import AL, { Constants, GMap, Mage, MapName, MonsterName, ServerIdentifier, ServerRegion, Tools } from "alclient"
-import { startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToPoitonSellerIfLow, goToBankIfFull } from "../base/general.js"
+import { startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToPotionSellerIfLow, goToBankIfFull } from "../base/general.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 
 export type Boundary = { x: [number, number], y: [number, number] }
@@ -134,11 +134,11 @@ export async function startShared(bot: Mage, targets: MonsterName[], friends: Ma
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
-            await goToPoitonSellerIfLow(bot)
+            await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot)
 
             // Hold position

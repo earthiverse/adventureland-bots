@@ -37,7 +37,7 @@ async function startShared(bot: Character) {
     if (bot.id == partyLeader) {
         startPartyLoop(bot, partyLeader, partyMembers)
     } else {
-        bot.timeouts.set("partyloop", setTimeout(async () => { startPartyLoop(bot, partyLeader, partyMembers) }, 2000))
+        bot.timeouts.set("partyLoop", setTimeout(async () => { startPartyLoop(bot, partyLeader, partyMembers) }, 2000))
     }
     startHealLoop(bot)
     startLootLoop(bot)
@@ -128,7 +128,7 @@ async function startPriest(bot: Priest) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
@@ -137,7 +137,7 @@ async function startPriest(bot: Priest) {
                 let index = 0
                 if (bot.party) index = bot.partyData.list.indexOf(bot.id)
                 await goToNearestWalkableToMonster(bot, ["mvampire", "fvampire", "phoenix", "goldenbat", "bat"], batLocations[index % batLocations.length])
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -149,7 +149,7 @@ async function startPriest(bot: Priest) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }
@@ -193,7 +193,7 @@ async function startRanger(bot: Ranger) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
@@ -202,7 +202,7 @@ async function startRanger(bot: Ranger) {
                 let index = 0
                 if (bot.party) index = bot.partyData.list.indexOf(bot.id)
                 await goToNearestWalkableToMonster(bot, ["mvampire", "fvampire", "phoenix", "goldenbat", "bat"], batLocations[index % batLocations.length])
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -214,7 +214,7 @@ async function startRanger(bot: Ranger) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }
@@ -262,7 +262,7 @@ async function startWarrior(bot: Warrior) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
@@ -271,7 +271,7 @@ async function startWarrior(bot: Warrior) {
                 let index = 0
                 if (bot.party) index = bot.partyData.list.indexOf(bot.id)
                 await goToNearestWalkableToMonster(bot, ["mvampire", "fvampire", "phoenix", "goldenbat", "bat"], batLocations[index % batLocations.length])
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -284,7 +284,7 @@ async function startWarrior(bot: Warrior) {
                 bot.smartMove(cryptEnd).catch(e => console.error(e))
             } else if (!nearest) {
                 // Wait for smartMove to bring us close to something
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -324,7 +324,7 @@ async function startWarrior(bot: Warrior) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }

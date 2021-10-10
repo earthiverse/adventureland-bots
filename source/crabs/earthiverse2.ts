@@ -1,5 +1,5 @@
 import AL, { Ranger, ServerIdentifier, ServerRegion } from "alclient"
-import { goToBankIfFull, goToPoitonSellerIfLow, LOOP_MS, startBuyLoop, startHealLoop, startLootLoop, startSellLoop } from "../base/general.js"
+import { goToBankIfFull, goToPotionSellerIfLow, LOOP_MS, startBuyLoop, startHealLoop, startLootLoop, startSellLoop } from "../base/general.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 
 /** Config */
@@ -36,11 +36,11 @@ async function startRanger(bot: Ranger) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
                 return
             }
 
-            await goToPoitonSellerIfLow(bot)
+            await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot)
 
             await bot.smartMove(crabSpawn)
@@ -48,7 +48,7 @@ async function startRanger(bot: Ranger) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
     }
     moveLoop()
 }

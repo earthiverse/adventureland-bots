@@ -256,7 +256,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                 return
             }
 
@@ -264,7 +264,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
             if (bot.isFull() || lastBankVisit < Date.now() - 120000 || bot.hasPvPMarkedItem()) {
                 lastBankVisit = Date.now()
                 await doBanking(bot)
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -281,7 +281,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
                             await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2 })
                         }
 
-                        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                         return
                     }
                 }
@@ -294,7 +294,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
                     await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                     lastBankVisit = Date.now()
                     await doBanking(bot)
-                    bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                     return
                 }
             }
@@ -302,14 +302,14 @@ export async function startMerchant(bot: Merchant, information: Information, str
             // Go fishing if we can
             await goFishing(bot)
             if (!bot.isOnCooldown("fishing")) {
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
             // Go mining if we can
             await goMining(bot)
             if (!bot.isOnCooldown("mining")) {
-                bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -325,7 +325,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
                         await bot.smartMove((bot.S[type] as ServerInfoDataLive), { getWithin: 100 })
                     }
 
-                    bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 250))
+                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                     return
                 }
 
@@ -363,7 +363,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
             console.error(e)
         }
 
-        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
     }
     moveLoop()
 }
@@ -731,8 +731,9 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
         console.log("~~~ Magiport Data DEBUG (add this type to ALClient) ~~~")
         console.log(data)
         if (magiporters.has(data.name)) {
-            if (bot.c?.town) await bot.stopWarpToTown()
             await bot.acceptMagiport(data.name)
+            await bot.stopSmartMove()
+            await bot.stopWarpToTown()
             return
         }
     })
@@ -755,7 +756,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
         if (bot.id == partyLeader) {
             startPartyLoop(bot, partyLeader, partyMembers)
         } else {
-            bot.timeouts.set("partyloop", setTimeout(async () => { startPartyLoop(bot, partyLeader, partyMembers) }, 2000))
+            bot.timeouts.set("partyLoop", setTimeout(async () => { startPartyLoop(bot, partyLeader, partyMembers) }, 2000))
         }
     }
     startScareLoop(bot)
@@ -772,7 +773,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
                 // If we are dead, respawn
                 if (bot.rip) {
                     await bot.respawn()
-                    bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, 1000))
+                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
                     return
                 }
 
@@ -780,7 +781,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
                 if (!bot.s.monsterhunt && bot.server.name == DEFAULT_IDENTIFIER && bot.server.region == DEFAULT_REGION) {
                     await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1, useBlink: true })
                     await bot.getMonsterHuntQuest()
-                    bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
+                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
                     return
                 }
 
@@ -789,7 +790,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
                     await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1, useBlink: true })
                     await bot.finishMonsterHuntQuest()
                     await bot.getMonsterHuntQuest()
-                    bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
+                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
                     return
                 }
 
@@ -798,7 +799,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
                     await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, useBlink: true })
                     // TODO: Improve ALClient by making this a function
                     bot.socket.emit("interaction", { type: "newyear_tree" })
-                    bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, Math.min(...bot.pings) * 2))
+                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, Math.min(...bot.pings) * 2))
                     return
                 }
 
@@ -809,7 +810,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
                         await bot.smartMove(friendlyRogue, { getWithin: 20 })
                         if (!bot.s.rspeed) await sleep(2500)
                         if (!bot.s.rspeed) friendlyRogues.splice(friendlyRogues.indexOf(friendlyRogue.id), 1) // They're not giving rspeed, remove them from our list
-                        bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
+                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
                         return
                     }
                 }
@@ -821,7 +822,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
                 //     const newPlayer = await AL.PlayerModel.findOne({ $expr: { $eq: ["$name", "$s.newcomersblessing.f"] }, lastSeen: { $gt: Date.now() - 120_000 }, serverIdentifier: bot.server.name, serverRegion: bot.server.region }).lean().exec()
                 //     if (newPlayer) {
                 //         await bot.smartMove(newPlayer, { getWithin: 20 })
-                //         bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
+                //         bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
                 //         return
                 //     }
                 // }
@@ -842,7 +843,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
             } catch (e) {
                 console.error(e)
             }
-            bot.timeouts.set("moveloop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
+            bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
         }
         moveLoop()
     }
