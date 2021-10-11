@@ -1,4 +1,4 @@
-import AL, { Character, Constants, Entity, Mage, MonsterName, Tools } from "alclient"
+import AL, { Character, Entity, Mage, MonsterName } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 
 const CBURST_WHEN_HP_LESS_THAN = 200
@@ -84,8 +84,9 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
     }
 
     if (bot.canUse("cburst")) {
+        const targets = new Map<string, number>()
+
         // Cburst low HP monsters
-        const targets: [string, number][] = []
         let mpNeeded = bot.G.skills.cburst.mp + bot.mp_cost
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
@@ -96,17 +97,31 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
             withinRange: bot.range
         })) {
             if (entity.immune) continue // Entity won't take damage from cburst
-            if (options.cburstWhenHPLessThan) {
-                if (entity.hp >= options.cburstWhenHPLessThan) continue
-            } else if (entity.hp >= CBURST_WHEN_HP_LESS_THAN) continue // Lots of HP
+            if (options.cburstWhenHPLessThan && entity.hp >= options.cburstWhenHPLessThan) continue
+            else if (entity.hp >= CBURST_WHEN_HP_LESS_THAN) continue // Lots of HP
             if (AL.Constants.SPECIAL_MONSTERS.includes(entity.type)) continue // Don't cburst special monsters
             const extraMP = entity.hp / bot.G.skills.cburst.ratio
             if (mpNeeded + extraMP > bot.mp) break // We can't cburst anything more
-            targets.push([entity.id, extraMP])
+            targets.set(entity.id, extraMP)
             mpNeeded += extraMP
         }
 
-        if (targets.length && bot.mp >= mpNeeded) {
+        // Cburst monsters that we can kill steal
+        for (const entity of bot.getEntities({
+            couldGiveCredit: true,
+            willDieToProjectiles: true,
+            withinRange: bot.range
+        })) {
+            if (entity.immune) continue // Entity won't take damage from cburst
+            if (entity.target) continue // Already has a target
+            if (entity.xp < 0) continue // Don't try to kill steal pets
+            const extraMP = 1 / bot.G.skills.cburst.ratio
+            if (mpNeeded + extraMP > bot.mp) break // We can't cburst anything more
+            targets.set(entity.id, extraMP)
+            mpNeeded += extraMP
+        }
+
+        if (targets.size && bot.mp >= mpNeeded) {
             // Remove them from our friends' entities list, since we're going to kill them
             for (const [id] of targets) {
                 for (const friend of friends) {
@@ -116,7 +131,12 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
                 }
             }
 
-            await bot.cburst(targets)
+            const cburstTargets: [string, number][] = []
+            for (const cburstData of targets) {
+                cburstTargets.push(cburstData)
+            }
+
+            await bot.cburst(cburstTargets)
         }
     }
 
