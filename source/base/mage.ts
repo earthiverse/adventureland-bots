@@ -1,4 +1,4 @@
-import AL, { Character, Entity, Mage, MonsterName } from "alclient"
+import AL, { Character, Entity, Mage, MonsterName, SlotType, TradeItemInfo, TradeSlotType } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 
 const CBURST_WHEN_HP_LESS_THAN = 200
@@ -101,9 +101,37 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
             else if (entity.hp >= CBURST_WHEN_HP_LESS_THAN) continue // Lots of HP
             if (AL.Constants.SPECIAL_MONSTERS.includes(entity.type)) continue // Don't cburst special monsters
             const extraMP = entity.hp / bot.G.skills.cburst.ratio
-            if (mpNeeded + extraMP > bot.mp) break // We can't cburst anything more
+            if (mpNeeded + extraMP > bot.mp) continue // We can't cburst anything more
             targets.set(entity.id, extraMP)
             mpNeeded += extraMP
+        }
+
+        // Cburst humanoids for the chance to regain mp.
+        let humanoidRestorability = 0
+        for (const slotName in bot.slots) {
+            const slot = bot.slots[slotName as SlotType | TradeSlotType]
+            if (!slot || (slot as TradeItemInfo).price != undefined) continue
+            const gItem = bot.G.items[slot.name]
+            if (gItem.ability == "restore_mp") {
+                humanoidRestorability += gItem.attr0 * 5
+            }
+        }
+        if (humanoidRestorability > 100 / 3) {
+            for (const entity of bot.getEntities({
+                couldGiveCredit: true,
+                typeList: types,
+                willDieToProjectiles: false,
+                withinRange: bot.range
+            })) {
+                if (entity.immune) continue // Entity won't take damage from cburst
+                if (!entity.humanoid) continue // Entity isn't a humanoid
+                if (targets.has(entity.id)) continue // It's low HP (from previous for loop), we're already going to kill it
+
+                const extraMP = 100
+                if (mpNeeded + extraMP > bot.mp) break // We can't cburst anything more
+                targets.set(entity.id, extraMP)
+                mpNeeded += extraMP
+            }
         }
 
         // Cburst monsters that we can kill steal
