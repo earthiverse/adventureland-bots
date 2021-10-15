@@ -829,7 +829,10 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
                 // }
 
                 // Get a luck elixir
-                if (!bot.slots.elixir && !bot.hasItem("computer") && bot.gold > bot.G.items.elixirluck.g) {
+                if (!bot.slots.elixir
+                     && !(bot.hasItem("computer") || bot.hasItem("supercomputer"))
+                     && bot.canBuy("elixirluck", { ignoreLocation: true })
+                     && !bot.isFull()) {
                     await bot.smartMove("elixirluck")
                 }
 

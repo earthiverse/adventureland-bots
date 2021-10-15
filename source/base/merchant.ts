@@ -122,6 +122,7 @@ export async function doEmergencyBanking(bot: Merchant, itemsToHold = MERCHANT_I
     }
 
     // Find things we can stack
+    let stacked = false
     for (const itemName in stackList) {
         const stacks = stackList[itemName]
         const stackLimit = bot.G.items[itemName].s
@@ -139,9 +140,13 @@ export async function doEmergencyBanking(bot: Merchant, itemsToHold = MERCHANT_I
                 await bot.withdrawItem(stack2[0], stack2[1], inventoryPos)
                 await bot.depositItem(inventoryPos, stack2[0], stack2[1])
                 stack2[2] += stack1[2]
+                stacked = true
             }
         }
     }
+    if (stacked) return // We found something to stack
+
+    // TODO: Find items to compound
 }
 
 export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOLD, itemsToHold = MERCHANT_ITEMS_TO_HOLD, itemsToSell = ITEMS_TO_SELL, itemsToCraft = ITEMS_TO_CRAFT, itemsToExchange = ITEMS_TO_EXCHANGE): Promise<void> {
