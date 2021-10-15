@@ -46,7 +46,7 @@ async function startRanger(bot: Ranger) {
             if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.isOnCooldown("scare")) {
-                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("scare"))))
+                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("scare"))))
                 return
             }
 
@@ -105,7 +105,7 @@ async function startRanger(bot: Ranger) {
             console.error(e)
         }
 
-        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
     }
     attackLoop()
 
@@ -136,7 +136,7 @@ async function startMage(bot: Mage) {
             if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.isOnCooldown("scare")) {
-                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("scare"))))
+                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("scare"))))
                 return
             }
 
@@ -162,7 +162,7 @@ async function startMage(bot: Mage) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
     }
     attackLoop()
 

@@ -51,7 +51,7 @@ async function run() {
                 }
             }
         }
-        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, 100 - Math.min(...bot.pings)))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, 100 - Math.min(...bot.pings)))
     }
     attackLoop()
 }

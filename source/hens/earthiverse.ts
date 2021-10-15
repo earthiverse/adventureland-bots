@@ -25,7 +25,7 @@ async function startWarrior(bot: Warrior) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
     }
     attackLoop()
 

@@ -56,12 +56,12 @@ export async function startBscorpionMageFarmer(bot: Mage, friends: Character[], 
             // If we are dead, respawn
             if (bot.rip || bot.c.town) {
                 await bot.respawn()
-                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
                 return
             }
 
             if (!bot.canUse("scare", { ignoreEquipped: true })) {
-                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
                 return
             }
 
@@ -70,7 +70,7 @@ export async function startBscorpionMageFarmer(bot: Mage, friends: Character[], 
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("cburst"), bot.getCooldown("attack")))))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("cburst"), bot.getCooldown("attack")))))
     }
     attackLoop()
 }
@@ -121,14 +121,14 @@ export async function startBscorpionPriestFarmer(bot: Priest, friends: Character
             // If we are dead, respawn
             if (bot.rip || bot.c.town) {
                 await bot.respawn()
-                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
                 return
             }
 
             if (!bot.canUse("scare", { ignoreEquipped: true })) {
                 // Only heal
                 await attackTheseTypesPriest(bot, [], friends)
-                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
                 return
             }
 
@@ -136,7 +136,7 @@ export async function startBscorpionPriestFarmer(bot: Priest, friends: Character
             if (closest && closest.monster.target == undefined && closest.distance <= bot.G.monsters.bscorpion.range) {
                 // Only heal
                 await attackTheseTypesPriest(bot, [], friends)
-                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
                 return
             }
 
@@ -145,7 +145,7 @@ export async function startBscorpionPriestFarmer(bot: Priest, friends: Character
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
     }
     attackLoop()
 }

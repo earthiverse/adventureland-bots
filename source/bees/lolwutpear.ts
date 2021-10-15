@@ -37,7 +37,7 @@ async function startMage(bot: Mage, positionOffset: { x: number, y: number } = {
             console.error(e)
         }
 
-        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
     }
     attackLoop()
 

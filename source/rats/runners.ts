@@ -60,12 +60,12 @@ export async function startRatMageFarmer(bot: Mage, friends: Character[], mercha
             // If we are dead, respawn
             if (bot.rip || bot.c.town) {
                 await bot.respawn()
-                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
                 return
             }
 
             if (!bot.canUse("scare", { ignoreEquipped: true })) {
-                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
                 return
             }
 
@@ -74,7 +74,7 @@ export async function startRatMageFarmer(bot: Mage, friends: Character[], mercha
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("cburst"), bot.getCooldown("attack")))))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("cburst"), bot.getCooldown("attack")))))
     }
     attackLoop()
 }

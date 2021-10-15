@@ -1,5 +1,5 @@
 import AL, { BankPackName, Character, Entity, ItemData, ItemName, Merchant, MonsterName } from "alclient"
-import { ITEMS_TO_CRAFT, ITEMS_TO_EXCHANGE, ITEMS_TO_HOLD, ITEMS_TO_SELL, LOOP_MS } from "./general.js"
+import { ITEMS_TO_CRAFT, ITEMS_TO_EXCHANGE, ITEMS_TO_HOLD, ITEMS_TO_SELL, LOOP_MS, sleep } from "./general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "./locations.js"
 
 export const MERCHANT_GOLD_TO_HOLD = 100_000_000
@@ -47,6 +47,101 @@ export async function attackTheseTypesMerchant(bot: Merchant, types: MonsterName
     }
 
     await bot.basicAttack(entity.id)
+}
+
+/**
+ * WORK IN PROGRESS. NOT FINISHED. DO NOT USE.
+ * Finds things that we can upgrade when our inventory and bank are both full, and attempts to upgrade them.
+ * @param bot
+ * @returns
+ */
+export async function doEmergencyBanking(bot: Merchant, itemsToHold = MERCHANT_ITEMS_TO_HOLD, itemsToSell = ITEMS_TO_SELL): Promise<void> {
+    if (bot.map !== "bank" && bot.map !== "bank_b" && bot.map !== "bank_u") return // Not in the bank
+    if (bot.esize > 1) return // We have more than one free slot, we're not in trouble
+
+    // Check if our bank is full. If it's not, don't perform emergency banking
+    for (const bankPackName in bot.bank) {
+        if (bankPackName == "gold") continue
+        for (const bankSlot of bot.bank[bankPackName as BankPackName]) {
+            if (!bankSlot) return // We found an empty spot, don't clean the bank
+        }
+    }
+
+    const availableInventorySlots: number[] = []
+    for (let i = 0; i < bot.isize; i++) {
+        const item = bot.items[i]
+
+        if (!item) {
+            // No item in this slot
+            availableInventorySlots.push(i)
+            continue
+        }
+        if (item.l) continue // Item is locked
+        if (item.p) continue // Item is special
+        if (itemsToHold.has(item.name)) continue // We want to hold this item
+        if ((item.level ?? 0) <= itemsToSell[item.name]) {
+            // We can go sell this item
+            await bot.smartMove("main")
+            await sleep(5000) // Leaving the bank doesn't free up our character right away
+            if (bot.items[i]) await bot.sell(i, item.q ?? 1)
+            return // We sold something to free up space, go do whatever now.
+        }
+
+        availableInventorySlots.push(i)
+    }
+
+    // Look for things we can combine in to one stack.
+    const stackList = {}
+
+    // Create the list of duplicate items
+    for (const bankSlot in bot.bank) {
+        const matches = /items(\d+)/.exec(bankSlot)
+        // Only get stuff from the packs in the current level
+        if (bot.map == "bank") {
+            if (!matches || Number.parseInt(matches[1]) > 7) continue
+        } else if (bot.map == "bank_b") {
+            if (!matches || Number.parseInt(matches[1]) < 8 || Number.parseInt(matches[1]) > 23) continue
+        } else if (bot.map == "bank_u") {
+            if (!matches || Number.parseInt(matches[1]) < 24) continue
+        }
+
+        for (let i = 0; i < bot.bank[bankSlot].length; i++) {
+            const item = bot.bank[bankSlot as BankPackName][i]
+            if (!item) continue // Empty slot
+            if (!item.q) continue // Not stackable
+            if (item.q >= bot.G.items[item.name].s) continue // Maximum stack quantity already reached
+            if (!stackList[item.name]) stackList[item.name] = []
+            stackList[item.name].push([bankSlot, i, item.q])
+        }
+    }
+
+    // Remove items with only one stack
+    for (const itemName in stackList) {
+        const items = stackList[itemName]
+        if (items.length == 1) delete stackList[itemName]
+    }
+
+    // Find things we can stack
+    for (const itemName in stackList) {
+        const stacks = stackList[itemName]
+        const stackLimit = bot.G.items[itemName].s
+        for (let j = 0; j < stacks.length - 1; j++) {
+            const stack1 = stacks[j]
+            const stack2 = stacks[j + 1]
+            if (stack1[2] + stack2[2] > stackLimit) continue // Can't stack, too much
+
+            // TODO: If we have a stand or computer with an empty space, use it to help create full stacks
+
+            // We can stack something!
+            const inventoryPos = availableInventorySlots.pop()
+            if (inventoryPos !== undefined) {
+                await bot.withdrawItem(stack1[0], stack1[1], inventoryPos)
+                await bot.withdrawItem(stack2[0], stack2[1], inventoryPos)
+                await bot.depositItem(inventoryPos, stack2[0], stack2[1])
+                stack2[2] += stack1[2]
+            }
+        }
+    }
 }
 
 export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOLD, itemsToHold = MERCHANT_ITEMS_TO_HOLD, itemsToSell = ITEMS_TO_SELL, itemsToCraft = ITEMS_TO_CRAFT, itemsToExchange = ITEMS_TO_EXCHANGE): Promise<void> {

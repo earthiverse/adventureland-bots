@@ -107,7 +107,7 @@ async function startPriest(bot: Priest) {
                 bot.rip // We are dead
                 || bot.c.town // We are teleporting to town
             ) {
-                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
                 return
             }
 
@@ -116,7 +116,7 @@ async function startPriest(bot: Priest) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
     }
     attackLoop()
 
@@ -172,7 +172,7 @@ async function startRanger(bot: Ranger) {
                 bot.rip // We are dead
                 || bot.c.town // We are teleporting to town
             ) {
-                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
                 return
             }
 
@@ -181,7 +181,7 @@ async function startRanger(bot: Ranger) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
     }
     attackLoop()
 
@@ -241,7 +241,7 @@ async function startWarrior(bot: Warrior) {
                 bot.rip // We are dead
                 || bot.c.town // We are teleporting to town
             ) {
-                bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
                 return
             }
 
@@ -250,7 +250,7 @@ async function startWarrior(bot: Warrior) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackloop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
     }
     attackLoop()
 
@@ -290,35 +290,35 @@ async function startWarrior(bot: Warrior) {
 
             if (nearest) {
                 switch (nearest.type) {
-                case "a1": // Spike
-                case "bat": // Spike spawns bats
-                    goToKiteMonster(bot, { stayWithinAttackingRange: true, type: "a1" })
-                    break
-                case "a2": // Bill
-                    goToKiteMonster(bot, { stayWithinAttackingRange: true, type: "a2" })
-                    break
-                case "a3": // Lestat
-                    goToKiteMonster(bot, { stayWithinAttackingRange: true, type: "a3" })
-                    break
-                case "a4": // Orlok
-                case "zapper0": // Orlok spawns zappers
-                    goToKiteMonster(bot, { stayWithinAttackingRange: true, type: "a4" })
-                    break
-                case "a5": // Elena
-                    goToKiteMonster(bot, { stayWithinAttackingRange: true, type: "a5" })
-                    break
-                case "a6": // Marceline
-                    goToKiteMonster(bot, { type: "a6" })
-                    break
-                case "a7": // Lucinda
-                    goToKiteMonster(bot, { stayWithinAttackingRange: true, type: "a7" })
-                    break
-                case "a8": // Angel
-                    goToKiteMonster(bot, { type: "a8" })
-                    break
-                case "vbat":
-                    goToKiteMonster(bot, { stayWithinAttackingRange: true, type: "vbat" })
-                    break
+                    case "a1": // Spike
+                    case "bat": // Spike spawns bats
+                        goToKiteMonster(bot, { stayWithinAttackingRange: true, type: "a1" })
+                        break
+                    case "a2": // Bill
+                        goToKiteMonster(bot, { stayWithinAttackingRange: true, type: "a2" })
+                        break
+                    case "a3": // Lestat
+                        goToKiteMonster(bot, { stayWithinAttackingRange: true, type: "a3" })
+                        break
+                    case "a4": // Orlok
+                    case "zapper0": // Orlok spawns zappers
+                        goToKiteMonster(bot, { stayWithinAttackingRange: true, type: "a4" })
+                        break
+                    case "a5": // Elena
+                        goToKiteMonster(bot, { stayWithinAttackingRange: true, type: "a5" })
+                        break
+                    case "a6": // Marceline
+                        goToKiteMonster(bot, { type: "a6" })
+                        break
+                    case "a7": // Lucinda
+                        goToKiteMonster(bot, { stayWithinAttackingRange: true, type: "a7" })
+                        break
+                    case "a8": // Angel
+                        goToKiteMonster(bot, { type: "a8" })
+                        break
+                    case "vbat":
+                        goToKiteMonster(bot, { stayWithinAttackingRange: true, type: "vbat" })
+                        break
                 }
             }
         } catch (e) {

@@ -500,12 +500,12 @@ export async function goToPotionSellerIfLow(bot: Character, minHpPots = 100, min
  */
 export async function goToNPCShopIfFull(bot: Character, itemsToSell = ITEMS_TO_SELL): Promise<void> {
     if (!bot.isFull()) return // Not full
-    if (bot.hasItem("computer")) return // We don't need to move if we have a computer
+    if (bot.hasItem("computer") || bot.hasItem("supercomputer")) return // We don't need to move if we have a computer
 
     let hasSellableItem = false
     for (const item of bot.items) {
         if (!item) continue
-        if (itemsToSell[item.name]) {
+        if (item.level <= itemsToSell[item.name]) {
             // We have something we could sell to make room
             hasSellableItem = true
             break
@@ -1184,20 +1184,18 @@ export function startSellLoop(bot: Character, itemsToSell: ItemLevelInfo = ITEMS
                 for (let i = 0; i < bot.items.length; i++) {
                     const item = bot.items[i]
                     if (!item) continue // No item in this slot
+                    if (item.l) continue // Item is locked
                     if (item.p) continue // This item is special in some way
-                    if (itemsToSell[item.name] == undefined) continue // We don't want to sell this item
-                    if (item.level && itemsToSell[item.name] <= item.level) continue // Keep this item, it's a high enough level that we want to keep it
+                    if (!(item.level <= itemsToSell[item.name])) continue // We don't want to sell this item
 
-                    const q = bot.items[i].q !== undefined ? bot.items[i].q : 1
-
-                    await bot.sell(i, q)
+                    await bot.sell(i, item.q ?? 1)
                 }
             }
         } catch (e) {
             console.error(e)
         }
 
-        bot.timeouts.set("sellloop", setTimeout(async () => { sellLoop() }, LOOP_MS))
+        bot.timeouts.set("sellLoop", setTimeout(async () => { sellLoop() }, LOOP_MS))
     }
     sellLoop()
 }
