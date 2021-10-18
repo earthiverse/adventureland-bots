@@ -4,7 +4,7 @@ import { getTargetServerFromDate, SERVER_HOP_SERVERS } from "../base/serverhop.j
 
 const servers = SERVER_HOP_SERVERS
 
-const SEND_ALDATA = false
+const SEND_ALDATA = true
 const NOTABLE_NPCS: string[] = ["Angel", "Kane"]
 
 const PEEK = true
@@ -36,7 +36,6 @@ async function run() {
             observer.socket.on("new_map", async (data: NewMapData) => {
                 // Help out super in his data gathering
                 const npcInfos = []
-                data.entities
                 for (const npc of NOTABLE_NPCS) {
                     for (const player of data.entities.players) {
                         if (npc == player.id) {
