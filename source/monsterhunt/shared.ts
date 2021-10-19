@@ -1,4 +1,4 @@
-import AL, { Character, CMData, Entity, IPosition, Mage, Merchant, MonsterName, Priest, Ranger, Rogue, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Warrior } from "alclient"
+import AL, { Character, CMData, Constants, Entity, IPosition, Mage, Merchant, MonsterName, Priest, Ranger, Rogue, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Warrior } from "alclient"
 import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, ITEMS_TO_HOLD, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { attackTheseTypesMerchant, doBanking, doEmergencyBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
@@ -26,9 +26,8 @@ export async function getTarget(bot: Character, strategy: Strategy, information:
             return realEntity.type
         } else {
             if (AL.Tools.distance(bot, entity) < AL.Constants.MAX_VISIBLE_RANGE / 2) {
-
                 // We're close, but we can't see the entity. It's probably dead
-                AL.Database.lastMongoUpdate.delete(entity.name)
+                AL.Database.nextUpdate.set(`${bot.server.name}${bot.server.region}${entity.name}`, Date.now() + Constants.MONGO_UPDATE_MS)
                 await AL.EntityModel.deleteOne({ name: entity.name, serverIdentifier: bot.serverData.name, serverRegion: bot.serverData.region }).lean().exec()
             } else {
                 return entity.type
@@ -47,14 +46,14 @@ export async function getTarget(bot: Character, strategy: Strategy, information:
             if (realEntity.couldGiveCreditForKill(bot)) return realEntity.type
 
             // Update the database to let others know that this entity is taken
-            AL.Database.lastMongoUpdate.set(realEntity.id, new Date())
+            AL.Database.nextUpdate.set(`${bot.server.name}${bot.server.region}${entity.name}`, Date.now() + Constants.MONGO_UPDATE_MS)
             await AL.EntityModel.updateOne({ name: realEntity.id, serverIdentifier: bot.serverData.name, serverRegion: bot.serverData.region, type: realEntity.type },
                 { hp: realEntity.hp, lastSeen: Date.now(), level: realEntity.level, map: realEntity.map, target: realEntity.target, x: realEntity.x, y: realEntity.y },
                 { upsert: true }).lean().exec()
         } else {
             if (AL.Tools.distance(bot, entity) < AL.Constants.MAX_VISIBLE_RANGE / 2) {
                 // We're close, but we can't see the entity. It's probably dead
-                AL.Database.lastMongoUpdate.delete(entity.name)
+                AL.Database.nextUpdate.set(`${bot.server.name}${bot.server.region}${entity.name}`, Date.now() + Constants.MONGO_UPDATE_MS)
                 await AL.EntityModel.deleteOne({ name: entity.name, serverIdentifier: bot.serverData.name, serverRegion: bot.serverData.region }).lean().exec()
                 continue
             }
