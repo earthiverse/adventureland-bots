@@ -42,37 +42,37 @@ export function offsetPositionParty(position: IPosition, bot: Character, offsetA
     const offset = { x: 0, y: 0 }
     if (bot.party) {
         switch (bot.partyData.list.indexOf(bot.id)) {
-        case 1:
-            offset.x = offsetAmount
-            break
-        case 2:
-            offset.x = -offsetAmount
-            break
-        case 3:
-            offset.y = offsetAmount
-            break
-        case 4:
-            offset.y = -offsetAmount
-            break
-        case 5:
-            offset.x = offsetAmount
-            offset.y = offsetAmount
-            break
-        case 6:
-            offset.x = offsetAmount
-            offset.y = -offsetAmount
-            break
-        case 7:
-            offset.x = -offsetAmount
-            offset.y = offsetAmount
-            break
-        case 8:
-            offset.x = -offsetAmount
-            offset.y = -offsetAmount
-            break
-        case 9:
-            offset.x = 2 * offsetAmount
-            break
+            case 1:
+                offset.x = offsetAmount
+                break
+            case 2:
+                offset.x = -offsetAmount
+                break
+            case 3:
+                offset.y = offsetAmount
+                break
+            case 4:
+                offset.y = -offsetAmount
+                break
+            case 5:
+                offset.x = offsetAmount
+                offset.y = offsetAmount
+                break
+            case 6:
+                offset.x = offsetAmount
+                offset.y = -offsetAmount
+                break
+            case 7:
+                offset.x = -offsetAmount
+                offset.y = offsetAmount
+                break
+            case 8:
+                offset.x = -offsetAmount
+                offset.y = -offsetAmount
+                break
+            case 9:
+                offset.x = 2 * offsetAmount
+                break
         }
     }
     return { in: position.in, map: position.map, x: position.x + offset.x, y: position.y + offset.y }
