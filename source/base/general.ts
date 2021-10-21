@@ -505,7 +505,7 @@ export async function goToNPCShopIfFull(bot: Character, itemsToSell = ITEMS_TO_S
     let hasSellableItem = false
     for (const item of bot.items) {
         if (!item) continue
-        if (item.level ?? 0 <= itemsToSell[item.name]) {
+        if ((item.level ?? 0) <= itemsToSell[item.name]) {
             // We have something we could sell to make room
             hasSellableItem = true
             break
@@ -1188,7 +1188,7 @@ export function startSellLoop(bot: Character, itemsToSell: ItemLevelInfo = ITEMS
                     if (item.p) continue // This item is special in some way
                     if (!((item.level ?? 0) <= itemsToSell[item.name])) continue // We don't want to sell this item
 
-                    console.log(`!((item.level ?? 0) <= itemsToSell[item.name]) is ${!(item.level ?? 0 <= itemsToSell[item.name])}`)
+                    console.log(`!((item.level ?? 0) <= itemsToSell[item.name]) is ${!((item.level ?? 0) <= itemsToSell[item.name])}`)
                     console.log(`itemsToSell[item.name] is ${itemsToSell[item.name]}`)
                     console.log(`we want to sell ${item.q ?? 1} ${item.name}(s)`)
                     // await bot.sell(i, item.q ?? 1)

@@ -79,7 +79,7 @@ export async function doEmergencyBanking(bot: Merchant, itemsToHold = MERCHANT_I
         if (item.l) continue // Item is locked
         if (item.p) continue // Item is special
         if (itemsToHold.has(item.name)) continue // We want to hold this item
-        if (item.level ?? 0 <= itemsToSell[item.name]) {
+        if ((item.level ?? 0) <= itemsToSell[item.name]) {
             // We can go sell this item
             await bot.smartMove("main")
             await sleep(5000) // Leaving the bank doesn't free up our character right away
@@ -179,7 +179,7 @@ export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOL
         if (!item) continue
         if (itemsToHold.has(item.name)) continue // We want to hold it
         if (item.l == "l") continue // We want to hold it
-        if ((item.level ?? 0 <= itemsToSell[item.name]) && !item.p) continue // We want to sell it
+        if (((item.level ?? 0) <= itemsToSell[item.name]) && !item.p) continue // We want to sell it
         try {
             // Deposit it in the bank
             await bot.depositItem(i)
@@ -390,7 +390,7 @@ export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOL
         if (!item) continue // No item
         if (item.l) continue // Item is locked
         if (item.p) continue // Item is special
-        if (!(item.level ?? 0 <= itemsToSell[item.name])) continue // The item level is too high to sell
+        if (!((item.level ?? 0) <= itemsToSell[item.name])) continue // The item level is too high to sell
 
         // Withdraw the item
         const pack = `items${Math.floor(i / 42)}` as Exclude<BankPackName, "gold">
