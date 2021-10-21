@@ -1188,6 +1188,8 @@ export function startSellLoop(bot: Character, itemsToSell: ItemLevelInfo = ITEMS
                     if (item.p) continue // This item is special in some way
                     if (!(item.level ?? 0 <= itemsToSell[item.name])) continue // We don't want to sell this item
 
+                    console.log(`!(item.level ?? 0 <= itemsToSell[item.name]) is ${!(item.level ?? 0 <= itemsToSell[item.name])}`)
+                    console.log(`itemsToSell[item.name] is ${itemsToSell[item.name]}`)
                     console.log(`we want to sell ${item.q ?? 1} ${item.name}(s)`)
                     // await bot.sell(i, item.q ?? 1)
                 }
