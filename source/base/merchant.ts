@@ -390,7 +390,7 @@ export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOL
         if (!item) continue // No item
         if (item.l) continue // Item is locked
         if (item.p) continue // Item is special
-        if (item.level ?? 0 > itemsToSell[item.name]) continue // The item level is too high to sell
+        if (!(item.level ?? 0 <= itemsToSell[item.name])) continue // The item level is too high to sell
 
         // Withdraw the item
         const pack = `items${Math.floor(i / 42)}` as Exclude<BankPackName, "gold">
