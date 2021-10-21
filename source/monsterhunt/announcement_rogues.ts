@@ -43,19 +43,19 @@ function prepareRogue(bot: Rogue) {
             attack: async () => { await attackTheseTypesRogue(bot, ["bee"], information.friends) },
             attackWhileIdle: true,
             equipment: { orb: "test_orb" },
-            move: async () => { goToNearestWalkableToMonster(bot, ["bee"], mainBeesNearTunnel).catch(e => console.error(e)) },
+            move: async () => { await goToNearestWalkableToMonster(bot, ["bee"], mainBeesNearTunnel).catch(e => console.error(e)) },
         },
         crab: {
             attack: async () => { await attackTheseTypesRogue(bot, ["crab"], information.friends) },
             attackWhileIdle: true,
             equipment: { orb: "test_orb" },
-            move: async () => { goToNearestWalkableToMonster(bot, ["crab"], mainBeesNearTunnel).catch(e => console.error(e)) },
+            move: async () => { await goToNearestWalkableToMonster(bot, ["crab"], mainBeesNearTunnel).catch(e => console.error(e)) },
         },
         croc: {
             attack: async () => { await attackTheseTypesRogue(bot, ["croc"], information.friends) },
             attackWhileIdle: true,
             equipment: { orb: "test_orb" },
-            move: async () => { goToNearestWalkableToMonster(bot, ["croc"], mainBeesNearTunnel).catch(e => console.error(e)) },
+            move: async () => { await goToNearestWalkableToMonster(bot, ["croc"], mainBeesNearTunnel).catch(e => console.error(e)) },
         },
         franky: {
             attack: async () => { await attackTheseTypesRogue(bot, ["nerfedmummy", "franky"], information.friends) },
@@ -81,7 +81,7 @@ function prepareRogue(bot: Rogue) {
             attack: async () => { await attackTheseTypesRogue(bot, ["goo"], information.friends) },
             attackWhileIdle: true,
             equipment: { orb: "test_orb" },
-            move: async () => { goToNearestWalkableToMonster(bot, ["goo"], mainBeesNearTunnel).catch(e => console.error(e)) },
+            move: async () => { await goToNearestWalkableToMonster(bot, ["goo"], mainBeesNearTunnel).catch(e => console.error(e)) },
         },
         greenjr: {
             attack: async () => { await attackTheseTypesRogue(bot, ["greenjr", "snake", "osnake"], information.friends) },
