@@ -1,4 +1,4 @@
-import AL, { Merchant, Priest, Ranger, Warrior, GMap, ServerInfoDataLive } from "alclient"
+import AL, { Merchant, Priest, Ranger, Warrior, GMap, ServerInfoDataLive, IPosition } from "alclient"
 import { goToAggroMonster, goToNearestWalkableToMonster, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesMerchant } from "../base/merchant.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
@@ -210,7 +210,7 @@ function preparePriest(bot: Priest) {
                     // Move close to Franky because other characters might help blast away mummies
                     await bot.smartMove(nearest.monster, { getWithin: 25 })
                 } else {
-                    if (bot.S.franky as ServerInfoDataLive) requestMagiportService(bot, bot.S.franky as ServerInfoDataLive)
+                    if (bot.S.franky as ServerInfoDataLive) requestMagiportService(bot, bot.S.franky as IPosition)
                     await goToSpecialMonster(bot, "franky")
                 }
             }
@@ -263,7 +263,7 @@ function preparePriest(bot: Priest) {
             move: async () => {
                 const iceGolem = bot.getNearestMonster("icegolem")?.monster
                 if (!iceGolem) {
-                    if (bot.S.icegolem as ServerInfoDataLive) requestMagiportService(bot, bot.S.icegolem as ServerInfoDataLive)
+                    if (bot.S.icegolem as ServerInfoDataLive) requestMagiportService(bot, bot.S.icegolem as IPosition)
                     await bot.smartMove({ map: "winterland", x: 783, y: 277 })
                 }
                 if (iceGolem && !AL.Pathfinder.canWalkPath(bot, iceGolem)) {
@@ -300,7 +300,7 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["mrgreen"], information.friends) },
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "test_orb" },
             move: async () => {
-                if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as ServerInfoDataLive)
+                if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as IPosition)
                 await goToSpecialMonster(bot, "mrgreen")
             },
         },
@@ -308,7 +308,7 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["mrpumpkin"], information.friends) },
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "test_orb" },
             move: async () => {
-                if (bot.S.mrpumpkin as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrpumpkin as ServerInfoDataLive)
+                if (bot.S.mrpumpkin as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrpumpkin as IPosition)
                 await goToSpecialMonster(bot, "mrpumpkin")
             },
         },
@@ -600,7 +600,7 @@ function prepareRanger(bot: Ranger) {
                     // Move close to Franky because other characters might help blast away mummies
                     await bot.smartMove(nearest.monster, { getWithin: 25 })
                 } else {
-                    if (bot.S.franky as ServerInfoDataLive) requestMagiportService(bot, bot.S.franky as ServerInfoDataLive)
+                    if (bot.S.franky as ServerInfoDataLive) requestMagiportService(bot, bot.S.franky as IPosition)
                     await goToSpecialMonster(bot, "franky")
                 }
             },
@@ -648,7 +648,7 @@ function prepareRanger(bot: Ranger) {
             move: async () => {
                 const iceGolem = bot.getNearestMonster("icegolem")?.monster
                 if (!iceGolem) {
-                    if (bot.S.icegolem as ServerInfoDataLive) requestMagiportService(bot, bot.S.icegolem as ServerInfoDataLive)
+                    if (bot.S.icegolem as ServerInfoDataLive) requestMagiportService(bot, bot.S.icegolem as IPosition)
                     await bot.smartMove({ map: "winterland", x: 783, y: 277 })
                 }
                 if (iceGolem && !AL.Pathfinder.canWalkPath(bot, iceGolem)) {
@@ -687,7 +687,7 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { return attackTheseTypesRanger(bot, ["mrgreen"], information.friends) },
             equipment: { mainhand: "firebow", orb: "test_orb" },
             move: async () => {
-                if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as ServerInfoDataLive)
+                if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as IPosition)
                 await goToSpecialMonster(bot, "mrgreen")
             },
             requireCtype: "priest"
@@ -696,7 +696,7 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { return await attackTheseTypesRanger(bot, ["mrpumpkin"], information.friends) },
             equipment: { mainhand: "firebow", orb: "test_orb" },
             move: async () => {
-                if (bot.S.mrpumpkin as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrpumpkin as ServerInfoDataLive)
+                if (bot.S.mrpumpkin as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrpumpkin as IPosition)
                 await goToSpecialMonster(bot, "mrpumpkin")
             },
             requireCtype: "priest"
@@ -1006,7 +1006,7 @@ function prepareWarrior(bot: Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["nerfedmummy", "franky"], information.friends) },
             equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => {
-                if (bot.S.franky as ServerInfoDataLive) requestMagiportService(bot, bot.S.franky as ServerInfoDataLive)
+                if (bot.S.franky as ServerInfoDataLive) requestMagiportService(bot, bot.S.franky as IPosition)
                 await goToSpecialMonster(bot, "franky")
             },
             requireCtype: "priest"
@@ -1059,7 +1059,7 @@ function prepareWarrior(bot: Warrior) {
             move: async () => {
                 const iceGolem = bot.getNearestMonster("icegolem")?.monster
                 if (!iceGolem) {
-                    if (bot.S.icegolem as ServerInfoDataLive) requestMagiportService(bot, bot.S.icegolem as ServerInfoDataLive)
+                    if (bot.S.icegolem as ServerInfoDataLive) requestMagiportService(bot, bot.S.icegolem as IPosition)
                     await bot.smartMove({ map: "winterland", x: 783, y: 277 })
                 }
                 if (iceGolem && !AL.Pathfinder.canWalkPath(bot, iceGolem)) {
@@ -1119,7 +1119,7 @@ function prepareWarrior(bot: Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["mrgreen"], information.friends) },
             equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => {
-                if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as ServerInfoDataLive)
+                if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as IPosition)
                 await goToSpecialMonster(bot, "mrgreen")
             },
             requireCtype: "priest"
@@ -1128,7 +1128,7 @@ function prepareWarrior(bot: Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["mrpumpkin"], information.friends) },
             equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "test_orb" },
             move: async () => {
-                if (bot.S.mrpumpkin as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrpumpkin as ServerInfoDataLive)
+                if (bot.S.mrpumpkin as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrpumpkin as IPosition)
                 await goToSpecialMonster(bot, "mrpumpkin")
             },
             requireCtype: "priest"

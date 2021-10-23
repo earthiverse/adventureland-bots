@@ -1,4 +1,4 @@
-import AL, { GMap, Merchant, Rogue, ServerInfoDataLive } from "alclient"
+import AL, { GMap, IPosition, Merchant, Rogue, ServerInfoDataLive } from "alclient"
 import { goToNearestWalkableToMonster, goToSpecialMonster, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
 import { mainBeesNearTunnel } from "../base/locations.js"
 import { attackTheseTypesRogue } from "../base/rogue.js"
@@ -66,7 +66,7 @@ function prepareRogue(bot: Rogue) {
                     // Move close to Franky because other characters might help blast away mummies
                     await bot.smartMove(nearest.monster, { getWithin: 25 })
                 } else {
-                    if (bot.S.franky as ServerInfoDataLive) requestMagiportService(bot, bot.S.franky as ServerInfoDataLive)
+                    if (bot.S.franky as ServerInfoDataLive) requestMagiportService(bot, bot.S.franky as IPosition)
                     await goToSpecialMonster(bot, "franky")
                 }
             }
@@ -99,7 +99,7 @@ function prepareRogue(bot: Rogue) {
             attack: async () => { await attackTheseTypesRogue(bot, ["mrgreen"], information.friends) },
             equipment: { orb: "test_orb" },
             move: async () => {
-                if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as ServerInfoDataLive)
+                if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as IPosition)
                 await goToSpecialMonster(bot, "mrgreen")
             },
         },
@@ -107,7 +107,7 @@ function prepareRogue(bot: Rogue) {
             attack: async () => { await attackTheseTypesRogue(bot, ["mrpumpkin"], information.friends) },
             equipment: { orb: "test_orb" },
             move: async () => {
-                if (bot.S.mrpumpkin as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrpumpkin as ServerInfoDataLive)
+                if (bot.S.mrpumpkin as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrpumpkin as IPosition)
                 await goToSpecialMonster(bot, "mrpumpkin")
             },
         },
