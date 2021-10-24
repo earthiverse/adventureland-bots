@@ -1,5 +1,6 @@
 import AL, { Character, Entity, Mage, MonsterName, SlotType, TradeItemInfo, TradeSlotType } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
+import { Information } from "../definitions/bot"
 
 const CBURST_WHEN_HP_LESS_THAN = 200
 
@@ -184,16 +185,26 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
 }
 
 const lastMagiport = new Map<string, number>()
-export async function magiportIfNotNearby(bot: Mage, friends: Character[] = [], distance = AL.Constants.MAX_VISIBLE_RANGE): Promise<void> {
+export async function magiportIfNotNearby(bot: Mage, information: Information, distance = AL.Constants.MAX_VISIBLE_RANGE): Promise<void> {
     if (!bot.canUse("magiport")) return // Can't use magiport
 
-    for (const friend of friends) {
-        if (lastMagiport.get(friend.id) > Date.now() - 5000) continue // Recently offered a magiport
-        if (AL.Tools.distance(bot, friend) <= distance) continue // Already nearby
+    const offerMagiport = async (friend: Character) => {
+        if (friend.id == bot.id) return // It's us!
+        if (lastMagiport.get(friend.id) > Date.now() - 5000) return // Recently offered a magiport
+        if (AL.Tools.distance(bot, friend) <= distance) return // Already nearby
 
         if (bot.canUse("magiport")) {
-            await bot.magiport(friend.id).catch(e => console.error(e))
+            bot.magiport(friend.id).catch(e => console.error(e))
             lastMagiport.set(friend.id, Date.now())
         }
     }
+
+    let myTarget: string
+    if (information.bot1.name == bot.id) myTarget = information.bot1.target
+    else if (information.bot2.name == bot.id) myTarget = information.bot2.target
+    else if (information.bot3.name == bot.id) myTarget = information.bot3.target
+
+    if (information.bot1.name !== bot.id && myTarget == information.bot1.target) offerMagiport(information.bot1.bot)
+    if (information.bot2.name !== bot.id && myTarget == information.bot2.target) offerMagiport(information.bot2.bot)
+    if (information.bot3.name !== bot.id && myTarget == information.bot3.target) offerMagiport(information.bot3.bot)
 }
