@@ -400,7 +400,7 @@ function preparePriest(bot: Priest) {
         slenderman: {
             attack: async () => { await attackTheseTypesPriest(bot, ["slenderman"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "wand", offhand: "wbook1", orb: "jacko" },
+            equipment: { mainhand: "wand", orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "slenderman") },
         },
         snake: {
