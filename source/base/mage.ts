@@ -182,3 +182,18 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
         }
     }
 }
+
+const lastMagiport = new Map<string, number>()
+export async function magiportIfNotNearby(bot: Mage, friends: Character[] = [], distance = AL.Constants.MAX_VISIBLE_RANGE): Promise<void> {
+    if (!bot.canUse("magiport")) return // Can't use magiport
+
+    for (const friend of friends) {
+        if (lastMagiport.get(friend.id) > Date.now() - 5000) continue // Recently offered a magiport
+        if (AL.Tools.distance(bot, friend) <= distance) continue // Already nearby
+
+        if (bot.canUse("magiport")) {
+            await bot.magiport(friend.id).catch(e => console.error(e))
+            lastMagiport.set(friend.id, Date.now())
+        }
+    }
+}
