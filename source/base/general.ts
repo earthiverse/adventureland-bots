@@ -225,6 +225,13 @@ export async function getPriority2Entities(bot: Character): Promise<Entity[] | I
     if (nearby.length > 0) return nearby
     let partyList = [bot.id]
     if (bot.party) partyList = bot.partyData.list
+
+    // Don't attack cute bees on PVP, because kouin will destroy us.
+    if (bot.server.name == "PVP" && solo.includes("cutebee")) solo.splice(solo.indexOf("cutebee"), 1)
+
+    // Don't attack skeletor on PVP, because kouin will destroy us.
+    if (bot.server.name == "PVP" && solo.includes("skeletor")) solo.splice(solo.indexOf("skeletor"), 1)
+
     return await AL.EntityModel.aggregate([
         {
             $match: {

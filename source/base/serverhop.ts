@@ -47,13 +47,14 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
         "greenjr", "jr", "skeletor", "mvampire", "fvampire", "snowman", "stompy"
     ]): Promise<[ServerRegion, ServerIdentifier]> {
     // Look for entities in the database
-    if (coop?.length) {
+    if (coop.length || solo.length) {
         const coopEntities: IEntity[] = await AL.EntityModel.aggregate([
             {
                 $match: {
                     $or: [
                         {
-                            serverIdentifier: { $nin: ["PVP"] },
+                            // NOTE: Temporarily off for Halloween
+                            // serverIdentifier: { $nin: ["PVP"] },
                             target: { $ne: undefined }, // We only want to do these if others are doing them, too.
                             type: { $in: coop }
                         },

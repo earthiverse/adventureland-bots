@@ -1116,7 +1116,10 @@ function prepareWarrior(bot: Warrior) {
             requireCtype: "priest"
         },
         mrgreen: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["mrgreen"], information.friends) },
+            attack: async () => {
+                if (bot.isPVP()) await attackTheseTypesWarrior(bot, ["mrgreen"], information.friends, { disableCleave: true, disableStomp: true })
+                else await attackTheseTypesWarrior(bot, ["mrgreen"], information.friends)
+            },
             equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
             move: async () => {
                 if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as IPosition)
@@ -1125,7 +1128,10 @@ function prepareWarrior(bot: Warrior) {
             requireCtype: "priest"
         },
         mrpumpkin: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["mrpumpkin"], information.friends) },
+            attack: async () => {
+                if (bot.isPVP()) await attackTheseTypesWarrior(bot, ["mrpumpkin"], information.friends, { disableCleave: true, disableStomp: true })
+                else await attackTheseTypesWarrior(bot, ["mrpumpkin"], information.friends)
+            },
             equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
             move: async () => {
                 if (bot.S.mrpumpkin as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrpumpkin as IPosition)
