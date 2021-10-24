@@ -304,7 +304,7 @@ async function run() {
             const currentRegion = information.bot1.bot.server.region
             const currentIdentifier = information.bot1.bot.server.name
 
-            const targetServer = await getTargetServerFromPlayer(currentRegion, currentIdentifier, "earthiverse")
+            const targetServer = await getTargetServerFromPlayer(currentRegion, currentIdentifier, "earthMag")
             if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
                 // We're already on the correct server
                 console.log("DEBUG: We're already on the correct server")
