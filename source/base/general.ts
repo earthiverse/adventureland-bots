@@ -229,6 +229,9 @@ export async function getPriority2Entities(bot: Character): Promise<Entity[] | I
     // Don't attack cute bees on PVP, because kouin will destroy us.
     if (bot.server.name == "PVP" && solo.includes("cutebee")) solo.splice(solo.indexOf("cutebee"), 1)
 
+    // Don't attack golden bats on PVP, because kouin will destroy us.
+    if (bot.server.name == "PVP" && solo.includes("goldenbat")) solo.splice(solo.indexOf("goldenbat"), 1)
+
     // Don't attack skeletor on PVP, because kouin will destroy us.
     if (bot.server.name == "PVP" && solo.includes("skeletor")) solo.splice(solo.indexOf("skeletor"), 1)
 
