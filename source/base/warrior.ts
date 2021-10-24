@@ -27,6 +27,13 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
         const cleaveTargets: Entity[] = []
         let couldCleaveNearby = false
         let avoidCleave = false
+        for (const [, player] of bot.players) {
+            if (bot.party && player.party == bot.party) continue // Same party, won't do damage
+            if (AL.Tools.distance(bot, player) > bot.G.skills.agitate.range + bot.xrange) continue // Out of range, won't do damage
+
+            avoidCleave = true
+            break
+        }
         for (const entity of bot.getEntities({
             withinRange: bot.G.skills.cleave.range + bot.xrange,
         })) {
@@ -47,30 +54,30 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
             }
 
             switch (entity.damage_type) {
-            case "magical":
-                if (bot.mcourage > targetingMe.magical) targetingMe.magical += 1 // We can tank one more magical monster
-                else {
+                case "magical":
+                    if (bot.mcourage > targetingMe.magical) targetingMe.magical += 1 // We can tank one more magical monster
+                    else {
                     // We can't tank any more, don't cleave
-                    avoidCleave = true
-                    continue
-                }
-                break
-            case "physical":
-                if (bot.courage > targetingMe.physical) targetingMe.physical += 1 // We can tank one more physical monster
-                else {
+                        avoidCleave = true
+                        continue
+                    }
+                    break
+                case "physical":
+                    if (bot.courage > targetingMe.physical) targetingMe.physical += 1 // We can tank one more physical monster
+                    else {
                     // We can't tank any more, don't cleave
-                    avoidCleave = true
-                    continue
-                }
-                break
-            case "pure":
-                if (bot.pcourage > targetingMe.pure) targetingMe.pure += 1 // We can tank one more pure monster
-                else {
+                        avoidCleave = true
+                        continue
+                    }
+                    break
+                case "pure":
+                    if (bot.pcourage > targetingMe.pure) targetingMe.pure += 1 // We can tank one more pure monster
+                    else {
                     // We can't tank any more, don't cleave
-                    avoidCleave = true
-                    continue
-                }
-                break
+                        avoidCleave = true
+                        continue
+                    }
+                    break
             }
 
             cleaveTargets.push(entity)
@@ -138,30 +145,30 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
             }
 
             switch (entity.damage_type) {
-            case "magical":
-                if (bot.mcourage > targetingMe.magical) targetingMe.magical += 1 // We can tank one more magical monster
-                else {
-                // We can't tank any more, don't agitate
-                    avoidAgitate = true
-                    continue
-                }
-                break
-            case "physical":
-                if (bot.courage > targetingMe.physical) targetingMe.physical += 1 // We can tank one more physical monster
-                else {
-                // We can't tank any more, don't agitate
-                    avoidAgitate = true
-                    continue
-                }
-                break
-            case "pure":
-                if (bot.pcourage > targetingMe.pure) targetingMe.pure += 1 // We can tank one more pure monster
-                else {
-                // We can't tank any more, don't agitate
-                    avoidAgitate = true
-                    continue
-                }
-                break
+                case "magical":
+                    if (bot.mcourage > targetingMe.magical) targetingMe.magical += 1 // We can tank one more magical monster
+                    else {
+                        // We can't tank any more, don't agitate
+                        avoidAgitate = true
+                        continue
+                    }
+                    break
+                case "physical":
+                    if (bot.courage > targetingMe.physical) targetingMe.physical += 1 // We can tank one more physical monster
+                    else {
+                        // We can't tank any more, don't agitate
+                        avoidAgitate = true
+                        continue
+                    }
+                    break
+                case "pure":
+                    if (bot.pcourage > targetingMe.pure) targetingMe.pure += 1 // We can tank one more pure monster
+                    else {
+                        // We can't tank any more, don't agitate
+                        avoidAgitate = true
+                        continue
+                    }
+                    break
             }
 
             agitateTargets.push(entity)
@@ -232,33 +239,43 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
             && bot.canUse("stomp", { ignoreEquipped: true })
             && (!entity.s.stunned || entity.s.stunned.ms < 250)
             && (bot.isEquipped("basher") || bot.isEquipped("wbasher") || bot.hasItem("basher") || bot.hasItem("wbasher"))) {
+                let avoidStomp = false
+                for (const [, player] of bot.players) {
+                    if (bot.party && player.party == bot.party) continue // Same party, won't stun
+                    if (AL.Tools.distance(bot, player) > bot.G.skills.stomp.range + bot.xrange) continue // Out of range, won't stun
 
+                    avoidStomp = true
+                    break
+                }
+
+                if (!avoidStomp) {
                 // Equip to bash if we don't have it already equipped
-                const mainhand = bot.slots.mainhand?.name
-                let mainhandSlot: number
-                const offhand = bot.slots.offhand?.name
-                let offhandSlot: number
-                if (!bot.isEquipped("basher") && !bot.isEquipped("wbasher")) {
+                    const mainhand = bot.slots.mainhand?.name
+                    let mainhandSlot: number
+                    const offhand = bot.slots.offhand?.name
+                    let offhandSlot: number
+                    if (!bot.isEquipped("basher") && !bot.isEquipped("wbasher")) {
+                        const promises: Promise<unknown>[] = []
+                        if (offhand) promises.push(bot.unequip("offhand").then((i) => { offhandSlot = i }))
+                        mainhandSlot = bot.locateItem("basher", bot.items, { locked: true })
+                        if (mainhandSlot == undefined) mainhandSlot = bot.locateItem("wbasher", bot.items, { locked: true })
+                        promises.push(bot.equip(mainhandSlot))
+                        await Promise.all(promises)
+                    }
+
+                    bot.stomp().catch(e => console.error(e))
+                    bot.mp -= bot.G.skills.stomp.mp
+
+                    // Re-equip if we changed weapons
                     const promises: Promise<unknown>[] = []
-                    if (offhand) promises.push(bot.unequip("offhand").then((i) => { offhandSlot = i }))
-                    mainhandSlot = bot.locateItem("basher", bot.items, { locked: true })
-                    if (mainhandSlot == undefined) mainhandSlot = bot.locateItem("wbasher", bot.items, { locked: true })
-                    promises.push(bot.equip(mainhandSlot))
+                    if (bot.slots.mainhand?.name !== mainhand) {
+                        if (mainhandSlot !== undefined) promises.push(bot.equip(mainhandSlot, "mainhand"))
+                    }
+                    if (bot.slots.offhand?.name !== offhand) {
+                        if (offhandSlot !== undefined) promises.push(bot.equip(offhandSlot, "offhand"))
+                    }
                     await Promise.all(promises)
                 }
-
-                bot.stomp().catch(e => console.error(e))
-                bot.mp -= bot.G.skills.stomp.mp
-
-                // Re-equip if we changed weapons
-                const promises: Promise<unknown>[] = []
-                if (bot.slots.mainhand?.name !== mainhand) {
-                    if (mainhandSlot !== undefined) promises.push(bot.equip(mainhandSlot, "mainhand"))
-                }
-                if (bot.slots.offhand?.name !== offhand) {
-                    if (offhandSlot !== undefined) promises.push(bot.equip(offhandSlot, "offhand"))
-                }
-                await Promise.all(promises)
             }
 
             // Remove them from our friends' entities list if we're going to kill it
