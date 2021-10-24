@@ -42,7 +42,7 @@ function prepareMage(bot: Mage) {
         armadillo: {
             attack: async () => { await attackTheseTypesMage(bot, ["armadillo", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
             move: async () => {
                 if (bot.id == information.bot1.name) {
                     await bot.smartMove(offsetPosition(mainArmadillos, -75, 75), { useBlink: true })
@@ -56,7 +56,7 @@ function prepareMage(bot: Mage) {
         bee: {
             attack: async () => { await attackTheseTypesMage(bot, ["bee"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.bee.hp + 1 }) },
             attackWhileIdle: true,
-            equipment: { mainhand: "wand", offhand: "wbook0", orb: "test_orb" },
+            equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },
             move: async () => {
                 if (bot.id == information.bot1.name) {
                     await bot.smartMove(offsetPosition(mainBeesNearTunnel, 25, 0), { useBlink: true })
@@ -70,7 +70,7 @@ function prepareMage(bot: Mage) {
         crab: {
             attack: async () => { await attackTheseTypesMage(bot, ["crab", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "wand", offhand: "wbook0", orb: "test_orb" },
+            equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },
             move: async () => {
                 if (bot.id == information.bot1.name) {
                     await bot.smartMove(offsetPosition(mainCrabs, -75, 75), { useBlink: true })
@@ -84,7 +84,7 @@ function prepareMage(bot: Mage) {
         croc: {
             attack: async () => { await attackTheseTypesMage(bot, ["croc", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
             move: async () => {
                 if (bot.id == information.bot1.name) {
                     await bot.smartMove(offsetPosition(mainCrocs, 0, 25), { useBlink: true })
@@ -97,7 +97,7 @@ function prepareMage(bot: Mage) {
         },
         franky: {
             attack: async () => { await attackTheseTypesMage(bot, ["nerfedmummy", "franky"], information.friends) },
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
             move: async () => {
                 const nearest = bot.getNearestMonster("franky")
                 if (nearest && nearest.distance > 25) {
@@ -111,13 +111,13 @@ function prepareMage(bot: Mage) {
         goldenbat: {
             attack: async () => { await attackTheseTypesMage(bot, ["goldenbat"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "goldenbat") },
         },
         goo: {
             attack: async () => { await attackTheseTypesMage(bot, ["goo"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.goo.hp + 1 }) },
             attackWhileIdle: true,
-            equipment: { mainhand: "wand", offhand: "wbook0", orb: "test_orb" },
+            equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },
             move: async () => {
                 if (bot.id == information.bot1.name) {
                     await bot.smartMove(offsetPosition(mainGoos, 50, 0), { useBlink: true })
@@ -131,34 +131,34 @@ function prepareMage(bot: Mage) {
         greenjr: {
             attack: async () => { await attackTheseTypesMage(bot, ["greenjr", "snake", "osnake"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "greenjr") },
         },
         jr: {
             attack: async () => { await attackTheseTypesMage(bot, ["jr"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "jr") },
         },
         mrgreen: {
             attack: async () => { await attackTheseTypesMage(bot, ["mrgreen"], information.friends) },
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "mrgreen") },
         },
         mrpumpkin: {
             attack: async () => { await attackTheseTypesMage(bot, ["mrpumpkin"], information.friends) },
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "mrpumpkin") },
         },
         mvampire: {
             attack: async () => { await attackTheseTypesMage(bot, ["mvampire", "bat"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "test_orb" },
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "mvampire") },
         },
         rat: {
             attack: async () => { await attackTheseTypesMage(bot, ["goo"], information.friends) }, attackWhileIdle: true,
-            equipment: { mainhand: "wand", offhand: "wbook0", orb: "test_orb" },
+            equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },
             move: async () => {
                 if (bot.id == information.bot1.name) {
                     await bot.smartMove({ map: "mansion", x: 240, y: -488 }, { useBlink: true })
@@ -172,12 +172,12 @@ function prepareMage(bot: Mage) {
         slenderman: {
             attack: async () => { await attackTheseTypesMage(bot, ["slenderman"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "wand", offhand: "wbook0", orb: "test_orb" },
+            equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "slenderman") },
         },
         snowman: {
             attack: async () => { await attackTheseTypesMage(bot, ["snowman"], information.friends) },
-            equipment: { mainhand: "wand", offhand: "wbook0", orb: "test_orb" },
+            equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "snowman") }
         }
     }

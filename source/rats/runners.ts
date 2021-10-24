@@ -27,7 +27,7 @@ export async function startRatMageFarmer(bot: Mage, friends: Character[], mercha
     // Equip
     const wand = bot.locateItem("wand", bot.items, { locked: true })
     if (wand !== undefined) await bot.equip(wand, "mainhand")
-    const orb = bot.locateItem("test_orb", bot.items, { locked: true })
+    const orb = bot.locateItem("jacko", bot.items, { locked: true })
     if (orb !== undefined) await bot.equip(orb, "orb")
 
     async function moveLoop() {

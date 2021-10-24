@@ -51,7 +51,7 @@ async function startWarrior(bot: Warrior, positionOffset: { x: number, y: number
     if (fireBlade1 !== undefined) await bot.equip(fireBlade1, "mainhand")
     const fireBlade2 = bot.locateItem("fireblade", bot.items, { locked: true })
     if (fireBlade2 !== undefined) await bot.equip(fireBlade2, "offhand")
-    const testOrb = bot.locateItem("test_orb", bot.items)
+    const testOrb = bot.locateItem("jacko", bot.items)
     if (testOrb !== undefined) await bot.equip(testOrb, "orb")
 
     async function attackLoop() {

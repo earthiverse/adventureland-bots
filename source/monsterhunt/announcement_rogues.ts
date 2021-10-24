@@ -42,24 +42,24 @@ function prepareRogue(bot: Rogue) {
         bee: {
             attack: async () => { await attackTheseTypesRogue(bot, ["bee"], information.friends) },
             attackWhileIdle: true,
-            equipment: { orb: "test_orb" },
+            equipment: { orb: "jacko" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["bee"], mainBeesNearTunnel).catch(e => console.error(e)) },
         },
         crab: {
             attack: async () => { await attackTheseTypesRogue(bot, ["crab"], information.friends) },
             attackWhileIdle: true,
-            equipment: { orb: "test_orb" },
+            equipment: { orb: "jacko" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["crab"], mainBeesNearTunnel).catch(e => console.error(e)) },
         },
         croc: {
             attack: async () => { await attackTheseTypesRogue(bot, ["croc"], information.friends) },
             attackWhileIdle: true,
-            equipment: { orb: "test_orb" },
+            equipment: { orb: "jacko" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["croc"], mainBeesNearTunnel).catch(e => console.error(e)) },
         },
         franky: {
             attack: async () => { await attackTheseTypesRogue(bot, ["nerfedmummy", "franky"], information.friends) },
-            equipment: { orb: "test_orb" },
+            equipment: { orb: "jacko" },
             move: async () => {
                 const nearest = bot.getNearestMonster("franky")
                 if (nearest && nearest.distance > 25) {
@@ -74,30 +74,30 @@ function prepareRogue(bot: Rogue) {
         goldenbat: {
             attack: async () => { await attackTheseTypesRogue(bot, ["goldenbat"], information.friends) },
             attackWhileIdle: true,
-            equipment: { orb: "test_orb" },
+            equipment: { orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "goldenbat") },
         },
         goo: {
             attack: async () => { await attackTheseTypesRogue(bot, ["goo"], information.friends) },
             attackWhileIdle: true,
-            equipment: { orb: "test_orb" },
+            equipment: { orb: "jacko" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["goo"], mainBeesNearTunnel).catch(e => console.error(e)) },
         },
         greenjr: {
             attack: async () => { await attackTheseTypesRogue(bot, ["greenjr", "snake", "osnake"], information.friends) },
             attackWhileIdle: true,
-            equipment: { orb: "test_orb" },
+            equipment: { orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "greenjr") },
         },
         jr: {
             attack: async () => { await attackTheseTypesRogue(bot, ["jr"], information.friends) },
             attackWhileIdle: true,
-            equipment: { orb: "test_orb" },
+            equipment: { orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "jr") },
         },
         mrgreen: {
             attack: async () => { await attackTheseTypesRogue(bot, ["mrgreen"], information.friends) },
-            equipment: { orb: "test_orb" },
+            equipment: { orb: "jacko" },
             move: async () => {
                 if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as IPosition)
                 await goToSpecialMonster(bot, "mrgreen")
@@ -105,7 +105,7 @@ function prepareRogue(bot: Rogue) {
         },
         mrpumpkin: {
             attack: async () => { await attackTheseTypesRogue(bot, ["mrpumpkin"], information.friends) },
-            equipment: { orb: "test_orb" },
+            equipment: { orb: "jacko" },
             move: async () => {
                 if (bot.S.mrpumpkin as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrpumpkin as IPosition)
                 await goToSpecialMonster(bot, "mrpumpkin")
@@ -114,18 +114,18 @@ function prepareRogue(bot: Rogue) {
         mvampire: {
             attack: async () => { await attackTheseTypesRogue(bot, ["mvampire", "bat"], information.friends) },
             attackWhileIdle: true,
-            equipment: { orb: "test_orb" },
+            equipment: { orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "mvampire") },
         },
         slenderman: {
             attack: async () => { await attackTheseTypesRogue(bot, ["slenderman"], information.friends) },
             attackWhileIdle: true,
-            equipment: { orb: "test_orb" },
+            equipment: { orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "slenderman") },
         },
         snowman: {
             attack: async () => { await attackTheseTypesRogue(bot, ["snowman"], information.friends) },
-            equipment: { orb: "test_orb" },
+            equipment: { orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "snowman") }
         }
     }

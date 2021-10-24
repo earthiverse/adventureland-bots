@@ -137,7 +137,7 @@ export async function startLeader(bot: Warrior): Promise<void> {
                 if (gloves !== undefined) promises.push(bot.equip(gloves, "gloves"))
 
                 // Orb of Testing
-                const orb = bot.locateItem("test_orb", bot.items, { locked: true })
+                const orb = bot.locateItem("jacko", bot.items, { locked: true })
                 if (orb !== undefined) promises.push(bot.equip(orb, "orb"))
 
                 // Strength Earrings

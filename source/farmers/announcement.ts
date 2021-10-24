@@ -36,7 +36,7 @@ async function startShared(bot: Character) {
 async function startMage(bot: Mage, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
     const wand = bot.locateItem("wand", bot.items, { locked: true })
     if (wand !== undefined) await bot.equip(wand, "mainhand")
-    const orb = bot.locateItem("test_orb", bot.items, { locked: true })
+    const orb = bot.locateItem("jacko", bot.items, { locked: true })
     if (orb !== undefined) await bot.equip(orb, "orb")
 
     async function attackLoop() {
