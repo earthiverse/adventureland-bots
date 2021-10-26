@@ -1,5 +1,5 @@
 import AL, { IPosition, Mage, ServerIdentifier, ServerRegion } from "alclient"
-import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startPartyLoop, startAvoidStacking, startLootLoop, startScareLoop } from "../base/general.js"
+import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startPartyLoop, startAvoidStacking, startLootLoop, startScareLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 
