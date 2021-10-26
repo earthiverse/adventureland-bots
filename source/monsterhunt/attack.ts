@@ -150,12 +150,7 @@ function prepareMage(bot: Mage) {
             move: async () => { await goToSpecialMonster(bot, "mrpumpkin") },
         },
         slenderman: {
-            attack: async () => {
-                // NOTE: Untested if this actually keeps slenderman up
-                const entities = bot.getEntities({ type: "slenderman", withinRange: bot.range })
-                if (entities.length && bot.canUse("light")) bot.light().catch(e => console.error(e))
-                await attackTheseTypesMage(bot, ["slenderman"], information.friends)
-            },
+            attack: async () => { await attackTheseTypesMage(bot, ["slenderman"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "slenderman") },

@@ -554,7 +554,7 @@ export async function goToNearestWalkableToMonster(bot: Character, types: Monste
         if (AL.Pathfinder.canWalkPath(bot, destination)) {
             bot.move(destination.x, destination.y).catch(() => { /* Suppress errors */ })
         } else {
-            return bot.smartMove(destination)
+            return bot.smartMove(destination, { useBlink: true })
         }
     }
 }

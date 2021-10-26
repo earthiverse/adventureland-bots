@@ -831,12 +831,7 @@ function prepareMage(bot: Mage) {
             requireCtype: "priest",
         },
         slenderman: {
-            attack: async () => {
-                // NOTE: Untested if this actually keeps slenderman up
-                const entities = bot.getEntities({ type: "slenderman", withinRange: bot.range })
-                if (entities.length && bot.canUse("light")) bot.light().catch(e => console.error(e))
-                await attackTheseTypesMage(bot, ["slenderman"], information.friends)
-            },
+            attack: async () => { await attackTheseTypesMage(bot, ["slenderman"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", orb: "jacko" },
             move: async () => {
