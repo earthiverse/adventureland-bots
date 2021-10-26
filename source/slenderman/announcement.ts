@@ -24,7 +24,12 @@ function randomIntFromInterval(min, max) { // min and max included
 
 async function startMage(bot: Mage) {
     const locations: IPosition[] = extraToLook
-    for (const monster of toLookFor) locations.push(...bot.locateMonster(monster))
+    for (const monster of toLookFor) {
+        for (const location of bot.locateMonster(monster)) {
+            if (location.map !== "cave" && location.map !== "spookytown" && location.map !== "halloween") continue
+            locations.push(location)
+        }
+    }
 
     startAvoidStacking(bot)
     startBuyLoop(bot, new Set())
