@@ -8,7 +8,7 @@ import { getTargetServerFromPlayer } from "../base/serverhop.js"
 let region: ServerRegion = "EU"
 let identifier: ServerIdentifier = "II"
 const toLookFor: MonsterName[] = ["bat", "minimush", "snake", "stoneworm", "fvampire", "jr", "mrpumpkin", "mrgreen"]
-const extraToLook: IPosition[] = [{ map: "spookytown", x: 250, y: -1129 }]
+const extraToLook: IPosition[] = [{ map: "spookytown", x: 250, y: -1129 }, { map: "spookytown", x: -525, y: -715 }, { map: "halloween", x: 920, y: -120 }]
 const toAttack: MonsterName[] = ["bat", "bee", "goo", "goldenbat", "minimush", "snake", "scorpion", "stoneworm", "osnake", "jr", "greenjr"]
 
 const mage1Name = "facilitating"
@@ -205,8 +205,8 @@ async function run() {
                 return
             }
 
-            const currentRegion = region
-            const currentIdentifier = identifier
+            const currentRegion = mage1.server.region
+            const currentIdentifier = mage1.server.name
 
             const targetServer = await getTargetServerFromPlayer(currentRegion, currentIdentifier, partyLeader)
             if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
