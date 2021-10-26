@@ -187,7 +187,6 @@ async function run() {
     let lastServerChangeTime = Date.now()
     const serverLoop = async () => {
         try {
-            console.log("DEBUG: Checking target server...")
             // We haven't logged in yet
             if (!mage1) {
                 setTimeout(async () => { serverLoop() }, 1000)
