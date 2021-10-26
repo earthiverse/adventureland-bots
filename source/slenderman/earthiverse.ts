@@ -7,7 +7,7 @@ import { getTargetServerFromCurrentServer } from "../base/serverhop.js"
 /** Config */
 let region: ServerRegion = "EU"
 let identifier: ServerIdentifier = "II"
-const toLookFor: MonsterName[] = ["bat", "minimush", "snake", "stoneworm", "fvampire", "jr", "mrpumpkin", "mrgreen"]
+const toLookFor: MonsterName[] = ["bat", "minimush", "snake", "stoneworm", "phoenix", "fvampire", "jr", "mrpumpkin", "mrgreen"]
 const extraToLook: IPosition[] = [{ map: "spookytown", x: 250, y: -1129 }, { map: "spookytown", x: -525, y: -715 }, { map: "halloween", x: 920, y: -120 }]
 const toAttack: MonsterName[] = ["bat", "bee", "goo", "goldenbat", "minimush", "snake", "scorpion", "stoneworm", "osnake", "jr", "greenjr"]
 
