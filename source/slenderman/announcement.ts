@@ -127,7 +127,7 @@ async function startMerchant(bot: Merchant) {
 
             // Go to each spawn on the map, in a loop
             for (const location of locations) {
-                await bot.smartMove(location, { getWithin: 600 })
+                await bot.smartMove(location, { getWithin: 550 })
             }
         } catch (e) {
             console.error(e)
