@@ -19,9 +19,9 @@ export function getTargetServerFromCurrentServer(currentRegion: ServerRegion, cu
             // The next one is our target
             let next: number
             if (avoidPVP) {
-                next = (i + 1) % (SERVER_HOP_SERVERS.length - NUM_PVP - 1)
+                next = (i + 1) % (SERVER_HOP_SERVERS.length - NUM_PVP)
             } else {
-                next = (i + 1) % (SERVER_HOP_SERVERS.length - 1)
+                next = (i + 1) % SERVER_HOP_SERVERS.length
             }
             return SERVER_HOP_SERVERS[next]
         }
@@ -37,9 +37,9 @@ export function getTargetServerFromCurrentServer(currentRegion: ServerRegion, cu
 export function getTargetServerFromDate(offset = 0, avoidPVP = false): [ServerRegion, ServerIdentifier] {
     let next: number
     if (avoidPVP) {
-        next = (Math.floor(Date.now() / 1000 / 60) + offset) % (SERVER_HOP_SERVERS.length - NUM_PVP - 1)
+        next = (Math.floor(Date.now() / 1000 / 60) + offset) % (SERVER_HOP_SERVERS.length - NUM_PVP)
     } else {
-        next = (Math.floor(Date.now() / 1000 / 60) + offset) % (SERVER_HOP_SERVERS.length - 1)
+        next = (Math.floor(Date.now() / 1000 / 60) + offset) % SERVER_HOP_SERVERS.length
     }
     return SERVER_HOP_SERVERS[next]
 }
