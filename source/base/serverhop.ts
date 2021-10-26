@@ -12,6 +12,22 @@ export const SERVER_HOP_SERVERS: [ServerRegion, ServerIdentifier][] = [
 ]
 const NUM_PVP = 2
 
+export function getTargetServerFromCurrentServer(currentRegion: ServerRegion, currentIdentifier: ServerIdentifier, avoidPVP = false): [ServerRegion, ServerIdentifier] {
+    for (let i = 0; i < SERVER_HOP_SERVERS.length; i++) {
+        const server = SERVER_HOP_SERVERS[i]
+        if (server[0] == currentRegion && server[1] == currentIdentifier) {
+            // The next one is our target
+            let next: number
+            if (avoidPVP) {
+                next = (i + 1) % (SERVER_HOP_SERVERS.length - NUM_PVP)
+            } else {
+                next = (i + 1) % SERVER_HOP_SERVERS.length
+            }
+            return SERVER_HOP_SERVERS[next]
+        }
+    }
+}
+
 /**
  * Chooses a server based on the date & time. Use this for characters that hop between servers to check easily killable monsters
  * @param offset If we're checking with many characters, offset so they won't interfere with each other logging in
@@ -19,10 +35,13 @@ const NUM_PVP = 2
  * @returns
  */
 export function getTargetServerFromDate(offset = 0, avoidPVP = false): [ServerRegion, ServerIdentifier] {
-    let next = (Math.floor(Date.now() / 1000 / 60) + offset) % (SERVER_HOP_SERVERS.length)
-    if (avoidPVP && next >= SERVER_HOP_SERVERS.length - NUM_PVP) next -= NUM_PVP
-    if (avoidPVP) return SERVER_HOP_SERVERS[next]
-    else return SERVER_HOP_SERVERS[next]
+    let next: number
+    if (avoidPVP) {
+        next = (Math.floor(Date.now() / 1000 / 60) + offset) % (SERVER_HOP_SERVERS.length - NUM_PVP)
+    } else {
+        next = (Math.floor(Date.now() / 1000 / 60) + offset) % SERVER_HOP_SERVERS.length
+    }
+    return SERVER_HOP_SERVERS[next]
 }
 
 /**

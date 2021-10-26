@@ -1549,9 +1549,9 @@ async function run() {
 
             // Disconnect everyone
             console.log("Disconnecting characters")
-            information.bot1.bot.disconnect(),
-            information.bot2.bot?.disconnect(),
-            information.bot3.bot?.disconnect(),
+            information.bot1.bot.disconnect()
+            information.bot2.bot?.disconnect()
+            information.bot3.bot?.disconnect()
             information.merchant.bot?.disconnect()
             await sleep(5000)
             lastServerChangeTime = Date.now()

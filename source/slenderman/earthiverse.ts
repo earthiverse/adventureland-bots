@@ -1,11 +1,12 @@
 import AL, { IPosition, Mage, MonsterName, ServerIdentifier, ServerRegion } from "alclient"
-import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startPartyLoop, startScareLoop, startAvoidStacking } from "../base/general.js"
+import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startPartyLoop, startScareLoop, startAvoidStacking, sleep } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
+import { getTargetServerFromCurrentServer } from "../base/serverhop.js"
 
 /** Config */
-const region: ServerRegion = "EU"
-const identifier: ServerIdentifier = "II"
+let region: ServerRegion = "EU"
+let identifier: ServerIdentifier = "II"
 const toLookFor: MonsterName[] = ["bat", "minimush", "snake", "stoneworm", "fvampire", "jr", "mrpumpkin", "mrgreen"]
 const extraToLook: IPosition[] = [{ map: "spookytown", x: 250, y: -1129 }]
 const toAttack: MonsterName[] = ["bat", "bee", "goo", "goldenbat", "minimush", "snake", "scorpion", "stoneworm", "osnake", "jr", "greenjr"]
@@ -182,5 +183,62 @@ async function run() {
         loopBot()
     }
     startMage3Loop(mage3Name, region, identifier).catch(() => { /* ignore errors */ })
+
+    let lastServerChangeTime = Date.now()
+    const serverLoop = async () => {
+        try {
+            console.log("DEBUG: Checking target server...")
+            // We haven't logged in yet
+            if (!mage1) {
+                setTimeout(async () => { serverLoop() }, 1000)
+                return
+            }
+
+            // Don't change servers too fast
+            if (lastServerChangeTime > Date.now() - AL.Constants.RECONNECT_TIMEOUT_MS) {
+                setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime + AL.Constants.RECONNECT_TIMEOUT_MS - Date.now()))
+                return
+            }
+
+            // Don't change servers if slender is live
+            if (mage1.S?.slenderman && mage1.S.slenderman.live) {
+                setTimeout(async () => { serverLoop() }, 1000)
+                return
+            }
+
+            const currentRegion = region
+            const currentIdentifier = identifier
+
+            const targetServer = getTargetServerFromCurrentServer(currentRegion, currentIdentifier, true)
+            if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
+                // We're already on the correct server
+                setTimeout(async () => { serverLoop() }, 1000)
+                return
+            }
+
+            // Change servers to attack this entity
+            region = targetServer[0]
+            identifier = targetServer[1]
+            console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${region} ${identifier}`)
+
+            // Loot all of our remaining chests
+            await sleep(1000)
+            console.log("Looting remaining chests")
+            for (const [, chest] of mage1.chests) await mage1.openChest(chest.id)
+            await sleep(1000)
+
+            // Disconnect everyone
+            console.log("Disconnecting characters")
+            mage1.disconnect()
+            mage2?.disconnect()
+            mage3?.disconnect()
+            await sleep(5000)
+            lastServerChangeTime = Date.now()
+        } catch (e) {
+            console.error(e)
+        }
+        setTimeout(async () => { serverLoop() }, 1000)
+    }
+    serverLoop()
 }
 run()
