@@ -39,7 +39,7 @@ async function startMage(bot: Mage, position: IPosition) {
                 // NOTE: We are bursting in the move loop, because we can do it really fast there
                 if (bot.canUse("attack")) await bot.basicAttack(slenderman.id).catch(() => { /** Suppress warnings */ })
             } else {
-                await attackTheseTypesMage(bot, ["bat", "goldenbat"], [], { disableCburst: true, disableEnergize: true })
+                await attackTheseTypesMage(bot, ["stoneworm", "jr"], [], { disableCburst: true, disableEnergize: true })
             }
         } catch (e) {
             console.error(e)
