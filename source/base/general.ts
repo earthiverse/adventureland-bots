@@ -237,6 +237,9 @@ export async function getPriority2Entities(bot: Character): Promise<Entity[] | I
     // Don't attack skeletor on PVP, because kouin will destroy us.
     if (bot.server.name == "PVP" && solo.includes("skeletor")) solo.splice(solo.indexOf("skeletor"), 1)
 
+    // Don't attack slenderman on PVP, because kouin will destroy us.
+    if (bot.server.name == "PVP" && solo.includes("slenderman")) solo.splice(solo.indexOf("slenderman"), 1)
+
     return await AL.EntityModel.aggregate([
         {
             $match: {
