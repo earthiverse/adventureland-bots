@@ -1,4 +1,4 @@
-import AL, { IPosition, Mage, ServerIdentifier, ServerRegion } from "alclient"
+import AL, { GMap, IPosition, Mage, MapName, Merchant, ServerIdentifier, ServerRegion } from "alclient"
 import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startPartyLoop, startScareLoop, startAvoidStacking } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
@@ -13,10 +13,13 @@ const mage2Name = "earthMag2"
 const mage2Position: IPosition = { map: "cave", x: 234, y: -1098 }
 const mage3Name = "earthMag3"
 const mage3Position: IPosition = { map: "cave", x: 1234, y: -765 }
+const merchantName = "earthMer"
+const merchantMap: MapName = "cave"
 
 let mage1: Mage
 let mage2: Mage
 let mage3: Mage
+let merchant: Merchant
 
 async function startMage(bot: Mage, position: IPosition) {
     startAvoidStacking(bot)
@@ -67,6 +70,52 @@ async function startMage(bot: Mage, position: IPosition) {
                 if (bot.canUse("burst")) bot.burst(slenderman.id).catch(() => { /** Suppress warnings */ })
             } else if (!bot.smartMoving) {
                 bot.smartMove(position).catch(() => { /** Suppress warnings */ })
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+    }
+    moveLoop()
+}
+
+async function startMerchant(bot: Merchant) {
+    startBuyLoop(bot, new Set())
+    startHealLoop(bot)
+    startLootLoop(bot)
+    startScareLoop(bot)
+    startSellLoop(bot, { ...ITEMS_TO_SELL, "wbook0": 2 })
+
+    const locations: IPosition[] = []
+    for (const monsterSpawn of (bot.G.maps[merchantMap] as GMap).monsters) {
+        if (monsterSpawn.boundary) {
+            locations.push({ "map": merchantMap as MapName, "x": (monsterSpawn.boundary[0] + monsterSpawn.boundary[2]) / 2, "y": (monsterSpawn.boundary[1] + monsterSpawn.boundary[3]) / 2 })
+        } else if (monsterSpawn.boundaries) {
+            for (const boundary of monsterSpawn.boundaries) {
+                if (boundary[0] !== merchantMap) continue
+                locations.push({ "map": boundary[0], "x": (boundary[1] + boundary[3]) / 2, "y": (boundary[2] + boundary[4]) / 2 })
+            }
+        }
+    }
+
+    async function moveLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            // If we are dead, respawn
+            if (bot.rip) {
+                await bot.respawn()
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                return
+            }
+
+            await goToPotionSellerIfLow(bot)
+            await goToBankIfFull(bot)
+
+            // Go to each spawn on the map, in a loop
+            for (const location of locations) {
+                await bot.smartMove(location, { getWithin: 600 })
             }
         } catch (e) {
             console.error(e)
@@ -164,5 +213,32 @@ async function run() {
         loopBot()
     }
     startMage3Loop(mage3Name, region, identifier).catch(() => { /* ignore errors */ })
+
+    const startMerchantLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
+        // Start the characters
+        const loopBot = async () => {
+            try {
+                if (merchant) merchant.disconnect()
+                merchant = await AL.Game.startMerchant(name, region, identifier)
+                startMerchant(merchant)
+                merchant.socket.on("disconnect", async () => { loopBot() })
+            } catch (e) {
+                console.error(e)
+                if (merchant) merchant.disconnect()
+                const wait = /wait_(\d+)_second/.exec(e)
+                if (wait && wait[1]) {
+                    setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
+                } else if (/limits/.test(e)) {
+                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                } else if (/ingame/.test(e)) {
+                    setTimeout(async () => { loopBot() }, 500)
+                } else {
+                    setTimeout(async () => { loopBot() }, 10000)
+                }
+            }
+        }
+        loopBot()
+    }
+    startMerchantLoop(merchantName, region, identifier).catch(() => { /* ignore errors */ })
 }
 run()
