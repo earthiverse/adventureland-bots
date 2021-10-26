@@ -6,6 +6,7 @@ const CBURST_WHEN_HP_LESS_THAN = 200
 
 export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], friends: Character[] = [], options: {
     cburstWhenHPLessThan?: number
+    disableCburst?: boolean
     disableEnergize?: boolean
     targetingPartyMember?: boolean
     targetingPlayer?: string
@@ -84,7 +85,7 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
         await bot.basicAttack(target.id)
     }
 
-    if (bot.canUse("cburst")) {
+    if (bot.canUse("cburst") && !options.disableCburst) {
         const targets = new Map<string, number>()
 
         // Cburst low HP monsters
@@ -170,7 +171,7 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
     }
 
     // Cburst when we have a lot of mp
-    if (bot.canUse("cburst") && bot.mp > bot.max_mp - 500) {
+    if (bot.canUse("cburst") && !options.disableCburst && bot.mp > bot.max_mp - 500) {
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
             typeList: types,
