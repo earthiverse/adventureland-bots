@@ -13,7 +13,7 @@ const mage2Name = "gratuitously"
 const mage2Position: IPosition = { map: "halloween", x: 0, y: 678 }
 const mage3Name = "hypothesized"
 const mage3Position: IPosition = { map: "halloween", x: -567, y: -567 }
-const merchantName = "earthMer"
+const merchantName = "decisiveness"
 const merchantMap: MapName = "halloween"
 
 
