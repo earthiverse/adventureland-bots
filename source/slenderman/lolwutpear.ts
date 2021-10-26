@@ -1,5 +1,6 @@
 import AL, { GMap, IPosition, Mage, MapName, Merchant, ServerIdentifier, ServerRegion } from "alclient"
 import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startPartyLoop, startScareLoop, startAvoidStacking } from "../base/general.js"
+import { offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 
@@ -29,6 +30,11 @@ async function startMage(bot: Mage, position: IPosition) {
     startScareLoop(bot)
     startSellLoop(bot, { ...ITEMS_TO_SELL, "wbook0": 2 })
     startPartyLoop(bot, partyLeader, partyMembers)
+
+    // We're not AFK, I swear...
+    setInterval(() => {
+        bot.socket.emit("property", { "afk": false })
+    }, 10_000)
 
     async function attackLoop() {
         try {
@@ -69,7 +75,8 @@ async function startMage(bot: Mage, position: IPosition) {
                 if (bot.canUse("blink")) bot.blink(slenderman.x, slenderman.y).catch(() => { /** Suppress warnings */ })
                 if (bot.canUse("burst")) bot.burst(slenderman.id).catch(() => { /** Suppress warnings */ })
             } else if (!bot.smartMoving) {
-                bot.smartMove(position).catch(() => { /** Suppress warnings */ })
+                const randomPos = offsetPosition(position, (Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20)
+                bot.smartMove(randomPos).catch(() => { /** Suppress warnings */ })
             }
         } catch (e) {
             console.error(e)
@@ -86,6 +93,11 @@ async function startMerchant(bot: Merchant) {
     startLootLoop(bot)
     startScareLoop(bot)
     startSellLoop(bot, { ...ITEMS_TO_SELL, "wbook0": 2 })
+
+    // We're not AFK, I swear...
+    setInterval(() => {
+        bot.socket.emit("property", { "afk": false })
+    }, 10_000)
 
     const locations: IPosition[] = []
     for (const monsterSpawn of (bot.G.maps[merchantMap] as GMap).monsters) {
