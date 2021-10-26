@@ -4,7 +4,7 @@ import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 
 /** Config */
-const region: ServerRegion = "US"
+const region: ServerRegion = "EU"
 const identifier: ServerIdentifier = "II"
 const monsters: MonsterName[] = ["bat", "minimush", "snake", "stoneworm", "osnake", "mvampire", "fvampire", "jr", "greenjr"]
 
