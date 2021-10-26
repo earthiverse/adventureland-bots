@@ -103,7 +103,7 @@ async function run() {
 
     // Start all characters
     console.log("Connecting...")
-    const startMage1Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
+    const startMage1Loop = async (name: string) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -128,9 +128,9 @@ async function run() {
         }
         loopBot()
     }
-    startMage1Loop(mage1Name, region, identifier).catch(() => { /* ignore errors */ })
+    startMage1Loop(mage1Name).catch(() => { /* ignore errors */ })
 
-    const startMage2Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
+    const startMage2Loop = async (name: string) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -155,9 +155,9 @@ async function run() {
         }
         loopBot()
     }
-    startMage2Loop(mage2Name, region, identifier).catch(() => { /* ignore errors */ })
+    startMage2Loop(mage2Name).catch(() => { /* ignore errors */ })
 
-    const startMage3Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
+    const startMage3Loop = async (name: string) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -182,7 +182,7 @@ async function run() {
         }
         loopBot()
     }
-    startMage3Loop(mage3Name, region, identifier).catch(() => { /* ignore errors */ })
+    startMage3Loop(mage3Name).catch(() => { /* ignore errors */ })
 
     let lastServerChangeTime = Date.now()
     const serverLoop = async () => {
