@@ -6,7 +6,8 @@ import { partyLeader, partyMembers } from "../base/party.js"
 /** Config */
 const region: ServerRegion = "EU"
 const identifier: ServerIdentifier = "II"
-const monsters: MonsterName[] = ["bat", "minimush", "snake", "stoneworm", "osnake", "mvampire", "fvampire", "jr", "greenjr"]
+const toLookFor: MonsterName[] = ["bat", "minimush", "snake", "stoneworm", "fvampire", "jr", "mrpumpkin", "mrgreen"]
+const toAttack: MonsterName[] = ["bat", "bee", "goo", "goldenbat", "minimush", "snake", "scorpion", "stoneworm", "osnake", "jr", "greenjr"]
 
 const mage1Name = "facilitating"
 const mage2Name = "gratuitously"
@@ -22,7 +23,7 @@ function randomIntFromInterval(min, max) { // min and max included
 
 async function startMage(bot: Mage) {
     const locations: IPosition[] = []
-    for (const monster of monsters) locations.push(...bot.locateMonster(monster))
+    for (const monster of toLookFor) locations.push(...bot.locateMonster(monster))
 
     startAvoidStacking(bot)
     startBuyLoop(bot, new Set())
@@ -46,7 +47,7 @@ async function startMage(bot: Mage) {
                 // NOTE: We are bursting in the move loop, because we can do it really fast there
                 if (bot.canUse("attack")) await bot.basicAttack(slenderman.id).catch(() => { /** Suppress warnings */ })
             } else {
-                await attackTheseTypesMage(bot, monsters, [], { disableCburst: true, disableEnergize: true })
+                await attackTheseTypesMage(bot, toAttack, [], { disableCburst: true, disableEnergize: true })
             }
         } catch (e) {
             console.error(e)
@@ -74,6 +75,7 @@ async function startMage(bot: Mage) {
             if (slenderman && AL.Tools.distance(bot, slenderman) > bot.range) {
                 console.log(`Slenderman spotted at ${slenderman.map},${slenderman.x},${slenderman.y} with ${slenderman.hp}/${slenderman.max_hp} HP.`)
                 if (bot.canUse("blink")) bot.blink(slenderman.x, slenderman.y).catch(() => { /** Suppress warnings */ })
+                if (bot.canUse("attack")) bot.basicAttack(slenderman.id).catch(() => { /** Suppress warnings */ })
                 if (bot.canUse("burst")) bot.burst(slenderman.id).catch(() => { /** Suppress warnings */ })
             } else if (!bot.smartMoving) {
                 bot.smartMove(locations[randomIntFromInterval(0, locations.length)]).catch(() => { /** Suppress warnings */ })
