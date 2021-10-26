@@ -7,6 +7,7 @@ import { partyLeader, partyMembers } from "../base/party.js"
 const region: ServerRegion = "EU"
 const identifier: ServerIdentifier = "II"
 const toLookFor: MonsterName[] = ["bat", "minimush", "snake", "stoneworm", "fvampire", "jr", "mrpumpkin", "mrgreen"]
+const extraToLook: IPosition[] = [{ map: "spookytown", x: 250, y: -1129 }]
 const toAttack: MonsterName[] = ["bat", "bee", "goo", "goldenbat", "minimush", "snake", "scorpion", "stoneworm", "osnake", "jr", "greenjr"]
 
 const mage1Name = "earthMag"
@@ -22,7 +23,7 @@ function randomIntFromInterval(min, max) { // min and max included
 }
 
 async function startMage(bot: Mage) {
-    const locations: IPosition[] = []
+    const locations: IPosition[] = extraToLook
     for (const monster of toLookFor) locations.push(...bot.locateMonster(monster))
 
     startAvoidStacking(bot)
