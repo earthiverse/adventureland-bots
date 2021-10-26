@@ -335,10 +335,8 @@ async function run() {
 
             const currentRegion = information.bot1.bot.server.region
             const currentIdentifier = information.bot1.bot.server.name
-            const G = information.bot1.bot.G
 
-            const targetServer = await getTargetServerFromMonsters(G, DEFAULT_REGION, DEFAULT_IDENTIFIER,
-                ["mrpumpkin", "mrgreen"])
+            const targetServer = await getTargetServerFromMonsters(AL.Game.G, DEFAULT_REGION, DEFAULT_IDENTIFIER, ["mrpumpkin", "mrgreen"])
             if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
                 // We're already on the correct server
                 console.log("DEBUG: We're already on the correct server")

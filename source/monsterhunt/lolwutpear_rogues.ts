@@ -2,7 +2,7 @@ import AL, { GMap, IPosition, Merchant, Rogue, ServerInfoDataLive } from "alclie
 import { goToNearestWalkableToMonster, goToSpecialMonster, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
 import { mainBeesNearTunnel } from "../base/locations.js"
 import { attackTheseTypesRogue } from "../base/rogue.js"
-import { getTargetServerFromPlayer } from "../base/serverhop.js"
+import { getTargetServerFromMonsters } from "../base/serverhop.js"
 import { Information, Strategy } from "../definitions/bot.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startRogue, startMerchant } from "./shared.js"
 
@@ -304,7 +304,7 @@ async function run() {
             const currentRegion = information.bot1.bot.server.region
             const currentIdentifier = information.bot1.bot.server.name
 
-            const targetServer = await getTargetServerFromPlayer(currentRegion, currentIdentifier, "earthMag")
+            const targetServer = await getTargetServerFromMonsters(AL.Game.G, DEFAULT_REGION, DEFAULT_IDENTIFIER, ["mrpumpkin", "mrgreen"])
             if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
                 // We're already on the correct server
                 console.log("DEBUG: We're already on the correct server")
