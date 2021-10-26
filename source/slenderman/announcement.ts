@@ -1,5 +1,5 @@
 import AL, { IPosition, Mage, ServerIdentifier, ServerRegion } from "alclient"
-import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startPartyLoop } from "../base/general.js"
+import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startPartyLoop, startAvoidStacking, startLootLoop, startScareLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 
@@ -19,9 +19,11 @@ let mage2: Mage
 let mage3: Mage
 
 async function startMage(bot: Mage, position: IPosition) {
+    startAvoidStacking(bot)
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
+    startScareLoop(bot)
     startSellLoop(bot, { ...ITEMS_TO_SELL, "wbook0": 2 })
     startPartyLoop(bot, partyLeader, partyMembers)
 
@@ -34,7 +36,7 @@ async function startMage(bot: Mage, position: IPosition) {
                 // NOTE: We are bursting in the move loop, because we can do it really fast there
                 if (bot.canUse("attack")) await bot.basicAttack(slenderman.id).catch(() => { /** Suppress warnings */ })
             } else {
-                await attackTheseTypesMage(bot, ["snake", "osnake", "minimush"], [], { disableCburst: true, disableEnergize: true })
+                await attackTheseTypesMage(bot, ["snake", "osnake", "minimush", "greenjr"], [], { disableCburst: true, disableEnergize: true })
             }
         } catch (e) {
             console.error(e)

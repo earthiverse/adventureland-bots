@@ -1,5 +1,5 @@
 import AL, { IPosition, Mage, ServerIdentifier, ServerRegion } from "alclient"
-import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startPartyLoop } from "../base/general.js"
+import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startPartyLoop, startScareLoop, startAvoidStacking } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 
@@ -19,9 +19,11 @@ let mage2: Mage
 let mage3: Mage
 
 async function startMage(bot: Mage, position: IPosition) {
+    startAvoidStacking(bot)
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
+    startScareLoop(bot)
     startSellLoop(bot, { ...ITEMS_TO_SELL, "wbook0": 2 })
     startPartyLoop(bot, partyLeader, partyMembers)
 
