@@ -90,7 +90,7 @@ async function startMage(bot: Mage) {
                 }
                 if (bot.canUse("attack")) bot.basicAttack(slenderman.id).catch(() => { /** Suppress warnings */ })
                 if (bot.canUse("burst")) bot.burst(slenderman.id).catch(() => { /** Suppress warnings */ })
-            } else if (!bot.smartMoving) {
+            } else if (!bot.smartMoving || bot.map == "jail") {
                 bot.smartMove(locations[randomIntFromInterval(0, locations.length)]).catch(() => { /** Suppress warnings */ })
             }
         } catch (e) {

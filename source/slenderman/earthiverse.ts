@@ -24,6 +24,8 @@ function randomIntFromInterval(min, max) { // min and max included
 }
 
 async function startMage(bot: Mage) {
+    let slenderID: string
+
     const locations: IPosition[] = extraToLook
     for (const monster of toLookFor) {
         for (const location of bot.locateMonster(monster)) {
@@ -50,6 +52,7 @@ async function startMage(bot: Mage) {
             if (!bot.socket || bot.socket.disconnected) return
 
             const slenderman = bot.getNearestMonster("slenderman")?.monster
+            if (slenderman) slenderID = slenderman.id
             if (slenderman && AL.Tools.distance(bot, slenderman) <= bot.range) {
                 // NOTE: We are bursting in the move loop, because we can do it really fast there
                 if (bot.canUse("attack")) await bot.basicAttack(slenderman.id).catch(() => { /** Suppress warnings */ })
@@ -79,6 +82,7 @@ async function startMage(bot: Mage) {
             await goToBankIfFull(bot)
 
             const slenderman = bot.getNearestMonster("slenderman")?.monster
+            if (slenderman) slenderID = slenderman.id
             if (slenderman && AL.Tools.distance(bot, slenderman) > bot.range) {
                 console.log(`Slenderman spotted at ${slenderman.map},${slenderman.x},${slenderman.y} with ${slenderman.hp}/${slenderman.max_hp} HP.`)
                 if (bot.canUse("blink")) {
@@ -90,7 +94,7 @@ async function startMage(bot: Mage) {
                 }
                 if (bot.canUse("attack")) bot.basicAttack(slenderman.id).catch(() => { /** Suppress warnings */ })
                 if (bot.canUse("burst")) bot.burst(slenderman.id).catch(() => { /** Suppress warnings */ })
-            } else if (!bot.smartMoving) {
+            } else if (!bot.smartMoving || bot.map == "jail") {
                 bot.smartMove(locations[randomIntFromInterval(0, locations.length)]).catch(() => { /** Suppress warnings */ })
             }
         } catch (e) {
