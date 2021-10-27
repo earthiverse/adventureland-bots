@@ -29,7 +29,11 @@ let slenderID: string
 let slenderTrilateration: (IPosition & {distance: number})[] = [undefined, undefined, undefined]
 
 async function startMage(bot: Mage, trilaterationIndex: number) {
-    const locations: IPosition[] = extraToLook
+    const locations: IPosition[] = []
+    for (const location of extraToLook) {
+        if (location.map !== toLookForMap) continue
+        locations.push(location)
+    }
     for (const monster of toLookFor) {
         for (const location of bot.locateMonster(monster)) {
             if (location.map !== toLookForMap) continue
