@@ -1,7 +1,8 @@
-import AL, { Character, Constants, IPosition, Mage, Merchant, MonsterName, ServerIdentifier, ServerRegion, Tools } from "alclient"
-import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, ITEMS_TO_HOLD, startSendStuffDenylistLoop } from "../base/general.js"
+import AL, { Character, IPosition, Mage, Merchant, MonsterName, ServerIdentifier, ServerInfoDataLive, ServerRegion } from "alclient"
+import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, ITEMS_TO_HOLD, startSendStuffDenylistLoop, startScareLoop, startAvoidStacking, startCompoundLoop, startCraftLoop, startUpgradeLoop, startBuyFriendsReplenishablesLoop, LOOP_MS } from "../base/general.js"
 import { mainBeesNearTunnel, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
+import { doBanking, doEmergencyBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { ItemLevelInfo } from "../definitions/bot.js"
 
 /** Config */
@@ -22,13 +23,18 @@ let mage3: Mage
 let merchant: Merchant
 const friends: [Mage, Mage, Mage] = [undefined, undefined, undefined]
 
-const SELL_THESE: ItemLevelInfo = { ...ITEMS_TO_SELL, "beewings": 9999, "hpamulet": 2, "hpbelt": 2, "ringsj": 2, "stinger": 2, "wcap": 2, "wshoes": 2 }
+const SELL_THESE: ItemLevelInfo = { ...ITEMS_TO_SELL, "beewings": 9999, "hpamulet": 2, "hpbelt": 2, "ringsj": 2, "stinger": 2 }
 
 async function startShared(bot: Character) {
+    startAvoidStacking(bot)
     startBuyLoop(bot, new Set())
+    startCompoundLoop(bot)
+    startCraftLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)
+    startScareLoop(bot)
     startSellLoop(bot, SELL_THESE)
+    startUpgradeLoop(bot)
 }
 
 async function startMage(bot: Mage, positionOffset: { x: number, y: number } = { x: 0, y: 0 }) {
@@ -75,6 +81,11 @@ async function startMage(bot: Mage, positionOffset: { x: number, y: number } = {
 }
 
 async function startMerchant(bot: Merchant, holdPosition: IPosition) {
+    startBuyFriendsReplenishablesLoop(bot, friends)
+    startMluckLoop(bot)
+
+
+    let lastBankVisit = Number.MIN_VALUE
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -86,15 +97,112 @@ async function startMerchant(bot: Merchant, holdPosition: IPosition) {
                 return
             }
 
-            await goToPotionSellerIfLow(bot)
-            await goToBankIfFull(bot, ITEMS_TO_HOLD, 2_000_000)
+            // If we are full, let's go to the bank
+            if (bot.isFull() || lastBankVisit < Date.now() - 120000 || bot.hasPvPMarkedItem()) {
+                lastBankVisit = Date.now()
+                await doBanking(bot)
+                await doEmergencyBanking(bot)
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                return
+            }
 
-            if (AL.Tools.distance(bot, holdPosition) > 1) await bot.smartMove(holdPosition)
+            // mluck our friends
+            if (bot.canUse("mluck", { ignoreCooldown: true })) {
+                for (const friend of [mage1, mage2, mage3]) {
+                    if (!friend) continue
+                    if (friend.id == bot.id) continue
+                    if (!friend.s.mluck || !friend.s.mluck.strong || friend.s.mluck.ms < 120000) {
+                        // Move to them, and we'll automatically mluck them
+                        if (AL.Tools.distance(bot, friend) > bot.G.skills.mluck.range) {
+                            await bot.closeMerchantStand()
+                            console.log(`[merchant] We are moving to ${friend.name} to mluck them!`)
+                            await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2 })
+                        }
+
+                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                        return
+                    }
+                }
+            }
+
+            // get stuff from our friends
+            for (const friend of [mage1, mage2, mage3]) {
+                if (!friend) continue
+                if (friend.isFull()) {
+                    await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+                    lastBankVisit = Date.now()
+                    await doBanking(bot)
+                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                    return
+                }
+            }
+
+            // Go fishing if we can
+            await goFishing(bot)
+            if (!bot.isOnCooldown("fishing")) {
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                return
+            }
+
+            // Go mining if we can
+            await goMining(bot)
+            if (!bot.isOnCooldown("mining")) {
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                return
+            }
+
+            if ((bot.id == "earthMer" || bot.id == "earthMer2") && bot.canUse("mluck", { ignoreCooldown: true })) {
+                // MLuck people if there is a server info target
+                for (const mN in bot.S) {
+                    const type = mN as MonsterName
+                    if (!bot.S[type].live) continue
+                    if (!(bot.S[type] as ServerInfoDataLive).target) continue
+                    if (bot.S[type]["x"] == undefined || bot.S[type]["y"] == undefined) continue // No location data
+
+                    if (AL.Tools.distance(bot, (bot.S[type] as IPosition)) > 100) {
+                        await bot.closeMerchantStand()
+                        await bot.smartMove((bot.S[type] as IPosition), { getWithin: 100 })
+                    }
+
+                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                    return
+                }
+
+                // Find other characters that need mluck and go find them
+                const charactersToMluck = await AL.PlayerModel.find({
+                    $or: [{ "s.mluck": undefined },
+                        { "s.mluck.f": { "$ne": bot.id }, "s.mluck.strong": undefined }],
+                    lastSeen: { $gt: Date.now() - 120000 },
+                    serverIdentifier: bot.server.name,
+                    serverRegion: bot.server.region },
+                {
+                    _id: 0,
+                    map: 1,
+                    name: 1,
+                    x: 1,
+                    y: 1
+                }).lean().exec()
+                for (const stranger of charactersToMluck) {
+                    // Move to them, and we'll automatically mluck them
+                    if (AL.Tools.distance(bot, stranger) > bot.G.skills.mluck.range) {
+                        await bot.closeMerchantStand()
+                        console.log(`[merchant] We are moving to ${stranger.name} to mluck them!`)
+                        await bot.smartMove(stranger, { getWithin: bot.G.skills.mluck.range / 2 })
+                    }
+
+                    setTimeout(async () => { moveLoop() }, 250)
+                    return
+                }
+            }
+
+            // Hang out in town
+            await bot.smartMove(holdPosition)
+            await bot.openMerchantStand()
         } catch (e) {
             console.error(e)
         }
 
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
     }
     moveLoop()
 }
