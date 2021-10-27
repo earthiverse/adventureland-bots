@@ -55,6 +55,7 @@ async function startMage(bot: Mage, trilaterationIndex: number) {
         if (typeof data == "object") {
             if (data.response == "too_far" && data.id == slenderID) {
                 for (const trilateration of slenderTrilateration) {
+                    if (!trilateration) continue
                     if (trilateration.map !== bot.map) {
                         // Found on a different map, clear the trilaterations
                         slenderTrilateration = [undefined, undefined, undefined]
