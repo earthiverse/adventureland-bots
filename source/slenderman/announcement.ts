@@ -1,9 +1,10 @@
-import AL, { DeathData, GameResponseData, IPosition, Mage, MapName, MonsterName, ServerIdentifier, ServerInfoData, ServerRegion } from "alclient"
-import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startPartyLoop, startScareLoop, startAvoidStacking, sleep } from "../base/general.js"
+import AL, { DeathData, GameResponseData, IPosition, Mage, MapName, Merchant, MonsterName, ServerIdentifier, ServerInfoData, ServerInfoDataLive, ServerRegion } from "alclient"
+import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startPartyLoop, startScareLoop, startAvoidStacking, sleep, startPontyLoop, ITEMS_TO_HOLD, startSendStuffDenylistLoop, startCompoundLoop, startCraftLoop, startUpgradeLoop, LOOP_MS } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { getTargetServerFromCurrentServer } from "../base/serverhop.js"
 import trilateration from "node-trilateration"
+import { doBanking, doEmergencyBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 
 /** Config */
 let region: ServerRegion = "EU"
@@ -12,14 +13,17 @@ const toLookForMap: MapName = "cave"
 const toLookFor: MonsterName[] = ["bat", "minimush", "snake", "stoneworm", "phoenix", "ghost", "jr", "xscorpion", "mrgreen"]
 const extraToLook: IPosition[] = [{ map: "spookytown", x: 250, y: -1129 }, { map: "spookytown", x: -525, y: -715 }, { map: "halloween", x: 920, y: -120 }]
 const toAttack: MonsterName[] = ["bat", "bee", "goo", "goldenbat", "minimush", "snake", "scorpion", "stoneworm", "osnake", "jr", "greenjr"]
+const merchantPosition: IPosition = { map: "main", x: -300, y: -100 }
 
 const mage1Name = "facilitating"
 const mage2Name = "gratuitously"
 const mage3Name = "hypothesized"
+const merchantName = "decisiveness"
 
 let mage1: Mage
 let mage2: Mage
 let mage3: Mage
+let merchant: Merchant
 
 function randomIntFromInterval(min, max) { // min and max included
     return Math.floor(Math.random() * (max - min + 1) + min)
@@ -76,6 +80,7 @@ async function startMage(bot: Mage, trilaterationIndex: number) {
     startLootLoop(bot)
     startScareLoop(bot)
     startSellLoop(bot, { ...ITEMS_TO_SELL, "wbook0": 2 })
+    startSendStuffDenylistLoop(bot, [merchantName], ITEMS_TO_HOLD, 10_000_000)
     startPartyLoop(bot, partyLeader, partyMembers)
 
     async function trilaterationLoop() {
@@ -159,7 +164,144 @@ async function startMage(bot: Mage, trilaterationIndex: number) {
             console.error(e)
         }
 
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+    }
+    moveLoop()
+}
+
+async function startMerchant(bot: Merchant) {
+    startAvoidStacking(bot)
+    startBuyLoop(bot)
+    startCompoundLoop(bot)
+    startCraftLoop(bot)
+    startHealLoop(bot)
+    startLootLoop(bot)
+    startScareLoop(bot)
+    startSellLoop(bot)
+    startUpgradeLoop(bot)
+
+    startPontyLoop(bot)
+    startMluckLoop(bot)
+    startPartyLoop(bot, bot.id) // Let anyone who wants to party with me do so
+
+    let lastBankVisit = Number.MIN_VALUE
+    async function moveLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            // If we are dead, respawn
+            if (bot.rip) {
+                await bot.respawn()
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+                return
+            }
+
+            // If we are full, let's go to the bank
+            if (bot.isFull() || lastBankVisit < Date.now() - 120000 || bot.hasPvPMarkedItem()) {
+                lastBankVisit = Date.now()
+                await doBanking(bot)
+                await doEmergencyBanking(bot)
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                return
+            }
+
+            // mluck our friends
+            if (bot.canUse("mluck", { ignoreCooldown: true })) {
+                for (const friend of [mage1, mage2, mage3]) {
+                    if (!friend) continue
+                    if (friend.id == bot.id) continue
+                    if (!friend.s.mluck || !friend.s.mluck.strong || friend.s.mluck.ms < 120000) {
+                        // Move to them, and we'll automatically mluck them
+                        if (AL.Tools.distance(bot, friend) > bot.G.skills.mluck.range) {
+                            await bot.closeMerchantStand()
+                            console.log(`[merchant] We are moving to ${friend.name} to mluck them!`)
+                            await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2 })
+                        }
+
+                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                        return
+                    }
+                }
+            }
+
+            // get stuff from our friends
+            for (const friend of [mage1, mage2, mage3]) {
+                if (!friend) continue
+                if (friend.isFull()) {
+                    await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+                    lastBankVisit = Date.now()
+                    await doBanking(bot)
+                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                    return
+                }
+            }
+
+            // Go fishing if we can
+            await goFishing(bot)
+            if (!bot.isOnCooldown("fishing")) {
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                return
+            }
+
+            // Go mining if we can
+            await goMining(bot)
+            if (!bot.isOnCooldown("mining")) {
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                return
+            }
+
+            if ((bot.id == "earthMer" || bot.id == "earthMer2") && bot.canUse("mluck", { ignoreCooldown: true })) {
+                // MLuck people if there is a server info target
+                for (const mN in bot.S) {
+                    const type = mN as MonsterName
+                    if (!bot.S[type].live) continue
+                    if (!(bot.S[type] as ServerInfoDataLive).target) continue
+                    if (bot.S[type]["x"] == undefined || bot.S[type]["y"] == undefined) continue // No location data
+
+                    if (AL.Tools.distance(bot, (bot.S[type] as IPosition)) > 100) {
+                        await bot.closeMerchantStand()
+                        await bot.smartMove((bot.S[type] as IPosition), { getWithin: 100 })
+                    }
+
+                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                    return
+                }
+
+                // Find other characters that need mluck and go find them
+                const charactersToMluck = await AL.PlayerModel.find({
+                    $or: [{ "s.mluck": undefined },
+                        { "s.mluck.f": { "$ne": bot.id }, "s.mluck.strong": undefined }],
+                    lastSeen: { $gt: Date.now() - 120000 },
+                    serverIdentifier: bot.server.name,
+                    serverRegion: bot.server.region },
+                {
+                    _id: 0,
+                    map: 1,
+                    name: 1,
+                    x: 1,
+                    y: 1
+                }).lean().exec()
+                for (const stranger of charactersToMluck) {
+                    // Move to them, and we'll automatically mluck them
+                    if (AL.Tools.distance(bot, stranger) > bot.G.skills.mluck.range) {
+                        await bot.closeMerchantStand()
+                        console.log(`[merchant] We are moving to ${stranger.name} to mluck them!`)
+                        await bot.smartMove(stranger, { getWithin: bot.G.skills.mluck.range / 2 })
+                    }
+
+                    setTimeout(async () => { moveLoop() }, 250)
+                    return
+                }
+            }
+
+            // Hang out in town
+            await bot.smartMove(merchantPosition)
+            await bot.openMerchantStand()
+        } catch (e) {
+            console.error(e)
+        }
+
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
     }
     moveLoop()
 }
@@ -252,6 +394,33 @@ async function run() {
     }
     startMage3Loop(mage3Name).catch(() => { /* ignore errors */ })
 
+    const startMerchantLoop = async (name: string) => {
+        // Start the characters
+        const loopBot = async () => {
+            try {
+                if (merchant) merchant.disconnect()
+                merchant = await AL.Game.startMerchant(name, region, identifier)
+                startMerchant(merchant)
+                merchant.socket.on("disconnect", async () => { loopBot() })
+            } catch (e) {
+                console.error(e)
+                if (merchant) merchant.disconnect()
+                const wait = /wait_(\d+)_second/.exec(e)
+                if (wait && wait[1]) {
+                    setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
+                } else if (/limits/.test(e)) {
+                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                } else if (/ingame/.test(e)) {
+                    setTimeout(async () => { loopBot() }, 500)
+                } else {
+                    setTimeout(async () => { loopBot() }, 10000)
+                }
+            }
+        }
+        loopBot()
+    }
+    startMerchantLoop(merchantName).catch(() => { /* ignore errors */ })
+
     let lastServerChangeTime = Date.now()
     const serverLoop = async () => {
         try {
@@ -301,6 +470,7 @@ async function run() {
             mage1.disconnect()
             mage2?.disconnect()
             mage3?.disconnect()
+            merchant?.disconnect()
             await sleep(5000)
             lastServerChangeTime = Date.now()
         } catch (e) {
