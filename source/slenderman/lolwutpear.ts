@@ -81,7 +81,13 @@ async function startMage(bot: Mage) {
             const slenderman = bot.getNearestMonster("slenderman")?.monster
             if (slenderman && AL.Tools.distance(bot, slenderman) > bot.range) {
                 console.log(`Slenderman spotted at ${slenderman.map},${slenderman.x},${slenderman.y} with ${slenderman.hp}/${slenderman.max_hp} HP.`)
-                if (bot.canUse("blink")) bot.blink(slenderman.x, slenderman.y).catch(() => { /** Suppress warnings */ })
+                if (bot.canUse("blink")) {
+                    if (AL.Pathfinder.canStand(slenderman)) {
+                        bot.blink(slenderman.x, slenderman.y).catch(() => { /** Suppress warnings */ })
+                    } else {
+                        bot.move(slenderman.x, slenderman.y, { disableSafetyCheck: true }).catch(() => { /** Suppress warnings */ })
+                    }
+                }
                 if (bot.canUse("attack")) bot.basicAttack(slenderman.id).catch(() => { /** Suppress warnings */ })
                 if (bot.canUse("burst")) bot.burst(slenderman.id).catch(() => { /** Suppress warnings */ })
             } else if (!bot.smartMoving) {
