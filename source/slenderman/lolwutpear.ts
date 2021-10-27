@@ -1,4 +1,4 @@
-import AL, { DeathData, GameResponseData, IPosition, Mage, MapName, Merchant, MonsterName, ServerIdentifier, ServerInfoData, ServerInfoDataLive, ServerRegion } from "alclient"
+import AL, { CMData, DeathData, GameResponseData, IPosition, Mage, MapName, Merchant, MonsterName, ServerIdentifier, ServerInfoData, ServerInfoDataLive, ServerRegion } from "alclient"
 import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startPartyLoop, startScareLoop, startAvoidStacking, sleep, startPontyLoop, ITEMS_TO_HOLD, startSendStuffDenylistLoop, startCompoundLoop, startCraftLoop, startUpgradeLoop, LOOP_MS, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
@@ -32,6 +32,19 @@ function randomIntFromInterval(min, max) { // min and max included
 let slenderID: string
 let slenderTrilateration: (IPosition & {distance: number})[] = [undefined, undefined, undefined]
 
+async function sendSlenderIDLoop(bot: Mage) {
+    async function sendSlenderIDLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+            if (slenderID) bot.sendCM(partyMembers, { slenderID: slenderID })
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("sendSlenderIDLoop", setTimeout(async () => { sendSlenderIDLoop() }, 5000))
+    }
+    sendSlenderIDLoop()
+}
+
 async function startMage(bot: Mage, trilaterationIndex: number) {
     const locations: IPosition[] = []
     for (const location of extraToLook) {
@@ -45,6 +58,12 @@ async function startMage(bot: Mage, trilaterationIndex: number) {
         }
     }
 
+    bot.socket.on("cm", (data: CMData) => {
+        // Update SlenderID from party members
+        if (!partyMembers.includes(data.name)) return
+        const dataJSON = JSON.parse(data.message)
+        if (dataJSON.slenderID) slenderID = dataJSON.slenderID
+    })
     bot.socket.on("death", (data: DeathData) => {
         if (data.id == slenderID) {
             // Clear Slender Data
@@ -321,6 +340,7 @@ async function run() {
                 mage1 = await AL.Game.startMage(name, region, identifier)
                 startMage(mage1, 0)
                 startTrackerLoop(mage1)
+                sendSlenderIDLoop(mage1)
                 mage1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
