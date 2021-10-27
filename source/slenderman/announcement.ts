@@ -26,9 +26,9 @@ function randomIntFromInterval(min, max) { // min and max included
 }
 
 let slenderID: string
-let slenderTrilateration: (IPosition & {distance: number})[] = []
+let slenderTrilateration: (IPosition & {distance: number})[] = [undefined, undefined, undefined]
 
-async function startMage(bot: Mage) {
+async function startMage(bot: Mage, trilaterationIndex: number) {
     const locations: IPosition[] = extraToLook
     for (const monster of toLookFor) {
         for (const location of bot.locateMonster(monster)) {
@@ -41,14 +41,14 @@ async function startMage(bot: Mage) {
         if (data.id == slenderID) {
             // Clear Slender Data
             slenderID = undefined
-            slenderTrilateration = []
+            slenderTrilateration = [undefined, undefined, undefined]
         }
     })
     bot.socket.on("server_info", (data: ServerInfoData) => {
         if (data.slenderman && !data.slenderman.live) {
             // Clear Slender Data
             slenderID = undefined
-            slenderTrilateration = []
+            slenderTrilateration = [undefined, undefined, undefined]
         }
     })
     bot.socket.on("game_response", (data: GameResponseData) => {
@@ -57,10 +57,10 @@ async function startMage(bot: Mage) {
                 for (const trilateration of slenderTrilateration) {
                     if (trilateration.map !== bot.map) {
                         // Found on a different map, clear the trilaterations
-                        slenderTrilateration = []
+                        slenderTrilateration = [undefined, undefined, undefined]
                     }
                 }
-                slenderTrilateration.push({ distance: data.dist, map: bot.map, x: bot.x, y: bot.y })
+                slenderTrilateration[trilaterationIndex] = { distance: data.dist, map: bot.map, x: bot.x, y: bot.y }
             }
         }
     })
@@ -75,7 +75,7 @@ async function startMage(bot: Mage) {
 
     async function trilaterationLoop() {
         try {
-            if (slenderTrilateration.length >= 3) {
+            if (slenderTrilateration[0] && slenderTrilateration[1] && slenderTrilateration[2]) {
                 const map = slenderTrilateration[0].map
                 const position: {x: number, y: number} = trilateration.calculate([slenderTrilateration[0], slenderTrilateration[1], slenderTrilateration[2]])
                 console.log(`Slenderman trilaterated to ${map},${position.x},${position.y}.`)
@@ -92,7 +92,7 @@ async function startMage(bot: Mage) {
                     if (mage.canUse("attack")) mage.basicAttack(slenderID).catch(() => { /** Suppress warnings */ })
                     if (mage.canUse("burst")) mage.burst(slenderID).catch(() => { /** Suppress warnings */ })
                 }
-                slenderTrilateration = []
+                slenderTrilateration = [undefined, undefined, undefined]
             }
         } catch (e) {
             console.error(e)
@@ -176,7 +176,7 @@ async function run() {
             try {
                 if (mage1) mage1.disconnect()
                 mage1 = await AL.Game.startMage(name, region, identifier)
-                startMage(mage1)
+                startMage(mage1, 0)
                 mage1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -203,7 +203,7 @@ async function run() {
             try {
                 if (mage2) mage2.disconnect()
                 mage2 = await AL.Game.startMage(name, region, identifier)
-                startMage(mage2)
+                startMage(mage2, 1)
                 mage2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -230,7 +230,7 @@ async function run() {
             try {
                 if (mage3) mage3.disconnect()
                 mage3 = await AL.Game.startMage(name, region, identifier)
-                startMage(mage3)
+                startMage(mage3, 2)
                 mage3.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
