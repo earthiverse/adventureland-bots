@@ -78,21 +78,17 @@ async function startMage(bot: Mage, trilaterationIndex: number) {
             if (slenderTrilateration[0] && slenderTrilateration[1] && slenderTrilateration[2]) {
                 const map = slenderTrilateration[0].map
                 const position: {x: number, y: number} = trilateration.calculate([slenderTrilateration[0], slenderTrilateration[1], slenderTrilateration[2]])
-                console.log(`Slenderman trilaterated to ${map},${position.x},${position.y}.`)
-                for (const mage of [mage1, mage2, mage3]) {
-                    if (!mage) continue // Mage isn't up
-                    if (mage.map !== toLookForMap) continue // Mage isn't on the same map
-                    if (mage.canUse("blink")) {
-                        if (AL.Pathfinder.canStand({ map: map, x: position.x, y: position.y })) {
-                            mage.blink(position.x, position.y).catch(() => { /** Suppress warnings */ })
-                        } else {
-                            mage.move(position.x, position.y, { disableSafetyCheck: true }).catch(() => { /** Suppress warnings */ })
-                        }
+                if (AL.Pathfinder.canStand({ map: map, x: position.x, y: position.y })) {
+                    console.log(`Slenderman trilaterated to ${map},${position.x},${position.y}.`)
+                    for (const mage of [mage1, mage2, mage3]) {
+                        if (!mage) continue // Mage isn't up
+                        if (mage.map !== toLookForMap) continue // Mage isn't on the same map
+                        if (mage.canUse("blink")) mage.blink(position.x, position.y).catch(() => { /** Suppress warnings */ })
+                        if (mage.canUse("attack")) mage.basicAttack(slenderID).catch(() => { /** Suppress warnings */ })
+                        if (mage.canUse("burst")) mage.burst(slenderID).catch(() => { /** Suppress warnings */ })
                     }
-                    if (mage.canUse("attack")) mage.basicAttack(slenderID).catch(() => { /** Suppress warnings */ })
-                    if (mage.canUse("burst")) mage.burst(slenderID).catch(() => { /** Suppress warnings */ })
+                    slenderTrilateration = [undefined, undefined, undefined]
                 }
-                slenderTrilateration = [undefined, undefined, undefined]
             }
         } catch (e) {
             console.error(e)
