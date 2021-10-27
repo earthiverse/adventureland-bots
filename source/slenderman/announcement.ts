@@ -3,7 +3,7 @@ import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, star
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { getTargetServerFromCurrentServer } from "../base/serverhop.js"
-import { trilateration } from "node-trilateration"
+import trilateration from "node-trilateration"
 
 /** Config */
 let region: ServerRegion = "EU"
