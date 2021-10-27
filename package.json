@@ -9,6 +9,7 @@
     "axios": "^0.23.0",
     "console-table-printer": "^2.10.0",
     "fastpriorityqueue": "^0.7.1",
+    "node-trilateration": "^1.0.0",
     "queue-promise": "^2.2.1"
   },
   "devDependencies": {
