@@ -2,7 +2,7 @@ import AL, { CMData, DeathData, GameResponseData, IPosition, Mage, MapName, Merc
 import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startPartyLoop, startScareLoop, startAvoidStacking, sleep, startPontyLoop, ITEMS_TO_HOLD, startSendStuffDenylistLoop, startCompoundLoop, startCraftLoop, startUpgradeLoop, LOOP_MS, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
-import { getTargetServerFromCurrentServer } from "../base/serverhop.js"
+import { getTargetServerFromCurrentServer, getTargetServerFromPlayer } from "../base/serverhop.js"
 import trilateration from "node-trilateration"
 import { doBanking, doEmergencyBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 
@@ -466,7 +466,7 @@ async function run() {
             const currentRegion = mage1.server.region
             const currentIdentifier = mage1.server.name
 
-            const targetServer = getTargetServerFromCurrentServer(currentRegion, currentIdentifier, true)
+            const targetServer = getTargetServerFromPlayer(currentRegion, currentIdentifier, partyLeader)
             if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
                 // We're already on the correct server
                 setTimeout(async () => { serverLoop() }, 1000)
