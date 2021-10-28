@@ -458,12 +458,6 @@ async function run() {
                 return
             }
 
-            // Don't change servers if slender is live, and we haven't spent a lot of time on the server looking for him
-            if (mage1.S?.slenderman && mage1.S.slenderman.live && lastServerChangeTime > (Date.now() - 900_000)) {
-                setTimeout(async () => { serverLoop() }, 1000)
-                return
-            }
-
             const currentRegion = mage1.serverData.region
             const currentIdentifier = mage1.serverData.name
 
