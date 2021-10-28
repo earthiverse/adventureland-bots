@@ -465,8 +465,8 @@ async function run() {
                 return
             }
 
-            const currentRegion = mage1.server.region
-            const currentIdentifier = mage1.server.name
+            const currentRegion = mage1.serverData.region
+            const currentIdentifier = mage1.serverData.name
 
             const targetServer = getTargetServerFromCurrentServer(currentRegion, currentIdentifier, true)
             if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
@@ -490,6 +490,7 @@ async function run() {
 
             // Disconnect everyone
             console.log("Disconnecting characters")
+            lastServerChangeTime = Date.now()
             mage1.disconnect()
             mage2?.disconnect()
             mage3?.disconnect()

@@ -2,7 +2,7 @@ import AL, { CMData, DeathData, GameResponseData, IPosition, Mage, MapName, Merc
 import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startPartyLoop, startScareLoop, startAvoidStacking, sleep, startPontyLoop, ITEMS_TO_HOLD, startSendStuffDenylistLoop, startCompoundLoop, startCraftLoop, startUpgradeLoop, LOOP_MS, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
-import { getTargetServerFromCurrentServer, getTargetServerFromPlayer } from "../base/serverhop.js"
+import { getTargetServerFromPlayer } from "../base/serverhop.js"
 import trilateration from "node-trilateration"
 import { doBanking, doEmergencyBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 
@@ -463,8 +463,8 @@ async function run() {
                 return
             }
 
-            const currentRegion = mage1.server.region
-            const currentIdentifier = mage1.server.name
+            const currentRegion = mage1.serverData.region
+            const currentIdentifier = mage1.serverData.name
 
             const targetServer = getTargetServerFromPlayer(currentRegion, currentIdentifier, partyLeader)
             if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
@@ -488,6 +488,7 @@ async function run() {
 
             // Disconnect everyone
             console.log("Disconnecting characters")
+            lastServerChangeTime = Date.now()
             mage1.disconnect()
             mage2?.disconnect()
             mage3?.disconnect()
