@@ -104,6 +104,7 @@ async function startMage(bot: Mage, trilaterationIndex: number) {
 
     async function trilaterationLoop() {
         try {
+            if (!bot.socket || bot.socket.disconnected) return
             if (slenderTrilateration[0] && slenderTrilateration[1] && slenderTrilateration[2]) {
                 const map = slenderTrilateration[0].map
                 const position: {x: number, y: number} = trilateration.calculate([slenderTrilateration[0], slenderTrilateration[1], slenderTrilateration[2]])
