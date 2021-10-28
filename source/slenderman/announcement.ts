@@ -467,7 +467,7 @@ async function run() {
             const currentRegion = mage1.serverData.region
             const currentIdentifier = mage1.serverData.name
 
-            const targetServer = getTargetServerFromPlayer(currentRegion, currentIdentifier, partyLeader)
+            const targetServer = await getTargetServerFromPlayer(currentRegion, currentIdentifier, partyLeader)
             if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
                 // We're already on the correct server
                 setTimeout(async () => { serverLoop() }, 1000)
