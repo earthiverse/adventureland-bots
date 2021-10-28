@@ -12,7 +12,7 @@ let identifier: ServerIdentifier = "II"
 const toLookForMap: MapName = "halloween"
 const toLookFor: MonsterName[] = ["bat", "minimush", "snake", "stoneworm", "phoenix", "ghost", "jr", "xscorpion", "mrgreen"]
 const extraToLook: IPosition[] = [{ map: "spookytown", x: 250, y: -1129 }, { map: "spookytown", x: -525, y: -715 }, { map: "halloween", x: 920, y: -120 }]
-const toAttack: MonsterName[] = ["bat", "bee", "goo", "goldenbat", "minimush", "snake", "scorpion", "stoneworm", "osnake", "jr", "greenjr"]
+const toAttack: MonsterName[] = ["goldenbat", "jr", "greenjr", "osnake", "bat", "bee", "goo", "minimush", "snake", "scorpion", "stoneworm"]
 const merchantPosition: IPosition = { map: "main", x: 0, y: 0 }
 
 const mage1Name = "earthMag"
