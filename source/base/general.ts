@@ -137,7 +137,9 @@ export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
     // Don't use offeringp on wanderers stuff (we get a lot from drops and crafting)
     "wattire": 9, "wbreeches": 9, "wcap": 9, "wgloves": 9, "wshoes": 9,
     // Don't use offeringp on books
-    "wbook0": 4
+    "wbook0": 4,
+    // Primling sbelt from 0
+    "sbelt": 0
 }
 
 export const UPGRADE_COMPOUND_LIMIT: ItemLevelInfo = {
