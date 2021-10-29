@@ -9,8 +9,8 @@ import { doBanking, doEmergencyBanking, goFishing, goMining, startMluckLoop } fr
 /** Config */
 let region: ServerRegion = "US"
 let identifier: ServerIdentifier = "I"
-const toLookFor: MonsterName[] = ["bat", "minimush", "snake", "stoneworm", "phoenix", "ghost", "jr", "xscorpion", "mrgreen"]
-const extraToLook: IPosition[] = [{ map: "spookytown", x: 250, y: -1129 }, { map: "spookytown", x: -525, y: -715 }, { map: "halloween", x: 920, y: -120 }]
+const toLookFor: MonsterName[] = ["bat", "booboo", "mummy", "minimush", "snake", "stoneworm", "phoenix", "ghost", "jr", "xscorpion", "mrgreen"]
+const extraToLook: IPosition[] = [{ map: "spookytown", x: -525, y: -715 }, { map: "halloween", x: 920, y: -120 }]
 
 const toLookForMap: MapName = "halloween"
 const merchantPosition: IPosition = { map: "main", x: 0, y: 0 }
@@ -85,6 +85,7 @@ async function startRogue(bot: Rogue, trilaterationIndex: number) {
                     if (trilateration.map !== bot.map) {
                         // Found on a different map, clear the trilaterations
                         slenderTrilateration = [undefined, undefined, undefined]
+                        break
                     }
                 }
                 slenderTrilateration[trilaterationIndex] = { distance: data.dist, map: bot.map, x: bot.x, y: bot.y }
