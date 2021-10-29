@@ -12,7 +12,7 @@ let identifier: ServerIdentifier = "I"
 const toLookFor: MonsterName[] = ["bat", "booboo", "mummy", "minimush", "snake", "stoneworm", "phoenix", "ghost", "jr", "xscorpion", "mrgreen"]
 const extraToLook: IPosition[] = [{ map: "spookytown", x: -525, y: -715 }, { map: "halloween", x: 920, y: -120 }]
 
-const toLookForMap: MapName = "halloween"
+const toLookForMap: MapName = "spookytown"
 const merchantPosition: IPosition = { map: "main", x: -250, y: -100 }
 const rogue1Name = "rule34"
 const rogue2Name = "gaben"
