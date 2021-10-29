@@ -169,12 +169,6 @@ function prepareMage(bot: Mage) {
                 }
             }
         },
-        slenderman: {
-            attack: async () => { await attackTheseTypesMage(bot, ["slenderman"], information.friends) },
-            attackWhileIdle: true,
-            equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },
-            move: async () => { await goToSpecialMonster(bot, "slenderman") },
-        },
         snowman: {
             attack: async () => { await attackTheseTypesMage(bot, ["snowman"], information.friends) },
             equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },

@@ -397,12 +397,6 @@ function preparePriest(bot: Priest) {
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["skeletor"], { map: "arena", x: 400, y: -575 }) },
         },
-        slenderman: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["slenderman"], information.friends) },
-            attackWhileIdle: true,
-            equipment: { mainhand: "wand", orb: "jacko" },
-            move: async () => { await goToSpecialMonster(bot, "slenderman") },
-        },
         snake: {
             attack: async () => { await attackTheseTypesPriest(bot, ["snake", "osnake"], information.friends) },
             attackWhileIdle: true,
@@ -443,11 +437,11 @@ function preparePriest(bot: Priest) {
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
             move: async () => { await bot.smartMove({ map: "spookytown", x: 697, y: 129 }) },
         },
-        tinyp: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["tinyp"], information.friends, { targetingPartyMember: true }) },
-            equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
-            move: async () => { await goToSpecialMonster(bot, "tinyp") },
-        },
+        // tinyp: {
+        //     attack: async () => { await attackTheseTypesPriest(bot, ["tinyp"], information.friends, { targetingPartyMember: true }) },
+        //     equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
+        //     move: async () => { await goToSpecialMonster(bot, "tinyp") },
+        // },
         tortoise: {
             attack: async () => { await attackTheseTypesPriest(bot, ["tortoise", "phoenix"], information.friends) },
             attackWhileIdle: true,
@@ -841,11 +835,11 @@ function prepareRanger(bot: Ranger) {
             move: async () => { await bot.smartMove({ map: "spookytown", x: 677, y: 129 }) },
             requireCtype: "priest"
         },
-        tinyp: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["tinyp"], information.friends, { targetingPartyMember: true }) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
-            move: async () => { await goToSpecialMonster(bot, "tinyp") },
-        },
+        // tinyp: {
+        //     attack: async () => { return attackTheseTypesRanger(bot, ["tinyp"], information.friends, { targetingPartyMember: true }) },
+        //     equipment: { mainhand: "firebow", orb: "jacko" },
+        //     move: async () => { await goToSpecialMonster(bot, "tinyp") },
+        // },
         tortoise: {
             attack: async () => { return attackTheseTypesRanger(bot, ["tortoise", "phoenix"], information.friends) },
             attackWhileIdle: true,
@@ -1312,21 +1306,21 @@ function prepareWarrior(bot: Warrior) {
             },
             requireCtype: "priest"
         },
-        tinyp: {
-            attack: async () => {
-                const nearby = bot.getNearestMonster("tinyp")
-                if (nearby?.monster) {
-                    if (!nearby.monster.s.stunned && bot.canUse("stomp") && AL.Tools.distance(bot, nearby.monster) < bot.range) {
-                        // Stun before attacking
-                        await bot.stomp()
-                    } else if (nearby.monster.s.stunned) {
-                        await attackTheseTypesWarrior(bot, ["tinyp"], information.friends, { disableAgitate: true })
-                    }
-                }
-            },
-            equipment: { mainhand: "basher", orb: "jacko" },
-            move: async () => { await goToSpecialMonster(bot, "tinyp") },
-        },
+        // tinyp: {
+        //     attack: async () => {
+        //         const nearby = bot.getNearestMonster("tinyp")
+        //         if (nearby?.monster) {
+        //             if (!nearby.monster.s.stunned && bot.canUse("stomp") && AL.Tools.distance(bot, nearby.monster) < bot.range) {
+        //                 // Stun before attacking
+        //                 await bot.stomp()
+        //             } else if (nearby.monster.s.stunned) {
+        //                 await attackTheseTypesWarrior(bot, ["tinyp"], information.friends, { disableAgitate: true })
+        //             }
+        //         }
+        //     },
+        //     equipment: { mainhand: "basher", orb: "jacko" },
+        //     move: async () => { await goToSpecialMonster(bot, "tinyp") },
+        // },
         tortoise: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["tortoise", "phoenix"], information.friends) },
             attackWhileIdle: true,

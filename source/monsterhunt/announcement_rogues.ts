@@ -117,12 +117,6 @@ function prepareRogue(bot: Rogue) {
             equipment: { orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "mvampire") },
         },
-        slenderman: {
-            attack: async () => { await attackTheseTypesRogue(bot, ["slenderman"], information.friends) },
-            attackWhileIdle: true,
-            equipment: { orb: "jacko" },
-            move: async () => { await goToSpecialMonster(bot, "slenderman") },
-        },
         snowman: {
             attack: async () => { await attackTheseTypesRogue(bot, ["snowman"], information.friends) },
             equipment: { orb: "jacko" },
