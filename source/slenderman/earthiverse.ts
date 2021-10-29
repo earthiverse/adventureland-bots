@@ -120,6 +120,8 @@ async function startRogue(bot: Rogue, trilaterationIndex: number) {
                     }
                     await Promise.allSettled(movingPromises)
                     slenderTrilateration = [undefined, undefined, undefined]
+                } else {
+                    console.log(`Slenderman trilaterated to inside the wall @ ${map},${position.x},${position.y}.`)
                 }
             }
         } catch (e) {
