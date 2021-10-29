@@ -6,7 +6,8 @@ export const SERVER_HOP_SERVERS: [ServerRegion, ServerIdentifier][] = [
     ["US", "II"],
     ["US", "III"],
     ["EU", "I"],
-    ["EU", "II"],
+    // NOTE: Slender is currently stuck here
+    // ["EU", "II"],
     ["US", "PVP"],
     ["EU", "PVP"]
 ]
