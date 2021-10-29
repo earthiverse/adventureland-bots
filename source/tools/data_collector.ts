@@ -7,7 +7,7 @@ const servers = SERVER_HOP_SERVERS
 const SEND_ALDATA = true
 const NOTABLE_NPCS: string[] = ["Angel", "Kane"]
 
-const PEEK = true
+const PEEK = false
 const PEEK_CHARS = ["earthRan2", "earthRan3", "earthMag2", "earthWar2", "earthWar3", "earthRog", "earthRog2", "earthPal"]
 
 async function run() {
@@ -21,7 +21,7 @@ async function run() {
         if (SEND_ALDATA) {
             // Server Status
             observer.socket.on("server_info", async (data: ServerData) => {
-                const statuses = Object.keys(data).filter(k => { typeof data[k] === "object" }).map(e => {
+                const statuses = Object.keys(data).filter(k => { return typeof data[k] === "object" }).map(e => {
                     data[e].eventname = e
                     data[e].server_region = region
                     data[e].server_identifier = identifier
@@ -29,7 +29,9 @@ async function run() {
                     return data[e]
                 })
 
-                axios.post("https://aldata.info/api/serverstatuses", statuses, { headers: { "Content-Type": "application/json" } })
+                if (statuses.length) {
+                    axios.post("https://aldata.info/api/serverstatuses", statuses, { headers: { "Content-Type": "application/json" } })
+                }
             })
 
             // NPCs
