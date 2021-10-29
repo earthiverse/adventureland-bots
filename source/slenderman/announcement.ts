@@ -148,6 +148,18 @@ async function startRogue(bot: Rogue, trilaterationIndex: number) {
     }
     attackLoop()
 
+    async function invisLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            if (!bot.s.invis && bot.canUse("invis")) bot.invis()
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(100, bot.getCooldown("invis"))))
+    }
+    invisLoop()
+
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
