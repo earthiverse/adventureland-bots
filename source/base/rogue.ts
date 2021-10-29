@@ -175,10 +175,10 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
 }
 
 export function startRSpeedLoop(bot: Rogue, options: {
-        disableGiveToFriends?: boolean,
-        enableGiveToStrangers?: boolean,
-        giveToThesePlayers?: string[]
-    } = {}): void {
+    disableGiveToFriends?: boolean,
+    enableGiveToStrangers?: boolean,
+    giveToThesePlayers?: string[]
+} = {}): void {
     async function rspeedLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return

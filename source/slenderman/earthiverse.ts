@@ -259,14 +259,14 @@ async function startMerchant(bot: Merchant) {
 
             // Go fishing if we can
             await goFishing(bot)
-            if (!bot.isOnCooldown("fishing")) {
+            if (!bot.isOnCooldown("fishing") && (bot.hasItem("rod") || bot.isEquipped("rod"))) {
                 bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
             // Go mining if we can
             await goMining(bot)
-            if (!bot.isOnCooldown("mining")) {
+            if (!bot.isOnCooldown("mining") && (bot.hasItem("pickaxe") || bot.isEquipped("pickaxe"))) {
                 bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }

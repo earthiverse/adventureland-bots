@@ -98,7 +98,7 @@ async function startMerchant(bot: Merchant, holdPosition: IPosition) {
             }
 
             // If we are full, let's go to the bank
-            if (bot.isFull() || lastBankVisit < Date.now() - 120000 || bot.hasPvPMarkedItem()) {
+            if (bot.isFull() || lastBankVisit < Date.now() - 120000) {
                 lastBankVisit = Date.now()
                 await doBanking(bot)
                 await doEmergencyBanking(bot)
@@ -139,14 +139,14 @@ async function startMerchant(bot: Merchant, holdPosition: IPosition) {
 
             // Go fishing if we can
             await goFishing(bot)
-            if (!bot.isOnCooldown("fishing")) {
+            if (!bot.isOnCooldown("fishing") && (bot.hasItem("rod") || bot.isEquipped("rod"))) {
                 bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
             // Go mining if we can
             await goMining(bot)
-            if (!bot.isOnCooldown("mining")) {
+            if (!bot.isOnCooldown("mining") && (bot.hasItem("pickaxe") || bot.isEquipped("pickaxe"))) {
                 bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }

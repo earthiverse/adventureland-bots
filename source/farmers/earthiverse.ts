@@ -278,9 +278,17 @@ async function startMerchant(bot: Merchant) {
 
             // Go fishing if we can
             await goFishing(bot)
+            if (!bot.isOnCooldown("fishing") && (bot.hasItem("rod") || bot.isEquipped("rod"))) {
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                return
+            }
 
             // Go mining if we can
             await goMining(bot)
+            if (!bot.isOnCooldown("mining") && (bot.hasItem("pickaxe") || bot.isEquipped("pickaxe"))) {
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                return
+            }
 
             // MLuck people if there is a server info target
             for (const mN in bot.S) {
