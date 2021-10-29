@@ -1,28 +1,27 @@
-import AL, { CMData, DeathData, GameResponseData, IPosition, Mage, MapName, Merchant, MonsterName, ServerIdentifier, ServerInfoData, ServerInfoDataLive, ServerRegion } from "alclient"
+import AL, { CMData, DeathData, GameResponseData, IPosition, Rogue, MapName, Merchant, MonsterName, ServerIdentifier, ServerInfoData, ServerInfoDataLive, ServerRegion } from "alclient"
 import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startPartyLoop, startScareLoop, startAvoidStacking, sleep, startPontyLoop, ITEMS_TO_HOLD, startSendStuffDenylistLoop, startCompoundLoop, startCraftLoop, startUpgradeLoop, LOOP_MS, startTrackerLoop } from "../base/general.js"
-import { attackTheseTypesMage } from "../base/mage.js"
+import { attackTheseTypesRogue } from "../base/rogue.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { getTargetServerFromCurrentServer } from "../base/serverhop.js"
 import trilateration from "node-trilateration"
 import { doBanking, doEmergencyBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 
 /** Config */
-let region: ServerRegion = "EU"
+let region: ServerRegion = "US"
 let identifier: ServerIdentifier = "I"
-const toLookForMap: MapName = "halloween"
 const toLookFor: MonsterName[] = ["bat", "minimush", "snake", "stoneworm", "phoenix", "ghost", "jr", "xscorpion", "mrgreen"]
 const extraToLook: IPosition[] = [{ map: "spookytown", x: 250, y: -1129 }, { map: "spookytown", x: -525, y: -715 }, { map: "halloween", x: 920, y: -120 }]
-const toAttack: MonsterName[] = ["goldenbat", "jr", "greenjr", "osnake", "bat", "bee", "goo", "minimush", "snake", "scorpion", "stoneworm"]
-const merchantPosition: IPosition = { map: "main", x: 0, y: 0 }
 
-const mage1Name = "earthMag"
-const mage2Name = "earthMag2"
-const mage3Name = "earthMag3"
+const toLookForMap: MapName = "halloween"
+const merchantPosition: IPosition = { map: "main", x: 0, y: 0 }
+const rogue1Name = "earthRog"
+const rogue2Name = "earthRog2"
+const rogue3Name = "earthRog3"
 const merchantName = "earthMer"
 
-let mage1: Mage
-let mage2: Mage
-let mage3: Mage
+let rogue1: Rogue
+let rogue2: Rogue
+let rogue3: Rogue
 let merchant: Merchant
 
 function randomIntFromInterval(min, max) { // min and max included
@@ -32,7 +31,7 @@ function randomIntFromInterval(min, max) { // min and max included
 let slenderID: string
 let slenderTrilateration: (IPosition & {distance: number})[] = [undefined, undefined, undefined]
 
-async function sendSlenderIDLoop(bot: Mage) {
+async function sendSlenderIDLoop(bot: Rogue) {
     async function sendSlenderIDLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -45,7 +44,7 @@ async function sendSlenderIDLoop(bot: Mage) {
     sendSlenderIDLoop()
 }
 
-async function startMage(bot: Mage, trilaterationIndex: number) {
+async function startRogue(bot: Rogue, trilaterationIndex: number) {
     const locations: IPosition[] = []
     for (const location of extraToLook) {
         if (location.map !== toLookForMap) continue
@@ -111,20 +110,21 @@ async function startMage(bot: Mage, trilaterationIndex: number) {
                 const position: {x: number, y: number} = trilateration.calculate([slenderTrilateration[0], slenderTrilateration[1], slenderTrilateration[2]])
                 if (AL.Pathfinder.canStand({ map: map, x: position.x, y: position.y })) {
                     console.log(`Slenderman trilaterated to ${map},${position.x},${position.y}.`)
-                    for (const mage of [mage1, mage2, mage3]) {
-                        if (!mage) continue // Mage isn't up
-                        if (mage.map !== toLookForMap) continue // Mage isn't on the same map
-                        if (mage.canUse("blink")) mage.blink(position.x, position.y).catch(() => { /** Suppress warnings */ })
-                        if (mage.canUse("attack")) mage.basicAttack(slenderID).catch(() => { /** Suppress warnings */ })
-                        if (mage.canUse("burst")) mage.burst(slenderID).catch(() => { /** Suppress warnings */ })
+                    const movingPromises: Promise<unknown>[] = []
+                    for (const rogue of [rogue1, rogue2, rogue3]) {
+                        if (!rogue) continue // Rogue isn't up
+                        if (!rogue.s.invis) continue // Rogue isn't invisible
+                        if (rogue.map !== toLookForMap) continue // Rogue isn't on the same map
+                        movingPromises.push(rogue.smartMove(position))
                     }
+                    await Promise.allSettled(movingPromises)
                     slenderTrilateration = [undefined, undefined, undefined]
                 }
             }
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { trilaterationLoop() }, 1000))
+        bot.timeouts.set("trilaterationLoop", setTimeout(async () => { trilaterationLoop() }, 1000))
     }
     trilaterationLoop()
 
@@ -134,13 +134,10 @@ async function startMage(bot: Mage, trilaterationIndex: number) {
 
             const slenderman = bot.getNearestMonster("slenderman")?.monster
             if (slenderman) slenderID = slenderman.id
-            if (slenderman && AL.Tools.distance(bot, slenderman) <= bot.range) {
-                // NOTE: We are bursting in the move loop, because we can do it really fast there
-                if (bot.canUse("attack")) await bot.basicAttack(slenderman.id).catch(() => { /** Suppress warnings */ })
-            } else {
-                await attackTheseTypesMage(bot, toAttack, [], { disableCburst: true, disableEnergize: true })
-            }
 
+            await attackTheseTypesRogue(bot, ["slenderman"])
+
+            // Trilateration attack
             if (slenderID && !bot.c.town && bot.canUse("attack")) {
                 await bot.basicAttack(slenderID).catch(() => { /** Suppress errors */ })
             }
@@ -167,19 +164,20 @@ async function startMage(bot: Mage, trilaterationIndex: number) {
 
             const slenderman = bot.getNearestMonster("slenderman")?.monster
             if (slenderman) slenderID = slenderman.id
-            if (slenderman && AL.Tools.distance(bot, slenderman) > bot.range) {
-                console.log(`Slenderman spotted at ${slenderman.map},${slenderman.x},${slenderman.y} with ${slenderman.hp}/${slenderman.max_hp} HP.`)
-                if (bot.canUse("blink")) {
-                    if (AL.Pathfinder.canStand(slenderman)) {
-                        bot.blink(slenderman.x, slenderman.y).catch(() => { /** Suppress warnings */ })
-                    } else {
-                        bot.move(slenderman.x, slenderman.y, { disableSafetyCheck: true }).catch(() => { /** Suppress warnings */ })
-                    }
+
+            if (!bot.s.invis) {
+                // We aren't invisible, hang out at the spawn until we are
+                if (!bot.smartMoving) bot.smartMove(toLookForMap)
+            } else {
+                // We are invisible, go look for Slender
+                if (slenderman) {
+                    // Go to slenderman
+                    console.log(`Slenderman spotted at ${slenderman.map},${slenderman.x},${slenderman.y} with ${slenderman.hp}/${slenderman.max_hp} HP.`)
+                    await bot.smartMove(slenderman)
+                } else if (!bot.smartMoving || bot.map == "jail") {
+                    // Go to a random location
+                    bot.smartMove(locations[randomIntFromInterval(0, locations.length)]).catch(() => { /** Suppress warnings */ })
                 }
-                if (bot.canUse("attack")) bot.basicAttack(slenderman.id).catch(() => { /** Suppress warnings */ })
-                if (bot.canUse("burst")) bot.burst(slenderman.id).catch(() => { /** Suppress warnings */ })
-            } else if (!bot.smartMoving || bot.map == "jail") {
-                bot.smartMove(locations[randomIntFromInterval(0, locations.length)]).catch(() => { /** Suppress warnings */ })
             }
         } catch (e) {
             console.error(e)
@@ -228,7 +226,7 @@ async function startMerchant(bot: Merchant) {
 
             // mluck our friends
             if (bot.canUse("mluck", { ignoreCooldown: true })) {
-                for (const friend of [mage1, mage2, mage3]) {
+                for (const friend of [rogue1, rogue2, rogue3]) {
                     if (!friend) continue
                     if (friend.id == bot.id) continue
                     if (!friend.s.mluck || !friend.s.mluck.strong || friend.s.mluck.ms < 120000) {
@@ -246,7 +244,7 @@ async function startMerchant(bot: Merchant) {
             }
 
             // get stuff from our friends
-            for (const friend of [mage1, mage2, mage3]) {
+            for (const friend of [rogue1, rogue2, rogue3]) {
                 if (!friend) continue
                 if (friend.isFull()) {
                     await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
@@ -334,19 +332,19 @@ async function run() {
 
     // Start all characters
     console.log("Connecting...")
-    const startMage1Loop = async (name: string) => {
+    const startRogue1Loop = async (name: string) => {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (mage1) mage1.disconnect()
-                mage1 = await AL.Game.startMage(name, region, identifier)
-                startMage(mage1, 0)
-                startTrackerLoop(mage1)
-                sendSlenderIDLoop(mage1)
-                mage1.socket.on("disconnect", async () => { loopBot() })
+                if (rogue1) rogue1.disconnect()
+                rogue1 = await AL.Game.startRogue(name, region, identifier)
+                startRogue(rogue1, 0)
+                startTrackerLoop(rogue1)
+                sendSlenderIDLoop(rogue1)
+                rogue1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (mage1) mage1.disconnect()
+                if (rogue1) rogue1.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
@@ -361,19 +359,19 @@ async function run() {
         }
         loopBot()
     }
-    startMage1Loop(mage1Name).catch(() => { /* ignore errors */ })
+    startRogue1Loop(rogue1Name).catch(() => { /* ignore errors */ })
 
-    const startMage2Loop = async (name: string) => {
+    const startRogue2Loop = async (name: string) => {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (mage2) mage2.disconnect()
-                mage2 = await AL.Game.startMage(name, region, identifier)
-                startMage(mage2, 1)
-                mage2.socket.on("disconnect", async () => { loopBot() })
+                if (rogue2) rogue2.disconnect()
+                rogue2 = await AL.Game.startRogue(name, region, identifier)
+                startRogue(rogue2, 1)
+                rogue2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (mage2) mage2.disconnect()
+                if (rogue2) rogue2.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
@@ -388,19 +386,19 @@ async function run() {
         }
         loopBot()
     }
-    startMage2Loop(mage2Name).catch(() => { /* ignore errors */ })
+    startRogue2Loop(rogue2Name).catch(() => { /* ignore errors */ })
 
-    const startMage3Loop = async (name: string) => {
+    const startRogue3Loop = async (name: string) => {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (mage3) mage3.disconnect()
-                mage3 = await AL.Game.startMage(name, region, identifier)
-                startMage(mage3, 2)
-                mage3.socket.on("disconnect", async () => { loopBot() })
+                if (rogue3) rogue3.disconnect()
+                rogue3 = await AL.Game.startRogue(name, region, identifier)
+                startRogue(rogue3, 2)
+                rogue3.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (mage3) mage3.disconnect()
+                if (rogue3) rogue3.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
@@ -415,7 +413,7 @@ async function run() {
         }
         loopBot()
     }
-    startMage3Loop(mage3Name).catch(() => { /* ignore errors */ })
+    startRogue3Loop(rogue3Name).catch(() => { /* ignore errors */ })
 
     const startMerchantLoop = async (name: string) => {
         // Start the characters
@@ -448,7 +446,7 @@ async function run() {
     const serverLoop = async () => {
         try {
             // We haven't logged in yet
-            if (!mage1) {
+            if (!rogue1) {
                 setTimeout(async () => { serverLoop() }, 1000)
                 return
             }
@@ -460,13 +458,13 @@ async function run() {
             }
 
             // Don't change servers if slender is live, and we haven't spent a lot of time on the server looking for him
-            if (mage1.S?.slenderman && mage1.S.slenderman.live && lastServerChangeTime > (Date.now() - 900_000)) {
+            if (rogue1.S?.slenderman && rogue1.S.slenderman.live && lastServerChangeTime > (Date.now() - 900_000)) {
                 setTimeout(async () => { serverLoop() }, 1000)
                 return
             }
 
-            const currentRegion = mage1.serverData.region
-            const currentIdentifier = mage1.serverData.name
+            const currentRegion = rogue1.serverData.region
+            const currentIdentifier = rogue1.serverData.name
 
             const targetServer = getTargetServerFromCurrentServer(currentRegion, currentIdentifier, true)
             if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
@@ -485,15 +483,15 @@ async function run() {
             // Loot all of our remaining chests
             await sleep(1000)
             console.log("Looting remaining chests")
-            for (const [, chest] of mage1.chests) await mage1.openChest(chest.id)
+            for (const [, chest] of rogue1.chests) await rogue1.openChest(chest.id)
             await sleep(1000)
 
             // Disconnect everyone
             console.log("Disconnecting characters")
             lastServerChangeTime = Date.now()
-            mage1.disconnect()
-            mage2?.disconnect()
-            mage3?.disconnect()
+            rogue1.disconnect()
+            rogue2?.disconnect()
+            rogue3?.disconnect()
             merchant?.disconnect()
             await sleep(5000)
             lastServerChangeTime = Date.now()

@@ -1,5 +1,5 @@
 import Queue from "queue-promise"
-import AL, { Character, ChestData, Entity, GameResponseData, GMap, HitData, IEntity, IPosition, ItemData, ItemName, Merchant, MonsterName, Player, ServerInfoDataLive, Tools, TradeSlotType } from "alclient"
+import AL, { Character, ChestData, Entity, GameResponseData, GMap, HitData, IEntity, IPosition, ItemData, ItemName, Merchant, MonsterName, Player, Tools, TradeSlotType } from "alclient"
 import { ItemLevelInfo } from "../definitions/bot.js"
 import { bankingPosition, offsetPositionParty } from "./locations.js"
 
@@ -11,7 +11,7 @@ export const GOLD_TO_HOLD = 5_000_000
 
 export const FRIENDLY_ROGUES = ["copper", "Bjarna", "RisingVanir"]
 
-export const MY_CHARACTERS = ["earthiverse", "earthMag", "earthMag2", "earthMag3", "earthMer", "earthMer2", "earthMer3", "earthMer4", "earthPal", "earthPri", "earthPri2", "earthRan2", "earthRan3", "earthRog", "earthRog2", "earthWar", "earthWar2", "earthWar3"]
+export const MY_CHARACTERS = ["earthiverse", "earthMag", "earthMag2", "earthMag3", "earthMer", "earthMer2", "earthMer3", "earthPal", "earthPri", "earthPri2", "earthRan2", "earthRan3", "earthRog", "earthRog2", "earthRog3", "earthWar", "earthWar2", "earthWar3"]
 export const ANNOUNCEMENT_CHARACTERS = ["announcement", "battleworthy", "charmingness", "decisiveness", "enlightening", "facilitating", "gratuitously", "hypothesized", "illumination", "journalistic", "kaleidoscope", "logistically"]
 export const KOUIN_CHARACTERS = ["bataxedude", "cclair", "fathergreen", "kakaka", "kekeke", "kouin", "kukuku", "mule0", "mule1", "mule2", "mule3", "mule5", "mule6", "mule7", "mule8", "mule9", "mule10", "piredude"]
 export const LOLWUTPEAR_CHARACTERS = ["fgsfds", "fsjal", "funny", "gaben", "lolwutpear", "longcat", "orlyowl", "over9000", "rickroll", "rule34", "shoopdawhoop", "wombocombo", "ytmnd"]
@@ -64,7 +64,7 @@ export const ITEMS_TO_BUY: Set<ItemName> = new Set([
     // Earrings
     "cearring", "dexearring", /*"intearring",*/ "lostearring", /*"strearring",*/
     // Amulets
-    "amuletofm", "dexamulet", "intamulet", "mpxamulet", "northstar", "snring", /*"stramulet",*/ "t2dexamulet", "t2intamulet", "t2stramulet",
+    "amuletofm", "dexamulet", "intamulet", "mpxamulet", "northstar", "skullamulet", "snring", /*"stramulet",*/ "t2dexamulet", "t2intamulet", "t2stramulet",
     // Orbs
     "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull", "vorb",
     // Offhands
@@ -84,7 +84,7 @@ export const ITEMS_TO_BUY: Set<ItemName> = new Set([
     // Gloves
     /*"gloves1",*/ "goldenpowerglove", "handofmidas", "hgloves", "mpxgloves", "mrngloves", "mwgloves", "poker", "powerglove", "vgloves", "wgloves", "xgloves",
     // Good weapons
-    "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "fireblade", "firebow", "firestaff", "firestars", "frostbow", "froststaff", "gbow", "gstaff", "harbringer", "heartwood", "hbow", "hdagger", "merry", "oozingterror", "ornamentstaff", "pinkie", "pmace", "scythe", "snowflakes", "t2bow", "t3bow", "vdagger", "vhammer", "vstaff", "vsword", "wblade",
+    "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "fireblade", "firebow", "firestaff", "firestars", "frostbow", "froststaff", "gbow", "gstaff", "harbringer", "heartwood", "hbow", "hdagger", "merry", "oozingterror", "ornamentstaff", "pinkie", "pmace", "scythe", "snowflakes", "t2bow", "t3bow", "throwingstars", "vdagger", "vhammer", "vstaff", "vsword", "wblade",
     // Things we can exchange / craft with
     "ascale", "bfur", "cscale", "electronics", "feather0", "frogt", "goldenegg", "goldingot", "goldnugget", "ink", "leather", "lotusf", "platinumingot", "platinumnugget", "pleather", "snakefang",
     // Things to make xbox
@@ -111,7 +111,7 @@ export const ITEMS_TO_SELL: ItemLevelInfo = {
     // Things that are now obsolete
     "dexring": 2, "intring": 2, "intearring": 2, "strearring": 2, "stramulet": 2,
     // Things in abundance during halloween
-    "gphelmet": 2, "phelmet": 2,
+    "glolipop": 2, "gphelmet": 2, "ololipop": 2, "phelmet": 2,
     // Field generators
     "fieldgen0": 999,
     // Snowballs
@@ -145,7 +145,7 @@ export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
 export const UPGRADE_COMPOUND_LIMIT: ItemLevelInfo = {
     "lostearring": 2, // Level 2 is the best for exchanging
     "test_orb": 0, // No advantages for leveling this item
-    // "throwingstars": 0, // We're going to craft them in to fiery throwing stars
+    "throwingstars": 0, // We're going to craft them in to fiery throwing stars
     "vitring": 2, // Level 2 vitrings are useful for crafting
     "vorb": 0 // No advantages for leveling this item
 }
