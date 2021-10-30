@@ -230,16 +230,16 @@ export async function getPriority2Entities(bot: Character): Promise<Entity[] | I
     let partyList = [bot.id]
     if (bot.party) partyList = bot.partyData.list
 
-    // Don't attack cute bees on PVP, because kouin will destroy us.
+    // Don't attack cute bees on PVP, because kouin will destroy you.
     if (bot.server.name == "PVP" && solo.includes("cutebee")) solo.splice(solo.indexOf("cutebee"), 1)
 
-    // Don't attack golden bats on PVP, because kouin will destroy us.
+    // Don't attack golden bats on PVP, because kouin will destroy you.
     if (bot.server.name == "PVP" && solo.includes("goldenbat")) solo.splice(solo.indexOf("goldenbat"), 1)
 
-    // Don't attack skeletor on PVP, because kouin will destroy us.
+    // Don't attack skeletor on PVP, because kouin will destroy you.
     if (bot.server.name == "PVP" && solo.includes("skeletor")) solo.splice(solo.indexOf("skeletor"), 1)
 
-    // Don't attack slenderman on PVP, because kouin will destroy us.
+    // Don't attack slenderman on PVP, because kouin will destroy you.
     if (bot.server.name == "PVP" && solo.includes("slenderman")) solo.splice(solo.indexOf("slenderman"), 1)
 
     return await AL.EntityModel.aggregate([

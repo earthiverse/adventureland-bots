@@ -61,7 +61,7 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
     // Very Rare Monsters
         "goldenbat", "tinyp", "cutebee",
         // Event Monsters
-        "pinkgoo", "wabbit", "slenderman",
+        "pinkgoo", "wabbit",
         // // Rare Monsters
         "greenjr", "jr", "skeletor", "mvampire", "fvampire", "snowman", "stompy"
     ]): Promise<[ServerRegion, ServerIdentifier]> {
