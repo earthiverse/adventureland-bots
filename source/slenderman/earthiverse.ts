@@ -159,7 +159,7 @@ async function startRogue(bot: Rogue, trilaterationIndex: number) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(100, bot.getCooldown("invis"))))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { invisLoop() }, Math.max(100, bot.getCooldown("invis"))))
     }
     invisLoop()
 
