@@ -1,13 +1,12 @@
 import AL, { GData, IEntity, MonsterName, ServerIdentifier, ServerRegion } from "alclient"
 
 export const SERVER_HOP_SERVERS: [ServerRegion, ServerIdentifier][] = [
-    // NOTE: Slender is missing
-    // ["ASIA", "I"],
-    // ["US", "I"],
+    ["ASIA", "I"],
+    ["US", "I"],
     ["US", "II"],
     ["US", "III"],
     ["EU", "I"],
-    // ["EU", "II"],
+    ["EU", "II"],
     ["US", "PVP"],
     ["EU", "PVP"]
 ]
