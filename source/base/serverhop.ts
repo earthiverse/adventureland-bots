@@ -59,7 +59,7 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
     ],
     solo: MonsterName[] = [
     // Very Rare Monsters
-        "goldenbat", "tinyp", "cutebee",
+        "goldenbat", "cutebee",
         // Event Monsters
         "pinkgoo", "wabbit",
         // // Rare Monsters
