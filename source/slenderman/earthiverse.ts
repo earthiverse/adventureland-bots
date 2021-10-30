@@ -498,7 +498,13 @@ async function run() {
             // Loot all of our remaining chests
             await sleep(1000)
             console.log("Looting remaining chests")
-            for (const [, chest] of rogue1.chests) await rogue1.openChest(chest.id)
+            for (const [, chest] of rogue1.chests) {
+                try {
+                    await rogue1.openChest(chest.id)
+                } catch (e) {
+                    console.error(e)
+                }
+            }
             await sleep(1000)
 
             // Disconnect everyone
