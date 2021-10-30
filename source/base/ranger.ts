@@ -1,4 +1,4 @@
-import AL, { Character, Constants, Entity, Mage, MonsterName, Ranger, Tools } from "alclient"
+import AL, { Character, Entity, Mage, MonsterName, Ranger } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 
 export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], friends: Character[] = [], options: {
@@ -59,8 +59,6 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
     })) {
         targets.add(entity)
 
-        if (entity.immune) continue // Can't attack it with 3shot or 5shot
-
         if (entity.target) {
             // It has a target, we can attack it without gaining additional fear
             threeShotTargets.add(entity)
@@ -81,33 +79,33 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
         }
 
         switch (entity.damage_type) {
-        case "magical":
-            if (bot.mcourage > targetingMe.magical) {
+            case "magical":
+                if (bot.mcourage > targetingMe.magical) {
                 // We can tank one more magical monster
-                if (!addedToThreeShotTargets) threeShotTargets.add(entity)
-                fiveShotTargets.add(entity)
-                targetingMe.magical += 1
-                continue
-            }
-            break
-        case "physical":
-            if (bot.courage > targetingMe.physical) {
+                    if (!addedToThreeShotTargets) threeShotTargets.add(entity)
+                    fiveShotTargets.add(entity)
+                    targetingMe.magical += 1
+                    continue
+                }
+                break
+            case "physical":
+                if (bot.courage > targetingMe.physical) {
                 // We can tank one more physical monster
-                if (!addedToThreeShotTargets)threeShotTargets.add(entity)
-                fiveShotTargets.add(entity)
-                targetingMe.physical += 1
-                continue
-            }
-            break
-        case "pure":
-            if (bot.pcourage > targetingMe.pure) {
+                    if (!addedToThreeShotTargets)threeShotTargets.add(entity)
+                    fiveShotTargets.add(entity)
+                    targetingMe.physical += 1
+                    continue
+                }
+                break
+            case "pure":
+                if (bot.pcourage > targetingMe.pure) {
                 // We can tank one more pure monster
-                if (!addedToThreeShotTargets)threeShotTargets.add(entity)
-                fiveShotTargets.add(entity)
-                targetingMe.pure += 1
-                continue
-            }
-            break
+                    if (!addedToThreeShotTargets)threeShotTargets.add(entity)
+                    fiveShotTargets.add(entity)
+                    targetingMe.pure += 1
+                    continue
+                }
+                break
         }
     }
 
@@ -198,8 +196,6 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
         willDieToProjectiles: false,
         withinRange: bot.range * bot.G.skills.supershot.range_multiplier
     })) {
-        if (entity.immune) continue // Can't attack it with supershot
-
         // If we can kill something guaranteed, break early
         if (bot.canKillInOneShot(entity, "supershot")) {
             for (const friend of friends) {
