@@ -72,8 +72,7 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
                 $match: {
                     $or: [
                         {
-                            // NOTE: Temporarily off for Halloween
-                            // serverIdentifier: { $nin: ["PVP"] },
+                            serverIdentifier: { $nin: ["PVP"] },
                             target: { $ne: undefined }, // We only want to do these if others are doing them, too.
                             type: { $in: coop }
                         },

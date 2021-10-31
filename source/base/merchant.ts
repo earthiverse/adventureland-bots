@@ -126,7 +126,7 @@ export async function doEmergencyBanking(bot: Merchant, itemsToHold = MERCHANT_I
     for (const itemName in stackList) {
         const stacks = stackList[itemName]
         const stackLimit = bot.G.items[itemName].s
-        for (let j = 0; j < stacks.length - 1; j++) {
+        for (let j = 0; j < stacks.length - 1 && availableInventorySlots.length; j++) {
             const stack1 = stacks[j]
             const stack2 = stacks[j + 1]
             if (stack1[2] + stack2[2] > stackLimit) continue // Can't stack, too much
@@ -146,7 +146,49 @@ export async function doEmergencyBanking(bot: Merchant, itemsToHold = MERCHANT_I
     }
     if (stacked) return // We found something to stack
 
-    // TODO: Find items to compound
+    // Find things we can sell
+    const sellThese: number[] = []
+    for (const bankSlot in bot.bank) {
+        const matches = /items(\d+)/.exec(bankSlot)
+        // Only get stuff from the packs in the current level
+        if (bot.map == "bank") {
+            if (!matches || Number.parseInt(matches[1]) > 7) continue
+        } else if (bot.map == "bank_b") {
+            if (!matches || Number.parseInt(matches[1]) < 8 || Number.parseInt(matches[1]) > 23) continue
+        } else if (bot.map == "bank_u") {
+            if (!matches || Number.parseInt(matches[1]) < 24) continue
+        }
+
+        for (let i = 0; i < bot.bank[bankSlot].length && availableInventorySlots.length; i++) {
+            const item = bot.bank[bankSlot as BankPackName][i]
+            if (!item) continue // Empty slot
+            if (item.l) continue // Item is locked
+            if (item.p) continue // Item is special
+            if (!itemsToSell[item.name] || itemsToSell[item.name] <= (item.level ?? 0)) continue // We don't want to sell it
+            const inventoryPos = availableInventorySlots.pop()
+            await bot.withdrawItem(bankSlot as BankPackName, i, inventoryPos)
+            sellThese.push(inventoryPos)
+        }
+    }
+    if (sellThese.length) {
+        // Go sell the items
+        await bot.smartMove("main")
+        await sleep(5000) // Leaving the bank doesn't free up our character right away
+        for (const i of sellThese) {
+            const item = bot.items[i]
+            if (!item) continue // Already sold
+            try {
+                await bot.sell(i, item.q ?? 1)
+            } catch (e) {
+                console.error(e)
+            }
+        }
+        return
+    }
+
+    // TODO: If we have a compound scroll in our inventory, find items to compound
+
+    // TODO: If we have an upgrade scroll in our inventory, find items to upgrade
 }
 
 export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOLD, itemsToHold = MERCHANT_ITEMS_TO_HOLD, itemsToSell = ITEMS_TO_SELL, itemsToCraft = ITEMS_TO_CRAFT, itemsToExchange = ITEMS_TO_EXCHANGE): Promise<void> {
