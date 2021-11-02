@@ -2,13 +2,14 @@ import AL, { Character, IPosition, Mage, Merchant, MonsterName, Priest, ServerId
 import { startAvoidStacking, startBuyLoop, startBuyFriendsReplenishablesLoop, startCompoundLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startUpgradeLoop, goToBankIfFull, goToPotionSellerIfLow, LOOP_MS, startSendStuffDenylistLoop, kiteInCircle } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
+import { partyLeader, partyMembers } from "../base/party.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 
 export const DEFAULT_REGION: ServerRegion = "US"
 export const DEFAULT_IDENTIFIER: ServerIdentifier = "III"
 
-const bscorpionPartyLeader = "over9000"
-const bscorpionPartyMembers = ["facilitating", "gratuitously", "illumination", "lolwutpear", "shoopdawhoop", "over9000"]
+const bscorpionPartyLeader = partyLeader
+const bscorpionPartyMembers = partyMembers
 
 const targets: MonsterName[] = ["bscorpion"]
 

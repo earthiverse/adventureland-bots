@@ -850,6 +850,9 @@ export function startCraftLoop(bot: Character, itemsToCraft = ITEMS_TO_CRAFT): v
             if (!bot.socket || bot.socket.disconnected) return
 
             for (const iName of itemsToCraft) {
+                // TODO: New check that checks if we require more space for what we craft,
+                //       or if it uses the same slots. If it does, we don't have to worry
+                //       about filling up our inventory.
                 if (bot.esize < 5) break // Not a lot of empty space
                 if (bot.canCraft(iName)) {
                     await bot.craft(iName)
@@ -858,7 +861,7 @@ export function startCraftLoop(bot: Character, itemsToCraft = ITEMS_TO_CRAFT): v
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("craftloop", setTimeout(async () => { craftLoop() }, 1000))
+        bot.timeouts.set("craftLoop", setTimeout(async () => { craftLoop() }, 1000))
     }
     craftLoop()
 }
