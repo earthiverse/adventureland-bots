@@ -9,10 +9,10 @@ import { Information, Strategy } from "../definitions/bot.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
 
-const DEFAULT_TARGET: MonsterName = "goo"
+const DEFAULT_TARGET: MonsterName = "spider"
 
 export const DEFAULT_REGION: ServerRegion = "US"
-export const DEFAULT_IDENTIFIER: ServerIdentifier = "II"
+export const DEFAULT_IDENTIFIER: ServerIdentifier = "III"
 
 export async function getTarget(bot: Character, strategy: Strategy, information: Information): Promise<MonsterName> {
     for (const entity of await getPriority1Entities(bot)) {

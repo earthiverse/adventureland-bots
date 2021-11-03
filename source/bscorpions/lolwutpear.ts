@@ -1,7 +1,8 @@
-import AL, { Constants, IPosition, Mage, Priest, ServerIdentifier, ServerRegion } from "alclient"
+import AL, { IPosition, Priest, Rogue, ServerIdentifier, ServerRegion } from "alclient"
 import { startTrackerLoop } from "../base/general.js"
 import { Information } from "../definitions/bot.js"
-import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMerchant, startBscorpionMageFarmer, startBscorpionPriestFarmer } from "./runners.js"
+import { startMerchant, startBscorpionRogueFarmer, startBscorpionPriestFarmer } from "./runners.js"
+import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "../monsterhunt/shared.js"
 
 /** Config */
 const information: Information = {
@@ -66,14 +67,14 @@ async function run() {
     }
     startMerchantLoop(information.merchant.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
 
-    const startMage1Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
+    const startRogue1Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
                 if (information.bot1.bot) information.bot1.bot.disconnect()
-                information.bot1.bot = await AL.Game.startMage(name, region, identifier)
+                information.bot1.bot = await AL.Game.startRogue(name, region, identifier)
                 information.friends[1] = information.bot1.bot
-                startBscorpionMageFarmer(information.bot1.bot as Mage, information.friends, information.merchant.name)
+                startBscorpionRogueFarmer(information.bot1.bot as Rogue, information.friends, information.merchant.name)
                 startTrackerLoop(information.bot1.bot)
                 information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
@@ -91,16 +92,16 @@ async function run() {
         }
         loopBot()
     }
-    startMage1Loop(information.bot1.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
+    startRogue1Loop(information.bot1.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
 
-    const startMage2Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
+    const startRogue2Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
                 if (information.bot2.bot) information.bot2.bot.disconnect()
-                information.bot2.bot = await AL.Game.startMage(name, region, identifier)
+                information.bot2.bot = await AL.Game.startRogue(name, region, identifier)
                 information.friends[2] = information.bot2.bot
-                startBscorpionMageFarmer(information.bot2.bot as Mage, information.friends, information.merchant.name)
+                startBscorpionRogueFarmer(information.bot2.bot as Rogue, information.friends, information.merchant.name)
                 information.bot2.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -117,7 +118,7 @@ async function run() {
         }
         loopBot()
     }
-    startMage2Loop(information.bot2.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
+    startRogue2Loop(information.bot2.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
 
     const startPriestLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
