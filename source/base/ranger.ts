@@ -114,7 +114,11 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
     const target = targets.peek()
 
     // Apply huntersmark if we can't kill it in one shot and we have enough MP
-    if (bot.canUse("huntersmark") && !options.disableHuntersMark && bot.mp > (bot.mp_cost + bot.G.skills.huntersmark.mp) && !bot.canKillInOneShot(target)) {
+    if (bot.canUse("huntersmark")
+        && !options.disableHuntersMark
+        && !target.immune
+        && bot.mp > (bot.mp_cost + bot.G.skills.huntersmark.mp)
+        && !bot.canKillInOneShot(target)) {
         bot.huntersMark(target.id).catch(e => console.error(e))
     }
 
