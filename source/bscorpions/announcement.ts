@@ -10,12 +10,12 @@ const information: Information = {
     // eslint-disable-next-line sort-keys
     bot1: {
         bot: undefined,
-        name: "facilitating",
+        name: "enlightening",
         target: undefined
     },
     bot2: {
         bot: undefined,
-        name: "gratuitously",
+        name: "kaleidoscope",
         target: undefined
     },
     bot3: {
