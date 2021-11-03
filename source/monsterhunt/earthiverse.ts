@@ -1,4 +1,4 @@
-import AL, { Merchant, Priest, Ranger, Warrior, GMap, ServerInfoDataLive, IPosition } from "alclient"
+import AL, { Merchant, Priest, Ranger, Warrior, GMap, ServerInfoDataLive, IPosition, SlotType, ItemName } from "alclient"
 import { goToAggroMonster, goToNearestWalkableToMonster, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesMerchant } from "../base/merchant.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
@@ -364,10 +364,9 @@ function preparePriest(bot: Priest) {
             move: async () => { await bot.smartMove({ map: "desertland", x: -809, y: 135 }) },
         },
         pppompom: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["pppompom"], information.friends, { targetingPartyMember: true }) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["pppompom"], information.friends) },
             equipment: { mainhand: "firestaff", offhand: "lantern", orb: "jacko" },
-            move: async () => { await bot.smartMove({ map: "level2n", x: 120, y: -130 }) },
-            requireCtype: "warrior"
+            move: async () => { await bot.smartMove({ map: "level2n", x: 120, y: -130 }) }
         },
         prat: {
             attack: async () => { await attackTheseTypesPriest(bot, ["prat"], information.friends) },
@@ -475,6 +474,10 @@ function preparePriest(bot: Priest) {
 
 function prepareRanger(bot: Ranger) {
     const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
+    const equipmentMaxRange: { [T in SlotType]?: ItemName } = { mainhand: "crossbow", orb: "jacko" }
+    const equipmentMaxDamage: { [T in SlotType]?: ItemName } = { mainhand: "crossbow", orb: "jacko" }
+    const equipmentMaxAttackSpeed: { [T in SlotType]?: ItemName } = { mainhand: "hbow", orb: "orbofdex" }
+
     const strategy: Strategy = {
         defaultTarget: "spider",
         // eslint-disable-next-line sort-keys
@@ -1195,7 +1198,7 @@ function prepareWarrior(bot: Warrior) {
             move: async () => { await goToNearestWalkableToMonster(bot, ["poisio"], { map: "main", x: -141, y: 1360 }) },
         },
         pppompom: {
-            attack: async () => { return attackTheseTypesWarrior(bot, ["pppompom"], information.friends, { maximumTargets: 1 }) },
+            attack: async () => { return attackTheseTypesWarrior(bot, ["pppompom"], information.friends, { disableCleave: true, disableStomp: true, targetingPartyMember: true }) },
             equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
             move: async () => { await bot.smartMove({ map: "level2n", x: 120, y: -150 }) },
             requireCtype: "priest"

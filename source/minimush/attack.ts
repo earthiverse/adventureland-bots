@@ -84,7 +84,6 @@ async function startMerchant(bot: Merchant, holdPosition: IPosition) {
     startBuyFriendsReplenishablesLoop(bot, friends)
     startMluckLoop(bot)
 
-
     let lastBankVisit = Number.MIN_VALUE
     async function moveLoop() {
         try {
