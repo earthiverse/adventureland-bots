@@ -14,7 +14,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
 
     // Adjust options
     if (options.targetingPlayer && options.targetingPlayer == bot.id) options.targetingPlayer = undefined
-    if (options.targetingPlayer) options.disableAgitate = true
+    if (options.targetingPlayer || options.targetingPartyMember) options.disableAgitate = true
 
     if (!options.disableCleave
     && bot.mp > bot.G.skills.cleave.mp + bot.mp_cost

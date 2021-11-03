@@ -1198,7 +1198,7 @@ function prepareWarrior(bot: Warrior) {
             move: async () => { await goToNearestWalkableToMonster(bot, ["poisio"], { map: "main", x: -141, y: 1360 }) },
         },
         pppompom: {
-            attack: async () => { return attackTheseTypesWarrior(bot, ["pppompom"], information.friends, { disableCleave: true, disableStomp: true, targetingPartyMember: true }) },
+            attack: async () => { return attackTheseTypesWarrior(bot, ["pppompom"], information.friends, { disableAgitate: true, disableCleave: true, disableStomp: true, targetingPartyMember: true }) },
             equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
             move: async () => { await bot.smartMove({ map: "level2n", x: 120, y: -150 }) },
             requireCtype: "priest"
