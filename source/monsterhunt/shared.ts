@@ -1,4 +1,4 @@
-import AL, { Character, CMData, Constants, Entity, IPosition, Mage, Merchant, MonsterName, Priest, Ranger, Rogue, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Warrior } from "alclient"
+import AL, { Character, CMData, Constants, Entity, IPosition, LimitDCReportData, Mage, Merchant, MonsterName, Priest, Ranger, Rogue, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Warrior } from "alclient"
 import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, ITEMS_TO_HOLD, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { attackTheseTypesMerchant, doBanking, doEmergencyBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
@@ -741,6 +741,11 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
 
     bot.socket.on("cm", async (data: CMData) => {
         console.log(`~~~ CM from ${data.name} DEBUG ~~~`)
+        console.log(data)
+    })
+
+    bot.socket.on("limitdcreport", async (data: LimitDCReportData) => {
+        console.log("~~ disconnected for doing too many things ~~")
         console.log(data)
     })
 

@@ -993,7 +993,7 @@ export function startLootLoop(bot: Character): void {
     bot.socket.on("drop", (chest: ChestData) => {
         queue.enqueue(() => {
             if (AL.Tools.distance(bot, chest) > 800) return
-            return bot.openChest(chest.id) })
+            return bot.openChest(chest.id).catch(e => console.error(e)) })
     })
     bot.socket.on("disconnect", () => {
         queue.stop()
@@ -1007,7 +1007,7 @@ export function startLootLoop(bot: Character): void {
 
             for (const [, chest] of bot.chests) {
                 if (AL.Tools.distance(bot, chest) > 800) continue
-                bot.openChest(chest.id)
+                await bot.openChest(chest.id)
             }
         } catch (e) {
             console.error(e)
