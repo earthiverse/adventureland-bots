@@ -9,10 +9,10 @@ import { Information, Strategy } from "../definitions/bot.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
 
-const DEFAULT_TARGET: MonsterName = "mummy"
+const DEFAULT_TARGET: MonsterName = "spider"
 
-export const DEFAULT_REGION: ServerRegion = "EU"
-export const DEFAULT_IDENTIFIER: ServerIdentifier = "I"
+export const DEFAULT_REGION: ServerRegion = "US"
+export const DEFAULT_IDENTIFIER: ServerIdentifier = "III"
 
 export async function getTarget(bot: Character, strategy: Strategy, information: Information): Promise<MonsterName> {
     for (const entity of await getPriority1Entities(bot)) {
@@ -861,8 +861,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            // const newTarget = await getTarget(bot, strategy, information)
-            const newTarget: MonsterName = "mummy"
+            const newTarget = await getTarget(bot, strategy, information)
             if (bot.id == information.bot1.name) {
                 if (newTarget !== information.bot1.target) bot.stopSmartMove()
                 if (newTarget !== information.bot1.target) console.log(`changing ${information.bot1.name}'s target from ${information.bot1.target} to ${newTarget}`)
