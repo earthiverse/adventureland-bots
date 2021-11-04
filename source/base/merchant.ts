@@ -375,6 +375,7 @@ export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOL
                 if (gInfo.upgrade || gInfo.compound) fixedItemLevel = 0
             }
 
+            if (bot.hasItem(requiredItem, bot.items, { level: fixedItemLevel, quantityGreaterThan: requiredQuantity - 1 })) continue // We already have it in our inventory
             const slot = bot.locateItem(requiredItem, bankItems, { level: fixedItemLevel, quantityGreaterThan: requiredQuantity - 1 })
             if (slot == undefined) {
                 // We don't have one of the items required to craft
