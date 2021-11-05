@@ -1,4 +1,4 @@
-import AL, { Character, Constants, GameResponseData, IPosition, ItemDataTrade, Merchant, MonsterName, Player, Priest, ServerIdentifier, ServerRegion, TradeSlotType, Warrior } from "alclient"
+import AL, { Character, GameResponseData, IPosition, ItemDataTrade, Merchant, MonsterName, Player, Priest, ServerIdentifier, ServerRegion, TradeSlotType, Warrior } from "alclient"
 import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPotionSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_SELL, goToNearestWalkableToMonster, startTrackerLoop, getFirstEmptyInventorySlot, startBuyFriendsReplenishablesLoop } from "../base/general.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
@@ -9,7 +9,7 @@ import FastPriorityQueue from "fastpriorityqueue"
 export const region: ServerRegion = "US"
 export const identifier: ServerIdentifier = "II"
 
-const targets: MonsterName[] = ["bluefairy", "greenfairy", "redfairy"]
+const targets: MonsterName[] = ["pinkgoblin"]
 const LOOP_MS = 10
 
 export async function startSellSticksToMerchantsLoop(bot: Character): Promise<void> {
@@ -311,7 +311,7 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
             console.error(e)
         }
 
-        bot.timeouts.set("scareloop", setTimeout(async () => { scareLoop() }, Math.max(250, bot.getCooldown("scare"))))
+        bot.timeouts.set("scareLoop", setTimeout(async () => { scareLoop() }, Math.max(250, bot.getCooldown("scare"))))
     }
 
     // If we have too many targets, we can't go through doors.
@@ -515,7 +515,7 @@ export async function startPriest(bot: Priest, merchantName: string): Promise<vo
             console.error(e)
         }
 
-        bot.timeouts.set("scareloop", setTimeout(async () => { scareLoop() }, Math.max(250, bot.getCooldown("scare"))))
+        bot.timeouts.set("scareLoop", setTimeout(async () => { scareLoop() }, Math.max(250, bot.getCooldown("scare"))))
     }
 
     // If we have too many targets, we can't go through doors.
