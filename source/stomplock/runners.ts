@@ -352,27 +352,24 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
             if (!bot.socket || bot.socket.disconnected) return
             console.log(`It's ${bot.id}'s turn to stomp. (${Date.now()})`)
 
-            // Equip the basher if we don't have one equipped
-            if ((!bot.slots.mainhand || bot.slots.mainhand.name !== "basher") && bot.hasItem("basher")) {
-                const promises: Promise<unknown>[] = []
-                if (bot.slots.offhand) promises.push(bot.unequip("offhand"))
-                promises.push(bot.equip(bot.locateItem("basher")))
-                await Promise.all(promises)
-            }
 
             // Stomp if we can
-            if (bot.canUse("stomp")) {
-                await bot.stomp()
+            if (bot.canUse("stomp", { ignoreEquipped: true }) && (bot.hasItem("basher") || bot.isEquipped("basher"))) {
+                // Equip & stomp
+                let promises: Promise<unknown>[] = []
+                if ((!bot.slots.mainhand || bot.slots.mainhand.name !== "basher")) {
+                    if (bot.slots.offhand) promises.push(bot.unequip("offhand"))
+                    promises.push(bot.equip(bot.locateItem("basher", bot.items, { locked: true })))
+                }
+                promises.push(bot.stomp())
+                await Promise.all(promises)
 
-                // Equip fireblades if we have two
-                if ((!bot.slots.mainhand || bot.slots.mainhand.name == "basher") && bot.countItem("fireblade") >= 2) {
-                    const promises: Promise<unknown>[] = []
-                    if (bot.id !== partyLeader) {
-                        const fireblade1 = bot.locateItem("fireblade", bot.items, { locked: true })
-                        if (fireblade1 !== undefined) promises.push(bot.equip(fireblade1, "mainhand"))
-                        const fireblade2 = bot.locateItem("fireblade", bot.items, { locked: true })
-                        if (fireblade2 !== undefined) promises.push(bot.equip(fireblade2, "offhand"))
-                    }
+                // Re-equip fireblades
+                if (bot.id !== partyLeader) {
+                    promises = []
+                    const fireblades = bot.locateItems("fireblade", bot.items, { locked: true })
+                    if (fireblades.length >= 1) promises.push(bot.equip(fireblades[0], "mainhand"))
+                    if (fireblades.length >= 2) promises.push(bot.equip(fireblades[1], "offhand"))
                     await Promise.all(promises)
                 }
             }
