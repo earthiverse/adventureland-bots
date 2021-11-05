@@ -92,6 +92,8 @@ export async function startLeader(bot: Warrior): Promise<void> {
 
     async function swapLuckStuffLoop() {
         try {
+            if (!bot.socket || bot.socket.disconnected) return
+
             const promises: Promise<unknown>[] = []
 
             const entity = bot.entities.get(bot.target)
