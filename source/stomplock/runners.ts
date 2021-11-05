@@ -7,7 +7,7 @@ import { startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 import FastPriorityQueue from "fastpriorityqueue"
 
 export const region: ServerRegion = "US"
-export const identifier: ServerIdentifier = "II"
+export const identifier: ServerIdentifier = "III"
 
 const targets: MonsterName[] = ["pinkgoblin"]
 const LOOP_MS = 10
@@ -108,7 +108,7 @@ export async function startLeader(bot: Warrior): Promise<void> {
                 if (shoes !== undefined) promises.push(bot.equip(shoes, "shoes"))
                 if (gloves !== undefined) promises.push(bot.equip(gloves, "gloves"))
 
-                // Rabbit's Foot (+10% luck)
+                // Rabbit's Foot (+15% luck)
                 const orb = bot.locateItem("rabbitsfoot", bot.items, { locked: true })
                 if (orb !== undefined) promises.push(bot.equip(orb, "orb"))
 
@@ -119,6 +119,10 @@ export async function startLeader(bot: Warrior): Promise<void> {
                     if (bot.slots.earring1?.name == "dexearringx") promises.push(bot.equip(earrings[0], "earring2"))
                     else promises.push(bot.equip(earrings[0], "earring1"))
                 }
+
+                // Amulet of Spooks (+2% luck)
+                const amulet = bot.locateItem("spookyamulet", bot.items, { locked: true })
+                if (amulet !== undefined) promises.push(bot.equip(amulet, "amulet"))
 
                 // Shield M (+15% luck)
                 const offhand = bot.locateItem("mshield", bot.items, { locked: true })
@@ -147,6 +151,10 @@ export async function startLeader(bot: Warrior): Promise<void> {
                     if (bot.slots.earring1?.name == "strearring") promises.push(bot.equip(earrings[0], "earring2"))
                     else promises.push(bot.equip(earrings[0], "earring1"))
                 }
+
+                // Amulet
+                const amulet = bot.locateItem("spookyamulet", bot.items, { locked: true })
+                if (amulet !== undefined) promises.push(bot.equip(amulet, "amulet"))
 
                 // Fireblades
                 const offhand = bot.locateItem("fireblade", bot.items, { locked: true })
