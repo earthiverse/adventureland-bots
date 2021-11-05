@@ -165,7 +165,7 @@ export async function startLeader(bot: Warrior): Promise<void> {
         } catch (e) {
             console.error(e)
         }
-        setTimeout(async () => { swapLuckStuffLoop() }, LOOP_MS)
+        setTimeout(async () => { swapLuckStuffLoop() }, 250)
     }
     swapLuckStuffLoop()
 }
