@@ -221,9 +221,9 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
 
             if (bot.id !== partyLeader) {
                 const fireblade1 = bot.locateItem("fireblade", bot.items, { locked: true })
-                if (fireblade1 !== undefined) await bot.equip(fireblade1, "mainhand")
+                if (fireblade1 !== undefined) try { await bot.equip(fireblade1, "mainhand") } catch (e) { console.error(e) }
                 const fireblade2 = bot.locateItem("fireblade", bot.items, { locked: true })
-                if (fireblade2 !== undefined) await bot.equip(fireblade2, "offhand")
+                if (fireblade2 !== undefined) try { await bot.equip(fireblade2, "offhand") } catch (e) { console.error(e) }
             }
 
             if (bot.canUse("attack")) {
