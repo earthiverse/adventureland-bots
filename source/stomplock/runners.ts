@@ -155,7 +155,7 @@ export async function startLeader(bot: Warrior): Promise<void> {
                 }
 
                 // Amulet
-                const amulet = bot.locateItem("spookyamulet", bot.items, { locked: true })
+                const amulet = bot.locateItem("snring", bot.items, { locked: true })
                 if (amulet !== undefined) promises.push(bot.equip(amulet, "amulet"))
 
                 // Fireblades
@@ -219,13 +219,6 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
             if (bot.isOnCooldown("scare")) {
                 setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("scare")))
                 return
-            }
-
-            if (bot.id !== partyLeader) {
-                const fireblade1 = bot.locateItem("fireblade", bot.items, { locked: true })
-                if (fireblade1 !== undefined) try { await bot.equip(fireblade1, "mainhand") } catch (e) { console.error(e) }
-                const fireblade2 = bot.locateItem("fireblade", bot.items, { locked: true })
-                if (fireblade2 !== undefined) try { await bot.equip(fireblade2, "offhand") } catch (e) { console.error(e) }
             }
 
             if (bot.canUse("attack")) {
@@ -374,10 +367,12 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
                 // Equip fireblades if we have two
                 if ((!bot.slots.mainhand || bot.slots.mainhand.name == "basher") && bot.countItem("fireblade") >= 2) {
                     const promises: Promise<unknown>[] = []
-                    const fireblades = bot.locateItems("fireblade")
-                    if (bot.hasItem("fireblade")) promises.push(bot.equip(fireblades[0], "mainhand"))
-                    if (bot.hasItem("mshield")) promises.push(bot.equip(bot.locateItem("mshield"), "offhand"))
-                    else if (!bot.slots.offhand && bot.hasItem("fireblade")) promises.push(bot.equip(fireblades[1], "offhand"))
+                    if (bot.id !== partyLeader) {
+                        const fireblade1 = bot.locateItem("fireblade", bot.items, { locked: true })
+                        if (fireblade1 !== undefined) promises.push(bot.equip(fireblade1, "mainhand"))
+                        const fireblade2 = bot.locateItem("fireblade", bot.items, { locked: true })
+                        if (fireblade2 !== undefined) promises.push(bot.equip(fireblade2, "offhand"))
+                    }
                     await Promise.all(promises)
                 }
             }
