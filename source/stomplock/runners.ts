@@ -2,7 +2,7 @@ import AL, { Character, GameResponseData, IPosition, ItemDataTrade, Merchant, Mo
 import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPotionSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_SELL, goToNearestWalkableToMonster, startTrackerLoop, getFirstEmptyInventorySlot, startBuyFriendsReplenishablesLoop } from "../base/general.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
-import { stompPartyLeader, stompPartyMembers } from "../base/party.js"
+import { partyLeader, stompPartyLeader, stompPartyMembers } from "../base/party.js"
 import { startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 import FastPriorityQueue from "fastpriorityqueue"
 
@@ -219,10 +219,12 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
                 return
             }
 
-            const fireblade1 = bot.locateItem("fireblade", bot.items, { locked: true })
-            if (fireblade1 !== undefined) await bot.equip(fireblade1, "mainhand")
-            const fireblade2 = bot.locateItem("fireblade", bot.items, { locked: true })
-            if (fireblade2 !== undefined) await bot.equip(fireblade2, "offhand")
+            if (bot.id !== partyLeader) {
+                const fireblade1 = bot.locateItem("fireblade", bot.items, { locked: true })
+                if (fireblade1 !== undefined) await bot.equip(fireblade1, "mainhand")
+                const fireblade2 = bot.locateItem("fireblade", bot.items, { locked: true })
+                if (fireblade2 !== undefined) await bot.equip(fireblade2, "offhand")
+            }
 
             if (bot.canUse("attack")) {
                 for (const entity of bot.getEntities({
