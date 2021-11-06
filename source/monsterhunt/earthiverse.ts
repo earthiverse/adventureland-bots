@@ -364,7 +364,7 @@ function preparePriest(bot: Priest) {
             move: async () => { await bot.smartMove({ map: "desertland", x: -809, y: 135 }) },
         },
         pppompom: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["pppompom"], information.friends) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["pppompom"], information.friends, { targetingPartyMember: true }) },
             equipment: { mainhand: "firestaff", offhand: "lantern", orb: "jacko" },
             move: async () => { await bot.smartMove({ map: "level2n", x: 120, y: -130 }) }
         },
@@ -995,7 +995,7 @@ function prepareWarrior(bot: Warrior) {
         },
         fireroamer: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["fireroamer"], information.friends, { disableAgitate: true, targetingPartyMember: true }) },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: { mainhand: "hbow", orb: "jacko" },
             move: async () => { await bot.smartMove({ map: "desertland", x: 200, y: -675 }) },
             requireCtype: "priest"
         },
@@ -1188,7 +1188,10 @@ function prepareWarrior(bot: Warrior) {
         plantoid: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["plantoid"], information.friends, { maximumTargets: 1 }) },
             equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
-            move: async () => { await bot.smartMove({ map: "desertland", x: -770, y: -125 }) },
+            move: async () => {
+                await goToPriestIfHurt(bot, information.bot1.bot)
+                await goToNearestWalkableToMonster(bot, ["plantoid"], { map: "desertland", x: -770, y: -125 })
+            },
             requireCtype: "priest"
         },
         poisio: {
@@ -1198,8 +1201,8 @@ function prepareWarrior(bot: Warrior) {
             move: async () => { await goToNearestWalkableToMonster(bot, ["poisio"], { map: "main", x: -141, y: 1360 }) },
         },
         pppompom: {
-            attack: async () => { return attackTheseTypesWarrior(bot, ["pppompom"], information.friends, { disableAgitate: true, disableCleave: true, disableStomp: true, targetingPartyMember: true }) },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            attack: async () => { return attackTheseTypesWarrior(bot, ["pppompom"], information.friends, { disableAgitate: true, disableCleave: true, maximumTargets: 1 }) },
+            equipment: { mainhand: "hbow", orb: "jacko" },
             move: async () => { await bot.smartMove({ map: "level2n", x: 120, y: -150 }) },
             requireCtype: "priest"
         },
