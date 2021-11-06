@@ -537,7 +537,7 @@ function prepareRanger(bot: Ranger) {
         cgoo: {
             attack: async () => { return attackTheseTypesRanger(bot, ["cgoo"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "hbow", orb: "jacko" },
+            equipment: { mainhand: "crossbow", orb: "jacko" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["cgoo"], { map: "arena", x: 0, y: -500 }) },
         },
         crab: {
@@ -549,7 +549,7 @@ function prepareRanger(bot: Ranger) {
         crabx: {
             attack: async () => { return attackTheseTypesRanger(bot, ["crabx", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "hbow", orb: "jacko" },
+            equipment: { mainhand: "crossbow", orb: "jacko" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["crabx"], { map: "main", x: -1202, y: -66 }) },
         },
         croc: {
@@ -636,7 +636,7 @@ function prepareRanger(bot: Ranger) {
         hen: {
             attack: async () => { return attackTheseTypesRanger(bot, ["hen"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "hbow", orb: "jacko" },
+            equipment: { mainhand: "crossbow", orb: "jacko" },
             move: async () => { await bot.smartMove({ map: "main", x: -61.5, y: -282 }) },
         },
         icegolem: {
@@ -659,7 +659,7 @@ function prepareRanger(bot: Ranger) {
         iceroamer: {
             attack: async () => { return attackTheseTypesRanger(bot, ["iceroamer"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "hbow", orb: "jacko" },
+            equipment: { mainhand: "crossbow", orb: "jacko" },
             move: async () => { await bot.smartMove({ map: "winterland", x: 1512, y: 104 }) },
         },
         jr: {

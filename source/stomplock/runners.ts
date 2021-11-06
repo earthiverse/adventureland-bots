@@ -1,4 +1,4 @@
-import AL, { Character, GameResponseData, IPosition, ItemDataTrade, Merchant, MonsterName, Player, Priest, ServerIdentifier, ServerRegion, TradeSlotType, Warrior } from "alclient"
+import AL, { Character, GameResponseData, IPosition, ItemDataTrade, Merchant, MonsterName, PingCompensatedCharacter, Player, Priest, ServerIdentifier, ServerRegion, TradeSlotType, Warrior } from "alclient"
 import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPotionSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_SELL, goToNearestWalkableToMonster, startTrackerLoop, getFirstEmptyInventorySlot, startBuyFriendsReplenishablesLoop } from "../base/general.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
@@ -51,7 +51,7 @@ export async function startMailBankKeysToEarthiverseLoop(bot: Character): Promis
             if (bankKey !== undefined) {
                 // TODO: Implement these in ALClient
                 bot.socket.emit("imove", { "a": 0, "b": bankKey })
-                bot.socket.emit("mail", { item: true, message: "sell it", subject: "bank key!", to: "earthiverse", })
+                bot.socket.emit("mail", { item: true, message: "sell it", subject: "bank key!", to: "earthiverse" })
             }
         } catch (e) {
             console.error
@@ -59,6 +59,28 @@ export async function startMailBankKeysToEarthiverseLoop(bot: Character): Promis
         setTimeout(async () => { mailBankKeys() }, 5000)
     }
     mailBankKeys()
+}
+
+function getMSToNextStun(bot: PingCompensatedCharacter) {
+    const now = Date.now()
+
+    let numStompers = 0
+    let partyMemberIndex = 0
+    if (bot.partyData && bot.partyData.list) {
+        for (const id of bot.partyData.list) {
+            const member = bot.partyData.party[id]
+            if (id == bot.id) partyMemberIndex = numStompers
+            if (member.type == "warrior") numStompers++
+        }
+    } else {
+        numStompers = 1
+    }
+
+    const cooldown = AL.Game.G.skills.stomp.cooldown + 5
+    const nextInterval = (cooldown - now % cooldown)
+    const offset = partyMemberIndex * (cooldown / numStompers)
+
+    return (nextInterval + offset) % cooldown
 }
 
 export async function startLeader(bot: Warrior): Promise<void> {
@@ -97,7 +119,7 @@ export async function startLeader(bot: Warrior): Promise<void> {
             const promises: Promise<unknown>[] = []
 
             const entity = bot.entities.get(bot.target)
-            if (entity && entity.hp < 50_000) { // Entity has low hp, let's equip our luck stuff
+            if (entity && entity.hp < 50_000 && getMSToNextStun(bot) > 10000) { // Entity has low hp, let's equip our luck stuff
                 // Wanderer's Set (+16% luck)
                 const helmet = bot.locateItem("wcap", bot.items, { locked: true })
                 const chest = bot.locateItem("wattire", bot.items, { locked: true })
@@ -190,33 +212,11 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
 
     startSellSticksToMerchantsLoop(bot)
 
-    function getMSToNextStun() {
-        const now = Date.now()
-
-        let numStompers = 0
-        let partyMemberIndex = 0
-        if (bot.partyData && bot.partyData.list) {
-            for (const id of bot.partyData.list) {
-                const member = bot.partyData.party[id]
-                if (id == bot.id) partyMemberIndex = numStompers
-                if (member.type == "warrior") numStompers++
-            }
-        } else {
-            numStompers = 1
-        }
-
-        const cooldown = AL.Game.G.skills.stomp.cooldown + 5
-        const nextInterval = (cooldown - now % cooldown)
-        const offset = partyMemberIndex * (cooldown / numStompers)
-
-        return (nextInterval + offset) % cooldown
-    }
-
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            if (bot.isOnCooldown("scare")) {
+            if (bot.isOnCooldown("scare") || bot.isEquipped("basher")) {
                 setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("scare")))
                 return
             }
@@ -229,14 +229,14 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
                     withinRange: bot.range
                 })) {
                     if (!entity) continue // Entity died?
-                    if (!entity.s.stunned || entity.s.stunned.ms <= ((LOOP_MS + Math.max(...bot.pings)) * 2)) continue // Enemy is not stunned, or is about to be free, don't attack!
+                    if (!entity.s.stunned || entity.s.stunned.ms <= ((LOOP_MS + Math.min(...bot.pings)) * 2)) continue // Enemy is not stunned, or is about to be free, don't attack!
 
                     await bot.basicAttack(entity.id)
                     break
                 }
             }
 
-            if (getMSToNextStun() > 10000 && bot.canUse("cleave", { ignoreEquipped: true }) && (bot.hasItem("bataxe") || bot.slots.mainhand?.name == "bataxe")) {
+            if (getMSToNextStun(bot) > 10000 && bot.canUse("cleave", { ignoreEquipped: true }) && (bot.hasItem("bataxe") || bot.slots.mainhand?.name == "bataxe")) {
                 let allStomped = true
                 for (const entity of bot.getEntities({
                     typeList: targets,
@@ -249,30 +249,20 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
                     }
                 }
                 if (allStomped) {
-                    // Equip the bataxe if we don't have one equipped
-                    let offhandSlot: number
-                    let mainhandSlot: number
-                    if ((!bot.slots.mainhand || bot.slots.mainhand.name !== "bataxe") && bot.hasItem("bataxe")) {
-                        const promises: Promise<unknown>[] = []
+                    let promises: Promise<unknown>[] = []
 
-                        if (bot.slots.offhand) {
-                            offhandSlot = getFirstEmptyInventorySlot(bot.items)
-                            promises.push(bot.unequip("offhand"))
-                        }
-                        if (bot.slots.mainhand?.name !== "bataxe") {
-                            mainhandSlot = bot.locateItem("bataxe")
-                            promises.push(bot.equip(mainhandSlot))
-                        }
-                        await Promise.all(promises)
-                    }
+                    // Equip & Cleave
+                    const batAxe = bot.locateItem("bataxe", bot.items, { locked: true })
+                    if (bot.slots.offhand) promises.push(bot.unequip("offhand"))
+                    if (batAxe !== undefined) promises.push(bot.equip(batAxe))
+                    promises.push(bot.cleave())
+                    await Promise.all(promises)
 
-                    // Cleave
-                    await bot.cleave()
-
-                    // Re-equip our stuff
-                    const promises: Promise<unknown>[] = []
-                    if (mainhandSlot) promises.push(bot.equip(mainhandSlot, "mainhand"))
-                    if (offhandSlot) promises.push(bot.equip(offhandSlot, "offhand"))
+                    // Re-equip fireblades
+                    promises = []
+                    const fireblades = bot.locateItems("fireblade", bot.items, { locked: true })
+                    if (fireblades[0] !== undefined) promises.push(bot.equip(fireblades[0], "mainhand"))
+                    if (fireblades[1] !== undefined) promises.push(bot.equip(fireblades[1], "offhand"))
                     await Promise.all(promises)
                 }
             }
@@ -352,15 +342,13 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
             if (!bot.socket || bot.socket.disconnected) return
             console.log(`It's ${bot.id}'s turn to stomp. (${Date.now()})`)
 
-
             // Stomp if we can
             if (bot.canUse("stomp", { ignoreEquipped: true }) && (bot.hasItem("basher") || bot.isEquipped("basher"))) {
                 // Equip & stomp
                 let promises: Promise<unknown>[] = []
-                if ((!bot.slots.mainhand || bot.slots.mainhand.name !== "basher")) {
-                    if (bot.slots.offhand) promises.push(bot.unequip("offhand"))
-                    promises.push(bot.equip(bot.locateItem("basher", bot.items, { locked: true })))
-                }
+                if (bot.slots.offhand) promises.push(bot.unequip("offhand"))
+                const basher = bot.locateItem("basher", bot.items, { locked: true })
+                if (basher !== undefined) promises.push(bot.equip(bot.locateItem("basher", bot.items, { locked: true })))
                 promises.push(bot.stomp())
                 await Promise.all(promises)
 
@@ -368,19 +356,19 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
                 if (bot.id !== partyLeader) {
                     promises = []
                     const fireblades = bot.locateItems("fireblade", bot.items, { locked: true })
-                    if (fireblades.length >= 1) promises.push(bot.equip(fireblades[0], "mainhand"))
-                    if (fireblades.length >= 2) promises.push(bot.equip(fireblades[1], "offhand"))
+                    if (fireblades[0] !== undefined) promises.push(bot.equip(fireblades[0], "mainhand"))
+                    if (fireblades[1] !== undefined) promises.push(bot.equip(fireblades[1], "offhand"))
                     await Promise.all(promises)
                 }
             }
         } catch (e) {
             console.error(e)
         }
-        setTimeout(async () => { stompLoop() }, Math.max(LOOP_MS, bot.getCooldown("stomp"), getMSToNextStun()))
+        setTimeout(async () => { stompLoop() }, Math.max(LOOP_MS, bot.getCooldown("stomp"), getMSToNextStun(bot)))
     }
     setTimeout(async () => {
         // Start our stomp loop in 5s, after we have a party setup
-        setTimeout(async () => { stompLoop() }, Math.max(getMSToNextStun()))
+        setTimeout(async () => { stompLoop() }, Math.max(getMSToNextStun(bot)))
     }, 5000)
 
     const spawn = bot.locateMonster(targets[0])[0]
