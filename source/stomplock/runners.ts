@@ -236,36 +236,36 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
                 }
             }
 
-            if (getMSToNextStun(bot) > 10000 && bot.canUse("cleave", { ignoreEquipped: true }) && (bot.hasItem("bataxe") || bot.slots.mainhand?.name == "bataxe")) {
-                let allStomped = true
-                for (const entity of bot.getEntities({
-                    typeList: targets,
-                    withinRange: bot.G.skills.stomp.range
-                })) {
-                    if (!entity) continue // Entity died?
-                    if (!entity.s.stunned || entity.s.stunned.ms <= ((LOOP_MS + Math.max(...bot.pings)) * 2)) {
-                        allStomped = false
-                        break
-                    }
-                }
-                if (allStomped) {
-                    let promises: Promise<unknown>[] = []
+            // if (getMSToNextStun(bot) > 10000 && bot.canUse("cleave", { ignoreEquipped: true }) && (bot.hasItem("bataxe") || bot.slots.mainhand?.name == "bataxe")) {
+            //     let allStomped = true
+            //     for (const entity of bot.getEntities({
+            //         typeList: targets,
+            //         withinRange: bot.G.skills.stomp.range
+            //     })) {
+            //         if (!entity) continue // Entity died?
+            //         if (!entity.s.stunned || entity.s.stunned.ms <= ((LOOP_MS + Math.max(...bot.pings)) * 2)) {
+            //             allStomped = false
+            //             break
+            //         }
+            //     }
+            //     if (allStomped) {
+            //         let promises: Promise<unknown>[] = []
 
-                    // Equip & Cleave
-                    const batAxe = bot.locateItem("bataxe", bot.items, { locked: true })
-                    if (bot.slots.offhand) promises.push(bot.unequip("offhand"))
-                    if (batAxe !== undefined) promises.push(bot.equip(batAxe))
-                    promises.push(bot.cleave())
-                    await Promise.all(promises)
+            //         // Equip & Cleave
+            //         const batAxe = bot.locateItem("bataxe", bot.items, { locked: true })
+            //         if (bot.slots.offhand) promises.push(bot.unequip("offhand"))
+            //         if (batAxe !== undefined) promises.push(bot.equip(batAxe))
+            //         promises.push(bot.cleave())
+            //         await Promise.all(promises)
 
-                    // Re-equip fireblades
-                    promises = []
-                    const fireblades = bot.locateItems("fireblade", bot.items, { locked: true })
-                    if (fireblades[0] !== undefined) promises.push(bot.equip(fireblades[0], "mainhand"))
-                    if (fireblades[1] !== undefined) promises.push(bot.equip(fireblades[1], "offhand"))
-                    await Promise.all(promises)
-                }
-            }
+            //         // Re-equip fireblades
+            //         promises = []
+            //         const fireblades = bot.locateItems("fireblade", bot.items, { locked: true })
+            //         if (fireblades[0] !== undefined) promises.push(bot.equip(fireblades[0], "mainhand"))
+            //         if (fireblades[1] !== undefined) promises.push(bot.equip(fireblades[1], "offhand"))
+            //         await Promise.all(promises)
+            //     }
+            // }
         } catch (e) {
             console.error(e)
         }
