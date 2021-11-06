@@ -1,5 +1,5 @@
 import AL, { Character, GameResponseData, IPosition, ItemDataTrade, Merchant, MonsterName, PingCompensatedCharacter, Player, Priest, ServerIdentifier, ServerRegion, TradeSlotType, Warrior } from "alclient"
-import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPotionSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_SELL, goToNearestWalkableToMonster, startTrackerLoop, getFirstEmptyInventorySlot, startBuyFriendsReplenishablesLoop } from "../base/general.js"
+import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPotionSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_SELL, goToNearestWalkableToMonster, startTrackerLoop, getFirstEmptyInventorySlot, startBuyFriendsReplenishablesLoop, startCraftLoop } from "../base/general.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { partyLeader, stompPartyLeader, stompPartyMembers } from "../base/party.js"
@@ -572,6 +572,7 @@ export async function startPriest(bot: Priest, merchantName: string): Promise<vo
 
 export async function startMerchant(bot: Merchant, friends: Character[], holdPosition: IPosition): Promise<void> {
     startBuyFriendsReplenishablesLoop(bot, friends)
+    startCraftLoop(bot)
     startHealLoop(bot)
     startMluckLoop(bot)
     startUpgradeLoop(bot, { ...ITEMS_TO_SELL, "stick": 100 }) // Don't upgrade sticks
