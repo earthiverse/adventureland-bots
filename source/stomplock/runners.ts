@@ -363,6 +363,10 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
             }
         } catch (e) {
             console.error(e)
+            if (bot.canUse("stomp", { ignoreEquipped: true })) {
+                setTimeout(async () => { stompLoop() }, 10)
+                return
+            }
         }
         setTimeout(async () => { stompLoop() }, Math.max(LOOP_MS, bot.getCooldown("stomp"), getMSToNextStun(bot)))
     }
