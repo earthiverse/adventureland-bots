@@ -436,7 +436,7 @@ export function goToKiteMonster(bot: Character, options: {
     const angleFromBotToMonster = Math.atan2(nearest.y - bot.y, nearest.x - bot.x)
     let potentialSpot: IPosition = { map: bot.map, x: bot.x + distanceToMove * Math.cos(angleFromBotToMonster), y: bot.y + distanceToMove * Math.sin(angleFromBotToMonster) }
     let angle = 0
-    while (!AL.Pathfinder.canStand(potentialSpot) && angle < Math.PI) {
+    while (!AL.Pathfinder.canStand(potentialSpot) && angle <= 2 * Math.PI) {
         if (angle > 0) {
             angle = -angle
         } else {
@@ -448,7 +448,7 @@ export function goToKiteMonster(bot: Character, options: {
     if (AL.Pathfinder.canWalkPath(bot, potentialSpot)) {
         bot.move(potentialSpot.x, potentialSpot.y).catch(() => { /* Suppress errors */ })
     } else if (AL.Pathfinder.canStand(potentialSpot) && !bot.smartMoving) {
-        bot.smartMove(potentialSpot).catch(() => { /* Suppress errors */ })
+        bot.smartMove(potentialSpot, { avoidTownWarps: true }).catch(() => { /* Suppress errors */ })
     }
 }
 
