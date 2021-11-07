@@ -374,7 +374,7 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
                 return
             }
         }
-        setTimeout(async () => { stompLoop() }, Math.max(LOOP_MS, bot.getCooldown("stomp"), getMSToNextStun(bot)))
+        setTimeout(async () => { stompLoop() }, getMSToNextStun(bot))
     }
     setTimeout(async () => {
         // Start our stomp loop in 5s, after we have a party setup
