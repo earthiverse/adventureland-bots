@@ -1,5 +1,5 @@
 import AL, { Character, IPosition, Mage, Merchant, MonsterName, ServerIdentifier, ServerInfoDataLive, ServerRegion } from "alclient"
-import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, ITEMS_TO_HOLD, startSendStuffDenylistLoop, startScareLoop, startAvoidStacking, startCompoundLoop, startCraftLoop, startUpgradeLoop, startBuyFriendsReplenishablesLoop, LOOP_MS } from "../base/general.js"
+import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, ITEMS_TO_HOLD, startSendStuffDenylistLoop, startScareLoop, startAvoidStacking, startCompoundLoop, startCraftLoop, startUpgradeLoop, startBuyFriendsReplenishablesLoop, LOOP_MS, startTrackerLoop } from "../base/general.js"
 import { halloweenMiniMushes, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { doBanking, doEmergencyBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
@@ -223,6 +223,7 @@ async function run() {
                 friends[0] = mage1
                 startShared(mage1)
                 startMage(mage1)
+                startTrackerLoop(mage1)
                 mage1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
