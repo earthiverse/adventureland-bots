@@ -360,6 +360,12 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
                     if (fireblades[1] !== undefined) promises.push(bot.equip(fireblades[1], "offhand"))
                     await Promise.all(promises)
                 }
+            } else {
+                console.log(`----- ${bot.id} couldn't stomp!? -----`)
+                console.log(`Has item: ${bot.hasItem("basher")}`)
+                console.log(`Has equipped: ${bot.isEquipped("basher")}`)
+                console.log(`MP: ${bot.mp} / ${bot.max_mp}`)
+                console.log(`Cooldown: ${bot.getCooldown("stomp")}`)
             }
         } catch (e) {
             console.error(e)
@@ -372,7 +378,7 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
     }
     setTimeout(async () => {
         // Start our stomp loop in 5s, after we have a party setup
-        setTimeout(async () => { stompLoop() }, Math.max(getMSToNextStun(bot)))
+        setTimeout(async () => { stompLoop() }, getMSToNextStun(bot))
     }, 5000)
 
     const spawn = bot.locateMonster(targets[0])[0]
