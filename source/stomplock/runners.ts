@@ -119,7 +119,7 @@ export async function startLeader(bot: Warrior): Promise<void> {
             const promises: Promise<unknown>[] = []
 
             const entity = bot.entities.get(bot.target)
-            if (entity && entity.hp < 50_000 && getMSToNextStun(bot) > 10000) { // Entity has low hp, let's equip our luck stuff
+            if (entity && entity.hp < 50_000) { // Entity has low hp, let's equip our luck stuff
                 // Wanderer's Set (+16% luck)
                 const helmet = bot.locateItem("wcap", bot.items, { locked: true })
                 const chest = bot.locateItem("wattire", bot.items, { locked: true })
@@ -149,8 +149,10 @@ export async function startLeader(bot: Warrior): Promise<void> {
                 if (amulet !== undefined) promises.push(bot.equip(amulet, "amulet"))
 
                 // Shield M (+15% luck)
-                const offhand = bot.locateItem("mshield", bot.items, { locked: true })
-                if (offhand !== undefined) promises.push(bot.equip(offhand, "offhand"))
+                if (getMSToNextStun(bot) > 5000) {
+                    const offhand = bot.locateItem("mshield", bot.items, { locked: true })
+                    if (offhand !== undefined) promises.push(bot.equip(offhand, "offhand"))
+                }
             } else { // Entity has high hp, let's equip stuff that does a lot of damage
                 // Rugged Set with Winged Boots
                 const helmet = bot.locateItem("helmet1", bot.items, { locked: true })
@@ -181,8 +183,10 @@ export async function startLeader(bot: Warrior): Promise<void> {
                 if (amulet !== undefined) promises.push(bot.equip(amulet, "amulet"))
 
                 // Fireblades
-                const offhand = bot.locateItem("fireblade", bot.items, { locked: true })
-                if (offhand !== undefined) promises.push(bot.equip(offhand, "offhand"))
+                if (getMSToNextStun(bot) > 5000) {
+                    const offhand = bot.locateItem("fireblade", bot.items, { locked: true })
+                    if (offhand !== undefined) promises.push(bot.equip(offhand, "offhand"))
+                }
             }
 
             await Promise.all(promises)
