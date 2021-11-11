@@ -1,5 +1,5 @@
 import AL, { Character, GameResponseData, IPosition, ItemDataTrade, Merchant, MonsterName, PingCompensatedCharacter, Player, Priest, ServerIdentifier, ServerRegion, TradeSlotType, Warrior } from "alclient"
-import { startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPotionSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_SELL, goToNearestWalkableToMonster, startTrackerLoop, getFirstEmptyInventorySlot, startBuyFriendsReplenishablesLoop, startCraftLoop } from "../base/general.js"
+import { startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPotionSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_SELL, goToNearestWalkableToMonster, startTrackerLoop, getFirstEmptyInventorySlot, startBuyFriendsReplenishablesLoop, startCraftLoop } from "../base/general.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { partyLeader, stompPartyLeader, stompPartyMembers } from "../base/party.js"
@@ -7,7 +7,7 @@ import { startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 import FastPriorityQueue from "fastpriorityqueue"
 
 export const region: ServerRegion = "US"
-export const identifier: ServerIdentifier = "III"
+export const identifier: ServerIdentifier = "PVP"
 
 const targets: MonsterName[] = ["pinkgoblin"]
 const LOOP_MS = 10
@@ -118,8 +118,17 @@ export async function startLeader(bot: Warrior): Promise<void> {
 
             const promises: Promise<unknown>[] = []
 
-            const entity = bot.entities.get(bot.target)
-            if (entity && entity.hp < 50_000) { // Entity has low hp, let's equip our luck stuff
+            const entities = bot.getEntities({ targetingPlayer: partyLeader })
+            let equipLuck = false
+            for (const entity of entities) {
+                if (!entity) continue
+                if (entity.hp < 50_000) {
+                    equipLuck = true
+                    break
+                }
+            }
+
+            if (equipLuck) { // Entity has low hp, let's equip our luck stuff
                 // Wanderer's Set (+16% luck)
                 const helmet = bot.locateItem("wcap", bot.items, { locked: true })
                 const chest = bot.locateItem("wattire", bot.items, { locked: true })
@@ -188,7 +197,6 @@ export async function startLeader(bot: Warrior): Promise<void> {
                     if (offhand !== undefined) promises.push(bot.equip(offhand, "offhand"))
                 }
             }
-
             await Promise.all(promises)
         } catch (e) {
             console.error(e)
