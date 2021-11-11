@@ -77,7 +77,7 @@ async function run() {
             if (ranger) ranger.disconnect()
         }
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { connectLoop() }, msToNextMinute + 2500)
+        setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
     }
 
     const disconnectLoop = async () => {
@@ -88,11 +88,11 @@ async function run() {
             console.error(e)
         }
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 2500 < 0 ? msToNextMinute + 57_500 : msToNextMinute - 2500)
+        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
     }
 
     const msToNextMinute = 60_000 - (Date.now() % 60_000)
-    setTimeout(async () => { connectLoop() }, msToNextMinute + 2500)
-    setTimeout(async () => { disconnectLoop() }, msToNextMinute - 2500 < 0 ? msToNextMinute + 57_500 : msToNextMinute - 2500)
+    setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
+    setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
 }
 run()
