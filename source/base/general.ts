@@ -452,6 +452,70 @@ export function goToKiteMonster(bot: Character, options: {
     }
 }
 
+export type KiteOptions = {
+    kiteMonsters?: boolean
+    kitePlayers?: boolean
+    numWallChecks?: number
+    padding?: number
+    type?: MonsterName
+    typeList?: MonsterName[]
+    weighting?: {
+        [T in number]?: number
+    }
+}
+export function goToKiteStuff(bot: Character, options?: KiteOptions): void {
+    // Set default options
+    if (options == undefined) options = {}
+    if (options.kitePlayers == undefined) options.kitePlayers = bot.isPVP()
+    if (options.kiteMonsters == undefined) options.kiteMonsters = true
+    if (options.numWallChecks) options.numWallChecks = 16
+    if (!options.padding) options.padding = (Math.min(...bot.pings) / 500) * bot.speed
+    if (!options.weighting) options.weighting = { 500: 1, 400: 2, 300: 3, 200: 4, 100: 5, 50: 6, 25: 7, 10: 8, 1: 9 }
+
+    // Send out feelers for walls
+    const vector = { x: 0, y: 0 }
+    for (const weightString in options.weighting) {
+        const checkDistance = Number.parseInt(weightString)
+        const checkWeight = options.weighting[weightString]
+
+        let angleFromBotToWall = 0
+        for (let i = 0; i < options.numWallChecks; i++) {
+            const x = Math.cos(angleFromBotToWall) * checkDistance
+            const y = Math.sin(angleFromBotToWall) * checkDistance
+            const canWalk = AL.Pathfinder.canWalkPath(bot, { x: x, y: y })
+            if (!canWalk) {
+                vector.x -= Math.cos(angleFromBotToWall) * checkWeight
+                vector.y -= Math.sin(angleFromBotToWall) * checkWeight
+            }
+            angleFromBotToWall += (2 * Math.PI) / options.numWallChecks
+        }
+    }
+
+    // Stay away from other players
+    if (options.kitePlayers) {
+        for (const [, player] of bot.players) {
+            if (player.isFriendly(bot)) continue // We are friends, yay!
+            const distanceToPlayer = AL.Tools.distance(bot, player)
+            if (distanceToPlayer > (player.range + options.padding)) continue // We are out of range of this character
+
+            const angleFromBotToPlayer = Math.atan2(player.y - bot.y, player.x - bot.x)
+            vector.x -= Math.cos(angleFromBotToPlayer) * (player.range + options.padding - distanceToPlayer)
+            vector.y -= Math.sin(angleFromBotToPlayer) * (player.range + options.padding - distanceToPlayer)
+        }
+    }
+
+    // Stay away from monsters
+    if (options.kiteMonsters) {
+        for (const monster of bot.getEntities(options)) {
+            if (monster.range > bot.range - options.padding) continue // We can't outrange this monster
+            const distanceToMonster = AL.Tools.distance(bot, monster)
+            if (distanceToMonster > (bot.range + options.padding)) continue // We are out of range of this character
+        }
+    }
+
+    bot.move(bot.x + vector.x, bot.y + vector.y).catch(e => console.error(e))
+}
+
 export async function goToPriestIfHurt(bot: Character, priest: Character): Promise<IPosition> {
     if (bot.hp > bot.max_hp / 2) return // We still have over half our HP
     if (!priest) return // Priest is not available
