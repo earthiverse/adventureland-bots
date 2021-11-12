@@ -51,7 +51,7 @@ function preparePriest(bot: Priest) {
             move: async () => { await bot.smartMove({ map: "winterland", x: 1102, y: -873 }) },
         },
         armadillo: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["armadillo", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["armadillo"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await bot.smartMove({ map: "main", x: 546, y: 1846 }) },
         },
@@ -66,17 +66,17 @@ function preparePriest(bot: Priest) {
             move: async () => { await bot.smartMove({ map: "main", x: 152, y: 1487 }) },
         },
         crab: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["crab", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["crab"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await bot.smartMove({ map: "main", x: -1182, y: -66 }) },
         },
         crabx: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["crabx", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["crabx"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await goToNearestWalkableToMonster(bot, ["crabx"], { map: "main", x: -964, y: 1762 }) },
         },
         croc: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["croc", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["croc"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await bot.smartMove({ map: "main", x: 821, y: 1710 }) },
         },
@@ -94,19 +94,6 @@ function preparePriest(bot: Priest) {
                     }
                 } else {
                     await goToSpecialMonster(bot, "cutebee")
-                }
-            }
-        },
-        franky: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["nerfedmummy", "franky"], information.friends) },
-            move: async () => {
-                const nearest = bot.getNearestMonster("franky")
-                if (nearest && nearest.distance > 25) {
-                    // Move close to Franky because other characters might help blast away mummies
-                    await bot.smartMove(nearest.monster, { getWithin: 25 })
-                } else {
-                    if (bot.S.franky as ServerInfoDataLive) requestMagiportService(bot, bot.S.franky as IPosition)
-                    await goToSpecialMonster(bot, "franky")
                 }
             }
         },
@@ -131,7 +118,7 @@ function preparePriest(bot: Priest) {
             move: async () => { await bot.smartMove({ map: "main", x: -41.5, y: -282 }) },
         },
         minimush: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["minimush", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["minimush"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await bot.smartMove({ map: "halloween", x: 28, y: 631 }) },
         },
@@ -154,11 +141,6 @@ function preparePriest(bot: Priest) {
             attackWhileIdle: true,
             move: async () => { await goToNearestWalkableToMonster(bot, ["osnake", "snake"], { map: "halloween", x: -488, y: -708 }) },
         },
-        phoenix: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["phoenix"], information.friends) },
-            attackWhileIdle: true,
-            move: async () => { await goToSpecialMonster(bot, "phoenix") },
-        },
         poisio: {
             attack: async () => { await attackTheseTypesPriest(bot, ["poisio"], information.friends) },
             attackWhileIdle: true,
@@ -180,7 +162,7 @@ function preparePriest(bot: Priest) {
             move: async () => { await bot.smartMove({ map: "main", x: -41.5, y: -282 }) },
         },
         scorpion: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["scorpion", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["scorpion"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await bot.smartMove({ map: "main", x: 1598, y: -168 }) },
         },
@@ -195,22 +177,22 @@ function preparePriest(bot: Priest) {
             move: async () => { await goToSpecialMonster(bot, "snowman") },
         },
         spider: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["spider", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["spider"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await bot.smartMove({ map: "main", x: 968, y: -144 }) },
         },
         squig: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["squig", "squigtoad", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["squig", "squigtoad"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await bot.smartMove({ map: "main", x: -1155, y: 422 }) },
         },
         squigtoad: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["squigtoad", "squig", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["squigtoad", "squig"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await bot.smartMove({ map: "main", x: -1155, y: 422 }) },
         },
         tortoise: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["tortoise", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["tortoise"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await goToNearestWalkableToMonster(bot, ["tortoise"], { map: "main", x: -1104, y: 1118 }) },
         },
@@ -233,7 +215,7 @@ function prepareRanger(bot: Ranger) {
             move: async () => { await bot.smartMove({ map: "winterland", x: 1082, y: -873 }) },
         },
         armadillo: {
-            attack: async () => { await attackTheseTypesRanger(bot, ["armadillo", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesRanger(bot, ["armadillo"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await bot.smartMove({ map: "main", x: 526, y: 1846 }) },
         },
@@ -248,17 +230,17 @@ function prepareRanger(bot: Ranger) {
             move: async () => { await bot.smartMove({ map: "main", x: 494, y: 1101 }) },
         },
         crab: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["crab", "phoenix"], information.friends) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["crab"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await bot.smartMove({ map: "main", x: -1202, y: -66 }) },
         },
         crabx: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["crabx", "phoenix"], information.friends) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["crabx"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await goToNearestWalkableToMonster(bot, ["crabx"], { map: "main", x: -1202, y: -66 }) },
         },
         croc: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["croc", "phoenix"], information.friends) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["croc"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await bot.smartMove({ map: "main", x: 801, y: 1710 }) },
         },
@@ -295,7 +277,7 @@ function prepareRanger(bot: Ranger) {
             move: async () => { await bot.smartMove({ map: "main", x: -61.5, y: -282 }) },
         },
         minimush: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["minimush", "phoenix"], information.friends) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["minimush"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await bot.smartMove({ map: "halloween", x: 8, y: 631 }) },
         },
@@ -320,11 +302,6 @@ function prepareRanger(bot: Ranger) {
             attackWhileIdle: true,
             move: async () => { await goToNearestWalkableToMonster(bot, ["osnake", "snake"], { map: "halloween", x: -589, y: -335 }) },
         },
-        phoenix: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["phoenix"], information.friends) },
-            attackWhileIdle: true,
-            move: async () => { await goToSpecialMonster(bot, "phoenix") },
-        },
         poisio: {
             // TODO: If we can 1shot with hbow, use that instead
             attack: async () => { return await attackTheseTypesRanger(bot, ["poisio"], information.friends) },
@@ -348,7 +325,7 @@ function prepareRanger(bot: Ranger) {
             move: async () => { await bot.smartMove({ map: "main", x: -61.5, y: -282 }) },
         },
         scorpion: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["scorpion", "phoenix"], information.friends) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["scorpion"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await bot.smartMove({ map: "main", x: 1578, y: -168 }) },
         },
@@ -363,22 +340,22 @@ function prepareRanger(bot: Ranger) {
             move: async () => { await goToSpecialMonster(bot, "snowman") },
         },
         spider: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["spider", "phoenix"], information.friends) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["spider"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await bot.smartMove({ map: "main", x: 948, y: -144 }) },
         },
         squig: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["squig", "squigtoad", "phoenix"], information.friends) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["squig", "squigtoad"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await bot.smartMove({ map: "main", x: -1175, y: 422 }) },
         },
         squigtoad: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["squigtoad", "squig", "phoenix"], information.friends) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["squigtoad", "squig"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await bot.smartMove({ map: "main", x: -1175, y: 422 }) },
         },
         tortoise: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["tortoise", "phoenix"], information.friends) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["tortoise"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await goToNearestWalkableToMonster(bot, ["tortoise"], { map: "main", x: -1124, y: 1118 }) },
         },
@@ -393,43 +370,49 @@ function prepareRanger(bot: Ranger) {
 }
 
 function prepareWarrior(bot: Warrior) {
-    const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
     const strategy: Strategy = {
         defaultTarget: "spider",
         // eslint-disable-next-line sort-keys
         arcticbee: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["arcticbee"], information.friends) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["arcticbee"], { map: "winterland", x: 1062, y: -873 }) },
         },
         bat: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["bat"], information.friends) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["bat"], { map: "cave", x: 1243, y: -27 }) },
         },
         bee: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["bee"], information.friends) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["bee"], { map: "main", x: 737, y: 720 }) },
         },
         crab: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["crab", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["crab"], information.friends) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["crab"], { map: "main", x: -1222, y: -66 }) },
         },
         crabx: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["crabx", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["crabx"], information.friends) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["crabx"], { map: "main", x: -1004, y: 1762 }) },
         },
         croc: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["croc", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["croc"], information.friends) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["croc"], { map: "main", x: 781, y: 1710 }) },
         },
         cutebee: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["cutebee"], information.friends) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => {
                 const nearby = bot.getNearestMonster("cutebee")
                 if (nearby) {
@@ -447,21 +430,25 @@ function prepareWarrior(bot: Warrior) {
         goldenbat: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["goldenbat"], information.friends) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await goToSpecialMonster(bot, "goldenbat") },
         },
         goo: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["goo"], information.friends) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["goo"], { map: "main", x: -52, y: 787 }) },
         },
         hen: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["hen"], information.friends) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await bot.smartMove({ map: "main", x: -81.5, y: -282 }) },
         },
         minimush: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["minimush", "phoenix"], information.friends, { disableAgitate: true }) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["minimush"], information.friends, { disableAgitate: true }) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["minimush"], { map: "halloween", x: -18, y: 631 }) },
         },
         mrgreen: {
@@ -469,6 +456,7 @@ function prepareWarrior(bot: Warrior) {
                 if (bot.isPVP()) await attackTheseTypesWarrior(bot, ["mrgreen"], information.friends, { disableCleave: true, disableStomp: true })
                 else await attackTheseTypesWarrior(bot, ["mrgreen"], information.friends)
             },
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => {
                 if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as IPosition)
                 await goToSpecialMonster(bot, "mrgreen")
@@ -480,6 +468,7 @@ function prepareWarrior(bot: Warrior) {
                 if (bot.isPVP()) await attackTheseTypesWarrior(bot, ["mrpumpkin"], information.friends, { disableCleave: true, disableStomp: true })
                 else await attackTheseTypesWarrior(bot, ["mrpumpkin"], information.friends)
             },
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => {
                 if (bot.S.mrpumpkin as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrpumpkin as IPosition)
                 await goToSpecialMonster(bot, "mrpumpkin")
@@ -489,36 +478,37 @@ function prepareWarrior(bot: Warrior) {
         osnake: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["osnake", "snake"], information.friends, { disableAgitate: true }) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["osnake", "snake"], { map: "halloween", x: 347, y: -747 }) },
-        },
-        phoenix: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["phoenix"], information.friends) },
-            attackWhileIdle: true,
-            move: async () => { await goToSpecialMonster(bot, "phoenix") },
         },
         poisio: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["poisio"], information.friends) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["poisio"], { map: "main", x: -141, y: 1360 }) },
         },
         rat: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["rat"], information.friends) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["rat"], { map: "mansion", x: 0, y: -21 }) },
         },
         rooster: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["rooster"], information.friends) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await bot.smartMove({ map: "main", x: -81.5, y: -282 }) },
         },
         scorpion: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["scorpion", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["scorpion"], information.friends) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["scorpion"], { map: "main", x: 1558, y: -168 }) },
         },
         snake: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["snake", "osnake"], information.friends, { disableAgitate: true }) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["snake", "osnake"], { map: "main", x: -102, y: 1901 }) },
         },
         snowman: {
@@ -541,31 +531,37 @@ function prepareWarrior(bot: Warrior) {
                 await attackTheseTypesWarrior(bot, ["snowman"], information.friends)
             },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await goToSpecialMonster(bot, "snowman") },
         },
         spider: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["spider", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["spider"], information.friends) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["spider"], { map: "main", x: 928, y: -144 }) },
         },
         squig: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["squig", "squigtoad", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["squig", "squigtoad"], information.friends) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["squig"], { map: "main", x: -1195, y: 422 }) },
         },
         squigtoad: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["squigtoad", "squig", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["squigtoad", "squig"], information.friends) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["squigtoad", "squig"], { map: "main", x: -1195, y: 422 }) },
         },
         tortoise: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["tortoise", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["tortoise"], information.friends) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await goToNearestWalkableToMonster(bot, ["tortoise"], { map: "main", x: -1144, y: 1118 }) },
         },
         wabbit: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["wabbit"], information.friends) },
             attackWhileIdle: true,
+            equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => { await goToSpecialMonster(bot, "wabbit") },
         }
     }
