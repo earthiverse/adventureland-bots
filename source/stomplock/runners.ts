@@ -2,7 +2,7 @@ import AL, { Character, GameResponseData, IPosition, ItemDataTrade, Merchant, Mo
 import { startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPotionSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_SELL, goToNearestWalkableToMonster, startTrackerLoop, getFirstEmptyInventorySlot, startBuyFriendsReplenishablesLoop, startCraftLoop } from "../base/general.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
-import { partyLeader, stompPartyLeader, stompPartyMembers } from "../base/party.js"
+import { stompPartyLeader, stompPartyMembers } from "../base/party.js"
 import { startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 import FastPriorityQueue from "fastpriorityqueue"
 
@@ -98,7 +98,7 @@ export async function startLeader(bot: Warrior): Promise<void> {
                     withinRange: bot.range
                 })) {
                     if (!entity) continue // Entity died?
-                    if (entity.target == bot.name) continue // Already targeting us
+                    if (entity.target == bot.id) continue // Already targeting us
                     if (!entity.s.stunned || entity.s.stunned.ms <= ((LOOP_MS + Math.max(...bot.pings)) * 2)) continue // Enemy is not stunned, or is about to be free, don't taunt!
 
                     await bot.taunt(entity.id)
@@ -118,7 +118,7 @@ export async function startLeader(bot: Warrior): Promise<void> {
 
             const promises: Promise<unknown>[] = []
 
-            const entities = bot.getEntities({ targetingPlayer: partyLeader })
+            const entities = bot.getEntities({ targetingPlayer: stompPartyLeader })
             let equipLuck = false
             for (const entity of entities) {
                 if (!entity) continue
@@ -365,7 +365,7 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
                 await Promise.all(promises)
 
                 // Re-equip fireblades
-                if (bot.id !== partyLeader) {
+                if (bot.id !== stompPartyLeader) {
                     promises = []
                     const fireblades = bot.locateItems("fireblade", bot.items, { locked: true })
                     if (fireblades[0] !== undefined) promises.push(bot.equip(fireblades[0], "mainhand"))
