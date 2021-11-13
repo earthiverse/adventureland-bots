@@ -2,6 +2,7 @@ import AL, { GMap, Mage, Merchant } from "alclient"
 import { goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
 import { mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrocs, mainGoos, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
+import { partyLeader, partyMembers } from "../base/party.js"
 import { getTargetServerFromPlayer } from "../base/serverhop.js"
 import { Information, Strategy } from "../definitions/bot.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMage, startMerchant } from "./shared.js"
@@ -176,14 +177,14 @@ function prepareMage(bot: Mage) {
         }
     }
 
-    startMage(bot, information, strategy)
+    startMage(bot, information, strategy, partyLeader, partyMembers)
 }
 
 function prepareMerchant(bot: Merchant) {
     const strategy: Strategy = {
     }
 
-    startMerchant(bot, information, strategy, { map: "main", x: -250, y: -100 })
+    startMerchant(bot, information, strategy, { map: "main", x: -250, y: -100 }, partyLeader, partyMembers)
 }
 
 async function run() {

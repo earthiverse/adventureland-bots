@@ -6,7 +6,6 @@ import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } fro
 import { attackTheseTypesRanger } from "../base/ranger.js"
 import { attackTheseTypesWarrior, startChargeLoop, startHardshellLoop, startWarcryLoop } from "../base/warrior.js"
 import { Information, Strategy } from "../definitions/bot.js"
-import { partyLeader, partyMembers } from "../base/party.js"
 import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
 
 const DEFAULT_TARGET: MonsterName = "spider"
@@ -79,8 +78,8 @@ export async function getTarget(bot: Character, strategy: Strategy, information:
     return strategy.defaultTarget ?? DEFAULT_TARGET
 }
 
-export async function startMage(bot: Mage, information: Information, strategy: Strategy): Promise<void> {
-    startShared(bot, strategy, information)
+export async function startMage(bot: Mage, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[]): Promise<void> {
+    startShared(bot, strategy, information, partyLeader, partyMembers)
 
     const idleTargets: MonsterName[] = []
     for (const t in strategy) {
@@ -165,8 +164,8 @@ export async function startMage(bot: Mage, information: Information, strategy: S
     attackLoop()
 }
 
-export async function startMerchant(bot: Merchant, information: Information, strategy: Strategy, standPlace: IPosition): Promise<void> {
-    startShared(bot, strategy, information)
+export async function startMerchant(bot: Merchant, information: Information, strategy: Strategy, standPlace: IPosition, partyLeader: string, partyMembers: string[]): Promise<void> {
+    startShared(bot, strategy, information, partyLeader, partyMembers)
     startMluckLoop(bot)
     startPartyLoop(bot, bot.id)
 
@@ -369,8 +368,8 @@ export async function startMerchant(bot: Merchant, information: Information, str
     moveLoop()
 }
 
-export async function startPriest(bot: Priest, information: Information, strategy: Strategy): Promise<void> {
-    startShared(bot, strategy, information)
+export async function startPriest(bot: Priest, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[]): Promise<void> {
+    startShared(bot, strategy, information, partyLeader, partyMembers)
     startDarkBlessingLoop(bot)
     startPartyHealLoop(bot, information.friends)
 
@@ -458,8 +457,8 @@ export async function startPriest(bot: Priest, information: Information, strateg
     attackLoop()
 }
 
-export async function startRanger(bot: Ranger, information: Information, strategy: Strategy): Promise<void> {
-    startShared(bot, strategy, information)
+export async function startRanger(bot: Ranger, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[]): Promise<void> {
+    startShared(bot, strategy, information, partyLeader, partyMembers)
 
     const idleTargets: MonsterName[] = []
     for (const t in strategy) {
@@ -545,8 +544,8 @@ export async function startRanger(bot: Ranger, information: Information, strateg
     attackLoop()
 }
 
-export async function startRogue(bot: Rogue, information: Information, strategy: Strategy): Promise<void> {
-    startShared(bot, strategy, information)
+export async function startRogue(bot: Rogue, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[]): Promise<void> {
+    startShared(bot, strategy, information, partyLeader, partyMembers)
 
     startRSpeedLoop(bot, { enableGiveToStrangers: true })
 
@@ -634,8 +633,8 @@ export async function startRogue(bot: Rogue, information: Information, strategy:
     attackLoop()
 }
 
-export async function startWarrior(bot: Warrior, information: Information, strategy: Strategy): Promise<void> {
-    startShared(bot, strategy, information)
+export async function startWarrior(bot: Warrior, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[]): Promise<void> {
+    startShared(bot, strategy, information, partyLeader, partyMembers)
 
     startChargeLoop(bot)
     startHardshellLoop(bot)
@@ -725,7 +724,7 @@ export async function startWarrior(bot: Warrior, information: Information, strat
     attackLoop()
 }
 
-export async function startShared(bot: Character, strategy: Strategy, information: Information): Promise<void> {
+export async function startShared(bot: Character, strategy: Strategy, information: Information, partyLeader: string, partyMembers: string[]): Promise<void> {
     const magiporters = new Set(["Bjarny", "Clarity", ...partyMembers])
     // TODO: Find type information and add it to ALClient
     bot.socket.on("magiport", async (data: { name: string }) => {

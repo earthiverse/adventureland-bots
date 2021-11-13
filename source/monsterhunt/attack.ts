@@ -1,14 +1,15 @@
-import AL, { Merchant, Priest, Ranger, Warrior, GMap, ServerInfoDataLive, IPosition } from "alclient"
-import { goToAggroMonster, goToNearestWalkableToMonster, goToSpecialMonster, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
+import AL, { Merchant, Priest, Ranger, Warrior, ServerInfoDataLive, IPosition } from "alclient"
+import { goToAggroMonster, goToNearestWalkableToMonster, goToSpecialMonster, requestMagiportService, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
-import { getTargetServerFromMonsters } from "../base/serverhop.js"
 import { attackTheseTypesWarrior } from "../base/warrior.js"
 import { Information, Strategy } from "../definitions/bot.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMerchant, startPriest, startRanger, startWarrior } from "./shared.js"
 
 const TARGET_REGION = DEFAULT_REGION
 const TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
+const partyLeader = "attackRan"
+const partyMembers = ["attackRan", "attackPri", "attackWar"]
 
 const information: Information = {
     friends: [undefined, undefined, undefined, undefined],
@@ -38,7 +39,7 @@ const information: Information = {
 
 function prepareMerchant(bot: Merchant) {
     const strategy: Strategy = { }
-    startMerchant(bot, information, strategy, { map: "main", x: 0, y: 0 })
+    startMerchant(bot, information, strategy, { map: "main", x: 0, y: 0 }, partyLeader, partyMembers)
 }
 
 function preparePriest(bot: Priest) {
@@ -202,7 +203,7 @@ function preparePriest(bot: Priest) {
             move: async () => { await goToSpecialMonster(bot, "wabbit") },
         },
     }
-    startPriest(bot, information, strategy)
+    startPriest(bot, information, strategy, partyLeader, partyMembers)
 }
 
 function prepareRanger(bot: Ranger) {
@@ -366,7 +367,7 @@ function prepareRanger(bot: Ranger) {
         }
     }
 
-    startRanger(bot, information, strategy)
+    startRanger(bot, information, strategy, partyLeader, partyMembers)
 }
 
 function prepareWarrior(bot: Warrior) {
@@ -565,7 +566,7 @@ function prepareWarrior(bot: Warrior) {
             move: async () => { await goToSpecialMonster(bot, "wabbit") },
         }
     }
-    startWarrior(bot, information, strategy)
+    startWarrior(bot, information, strategy, partyLeader, partyMembers)
 }
 
 async function run() {

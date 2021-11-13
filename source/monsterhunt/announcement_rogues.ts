@@ -1,6 +1,7 @@
 import AL, { GMap, IPosition, Merchant, Rogue, ServerInfoDataLive } from "alclient"
 import { goToNearestWalkableToMonster, goToSpecialMonster, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
 import { mainBeesNearTunnel } from "../base/locations.js"
+import { partyLeader, partyMembers } from "../base/party.js"
 import { attackTheseTypesRogue } from "../base/rogue.js"
 import { getTargetServerFromMonsters } from "../base/serverhop.js"
 import { Information, Strategy } from "../definitions/bot.js"
@@ -124,14 +125,14 @@ function prepareRogue(bot: Rogue) {
         }
     }
 
-    startRogue(bot, information, strategy)
+    startRogue(bot, information, strategy, partyLeader, partyMembers)
 }
 
 function prepareMerchant(bot: Merchant) {
     const strategy: Strategy = {
     }
 
-    startMerchant(bot, information, strategy, { map: "main", x: -300, y: -100 })
+    startMerchant(bot, information, strategy, { map: "main", x: -300, y: -100 }, partyLeader, partyMembers)
 }
 
 async function run() {

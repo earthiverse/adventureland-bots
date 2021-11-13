@@ -2,6 +2,7 @@ import AL, { Merchant, Priest, Warrior, GMap, ServerInfoDataLive, IPosition, Mag
 import { goToAggroMonster, goToNearestWalkableToMonster, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesMage, magiportIfNotNearby } from "../base/mage.js"
 import { attackTheseTypesMerchant } from "../base/merchant.js"
+import { partyLeader, partyMembers } from "../base/party.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
 import { getTargetServerFromMonsters } from "../base/serverhop.js"
 import { attackTheseTypesWarrior } from "../base/warrior.js"
@@ -66,7 +67,7 @@ function prepareMerchant(bot: Merchant) {
             move: async () => { await goToSpecialMonster(bot, "snowman") }
         }
     }
-    startMerchant(bot, information, strategy, { map: "main", x: 0, y: 0 })
+    startMerchant(bot, information, strategy, { map: "main", x: 0, y: 0 }, partyLeader, partyMembers)
 }
 
 function preparePriest(bot: Priest) {
@@ -470,7 +471,7 @@ function preparePriest(bot: Priest) {
             move: async () => { await bot.smartMove({ map: "halloween", x: -325, y: 725 }) },
         }
     }
-    startPriest(bot, information, strategy)
+    startPriest(bot, information, strategy, partyLeader, partyMembers)
 }
 
 function prepareMage(bot: Mage) {
@@ -929,7 +930,7 @@ function prepareMage(bot: Mage) {
         }
     }
 
-    startMage(bot, information, strategy)
+    startMage(bot, information, strategy, partyLeader, partyMembers)
 }
 
 function prepareWarrior(bot: Warrior) {
@@ -1411,7 +1412,7 @@ function prepareWarrior(bot: Warrior) {
             requireCtype: "priest"
         }
     }
-    startWarrior(bot, information, strategy)
+    startWarrior(bot, information, strategy, partyLeader, partyMembers)
 }
 
 async function run() {
