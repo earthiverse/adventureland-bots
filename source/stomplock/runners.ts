@@ -365,13 +365,15 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
                 await Promise.all(promises)
 
                 // Re-equip fireblades
-                if (bot.id !== stompPartyLeader) {
-                    promises = []
-                    const fireblades = bot.locateItems("fireblade", bot.items, { locked: true })
+                promises = []
+                const fireblades = bot.locateItems("fireblade", bot.items, { locked: true })
+                if (bot.id == stompPartyLeader) {
+                    if (fireblades[0] !== undefined) promises.push(bot.equip(fireblades[0], "mainhand"))
+                } else {
                     if (fireblades[0] !== undefined) promises.push(bot.equip(fireblades[0], "mainhand"))
                     if (fireblades[1] !== undefined) promises.push(bot.equip(fireblades[1], "offhand"))
-                    await Promise.all(promises)
                 }
+                await Promise.all(promises)
             } else {
                 console.log(`----- ${bot.id} couldn't stomp!? -----`)
                 console.log(`Has item: ${bot.hasItem("basher")}`)
