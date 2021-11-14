@@ -1,5 +1,5 @@
 import AL, { Merchant, Priest, Ranger, Warrior, ServerInfoDataLive, IPosition } from "alclient"
-import { goToAggroMonster, goToNearestWalkableToMonster, goToSpecialMonster, requestMagiportService, startTrackerLoop } from "../base/general.js"
+import { goToAggroMonster, goToKiteMonster, goToNearestWalkableToMonster, goToSpecialMonster, requestMagiportService, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 import { attackTheseTypesWarrior } from "../base/warrior.js"
@@ -65,6 +65,17 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["bee"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await bot.smartMove({ map: "main", x: 152, y: 1487 }) },
+        },
+        cgoo: {
+            attack: async () => { await attackTheseTypesPriest(bot, ["cgoo"], information.friends) },
+            move: async () => {
+                const nearest = bot.getNearestMonster("cgoo")
+                if (nearest?.monster) {
+                    goToKiteMonster(bot, { typeList: ["cgoo"] })
+                } else if (!bot.smartMoving) {
+                    bot.smartMove({ map: "arena", x: 650, y: -500 }).catch(/** Suppress errors */)
+                }
+            },
         },
         crab: {
             attack: async () => { await attackTheseTypesPriest(bot, ["crab"], information.friends) },
@@ -229,6 +240,17 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { await attackTheseTypesRanger(bot, ["bee"], information.friends) },
             attackWhileIdle: true,
             move: async () => { await bot.smartMove({ map: "main", x: 494, y: 1101 }) },
+        },
+        cgoo: {
+            attack: async () => { await attackTheseTypesRanger(bot, ["cgoo"], information.friends) },
+            move: async () => {
+                const nearest = bot.getNearestMonster("cgoo")
+                if (nearest?.monster) {
+                    goToKiteMonster(bot, { typeList: ["cgoo"] })
+                } else if (!bot.smartMoving) {
+                    bot.smartMove({ map: "arena", x: 0, y: -500 }).catch(/** Suppress errors */)
+                }
+            },
         },
         crab: {
             attack: async () => { return attackTheseTypesRanger(bot, ["crab"], information.friends) },
