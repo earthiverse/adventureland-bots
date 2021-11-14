@@ -9,7 +9,7 @@ import FastPriorityQueue from "fastpriorityqueue"
 export const region: ServerRegion = "US"
 export const identifier: ServerIdentifier = "III"
 
-const targets: MonsterName[] = ["pinkgoblin"]
+const targets: MonsterName[] = ["greenfairy", "bluefairy", "redfairy"]
 const LOOP_MS = 10
 
 export async function startSellSticksToMerchantsLoop(bot: Character): Promise<void> {
