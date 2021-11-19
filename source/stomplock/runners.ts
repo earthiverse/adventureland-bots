@@ -76,7 +76,7 @@ function getMSToNextStun(bot: PingCompensatedCharacter) {
         numStompers = 1
     }
 
-    const cooldown = AL.Game.G.skills.stomp.cooldown + 100
+    const cooldown = AL.Game.G.skills.stomp.cooldown + 500
     const nextInterval = (cooldown - now % cooldown)
     const offset = partyMemberIndex * (cooldown / numStompers)
 
