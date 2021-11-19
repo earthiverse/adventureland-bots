@@ -489,7 +489,7 @@ export async function startPriest(bot: Priest, merchantName: string): Promise<vo
                     withinRange: bot.range
                 })) {
                     if (!entity) continue // Entity died?
-                    if (!entity.s.stunned || entity.s.stunned.ms <= ((LOOP_MS + Math.max(...bot.pings)) * 2)) continue // Enemy is not stunned, or is about to be free, don't attack!
+                    if (!entity.s.stunned || entity.s.stunned.ms <= ((LOOP_MS + Math.min(...bot.pings)) * 2)) continue // Enemy is not stunned, or is about to be free, don't attack!
 
                     await bot.basicAttack(entity.id)
                     break
