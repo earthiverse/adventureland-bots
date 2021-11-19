@@ -7,7 +7,7 @@ import { startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 import FastPriorityQueue from "fastpriorityqueue"
 
 export const region: ServerRegion = "US"
-export const identifier: ServerIdentifier = "II"
+export const identifier: ServerIdentifier = "PVP"
 
 const targets: MonsterName[] = ["pinkgoblin"]
 const LOOP_MS = 10

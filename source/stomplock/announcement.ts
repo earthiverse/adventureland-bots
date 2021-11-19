@@ -1,4 +1,4 @@
-import AL, { Constants, Merchant, ServerIdentifier, ServerRegion, Warrior } from "alclient"
+import AL, { IPosition, Merchant, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { identifier, region, startMerchant, startShared } from "./runners.js"
 
 /** Config */
@@ -12,6 +12,11 @@ let follower1: Warrior
 let follower2: Warrior
 let follower3: Warrior
 let merchant: Merchant
+
+let merchantLocation: IPosition = { map: "main", x: -50, y: 0 }
+if (identifier == "PVP") {
+    merchantLocation = { map: "level2e", x: 575, y: 100 }
+}
 
 async function run() {
     // Login and prepare pathfinding
@@ -99,7 +104,7 @@ async function run() {
             try {
                 if (merchant) merchant.disconnect()
                 merchant = await AL.Game.startMerchant(name, region, identifier)
-                startMerchant(merchant, [follower1, follower2, follower3], { map: "main", x: -50, y: 0 })
+                startMerchant(merchant, [follower1, follower2, follower3], merchantLocation)
                 merchant.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)

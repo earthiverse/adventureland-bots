@@ -18,6 +18,11 @@ let follower2: Warrior
 // let follower2: Priest
 let merchant: Merchant
 
+let merchantLocation: IPosition = { map: "main", x: 0, y: 0 }
+if (identifier == "PVP") {
+    merchantLocation = { map: "level2e", x: 575, y: 150 }
+}
+
 async function startMerchant(bot: Merchant, friends: Character[], holdPosition: IPosition): Promise<void> {
     startHealLoop(bot)
     startMluckLoop(bot)
@@ -275,7 +280,7 @@ async function run() {
             try {
                 if (merchant) merchant.disconnect()
                 merchant = await AL.Game.startMerchant(name, region, identifier)
-                startMerchant(merchant, [leader, follower1, follower2], { map: "main", x: 0, y: 0 })
+                startMerchant(merchant, [leader, follower1, follower2], merchantLocation)
                 merchant.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
