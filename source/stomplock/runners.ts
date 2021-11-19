@@ -314,7 +314,11 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
                 }
 
                 // Scare, because we are scared
-                bot.scare()
+                try {
+                    await bot.scare()
+                } catch (e) {
+                    console.error(e)
+                }
 
                 // Re-equip our orb
                 if (inventoryPos !== undefined) bot.equip(inventoryPos)
