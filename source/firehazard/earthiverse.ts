@@ -1,4 +1,4 @@
-import AL, { IPosition, Priest, Warrior, ServerIdentifier, ServerRegion, Merchant, MonsterName, Rogue, ServerInfoDataLive, Character } from "alclient"
+import AL, { IPosition, Priest, Warrior, ServerIdentifier, ServerRegion, Merchant, MonsterName, Rogue, ServerInfoDataLive, Character, AchievementProgressData, AchievementProgressDataFirehazard } from "alclient"
 import { ITEMS_TO_HOLD, ITEMS_TO_SELL, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
 import { startPartyHealLoop } from "../base/priest.js"
@@ -102,6 +102,12 @@ function startWarrior(bot: Warrior) {
     startSellLoop(bot)
     startSendStuffDenylistLoop(bot, [information.merchant.name, information.merchant.nameAlt], ITEMS_TO_HOLD, 10_000_000)
     startUpgradeLoop(bot)
+
+    bot.socket.on("achievement_progress", (data: AchievementProgressData) => {
+        if (data.name == "firehazard") {
+            console.log(`Firehazard Progress: ${(data as AchievementProgressDataFirehazard).count}/${(data as AchievementProgressDataFirehazard).needed}`)
+        }
+    })
 
     async function attackLoop() {
         try {
