@@ -1,11 +1,9 @@
-import AL, { IPosition, Priest, Warrior, ServerIdentifier, ServerRegion, Merchant, MonsterName, Rogue, ServerInfoDataLive, Character, AchievementProgressData, AchievementProgressDataFirehazard } from "alclient"
-import { ITEMS_TO_HOLD, ITEMS_TO_SELL, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
+import AL, { IPosition, Priest, Warrior, ServerIdentifier, ServerRegion, Merchant, MonsterName, ServerInfoDataLive, Character, AchievementProgressData, AchievementProgressDataFirehazard } from "alclient"
+import { ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
 import { startPartyHealLoop } from "../base/priest.js"
-import { startBscorpionRogueFarmer, startBscorpionPriestFarmer } from "../bscorpions/runners.js"
 import { Information } from "../definitions/bot.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "../monsterhunt/shared.js"
-import { startMailBankKeysToEarthiverseLoop } from "../stomplock/runners.js"
 
 /** Config */
 const information: Information = {
@@ -372,7 +370,7 @@ async function run() {
                 if (information.bot3.bot) information.bot3.bot.disconnect()
                 information.bot3.bot = await AL.Game.startPriest(name, region, identifier)
                 information.friends[3] = information.bot3.bot
-                startBscorpionPriestFarmer(information.bot3.bot as Priest, information.friends, information.merchant.name)
+                startPriest(information.bot3.bot as Priest)
                 information.bot3.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
