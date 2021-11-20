@@ -1,25 +1,33 @@
 import AL, { IPosition, Priest, Warrior, ServerIdentifier, ServerRegion, Merchant, MonsterName, ServerInfoDataLive, Character, AchievementProgressData, AchievementProgressDataFirehazard } from "alclient"
-import { ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
+import { LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
 import { startPartyHealLoop } from "../base/priest.js"
 import { Information } from "../definitions/bot.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "../monsterhunt/shared.js"
+
+/**
+ * Put the weapon you want to firehazard on `bot1`.
+ * Equip bot1 with something with a lot of armor and a `jacko` (important!)
+ */
 
 /** Config */
 const information: Information = {
     friends: [undefined, undefined, undefined, undefined],
     // eslint-disable-next-line sort-keys
     bot1: {
+        /** Character that holds the weapon to firehazard */
         bot: undefined,
         name: "earthWar",
         target: undefined
     },
     bot2: {
+        /** Priest #1 */
         bot: undefined,
         name: "earthPri",
         target: undefined
     },
     bot3: {
+        /** Priest #2 */
         bot: undefined,
         name: "earthPri2",
         target: undefined
@@ -33,7 +41,65 @@ const information: Information = {
 }
 const merchantLocation: IPosition = { map: "main", x: 50, y: 50 }
 
-function startPriest(bot: Priest) {
+function startFirehazardWarrior(bot: Warrior) {
+    startAvoidStacking(bot)
+    startBuyLoop(bot)
+    startCompoundLoop(bot)
+    startCraftLoop(bot)
+    startExchangeLoop(bot)
+    startHealLoop(bot)
+    startLootLoop(bot)
+    startPartyLoop(bot, information.bot1.name, [information.bot1.name, information.bot2.name, information.bot3.name])
+    startPontyLoop(bot)
+    startScareLoop(bot)
+    startSellLoop(bot)
+    // startSendStuffDenylistLoop(bot, [information.merchant.name, information.merchant.nameAlt], ITEMS_TO_HOLD, 10_000_000)
+    startUpgradeLoop(bot)
+
+    bot.socket.on("achievement_progress", (data: AchievementProgressData) => {
+        if (data.name == "firehazard") {
+            console.log(`Firehazard Progress: ${(data as AchievementProgressDataFirehazard).count}/${(data as AchievementProgressDataFirehazard).needed}`)
+        }
+    })
+
+    async function attackLoop() {
+        try {
+            // Only taunt & agitate, don't attack
+            const inAgitateRange: string[] = []
+            const inTauntRange: string[] = []
+            for (const entity of bot.getEntities({
+                couldGiveCredit: true,
+                targetingMe: false
+            })) {
+                const distance = AL.Tools.distance(bot, entity)
+                if (distance <= AL.Game.G.skills.agitate.range) inAgitateRange.push(entity.id)
+                if (distance <= AL.Game.G.skills.taunt.range) inTauntRange.push(entity.id)
+            }
+
+            if (inAgitateRange.length > 1 && bot.canUse("agitate")) {
+                await bot.agitate()
+            } else if (inTauntRange.length > 0 && bot.canUse("taunt")) {
+                await bot.taunt(inTauntRange[0])
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("agitate"), bot.getCooldown("taunt")))))
+    }
+    attackLoop()
+
+    async function moveLoop() {
+        try {
+            await bot.smartMove({ map: "desertland", x: 390.675, y: -1422.46 })
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+    }
+    moveLoop()
+}
+
+function startSupportPriest(bot: Priest) {
     startAvoidStacking(bot)
     startBuyLoop(bot)
     startCompoundLoop(bot)
@@ -86,64 +152,6 @@ function startPriest(bot: Priest) {
                 await bot.smartMove({ map: "desertland", x: 410.675, y: -1422.46 })
             }
 
-        } catch (e) {
-            console.error(e)
-        }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
-    }
-    moveLoop()
-}
-
-function startWarrior(bot: Warrior) {
-    startAvoidStacking(bot)
-    startBuyLoop(bot)
-    startCompoundLoop(bot)
-    startCraftLoop(bot)
-    startExchangeLoop(bot)
-    startHealLoop(bot)
-    startLootLoop(bot)
-    startPartyLoop(bot, information.bot1.name, [information.bot1.name, information.bot2.name, information.bot3.name])
-    startPontyLoop(bot)
-    startScareLoop(bot)
-    startSellLoop(bot)
-    // startSendStuffDenylistLoop(bot, [information.merchant.name, information.merchant.nameAlt], ITEMS_TO_HOLD, 10_000_000)
-    startUpgradeLoop(bot)
-
-    bot.socket.on("achievement_progress", (data: AchievementProgressData) => {
-        if (data.name == "firehazard") {
-            console.log(`Firehazard Progress: ${(data as AchievementProgressDataFirehazard).count}/${(data as AchievementProgressDataFirehazard).needed}`)
-        }
-    })
-
-    async function attackLoop() {
-        try {
-            // Only taunt & agitate, don't attack
-            const inAgitateRange: string[] = []
-            const inTauntRange: string[] = []
-            for (const entity of bot.getEntities({
-                couldGiveCredit: true,
-                targetingMe: false
-            })) {
-                const distance = AL.Tools.distance(bot, entity)
-                if (distance <= AL.Game.G.skills.agitate.range) inAgitateRange.push(entity.id)
-                if (distance <= AL.Game.G.skills.taunt.range) inTauntRange.push(entity.id)
-            }
-
-            if (inAgitateRange.length > 1 && bot.canUse("agitate")) {
-                await bot.agitate()
-            } else if (inTauntRange.length > 0 && bot.canUse("taunt")) {
-                await bot.taunt(inTauntRange[0])
-            }
-        } catch (e) {
-            console.error(e)
-        }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("agitate"), bot.getCooldown("taunt")))))
-    }
-    attackLoop()
-
-    async function moveLoop() {
-        try {
-            await bot.smartMove({ map: "desertland", x: 390.675, y: -1422.46 })
         } catch (e) {
             console.error(e)
         }
@@ -325,7 +333,7 @@ async function run() {
                 if (information.bot1.bot) information.bot1.bot.disconnect()
                 information.bot1.bot = await AL.Game.startWarrior(name, region, identifier)
                 information.friends[1] = information.bot1.bot
-                startWarrior(information.bot1.bot as Warrior)
+                startFirehazardWarrior(information.bot1.bot as Warrior)
                 startTrackerLoop(information.bot1.bot)
                 information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
@@ -352,7 +360,7 @@ async function run() {
                 if (information.bot2.bot) information.bot2.bot.disconnect()
                 information.bot2.bot = await AL.Game.startPriest(name, region, identifier)
                 information.friends[2] = information.bot2.bot
-                startPriest(information.bot2.bot as Priest)
+                startSupportPriest(information.bot2.bot as Priest)
                 information.bot2.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -378,7 +386,7 @@ async function run() {
                 if (information.bot3.bot) information.bot3.bot.disconnect()
                 information.bot3.bot = await AL.Game.startPriest(name, region, identifier)
                 information.friends[3] = information.bot3.bot
-                startPriest(information.bot3.bot as Priest)
+                startSupportPriest(information.bot3.bot as Priest)
                 information.bot3.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
