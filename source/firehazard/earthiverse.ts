@@ -57,8 +57,16 @@ function startPriest(bot: Priest) {
                 for (const entity of bot.getEntities({
                     targetingPartyMember: true,
                     willBurnToDeath: false,
+                    willDieToProjectiles: false,
                     withinRange: bot.range
                 })) {
+                    if (bot.canKillInOneShot(entity)) {
+                        for (const friend of information.friends) {
+                            if (!friend) continue
+                            if (bot.id == friend.id) continue
+                            friend.entities.delete(entity.id)
+                        }
+                    }
                     await bot.basicAttack(entity.id)
                     break
                 }
