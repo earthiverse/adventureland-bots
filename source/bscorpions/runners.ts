@@ -2,11 +2,11 @@ import AL, { Character, IPosition, Mage, Merchant, MonsterName, Priest, Rogue, S
 import { startAvoidStacking, startBuyLoop, startBuyFriendsReplenishablesLoop, startCompoundLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startUpgradeLoop, goToBankIfFull, goToPotionSellerIfLow, LOOP_MS, startSendStuffDenylistLoop, kiteInCircle, goToNearestWalkableToMonster } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
-import { partyLeader, partyMembers } from "../base/party.js"
+import { partyMembers } from "../base/party.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
 
-const bscorpionPartyLeader = partyLeader
+const bscorpionPartyLeader = "over9000"
 const bscorpionPartyMembers = partyMembers
 
 const targets: MonsterName[] = ["bscorpion"]
