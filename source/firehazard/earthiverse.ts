@@ -45,7 +45,7 @@ function startPriest(bot: Priest) {
     startPontyLoop(bot)
     startScareLoop(bot)
     startSellLoop(bot)
-    startSendStuffDenylistLoop(bot, [information.merchant.name, information.merchant.nameAlt], ITEMS_TO_HOLD, 10_000_000)
+    // startSendStuffDenylistLoop(bot, [information.merchant.name, information.merchant.nameAlt], ITEMS_TO_HOLD, 10_000_000)
     startUpgradeLoop(bot)
 
     startPartyHealLoop(bot, information.friends)
@@ -98,7 +98,7 @@ function startWarrior(bot: Warrior) {
     startPontyLoop(bot)
     startScareLoop(bot)
     startSellLoop(bot)
-    startSendStuffDenylistLoop(bot, [information.merchant.name, information.merchant.nameAlt], ITEMS_TO_HOLD, 10_000_000)
+    // startSendStuffDenylistLoop(bot, [information.merchant.name, information.merchant.nameAlt], ITEMS_TO_HOLD, 10_000_000)
     startUpgradeLoop(bot)
 
     bot.socket.on("achievement_progress", (data: AchievementProgressData) => {
