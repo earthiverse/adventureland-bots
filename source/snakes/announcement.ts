@@ -60,7 +60,8 @@ function startMage(bot: Mage) {
 
     async function moveLoop() {
         try {
-            if (bot.id == information.bot1.name){
+            if (!bot.socket || bot.socket.disconnected) return
+            if (bot.id == information.bot1.name) {
                 await goToNearestWalkableToMonster(bot, TARGETS, { map: "halloween", x: -589, y: -335 })
             } else if (bot.id == information.bot2.name) {
                 await goToNearestWalkableToMonster(bot, TARGETS, { map: "halloween", x: -488, y: -708 })

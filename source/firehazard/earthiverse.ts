@@ -64,6 +64,8 @@ function startFirehazardWarrior(bot: Warrior) {
 
     async function attackLoop() {
         try {
+            if (!bot.socket || bot.socket.disconnected) return
+
             // Only taunt & agitate, don't attack
             const inAgitateRange: string[] = []
             const inTauntRange: string[] = []
@@ -90,6 +92,7 @@ function startFirehazardWarrior(bot: Warrior) {
 
     async function moveLoop() {
         try {
+            if (!bot.socket || bot.socket.disconnected) return
             await bot.smartMove({ map: "desertland", x: 390.675, y: -1422.46 })
         } catch (e) {
             console.error(e)
@@ -118,6 +121,8 @@ function startSupportPriest(bot: Priest) {
 
     async function attackLoop() {
         try {
+            if (!bot.socket || bot.socket.disconnected) return
+
             // Attack only if it's targeting our warrior, and it won't burn to death
             if (bot.canUse("attack")) {
                 for (const entity of bot.getEntities({
@@ -146,6 +151,8 @@ function startSupportPriest(bot: Priest) {
 
     async function moveLoop() {
         try {
+            if (!bot.socket || bot.socket.disconnected) return
+
             if (bot.id == information.bot2.name){
                 await bot.smartMove({ map: "desertland", x: 370.675, y: -1422.46 })
             } else {
