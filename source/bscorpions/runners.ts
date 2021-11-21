@@ -1,4 +1,4 @@
-import AL, { Character, IPosition, Mage, Merchant, MonsterName, Priest, Rogue, ServerIdentifier, ServerInfoDataLive, ServerRegion, Tools } from "alclient"
+import AL, { Character, IPosition, Mage, Merchant, MonsterName, Priest, Rogue, ServerInfoDataLive } from "alclient"
 import { startAvoidStacking, startBuyLoop, startBuyFriendsReplenishablesLoop, startCompoundLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startUpgradeLoop, goToBankIfFull, goToPotionSellerIfLow, LOOP_MS, startSendStuffDenylistLoop, kiteInCircle, goToNearestWalkableToMonster } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
@@ -6,7 +6,7 @@ import { partyMembers } from "../base/party.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
 
-const bscorpionPartyLeader = "over9000"
+const bscorpionPartyLeader = "illumination"
 const bscorpionPartyMembers = partyMembers
 
 const targets: MonsterName[] = ["bscorpion"]
@@ -214,6 +214,13 @@ export async function startBscorpionPriestFarmer(bot: Priest, friends: Character
                 await attackTheseTypesPriest(bot, [], friends)
                 bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
                 return
+            }
+
+            if (bot.id == bscorpionPartyLeader && closest && closest.monster.target !== undefined && closest.monster.target !== bot.id) {
+                const targetedPlayer = bot.players.get(closest.monster.target)
+                if (targetedPlayer.party == bot.party && bot.canUse("absorb")) {
+                    await bot.absorbSins(targetedPlayer.id)
+                }
             }
 
             // Attack
