@@ -1,4 +1,4 @@
-import AL, { IPosition, Priest, Warrior, ServerIdentifier, ServerRegion, Merchant, MonsterName, ServerInfoDataLive, Character, AchievementProgressData, AchievementProgressDataFirehazard } from "alclient"
+import AL, { IPosition, Priest, Warrior, ServerIdentifier, ServerRegion, Merchant, MonsterName, ServerInfoDataLive, Character, AchievementProgressData, AchievementProgressDataFirehazard, Tools } from "alclient"
 import { ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
 import { startPartyHealLoop } from "../base/priest.js"
@@ -143,6 +143,17 @@ function startSupportPriest(bot: Priest) {
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
+
+            if (bot.canUse("heal")) {
+                for (const friend of information.friends) {
+                    if (!friend) continue
+                    if (friend.hp / friend.max_hp > 0.8) continue // Friend still has a lot of hp
+                    if (Tools.distance(bot, friend) > bot.range) continue // Out of range
+
+                    await bot.heal(friend.id)
+                    break
+                }
+            }
 
             // Attack only if it's targeting our warrior, and it won't burn to death
             if (bot.canUse("attack")) {
