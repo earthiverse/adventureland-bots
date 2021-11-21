@@ -1,5 +1,5 @@
 import AL, { IPosition, Priest, Warrior, ServerIdentifier, ServerRegion, Merchant, MonsterName, ServerInfoDataLive, Character, AchievementProgressData, AchievementProgressDataFirehazard } from "alclient"
-import { LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
+import { ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
 import { startPartyHealLoop } from "../base/priest.js"
 import { Information } from "../definitions/bot.js"
@@ -52,7 +52,7 @@ async function startFirehazardWarrior(bot: Warrior) {
     startPartyLoop(bot, information.bot1.name, [information.bot1.name, information.bot2.name, information.bot3.name])
     startPontyLoop(bot)
     startSellLoop(bot)
-    // startSendStuffDenylistLoop(bot, [information.merchant.name, information.merchant.nameAlt], ITEMS_TO_HOLD, 10_000_000)
+    startSendStuffDenylistLoop(bot, [information.merchant.name, information.merchant.nameAlt], ITEMS_TO_HOLD, 10_000_000)
     startUpgradeLoop(bot)
 
     if (!bot.isEquipped("jacko")) {
@@ -125,7 +125,7 @@ function startSupportPriest(bot: Priest) {
     startPontyLoop(bot)
     startScareLoop(bot)
     startSellLoop(bot)
-    // startSendStuffDenylistLoop(bot, [information.merchant.name, information.merchant.nameAlt], ITEMS_TO_HOLD, 10_000_000)
+    startSendStuffDenylistLoop(bot, [information.merchant.name, information.merchant.nameAlt], ITEMS_TO_HOLD, 10_000_000)
     startUpgradeLoop(bot)
 
     startPartyHealLoop(bot, information.friends)
