@@ -74,6 +74,16 @@ async function startFirehazardWarrior(bot: Warrior) {
                 await bot.scare()
             }
 
+            if (bot.canUse("taunt")) {
+                for (const entity of bot.getEntities({
+                    targetingMe: false,
+                    targetingPartyMember: true
+                })) {
+                    await bot.taunt(entity.id)
+                    break
+                }
+            }
+
             if (bot.canUse("attack")) {
                 for (const entity of bot.getEntities({
                     couldGiveCredit: true,
@@ -90,7 +100,7 @@ async function startFirehazardWarrior(bot: Warrior) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("scare"), bot.getCooldown("attack")))))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("scare"), bot.getCooldown("attack"), bot.getCooldown("taunt")))))
     }
     attackLoop()
 
