@@ -33,7 +33,8 @@ const information: Information = {
         target: undefined
     }
 }
-function startMage(bot: Mage) {
+
+async function startMage(bot: Mage) {
     startAvoidStacking(bot)
     startBuyLoop(bot)
     startCompoundLoop(bot)
@@ -46,6 +47,11 @@ function startMage(bot: Mage) {
     startScareLoop(bot)
     startSellLoop(bot, { ...ITEMS_TO_SELL, "dexamulet": 1, "intamulet": 1, "stramulet": 1, "wbreeches": 1, "wgloves": 1 })
     startUpgradeLoop(bot)
+
+    if (!bot.isEquipped("wand")) {
+        const wand = bot.locateItem("wand", bot.items, { locked: true })
+        if (wand !== undefined) await bot.equip(wand)
+    }
 
     async function attackLoop() {
         try {

@@ -1,4 +1,4 @@
-import AL, { Constants, IPosition, Mage, MonsterName, ServerIdentifier, ServerRegion, Tools } from "alclient"
+import AL, { IPosition, Mage, MonsterName, ServerIdentifier, ServerRegion, Tools } from "alclient"
 import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startSendStuffAllowlistLoop, ITEMS_TO_HOLD } from "../base/general.js"
 import { mainBeesNearRats, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
