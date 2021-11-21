@@ -91,7 +91,7 @@ async function startFirehazardWarrior(bot: Warrior) {
                 })) {
                     const distance = AL.Tools.distance(bot, entity)
                     if (distance > bot.range) continue
-                    if (entity.hp < bot.attack * 3) continue // Low HP, don't attack it
+                    if (entity.hp < bot.attack * 4) continue // Low HP, don't attack it
 
                     await bot.basicAttack(entity.id)
                     break
