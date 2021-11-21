@@ -1,5 +1,5 @@
 import AL, { ServerIdentifier, ServerRegion, MonsterName, Mage } from "alclient"
-import { goToNearestWalkableToMonster, ITEMS_TO_SELL, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startUpgradeLoop } from "../base/general.js"
+import { goToBankIfFull, goToNearestWalkableToMonster, goToPotionSellerIfLow, ITEMS_TO_SELL, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { Information } from "../definitions/bot.js"
 
@@ -67,6 +67,17 @@ async function startMage(bot: Mage) {
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
+
+            // If we are dead, respawn
+            if (bot.rip) {
+                await bot.respawn()
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+                return
+            }
+
+            await goToPotionSellerIfLow(bot)
+            await goToBankIfFull(bot)
+
             if (bot.id == information.bot1.name) {
                 await goToNearestWalkableToMonster(bot, TARGETS, { map: "halloween", x: -589, y: -335 })
             } else if (bot.id == information.bot2.name) {
