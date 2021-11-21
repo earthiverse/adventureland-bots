@@ -108,7 +108,13 @@ async function startFirehazardWarrior(bot: Warrior) {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            if (bot.targets <= 1 && bot.canUse("scare")) {
+            let highestMummyLevel = 0
+            for (const [, entity] of bot.entities) {
+                if (entity.type !== "mummy") continue
+                if (entity.level > highestMummyLevel) highestMummyLevel = entity.level
+            }
+
+            if ((highestMummyLevel <= 1 || bot.targets <= 1) && bot.canUse("scare")) {
                 // Step inside and aggro mummies
                 await bot.smartMove({ map: "spookytown", x: 250, y: -1131 })
             } else {
