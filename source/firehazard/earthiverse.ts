@@ -41,7 +41,7 @@ const information: Information = {
 }
 const merchantLocation: IPosition = { map: "main", x: 50, y: 50 }
 
-function startFirehazardWarrior(bot: Warrior) {
+async function startFirehazardWarrior(bot: Warrior) {
     startAvoidStacking(bot)
     startBuyLoop(bot)
     startCompoundLoop(bot)
@@ -51,10 +51,14 @@ function startFirehazardWarrior(bot: Warrior) {
     startLootLoop(bot)
     startPartyLoop(bot, information.bot1.name, [information.bot1.name, information.bot2.name, information.bot3.name])
     startPontyLoop(bot)
-    startScareLoop(bot)
     startSellLoop(bot)
     // startSendStuffDenylistLoop(bot, [information.merchant.name, information.merchant.nameAlt], ITEMS_TO_HOLD, 10_000_000)
     startUpgradeLoop(bot)
+
+    if (!bot.isEquipped("jacko")) {
+        const orb = bot.locateItem("jacko", bot.items, { locked: true })
+        if (orb !== undefined) await bot.equip(orb, "orb")
+    }
 
     bot.socket.on("achievement_progress", (data: AchievementProgressData) => {
         if (data.name == "firehazard") {
@@ -66,34 +70,41 @@ function startFirehazardWarrior(bot: Warrior) {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            // Only taunt & agitate, don't attack
-            const inAgitateRange: string[] = []
-            const inTauntRange: string[] = []
-            for (const entity of bot.getEntities({
-                couldGiveCredit: true,
-                targetingMe: false
-            })) {
-                const distance = AL.Tools.distance(bot, entity)
-                if (distance <= AL.Game.G.skills.agitate.range) inAgitateRange.push(entity.id)
-                if (distance <= AL.Game.G.skills.taunt.range) inTauntRange.push(entity.id)
+            if (bot.canUse("scare") && bot.hp < bot.max_hp / 2) {
+                await bot.scare()
             }
 
-            if (inAgitateRange.length > 1 && bot.canUse("agitate")) {
-                await bot.agitate()
-            } else if (inTauntRange.length > 0 && bot.canUse("taunt")) {
-                await bot.taunt(inTauntRange[0])
+            if (bot.canUse("attack")) {
+                for (const entity of bot.getEntities({
+                    couldGiveCredit: true,
+                    typeList: ["mummy"]
+                })) {
+                    const distance = AL.Tools.distance(bot, entity)
+                    if (distance > bot.range) continue
+                    if (entity.hp < bot.attack * 3) continue // Low HP, don't attack it
+
+                    await bot.basicAttack(entity.id)
+                    break
+                }
             }
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("agitate"), bot.getCooldown("taunt")))))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("scare"), bot.getCooldown("attack")))))
     }
     attackLoop()
 
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
-            await bot.smartMove({ map: "desertland", x: 390.675, y: -1422.46 })
+
+            if (bot.targets <= 1 && bot.canUse("scare")) {
+                // Step inside and aggro mummies
+                await bot.smartMove({ map: "spookytown", x: 250, y: -1131 })
+            } else {
+                // Stay back
+                await bot.smartMove({ map: "spookytown", x: 250, y: -1129 })
+            }
         } catch (e) {
             console.error(e)
         }
@@ -154,9 +165,9 @@ function startSupportPriest(bot: Priest) {
             if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.id == information.bot2.name){
-                await bot.smartMove({ map: "desertland", x: 370.675, y: -1422.46 })
+                await bot.smartMove({ map: "spookytown", x: 270, y: -1129 })
             } else {
-                await bot.smartMove({ map: "desertland", x: 410.675, y: -1422.46 })
+                await bot.smartMove({ map: "spookytown", x: 230, y: -1129 })
             }
 
         } catch (e) {
