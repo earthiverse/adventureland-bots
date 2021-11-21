@@ -153,7 +153,7 @@ async function run() {
         setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
         setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
     }
-    startMage2Loop(information.bot1.name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
+    startMage2Loop(information.bot2.name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
 
     const startMage3Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         const connectLoop = async () => {
