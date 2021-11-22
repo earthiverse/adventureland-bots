@@ -1,4 +1,4 @@
-import AL, { IPosition, Priest, Warrior, ServerIdentifier, ServerRegion, Merchant, MonsterName, ServerInfoDataLive, Character, AchievementProgressData, AchievementProgressDataFirehazard, Tools } from "alclient"
+import AL, { IPosition, Priest, Warrior, ServerIdentifier, ServerRegion, Merchant, MonsterName, ServerInfoDataLive, Character, AchievementProgressData, AchievementProgressDataFirehazard, Tools, Ranger } from "alclient"
 import { ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
 import { startPartyHealLoop } from "../base/priest.js"
@@ -41,6 +41,84 @@ const information: Information = {
 }
 const merchantLocation: IPosition = { map: "main", x: 50, y: 50 }
 
+async function startFirehazardRanger(bot: Ranger) {
+    startAvoidStacking(bot)
+    startBuyLoop(bot)
+    startCompoundLoop(bot)
+    startCraftLoop(bot)
+    startExchangeLoop(bot)
+    startHealLoop(bot)
+    startLootLoop(bot)
+    startPartyLoop(bot, information.bot1.name)
+    startPontyLoop(bot)
+    startSellLoop(bot)
+    startSendStuffDenylistLoop(bot, [information.merchant.name, information.merchant.nameAlt], ITEMS_TO_HOLD, 10_000_000)
+    startTrackerLoop(bot)
+    startUpgradeLoop(bot)
+
+    if (!bot.isEquipped("jacko")) {
+        const orb = bot.locateItem("jacko", bot.items, { locked: true })
+        if (orb !== undefined) await bot.equip(orb, "orb")
+    }
+
+    bot.socket.on("achievement_progress", (data: AchievementProgressData) => {
+        if (data.name == "firehazard") {
+            console.log(`Firehazard Progress: ${(data as AchievementProgressDataFirehazard).count}/${(data as AchievementProgressDataFirehazard).needed}`)
+        }
+    })
+
+    async function attackLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            if (bot.canUse("scare") && bot.hp < bot.max_hp / 2) {
+                await bot.scare()
+            }
+
+            if (bot.canUse("attack")) {
+                const targets = []
+                for (const entity of bot.getEntities({
+                    couldGiveCredit: true,
+                    typeList: ["mummy"],
+                    withinRange: bot.range
+                })) {
+                    if (entity.hp < bot.attack * 4) continue // Low HP, don't attack it
+
+                    targets.push(entity.id)
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("scare"), bot.getCooldown("attack"), bot.getCooldown("taunt")))))
+    }
+    attackLoop()
+
+    async function moveLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            let highestMummyLevel = 0
+            for (const [, entity] of bot.entities) {
+                if (entity.type !== "mummy") continue
+                if (entity.level > highestMummyLevel) highestMummyLevel = entity.level
+            }
+
+            if ((highestMummyLevel <= 1 || bot.targets <= 1) && bot.canUse("scare")) {
+                // Step inside and aggro mummies
+                await bot.smartMove({ map: "spookytown", x: 250, y: -1131 })
+            } else {
+                // Stay back
+                await bot.smartMove({ map: "spookytown", x: 250, y: -1129 })
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+    }
+    moveLoop()
+}
+
 async function startFirehazardWarrior(bot: Warrior) {
     startAvoidStacking(bot)
     startBuyLoop(bot)
@@ -49,10 +127,11 @@ async function startFirehazardWarrior(bot: Warrior) {
     startExchangeLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)
-    startPartyLoop(bot, information.bot1.name, [information.bot1.name, information.bot2.name, information.bot3.name])
+    startPartyLoop(bot, information.bot1.name)
     startPontyLoop(bot)
     startSellLoop(bot)
     startSendStuffDenylistLoop(bot, [information.merchant.name, information.merchant.nameAlt], ITEMS_TO_HOLD, 10_000_000)
+    startTrackerLoop(bot)
     startUpgradeLoop(bot)
 
     if (!bot.isEquipped("jacko")) {
@@ -87,10 +166,9 @@ async function startFirehazardWarrior(bot: Warrior) {
             if (bot.canUse("attack")) {
                 for (const entity of bot.getEntities({
                     couldGiveCredit: true,
-                    typeList: ["mummy"]
+                    typeList: ["mummy"],
+                    withinRange: bot.range
                 })) {
-                    const distance = AL.Tools.distance(bot, entity)
-                    if (distance > bot.range) continue
                     if (entity.hp < bot.attack * 4) continue // Low HP, don't attack it
 
                     await bot.basicAttack(entity.id)
@@ -137,7 +215,7 @@ function startSupportPriest(bot: Priest) {
     startExchangeLoop(bot)
     startHealLoop(bot)
     startLootLoop(bot)
-    startPartyLoop(bot, information.bot1.name, [information.bot1.name, information.bot2.name, information.bot3.name])
+    startPartyLoop(bot, information.bot1.name)
     startPontyLoop(bot)
     startScareLoop(bot)
     startSellLoop(bot)
@@ -371,6 +449,32 @@ async function run() {
     }
     startMerchantLoop(information.merchant.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
 
+    // const startRangerLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
+    //     // Start the characters
+    //     const loopBot = async () => {
+    //         try {
+    //             if (information.bot1.bot) information.bot1.bot.disconnect()
+    //             information.bot1.bot = await AL.Game.startRanger(name, region, identifier)
+    //             information.friends[1] = information.bot1.bot
+    //             startFirehazardRanger(information.bot1.bot as Ranger)
+    //             information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
+    //         } catch (e) {
+    //             console.error(e)
+    //             if (information.bot1.bot) information.bot1.bot.disconnect()
+    //             const wait = /wait_(\d+)_second/.exec(e)
+    //             if (wait && wait[1]) {
+    //                 setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+    //             } else if (/limits/.test(e)) {
+    //                 setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+    //             } else {
+    //                 setTimeout(async () => { loopBot() }, 10000)
+    //             }
+    //         }
+    //     }
+    //     loopBot()
+    // }
+    // startRangerLoop(information.bot1.name, DEFAULT_REGION, DEFAULT_IDENTIFIER).catch(() => { /* ignore errors */ })
+
     const startWarriorLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
@@ -379,7 +483,6 @@ async function run() {
                 information.bot1.bot = await AL.Game.startWarrior(name, region, identifier)
                 information.friends[1] = information.bot1.bot
                 startFirehazardWarrior(information.bot1.bot as Warrior)
-                startTrackerLoop(information.bot1.bot)
                 information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
