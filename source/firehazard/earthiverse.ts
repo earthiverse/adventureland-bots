@@ -86,6 +86,12 @@ async function startFirehazardRanger(bot: Ranger) {
 
                     targets.push(entity.id)
                 }
+
+                // TODO: implement 3shot and 5shot
+
+                if (targets.length > 0) {
+                    bot.basicAttack(targets[0])
+                }
             }
         } catch (e) {
             console.error(e)
