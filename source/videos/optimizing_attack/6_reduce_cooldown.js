@@ -16,7 +16,7 @@ async function attackLoop() {
                 script: "reduce_cooldown",
                 numKilled: numKilled,
                 numCalls: numCalls,
-                pings: pings2,
+                pings: parent.pings,
                 level: character.level,
                 server: server
             })
@@ -35,7 +35,7 @@ async function attackLoop() {
             set_message("Attacking")
             await attack(nearest)
             /** NOTE: We're now reducing the cooldown based on the ping */
-            reduce_cooldown("attack", Math.min(...pings2))
+            reduce_cooldown("attack", Math.min(...parent.pings))
         }
     } catch (e) {
         console.error(e)

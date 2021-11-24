@@ -19,7 +19,7 @@ while (true) {
                 script: "while_true",
                 numKilled: numKilled,
                 numCalls: numCalls,
-                pings: pings2,
+                pings: parent.pings,
                 level: character.level,
                 server: server
             })

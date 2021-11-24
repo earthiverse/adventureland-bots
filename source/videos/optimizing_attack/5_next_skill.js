@@ -17,7 +17,7 @@ async function attackLoop() {
                 script: "next_skill",
                 numKilled: numKilled,
                 numCalls: numCalls,
-                pings: pings2,
+                pings: parent.pings,
                 level: character.level,
                 server: server
             })

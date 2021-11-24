@@ -8,35 +8,6 @@ function ms_to_next_skill(skill) {
     return ms < 0 ? 0 : ms
 }
 
-/** We are going to track our own pings, because there's some problems with the built-in parent.pings
- *  when you send a lot of attacks at the same time. */
-const MAX_PINGS = 10
-let pingNum = 1
-let pingIndex = 0
-const pingMap = new Map()
-var pings2 = []
-parent.socket.on("ping_ack", (data) => {
-    const ping = pingMap.get(data.id)
-    if (ping) {
-        // Add the new ping
-        const time = Date.now() - ping
-        pings2[pingIndex++] = time
-        pingIndex = pingIndex % MAX_PINGS
-        console.log(`Ping: ${time}`)
-
-        // Remove the ping from the map
-        pingMap.delete(data.id)
-    }
-})
-const myPing = () => {
-    const pingID = pingNum.toString()
-    pingNum++
-    pingMap.set(pingID, Date.now())
-    parent.socket.emit("ping_trig", { id: pingID })
-}
-setInterval(() => { myPing() }, 5000)
-myPing()
-
 async function moveLoop() {
     try {
         let nearest = get_nearest_monster()
@@ -76,11 +47,11 @@ async function regenLoop() {
         if (mp_ratio < hp_ratio && can_use("regen_mp")) {
             // We have less MP than HP, so let's regen some MP.
             await use_skill("regen_mp")
-            reduce_cooldown("regen_mp", Math.min(...pings2))
+            reduce_cooldown("regen_mp", Math.min(...parent.pings))
         } else if (can_use("regen_hp")) {
             // We have less HP than MP, so let's regen some HP.
             await use_skill("regen_hp")
-            reduce_cooldown("regen_hp", Math.min(...pings2))
+            reduce_cooldown("regen_hp", Math.min(...parent.pings))
         }
     } catch (e) {
         console.error(e)

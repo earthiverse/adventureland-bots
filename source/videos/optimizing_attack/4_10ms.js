@@ -15,7 +15,7 @@ setInterval(async () => {
             script: "10ms",
             numKilled: numKilled,
             numCalls: numCalls,
-            pings: pings2,
+            pings: parent.pings,
             level: character.level,
             server: server
         })

@@ -19,7 +19,7 @@ async function attackLoop() {
                 script: "multiple_attacks",
                 numKilled: numKilled,
                 numCalls: numCalls,
-                pings: pings2,
+                pings: parent.pings,
                 level: character.level,
                 server: server
             })
@@ -48,14 +48,14 @@ async function attackLoop() {
                         numLoops -= 1
                     }
                     await attack(nearest)
-                    reduce_cooldown("attack", Math.min(...pings2) + Math.floor(NUM_ATTACKS / 2))
+                    reduce_cooldown("attack", Math.min(...parent.pings) + Math.floor(NUM_ATTACKS / 2))
                 } catch (e) {
                     console.error(e)
                 }
             }, 1)
 
             await attack(nearest)
-            reduce_cooldown("attack", Math.min(...pings2) + Math.floor(NUM_ATTACKS / 2))
+            reduce_cooldown("attack", Math.min(...parent.pings) + Math.floor(NUM_ATTACKS / 2))
         }
     } catch (e) {
         console.error(e)
