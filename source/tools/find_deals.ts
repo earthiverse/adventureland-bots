@@ -31,6 +31,9 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
             const item = merchant.slots[slotName as TradeSlotType]
             const key = item.level == undefined ? item.name : `${item.name}_${item.level}`
 
+            if (item.gift) continue
+            if (item.giveaway) continue
+
             if (item.b) {
                 // They are buying
                 if (!buying[key]) buying[key] = []
@@ -96,13 +99,33 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
 
         if (!G.items[bestSell.itemName]) {
             console.error(`What is a ${bestSell.itemName}?`)
-            return
+            continue
         }
 
-        if (bestSeller.price < G.items[bestSell.itemName].g * 0.6) {
-            console.log(`We could resell ${bestSell.name}'s ${bestSell.itemName} to the NPC for profit.`)
-        } else if (bestSeller.price < G.items[bestSell.itemName].g) {
+        if (bestSell.price < G.items[bestSell.itemName].g * 0.6) {
+            console.log(`We could resell ${bestSell.name}'s (${bestSell.price}) ${bestSell.itemName} to the NPC for profit.`)
+        } else if (bestSell.price < G.items[bestSell.itemName].g) {
             console.log(`${bestSell.name}'s ${bestSell.itemName} @ ${bestSell.price} is a good price.`)
+        }
+    }
+
+    // Look for items that people are paying a lot more than 'G' for.
+    for (const buyOrder in buying) {
+        let bestBuyer = { price: Number.MIN_VALUE }
+        for (const order of buying[buyOrder]) {
+            if (order.price > bestBuyer.price) bestBuyer = order
+        }
+        const bestBuy = bestBuyer as BuyData
+
+        if (!G.items[bestBuy.itemName]) {
+            console.error(`What is a ${bestBuy.itemName}?`)
+            continue
+        }
+
+        if (bestBuy.itemLevel !== undefined && bestBuy.itemLevel !== 0) continue
+
+        if (bestBuy.price > G.items[bestBuy.itemName].g * 2) {
+            console.log(`${bestBuy.name} is paying ${bestBuy.price} for ${bestBuy.itemName} (${bestBuy.price / G.items[bestBuy.itemName].g}x more than G's ${G.items[bestBuy.itemName].g})`)
         }
     }
 
