@@ -90,6 +90,12 @@ function prepareRogue(bot: Rogue) {
             equipment: { orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "greenjr") },
         },
+        grinch: {
+            attack: async () => { await attackTheseTypesRogue(bot, ["grinch"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { orb: "jacko" },
+            move: async () => { await goToSpecialMonster(bot, "grinch") },
+        },
         jr: {
             attack: async () => { await attackTheseTypesRogue(bot, ["jr"], information.friends) },
             attackWhileIdle: true,
