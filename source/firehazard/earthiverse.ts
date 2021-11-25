@@ -104,6 +104,13 @@ async function startFirehazardRanger(bot: Ranger) {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
+            // If we are dead, respawn
+            if (bot.rip) {
+                await bot.respawn()
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+                return
+            }
+
             let highestMummyLevel = 0
             for (const [, entity] of bot.entities) {
                 if (entity.type !== "mummy") continue
@@ -191,6 +198,13 @@ async function startFirehazardWarrior(bot: Warrior) {
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
+
+            // If we are dead, respawn
+            if (bot.rip) {
+                await bot.respawn()
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+                return
+            }
 
             let highestMummyLevel = 0
             for (const [, entity] of bot.entities) {
