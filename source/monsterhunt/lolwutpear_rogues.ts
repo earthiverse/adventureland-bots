@@ -1,5 +1,5 @@
 import AL, { GMap, IPosition, Merchant, Rogue, ServerInfoDataLive } from "alclient"
-import { goToNearestWalkableToMonster, goToSpecialMonster, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
+import { goToNearestWalkableToMonster, goToNPC, goToSpecialMonster, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
 import { mainBeesNearTunnel } from "../base/locations.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { attackTheseTypesRogue } from "../base/rogue.js"
@@ -94,7 +94,7 @@ function prepareRogue(bot: Rogue) {
             attack: async () => { await attackTheseTypesRogue(bot, ["grinch"], information.friends) },
             attackWhileIdle: true,
             equipment: { orb: "jacko" },
-            move: async () => { await goToSpecialMonster(bot, "grinch") },
+            move: async () => { await goToNPC(bot, "citizen0") },
         },
         jr: {
             attack: async () => { await attackTheseTypesRogue(bot, ["jr"], information.friends) },

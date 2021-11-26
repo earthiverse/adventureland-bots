@@ -1,5 +1,5 @@
 import Queue from "queue-promise"
-import AL, { Character, ChestData, Entity, GameResponseData, GMap, HitData, IEntity, IPosition, ItemData, ItemName, Merchant, MonsterName, Player, Tools, TradeSlotType } from "alclient"
+import AL, { Character, ChestData, Entity, GameResponseData, GMap, HitData, IEntity, IPosition, ItemData, ItemName, Merchant, MonsterName, NPCName, Player, Tools, TradeSlotType } from "alclient"
 import { ItemLevelInfo } from "../definitions/bot.js"
 import { bankingPosition, offsetPositionParty } from "./locations.js"
 
@@ -515,6 +515,12 @@ export function goToKiteStuff(bot: Character, options?: KiteOptions): void {
     }
 
     bot.move(bot.x + vector.x, bot.y + vector.y).catch(e => console.error(e))
+}
+
+export async function goToNPC(bot: Character, npc: NPCName) {
+    // Look for it in our database
+    const special = await AL.NPCModel.findOne({ serverIdentifier: bot.server.name, serverRegion: bot.server.region, name: bot.G.npcs[npc].name }).lean().exec()
+    if (special) return bot.smartMove(special, { getWithin: bot.range - 10, useBlink: true })
 }
 
 export async function goToPriestIfHurt(bot: Character, priest: Character): Promise<IPosition> {

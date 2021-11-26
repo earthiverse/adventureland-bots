@@ -1,5 +1,5 @@
 import AL, { GMap, Mage, Merchant } from "alclient"
-import { goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
+import { goToNPC, goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
 import { mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrocs, mainGoos, offsetPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
@@ -139,7 +139,7 @@ function prepareMage(bot: Mage) {
             attack: async () => { await attackTheseTypesMage(bot, ["grinch"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
-            move: async () => { await goToSpecialMonster(bot, "grinch") },
+            move: async () => { await goToNPC(bot, "citizen0") },
         },
         jr: {
             attack: async () => { await attackTheseTypesMage(bot, ["jr"], information.friends) },

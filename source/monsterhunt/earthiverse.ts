@@ -1,5 +1,5 @@
 import AL, { Merchant, Priest, Ranger, Warrior, GMap, ServerInfoDataLive, IPosition, SlotType, ItemName } from "alclient"
-import { goToAggroMonster, goToNearestWalkableToMonster, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
+import { goToAggroMonster, goToNearestWalkableToMonster, goToNPC, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesMerchant } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
@@ -256,10 +256,7 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["grinch"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
-            move: async () => {
-                // TODO: Change to goToNPC("Kane")
-                await goToSpecialMonster(bot, "grinch")
-            },
+            move: async () => { await goToNPC(bot, "citizen0") },
         },
         hen: {
             attack: async () => { await attackTheseTypesPriest(bot, ["hen"], information.friends) },
@@ -647,10 +644,7 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { return attackTheseTypesRanger(bot, ["grinch"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "firebow", orb: "jacko" },
-            move: async () => {
-                // TODO: Change to goToNPC("Kane")
-                await goToSpecialMonster(bot, "grinch")
-            },
+            move: async () => { await goToNPC(bot, "citizen0") },
         },
         hen: {
             attack: async () => { return attackTheseTypesRanger(bot, ["hen"], information.friends) },
@@ -1074,10 +1068,7 @@ function prepareWarrior(bot: Warrior) {
             },
             attackWhileIdle: true,
             equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
-            move: async () => {
-                // TODO: Change to goToNPC("Kane")
-                await goToSpecialMonster(bot, "grinch")
-            },
+            move: async () => { await goToNPC(bot, "citizen0") },
         },
         hen: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["hen"], information.friends) },
