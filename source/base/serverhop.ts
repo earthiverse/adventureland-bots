@@ -72,14 +72,22 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
                 $match: {
                     $or: [
                         {
+                            // Grinch hops around a lot, stay on the server where he's the lowest HP until he's dead
                             serverIdentifier: { $nin: ["PVP"] },
-                            target: { $ne: undefined }, // We only want to do these if others are doing them, too.
+                            target: { $ne: undefined },
+                            type: { $in: ["grinch"] }
+                        },
+                        {
+                            // We only want to attack most coop monsters if others are attacking too, since they're high HP
+                            serverIdentifier: { $nin: ["PVP"] },
+                            target: { $ne: undefined },
                             type: { $in: coop }
                         },
                         {
+                            // These monsters don't need us to target them specifically, since they're co-op.
                             $or: [
                                 { target: undefined },
-                                { type: { $in: ["pinkgoo", "snowman", "wabbit"] } } // Coop monsters will give credit
+                                { type: { $in: ["pinkgoo", "snowman", "wabbit"] } }
                             ],
                             serverIdentifier: { $nin: ["PVP"] },
                             type: { $in: solo },
