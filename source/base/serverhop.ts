@@ -58,12 +58,12 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
         "dragold", "grinch", "icegolem", "mrpumpkin", "mrgreen", "franky"
     ],
     solo: MonsterName[] = [
-    // Very Rare Monsters
+        // Very Rare Monsters
         "goldenbat", "cutebee",
         // Event Monsters
         "pinkgoo", "wabbit",
-        // // Rare Monsters
-        "greenjr", "jr", "skeletor", "mvampire", "fvampire", "snowman", "stompy"
+        // Rare Monsters
+        "snowman", "greenjr", "jr", "skeletor", "mvampire", "fvampire", "stompy"
     ]): Promise<[ServerRegion, ServerIdentifier]> {
     // Look for entities in the database
     if (coop.length || solo.length) {
