@@ -252,6 +252,15 @@ function preparePriest(bot: Priest) {
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "greenjr") },
         },
+        grinch: {
+            attack: async () => { await attackTheseTypesPriest(bot, ["grinch"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
+            move: async () => {
+                // TODO: Change to goToNPC("Kane")
+                await goToSpecialMonster(bot, "grinch")
+            },
+        },
         hen: {
             attack: async () => { await attackTheseTypesPriest(bot, ["hen"], information.friends) },
             attackWhileIdle: true,
@@ -633,6 +642,15 @@ function prepareRanger(bot: Ranger) {
             attackWhileIdle: true,
             equipment: { mainhand: "firebow", orb: "jacko" },
             move: async () => { await bot.smartMove("greenjr") },
+        },
+        grinch: {
+            attack: async () => { return attackTheseTypesRanger(bot, ["grinch"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "firebow", orb: "jacko" },
+            move: async () => {
+                // TODO: Change to goToNPC("Kane")
+                await goToSpecialMonster(bot, "grinch")
+            },
         },
         hen: {
             attack: async () => { return attackTheseTypesRanger(bot, ["hen"], information.friends) },
@@ -1044,6 +1062,22 @@ function prepareWarrior(bot: Warrior) {
             attackWhileIdle: true,
             equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "greenjr") },
+        },
+        grinch: {
+            attack: async () => {
+                const kane = bot.players.get("Kane")
+                if (kane && AL.Tools.distance(bot, kane) < 400) {
+                    await attackTheseTypesWarrior(bot, ["grinch"], information.friends)
+                } else {
+                    await attackTheseTypesWarrior(bot, ["grinch"], information.friends, { disableStomp: true })
+                }
+            },
+            attackWhileIdle: true,
+            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            move: async () => {
+                // TODO: Change to goToNPC("Kane")
+                await goToSpecialMonster(bot, "grinch")
+            },
         },
         hen: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["hen"], information.friends) },
