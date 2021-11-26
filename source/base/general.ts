@@ -178,7 +178,7 @@ export async function getPriority1Entities(bot: Character): Promise<Entity[] | I
         "dragold", "grinch", "mrpumpkin", "mrgreen",
         // Year-round
         "franky", "icegolem"]
-    const nearby = []
+    const nearby: Entity[] = []
     for (const entity of bot.getEntities({
         typeList: coop
     })) {
@@ -186,24 +186,23 @@ export async function getPriority1Entities(bot: Character): Promise<Entity[] | I
         nearby.push(entity)
     }
     if (nearby.length > 0) return nearby
-    return await AL.EntityModel.aggregate([
-        {
-            $match: {
+
+    const alive: IEntity[] = []
+    for (const key in bot.S) {
+        const data = bot.S[key as MonsterName]
+        if (typeof data == "object" && data.live) {
+            alive.push({
+                in: data.map,
+                map: data.map,
                 serverIdentifier: bot.server.name,
                 serverRegion: bot.server.region,
-                target: { $ne: undefined }, // We only want to do these if others are doing them, too.
-                type: { $in: coop }
-            }
-        },
-        { $addFields: { __order: { $indexOfArray: [coop, "$type"] } } },
-        { $sort: { "__order": 1 } },
-        { $project: {
-            __order: 0,
-            _id: 0,
-            lastSeen: 0,
-            serverIdentifier: 0,
-            serverRegion: 0
-        } }]).exec()
+                type: key as MonsterName,
+                x: data.x,
+                y: data.y,
+            })
+        }
+    }
+    if (alive.length > 0) return alive
 }
 
 /**

@@ -1,29 +1,29 @@
-import AL, { Entity, Priest, ServerIdentifier, ServerRegion, Tools } from "alclient"
+import AL, { Entity, Mage, ServerIdentifier, ServerRegion } from "alclient"
 import { goToBankIfFull, goToPotionSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
 import { bankingPosition } from "../base/locations.js"
+import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader } from "../base/party.js"
-import { attackTheseTypesPriest } from "../base/priest.js"
 import { getTargetServerFromDate, getTargetServerFromPlayer } from "../base/serverhop.js"
 
 /** Config */
-const priestName = "earthPri2"
+const mageName = "earthMag2"
 let lastServer: [ServerRegion, ServerIdentifier] = ["US", "II"]
 
 /** Characters */
-let priest: Priest
+let mage: Mage
 
-async function startPriest(bot: Priest) {
+async function startMage(bot: Mage) {
     startBuyLoop(bot, new Set())
     startHealLoop(bot)
     startLootLoop(bot)
     startSellLoop(bot, { "hpamulet": 2, "hpbelt": 2, "ringsj": 2 })
-    startPartyLoop(bot, "earthPri2", MY_CHARACTERS)
+    startPartyLoop(bot, "earthMag", MY_CHARACTERS)
 
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            await attackTheseTypesPriest(bot, ["squigtoad", "squig"], [priest])
+            await attackTheseTypesMage(bot, ["squigtoad", "squig"], [mage])
         } catch (e) {
             console.error(e)
         }
@@ -123,11 +123,11 @@ async function run() {
             const targetServer = getTargetServerFromDate(0, true)
             if (targetServer[0] !== avoidServer[0] || targetServer[1] !== avoidServer[1]) lastServer = targetServer
 
-            priest = await AL.Game.startPriest(priestName, lastServer[0], lastServer[1])
-            startPriest(priest)
+            mage = await AL.Game.startMage(mageName, lastServer[0], lastServer[1])
+            startMage(mage)
         } catch (e) {
             console.error(e)
-            if (priest) priest.disconnect()
+            if (mage) mage.disconnect()
         }
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
         setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
@@ -135,8 +135,8 @@ async function run() {
 
     const disconnectLoop = async () => {
         try {
-            if (priest) priest.disconnect()
-            priest = undefined
+            if (mage) mage.disconnect()
+            mage = undefined
         } catch (e) {
             console.error(e)
         }

@@ -6,7 +6,7 @@ import { partyLeader } from "../base/party.js"
 import { getTargetServerFromDate, getTargetServerFromPlayer } from "../base/serverhop.js"
 
 /** Config */
-const mageName = "earthMag3"
+const mageName = "earthMag"
 let lastServer: [ServerRegion, ServerIdentifier] = ["US", "II"]
 
 /** Characters */
@@ -17,7 +17,7 @@ async function startMage(bot: Mage) {
     startHealLoop(bot)
     startLootLoop(bot)
     startSellLoop(bot, { "hpamulet": 2, "hpbelt": 2, "ringsj": 2 })
-    startPartyLoop(bot, "earthPri2", MY_CHARACTERS)
+    startPartyLoop(bot, "earthMag", MY_CHARACTERS)
 
     async function attackLoop() {
         try {
@@ -45,6 +45,15 @@ async function startMage(bot: Mage) {
 
             await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot)
+
+            // Get some holiday spirit if it's Christmas
+            if (bot.S && bot.S.holidayseason && !bot.s.holidayspirit) {
+                await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, useBlink: true })
+                // TODO: Improve ALClient by making this a function
+                bot.socket.emit("interaction", { type: "newyear_tree" })
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, Math.min(...bot.pings) * 2))
+                return
+            }
 
             if (bot.countItem("seashell") > 1000 || bot.hasItem("gem0") || bot.gold > 5_000_000) {
                 await bot.smartMove(bankingPosition) // Move to bank teller to give bank time to get ready
@@ -81,7 +90,7 @@ async function startMage(bot: Mage) {
                 }
             }
             if (nearest) {
-                bot.smartMove(nearest, { getWithin: bot.range - nearest.speed }).catch(() => { /* Suppress errors */ })
+                bot.smartMove(nearest, { getWithin: bot.range - nearest.speed, useBlink: true }).catch(() => { /* Suppress errors */ })
             } else {
                 // Look for tortoises
                 for (const tortoise of bot.getEntities({
@@ -97,9 +106,9 @@ async function startMage(bot: Mage) {
                     }
                 }
                 if (nearest) {
-                    bot.smartMove(nearest, { getWithin: bot.range - nearest.speed }).catch(() => { /* Suppress errors */ })
+                    bot.smartMove(nearest, { getWithin: bot.range - nearest.speed, useBlink: true }).catch(() => { /* Suppress errors */ })
                 } else {
-                    bot.smartMove(frogSpawn).catch(() => { /* Suppress errors */ })
+                    bot.smartMove(frogSpawn, { useBlink: true }).catch(() => { /* Suppress errors */ })
                 }
             }
 
