@@ -192,7 +192,7 @@ export async function getPriority1Entities(bot: Character): Promise<Entity[] | I
         const data = bot.S[key as MonsterName]
         if (typeof data == "object" && data.live) {
             if (!data.target
-                && ["grinch"].includes(key) /** Grinch changes target a lot, keep on him */) continue // No target
+                && !["grinch"].includes(key) /** Grinch changes target a lot, keep on him */) continue // No target
             alive.push({
                 in: data.map,
                 map: data.map,
