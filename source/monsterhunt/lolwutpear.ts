@@ -135,6 +135,12 @@ function prepareMage(bot: Mage) {
             equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "greenjr") },
         },
+        grinch: {
+            attack: async () => { await attackTheseTypesMage(bot, ["grinch"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            move: async () => { await goToSpecialMonster(bot, "grinch") },
+        },
         jr: {
             attack: async () => { await attackTheseTypesMage(bot, ["jr"], information.friends) },
             attackWhileIdle: true,
