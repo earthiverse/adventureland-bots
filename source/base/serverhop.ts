@@ -64,7 +64,7 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
         "pinkgoo", "wabbit",
         // Rare Monsters
         "snowman", "greenjr", "jr", "skeletor", "mvampire", "fvampire", "stompy"
-    ]): Promise<[ServerRegion, ServerIdentifier]> {
+    ]): Promise<[ServerRegion, ServerIdentifier, MonsterName]> {
     // Look for entities in the database
     if (coop.length || solo.length) {
         const coopEntities: IEntity[] = await AL.EntityModel.aggregate([
@@ -98,12 +98,13 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
             },
             { $addFields: { __order: { $indexOfArray: [[...coop, ...solo], "$type"] } } },
             { $sort: { "__order": 1, "hp": 1 } },
-            { $project: { "_id": 0, "serverIdentifier": 1, "serverRegion": 1 } }]).exec()
-        for (const entity of coopEntities) return [entity.serverRegion, entity.serverIdentifier]
+            { $project: { "_id": 0, "serverIdentifier": 1, "serverRegion": 1 } },
+            { $limit: 1 }]).exec()
+        for (const entity of coopEntities) return [entity.serverRegion, entity.serverIdentifier, entity.type]
     }
 
     // If there are none, use the default server
-    return [defaultRegion, defaultIdentifier]
+    return [defaultRegion, defaultIdentifier, undefined]
 }
 
 /**
