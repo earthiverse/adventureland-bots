@@ -756,8 +756,9 @@ export function startBuyLoop(bot: Character, itemsToBuy = ITEMS_TO_BUY, replenis
 
                     // Buy if we can resell to NPC for more money
                     const cost = bot.calculateItemCost(item)
-                    if ((item.price < cost * 0.6) // Item is lower price than G, which means we could sell it to an NPC straight away and make a profit...
-                        || (itemsToBuy.has(item.name) && item.price <= cost * AL.Constants.PONTY_MARKUP) // Item is the same, or lower price than Ponty would sell it for, and we want it.
+                    if (bot.gold >= item.price &&
+                        ((item.price < cost * 0.6) // Item is lower price than G, which means we could sell it to an NPC straight away and make a profit...
+                        || (itemsToBuy.has(item.name) && item.price <= cost * AL.Constants.PONTY_MARKUP)) // Item is the same, or lower price than Ponty would sell it for, and we want it.
                     ) {
                         await bot.buyFromMerchant(player.id, slot, item.rid, q)
                         continue
