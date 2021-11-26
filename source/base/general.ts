@@ -204,7 +204,7 @@ export async function getPriority1Entities(bot: Character): Promise<Entity[] | I
             })
         }
     }
-    if (alive.length > 0) return alive
+    return alive
 }
 
 /**
