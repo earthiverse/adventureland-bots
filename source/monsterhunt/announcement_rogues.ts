@@ -94,7 +94,14 @@ function prepareRogue(bot: Rogue) {
             attack: async () => { await attackTheseTypesRogue(bot, ["grinch"], information.friends) },
             attackWhileIdle: true,
             equipment: { orb: "jacko" },
-            move: async () => { await goToNPC(bot, "citizen0") },
+            move: async () => {
+                const grinch = bot.getNearestMonster("grinch")?.monster
+                if (grinch) {
+                    await bot.smartMove(grinch, { getWithin: bot.range - 10 })
+                } else {
+                    await goToNPC(bot, "citizen0")
+                }
+            }
         },
         jr: {
             attack: async () => { await attackTheseTypesRogue(bot, ["jr"], information.friends) },

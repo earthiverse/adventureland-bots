@@ -520,7 +520,7 @@ export function goToKiteStuff(bot: Character, options?: KiteOptions): void {
 export async function goToNPC(bot: Character, npc: NPCName) {
     // Look for it in our database
     const special = await AL.NPCModel.findOne({ serverIdentifier: bot.server.name, serverRegion: bot.server.region, name: bot.G.npcs[npc].name }).lean().exec()
-    if (special) return bot.smartMove(special, { getWithin: bot.range - 10, useBlink: true })
+    if (special) return bot.smartMove(offsetPositionParty(special, bot), { getWithin: bot.range - 10, useBlink: true })
 }
 
 export async function goToPriestIfHurt(bot: Character, priest: Character): Promise<IPosition> {

@@ -139,7 +139,14 @@ function prepareMage(bot: Mage) {
             attack: async () => { await attackTheseTypesMage(bot, ["grinch"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
-            move: async () => { await goToNPC(bot, "citizen0") },
+            move: async () => {
+                const grinch = bot.getNearestMonster("grinch")?.monster
+                if (grinch) {
+                    await bot.smartMove(grinch, { getWithin: bot.range - 10 })
+                } else {
+                    await goToNPC(bot, "citizen0")
+                }
+            }
         },
         jr: {
             attack: async () => { await attackTheseTypesMage(bot, ["jr"], information.friends) },

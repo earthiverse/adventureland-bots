@@ -256,7 +256,14 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["grinch"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
-            move: async () => { await goToNPC(bot, "citizen0") },
+            move: async () => {
+                const grinch = bot.getNearestMonster("grinch")?.monster
+                if (grinch) {
+                    await bot.smartMove(grinch, { getWithin: bot.range - 10 })
+                } else {
+                    await goToNPC(bot, "citizen0")
+                }
+            }
         },
         hen: {
             attack: async () => { await attackTheseTypesPriest(bot, ["hen"], information.friends) },
@@ -644,7 +651,14 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { return attackTheseTypesRanger(bot, ["grinch"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "firebow", orb: "jacko" },
-            move: async () => { await goToNPC(bot, "citizen0") },
+            move: async () => {
+                const grinch = bot.getNearestMonster("grinch")?.monster
+                if (grinch) {
+                    await bot.smartMove(grinch, { getWithin: bot.range - 10 })
+                } else {
+                    await goToNPC(bot, "citizen0")
+                }
+            }
         },
         hen: {
             attack: async () => { return attackTheseTypesRanger(bot, ["hen"], information.friends) },
@@ -1068,7 +1082,14 @@ function prepareWarrior(bot: Warrior) {
             },
             attackWhileIdle: true,
             equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
-            move: async () => { await goToNPC(bot, "citizen0") },
+            move: async () => {
+                const grinch = bot.getNearestMonster("grinch")?.monster
+                if (grinch) {
+                    await bot.smartMove(grinch, { getWithin: bot.range - 10 })
+                } else {
+                    await goToNPC(bot, "citizen0")
+                }
+            }
         },
         hen: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["hen"], information.friends) },
