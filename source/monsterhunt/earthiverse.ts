@@ -261,6 +261,7 @@ function preparePriest(bot: Priest) {
                 if (grinch) {
                     await bot.smartMove(grinch, { getWithin: bot.range - 10 })
                 } else {
+                    if (bot.S.grinch as ServerInfoDataLive) requestMagiportService(bot, bot.S.grinch as IPosition)
                     await goToNPC(bot, "citizen0")
                 }
             }
@@ -420,7 +421,10 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["snowman"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "wand", orb: "jacko" },
-            move: async () => { await goToSpecialMonster(bot, "snowman") },
+            move: async () => {
+                if (bot.S.snowman as ServerInfoDataLive) requestMagiportService(bot, bot.S.snowman as IPosition)
+                await goToSpecialMonster(bot, "snowman")
+            }
         },
         spider: {
             attack: async () => { await attackTheseTypesPriest(bot, ["spider", "phoenix"], information.friends) },
@@ -656,6 +660,7 @@ function prepareRanger(bot: Ranger) {
                 if (grinch) {
                     await bot.smartMove(grinch, { getWithin: bot.range - 10 })
                 } else {
+                    if (bot.S.grinch as ServerInfoDataLive) requestMagiportService(bot, bot.S.grinch as IPosition)
                     await goToNPC(bot, "citizen0")
                 }
             }
@@ -833,7 +838,10 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { return attackTheseTypesRanger(bot, ["snowman"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "hbow", orb: "orbofdex" },
-            move: async () => { await goToSpecialMonster(bot, "snowman") },
+            move: async () => {
+                if (bot.S.snowman as ServerInfoDataLive) requestMagiportService(bot, bot.S.snowman as IPosition)
+                await goToSpecialMonster(bot, "snowman")
+            },
         },
         spider: {
             attack: async () => { return attackTheseTypesRanger(bot, ["spider", "phoenix"], information.friends) },
@@ -1087,6 +1095,7 @@ function prepareWarrior(bot: Warrior) {
                 if (grinch) {
                     await bot.smartMove(grinch, { getWithin: bot.range - 10 })
                 } else {
+                    if (bot.S.grinch as ServerInfoDataLive) requestMagiportService(bot, bot.S.grinch as IPosition)
                     await goToNPC(bot, "citizen0")
                 }
             }
@@ -1310,7 +1319,10 @@ function prepareWarrior(bot: Warrior) {
             },
             attackWhileIdle: true,
             equipment: { mainhand: "candycanesword", offhand: "candycanesword", orb: "jacko" },
-            move: async () => { await goToSpecialMonster(bot, "snowman") },
+            move: async () => {
+                if (bot.S.snowman as ServerInfoDataLive) requestMagiportService(bot, bot.S.snowman as IPosition)
+                await goToSpecialMonster(bot, "snowman")
+            },
         },
         spider: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["spider", "phoenix"], information.friends) },
