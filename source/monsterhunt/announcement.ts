@@ -1,6 +1,6 @@
 import AL, { GMap, Mage, Merchant } from "alclient"
-import { goToNPC, goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
-import { halloweenMiniMushes, mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrocs, mainGoos, mainPoisios, mainSquigs, offsetPosition, winterlandArcticBees } from "../base/locations.js"
+import { goToNearestWalkableToMonster, goToNPC, goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
+import { halloweenMiniMushes, mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrabXs, mainCrocs, mainGoos, mainPoisios, mainScorpions, mainSquigs, offsetPosition, winterlandArcticBees } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { getTargetServerFromPlayer } from "../base/serverhop.js"
@@ -93,6 +93,20 @@ function prepareMage(bot: Mage) {
                     await bot.smartMove(offsetPosition(mainCrabs, 0, 75), { useBlink: true })
                 } else if (bot.id == information.bot3.name) {
                     await bot.smartMove(offsetPosition(mainCrabs, 75, 75), { useBlink: true })
+                }
+            },
+        },
+        crabx: {
+            attack: async () => { await attackTheseTypesMage(bot, ["crabx", "phoenix"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            move: async () => {
+                if (bot.id == information.bot1.name) {
+                    await goToNearestWalkableToMonster(bot, ["crabx", "phoenix"], offsetPosition(mainCrabXs, -75, 75), bot.range - 25)
+                } else if (bot.id == information.bot2.name) {
+                    await goToNearestWalkableToMonster(bot, ["crabx", "phoenix"], offsetPosition(mainCrabXs, 0, 75), bot.range - 25)
+                } else if (bot.id == information.bot3.name) {
+                    await goToNearestWalkableToMonster(bot, ["crabx", "phoenix"], offsetPosition(mainCrabXs, 75, 75), bot.range - 25)
                 }
             },
         },
@@ -225,6 +239,20 @@ function prepareMage(bot: Mage) {
                     await bot.smartMove({ map: "mansion", x: 223, y: -100 }, { useBlink: true })
                 }
             }
+        },
+        scorpion: {
+            attack: async () => { await attackTheseTypesMage(bot, ["scorpion", "phoenix"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            move: async () => {
+                if (bot.id == information.bot1.name) {
+                    await goToNearestWalkableToMonster(bot, ["scorpion", "phoenix"], offsetPosition(mainScorpions, -75, 75), bot.range - 25)
+                } else if (bot.id == information.bot2.name) {
+                    await goToNearestWalkableToMonster(bot, ["scorpion", "phoenix"], offsetPosition(mainScorpions, 0, 75), bot.range - 25)
+                } else if (bot.id == information.bot3.name) {
+                    await goToNearestWalkableToMonster(bot, ["scorpion", "phoenix"], offsetPosition(mainScorpions, 75, 75), bot.range - 25)
+                }
+            },
         },
         snowman: {
             attack: async () => { await attackTheseTypesMage(bot, ["snowman"], information.friends) },
