@@ -1,6 +1,6 @@
 import AL, { GMap, Mage, Merchant } from "alclient"
 import { goToNPC, goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
-import { mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrocs, mainGoos, offsetPosition } from "../base/locations.js"
+import { halloweenMiniMushes, mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrocs, mainGoos, mainPoisios, mainSquigs, offsetPosition, winterlandArcticBees } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { getTargetServerFromPlayer } from "../base/serverhop.js"
@@ -40,6 +40,20 @@ function prepareMage(bot: Mage) {
     const strategy: Strategy = {
         defaultTarget: "armadillo",
         // eslint-disable-next-line sort-keys
+        arcticbee: {
+            attack: async () => { await attackTheseTypesMage(bot, ["arcticbee"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.goo.hp + 1 }) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },
+            move: async () => {
+                if (bot.id == information.bot1.name) {
+                    await bot.smartMove(offsetPosition(winterlandArcticBees, -50, 0), { useBlink: true })
+                } else if (bot.id == information.bot2.name) {
+                    await bot.smartMove(offsetPosition(winterlandArcticBees, -150, 0), { useBlink: true })
+                } else if (bot.id == information.bot3.name) {
+                    await bot.smartMove(offsetPosition(winterlandArcticBees, -250, 0), { useBlink: true })
+                }
+            }
+        },
         armadillo: {
             attack: async () => { await attackTheseTypesMage(bot, ["armadillo", "phoenix"], information.friends) },
             attackWhileIdle: true,
@@ -154,6 +168,20 @@ function prepareMage(bot: Mage) {
             equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "jr") },
         },
+        minimush: {
+            attack: async () => { await attackTheseTypesMage(bot, ["minimush", "phoenix"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },
+            move: async () => {
+                if (bot.id == information.bot1.name) {
+                    await bot.smartMove(offsetPosition(halloweenMiniMushes, -75, -75), { useBlink: true })
+                } else if (bot.id == information.bot2.name) {
+                    await bot.smartMove(offsetPosition(halloweenMiniMushes, 0, -75), { useBlink: true })
+                } else if (bot.id == information.bot3.name) {
+                    await bot.smartMove(offsetPosition(halloweenMiniMushes, 75, -75), { useBlink: true })
+                }
+            }
+        },
         mrgreen: {
             attack: async () => { await attackTheseTypesMage(bot, ["mrgreen"], information.friends) },
             equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
@@ -170,8 +198,23 @@ function prepareMage(bot: Mage) {
             equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "mvampire") },
         },
+        poisio: {
+            attack: async () => { await attackTheseTypesMage(bot, ["poisio"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            move: async () => {
+                if (bot.id == information.bot1.name) {
+                    await bot.smartMove(offsetPosition(mainPoisios, -75, -75), { useBlink: true })
+                } else if (bot.id == information.bot2.name) {
+                    await bot.smartMove(offsetPosition(mainPoisios, 0, -75), { useBlink: true })
+                } else if (bot.id == information.bot3.name) {
+                    await bot.smartMove(offsetPosition(mainPoisios, 75, -75), { useBlink: true })
+                }
+            }
+        },
         rat: {
-            attack: async () => { await attackTheseTypesMage(bot, ["goo"], information.friends) }, attackWhileIdle: true,
+            attack: async () => { await attackTheseTypesMage(bot, ["goo"], information.friends) },
+            attackWhileIdle: true,
             equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },
             move: async () => {
                 if (bot.id == information.bot1.name) {
@@ -185,9 +228,38 @@ function prepareMage(bot: Mage) {
         },
         snowman: {
             attack: async () => { await attackTheseTypesMage(bot, ["snowman"], information.friends) },
+            attackWhileIdle: true,
             equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "snowman") }
-        }
+        },
+        squig: {
+            attack: async () => { await attackTheseTypesMage(bot, ["squig", "squigtoad", "phoenix"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            move: async () => {
+                if (bot.id == information.bot1.name) {
+                    await bot.smartMove(offsetPosition(mainSquigs, -75, -75), { useBlink: true })
+                } else if (bot.id == information.bot2.name) {
+                    await bot.smartMove(offsetPosition(mainSquigs, 0, -75), { useBlink: true })
+                } else if (bot.id == information.bot3.name) {
+                    await bot.smartMove(offsetPosition(mainSquigs, 75, -75), { useBlink: true })
+                }
+            }
+        },
+        squigtoad: {
+            attack: async () => { await attackTheseTypesMage(bot, ["squigtoad", "squig", "phoenix"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            move: async () => {
+                if (bot.id == information.bot1.name) {
+                    await bot.smartMove(offsetPosition(mainSquigs, -75, -75), { useBlink: true })
+                } else if (bot.id == information.bot2.name) {
+                    await bot.smartMove(offsetPosition(mainSquigs, 0, -75), { useBlink: true })
+                } else if (bot.id == information.bot3.name) {
+                    await bot.smartMove(offsetPosition(mainSquigs, 75, -75), { useBlink: true })
+                }
+            }
+        },
     }
 
     startMage(bot, information, strategy, partyLeader, partyMembers)

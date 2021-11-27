@@ -13,6 +13,8 @@ export const mainPoisios: IPosition = { map: "main", x: -121, y: 1360 }
 export const mainScorpions: IPosition = { map: "main", x: 1577.5, y: -168 }
 export const mainSnakes: IPosition = { map: "main", x: -82, y: 1901 }
 export const mainSpiders: IPosition = { map: "main", x: 948, y: -144 }
+export const mainSquigs: IPosition = { map: "main", x: -1175.5, y: 422 }
+export const mainSquigtoads = mainSquigs
 
 // Bank
 export const bankingPosition: IPosition = { map: "bank", x: 0, y: -200 }
