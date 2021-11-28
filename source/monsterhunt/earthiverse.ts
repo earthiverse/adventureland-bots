@@ -449,7 +449,7 @@ function preparePriest(bot: Priest) {
             move: async () => { await bot.smartMove({ map: "main", x: -1155, y: 422 }) },
         },
         stompy: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["stompy"], information.friends, { targetingPartyMember: true }) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends, { targetingPartyMember: true }) },
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "stompy") }
         },
@@ -870,7 +870,7 @@ function prepareRanger(bot: Ranger) {
             move: async () => { await bot.smartMove({ map: "main", x: -1175, y: 422 }) },
         },
         stompy: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["stompy", "wolf"], information.friends, { targetingPartyMember: true }) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends, { targetingPartyMember: true }) },
             equipment: { mainhand: "firebow", orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "stompy") },
             requireCtype: "priest"
@@ -1365,7 +1365,7 @@ function prepareWarrior(bot: Warrior) {
                         bot.taunt(wolvesToTarget[0].id).catch(e => console.error(e))
                     }
                 }
-                await attackTheseTypesWarrior(bot, ["stompy"], information.friends, { disableAgitate: true })
+                await attackTheseTypesWarrior(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends, { disableAgitate: true })
             },
             equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
             move: async () => {
