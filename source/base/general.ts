@@ -50,6 +50,8 @@ export const ITEMS_TO_EXCHANGE: Set<ItemName> = new Set([
 export const ITEMS_TO_CRAFT: Set<ItemName> = new Set([
     // Good items
     "firestars", "resistancering", "wingedboots", "frostbow",
+    // Event items
+    "basketofeggs", "xbox",
     // Wanderer's items
     // "wattire", "wshoes", "wbreeches", "wcap", "wgloves"
 ])
