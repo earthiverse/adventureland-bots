@@ -1579,7 +1579,7 @@ async function run() {
 
             // Don't change servers if we're running a crypt
             const merchantMap: GMap = AL.Game.G.maps[information.merchant?.bot?.map]
-            if (merchantMap && merchantMap.instance) {
+            if (merchantMap?.instance) {
                 console.log("DEBUG: Merchant is in an instance")
                 setTimeout(async () => { serverLoop() }, 1000)
                 return
@@ -1597,6 +1597,9 @@ async function run() {
                 && !(information.bot1.bot.S?.holidayseason && ["grinch", "snowman"].includes(targetServer[2])) // Switch servers right away for special Christmas monsters
             ) {
                 console.log(`DEBUG: We are targeting something special (${information.bot1.target}, ${information.bot2.target}, ${information.bot3.target})`)
+                console.log(`DEBUG: Christmas: ${information.bot1.bot.S?.holidayseason !== undefined}`)
+                console.log(`DEBUG: Halloween: ${information.bot1.bot.S?.halloween !== undefined}`)
+                console.log(`DEBUG: Switching For: ${targetServer[2]}`)
                 setTimeout(async () => { serverLoop() }, 1000)
                 return
             }

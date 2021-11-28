@@ -142,6 +142,8 @@ export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
     "vattire": 7,
     // Don't use offeringp on wanderers stuff (we get a lot from drops and crafting)
     "wattire": 9, "wbreeches": 9, "wcap": 9, "wgloves": 9, "wshoes": 9,
+    // Don't use as many offeringp on dead items
+    "bowofthedead": 7, "daggerofthedead": 7, "maceofthedead": 7, "pmaceofthedead": 6, "staffofthedead": 7,
     // Don't use offeringp on books
     "wbook0": 4,
     // Primling sbelt from 0
@@ -639,7 +641,7 @@ export async function goToNearestWalkableToMonster(bot: Character, types: Monste
             return bot.smartMove(destination, { useBlink: true })
         }
     } else {
-        return bot.smartMove(types[0])
+        return bot.smartMove(types[0], { useBlink: true })
     }
 }
 
