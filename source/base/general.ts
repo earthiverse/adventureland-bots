@@ -638,6 +638,8 @@ export async function goToNearestWalkableToMonster(bot: Character, types: Monste
         } else {
             return bot.smartMove(destination, { useBlink: true })
         }
+    } else {
+        return bot.smartMove(types[0])
     }
 }
 

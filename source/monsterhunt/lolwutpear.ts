@@ -1,6 +1,6 @@
-import AL, { GMap, Mage, Merchant } from "alclient"
+import AL, { Mage, Merchant } from "alclient"
 import { goToNearestWalkableToMonster, goToNPC, goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
-import { halloweenMiniMushes, mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrabXs, mainCrocs, mainGoos, mainPoisios, mainScorpions, mainSquigs, offsetPosition, winterlandArcticBees } from "../base/locations.js"
+import { desertlandPorcupines, halloweenMiniMushes, mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrabXs, mainCrocs, mainGoos, mainPoisios, mainScorpions, mainSquigs, offsetPosition, winterlandArcticBees } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { getTargetServerFromPlayer } from "../base/serverhop.js"
@@ -137,6 +137,12 @@ function prepareMage(bot: Mage) {
                 }
             }
         },
+        frog: {
+            attack: async () => { await attackTheseTypesMage(bot, ["frog"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            move: async () => { await goToNearestWalkableToMonster(bot, ["frog"]) },
+        },
         goldenbat: {
             attack: async () => { await attackTheseTypesMage(bot, ["goldenbat"], information.friends) },
             attackWhileIdle: true,
@@ -229,6 +235,20 @@ function prepareMage(bot: Mage) {
                     await bot.smartMove(offsetPosition(mainPoisios, 75, -75), { useBlink: true })
                 }
             }
+        },
+        porcupine: {
+            attack: async () => { await attackTheseTypesMage(bot, ["porcupine"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            move: async () => {
+                if (bot.id == information.bot1.name) {
+                    await bot.smartMove(offsetPosition(desertlandPorcupines, -75, -75), { useBlink: true })
+                } else if (bot.id == information.bot2.name) {
+                    await bot.smartMove(offsetPosition(desertlandPorcupines, 0, -75), { useBlink: true })
+                } else if (bot.id == information.bot3.name) {
+                    await bot.smartMove(offsetPosition(desertlandPorcupines, 75, -75), { useBlink: true })
+                }
+            },
         },
         rat: {
             attack: async () => { await attackTheseTypesMage(bot, ["goo"], information.friends) },
