@@ -58,7 +58,7 @@ export const ITEMS_TO_BUY: Set<ItemName> = new Set([
     // Exchangeables
     ...ITEMS_TO_EXCHANGE,
     // Belts
-    "dexbelt", "intbelt", "strbelt",
+    "dexbelt", "intbelt", "sbelt", "strbelt",
     // Rings
     "cring", "ctristone", /*"dexring",*/ "goldring", /*"intring",*/ "ringofluck", "strring", "suckerpunch", "trigger", "tristone", "vring",
     // Earrings
@@ -72,7 +72,7 @@ export const ITEMS_TO_BUY: Set<ItemName> = new Set([
     // Shields
     "t2quiver", "lantern", "mshield", /*"quiver",*/ "sshield", "xshield",
     // Capes
-    "angelwings", "bcape", "cape", "ecape", "fcape", "stealthcape", "vcape",
+    "angelwings", "bcape", "cape", "ecape", "fcape", "gcape", "stealthcape", "vcape",
     // Shoes
     "eslippers", "hboots", "mrnboots", "mwboots", /*"shoes1",*/ "vboots", "wingedboots", "wshoes", "xboots",
     // Pants
@@ -86,7 +86,7 @@ export const ITEMS_TO_BUY: Set<ItemName> = new Set([
     // Good weapons
     "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "fireblade", "firebow", "firestaff", "firestars", "frostbow", "froststaff", "gbow", "glolipop", "gstaff", "harbringer", "heartwood", "hbow", "hdagger", "merry", "ololipop", "oozingterror", "ornamentstaff", "pinkie", "pmace", "scythe", "snowflakes", "t2bow", "t3bow", /*"throwingstars",*/ "vdagger", "vhammer", "vstaff", "vsword", "wblade",
     // Things we can exchange / craft with
-    "ascale", "bfur", "cscale", "electronics", "feather0", "frogt", "goldenegg", "goldingot", "goldnugget", "ink", "leather", "lotusf", "platinumingot", "platinumnugget", "pleather", "snakefang",
+    "ascale", "bfur", "cscale", "cshell", "crabclaw", "electronics", "feather0", "frogt", "goldenegg", "goldingot", "goldnugget", "ink", "leather", "lotusf", "platinumingot", "platinumnugget", "pleather", "snakefang", "spores",
     // Things to make xbox
     "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8",
     // Things to make easter basket
@@ -99,8 +99,10 @@ export const ITEMS_TO_BUY: Set<ItemName> = new Set([
     "cscroll3", "scroll3", "scroll4", "forscroll", "luckscroll", "manastealscroll",
     // Merchant Tools
     "pickaxe", "rod",
+    // Keys
+    "bkey", "cryptkey", "dkey", "frozenkey", "stonekey", "tombkey", "ukey",
     // Misc. Things
-    "bottleofxp", "bugbountybox", "computer", "confetti", "cxjar", "emotionjar", "flute", "monstertoken", "poison", "puppyer", "shadowstone", "snakeoil"
+    "bottleofxp", "bugbountybox", "computer", "confetti", "cxjar", "emotionjar", "flute", "frozenstone", "monstertoken", "poison", "puppyer", "shadowstone", "snakeoil"
 ])
 
 export const ITEMS_TO_SELL: ItemLevelInfo = {
