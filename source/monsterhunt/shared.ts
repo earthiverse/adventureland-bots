@@ -247,6 +247,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
     attackLoop()
 
     let lastBankVisit = Number.MIN_VALUE
+    const friendlyRogues = FRIENDLY_ROGUES
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -265,6 +266,27 @@ export async function startMerchant(bot: Merchant, information: Information, str
                 await doEmergencyBanking(bot)
                 bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
+            }
+
+            // Get some holiday spirit if it's Christmas
+            if (bot.S && bot.S.holidayseason && !bot.s.holidayspirit) {
+                await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, useBlink: true })
+                // TODO: Improve ALClient by making this a function
+                bot.socket.emit("interaction", { type: "newyear_tree" })
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, Math.min(...bot.pings) * 2))
+                return
+            }
+
+            // Get some buffs from rogues
+            if (!bot.s.rspeed) {
+                const friendlyRogue = await AL.PlayerModel.findOne({ lastSeen: { $gt: Date.now() - 120_000 }, name: { $in: friendlyRogues }, serverIdentifier: bot.server.name, serverRegion: bot.server.region }).lean().exec()
+                if (friendlyRogue) {
+                    await bot.smartMove(friendlyRogue, { getWithin: 20 })
+                    if (!bot.s.rspeed) await sleep(2500)
+                    if (!bot.s.rspeed) friendlyRogues.splice(friendlyRogues.indexOf(friendlyRogue.id), 1) // They're not giving rspeed, remove them from our list
+                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
+                    return
+                }
             }
 
             // mluck our friends

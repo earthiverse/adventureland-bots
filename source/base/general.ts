@@ -762,7 +762,7 @@ export function startBuyLoop(bot: Character, itemsToBuy = ITEMS_TO_BUY, replenis
                     const q = item.q === undefined ? 1 : item.q
 
                     // Join new giveaways if we're a merchant
-                    if (item.giveaway && bot.ctype == "merchant" && (!item.list || !item.list.includes(bot.id))) {
+                    if (item.giveaway && bot.ctype == "merchant" && !["attackMer"].includes(bot.id) && (!item.list || !item.list.includes(bot.id))) {
                         await (bot as Merchant).joinGiveaway(slot, player.id, item.rid)
                         continue
                     }
