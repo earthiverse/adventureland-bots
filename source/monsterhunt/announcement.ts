@@ -447,28 +447,10 @@ async function run() {
                 return
             }
 
-            // Don't change servers if we're currently attacking something special.
-            if ((!information.bot1.bot.S?.halloween && !information.bot1.bot.S?.holidayseason)
-                && (AL.Constants.SPECIAL_MONSTERS.includes(information.bot1.target)
-                || AL.Constants.SPECIAL_MONSTERS.includes(information.bot2.target)
-                || AL.Constants.SPECIAL_MONSTERS.includes(information.bot3.target))) {
-                console.log(`DEBUG: We are targeting something special (${information.bot1.target}, ${information.bot2.target}, ${information.bot3.target})`)
-                setTimeout(async () => { serverLoop() }, 1000)
-                return
-            }
-
-            // Don't change servers if we're running a crypt
-            const merchantMap: GMap = AL.Game.G.maps[information.merchant?.bot?.map]
-            if (merchantMap && merchantMap.instance) {
-                console.log("DEBUG: Merchant is in an instance")
-                setTimeout(async () => { serverLoop() }, 1000)
-                return
-            }
-
             const currentRegion = information.bot1.bot.server.region
             const currentIdentifier = information.bot1.bot.server.name
 
-            const targetServer = await getTargetServerFromPlayer(currentRegion, currentIdentifier, "earthiverse")
+            const targetServer = await getTargetServerFromPlayer(currentRegion, currentIdentifier, partyLeader)
             if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
                 // We're already on the correct server
                 console.log("DEBUG: We're already on the correct server")
