@@ -74,7 +74,6 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
                         {
                             // Grinch hops around a lot, stay on the server where he's the lowest HP until he's dead
                             serverIdentifier: { $nin: ["PVP"] },
-                            target: { $ne: undefined },
                             type: { $in: ["grinch"] }
                         },
                         {
