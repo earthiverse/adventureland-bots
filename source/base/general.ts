@@ -227,7 +227,7 @@ export async function getPriority2Entities(bot: Character): Promise<Entity[] | I
         // Event Monsters
         "pinkgoo", "wabbit", "slenderman",
         // Rare Monsters
-        "greenjr", "jr", "skeletor", "mvampire", "fvampire", "snowman", "stompy"
+        "snowman", "greenjr", "jr", "skeletor", "mvampire", "fvampire", "stompy"
     ]
     const nearby = bot.getEntities({
         couldGiveCredit: true,
