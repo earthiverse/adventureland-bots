@@ -142,8 +142,11 @@ export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
     "vattire": 7,
     // Don't use offeringp on wanderers stuff (we get a lot from drops and crafting)
     "wattire": 9, "wbreeches": 9, "wcap": 9, "wgloves": 9, "wshoes": 9,
-    // Don't use as many offeringp on dead items
+    "cape": 7,
+    // Don't use as many offeringp on Halloween stuff
     "bowofthedead": 7, "daggerofthedead": 7, "maceofthedead": 7, "pmaceofthedead": 6, "staffofthedead": 7,
+    // Don't use as many offeringp on Christmas stuff
+    "candycanesword": 7, "gcape": 7, "merry": 7, "ornamentstaff": 7, "xmace": 7,
     // Don't use offeringp on books
     "wbook0": 4,
     // Primling sbelt from 0
