@@ -97,7 +97,7 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
             },
             { $addFields: { __order: { $indexOfArray: [[...coop, ...solo], "$type"] } } },
             { $sort: { "__order": 1, "hp": 1 } },
-            { $project: { "_id": 0, "serverIdentifier": 1, "serverRegion": 1 } },
+            { $project: { "_id": 0, "serverIdentifier": 1, "serverRegion": 1, "type": 1 } },
             { $limit: 1 }]).exec()
         for (const entity of coopEntities) return [entity.serverRegion, entity.serverIdentifier, entity.type]
     }
