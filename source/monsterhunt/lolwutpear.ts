@@ -172,7 +172,11 @@ function prepareMage(bot: Mage) {
                 if (grinch) {
                     await bot.smartMove(grinch, { getWithin: bot.range - 10 })
                 } else {
-                    await goToNPC(bot, "citizen0")
+                    if (bot.S.grinch.live && bot.S.grinch.hp > 1_000_000) {
+                        await goToSpecialMonster(bot, "grinch")
+                    } else if (bot.S.grinch.live) {
+                        await goToNPC(bot, "citizen0")
+                    }
                 }
             }
         },

@@ -261,8 +261,12 @@ function preparePriest(bot: Priest) {
                 if (grinch) {
                     await bot.smartMove(grinch, { getWithin: bot.range - 10 })
                 } else {
-                    if (bot.S.grinch as ServerInfoDataLive) requestMagiportService(bot, bot.S.grinch as IPosition)
-                    await goToNPC(bot, "citizen0")
+                    if (bot.S.grinch.live && bot.S.grinch.hp > 1_000_000) {
+                        await goToSpecialMonster(bot, "grinch")
+                    } else {
+                        if (bot.S.grinch as ServerInfoDataLive) requestMagiportService(bot, bot.S.grinch as IPosition)
+                        await goToNPC(bot, "citizen0")
+                    }
                 }
             }
         },
@@ -660,8 +664,12 @@ function prepareRanger(bot: Ranger) {
                 if (grinch) {
                     await bot.smartMove(grinch, { getWithin: bot.range - 10 })
                 } else {
-                    if (bot.S.grinch as ServerInfoDataLive) requestMagiportService(bot, bot.S.grinch as IPosition)
-                    await goToNPC(bot, "citizen0")
+                    if (bot.S.grinch.live && bot.S.grinch.hp > 1_000_000) {
+                        await goToSpecialMonster(bot, "grinch")
+                    } else {
+                        if (bot.S.grinch as ServerInfoDataLive) requestMagiportService(bot, bot.S.grinch as IPosition)
+                        await goToNPC(bot, "citizen0")
+                    }
                 }
             }
         },
@@ -1095,8 +1103,12 @@ function prepareWarrior(bot: Warrior) {
                 if (grinch) {
                     await bot.smartMove(grinch, { getWithin: bot.range - 10 })
                 } else {
-                    if (bot.S.grinch as ServerInfoDataLive) requestMagiportService(bot, bot.S.grinch as IPosition)
-                    await goToNPC(bot, "citizen0")
+                    if (bot.S.grinch.live && bot.S.grinch.hp > 1_000_000) {
+                        await goToSpecialMonster(bot, "grinch")
+                    } else {
+                        if (bot.S.grinch as ServerInfoDataLive) requestMagiportService(bot, bot.S.grinch as IPosition)
+                        await goToNPC(bot, "citizen0")
+                    }
                 }
             }
         },
