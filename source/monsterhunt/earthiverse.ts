@@ -843,7 +843,7 @@ function prepareRanger(bot: Ranger) {
             move: async () => { await bot.smartMove({ map: "main", x: -82, y: 1901 }) },
         },
         snowman: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["snowman"], information.friends) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["snowman", "arcticbee", "boar", "wolf", "wolfie"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "hbow", orb: "orbofdex" },
             move: async () => {
