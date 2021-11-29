@@ -93,6 +93,7 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
 
                         }
                     ],
+                    lastSeen: { $gt: Date.now() - 120_000 },
                 }
             },
             { $addFields: { __order: { $indexOfArray: [[...coop, ...solo], "$type"] } } },

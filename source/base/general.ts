@@ -756,7 +756,7 @@ export function startBuyLoop(bot: Character, itemsToBuy = ITEMS_TO_BUY, replenis
 
             // Buy things from other merchants
             for (const [, player] of bot.players) {
-                if (!player.stand) continue // Not selling anything
+                // if (!player.stand) continue // Not selling anything
                 if (AL.Tools.distance(bot, player) > AL.Constants.NPC_INTERACTION_DISTANCE) continue // Too far away
 
                 for (const s in player.slots) {
