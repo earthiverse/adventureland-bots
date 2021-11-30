@@ -84,7 +84,7 @@ export const ITEMS_TO_BUY: Set<ItemName> = new Set([
     // Helmets
     "cyber", "eears", "fury", /*"helmet1",*/ "hhelmet", "mchat", "mmhat", "mphat", "mrnhat", "mwhelmet", "oxhelmet", "partyhat", "rednose", "wcap", "xhelmet",
     // Gloves
-    /*"gloves1",*/ "goldenpowerglove", "handofmidas", "hgloves", "mpxgloves", "mrngloves", "mwgloves", "poker", "powerglove", "vgloves", "wgloves", "xgloves",
+    /*"gloves1",*/ "goldenpowerglove", "handofmidas", "hgloves", "mittens", "mpxgloves", "mrngloves", "mwgloves", "poker", "powerglove", "supermittens", "vgloves", "wgloves", "xgloves",
     // Good weapons
     "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "fireblade", "firebow", "firestaff", "firestars", "frostbow", "froststaff", "gbow", "glolipop", "gstaff", "harbringer", "heartwood", "hbow", "hdagger", "merry", "ololipop", "oozingterror", "ornamentstaff", "pinkie", "pmace", "scythe", "snowflakes", "t2bow", "t3bow", /*"throwingstars",*/ "vdagger", "vhammer", "vstaff", "vsword", "wblade",
     // Things we can exchange / craft with
@@ -133,7 +133,7 @@ for (const itemName in ITEMS_TO_SELL) {
 }
 
 export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
-    "cyber": 1, "exoarm": 1, "fury": 1, "gstaff": 1, "starkillers": 1, "suckerpunch": 1, "t3bow": 1,
+    "cyber": 1, "exoarm": 1, "fury": 1, "gstaff": 1, "starkillers": 1, "suckerpunch": 1, "t3bow": 1, "supermittens": 1,
     // Don't use offeringp on rugged stuff (we get a lot from fishing)
     "coat1": 8, "gloves1": 8, "helmet1": 8, "pants1": 8, "shoes1": 8,
     // Don't use as many offeringp on heavy armor, a lot is available during events
@@ -154,6 +154,9 @@ export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
 }
 
 export const UPGRADE_COMPOUND_LIMIT: ItemLevelInfo = {
+    "suckerpunch": 1, // Very valuable, don't destroy
+    "fury": 3, // Very valuable, don't destroy
+    "supermittens": 3, // Very valuable, don't destroy
     "lostearring": 2, // Level 2 is the best for exchanging
     "test_orb": 0, // No advantages for leveling this item
     "throwingstars": 0, // We're going to craft them in to fiery throwing stars
