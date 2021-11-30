@@ -81,6 +81,19 @@ export async function getTarget(bot: Character, strategy: Strategy, information:
 export async function startMage(bot: Mage, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[]): Promise<void> {
     startShared(bot, strategy, information, partyLeader, partyMembers)
 
+    bot.socket.on("cm", async (data: CMData) => {
+        // Let mages do magiport requests from party members
+        if (data.message == "magiport"
+            && partyMembers.includes(data.name)
+            && bot.canUse("magiport")) {
+            bot.magiport(data.name)
+            return
+        }
+
+        console.log(`~~~ CM from ${data.name} DEBUG ~~~`)
+        console.log(data)
+    })
+
     const idleTargets: MonsterName[] = []
     for (const t in strategy) {
         if (!strategy[t as MonsterName].attackWhileIdle) continue

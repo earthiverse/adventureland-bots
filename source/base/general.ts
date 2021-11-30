@@ -689,18 +689,25 @@ export function requestMagiportService(bot: Character, targetLocation: IPosition
     if (Tools.distance(bot, targetLocation) < within) return
 
     // Get player locations
+    let numRequested = 0
     AL.PlayerModel.find({
         lastSeen: { $gt: Date.now() - 30000 },
         map: targetLocation.map,
-        name: { $in: ["Bjarny", "Clarity"] },
+        name: { $in: [
+            "Bjarny", "Clarity", // Public magiport services
+            "lolwutpear", "shoopdawhoop", "ytmnd", // lolwutpear's mages
+            "facilitating", "gratuitously", "hypothesized"] // sesquipedalian's mages
+        },
         serverIdentifier: bot.server.name,
         serverRegion: bot.server.region }, {
         _id: 0, map: 1, name: 1, x: 1, y: 1
     }).lean().exec().then((players) => {
         for (const player of players) {
-            if (AL.Tools.distance(targetLocation, player) > within) continue // Too far away from target
-            if (player.name == "Bjarny") bot.sendCM(["Bjarny"], "magiport")
-            else if (player.name == "Clarity") bot.sendCM(["Clarity"], "magiport_please_dad")
+            if (["Bjarny", "lolwutpear", "shoopdawhoop", "ytmnd", "facilitating", "gratuitously", "hypothesized"].includes(player.name)) bot.sendCM([player.name], "magiport")
+            else if (player.name == "Clarity") bot.sendCM([player.name], "magiport_please_dad")
+
+            // Don't request too many because of call code cost
+            if (numRequested++ > 3) break
         }
     })
 }
