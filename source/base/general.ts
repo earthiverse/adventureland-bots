@@ -133,7 +133,8 @@ for (const itemName in ITEMS_TO_SELL) {
 }
 
 export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
-    "cyber": 1, "exoarm": 1, "fury": 1, "gstaff": 1, "starkillers": 1, "suckerpunch": 1, "t3bow": 1, "supermittens": 1,
+    // Rare & important items
+    "cyber": 1, "exoarm": 1, "fury": 1, "gstaff": 1, "starkillers": 1, "suckerpunch": 1, "t3bow": 1, "sbelt": 0, "supermittens": 1,
     // Don't use offeringp on rugged stuff (we get a lot from fishing)
     "coat1": 8, "gloves1": 8, "helmet1": 8, "pants1": 8, "shoes1": 8,
     // Don't use as many offeringp on heavy armor, a lot is available during events
@@ -142,15 +143,12 @@ export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
     "vattire": 7,
     // Don't use offeringp on wanderers stuff (we get a lot from drops and crafting)
     "wattire": 9, "wbreeches": 9, "wcap": 9, "wgloves": 9, "wshoes": 9,
-    "cape": 7,
+    // Misc. common stuff
+    "cape": 7, "fireblade": 7, "firestaff": 7, "sword": 7, "wbook0": 4,
     // Don't use as many offeringp on Halloween stuff
     "bowofthedead": 7, "daggerofthedead": 7, "maceofthedead": 7, "pmaceofthedead": 6, "staffofthedead": 7,
     // Don't use as many offeringp on Christmas stuff
     "candycanesword": 7, "gcape": 7, "merry": 7, "ornamentstaff": 7, "xmace": 7,
-    // Don't use offeringp on books
-    "wbook0": 4,
-    // Primling sbelt from 0
-    "sbelt": 0
 }
 
 export const UPGRADE_COMPOUND_LIMIT: ItemLevelInfo = {
