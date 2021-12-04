@@ -78,8 +78,8 @@ export async function getTarget(bot: Character, strategy: Strategy, information:
     return strategy.defaultTarget ?? DEFAULT_TARGET
 }
 
-export async function startMage(bot: Mage, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[]): Promise<void> {
-    startShared(bot, strategy, information, partyLeader, partyMembers)
+export async function startMage(bot: Mage, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[], defaultRegion = DEFAULT_REGION, defaultIdentifier = DEFAULT_IDENTIFIER): Promise<void> {
+    startShared(bot, strategy, information, partyLeader, partyMembers, defaultRegion, defaultIdentifier)
 
     bot.socket.on("cm", async (data: CMData) => {
         // Let mages do magiport requests from party members
@@ -177,8 +177,8 @@ export async function startMage(bot: Mage, information: Information, strategy: S
     attackLoop()
 }
 
-export async function startMerchant(bot: Merchant, information: Information, strategy: Strategy, standPlace: IPosition, partyLeader: string, partyMembers: string[]): Promise<void> {
-    startShared(bot, strategy, information, partyLeader, partyMembers)
+export async function startMerchant(bot: Merchant, information: Information, strategy: Strategy, standPlace: IPosition, partyLeader: string, partyMembers: string[], defaultRegion = DEFAULT_REGION, defaultIdentifier = DEFAULT_IDENTIFIER): Promise<void> {
+    startShared(bot, strategy, information, partyLeader, partyMembers, defaultRegion, defaultIdentifier)
     startMluckLoop(bot)
     startPartyLoop(bot, bot.id)
 
@@ -403,8 +403,8 @@ export async function startMerchant(bot: Merchant, information: Information, str
     moveLoop()
 }
 
-export async function startPriest(bot: Priest, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[]): Promise<void> {
-    startShared(bot, strategy, information, partyLeader, partyMembers)
+export async function startPriest(bot: Priest, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[], defaultRegion = DEFAULT_REGION, defaultIdentifier = DEFAULT_IDENTIFIER): Promise<void> {
+    startShared(bot, strategy, information, partyLeader, partyMembers, defaultRegion, defaultIdentifier)
     startDarkBlessingLoop(bot)
     startPartyHealLoop(bot, information.friends)
 
@@ -492,8 +492,8 @@ export async function startPriest(bot: Priest, information: Information, strateg
     attackLoop()
 }
 
-export async function startRanger(bot: Ranger, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[]): Promise<void> {
-    startShared(bot, strategy, information, partyLeader, partyMembers)
+export async function startRanger(bot: Ranger, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[], defaultRegion = DEFAULT_REGION, defaultIdentifier = DEFAULT_IDENTIFIER): Promise<void> {
+    startShared(bot, strategy, information, partyLeader, partyMembers, defaultRegion, defaultIdentifier)
 
     const idleTargets: MonsterName[] = []
     for (const t in strategy) {
@@ -579,8 +579,8 @@ export async function startRanger(bot: Ranger, information: Information, strateg
     attackLoop()
 }
 
-export async function startRogue(bot: Rogue, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[]): Promise<void> {
-    startShared(bot, strategy, information, partyLeader, partyMembers)
+export async function startRogue(bot: Rogue, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[], defaultRegion = DEFAULT_REGION, defaultIdentifier = DEFAULT_IDENTIFIER): Promise<void> {
+    startShared(bot, strategy, information, partyLeader, partyMembers, defaultRegion, defaultIdentifier)
 
     startRSpeedLoop(bot, { enableGiveToStrangers: true })
 
@@ -668,8 +668,8 @@ export async function startRogue(bot: Rogue, information: Information, strategy:
     attackLoop()
 }
 
-export async function startWarrior(bot: Warrior, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[]): Promise<void> {
-    startShared(bot, strategy, information, partyLeader, partyMembers)
+export async function startWarrior(bot: Warrior, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[], defaultRegion = DEFAULT_REGION, defaultIdentifier = DEFAULT_IDENTIFIER): Promise<void> {
+    startShared(bot, strategy, information, partyLeader, partyMembers, defaultRegion, defaultIdentifier)
 
     startChargeLoop(bot)
     startHardshellLoop(bot)
@@ -759,7 +759,7 @@ export async function startWarrior(bot: Warrior, information: Information, strat
     attackLoop()
 }
 
-export async function startShared(bot: Character, strategy: Strategy, information: Information, partyLeader: string, partyMembers: string[]): Promise<void> {
+export async function startShared(bot: Character, strategy: Strategy, information: Information, partyLeader: string, partyMembers: string[], defaultRegion = DEFAULT_REGION, defaultIdentifier = DEFAULT_IDENTIFIER): Promise<void> {
     const magiporters = new Set(["Bjarny", "Clarity", ...partyMembers])
     bot.socket.on("magiport", async (data: { name: string }) => {
         if (magiporters.has(data.name)) {
@@ -815,7 +815,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
                 }
 
                 // Get a MH if we're on the default server and we don't have one
-                if (!bot.s.monsterhunt && bot.server.name == DEFAULT_IDENTIFIER && bot.server.region == DEFAULT_REGION) {
+                if (!bot.s.monsterhunt && bot.server.name == defaultIdentifier && bot.server.region == defaultRegion) {
                     await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1, useBlink: true })
                     await bot.getMonsterHuntQuest()
                     bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))

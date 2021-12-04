@@ -39,7 +39,7 @@ const information: Information = {
 
 function prepareMerchant(bot: Merchant) {
     const strategy: Strategy = { }
-    startMerchant(bot, information, strategy, { map: "main", x: 0, y: 0 }, partyLeader, partyMembers)
+    startMerchant(bot, information, strategy, { map: "main", x: 0, y: 0 }, partyLeader, partyMembers, TARGET_REGION, TARGET_IDENTIFIER)
 }
 
 function preparePriest(bot: Priest) {
@@ -224,7 +224,7 @@ function preparePriest(bot: Priest) {
             move: async () => { await goToSpecialMonster(bot, "wabbit") },
         },
     }
-    startPriest(bot, information, strategy, partyLeader, partyMembers)
+    startPriest(bot, information, strategy, partyLeader, partyMembers, TARGET_REGION, TARGET_IDENTIFIER)
 }
 
 function prepareRanger(bot: Ranger) {
@@ -409,7 +409,7 @@ function prepareRanger(bot: Ranger) {
         }
     }
 
-    startRanger(bot, information, strategy, partyLeader, partyMembers)
+    startRanger(bot, information, strategy, partyLeader, partyMembers, TARGET_REGION, TARGET_IDENTIFIER)
 }
 
 function prepareWarrior(bot: Warrior) {
@@ -620,7 +620,7 @@ function prepareWarrior(bot: Warrior) {
             move: async () => { await goToSpecialMonster(bot, "wabbit") },
         }
     }
-    startWarrior(bot, information, strategy, partyLeader, partyMembers)
+    startWarrior(bot, information, strategy, partyLeader, partyMembers, TARGET_REGION, TARGET_IDENTIFIER)
 }
 
 async function run() {
