@@ -1,5 +1,5 @@
 import Queue from "queue-promise"
-import AL, { Character, ChestData, Entity, GameResponseData, GMap, HitData, IEntity, IPosition, ItemData, ItemName, Merchant, MonsterName, NPCName, Player, Tools, TradeSlotType } from "alclient"
+import AL, { Character, ChestData, Entity, GameResponseData, GMap, HitData, IEntity, InviteData, IPosition, ItemData, ItemName, Merchant, MonsterName, NPCName, Player, Tools, TradeSlotType } from "alclient"
 import { ItemLevelInfo } from "../definitions/bot.js"
 import { bankingPosition, offsetPositionParty } from "./locations.js"
 
@@ -15,6 +15,7 @@ export const MY_CHARACTERS = ["earthiverse", "earthMag", "earthMag2", "earthMag3
 export const ANNOUNCEMENT_CHARACTERS = ["announcement", "battleworthy", "charmingness", "decisiveness", "enlightening", "facilitating", "gratuitously", "hypothesized", "illumination", "journalistic", "kaleidoscope", "logistically"]
 export const KOUIN_CHARACTERS = ["bataxedude", "cclair", "fathergreen", "kakaka", "kekeke", "kouin", "kukuku", "mule0", "mule1", "mule2", "mule3", "mule5", "mule6", "mule7", "mule8", "mule9", "mule10", "piredude"]
 export const LOLWUTPEAR_CHARACTERS = ["fgsfds", "fsjal", "funny", "gaben", "lolwutpear", "longcat", "orlyowl", "over9000", "rickroll", "rule34", "shoopdawhoop", "wombocombo", "ytmnd"]
+export const MAIN_CHARACTERS = ["WarriorMain", "MageMain", "MerchantMain", "PriestMain", "RangerMain", "PaladinMain", "RogueMain", "RogueSub"]
 
 export const ITEMS_TO_HOLD: Set<ItemName> = new Set([
     // Things we keep on ourselves
@@ -144,7 +145,7 @@ export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
     // Don't use offeringp on wanderers stuff (we get a lot from drops and crafting)
     "wattire": 9, "wbreeches": 9, "wcap": 9, "wgloves": 9, "wshoes": 9,
     // Misc. common stuff
-    "cape": 7, "fireblade": 7, "firestaff": 7, "sword": 7, "wbook0": 4,
+    "cape": 7, "dagger": 7, "fireblade": 7, "firestaff": 7, "sword": 7, "wbook0": 4,
     // Don't use as many offeringp on Halloween stuff
     "bowofthedead": 7, "daggerofthedead": 7, "maceofthedead": 7, "pmaceofthedead": 6, "staffofthedead": 7,
     // Don't use as many offeringp on Christmas stuff
@@ -1114,6 +1115,15 @@ export function startLootLoop(bot: Character): void {
 export function startPartyLoop(bot: Character, leader: string, partyMembers?: string[]): void {
     if (bot.id == leader) {
         // Have the leader accept party requests
+        bot.socket.on("invite", async (data: InviteData) => {
+            try {
+                if (partyMembers.includes(data.name)) {
+                    await bot.acceptPartyInvite(data.name)
+                }
+            } catch (e) {
+                console.error(e)
+            }
+        })
         bot.socket.on("request", async (data: { name: string }) => {
             try {
                 if (partyMembers) {
@@ -1152,12 +1162,11 @@ export function startPartyLoop(bot: Character, leader: string, partyMembers?: st
                     }
                 }
 
-                console.log(await bot.acceptPartyRequest(data.name))
+                await bot.acceptPartyRequest(data.name)
             } catch (e) {
                 console.error(e)
             }
         })
-        return
     }
     async function partyLoop() {
         try {
@@ -1380,7 +1389,7 @@ export function startSendStuffDenylistLoop(bot: Character, sendTo: string[], ite
             }
 
             if (!sendToPlayer) {
-                bot.timeouts.set("sendstuffdenylistloop", setTimeout(async () => { sendStuffLoop() }, 10000))
+                bot.timeouts.set("sendStuffDenyListLoop", setTimeout(async () => { sendStuffLoop() }, 10000))
                 return
             }
 
@@ -1397,7 +1406,7 @@ export function startSendStuffDenylistLoop(bot: Character, sendTo: string[], ite
                         await bot.sendItem(sendToPlayer.id, i, item.q)
                     } catch (e) {
                         // They're probably full
-                        bot.timeouts.set("sendstuffdenylistloop", setTimeout(async () => { sendStuffLoop() }, 5000))
+                        bot.timeouts.set("sendStuffDenyListLoop", setTimeout(async () => { sendStuffLoop() }, 5000))
                         return
                     }
                 }
@@ -1406,7 +1415,7 @@ export function startSendStuffDenylistLoop(bot: Character, sendTo: string[], ite
             console.error(e)
         }
 
-        bot.timeouts.set("sendstuffdenylistloop", setTimeout(async () => { sendStuffLoop() }, LOOP_MS))
+        bot.timeouts.set("sendStuffDenyListLoop", setTimeout(async () => { sendStuffLoop() }, LOOP_MS))
     }
     sendStuffLoop()
 }
@@ -1444,7 +1453,7 @@ export function startServerPartyInviteLoop(bot: Character, ignore = [bot.id], se
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("serverpartyinviteloop", setTimeout(async () => { serverPartyInviteLoop() }, 1000))
+        bot.timeouts.set("serverPartyInviteLoop", setTimeout(async () => { serverPartyInviteLoop() }, 1000))
     }
     serverPartyInviteLoop()
 }
@@ -1461,7 +1470,7 @@ export function startTrackerLoop(bot: Character): void {
             console.error(e)
         }
 
-        bot.timeouts.set("trackerloop", setTimeout(async () => { trackerLoop() }, CHECK_TRACKER_EVERY_MS))
+        bot.timeouts.set("trackerLoop", setTimeout(async () => { trackerLoop() }, CHECK_TRACKER_EVERY_MS))
     }
     trackerLoop()
 }
