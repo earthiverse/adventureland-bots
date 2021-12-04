@@ -44,7 +44,7 @@ function prepareMerchant(bot: Merchant) {
 
 function preparePriest(bot: Priest) {
     const strategy: Strategy = {
-        defaultTarget: "snake",
+        defaultTarget: "osnake",
         // eslint-disable-next-line sort-keys
         arcticbee: {
             attack: async () => { await attackTheseTypesPriest(bot, ["arcticbee"], information.friends) },
@@ -229,7 +229,7 @@ function preparePriest(bot: Priest) {
 
 function prepareRanger(bot: Ranger) {
     const strategy: Strategy = {
-        defaultTarget: "snake",
+        defaultTarget: "osnake",
         // eslint-disable-next-line sort-keys
         arcticbee: {
             attack: async () => { await attackTheseTypesRanger(bot, ["arcticbee"], information.friends) },
@@ -414,7 +414,7 @@ function prepareRanger(bot: Ranger) {
 
 function prepareWarrior(bot: Warrior) {
     const strategy: Strategy = {
-        defaultTarget: "snake",
+        defaultTarget: "osnake",
         // eslint-disable-next-line sort-keys
         arcticbee: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["arcticbee"], information.friends) },
