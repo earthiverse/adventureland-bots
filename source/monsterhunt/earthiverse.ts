@@ -886,20 +886,20 @@ function prepareRanger(bot: Ranger) {
             move: async () => { await bot.smartMove({ map: "spookytown", x: 677, y: 129 }) },
             requireCtype: "priest"
         },
-        tinyp: {
-            attack: async () => {
-                const tinyp = bot.getNearestMonster("tinyp")
-                if (tinyp?.monster && tinyp.distance < bot.range * bot.G.skills.supershot.range_multiplier) {
-                    await bot.superShot(tinyp.monster.id)
-                }
-                await attackTheseTypesRanger(bot, ["minimush", "osnake", "snake"], information.friends, { disableHuntersMark: true, disableSupershot: true })
-                return
-            },
-            equipment: maxCritEquipment,
-            move: async () => {
-                await goToSpecialMonster(bot, "tinyp")
-            },
-        },
+        // tinyp: {
+        //     attack: async () => {
+        //         const tinyp = bot.getNearestMonster("tinyp")
+        //         if (tinyp?.monster && tinyp.distance < bot.range * bot.G.skills.supershot.range_multiplier) {
+        //             await bot.superShot(tinyp.monster.id)
+        //         }
+        //         await attackTheseTypesRanger(bot, ["minimush", "osnake", "snake"], information.friends, { disableHuntersMark: true, disableSupershot: true })
+        //         return
+        //     },
+        //     equipment: maxCritEquipment,
+        //     move: async () => {
+        //         await goToSpecialMonster(bot, "tinyp")
+        //     },
+        // },
         tortoise: {
             attack: async () => { return attackTheseTypesRanger(bot, ["tortoise", "phoenix"], information.friends) },
             attackWhileIdle: true,
