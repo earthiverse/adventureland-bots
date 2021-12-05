@@ -146,7 +146,7 @@ export async function startMage(bot: Mage, information: Information, strategy: S
 
                         if (!bot.slots[slot]
                             || (bot.slots[slot] && bot.slots[slot].name !== itemName)) {
-                            const i = bot.locateItem(itemName)
+                            const i = bot.locateItem(itemName, bot.items, { returnHighestLevel: true })
                             if (i !== undefined) await bot.equip(i, slot)
                         }
                     }

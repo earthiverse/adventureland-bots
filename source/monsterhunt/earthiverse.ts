@@ -926,6 +926,9 @@ function prepareRanger(bot: Ranger) {
 }
 
 function prepareWarrior(bot: Warrior) {
+    const aoeEquipment: { [T in SlotType]?: ItemName } = { chest: "coat1", gloves: "gloves1", helmet: "helmet1", mainhand: "bataxe", pants: "pants1", orb: "jacko", shoes: "wingedboots" }
+    const burnEquipment: { [T in SlotType]?: ItemName } = { chest: "coat1", gloves: "gloves1", helmet: "helmet1", mainhand: "fireblade", offhand: "fireblade", pants: "pants1", orb: "jacko", shoes: "wingedboots" }
+    const bowEquipment: { [T in SlotType]?: ItemName } = { chest: "coat1", gloves: "gloves1", helmet: "helmet1", mainhand: "hbow", pants: "pants1", orb: "jacko", shoes: "wingedboots" }
     const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
     const strategy: Strategy = {
         defaultTarget: "spider",
@@ -933,18 +936,18 @@ function prepareWarrior(bot: Warrior) {
         arcticbee: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["arcticbee"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["arcticbee"], { map: "winterland", x: 1062, y: -873 }) },
         },
         bat: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["bat"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["bat"], { map: "cave", x: 1243, y: -27 }) },
         },
         bbpompom: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["bbpompom"], information.friends, { disableAgitate: true }) },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToNearestWalkableToMonster(bot, ["bbpompom"], { map: "winter_cave", x: 31, y: -164 })
@@ -953,31 +956,31 @@ function prepareWarrior(bot: Warrior) {
         bee: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["bee"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["bee"], { map: "main", x: 737, y: 720 }) },
         },
         bigbird: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["bigbird"], information.friends) },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: 1323, y: 248 }) },
             requireCtype: "priest",
         },
         boar: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["boar"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => { await bot.smartMove({ map: "winterland", x: 0, y: -1109 }) },
             requireCtype: "priest"
         },
         booboo: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["booboo"], information.friends, { maximumTargets: 1 }) },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => { await bot.smartMove({ map: "spookytown", x: 265, y: -625 }) },
             requireCtype: "priest"
         },
         bscorpion: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["bscorpion"], information.friends, { disableAgitate: true, targetingPartyMember: true }) },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => {
                 const nearest = bot.getNearestMonster("bscorpion")
                 if (nearest && nearest.monster.target && nearest.monster.couldGiveCreditForKill(bot)) {
@@ -990,7 +993,7 @@ function prepareWarrior(bot: Warrior) {
         },
         cgoo: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["cgoo"], information.friends) },
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToNearestWalkableToMonster(bot, ["cgoo"], { map: "arena", x: 151.6, y: 40.82 })
@@ -999,25 +1002,25 @@ function prepareWarrior(bot: Warrior) {
         crab: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["crab", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["crab"], { map: "main", x: -1222, y: -66 }) },
         },
         crabx: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["crabx", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["crabx"], { map: "main", x: -1004, y: 1762 }) },
         },
         croc: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["croc", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["croc"], { map: "main", x: 781, y: 1710 }) },
         },
         cutebee: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["cutebee"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => {
                 const nearby = bot.getNearestMonster("cutebee")
                 if (nearby) {
@@ -1034,7 +1037,7 @@ function prepareWarrior(bot: Warrior) {
         },
         dragold: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["dragold"], information.friends) },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToSpecialMonster(bot, "dragold")
@@ -1048,7 +1051,7 @@ function prepareWarrior(bot: Warrior) {
         },
         franky: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["nerfedmummy", "franky"], information.friends) },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => {
                 if (bot.S.franky as ServerInfoDataLive) requestMagiportService(bot, bot.S.franky as IPosition)
                 await goToSpecialMonster(bot, "franky")
@@ -1057,7 +1060,7 @@ function prepareWarrior(bot: Warrior) {
         },
         fvampire: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["fvampire"], information.friends) },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToSpecialMonster(bot, "fvampire")
@@ -1067,7 +1070,7 @@ function prepareWarrior(bot: Warrior) {
         ghost: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["ghost"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToNearestWalkableToMonster(bot, ["ghost"], { map: "halloween", x: 236, y: -1224 })
@@ -1076,19 +1079,19 @@ function prepareWarrior(bot: Warrior) {
         goldenbat: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["goldenbat"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => { await goToSpecialMonster(bot, "goldenbat") },
         },
         goo: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["goo"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["goo"], { map: "main", x: -52, y: 787 }) },
         },
         greenjr: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["greenjr", "snake", "osnake"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => { await goToSpecialMonster(bot, "greenjr") },
         },
         grinch: {
@@ -1105,7 +1108,7 @@ function prepareWarrior(bot: Warrior) {
                 }
             },
             attackWhileIdle: true,
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => {
                 const grinch = bot.getNearestMonster("grinch")?.monster
                 if (grinch) {
@@ -1125,12 +1128,12 @@ function prepareWarrior(bot: Warrior) {
         hen: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["hen"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: -81.5, y: -282 }) },
         },
         icegolem: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["icegolem"], information.friends) },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => {
                 const iceGolem = bot.getNearestMonster("icegolem")?.monster
                 if (!iceGolem) {
@@ -1147,7 +1150,7 @@ function prepareWarrior(bot: Warrior) {
         },
         iceroamer: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["iceroamer"], information.friends) },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToNearestWalkableToMonster(bot, ["iceroamer"], { map: "winterland", x: 1532, y: 104 })
@@ -1156,13 +1159,13 @@ function prepareWarrior(bot: Warrior) {
         jr: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["jr"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => { await goToSpecialMonster(bot, "jr") },
         },
         minimush: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["minimush", "phoenix"], information.friends, { disableAgitate: true }) },
             attackWhileIdle: true,
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["minimush"], { map: "halloween", x: -18, y: 631 }) },
         },
         mole: {
@@ -1186,7 +1189,7 @@ function prepareWarrior(bot: Warrior) {
 
                 await attackTheseTypesWarrior(bot, ["mole"], information.friends, { maximumTargets: 3 })
             },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => { await bot.smartMove({ map: "tunnel", x: 5, y: -329 }) },
             requireCtype: "priest"
         },
@@ -1195,7 +1198,7 @@ function prepareWarrior(bot: Warrior) {
                 if (bot.isPVP()) await attackTheseTypesWarrior(bot, ["mrgreen"], information.friends, { disableCleave: true, disableStomp: true })
                 else await attackTheseTypesWarrior(bot, ["mrgreen"], information.friends)
             },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => {
                 if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as IPosition)
                 await goToSpecialMonster(bot, "mrgreen")
@@ -1207,7 +1210,7 @@ function prepareWarrior(bot: Warrior) {
                 if (bot.isPVP()) await attackTheseTypesWarrior(bot, ["mrpumpkin"], information.friends, { disableCleave: true, disableStomp: true })
                 else await attackTheseTypesWarrior(bot, ["mrpumpkin"], information.friends)
             },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => {
                 if (bot.S.mrpumpkin as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrpumpkin as IPosition)
                 await goToSpecialMonster(bot, "mrpumpkin")
@@ -1216,7 +1219,7 @@ function prepareWarrior(bot: Warrior) {
         },
         mummy: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["mummy"], information.friends, { maximumTargets: 3 }) },
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => {
                 let highestMummyLevel = 0
                 for (const [, entity] of bot.entities) {
@@ -1236,36 +1239,36 @@ function prepareWarrior(bot: Warrior) {
         mvampire: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["mvampire", "bat"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => { await goToSpecialMonster(bot, "mvampire") },
         },
         nerfedmummy: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["nerfedmummy"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => { await goToSpecialMonster(bot, "franky") },
         },
         oneeye: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["oneeye"], information.friends, { maximumTargets: 1 }) },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => { await bot.smartMove({ map: "level2w", x: -195, y: 0 }) },
             requireCtype: "priest"
         },
         osnake: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["osnake", "snake"], information.friends, { disableAgitate: true }) },
             attackWhileIdle: true,
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["osnake", "snake"], { map: "halloween", x: 347, y: -747 }) },
         },
         phoenix: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => { await goToSpecialMonster(bot, "phoenix") },
         },
         plantoid: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["plantoid"], information.friends, { maximumTargets: 1 }) },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToNearestWalkableToMonster(bot, ["plantoid"], { map: "desertland", x: -770, y: -125 })
@@ -1275,49 +1278,49 @@ function prepareWarrior(bot: Warrior) {
         poisio: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["poisio"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["poisio"], { map: "main", x: -141, y: 1360 }) },
         },
         pppompom: {
             attack: async () => { return attackTheseTypesWarrior(bot, ["pppompom"], information.friends, { disableAgitate: true, disableCleave: true, maximumTargets: 1 }) },
-            equipment: { mainhand: "hbow", orb: "jacko" },
+            equipment: bowEquipment,
             move: async () => { await bot.smartMove({ map: "level2n", x: 120, y: -150 }) },
             requireCtype: "priest"
         },
         rat: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["rat"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["rat"], { map: "mansion", x: 0, y: -21 }) },
         },
         rooster: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["rooster"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: -81.5, y: -282 }) },
         },
         scorpion: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["scorpion", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["scorpion"], { map: "main", x: 1558, y: -168 }) },
         },
         skeletor: {
             attack: async () => { return await attackTheseTypesWarrior(bot, ["skeletor", "cgoo"], information.friends) },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["skeletor"], { map: "arena", x: 360, y: -575 }) },
             requireCtype: "priest"
         },
         // slenderman: {
         //     attack: async () => { await attackTheseTypesWarrior(bot, ["slenderman"], information.friends) },
         //     attackWhileIdle: true,
-        //     equipment: { mainhand: "bataxe", orb: "jacko" },
+        //     equipment: aoeEquipment,
         //     move: async () => { await goToSpecialMonster(bot, "slenderman") },
         // },
         snake: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["snake", "osnake"], information.friends, { disableAgitate: true }) },
             attackWhileIdle: true,
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["snake", "osnake"], { map: "main", x: -102, y: 1901 }) },
         },
         snowman: {
@@ -1349,19 +1352,19 @@ function prepareWarrior(bot: Warrior) {
         spider: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["spider", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["spider"], { map: "main", x: 928, y: -144 }) },
         },
         squig: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["squig", "squigtoad", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["squig"], { map: "main", x: -1195, y: 422 }) },
         },
         squigtoad: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["squigtoad", "squig", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["squigtoad", "squig"], { map: "main", x: -1195, y: 422 }) },
         },
         stompy: {
@@ -1377,7 +1380,7 @@ function prepareWarrior(bot: Warrior) {
                 }
                 await attackTheseTypesWarrior(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends, { disableAgitate: true })
             },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToSpecialMonster(bot, "stompy")
@@ -1386,7 +1389,7 @@ function prepareWarrior(bot: Warrior) {
         },
         stoneworm: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["stoneworm"], information.friends, { disableAgitate: true }) },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToNearestWalkableToMonster(bot, ["stoneworm"], { map: "spookytown", x: 717, y: 129 })
@@ -1411,24 +1414,24 @@ function prepareWarrior(bot: Warrior) {
         tortoise: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["tortoise", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "bataxe", orb: "jacko" },
+            equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["tortoise"], { map: "main", x: -1144, y: 1118 }) },
         },
         wabbit: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["wabbit"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => { await goToSpecialMonster(bot, "wabbit") },
         },
         wolf: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["wolf"], information.friends, { maximumTargets: 2 }) },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => { await bot.smartMove({ map: "winterland", x: 380, y: -2525 }) },
             requireCtype: "priest"
         },
         wolfie: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["wolfie"], information.friends) },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToNearestWalkableToMonster(bot, ["wolfie"], { map: "winterland", x: -189, y: -2026 }) },
@@ -1436,7 +1439,7 @@ function prepareWarrior(bot: Warrior) {
         },
         xscorpion: {
             attack: async () => { return await attackTheseTypesWarrior(bot, ["xscorpion"], information.friends, { maximumTargets: 3 }) },
-            equipment: { mainhand: "fireblade", offhand: "fireblade", orb: "jacko" },
+            equipment: burnEquipment,
             move: async () => { await bot.smartMove({ map: "halloween", x: -325, y: 750 }) },
             requireCtype: "priest"
         }
