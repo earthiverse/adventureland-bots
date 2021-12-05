@@ -498,9 +498,10 @@ function preparePriest(bot: Priest) {
 
 function prepareRanger(bot: Ranger) {
     const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
-    const equipmentMaxRange: { [T in SlotType]?: ItemName } = { mainhand: "crossbow", orb: "jacko" }
-    const equipmentMaxDamage: { [T in SlotType]?: ItemName } = { mainhand: "crossbow", orb: "jacko" }
-    const equipmentMaxAttackSpeed: { [T in SlotType]?: ItemName } = { mainhand: "hbow", orb: "orbofdex" }
+    const maxCritEquipment: { [T in SlotType]?: ItemName } = { helmet: "fury", mainhand: "crossbow", orb: "jacko" }
+    const maxRangeEquipment: { [T in SlotType]?: ItemName } = { helmet: "wcap", mainhand: "crossbow", orb: "jacko" }
+    const maxDamageEquipment: { [T in SlotType]?: ItemName } = { helmet: "wcap", mainhand: "firebow", orb: "jacko" }
+    const maxAttackSpeedEquipment: { [T in SlotType]?: ItemName } = { helmet: "wcap", mainhand: "hbow", orb: "orbofdex" }
 
     const strategy: Strategy = {
         defaultTarget: "spider",
@@ -508,13 +509,13 @@ function prepareRanger(bot: Ranger) {
         arcticbee: {
             attack: async () => { await attackTheseTypesRanger(bot, ["arcticbee"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: maxRangeEquipment,
             move: async () => { await bot.smartMove({ map: "winterland", x: 1082, y: -873 }) },
         },
         armadillo: {
             attack: async () => { await attackTheseTypesRanger(bot, ["armadillo", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "hbow", orb: "jacko" },
+            equipment: maxAttackSpeedEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: 526, y: 1846 }) },
         },
         bat: {
@@ -532,7 +533,7 @@ function prepareRanger(bot: Ranger) {
         bee: {
             attack: async () => { await attackTheseTypesRanger(bot, ["bee"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "hbow", orb: "jacko" },
+            equipment: maxAttackSpeedEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: 494, y: 1101 }) },
         },
         bigbird: {
@@ -567,7 +568,7 @@ function prepareRanger(bot: Ranger) {
         crab: {
             attack: async () => { return attackTheseTypesRanger(bot, ["crab", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "hbow", orb: "jacko" },
+            equipment: maxAttackSpeedEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: -1202, y: -66 }) },
         },
         crabx: {
@@ -648,7 +649,7 @@ function prepareRanger(bot: Ranger) {
         goo: {
             attack: async () => { return attackTheseTypesRanger(bot, ["goo"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "hbow", orb: "jacko" },
+            equipment: maxAttackSpeedEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: -32, y: 787 }) },
         },
         greenjr: {
@@ -680,7 +681,7 @@ function prepareRanger(bot: Ranger) {
         hen: {
             attack: async () => { return attackTheseTypesRanger(bot, ["hen"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: maxAttackSpeedEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: -61.5, y: -282 }) },
         },
         icegolem: {
@@ -715,7 +716,7 @@ function prepareRanger(bot: Ranger) {
         minimush: {
             attack: async () => { return attackTheseTypesRanger(bot, ["minimush", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "hbow", orb: "jacko" },
+            equipment: maxAttackSpeedEquipment,
             move: async () => { await bot.smartMove({ map: "halloween", x: 8, y: 631 }) },
         },
         mole: {
@@ -769,7 +770,7 @@ function prepareRanger(bot: Ranger) {
         osnake: {
             attack: async () => { return attackTheseTypesRanger(bot, ["osnake", "snake"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "hbow", orb: "jacko" },
+            equipment: maxAttackSpeedEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["osnake", "snake"], { map: "halloween", x: -589, y: -335 }) },
         },
         phoenix: {
@@ -819,7 +820,7 @@ function prepareRanger(bot: Ranger) {
         rooster: {
             attack: async () => { return attackTheseTypesRanger(bot, ["rooster"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxAttackSpeedEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: -61.5, y: -282 }) },
         },
         scorpion: {
@@ -837,19 +838,19 @@ function prepareRanger(bot: Ranger) {
         // slenderman: {
         //     attack: async () => { await attackTheseTypesRanger(bot, ["slenderman"], information.friends) },
         //     attackWhileIdle: true,
-        //     equipment: { mainhand: "hbow", orb: "jacko" },
+        //     equipment: maxCritEquipment,
         //     move: async () => { await goToSpecialMonster(bot, "slenderman") },
         // },
         snake: {
             attack: async () => { return attackTheseTypesRanger(bot, ["snake", "osnake"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "hbow", orb: "jacko" },
+            equipment: maxAttackSpeedEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: -82, y: 1901 }) },
         },
         snowman: {
             attack: async () => { return attackTheseTypesRanger(bot, ["snowman", "arcticbee", "boar", "wolf", "wolfie"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "hbow", orb: "orbofdex" },
+            equipment: maxAttackSpeedEquipment,
             move: async () => {
                 if (bot.S.snowman as ServerInfoDataLive) requestMagiportService(bot, bot.S.snowman as IPosition)
                 await goToSpecialMonster(bot, "snowman")
@@ -875,25 +876,34 @@ function prepareRanger(bot: Ranger) {
         },
         stompy: {
             attack: async () => { return attackTheseTypesRanger(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends, { targetingPartyMember: true }) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await goToSpecialMonster(bot, "stompy") },
             requireCtype: "priest"
         },
         stoneworm: {
             attack: async () => { return attackTheseTypesRanger(bot, ["stoneworm"], information.friends) },
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: maxRangeEquipment,
             move: async () => { await bot.smartMove({ map: "spookytown", x: 677, y: 129 }) },
             requireCtype: "priest"
         },
-        // tinyp: {
-        //     attack: async () => { return attackTheseTypesRanger(bot, ["tinyp"], information.friends, { targetingPartyMember: true }) },
-        //     equipment: { mainhand: "firebow", orb: "jacko" },
-        //     move: async () => { await goToSpecialMonster(bot, "tinyp") },
-        // },
+        tinyp: {
+            attack: async () => {
+                const tinyp = bot.getNearestMonster("tinyp")
+                if (tinyp?.monster && tinyp.distance < bot.range * bot.G.skills.supershot.range_multiplier) {
+                    await bot.superShot(tinyp.monster.id)
+                }
+                await attackTheseTypesRanger(bot, ["minimush", "osnake", "snake"], information.friends, { disableHuntersMark: true, disableSupershot: true })
+                return
+            },
+            equipment: maxCritEquipment,
+            move: async () => {
+                await goToSpecialMonster(bot, "tinyp")
+            },
+        },
         tortoise: {
             attack: async () => { return attackTheseTypesRanger(bot, ["tortoise", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: maxRangeEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["tortoise"], { map: "main", x: -1124, y: 1118 }) },
         },
         wabbit: {
@@ -904,13 +914,13 @@ function prepareRanger(bot: Ranger) {
         },
         wolf: {
             attack: async () => { return attackTheseTypesRanger(bot, ["wolf"], information.friends) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await bot.smartMove({ map: "winterland", x: 400, y: -2525 }) },
             requireCtype: "priest"
         },
         wolfie: {
             attack: async () => { return await attackTheseTypesRanger(bot, ["wolfie"], information.friends) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["wolfie"], { map: "winterland", x: -169, y: -2026 }) },
             requireCtype: "priest"
         },
@@ -1045,7 +1055,7 @@ function prepareWarrior(bot: Warrior) {
         },
         fireroamer: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["fireroamer"], information.friends, { disableAgitate: true, targetingPartyMember: true }) },
-            equipment: { mainhand: "hbow", orb: "jacko" },
+            equipment: bowEquipment,
             move: async () => { await bot.smartMove({ map: "desertland", x: 200, y: -675 }) },
             requireCtype: "priest"
         },
