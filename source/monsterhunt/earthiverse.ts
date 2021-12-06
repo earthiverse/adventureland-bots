@@ -499,9 +499,9 @@ function preparePriest(bot: Priest) {
 function prepareRanger(bot: Ranger) {
     const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
     const maxCritEquipment: { [T in SlotType]?: ItemName } = { helmet: "fury", mainhand: "crossbow", orb: "jacko" }
-    const maxRangeEquipment: { [T in SlotType]?: ItemName } = { helmet: "wcap", mainhand: "crossbow", orb: "jacko" }
-    const maxDamageEquipment: { [T in SlotType]?: ItemName } = { helmet: "wcap", mainhand: "firebow", orb: "jacko" }
-    const maxAttackSpeedEquipment: { [T in SlotType]?: ItemName } = { helmet: "wcap", mainhand: "hbow", orb: "orbofdex" }
+    const maxRangeEquipment: { [T in SlotType]?: ItemName } = { helmet: "cyber", mainhand: "crossbow", orb: "jacko" }
+    const maxDamageEquipment: { [T in SlotType]?: ItemName } = { helmet: "cyber", mainhand: "firebow", orb: "jacko" }
+    const maxAttackSpeedEquipment: { [T in SlotType]?: ItemName } = { helmet: "cyber", mainhand: "hbow", orb: "orbofdex" }
 
     const strategy: Strategy = {
         defaultTarget: "spider",
