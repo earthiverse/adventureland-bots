@@ -28,24 +28,25 @@ export const ITEMS_TO_HOLD: Set<ItemName> = new Set([
 
 // NOTE: Level 2 lostearrings will also be exchanged in exchangeLoop
 export const ITEMS_TO_EXCHANGE: Set<ItemName> = new Set([
-    // General exchangables
-    "5bucks", "gem0", "gem1",
-    // Gem Fragments for t2 amulets
-    "gemfragment",
-    // Seashells for potions
-    "seashell",
-    // Leather for capes
-    "leather",
-    // Christmas
-    "candycane", "mistletoe", "ornament",
-    // Halloween
-    "candy0", "candy1",
-    // Lunar New Year's
-    "greenenvelope", "redenvelope", "redenvelopev2", "redenvelopev3",
-    // Easter
-    "basketofeggs",
-    // Boxes
-    "armorbox", "bugbountybox", "gift0", "gift1", "mysterybox", "weaponbox", "xbox"
+    // NOTE: Temporary for Christmas
+    // // General exchangables
+    // "5bucks", "gem0", "gem1",
+    // // Gem Fragments for t2 amulets
+    // "gemfragment",
+    // // Seashells for potions
+    // "seashell",
+    // // Leather for capes
+    // "leather",
+    // // Christmas
+    // "candycane", "mistletoe", "ornament",
+    // // Halloween
+    // "candy0", "candy1",
+    // // Lunar New Year's
+    // "greenenvelope", "redenvelope", "redenvelopev2", "redenvelopev3",
+    // // Easter
+    // "basketofeggs",
+    // // Boxes
+    // "armorbox", "bugbountybox", "gift0", "gift1", "mysterybox", "weaponbox", "xbox"
 ])
 
 export const ITEMS_TO_CRAFT: Set<ItemName> = new Set([
@@ -58,54 +59,55 @@ export const ITEMS_TO_CRAFT: Set<ItemName> = new Set([
 ])
 
 export const ITEMS_TO_BUY: Set<ItemName> = new Set([
-    // Exchangeables
-    ...ITEMS_TO_EXCHANGE,
-    // Belts
-    "dexbelt", "intbelt", "sbelt", "strbelt",
-    // Rings
-    "cring", "ctristone", /*"dexring",*/ "goldring", /*"intring",*/ "ringofluck", "strring", "suckerpunch", "trigger", "tristone", "vring",
-    // Earrings
-    "cearring", "dexearring", /*"intearring",*/ "lostearring", /*"strearring",*/
-    // Amulets
-    "amuletofm", "dexamulet", "intamulet", "mpxamulet", "northstar", "skullamulet", "snring", /*"stramulet",*/ "t2dexamulet", "t2intamulet", "t2stramulet",
-    // Orbs
-    "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull", "vorb",
-    // Offhands
-    "exoarm", "wbook0", "wbook1",
-    // Shields
-    "t2quiver", "lantern", "mshield", /*"quiver",*/ "sshield", "xshield",
-    // Capes
-    "angelwings", "bcape", "cape", "ecape", "fcape", "gcape", "stealthcape", "vcape",
-    // Shoes
-    "eslippers", "hboots", "mrnboots", "mwboots", /*"shoes1",*/ "vboots", "wingedboots", "wshoes", "xboots",
-    // Pants
-    /*"frankypants",*/ "hpants", "mrnpants", "mwpants", /*"pants1",*/ "starkillers", "wbreeches", "xpants",
-    // Armor
-    "cdragon", /*"coat1",*/ "harmor", "luckyt", "mcape", "mrnarmor", "mwarmor", "tshirt0", "tshirt1", "tshirt2", "tshirt3", "tshirt4", "tshirt6", "tshirt7", "tshirt8", "tshirt88", "tshirt9", "vattire", "warpvest", "wattire", "xarmor",
-    // Helmets
-    "cyber", "eears", "fury", /*"helmet1",*/ "hhelmet", "mchat", "mmhat", "mphat", "mrnhat", "mwhelmet", "oxhelmet", "partyhat", "rednose", "wcap", "xhelmet",
-    // Gloves
-    /*"gloves1",*/ "goldenpowerglove", "handofmidas", "hgloves", "mittens", "mpxgloves", "mrngloves", "mwgloves", "poker", "powerglove", "supermittens", "vgloves", "wgloves", "xgloves",
-    // Good weapons
-    "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "fireblade", "firebow", "firestaff", "firestars", "frostbow", "froststaff", "gbow", "glolipop", "gstaff", "harbringer", "heartwood", "hbow", "hdagger", "merry", "ololipop", "oozingterror", "ornamentstaff", "pinkie", "pmace", "scythe", "snowflakes", "t2bow", "t3bow", /*"throwingstars",*/ "vdagger", "vhammer", "vstaff", "vsword", "wblade",
-    // Things we can exchange / craft with
-    "ascale", "bfur", "cscale", "cshell", "crabclaw", "electronics", "feather0", "frogt", "goldenegg", "goldingot", "goldnugget", "ink", "leather", "lotusf", "platinumingot", "platinumnugget", "pleather", "snakefang", "spores",
-    // Things to make xbox
-    "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8",
-    // Things to make easter basket
-    "egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8",
-    // Essences
-    "essenceofether", "essenceoffire", "essenceoffrost", "essenceofgreed", "essenceoflife", "essenceofnature", "offering", "offeringp", "offeringx",
-    // Potions & consumables
-    "bunnyelixir", "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate", "vblood",
-    // High level scrolls
-    "cscroll3", "scroll3", "scroll4", "forscroll", "luckscroll", "manastealscroll",
-    // Merchant Tools
-    "pickaxe", "rod",
-    // Keys
-    "bkey", "cryptkey", "dkey", "frozenkey", "stonekey", "tombkey", "ukey",
-    // Misc. Things
-    "bottleofxp", "bugbountybox", "computer", "confetti", "cxjar", "emotionjar", "flute", "frozenstone", "monstertoken", "poison", "puppyer", "shadowstone", "snakeoil"
+    // NOTE: Temporary for Christmas
+    // // Exchangeables
+    // ...ITEMS_TO_EXCHANGE,
+    // // Belts
+    // "dexbelt", "intbelt", "sbelt", "strbelt",
+    // // Rings
+    // "cring", "ctristone", /*"dexring",*/ "goldring", /*"intring",*/ "ringofluck", "strring", "suckerpunch", "trigger", "tristone", "vring",
+    // // Earrings
+    // "cearring", "dexearring", /*"intearring",*/ "lostearring", /*"strearring",*/
+    // // Amulets
+    // "amuletofm", "dexamulet", "intamulet", "mpxamulet", "northstar", "skullamulet", "snring", /*"stramulet",*/ "t2dexamulet", "t2intamulet", "t2stramulet",
+    // // Orbs
+    // "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull", "vorb",
+    // // Offhands
+    // "exoarm", "wbook0", "wbook1",
+    // // Shields
+    // "t2quiver", "lantern", "mshield", /*"quiver",*/ "sshield", "xshield",
+    // // Capes
+    // "angelwings", "bcape", "cape", "ecape", "fcape", "gcape", "stealthcape", "vcape",
+    // // Shoes
+    // "eslippers", "hboots", "mrnboots", "mwboots", /*"shoes1",*/ "vboots", "wingedboots", "wshoes", "xboots",
+    // // Pants
+    // /*"frankypants",*/ "hpants", "mrnpants", "mwpants", /*"pants1",*/ "starkillers", "wbreeches", "xpants",
+    // // Armor
+    // "cdragon", /*"coat1",*/ "harmor", "luckyt", "mcape", "mrnarmor", "mwarmor", "tshirt0", "tshirt1", "tshirt2", "tshirt3", "tshirt4", "tshirt6", "tshirt7", "tshirt8", "tshirt88", "tshirt9", "vattire", "warpvest", "wattire", "xarmor",
+    // // Helmets
+    // "cyber", "eears", "fury", /*"helmet1",*/ "hhelmet", "mchat", "mmhat", "mphat", "mrnhat", "mwhelmet", "oxhelmet", "partyhat", "rednose", "wcap", "xhelmet",
+    // // Gloves
+    // /*"gloves1",*/ "goldenpowerglove", "handofmidas", "hgloves", "mittens", "mpxgloves", "mrngloves", "mwgloves", "poker", "powerglove", "supermittens", "vgloves", "wgloves", "xgloves",
+    // // Good weapons
+    // "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "fireblade", "firebow", "firestaff", "firestars", "frostbow", "froststaff", "gbow", "glolipop", "gstaff", "harbringer", "heartwood", "hbow", "hdagger", "merry", "ololipop", "oozingterror", "ornamentstaff", "pinkie", "pmace", "scythe", "snowflakes", "t2bow", "t3bow", /*"throwingstars",*/ "vdagger", "vhammer", "vstaff", "vsword", "wblade",
+    // // Things we can exchange / craft with
+    // "ascale", "bfur", "cscale", "cshell", "crabclaw", "electronics", "feather0", "frogt", "goldenegg", "goldingot", "goldnugget", "ink", "leather", "lotusf", "platinumingot", "platinumnugget", "pleather", "snakefang", "spores",
+    // // Things to make xbox
+    // "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8",
+    // // Things to make easter basket
+    // "egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8",
+    // // Essences
+    // "essenceofether", "essenceoffire", "essenceoffrost", "essenceofgreed", "essenceoflife", "essenceofnature", "offering", "offeringp", "offeringx",
+    // // Potions & consumables
+    // "bunnyelixir", "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate", "vblood",
+    // // High level scrolls
+    // "cscroll3", "scroll3", "scroll4", "forscroll", "luckscroll", "manastealscroll",
+    // // Merchant Tools
+    // "pickaxe", "rod",
+    // // Keys
+    // "bkey", "cryptkey", "dkey", "frozenkey", "stonekey", "tombkey", "ukey",
+    // // Misc. Things
+    // "bottleofxp", "bugbountybox", "computer", "confetti", "cxjar", "emotionjar", "flute", "frozenstone", "monstertoken", "poison", "puppyer", "shadowstone", "snakeoil"
 ])
 
 export const ITEMS_TO_SELL: ItemLevelInfo = {
