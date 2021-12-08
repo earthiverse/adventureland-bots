@@ -1342,7 +1342,7 @@ function prepareWarrior(bot: Warrior) {
                     targetingMe: false,
                     withinRange: bot.G.skills.agitate.range
                 })) {
-                    if (entity.type !== "snowman" && !strategy[entity.type].attackWhileIdle) {
+                    if (entity.type !== "snowman" && !strategy[entity.type]?.attackWhileIdle) {
                         // Something else is here, don't agitate
                         shouldAgitate = false
                         break
