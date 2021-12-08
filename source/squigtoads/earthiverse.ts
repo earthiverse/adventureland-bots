@@ -13,7 +13,7 @@ const lastServer: [ServerRegion, ServerIdentifier] = ["EU", "PVP"]
 let mage: Mage
 
 async function startMage(bot: Mage) {
-    startBuyLoop(bot, new Set())
+    startBuyLoop(bot, new Set(), [["hpot1", 100], ["mpot1", 4999]])
     startHealLoop(bot)
     startLootLoop(bot)
     startSellLoop(bot, { "hpamulet": 2, "hpbelt": 2, "ringsj": 2 })
@@ -43,9 +43,17 @@ async function startMage(bot: Mage) {
                 return
             }
 
+            // Get some holiday spirit if it's Christmas
+            if (bot.S && bot.S.holidayseason && !bot.s.holidayspirit) {
+                await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, useBlink: true })
+                // TODO: Improve ALClient by making this a function
+                bot.socket.emit("interaction", { type: "newyear_tree" })
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, Math.min(...bot.pings) * 2))
+                return
+            }
+
             await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot)
-
 
             if (bot.countItem("seashell") > 1000 || bot.hasItem("gem0") || bot.gold > 5_000_000) {
                 await bot.smartMove(bankingPosition) // Move to bank teller to give bank time to get ready

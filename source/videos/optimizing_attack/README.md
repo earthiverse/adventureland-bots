@@ -1,14 +1,10 @@
 # Optimizing Attack
 
-This will be the the first video I will make about Adventure Land. I might consider making more depending on how well this video is received.
-
-[comment]: <> (TODO: Change the tense of the previous sentence when I actually upload the video.)
+This is the first video I made about Adventure Land. It deals with optimizing attacking for a single character.
 
 ## YouTube
 
-The video is currently in production.
-
-[comment]: <> (TODO: Post the link here when it is finished, and we upload it.)
+You can watch the video [on YouTube](https://www.youtube.com/watch?v=tYYap-K8O7A).
 
 ## Scripts
 
