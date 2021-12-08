@@ -2,12 +2,12 @@ import AL, { Entity, Mage, ServerIdentifier, ServerRegion } from "alclient"
 import { goToBankIfFull, goToPotionSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
 import { bankingPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
-import { partyLeader } from "../base/party.js"
-import { getTargetServerFromDate, getTargetServerFromPlayer } from "../base/serverhop.js"
+// import { partyLeader } from "../base/party.js"
+// import { getTargetServerFromDate, getTargetServerFromPlayer } from "../base/serverhop.js"
 
 /** Config */
 const mageName = "earthMag2"
-let lastServer: [ServerRegion, ServerIdentifier] = ["US", "II"]
+const lastServer: [ServerRegion, ServerIdentifier] = ["EU", "PVP"]
 
 /** Characters */
 let mage: Mage
@@ -119,9 +119,9 @@ async function run() {
 
     const connectLoop = async () => {
         try {
-            const avoidServer = await getTargetServerFromPlayer(lastServer[0], lastServer[1], partyLeader)
-            const targetServer = getTargetServerFromDate(0, true)
-            if (targetServer[0] !== avoidServer[0] || targetServer[1] !== avoidServer[1]) lastServer = targetServer
+            // const avoidServer = await getTargetServerFromPlayer(lastServer[0], lastServer[1], partyLeader)
+            // const targetServer: [ServerRegion, ServerIdentifier] = getTargetServerFromDate(0, true)
+            // if (targetServer[0] !== avoidServer[0] || targetServer[1] !== avoidServer[1]) lastServer = targetServer
 
             mage = await AL.Game.startMage(mageName, lastServer[0], lastServer[1])
             startMage(mage)
