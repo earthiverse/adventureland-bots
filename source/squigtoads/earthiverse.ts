@@ -6,7 +6,7 @@ import { attackTheseTypesMage } from "../base/mage.js"
 // import { getTargetServerFromDate, getTargetServerFromPlayer } from "../base/serverhop.js"
 
 /** Config */
-const mageName = "earthMag2"
+const mageName = "earthMag"
 const lastServer: [ServerRegion, ServerIdentifier] = ["EU", "PVP"]
 
 /** Characters */
