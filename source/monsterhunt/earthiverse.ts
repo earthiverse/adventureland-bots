@@ -936,7 +936,7 @@ function prepareRanger(bot: Ranger) {
 }
 
 function prepareWarrior(bot: Warrior) {
-    const aoeEquipment: { [T in SlotType]?: ItemName } = { amulet: "snring", belt: "strbelt", chest: "coat1", gloves: "gloves1", helmet: "helmet1", mainhand: "bataxe", orb: "jacko", pants: "pants1", ring1: "strring", ring2: "strring", shoes: "wingedboots" }
+    const aoeEquipment: { [T in SlotType]?: ItemName } = { amulet: "snring", belt: "strbelt", chest: "coat1", gloves: "gloves1", helmet: "helmet1", mainhand: "glolipop", offhand: "glolipop", orb: "jacko", pants: "pants1", ring1: "strring", ring2: "strring", shoes: "wingedboots" }
     const burnEquipment: { [T in SlotType]?: ItemName } = { amulet: "snring", belt: "strbelt", chest: "coat1", gloves: "gloves1", helmet: "helmet1", mainhand: "fireblade", offhand: "fireblade", orb: "jacko", pants: "pants1", ring1: "strring", ring2: "strring", shoes: "wingedboots" }
     const bowEquipment: { [T in SlotType]?: ItemName } = { amulet: "snring", belt: "strbelt", chest: "coat1", gloves: "gloves1", helmet: "helmet1", mainhand: "hbow", orb: "jacko", pants: "pants1", ring1: "strring", ring2: "strring", shoes: "wingedboots" }
     const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
@@ -1390,7 +1390,7 @@ function prepareWarrior(bot: Warrior) {
                 }
                 await attackTheseTypesWarrior(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends, { disableAgitate: true })
             },
-            equipment: burnEquipment,
+            equipment: aoeEquipment,
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
                 await goToSpecialMonster(bot, "stompy")
