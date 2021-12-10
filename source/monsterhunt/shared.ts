@@ -82,16 +82,23 @@ export async function startMage(bot: Mage, information: Information, strategy: S
     startShared(bot, strategy, information, partyLeader, partyMembers, defaultRegion, defaultIdentifier)
 
     bot.socket.on("cm", async (data: CMData) => {
-        // Let mages do magiport requests from party members
-        if (partyMembers.includes(data.name)
-            && JSON.parse(data.message) == "magiport"
-            && bot.canUse("magiport")) {
-            magiportStrangerIfNotNearby(bot, data.name)
+        if (partyMembers.includes(data.name)) {
+            // Friendly CM
+            const parsedData = JSON.parse(data.message)
+
+            if (parsedData == "magiport") {
+                // Let mages do magiport requests for party members
+                console.log(`${bot.id} is going to try to magiport ${data.name}!`)
+                magiportStrangerIfNotNearby(bot, data.name)
+            }
+
             return
         }
 
         console.log(`~~~ CM from ${data.name} DEBUG ~~~`)
         console.log(data)
+        console.log("~~~ party members ~~~")
+        console.log(partyMembers)
     })
 
     const idleTargets: MonsterName[] = []
