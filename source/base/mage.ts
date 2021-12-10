@@ -138,7 +138,10 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
 
         let strangerNearby = false
         for (const [, player] of bot.players) {
-            if (player.isFriendly(bot)) continue
+            if (player.isFriendly(bot)) continue // They are friendly
+
+            const distance = AL.Tools.distance(bot, player)
+            if (distance > bot.range + player.range + 100) continue // They are far away
 
             strangerNearby = true
             break
