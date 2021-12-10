@@ -138,10 +138,10 @@ function prepareMage(bot: Mage) {
             }
         },
         frog: {
-            attack: async () => { await attackTheseTypesMage(bot, ["frog"], information.friends) },
+            attack: async () => { await attackTheseTypesMage(bot, ["frog", "tortoise"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
-            move: async () => { await goToNearestWalkableToMonster(bot, ["frog"]) },
+            move: async () => { await goToNearestWalkableToMonster(bot, ["frog", "tortoise"]) },
         },
         goldenbat: {
             attack: async () => { await attackTheseTypesMage(bot, ["goldenbat"], information.friends) },
@@ -315,6 +315,12 @@ function prepareMage(bot: Mage) {
                 }
             }
         },
+        tortoise: {
+            attack: async () => { await attackTheseTypesMage(bot, ["tortoise", "frog"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            move: async () => { await goToNearestWalkableToMonster(bot, ["tortoise", "frog"]) },
+        }
     }
 
     startMage(bot, information, strategy, partyLeader, partyMembers)
