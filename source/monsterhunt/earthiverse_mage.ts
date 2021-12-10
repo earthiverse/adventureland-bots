@@ -1,6 +1,6 @@
 import AL, { Merchant, Priest, Warrior, GMap, ServerInfoDataLive, IPosition, Mage } from "alclient"
 import { goToAggroMonster, goToNearestWalkableToMonster, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
-import { attackTheseTypesMage, magiportIfNotNearby } from "../base/mage.js"
+import { attackTheseTypesMage, magiportFriendsIfNotNearby } from "../base/mage.js"
 import { attackTheseTypesMerchant } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
@@ -573,7 +573,7 @@ function prepareMage(bot: Mage) {
                     await goToSpecialMonster(bot, "cutebee")
                 }
                 const entities = bot.getEntities({ type: "cutebee", withinRange: bot.range })
-                if (entities.length) magiportIfNotNearby(bot, information)
+                if (entities.length) magiportFriendsIfNotNearby(bot, information)
             }
         },
         dragold: {
@@ -582,7 +582,7 @@ function prepareMage(bot: Mage) {
             move: async () => {
                 await goToSpecialMonster(bot, "dragold")
                 const entities = bot.getEntities({ type: "dragold", withinRange: bot.range })
-                if (entities.length) magiportIfNotNearby(bot, information)
+                if (entities.length) magiportFriendsIfNotNearby(bot, information)
             },
             requireCtype: "priest"
         },
@@ -604,7 +604,7 @@ function prepareMage(bot: Mage) {
                     if (bot.S.franky as ServerInfoDataLive) requestMagiportService(bot, bot.S.franky as IPosition)
                     await goToSpecialMonster(bot, "franky")
                     const entities = bot.getEntities({ type: "franky", withinRange: bot.range })
-                    if (entities.length) magiportIfNotNearby(bot, information)
+                    if (entities.length) magiportFriendsIfNotNearby(bot, information)
                 }
             },
             requireCtype: "priest"
@@ -615,7 +615,7 @@ function prepareMage(bot: Mage) {
             move: async () => {
                 await goToSpecialMonster(bot, "fvampire")
                 const entities = bot.getEntities({ type: "fvampire", withinRange: bot.range })
-                if (entities.length) magiportIfNotNearby(bot, information)
+                if (entities.length) magiportFriendsIfNotNearby(bot, information)
             },
             requireCtype: "priest"
         },
@@ -644,7 +644,7 @@ function prepareMage(bot: Mage) {
             move: async () => {
                 await bot.smartMove("greenjr")
                 const entities = bot.getEntities({ type: "greenjr", withinRange: bot.range })
-                if (entities.length) magiportIfNotNearby(bot, information)
+                if (entities.length) magiportFriendsIfNotNearby(bot, information)
             },
         },
         hen: {
@@ -662,7 +662,7 @@ function prepareMage(bot: Mage) {
                     if (bot.S.icegolem as ServerInfoDataLive) requestMagiportService(bot, bot.S.icegolem as IPosition)
                     await bot.smartMove({ map: "winterland", x: 783, y: 277 }, { useBlink: true })
                     const entities = bot.getEntities({ type: "icegolem", withinRange: bot.range })
-                    if (entities.length) magiportIfNotNearby(bot, information)
+                    if (entities.length) magiportFriendsIfNotNearby(bot, information)
                 }
                 if (iceGolem && !AL.Pathfinder.canWalkPath(bot, iceGolem)) {
                     // Cheat and walk across the water.
@@ -685,7 +685,7 @@ function prepareMage(bot: Mage) {
             move: async () => {
                 await goToSpecialMonster(bot, "jr")
                 const entities = bot.getEntities({ type: "jr", withinRange: bot.range })
-                if (entities.length) magiportIfNotNearby(bot, information)
+                if (entities.length) magiportFriendsIfNotNearby(bot, information)
             },
         },
         minimush: {
@@ -707,7 +707,7 @@ function prepareMage(bot: Mage) {
                 if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as IPosition)
                 await goToSpecialMonster(bot, "mrgreen")
                 const entities = bot.getEntities({ type: "mrgreen", withinRange: bot.range })
-                if (entities.length) magiportIfNotNearby(bot, information)
+                if (entities.length) magiportFriendsIfNotNearby(bot, information)
             },
             requireCtype: "priest"
         },
@@ -718,7 +718,7 @@ function prepareMage(bot: Mage) {
                 if (bot.S.mrpumpkin as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrpumpkin as IPosition)
                 await goToSpecialMonster(bot, "mrpumpkin")
                 const entities = bot.getEntities({ type: "mrpumpkin", withinRange: bot.range })
-                if (entities.length) magiportIfNotNearby(bot, information)
+                if (entities.length) magiportFriendsIfNotNearby(bot, information)
             },
             requireCtype: "priest"
         },
@@ -735,7 +735,7 @@ function prepareMage(bot: Mage) {
             move: async () => {
                 await goToSpecialMonster(bot, "mvampire")
                 const entities = bot.getEntities({ type: "mvampire", withinRange: bot.range })
-                if (entities.length) magiportIfNotNearby(bot, information)
+                if (entities.length) magiportFriendsIfNotNearby(bot, information)
             },
         },
         nerfedmummy: {
@@ -763,7 +763,7 @@ function prepareMage(bot: Mage) {
             move: async () => {
                 await goToSpecialMonster(bot, "phoenix")
                 const entities = bot.getEntities({ type: "phoenix", withinRange: bot.range })
-                if (entities.length) magiportIfNotNearby(bot, information)
+                if (entities.length) magiportFriendsIfNotNearby(bot, information)
             },
         },
         plantoid: {
@@ -821,7 +821,7 @@ function prepareMage(bot: Mage) {
             move: async () => {
                 await goToNearestWalkableToMonster(bot, ["skeletor"], { map: "arena", x: 380, y: -575 })
                 const entities = bot.getEntities({ type: "skeletor", withinRange: bot.range })
-                if (entities.length) magiportIfNotNearby(bot, information)
+                if (entities.length) magiportFriendsIfNotNearby(bot, information)
             },
             requireCtype: "priest",
         },
@@ -832,7 +832,7 @@ function prepareMage(bot: Mage) {
         //     move: async () => {
         //         await goToSpecialMonster(bot, "slenderman")
         //         const entities = bot.getEntities({ type: "slenderman", withinRange: bot.range })
-        //         if (entities.length) magiportIfNotNearby(bot, information)
+        //         if (entities.length) magiportFriendsIfNotNearby(bot, information)
         //     },
         // },
         snake: {
@@ -848,7 +848,7 @@ function prepareMage(bot: Mage) {
             move: async () => {
                 await goToSpecialMonster(bot, "snowman")
                 const entities = bot.getEntities({ type: "snowman", withinRange: bot.range })
-                if (entities.length) magiportIfNotNearby(bot, information)
+                if (entities.length) magiportFriendsIfNotNearby(bot, information)
             },
         },
         spider: {
@@ -875,7 +875,7 @@ function prepareMage(bot: Mage) {
             move: async () => {
                 await goToSpecialMonster(bot, "stompy")
                 const entities = bot.getEntities({ type: "stompy", withinRange: bot.range })
-                if (entities.length) magiportIfNotNearby(bot, information)
+                if (entities.length) magiportFriendsIfNotNearby(bot, information)
             },
             requireCtype: "priest"
         },
@@ -891,7 +891,7 @@ function prepareMage(bot: Mage) {
         //     move: async () => {
         //         await goToSpecialMonster(bot, "tinyp")
         //         const entities = bot.getEntities({ type: "tinyp", withinRange: bot.range })
-        //         if (entities.length) magiportIfNotNearby(bot, information)
+        //         if (entities.length) magiportFriendsIfNotNearby(bot, information)
         //     },
         // },
         tortoise: {
@@ -907,7 +907,7 @@ function prepareMage(bot: Mage) {
             move: async () => {
                 await goToSpecialMonster(bot, "wabbit")
                 const entities = bot.getEntities({ type: "wabbit", withinRange: bot.range })
-                if (entities.length) magiportIfNotNearby(bot, information)
+                if (entities.length) magiportFriendsIfNotNearby(bot, information)
             }
         },
         wolf: {

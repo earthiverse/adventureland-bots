@@ -1,4 +1,4 @@
-import AL, { Character, Entity, Mage, MonsterName, SlotType, TradeItemInfo, TradeSlotType } from "alclient"
+import AL, { Character, Entity, Mage, MonsterName, Pathfinder, SlotType, TradeItemInfo, TradeSlotType } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { Information } from "../definitions/bot"
 
@@ -136,37 +136,46 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
             }
         }
 
-        // Cburst monsters that we can kill steal
-        for (const entity of bot.getEntities({
-            couldGiveCredit: true,
-            willDieToProjectiles: true,
-            withinRange: bot.range
-        })) {
-            if (entity.immune) continue // Entity won't take damage from cburst
-            if (entity.target) continue // Already has a target
-            if (entity.xp < 0) continue // Don't try to kill steal pets
-            const extraMP = 1 / bot.G.skills.cburst.ratio
-            if (mpNeeded + extraMP > bot.mp) break // We can't cburst anything more
-            targets.set(entity.id, extraMP)
-            mpNeeded += extraMP
+        let strangerNearby = false
+        for (const [, player] of bot.players) {
+            if (player.isFriendly(bot)) continue
+
+            strangerNearby = true
+            break
         }
+        if (strangerNearby) {
+            // Cburst monsters to kill steal
+            for (const entity of bot.getEntities({
+                couldGiveCredit: true,
+                willDieToProjectiles: true,
+                withinRange: bot.range
+            })) {
+                if (entity.immune) continue // Entity won't take damage from cburst
+                if (entity.target) continue // Already has a target
+                if (entity.xp < 0) continue // Don't try to kill steal pets
+                const extraMP = 1 / bot.G.skills.cburst.ratio
+                if (mpNeeded + extraMP > bot.mp) break // We can't cburst anything more
+                targets.set(entity.id, extraMP)
+                mpNeeded += extraMP
+            }
 
-        if (targets.size && bot.mp >= mpNeeded) {
+            if (targets.size && bot.mp >= mpNeeded) {
             // Remove them from our friends' entities list, since we're going to kill them
-            for (const [id] of targets) {
-                for (const friend of friends) {
-                    if (!friend) continue // No friend
-                    if (friend.id == bot.id) continue // Don't delete it from our own list
-                    friend.deleteEntity(id)
+                for (const [id] of targets) {
+                    for (const friend of friends) {
+                        if (!friend) continue // No friend
+                        if (friend.id == bot.id) continue // Don't delete it from our own list
+                        friend.deleteEntity(id)
+                    }
                 }
-            }
 
-            const cburstTargets: [string, number][] = []
-            for (const cburstData of targets) {
-                cburstTargets.push(cburstData)
-            }
+                const cburstTargets: [string, number][] = []
+                for (const cburstData of targets) {
+                    cburstTargets.push(cburstData)
+                }
 
-            await bot.cburst(cburstTargets)
+                await bot.cburst(cburstTargets)
+            }
         }
     }
 
@@ -186,7 +195,7 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
 }
 
 const lastMagiport = new Map<string, number>()
-export async function magiportIfNotNearby(bot: Mage, information: Information, distance = AL.Constants.MAX_VISIBLE_RANGE): Promise<void> {
+export async function magiportFriendsIfNotNearby(bot: Mage, information: Information, distance = AL.Constants.MAX_VISIBLE_RANGE): Promise<void> {
     if (!bot.canUse("magiport")) return // Can't use magiport
 
     const offerMagiport = async (friend: Character) => {
@@ -208,4 +217,16 @@ export async function magiportIfNotNearby(bot: Mage, information: Information, d
     if (information.bot1.name !== bot.id && myTarget == information.bot1.target) offerMagiport(information.bot1.bot)
     if (information.bot2.name !== bot.id && myTarget == information.bot2.target) offerMagiport(information.bot2.bot)
     if (information.bot3.name !== bot.id && myTarget == information.bot3.target) offerMagiport(information.bot3.bot)
+}
+export function magiportStrangerIfNotNearby(bot: Mage, id: string): void {
+    if (!bot.canUse("magiport")) return // Can't use magiport
+    if (lastMagiport.get(id) <= Date.now() - 5000) return // Recently offered a magiport
+    if (id == bot.id) return // It's us!
+
+    const player = bot.players.get(id)
+    if (player && Pathfinder.canWalkPath(bot, player)) return // Nearby
+
+    // Magiport
+    bot.magiport(id).catch(e => console.error(e))
+    lastMagiport.set(id, Date.now())
 }

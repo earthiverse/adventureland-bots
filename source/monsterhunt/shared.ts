@@ -1,6 +1,6 @@
 import AL, { Character, CMData, Constants, Entity, IPosition, LimitDCReportData, Mage, Merchant, MonsterName, Priest, Ranger, Rogue, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Warrior } from "alclient"
 import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, ITEMS_TO_HOLD, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
-import { attackTheseTypesMage } from "../base/mage.js"
+import { attackTheseTypesMage, magiportStrangerIfNotNearby } from "../base/mage.js"
 import { attackTheseTypesMerchant, doBanking, doEmergencyBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
@@ -83,10 +83,10 @@ export async function startMage(bot: Mage, information: Information, strategy: S
 
     bot.socket.on("cm", async (data: CMData) => {
         // Let mages do magiport requests from party members
-        if (data.message == "magiport"
+        if (data.message == "\"magiport\""
             && partyMembers.includes(data.name)
             && bot.canUse("magiport")) {
-            bot.magiport(data.name)
+            magiportStrangerIfNotNearby(bot, data.name)
             return
         }
 
