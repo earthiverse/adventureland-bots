@@ -140,14 +140,14 @@ for (const itemName in ITEMS_TO_SELL) {
 export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
     // Rare & important items
     "cyber": 1, "exoarm": 1, "fury": 1, "gstaff": 1, "starkillers": 1, "suckerpunch": 1, "t3bow": 1, "sbelt": 0, "supermittens": 1,
+    // Rings which are slightly harder to get
+    "armorring": 2, "resistancering": 2, "tristone": 2,
     // Don't use offeringp on rugged stuff (we get a lot from fishing)
     "coat1": 8, "gloves1": 8, "helmet1": 8, "pants1": 8, "shoes1": 8,
     // Don't use as many offeringp on heavy armor, a lot is available during events
     "harmor": 6, "hgloves": 6, "hhelmet": 6, "hpants": 6, "hboots": 6,
     // Don't use offeringp on vampire attire (we get a lot from bosses)
     "vattire": 7,
-    // Don't use offeringp on wanderers stuff (we get a lot from drops and crafting)
-    "wattire": 9, "wbreeches": 9, "wcap": 9, "wgloves": 9, "wshoes": 9,
     // Misc. common stuff
     "cape": 7, "dagger": 7, "fireblade": 7, "firestaff": 7, "sword": 7, "wbook0": 4,
     // Don't use as many offeringp on Halloween stuff

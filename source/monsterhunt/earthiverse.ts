@@ -257,18 +257,20 @@ function preparePriest(bot: Priest) {
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
             move: async () => {
+                if (bot.S.grinch?.live && bot.S.grinch.hp <= 1_000_000) {
+                    await goToNPC(bot, "citizen0")
+                    return
+                }
+
                 const grinch = bot.getNearestMonster("grinch")?.monster
                 if (grinch) {
                     // TODO: If we see Kane, and the grinch is targeting us, kite him to Kane
                     await bot.smartMove(grinch, { getWithin: bot.range - 10 })
-                } else if (bot.S.grinch.live) {
+                } else if (bot.S.grinch?.live) {
                     if (["woffice", "bank", "bank_b", "bank_u"].includes(bot.S.grinch.map)) return // Wait for the grinch to move to a place we can attack him
-                    if (bot.S.grinch.hp > 1_000_000) {
-                        if (bot.S.grinch as ServerInfoDataLive) requestMagiportService(bot, bot.S.grinch as IPosition)
-                        await goToSpecialMonster(bot, "grinch")
-                    } else {
-                        await goToNPC(bot, "citizen0")
-                    }
+
+                    requestMagiportService(bot, bot.S.grinch as IPosition)
+                    await goToSpecialMonster(bot, "grinch")
                 }
             }
         },
@@ -663,18 +665,20 @@ function prepareRanger(bot: Ranger) {
             attackWhileIdle: true,
             equipment: { mainhand: "firebow", orb: "jacko" },
             move: async () => {
+                if (bot.S.grinch?.live && bot.S.grinch.hp <= 1_000_000) {
+                    await goToNPC(bot, "citizen0")
+                    return
+                }
+
                 const grinch = bot.getNearestMonster("grinch")?.monster
                 if (grinch) {
                     // TODO: If we see Kane, and the grinch is targeting us, kite him to Kane
                     await bot.smartMove(grinch, { getWithin: bot.range - 10 })
-                } else if (bot.S.grinch.live) {
+                } else if (bot.S.grinch?.live) {
                     if (["woffice", "bank", "bank_b", "bank_u"].includes(bot.S.grinch.map)) return // Wait for the grinch to move to a place we can attack him
-                    if (bot.S.grinch.hp > 1_000_000) {
-                        if (bot.S.grinch as ServerInfoDataLive) requestMagiportService(bot, bot.S.grinch as IPosition)
-                        await goToSpecialMonster(bot, "grinch")
-                    } else {
-                        await goToNPC(bot, "citizen0")
-                    }
+
+                    requestMagiportService(bot, bot.S.grinch as IPosition)
+                    await goToSpecialMonster(bot, "grinch")
                 }
             }
         },
@@ -1120,18 +1124,20 @@ function prepareWarrior(bot: Warrior) {
             attackWhileIdle: true,
             equipment: burnEquipment,
             move: async () => {
+                if (bot.S.grinch?.live && bot.S.grinch.hp <= 1_000_000) {
+                    await goToNPC(bot, "citizen0")
+                    return
+                }
+
                 const grinch = bot.getNearestMonster("grinch")?.monster
                 if (grinch) {
                     // TODO: If we see Kane, and the grinch is targeting us, kite him to Kane
                     await bot.smartMove(grinch, { getWithin: bot.range - 10 })
-                } else if (bot.S.grinch.live) {
+                } else if (bot.S.grinch?.live) {
                     if (["woffice", "bank", "bank_b", "bank_u"].includes(bot.S.grinch.map)) return // Wait for the grinch to move to a place we can attack him
-                    if (bot.S.grinch.hp > 1_000_000) {
-                        if (bot.S.grinch as ServerInfoDataLive) requestMagiportService(bot, bot.S.grinch as IPosition)
-                        await goToSpecialMonster(bot, "grinch")
-                    } else {
-                        await goToNPC(bot, "citizen0")
-                    }
+
+                    requestMagiportService(bot, bot.S.grinch as IPosition)
+                    await goToSpecialMonster(bot, "grinch")
                 }
             }
         },
@@ -1382,9 +1388,9 @@ function prepareWarrior(bot: Warrior) {
                 // Taunt extra wolves so the ranger can 3shot
                 const stompy = bot.getNearestMonster("stompy")?.monster
                 if (stompy && stompy.level <= 1 && bot.canUse("taunt")) {
-                    const wolvesTargettingMe = bot.getEntities({ targetingMe: true, type: "wolf" })
+                    const wolvesTargetingMe = bot.getEntities({ targetingMe: true, type: "wolf" })
                     const wolvesToTarget = bot.getEntities({ couldGiveCredit: true, targetingMe: false, type: "wolf", withinRange: bot.G.skills.taunt.range })
-                    if (wolvesTargettingMe.length < 2 && wolvesToTarget.length > 0) {
+                    if (wolvesTargetingMe.length < 2 && wolvesToTarget.length > 0) {
                         bot.taunt(wolvesToTarget[0].id).catch(e => console.error(e))
                     }
                 }

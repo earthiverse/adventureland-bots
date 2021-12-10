@@ -174,17 +174,18 @@ function prepareMage(bot: Mage) {
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
             move: async () => {
+                if (bot.S.grinch?.live && bot.S.grinch.hp <= 1_000_000) {
+                    await goToNPC(bot, "citizen0")
+                    return
+                }
+
                 const grinch = bot.getNearestMonster("grinch")?.monster
                 if (grinch) {
                     // TODO: If we see Kane, and the grinch is targeting us, kite him to Kane
                     await bot.smartMove(grinch, { getWithin: bot.range - 10 })
-                } else if (bot.S.grinch.live) {
+                } else if (bot.S.grinch?.live) {
                     if (["woffice", "bank", "bank_b", "bank_u"].includes(bot.S.grinch.map)) return // Wait for the grinch to move to a place we can attack him
-                    if (bot.S.grinch.hp > 1_000_000) {
-                        await goToSpecialMonster(bot, "grinch")
-                    } else {
-                        await goToNPC(bot, "citizen0")
-                    }
+                    await goToSpecialMonster(bot, "grinch")
                 }
             }
         },
