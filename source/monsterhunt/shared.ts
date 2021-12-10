@@ -83,8 +83,8 @@ export async function startMage(bot: Mage, information: Information, strategy: S
 
     bot.socket.on("cm", async (data: CMData) => {
         // Let mages do magiport requests from party members
-        if (data.message == "\"magiport\""
-            && partyMembers.includes(data.name)
+        if (partyMembers.includes(data.name)
+            && JSON.parse(data.message) == "magiport"
             && bot.canUse("magiport")) {
             magiportStrangerIfNotNearby(bot, data.name)
             return
