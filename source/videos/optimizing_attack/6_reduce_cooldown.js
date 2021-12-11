@@ -28,10 +28,7 @@ async function attackLoop() {
         const nearest = get_nearest_monster()
         if (!nearest) {
             set_message("No Monsters")
-            return
-        }
-
-        if (can_attack(nearest)) {
+        } else if (can_attack(nearest)) {
             set_message("Attacking")
             await attack(nearest)
             /** NOTE: We're now reducing the cooldown based on the ping */

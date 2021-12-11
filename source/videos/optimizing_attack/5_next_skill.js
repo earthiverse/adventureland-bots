@@ -29,10 +29,7 @@ async function attackLoop() {
         const nearest = get_nearest_monster()
         if (!nearest) {
             set_message("No Monsters")
-            return
-        }
-
-        if (can_attack(nearest)) {
+        } else if (can_attack(nearest)) {
             set_message("Attacking")
             /** NOTE: We're now awaiting the attack */
             await attack(nearest)
