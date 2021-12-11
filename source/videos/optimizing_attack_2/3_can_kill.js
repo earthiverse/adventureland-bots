@@ -18,6 +18,20 @@ if (!character.controller) {
     setTimeout(() => { startStatisticsLoop(SCRIPT_NAME, CHARACTERS) }, 60000)
 }
 
+function can_kill(entity) {
+    let minimumDamage = 0
+    switch (G.classes[character.ctype].damage_type) {
+        case "magical":
+            minimumDamage = 0.9 * damage_multiplier(entity.resistance - character.rpiercing)
+            break
+        case "physical":
+            minimumDamage = 0.9 * damage_multiplier(entity.armor - character.apiercing)
+            break
+    }
+    if ()
+    
+}
+
 async function attackLoop() {
     try {
         const nearest = get_nearest_monster({ type: MONSTER })

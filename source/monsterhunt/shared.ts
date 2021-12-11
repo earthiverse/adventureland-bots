@@ -290,7 +290,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
 
             // Get some holiday spirit if it's Christmas
             if (bot.S && bot.S.holidayseason && !bot.s.holidayspirit) {
-                await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, useBlink: true })
+                await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                 // TODO: Improve ALClient by making this a function
                 bot.socket.emit("interaction", { type: "newyear_tree" })
                 bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, Math.min(...bot.pings) * 2))
@@ -840,7 +840,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
 
                 // Get some holiday spirit if it's Christmas
                 if (bot.S && bot.S.holidayseason && !bot.s.holidayspirit) {
-                    await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, useBlink: true })
+                    await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                     // TODO: Improve ALClient by making this a function
                     bot.socket.emit("interaction", { type: "newyear_tree" })
                     bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, Math.min(...bot.pings) * 2))
