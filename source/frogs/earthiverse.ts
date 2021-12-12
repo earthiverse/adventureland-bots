@@ -2,18 +2,18 @@ import AL, { Entity, Mage, ServerIdentifier, ServerRegion } from "alclient"
 import { goToBankIfFull, goToPotionSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
 import { bankingPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
-import { partyLeader } from "../base/party.js"
-import { getTargetServerFromDate, getTargetServerFromPlayer } from "../base/serverhop.js"
+// import { partyLeader } from "../base/party.js"
+// import { getTargetServerFromDate, getTargetServerFromPlayer } from "../base/serverhop.js"
 
 /** Config */
-const mageName = "earthMag"
-let lastServer: [ServerRegion, ServerIdentifier] = ["US", "II"]
+const mageName = "earthMag3"
+const lastServer: [ServerRegion, ServerIdentifier] = ["EU", "PVP"]
 
 /** Characters */
 let mage: Mage
 
 async function startMage(bot: Mage) {
-    startBuyLoop(bot, new Set())
+    startBuyLoop(bot, new Set(), [["hpot1", 100], ["mpot1", 4999]])
     startHealLoop(bot)
     startLootLoop(bot)
     startSellLoop(bot, { "hpamulet": 2, "hpbelt": 2, "ringsj": 2 })
@@ -43,9 +43,6 @@ async function startMage(bot: Mage) {
                 return
             }
 
-            await goToPotionSellerIfLow(bot)
-            await goToBankIfFull(bot)
-
             // Get some holiday spirit if it's Christmas
             if (bot.S && bot.S.holidayseason && !bot.s.holidayspirit) {
                 await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
@@ -55,7 +52,10 @@ async function startMage(bot: Mage) {
                 return
             }
 
-            if (bot.countItem("seashell") > 1000 || bot.hasItem("gem0") || bot.gold > 5_000_000) {
+            await goToPotionSellerIfLow(bot)
+            await goToBankIfFull(bot)
+
+            if (bot.countItem("seashell") > 1000 || bot.hasItem("gem0") || bot.hasItem("ink") || bot.hasItem("5bucks") || bot.gold > 5_000_000) {
                 await bot.smartMove(bankingPosition) // Move to bank teller to give bank time to get ready
 
                 for (let i = 0; i < bot.isize; i++) {
@@ -90,7 +90,7 @@ async function startMage(bot: Mage) {
                 }
             }
             if (nearest) {
-                bot.smartMove(nearest, { getWithin: bot.range - nearest.speed, useBlink: true }).catch(() => { /* Suppress errors */ })
+                bot.smartMove(nearest, { getWithin: bot.range - nearest.speed }).catch(() => { /* Suppress errors */ })
             } else {
                 // Look for tortoises
                 for (const tortoise of bot.getEntities({
@@ -106,9 +106,9 @@ async function startMage(bot: Mage) {
                     }
                 }
                 if (nearest) {
-                    bot.smartMove(nearest, { getWithin: bot.range - nearest.speed, useBlink: true }).catch(() => { /* Suppress errors */ })
+                    bot.smartMove(nearest, { getWithin: bot.range - nearest.speed }).catch(() => { /* Suppress errors */ })
                 } else {
-                    bot.smartMove(frogSpawn, { useBlink: true }).catch(() => { /* Suppress errors */ })
+                    bot.smartMove(frogSpawn).catch(() => { /* Suppress errors */ })
                 }
             }
 
@@ -127,9 +127,9 @@ async function run() {
 
     const connectLoop = async () => {
         try {
-            const avoidServer = await getTargetServerFromPlayer(lastServer[0], lastServer[1], partyLeader)
-            const targetServer = getTargetServerFromDate(0, true)
-            if (targetServer[0] !== avoidServer[0] || targetServer[1] !== avoidServer[1]) lastServer = targetServer
+            // const avoidServer = await getTargetServerFromPlayer(lastServer[0], lastServer[1], partyLeader)
+            // const targetServer: [ServerRegion, ServerIdentifier] = getTargetServerFromDate(0, true)
+            // if (targetServer[0] !== avoidServer[0] || targetServer[1] !== avoidServer[1]) lastServer = targetServer
 
             mage = await AL.Game.startMage(mageName, lastServer[0], lastServer[1])
             startMage(mage)
