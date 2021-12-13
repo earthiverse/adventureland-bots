@@ -4,7 +4,8 @@ load_code("base") // Performs the healing, looting, and movement for us
 // Script variables
 const SCRIPT_NAME = "default"
 const MERCHANT = "attackMer"
-const CHARACTERS = ["attackMag", "attackMag2", "attackMag3"]
+// You can run up to 3 attacking characters and 1 merchant at a time.
+const CHARACTERS = [MERCHANT, "attackMag", "attackMag2", "attackMag3"]
 const MONSTER = "bee"
 
 if (!character.controller) {
@@ -14,7 +15,7 @@ if (!character.controller) {
         start_character(friend, SCRIPT_NAME)
     }
 
-    // Start tracking statistics in a minute (to give time to let the others start)
+    // Start tracking statistics in a minute (to give time to let the others start and de-level the monsters)
     setTimeout(() => { startStatisticsLoop(SCRIPT_NAME, CHARACTERS) }, 60000)
 }
 
@@ -35,8 +36,9 @@ async function attackLoop() {
 }
 
 if (character.ctype == "merchant") {
-    //
+    // What to do if we're the merchant
 } else {
+    // What to do if we're one of the attacking characters
     attackLoop()
     sendStuffLoop(MERCHANT)
 }

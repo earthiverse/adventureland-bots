@@ -107,33 +107,53 @@ async function regenLoop() {
         const hpMissing = character.max_hp - character.hp
         const mpRatio = character.mp / character.max_mp
         const mpMissing = character.max_mp - character.mp
+        const minPing = Math.min(...parent.pings)
 
         if (character.rip) {
             // Don't heal if we're dead
             setTimeout(async () => { regenLoop() }, Math.max(100, ms_to_next_skill("use_hp")))
+            return
         }
 
-        const hpot1 = locate_item("hpot1")
-        const hpot1Recovery = G.items.hpot1.gives[0][1]
-        const mpot1 = locate_item("mpot1")
-        const mpot1Recovery = G.items.hpot1.gives[0][1]
+        if (mpRatio < hpRatio) {
+            // We want to heal MP
+            const mpot0 = locate_item("mpot0")
+            const mpot0Recovery = G.items.mpot0.gives[0][1]
+            const mpot1 = locate_item("mpot1")
+            const mpot1Recovery = G.items.mpot1.gives[0][1]
+            if (mpot1 !== -1 && mpMissing >= mpot1Recovery) {
+                await equip(mpot1)
+                // Equip doesn't return a promise yet. When it does, remove the setTimeout to just the function inside of it
+                setTimeout(() => { reduce_cooldown("use_hp", minPing) }, 2 * minPing)
+            } else if (mpot0 !== -1 && mpMissing >= mpot0Recovery) {
+                await equip(mpot0)
+                // Equip doesn't return a promise yet. When it does, remove the setTimeout to just the function inside of it
+                setTimeout(() => { reduce_cooldown("use_hp", minPing) }, 2 * minPing)
+            } else {
+                await use_skill("regen_mp")
+                // Use Skill doesn't return a promise yet. When it does, remove the setTimeout to just the function inside of it
+                setTimeout(() => { reduce_cooldown("use_hp", minPing) }, 2 * minPing)
+            }
+        } else if (character.hp !== character.max_hp) {
+            // We want to heal HP
+            const hpot0 = locate_item("hpot0")
+            const hpot0Recovery = G.items.hpot0.gives[0][1]
+            const hpot1 = locate_item("hpot1")
+            const hpot1Recovery = G.items.hpot1.gives[0][1]
 
-        if (hpot1 != -1 && mpMissing >= mpot1Recovery && mpRatio < hpRatio && can_use("use_hp")) {
-            // We have an MP pot to use
-            await use_skill("use_mp")
-            reduce_cooldown("use_hp", Math.min(...parent.pings))
-        } else if (mpot1 != -1 && hpMissing >= hpot1Recovery && can_use("use_hp")) {
-            // We have an HP pot to use
-            await use_skill("use_hp")
-            reduce_cooldown("use_hp", Math.min(...parent.pings))
-        } else if (mpRatio < hpRatio && can_use("use_hp")) {
-            // We have less MP than HP, so let's regen some MP.
-            await use_skill("regen_mp")
-            reduce_cooldown("use_hp", Math.min(...parent.pings))
-        } else if (hpRatio !== 1 && can_use("use_hp")) {
-            // We have less HP than MP, so let's regen some HP.
-            await use_skill("regen_hp")
-            reduce_cooldown("use_hp", Math.min(...parent.pings))
+            if (hpot1 !== -1 && hpMissing >= hpot1Recovery) {
+                await equip(hpot1)
+                // Equip doesn't return a promise yet. When it does, remove the setTimeout to just the function inside of it
+                setTimeout(() => { reduce_cooldown("use_hp", minPing) }, 2 * minPing)
+            } else if (hpot0 !== -1 && hpMissing >= hpot0Recovery) {
+                await equip(hpot0)
+                // Equip doesn't return a promise yet. When it does, remove the setTimeout to just the function inside of it
+                setTimeout(() => { reduce_cooldown("use_hp", minPing) }, 2 * minPing)
+            } else {
+                await use_skill("regen_hp")
+                // Use Skill doesn't return a promise yet. When it does, remove the setTimeout to just the function inside of it
+                setTimeout(() => { reduce_cooldown("use_hp", minPing) }, 2 * minPing)
+            }
         }
     } catch (e) {
         console.error(e)
@@ -187,5 +207,24 @@ function getCharacter(name) {
         const char = iframe.contentWindow.character
         if (!char) continue // Character isn't loaded yet
         if (char.name == name) return char
+    }
+}
+function getParentsOfCharacters(excludeSelf = true) {
+    const parents = []
+
+    for (const iframe of top.$("iframe")) {
+        const char = iframe.contentWindow.character
+        if (!char) continue // Character isn't loaded yet
+        if (excludeSelf && char.name == character.name) continue
+        parents.push(iframe.contentWindow)
+    }
+
+    return parents
+}
+function getParentOfCharacter(name) {
+    for (const iframe of top.$("iframe")) {
+        const char = iframe.contentWindow.character
+        if (!char) continue // Character isn't loaded yet
+        if (char.name == name) return iframe.contentWindow
     }
 }
