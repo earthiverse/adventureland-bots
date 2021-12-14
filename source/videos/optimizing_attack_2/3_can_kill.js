@@ -76,7 +76,7 @@ async function attackLoop() {
 }
 
 if (character.ctype == "merchant") {
-    //
+    buyAndSendPotionsLoop(ATTACKING_CHARACTERS)
 } else {
     attackLoop()
     sendStuffLoop(MERCHANT)

@@ -38,6 +38,7 @@ async function attackLoop() {
 
 if (character.ctype == "merchant") {
     // What to do if we're the merchant
+    buyAndSendPotionsLoop(ATTACKING_CHARACTERS)
 } else {
     // What to do if we're one of the attacking characters
     attackLoop()

@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-undef */
 
+// Constants
+const MPOT0_RECOVERY = G.items.mpot0.gives[0][1]
+const MPOT1_RECOVERY = G.items.mpot1.gives[0][1]
+const HPOT0_RECOVERY = G.items.hpot0.gives[0][1]
+const HPOT1_RECOVERY = G.items.hpot1.gives[0][1]
+
 function ms_to_next_skill(skill) {
     const next_skill = parent.next_skill[skill]
     if (next_skill == undefined) return 0
@@ -117,14 +123,13 @@ async function regenLoop() {
         if (mpRatio < hpRatio) {
             // We want to heal MP
             const mpot0 = locate_item("mpot0")
-            const mpot0Recovery = G.items.mpot0.gives[0][1]
             const mpot1 = locate_item("mpot1")
-            const mpot1Recovery = G.items.mpot1.gives[0][1]
-            if (mpot1 !== -1 && mpMissing >= mpot1Recovery) {
+
+            if (mpot1 !== -1 && mpMissing >= MPOT1_RECOVERY) {
                 await equip(mpot1)
                 // Equip doesn't return a promise yet. When it does, remove the setTimeout to just the function inside of it
                 setTimeout(() => { reduce_cooldown("use_hp", minPing) }, 2 * minPing)
-            } else if (mpot0 !== -1 && mpMissing >= mpot0Recovery) {
+            } else if (mpot0 !== -1 && mpMissing >= MPOT0_RECOVERY) {
                 await equip(mpot0)
                 // Equip doesn't return a promise yet. When it does, remove the setTimeout to just the function inside of it
                 setTimeout(() => { reduce_cooldown("use_hp", minPing) }, 2 * minPing)
@@ -136,15 +141,13 @@ async function regenLoop() {
         } else if (character.hp !== character.max_hp) {
             // We want to heal HP
             const hpot0 = locate_item("hpot0")
-            const hpot0Recovery = G.items.hpot0.gives[0][1]
             const hpot1 = locate_item("hpot1")
-            const hpot1Recovery = G.items.hpot1.gives[0][1]
 
-            if (hpot1 !== -1 && hpMissing >= hpot1Recovery) {
+            if (hpot1 !== -1 && hpMissing >= HPOT1_RECOVERY) {
                 await equip(hpot1)
                 // Equip doesn't return a promise yet. When it does, remove the setTimeout to just the function inside of it
                 setTimeout(() => { reduce_cooldown("use_hp", minPing) }, 2 * minPing)
-            } else if (hpot0 !== -1 && hpMissing >= hpot0Recovery) {
+            } else if (hpot0 !== -1 && hpMissing >= HPOT0_RECOVERY) {
                 await equip(hpot0)
                 // Equip doesn't return a promise yet. When it does, remove the setTimeout to just the function inside of it
                 setTimeout(() => { reduce_cooldown("use_hp", minPing) }, 2 * minPing)
@@ -163,7 +166,38 @@ regenLoop()
 
 async function buyAndSendPotionsLoop(names) {
     try {
-        //
+        // If we don't have a computer don't buy and send potions.
+        const hasComputer = locate_item("computer") !== -1
+        if (!hasComputer) return
+
+        // Check all friends
+        for (const friend of getCharacters(true)) {
+            if (distance(character, friend) > 400) continue // Friend is too far away
+
+            const toHold = {
+                "hpot1": 2500,
+                "mpot1": 2500
+            }
+
+            for (let i = 0; i < friend.isize; i++) {
+                const item = friend.items[i]
+                if (!item) continue // No item in this slot
+                if (!toHold[item.name]) continue // Not interested in this item
+                toHold[item.name] -= item.q
+                if (toHold[item.name] < 0) delete toHold[item.name]
+            }
+
+            for (const itemName in toHold) {
+                const qToSend = toHold[itemName]
+                const ourQ = quantity(itemName)
+                const ourQAfterSending = ourQ - qToSend
+
+                // Buy enough so we have 2500 on the merchant after sending
+                if (ourQAfterSending < 2500) await buy(itemName, 1000 - qToSend)
+                await buy(itemName, qToSend)
+                await send_item(friend.id, locate_item(itemName), qToSend)
+            }
+        }
     } catch (e) {
         console.error(e)
     }
@@ -180,13 +214,15 @@ async function sendStuffLoop(name) {
                 if (item.l) continue // Don't send locked items
                 if (["hpot1", "mpot1", "tracker", "computer"].includes(item.name)) continue // Don't send important items
 
-                send_item(name, i, item.q ?? 1)
+                await send_item(name, i, item.q ?? 1)
             }
+
+            if (character.gold > 1_000_000) await send_gold(merchant, character.gold - 1_000_000)
         }
     } catch (e) {
         console.error(e)
     }
-    setTimeout(async () => { sendStuffLoop() }, 1000)
+    setTimeout(async () => { sendStuffLoop(name) }, 1000)
 }
 
 function getCharacters(excludeSelf = true) {
