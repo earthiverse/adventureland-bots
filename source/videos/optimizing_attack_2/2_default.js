@@ -5,7 +5,8 @@ load_code("base") // Performs the healing, looting, and movement for us
 const SCRIPT_NAME = "default"
 const MERCHANT = "attackMer"
 // You can run up to 3 attacking characters and 1 merchant at a time.
-const CHARACTERS = [MERCHANT, "attackMag", "attackMag2", "attackMag3"]
+const ATTACKING_CHARACTERS = ["attackMag", "attackMag2", "attackMag3"]
+const CHARACTERS = [merchant, ...ATTACKING_CHARACTERS]
 const MONSTER = "bee"
 
 if (!character.controller) {

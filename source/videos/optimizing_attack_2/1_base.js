@@ -76,13 +76,12 @@ if (!character.controller) on_party_request = filterPartyRequests
  */
 function startStatisticsLoop(scriptName, characters) {
     const tenMinutesInMs = 10 * 60 * 1000
-    let started = Date.now()
     let numKilled = 0
     game.on("hit", (data) => {
-        if (!characters.includes(data.hid)) return // Not our character
+        if (!characters.includes(data.actor)) return // Not our character
         if (data.kill) numKilled += 1
     })
-    function statisticsLoop() {
+    statisticsLoop = () => {
         try {
             show_json({
                 script: scriptName,

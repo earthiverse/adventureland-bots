@@ -3,7 +3,8 @@ load_code("base")
 
 const SCRIPT_NAME = "default"
 const MERCHANT = "attackMer"
-const CHARACTERS = ["attackMag", "attackMag2", "attackMag3"]
+const ATTACKING_CHARACTERS = ["attackMag", "attackMag2", "attackMag3"]
+const CHARACTERS = [merchant, ...ATTACKING_CHARACTERS]
 const MONSTER = "bee"
 
 if (!character.controller) {
@@ -43,7 +44,7 @@ function canKill(entity) {
 
 // This function "removes" the entity from other characters, so they aren't able to target it.
 function removeEntityFromOtherCharacters(entity) {
-    for (const friendsParent of getParentsOfCharacters()) {
+    for (const friendsParent of getParentsOfCharacters(true)) {
         delete friendsParent.entities[entity.id]
     }
 }
