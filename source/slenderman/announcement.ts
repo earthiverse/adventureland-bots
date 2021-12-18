@@ -494,17 +494,8 @@ async function run() {
             identifier = targetServer[1]
             console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${region} ${identifier}`)
 
-            // Loot all of our remaining chests
-            await sleep(1000)
-            console.log("Looting remaining chests")
-            for (const [, chest] of rogue1.chests) {
-                try {
-                    await rogue1.openChest(chest.id)
-                } catch (e) {
-                    console.error(e)
-                }
-            }
-            await sleep(1000)
+            // Sleep to give a chance to loot
+            await sleep(5000)
 
             // Disconnect everyone
             console.log("Disconnecting characters")
