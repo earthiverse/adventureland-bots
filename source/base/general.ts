@@ -1087,7 +1087,7 @@ export function startLootLoop(bot: Character, friends: Character[] = []): void {
             if (!bot.socket || bot.socket.disconnected) return
 
             const [chest] = bot.chests
-            if (AL.Tools.distance(bot, chest[1]) <= 800) {
+            if (chest && AL.Tools.distance(bot, chest[1]) <= 800) {
                 for (const friend of friends) {
                     if (!friend) continue // No friend
                     if (friend.id == bot.id) continue // Don't delete our chests
