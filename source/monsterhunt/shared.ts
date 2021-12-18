@@ -795,7 +795,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
     if (bot.ctype !== "merchant") startElixirLoop(bot, "elixirluck")
     startExchangeLoop(bot)
     startHealLoop(bot)
-    startLootLoop(bot)
+    startLootLoop(bot, information.friends)
     if (bot.ctype !== "merchant") {
         if (bot.id == partyLeader) {
             startPartyLoop(bot, partyLeader, partyMembers)

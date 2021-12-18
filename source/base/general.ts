@@ -1,4 +1,3 @@
-import Queue from "queue-promise"
 import AL, { Character, ChestData, Entity, GameResponseData, GMap, HitData, IEntity, InviteData, IPosition, ItemData, ItemName, Merchant, MonsterName, NPCName, Player, Tools, TradeSlotType } from "alclient"
 import { ItemLevelInfo } from "../definitions/bot.js"
 import { bankingPosition, offsetPositionParty } from "./locations.js"
@@ -1081,37 +1080,27 @@ export function startHealLoop(bot: Character): void {
     healLoop()
 }
 
-export function startLootLoop(bot: Character): void {
-    // Loot chests as they come in
-    const queue = new Queue({
-        concurrent: 6,
-        interval: AL.Constants.TIMEOUT,
-        start: true
-    })
-    bot.socket.on("drop", (chest: ChestData) => {
-        queue.enqueue(() => {
-            if (AL.Tools.distance(bot, chest) > 800) return
-            return bot.openChest(chest.id).catch(e => console.error(e)) })
-    })
-    bot.socket.on("disconnect", () => {
-        queue.stop()
-        queue.clear()
-    })
-
+export function startLootLoop(bot: Character, friends: Character[] = []): void {
     // Backup loot loop if we fail to open chests
     async function lootLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            for (const [, chest] of bot.chests) {
-                if (AL.Tools.distance(bot, chest) > 800) continue
-                await bot.openChest(chest.id)
+            const [chest] = bot.chests
+            if (AL.Tools.distance(bot, chest[1]) <= 800) {
+                for (const friend of friends) {
+                    if (!friend) continue // No friend
+                    if (friend.id == bot.id) continue // Don't delete our chests
+                    friend.chests.delete(chest[0])
+                }
+                await bot.openChest(chest[0])
+                lootLoop()
+                return
             }
         } catch (e) {
             console.error(e)
         }
-
-        bot.timeouts.set("lootloop", setTimeout(async () => { lootLoop() }, 1000))
+        bot.timeouts.set("lootLoop", setTimeout(async () => { lootLoop() }, 100))
     }
     lootLoop()
 }
