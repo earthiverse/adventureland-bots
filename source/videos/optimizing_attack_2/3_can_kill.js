@@ -17,27 +17,35 @@ if (!character.controller) {
 }
 
 // This function checks if we can kill the entity with a normal attack
-function canKill(entity) {
+function canKillInOneShot(entity, skill = "attack") {
+    // Check if it can heal
+    if (entity.lifesteal) return false
+    if (entity.abilities?.self_healing) return false
+
+    // Check if it can avoid our shot
+    if (entity.avoidance) return false
+    if (this.damage_type == "magical" && entity.reflection) return false
+    if (this.damage_type == "physical" && entity.evasion) return false
+
     if (entity["1hp"]) return entity.hp <= 1
 
-    let minimumDamage = this.attack
+    // Your damage will randomly fall between 0.9 to 1.1 of your actual attack.
+    let minimumDamage = this.attack * 0.9
     switch (G.classes[character.ctype].damage_type) {
         case "magical":
-            minimumDamage *= 0.9 * damage_multiplier(entity.resistance - character.rpiercing)
+            minimumDamage *= damage_multiplier(entity.resistance - character.rpiercing)
             break
         case "physical":
-            minimumDamage *= 0.9 * damage_multiplier(entity.armor - character.apiercing)
+            minimumDamage *= damage_multiplier(entity.armor - character.apiercing)
             break
     }
 
-    // NOTE: I asked Wizard to add something to G.conditions.cursed and .marked so we don't need these hardcoded.
+    // If the entity is cursed, or marked, they will take more damage
     if (entity.s.cursed) baseDamage *= 1.2
     if (entity.s.marked) baseDamage *= 1.1
 
     // Priests only do 40% of their heal in damage
-    if (character.ctype == "priest") {
-        minimumDamage *= 0.4
-    }
+    if (character.ctype == "priest") minimumDamage *= 0.4
 
     return minimumDamage >= entity.hp
 }
@@ -64,7 +72,7 @@ async function attackLoop() {
              *
              * This isn't the only way to do it, but it's relatively simple code-wise.
              */
-            if (canKill(nearest)) removeEntityFromOtherCharacters(nearest)
+            if (canKillInOneShot(nearest)) removeEntityFromOtherCharacters(nearest)
 
             await attack(nearest)
             reduce_cooldown("attack", Math.min(...parent.pings))
