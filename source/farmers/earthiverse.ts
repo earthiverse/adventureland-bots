@@ -63,9 +63,9 @@ async function startRanger(bot: Ranger) {
             if (targets.length >= 3 && bot.canUse("3shot")) {
                 if (!bot.s.energized) {
                     if (mage1.socket.connected && mage1.canUse("energize") && AL.Tools.distance(bot, mage1) < bot.G.skills.energize.range) {
-                        mage1.energize(bot.id)
+                        mage1.energize(bot.id).catch(e => console.error(e))
                     } else if (mage2.socket.connected && mage2.canUse("energize") && AL.Tools.distance(bot, mage2) < bot.G.skills.energize.range) {
-                        mage2.energize(bot.id)
+                        mage2.energize(bot.id).catch(e => console.error(e))
                     }
                 }
 
