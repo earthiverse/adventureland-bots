@@ -1,4 +1,4 @@
-import AL, { Merchant, Priest, Ranger, Warrior, GMap, ServerInfoDataLive, IPosition, SlotType, ItemName } from "alclient"
+import AL, { Merchant, Priest, Ranger, Warrior, GMap, ServerInfoDataLive, IPosition, SlotType, ItemName, Tools } from "alclient"
 import { goToAggroMonster, goToNearestWalkableToMonster, goToNPC, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesMerchant } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "../base/party.js"
@@ -253,7 +253,15 @@ function preparePriest(bot: Priest) {
             move: async () => { await goToSpecialMonster(bot, "greenjr") },
         },
         grinch: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["grinch"], information.friends) },
+            attack: async () => {
+                await attackTheseTypesPriest(bot, ["grinch"], information.friends)
+                const grinch = bot.getNearestMonster("grinch")
+                if (grinch?.monster && grinch.monster.target
+                    && bot.party && !bot.partyData.list.includes[grinch.monster.target] // It's not targeting someone in our party
+                    && bot.canUse("scare", { ignoreEquipped: true })) {
+                    if (bot.canUse("absorb") && Tools.distance(bot, bot.players.get(grinch.monster.target)) < bot.G.skills.absorb.range) bot.absorbSins(grinch.monster.target)
+                }
+            },
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
             move: async () => {
@@ -1117,8 +1125,11 @@ function prepareWarrior(bot: Warrior) {
                     await attackTheseTypesWarrior(bot, ["grinch"], information.friends, { disableStomp: true })
                 }
                 const grinch = bot.getNearestMonster("grinch")
-                if (grinch?.monster && bot.range > grinch.distance) {
-                    bot.taunt(grinch.monster.id)
+                if (grinch?.monster
+                    && bot.party && !bot.partyData.list.includes[grinch?.monster.target] // It's not targeting someone in our party
+                    && bot.canUse("scare", { ignoreEquipped: true })) {
+                    if (bot.canUse("taunt") && grinch?.distance < bot.G.skills.taunt.range) bot.taunt(grinch.monster.id)
+                    else if (bot.canUse("agitate") && grinch?.distance < bot.G.skills.agitate.range) bot.agitate()
                 }
             },
             attackWhileIdle: true,
