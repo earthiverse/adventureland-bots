@@ -1,4 +1,4 @@
-import AL, { Mage, Merchant } from "alclient"
+import AL, { IPosition, Mage, Merchant } from "alclient"
 import { goToNearestWalkableToMonster, goToNPC, goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
 import { desertlandPorcupines, halloweenMiniMushes, mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrabXs, mainCrocs, mainGoos, mainPoisios, mainScorpions, mainSquigs, offsetPosition, winterlandArcticBees } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
@@ -175,6 +175,7 @@ function prepareMage(bot: Mage) {
             equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
             move: async () => {
                 if (bot.S.grinch?.live && bot.S.grinch.hp <= 1_000_000) {
+                    // Go to Kane when Grinch is nearing death for extra luck
                     await goToNPC(bot, "citizen0")
                     return
                 }
@@ -182,10 +183,14 @@ function prepareMage(bot: Mage) {
                 const grinch = bot.getNearestMonster("grinch")?.monster
                 if (grinch) {
                     // TODO: If we see Kane, and the grinch is targeting us, kite him to Kane
-                    await bot.smartMove(grinch, { getWithin: bot.range - 10 })
+                    if (!bot.smartMoving) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
                 } else if (bot.S.grinch?.live) {
                     if (["woffice", "bank", "bank_b", "bank_u"].includes(bot.S.grinch.map)) return // Wait for the grinch to move to a place we can attack him
-                    await goToSpecialMonster(bot, "grinch")
+
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "grinch").catch(e => console.error(e))
+                    else if (AL.Tools.distance(bot.S.grinch as IPosition, bot.smartMoving) > 100) {
+                        bot.stopSmartMove().catch(e => console.error(e))
+                    }
                 }
             }
         },

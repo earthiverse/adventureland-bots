@@ -1,4 +1,4 @@
-import AL, { Merchant, Priest, Ranger, Warrior, GMap, ServerInfoDataLive, IPosition, SlotType, ItemName, Tools } from "alclient"
+import AL, { Merchant, Priest, Ranger, Warrior, GMap, ServerInfoDataLive, IPosition, SlotType, ItemName } from "alclient"
 import { goToAggroMonster, goToNearestWalkableToMonster, goToNPC, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesMerchant } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "../base/party.js"
@@ -259,13 +259,14 @@ function preparePriest(bot: Priest) {
                 if (grinch?.monster && grinch.monster.target
                     && bot.party && !bot.partyData.list.includes[grinch.monster.target] // It's not targeting someone in our party
                     && bot.canUse("scare", { ignoreEquipped: true })) {
-                    if (bot.canUse("absorb") && Tools.distance(bot, bot.players.get(grinch.monster.target)) < bot.G.skills.absorb.range) bot.absorbSins(grinch.monster.target)
+                    if (bot.canUse("absorb") && AL.Tools.distance(bot, bot.players.get(grinch.monster.target)) < bot.G.skills.absorb.range) bot.absorbSins(grinch.monster.target)
                 }
             },
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
             move: async () => {
                 if (bot.S.grinch?.live && bot.S.grinch.hp <= 1_000_000) {
+                    // Go to Kane when Grinch is nearing death for extra luck
                     await goToNPC(bot, "citizen0")
                     return
                 }
@@ -273,12 +274,15 @@ function preparePriest(bot: Priest) {
                 const grinch = bot.getNearestMonster("grinch")?.monster
                 if (grinch) {
                     // TODO: If we see Kane, and the grinch is targeting us, kite him to Kane
-                    await bot.smartMove(grinch, { getWithin: bot.range - 10 })
+                    if (!bot.smartMoving) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
                 } else if (bot.S.grinch?.live) {
                     if (["woffice", "bank", "bank_b", "bank_u"].includes(bot.S.grinch.map)) return // Wait for the grinch to move to a place we can attack him
 
                     requestMagiportService(bot, bot.S.grinch as IPosition)
-                    await goToSpecialMonster(bot, "grinch")
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "grinch").catch(e => console.error(e))
+                    else if (AL.Tools.distance(bot.S.grinch as IPosition, bot.smartMoving) > 100) {
+                        bot.stopSmartMove().catch(e => console.error(e))
+                    }
                 }
             }
         },
@@ -674,6 +678,7 @@ function prepareRanger(bot: Ranger) {
             equipment: { mainhand: "firebow", orb: "jacko" },
             move: async () => {
                 if (bot.S.grinch?.live && bot.S.grinch.hp <= 1_000_000) {
+                    // Go to Kane when Grinch is nearing death for extra luck
                     await goToNPC(bot, "citizen0")
                     return
                 }
@@ -681,12 +686,15 @@ function prepareRanger(bot: Ranger) {
                 const grinch = bot.getNearestMonster("grinch")?.monster
                 if (grinch) {
                     // TODO: If we see Kane, and the grinch is targeting us, kite him to Kane
-                    await bot.smartMove(grinch, { getWithin: bot.range - 10 })
+                    if (!bot.smartMoving) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
                 } else if (bot.S.grinch?.live) {
                     if (["woffice", "bank", "bank_b", "bank_u"].includes(bot.S.grinch.map)) return // Wait for the grinch to move to a place we can attack him
 
                     requestMagiportService(bot, bot.S.grinch as IPosition)
-                    await goToSpecialMonster(bot, "grinch")
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "grinch").catch(e => console.error(e))
+                    else if (AL.Tools.distance(bot.S.grinch as IPosition, bot.smartMoving) > 100) {
+                        bot.stopSmartMove().catch(e => console.error(e))
+                    }
                 }
             }
         },
@@ -1136,6 +1144,7 @@ function prepareWarrior(bot: Warrior) {
             equipment: burnEquipment,
             move: async () => {
                 if (bot.S.grinch?.live && bot.S.grinch.hp <= 1_000_000) {
+                    // Go to Kane when Grinch is nearing death for extra luck
                     await goToNPC(bot, "citizen0")
                     return
                 }
@@ -1143,12 +1152,15 @@ function prepareWarrior(bot: Warrior) {
                 const grinch = bot.getNearestMonster("grinch")?.monster
                 if (grinch) {
                     // TODO: If we see Kane, and the grinch is targeting us, kite him to Kane
-                    await bot.smartMove(grinch, { getWithin: bot.range - 10 })
+                    if (!bot.smartMoving) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
                 } else if (bot.S.grinch?.live) {
                     if (["woffice", "bank", "bank_b", "bank_u"].includes(bot.S.grinch.map)) return // Wait for the grinch to move to a place we can attack him
 
                     requestMagiportService(bot, bot.S.grinch as IPosition)
-                    await goToSpecialMonster(bot, "grinch")
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "grinch").catch(e => console.error(e))
+                    else if (AL.Tools.distance(bot.S.grinch as IPosition, bot.smartMoving) > 100) {
+                        bot.stopSmartMove().catch(e => console.error(e))
+                    }
                 }
             }
         },
