@@ -533,9 +533,15 @@ export function goToKiteStuff(bot: Character, options?: KiteOptions): void {
     bot.move(bot.x + vector.x, bot.y + vector.y).catch(e => console.error(e))
 }
 
-export async function goToNPC(bot: Character, npc: NPCName) {
+export async function goToNPC(bot: Character, name: NPCName) {
+    const fixedName = bot.G.npcs[name].name
+
+    // Look for it in our visible entities
+    const npc = bot.players.get(fixedName)
+    if (npc) return bot.smartMove(offsetPositionParty(npc, bot), { useBlink: true })
+
     // Look for it in our database
-    const special = await AL.NPCModel.findOne({ serverIdentifier: bot.server.name, serverRegion: bot.server.region, name: bot.G.npcs[npc].name }).lean().exec()
+    const special = await AL.NPCModel.findOne({ name: fixedName, serverIdentifier: bot.server.name, serverRegion: bot.server.region }).lean().exec()
     if (special) return bot.smartMove(offsetPositionParty(special, bot), { useBlink: true })
 }
 
