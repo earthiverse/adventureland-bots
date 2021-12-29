@@ -15,8 +15,8 @@ async function run() {
     /** 3: Setup Basics */
     async function moveLoop() {
         try {
-            const nearest = bot.getNearestMonster("goo")
-            if (nearest.distance > bot.range) await bot.move(bot.x + (nearest.monster.x - bot.x) / 2, bot.y + (nearest.monster.y - bot.y) / 2)
+            const nearest = bot.getEntity({ returnNearest: true, type: "goo" })
+            if (AL.Tools.distance(bot, nearest) > bot.range) await bot.move(bot.x + (nearest.x - bot.x) / 2, bot.y + (nearest.y - bot.y) / 2)
 
         } catch (e) {
             console.error(e)
@@ -31,9 +31,9 @@ async function run() {
     let nextAttack: Date
     async function attackLoop() {
         try {
-            const nearest = bot.getNearestMonster("goo")
+            const nearest = bot.getEntity({ returnNearest: true, type: "goo" })
             if (nearest) {
-                await bot.basicAttack(nearest.monster.id)
+                await bot.basicAttack(nearest.id)
                 nextAttack = bot.nextSkill.get("attack")
             }
         } catch (e) {

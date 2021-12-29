@@ -1,15 +1,16 @@
 /* eslint-disable no-undef */
 load_code("base")
 
-const SCRIPT_NAME = "default"
+const SCRIPT_NAME = "can_kill"
 const MERCHANT = "attackMer"
 const ATTACKING_CHARACTERS = ["attackMag", "attackMag2", "attackMag3"]
-const CHARACTERS = [merchant, ...ATTACKING_CHARACTERS]
+const CHARACTERS = [MERCHANT, ...ATTACKING_CHARACTERS]
 const MONSTER = "bee"
 
 if (!character.controller) {
     for (const friend of CHARACTERS) {
         if (friend == character.id) continue
+        stop_character(friend, SCRIPT_NAME)
         start_character(friend, SCRIPT_NAME)
     }
 
@@ -17,20 +18,20 @@ if (!character.controller) {
 }
 
 // This function checks if we can kill the entity with a normal attack
-function canKillInOneShot(entity, skill = "attack") {
+function canKillInOneShot(entity) {
     // Check if it can heal
     if (entity.lifesteal) return false
     if (entity.abilities?.self_healing) return false
 
     // Check if it can avoid our shot
     if (entity.avoidance) return false
-    if (this.damage_type == "magical" && entity.reflection) return false
-    if (this.damage_type == "physical" && entity.evasion) return false
+    if (G.classes[character.ctype].damage_type == "magical" && entity.reflection) return false
+    if (G.classes[character.ctype].damage_type == "physical" && entity.evasion) return false
 
     if (entity["1hp"]) return entity.hp <= 1
 
     // Your damage will randomly fall between 0.9 to 1.1 of your actual attack.
-    let minimumDamage = this.attack * 0.9
+    let minimumDamage = character.attack * 0.9
     switch (G.classes[character.ctype].damage_type) {
         case "magical":
             minimumDamage *= damage_multiplier(entity.resistance - character.rpiercing)
@@ -53,6 +54,7 @@ function canKillInOneShot(entity, skill = "attack") {
 // This function "removes" the entity from other characters, so they aren't able to target it.
 function removeEntityFromOtherCharacters(entity) {
     for (const friendsParent of getParentsOfCharacters(true)) {
+        if (friendsParent == top) continue // Don't destroy from the top
         delete friendsParent.entities[entity.id]
     }
 }

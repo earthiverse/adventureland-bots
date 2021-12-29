@@ -45,10 +45,8 @@ async function startKite(bot: Mage) {
                 return
             }
 
-            const nearest = bot.getNearestMonster(targets[0])
-            if (!nearest) {
-                await bot.smartMove(targets[0], { getWithin: 200 })
-            }
+            const nearest = bot.getEntity({ returnNearest: true, typeList: targets })
+            if (!nearest) await bot.smartMove(targets[0], { getWithin: 200 })
 
             goToKiteMonster(bot, { kiteDistance: bot.range - 25, typeList: targets })
         } catch (e) {

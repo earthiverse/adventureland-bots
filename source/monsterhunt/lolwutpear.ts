@@ -128,10 +128,10 @@ function prepareMage(bot: Mage) {
             attack: async () => { await attackTheseTypesMage(bot, ["nerfedmummy", "franky"], information.friends) },
             equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
             move: async () => {
-                const nearest = bot.getNearestMonster("franky")
-                if (nearest && nearest.distance > 25) {
+                const nearest = bot.getEntity({ returnNearest: true, type: "franky" })
+                if (nearest && AL.Tools.distance(bot, nearest) > 25) {
                     // Move close to Franky because other characters might help blast away mummies
-                    await bot.smartMove(nearest.monster, { getWithin: 25 })
+                    await bot.smartMove(nearest, { getWithin: 25 })
                 } else {
                     await goToSpecialMonster(bot, "franky")
                 }
@@ -180,7 +180,7 @@ function prepareMage(bot: Mage) {
                     return
                 }
 
-                const grinch = bot.getNearestMonster("grinch")?.monster
+                const grinch = bot.getEntity({ returnNearest: true, type: "grinch" })
                 if (grinch) {
                     // TODO: If we see Kane, and the grinch is targeting us, kite him to Kane
                     if (!bot.smartMoving) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))

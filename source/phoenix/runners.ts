@@ -41,9 +41,9 @@ export async function startPhoenixFarmer(bot: Mage, friends: Character[], mercha
             await goToBankIfFull(bot)
 
             // Look for nearby phoenixes
-            const nearbyPhoenix = bot.getNearestMonster("phoenix")
+            const nearbyPhoenix = bot.getEntity({ returnNearest: true, type: "phoenix" })
             if (nearbyPhoenix) {
-                await bot.smartMove(nearbyPhoenix.monster, { getWithin: bot.range - 50, useBlink: true })
+                await bot.smartMove(nearbyPhoenix, { getWithin: bot.range - 50, useBlink: true })
                 bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
@@ -55,7 +55,7 @@ export async function startPhoenixFarmer(bot: Mage, friends: Character[], mercha
 
                 if (AL.Tools.distance(bot, dbPhoenix) < AL.Constants.MAX_VISIBLE_RANGE / 2) {
                     // If we're near the database entry, but we don't see it, delete it.
-                    const nearbyPhoenix = bot.getNearestMonster("phoenix")?.monster
+                    const nearbyPhoenix = bot.getEntity({ returnNearest: true, type: "phoenix" })
                     if (!nearbyPhoenix) await AL.EntityModel.deleteOne({ serverIdentifier: bot.server.name, serverRegion: bot.server.region, type: "phoenix" }).lean().exec()
                 }
 

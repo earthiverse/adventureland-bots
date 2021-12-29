@@ -208,16 +208,16 @@ export async function startBscorpionPriestFarmer(bot: Priest, friends: Character
                 return
             }
 
-            const closest = bot.getNearestMonster("bscorpion")
-            if (closest && closest.monster.target == undefined && closest.distance <= bot.G.monsters.bscorpion.range) {
+            const closest = bot.getEntity({ returnNearest: true, type: "bscorpion" })
+            if (closest && closest.target == undefined && AL.Tools.distance(bot, closest) <= bot.G.monsters.bscorpion.range) {
                 // Only heal
                 await attackTheseTypesPriest(bot, [], friends)
                 bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
                 return
             }
 
-            if (bot.id == bscorpionPartyLeader && closest && closest.monster.target !== undefined && closest.monster.target !== bot.id) {
-                const targetedPlayer = bot.players.get(closest.monster.target)
+            if (bot.id == bscorpionPartyLeader && closest && closest.target !== undefined && closest.target !== bot.id) {
+                const targetedPlayer = bot.players.get(closest.target)
                 if (targetedPlayer.party == bot.party && bot.canUse("absorb")) {
                     await bot.absorbSins(targetedPlayer.id)
                 }

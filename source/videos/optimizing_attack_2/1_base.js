@@ -7,6 +7,10 @@ const MPOT1_RECOVERY = G.items.mpot1.gives[0][1]
 const HPOT0_RECOVERY = G.items.hpot0.gives[0][1]
 const HPOT1_RECOVERY = G.items.hpot1.gives[0][1]
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 function ms_to_next_skill(skill) {
     const next_skill = parent.next_skill[skill]
     if (next_skill == undefined) return 0
@@ -14,22 +18,48 @@ function ms_to_next_skill(skill) {
     return ms < 0 ? 0 : ms
 }
 
-async function moveLoop() {
-    try {
-        let nearest = get_nearest_monster()
-        if (!is_in_range(nearest)) {
-            // Move closer
-            move(
-                character.x + (nearest.x - character.x) / 2,
-                character.y + (nearest.y - character.y) / 2
-            )
-        }
-    } catch (e) {
-        console.error(e)
+function getCharacters(excludeSelf = true) {
+    const characters = []
+
+    for (const iframe of top.$("iframe")) {
+        const char = iframe.contentWindow.character
+        if (!char) continue // Character isn't loaded yet
+        if (excludeSelf && char.name == character.name) continue
+        characters.push(char)
     }
-    setTimeout(async () => { moveLoop() }, 250)
+
+    return characters
 }
-if (character.ctype !== "merchant") moveLoop()
+function getCharacter(name) {
+    for (const iframe of top.$("iframe")) {
+        const char = iframe.contentWindow.character
+        if (!char) continue // Character isn't loaded yet
+        if (char.name == name) return char
+    }
+}
+function getParentsOfCharacters(excludeSelf = true) {
+    const parents = []
+
+    for (const iframe of top.$("iframe")) {
+        const char = iframe.contentWindow.character
+        if (!char) continue // Character isn't loaded yet
+        if (excludeSelf && char.name == character.name) continue
+        if (!char.controller) {
+            parents.push(top)
+        } else {
+            parents.push(iframe.contentWindow)
+        }
+    }
+
+    return parents
+}
+function getParentOfCharacter(name) {
+    for (const iframe of top.$("iframe")) {
+        const char = iframe.contentWindow.character
+        if (!char) continue // Character isn't loaded yet
+        if (char.name == name) return iframe.contentWindow
+    }
+}
 
 async function partyLoop() {
     try {
@@ -50,14 +80,26 @@ if (character.controller) partyLoop()
 
 async function lootLoop() {
     try {
-        // The built in loot() does pretty much all of the work for us!
-        loot()
+        for (const id in parent.chests) {
+            // Don't open far away chests
+            const chest = parent.chests[id]
+            if (distance(character, chest) > 800) continue
+
+            // Remove the chests from the others to lower call code cost opening already opened chests
+            for (const friendsParent of getParentsOfCharacters(true)) {
+                if (friendsParent == top) continue // Don't delete from
+                delete friendsParent.chests[id]
+            }
+
+            parent.socket.emit("open_chest", { id: id })
+            break
+        }
     } catch (e) {
         console.error(e)
     }
-    setTimeout(async () => { lootLoop() }, 250)
+    setTimeout(async () => { lootLoop() }, 100)
 }
-if (!character.controller) lootLoop()
+if (character.controller) lootLoop()
 
 function filterPartyRequests(name) {
     for (const c of parent.X.characters) {
@@ -206,8 +248,8 @@ async function buyAndSendPotionsLoop(names) {
 
 async function sendStuffLoop(name) {
     try {
-        const merchant = parent.entities[name]
-        if (merchant && distance(character, merchant) < 400) {
+        const sendTo = parent.entities[name]
+        if (sendTo && distance(character, sendTo) < 400) {
             for (let i = 0; i < character.isize; i++) {
                 const item = character.items[i]
                 if (!item) continue // No item
@@ -217,49 +259,10 @@ async function sendStuffLoop(name) {
                 await send_item(name, i, item.q ?? 1)
             }
 
-            if (character.gold > 1_000_000) await send_gold(merchant, character.gold - 1_000_000)
+            if (character.gold > 1_000_000) await send_gold(sendTo, character.gold - 1_000_000)
         }
     } catch (e) {
         console.error(e)
     }
     setTimeout(async () => { sendStuffLoop(name) }, 1000)
-}
-
-function getCharacters(excludeSelf = true) {
-    const characters = []
-
-    for (const iframe of top.$("iframe")) {
-        const char = iframe.contentWindow.character
-        if (!char) continue // Character isn't loaded yet
-        if (excludeSelf && char.name == character.name) continue
-        characters.push(char)
-    }
-
-    return characters
-}
-function getCharacter(name) {
-    for (const iframe of top.$("iframe")) {
-        const char = iframe.contentWindow.character
-        if (!char) continue // Character isn't loaded yet
-        if (char.name == name) return char
-    }
-}
-function getParentsOfCharacters(excludeSelf = true) {
-    const parents = []
-
-    for (const iframe of top.$("iframe")) {
-        const char = iframe.contentWindow.character
-        if (!char) continue // Character isn't loaded yet
-        if (excludeSelf && char.name == character.name) continue
-        parents.push(iframe.contentWindow)
-    }
-
-    return parents
-}
-function getParentOfCharacter(name) {
-    for (const iframe of top.$("iframe")) {
-        const char = iframe.contentWindow.character
-        if (!char) continue // Character isn't loaded yet
-        if (char.name == name) return iframe.contentWindow
-    }
 }

@@ -123,7 +123,7 @@ function preparePriest(bot: Priest) {
         bscorpion: {
             attack: async () => {
                 // Get the bscorpion to target us if it's attacking a friend
-                const bscorpion = bot.getNearestMonster("bscorpion")?.monster
+                const bscorpion = bot.getEntity({ returnNearest: true, type: "bscorpion" })
                 if (!bscorpion) {
                     return
                 }
@@ -179,11 +179,11 @@ function preparePriest(bot: Priest) {
             attackWhileIdle: true,
             equipment: { mainhand: "wand", orb: "jacko" },
             move: async () => {
-                const nearby = bot.getNearestMonster("cutebee")
+                const nearby = bot.getEntity({ returnNearest: true, type: "cutebee" })
                 if (nearby) {
-                    if (!nearby.monster.target) {
+                    if (!nearby.target) {
                         // The cutebee will avoid 99.9% of our attacks, so let's try to walk in front of it so that we can aggro it
-                        await goToAggroMonster(bot, nearby.monster)
+                        await goToAggroMonster(bot, nearby)
                     } else {
                         await goToNearestWalkableToMonster(bot, ["cutebee"])
                     }
@@ -206,10 +206,10 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["nerfedmummy", "franky"], information.friends) },
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
             move: async () => {
-                const nearest = bot.getNearestMonster("franky")
-                if (nearest && nearest.distance > 25) {
+                const nearest = bot.getEntity({ returnNearest: true, type: "franky" })
+                if (nearest && AL.Tools.distance(bot, nearest) > 25) {
                     // Move close to Franky because other characters might help blast away mummies
-                    await bot.smartMove(nearest.monster, { getWithin: 25 })
+                    await bot.smartMove(nearest, { getWithin: 25 })
                 } else {
                     if (bot.S.franky as ServerInfoDataLive) requestMagiportService(bot, bot.S.franky as IPosition)
                     await goToSpecialMonster(bot, "franky")
@@ -255,11 +255,11 @@ function preparePriest(bot: Priest) {
         grinch: {
             attack: async () => {
                 await attackTheseTypesPriest(bot, ["grinch"], information.friends)
-                const grinch = bot.getNearestMonster("grinch")
-                if (grinch?.monster && grinch.monster.target
-                    && bot.party && !bot.partyData.list.includes[grinch.monster.target] // It's not targeting someone in our party
+                const grinch = bot.getEntity({ returnNearest: true, type: "grinch" })
+                if (grinch && grinch.target
+                    && bot.party && !bot.partyData.list.includes[grinch.target] // It's not targeting someone in our party
                     && bot.canUse("scare", { ignoreEquipped: true })) {
-                    if (bot.canUse("absorb") && AL.Tools.distance(bot, bot.players.get(grinch.monster.target)) < bot.G.skills.absorb.range) bot.absorbSins(grinch.monster.target)
+                    if (bot.canUse("absorb") && AL.Tools.distance(bot, bot.players.get(grinch.target)) < bot.G.skills.absorb.range) bot.absorbSins(grinch.target)
                 }
             },
             attackWhileIdle: true,
@@ -271,7 +271,7 @@ function preparePriest(bot: Priest) {
                     return
                 }
 
-                const grinch = bot.getNearestMonster("grinch")?.monster
+                const grinch = bot.getEntity({ returnNearest: true, type: "grinch" })
                 if (grinch) {
                     // TODO: If we see Kane, and the grinch is targeting us, kite him to Kane
                     if (!bot.smartMoving) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
@@ -296,7 +296,7 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["icegolem"], information.friends) },
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
             move: async () => {
-                const iceGolem = bot.getNearestMonster("icegolem")?.monster
+                const iceGolem = bot.getEntity({ returnNearest: true, type: "icegolem" })
                 if (!iceGolem) {
                     if (bot.S.icegolem as ServerInfoDataLive) requestMagiportService(bot, bot.S.icegolem as IPosition)
                     await bot.smartMove({ map: "winterland", x: 783, y: 277 })
@@ -602,11 +602,11 @@ function prepareRanger(bot: Ranger) {
             attackWhileIdle: true,
             equipment: { mainhand: "firebow", orb: "jacko" },
             move: async () => {
-                const nearby = bot.getNearestMonster("cutebee")
+                const nearby = bot.getEntity({ returnNearest: true, type: "cutebee" })
                 if (nearby) {
-                    if (!nearby.monster.target) {
+                    if (!nearby.target) {
                         // The cutebee will avoid 99.9% of our attacks, so let's try to walk in front of it so that we can aggro it
-                        await goToAggroMonster(bot, nearby.monster)
+                        await goToAggroMonster(bot, nearby)
                     } else {
                         await goToNearestWalkableToMonster(bot, ["cutebee"])
                     }
@@ -631,10 +631,10 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { return attackTheseTypesRanger(bot, ["nerfedmummy", "franky"], information.friends) },
             equipment: { mainhand: "crossbow", orb: "jacko" },
             move: async () => {
-                const nearest = bot.getNearestMonster("franky")
-                if (nearest && nearest.distance > 25) {
+                const nearest = bot.getEntity({ returnNearest: true, type: "franky" })
+                if (nearest && AL.Tools.distance(bot, nearest) > 25) {
                     // Move close to Franky because other characters might help blast away mummies
-                    await bot.smartMove(nearest.monster, { getWithin: 25 })
+                    await bot.smartMove(nearest, { getWithin: 25 })
                 } else {
                     if (bot.S.franky as ServerInfoDataLive) requestMagiportService(bot, bot.S.franky as IPosition)
                     await goToSpecialMonster(bot, "franky")
@@ -683,7 +683,7 @@ function prepareRanger(bot: Ranger) {
                     return
                 }
 
-                const grinch = bot.getNearestMonster("grinch")?.monster
+                const grinch = bot.getEntity({ returnNearest: true, type: "grinch" })
                 if (grinch) {
                     // TODO: If we see Kane, and the grinch is targeting us, kite him to Kane
                     if (!bot.smartMoving) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
@@ -708,7 +708,7 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { return attackTheseTypesRanger(bot, ["icegolem"], information.friends) },
             equipment: { mainhand: "firebow", orb: "jacko" },
             move: async () => {
-                const iceGolem = bot.getNearestMonster("icegolem")?.monster
+                const iceGolem = bot.getEntity({ returnNearest: true, type: "icegolem" })
                 if (!iceGolem) {
                     if (bot.S.icegolem as ServerInfoDataLive) requestMagiportService(bot, bot.S.icegolem as IPosition)
                     await bot.smartMove({ map: "winterland", x: 783, y: 277 })
@@ -908,7 +908,7 @@ function prepareRanger(bot: Ranger) {
         },
         // tinyp: {
         //     attack: async () => {
-        //         const tinyp = bot.getNearestMonster("tinyp")
+        //         const tinyp = bot.getEntity({ returnNearest: true, type: "tinyp" })
         //         if (tinyp?.monster && tinyp.distance < bot.range * bot.G.skills.supershot.range_multiplier) {
         //             await bot.superShot(tinyp.monster.id)
         //         }
@@ -1012,8 +1012,8 @@ function prepareWarrior(bot: Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["bscorpion"], information.friends, { disableAgitate: true, targetingPartyMember: true }) },
             equipment: burnEquipment,
             move: async () => {
-                const nearest = bot.getNearestMonster("bscorpion")
-                if (nearest && nearest.monster.target && nearest.monster.couldGiveCreditForKill(bot)) {
+                const nearest = bot.getEntity({ returnNearest: true, type: "bscorpion" })
+                if (nearest && nearest.target && nearest.couldGiveCreditForKill(bot)) {
                     await goToNearestWalkableToMonster(bot, ["bscorpion"], bscorpionSpawn)
                 } else {
                     await kiteInCircle(bot, "bscorpion", bscorpionSpawn)
@@ -1052,11 +1052,11 @@ function prepareWarrior(bot: Warrior) {
             attackWhileIdle: true,
             equipment: burnEquipment,
             move: async () => {
-                const nearby = bot.getNearestMonster("cutebee")
+                const nearby = bot.getEntity({ returnNearest: true, type: "cutebee" })
                 if (nearby) {
-                    if (!nearby.monster.target) {
+                    if (!nearby.target) {
                         // The cutebee will avoid 99.9% of our attacks, so let's try to walk in front of it so that we can aggro it
-                        await goToAggroMonster(bot, nearby.monster)
+                        await goToAggroMonster(bot, nearby)
                     } else {
                         await goToNearestWalkableToMonster(bot, ["cutebee"])
                     }
@@ -1132,12 +1132,12 @@ function prepareWarrior(bot: Warrior) {
                 } else {
                     await attackTheseTypesWarrior(bot, ["grinch"], information.friends, { disableStomp: true })
                 }
-                const grinch = bot.getNearestMonster("grinch")
-                if (grinch?.monster
-                    && bot.party && !bot.partyData.list.includes[grinch?.monster.target] // It's not targeting someone in our party
+                const grinch = bot.getEntity({ returnNearest: true, type: "grinch" })
+                if (grinch
+                    && bot.party && !bot.partyData.list.includes[grinch.target] // It's not targeting someone in our party
                     && bot.canUse("scare", { ignoreEquipped: true })) {
-                    if (bot.canUse("taunt") && grinch?.distance < bot.G.skills.taunt.range) bot.taunt(grinch.monster.id)
-                    else if (bot.canUse("agitate") && grinch?.distance < bot.G.skills.agitate.range) bot.agitate()
+                    if (bot.canUse("taunt") && AL.Tools.distance(grinch, bot) < bot.G.skills.taunt.range) bot.taunt(grinch.id)
+                    else if (bot.canUse("agitate") && AL.Tools.distance(bot, grinch) < bot.G.skills.agitate.range) bot.agitate()
                 }
             },
             attackWhileIdle: true,
@@ -1149,7 +1149,7 @@ function prepareWarrior(bot: Warrior) {
                     return
                 }
 
-                const grinch = bot.getNearestMonster("grinch")?.monster
+                const grinch = bot.getEntity({ returnNearest: true, type: "grinch" })
                 if (grinch) {
                     // TODO: If we see Kane, and the grinch is targeting us, kite him to Kane
                     if (!bot.smartMoving) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
@@ -1174,7 +1174,7 @@ function prepareWarrior(bot: Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["icegolem"], information.friends) },
             equipment: burnEquipment,
             move: async () => {
-                const iceGolem = bot.getNearestMonster("icegolem")?.monster
+                const iceGolem = bot.getEntity({ returnNearest: true, type: "icegolem" })
                 if (!iceGolem) {
                     if (bot.S.icegolem as ServerInfoDataLive) requestMagiportService(bot, bot.S.icegolem as IPosition)
                     await bot.smartMove({ map: "winterland", x: 783, y: 277 })
@@ -1409,7 +1409,7 @@ function prepareWarrior(bot: Warrior) {
         stompy: {
             attack: async () => {
                 // Taunt extra wolves so the ranger can 3shot
-                const stompy = bot.getNearestMonster("stompy")?.monster
+                const stompy = bot.getEntity({ returnNearest: true, type: "stompy" })
                 if (stompy && stompy.level <= 1 && bot.canUse("taunt")) {
                     const wolvesTargetingMe = bot.getEntities({ targetingMe: true, type: "wolf" })
                     const wolvesToTarget = bot.getEntities({ couldGiveCredit: true, targetingMe: false, type: "wolf", withinRange: bot.G.skills.taunt.range })
@@ -1437,7 +1437,7 @@ function prepareWarrior(bot: Warrior) {
         },
         // tinyp: {
         //     attack: async () => {
-        //         const nearby = bot.getNearestMonster("tinyp")
+        //         const nearby = bot.getEntity({ returnNearest: true, type: "tinyp" })
         //         if (nearby?.monster) {
         //             if (!nearby.monster.s.stunned && bot.canUse("stomp") && AL.Tools.distance(bot, nearby.monster) < bot.range) {
         //                 // Stun before attacking

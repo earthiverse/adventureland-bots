@@ -7,7 +7,7 @@ import { Information, Strategy } from "../definitions/bot.js"
 import { startMerchant, startPriest, startRanger, startWarrior } from "./shared.js"
 
 const TARGET_REGION: ServerRegion = "US"
-const TARGET_IDENTIFIER: ServerIdentifier = "II"
+const TARGET_IDENTIFIER: ServerIdentifier = "I"
 const partyLeader = "attackRan"
 const partyMembers = ["attackRan", "attackPri", "attackWar", ...MAIN_CHARACTERS]
 
@@ -69,8 +69,8 @@ function preparePriest(bot: Priest) {
         cgoo: {
             attack: async () => { await attackTheseTypesPriest(bot, ["cgoo"], information.friends) },
             move: async () => {
-                const nearest = bot.getNearestMonster("cgoo")
-                if (nearest?.monster) {
+                const nearest = bot.getEntity({ returnNearest: true, type: "cgoo" })
+                if (nearest) {
                     goToKiteMonster(bot, { typeList: ["cgoo"] })
                 } else if (!bot.smartMoving) {
                     bot.smartMove({ map: "arena", x: 650, y: -500 }).catch(/** Suppress errors */)
@@ -96,11 +96,11 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["cutebee"], information.friends) },
             attackWhileIdle: true,
             move: async () => {
-                const nearby = bot.getNearestMonster("cutebee")
+                const nearby = bot.getEntity({ returnNearest: true, type: "cutebee" })
                 if (nearby) {
-                    if (!nearby.monster.target) {
+                    if (!nearby.target) {
                         // The cutebee will avoid 99.9% of our attacks, so let's try to walk in front of it so that we can aggro it
-                        await goToAggroMonster(bot, nearby.monster)
+                        await goToAggroMonster(bot, nearby)
                     } else {
                         await goToNearestWalkableToMonster(bot, ["cutebee"])
                     }
@@ -254,8 +254,8 @@ function prepareRanger(bot: Ranger) {
         cgoo: {
             attack: async () => { await attackTheseTypesRanger(bot, ["cgoo"], information.friends) },
             move: async () => {
-                const nearest = bot.getNearestMonster("cgoo")
-                if (nearest?.monster) {
+                const nearest = bot.getEntity({ returnNearest: true, type: "cgoo" })
+                if (nearest) {
                     goToKiteMonster(bot, { typeList: ["cgoo"] })
                 } else if (!bot.smartMoving) {
                     bot.smartMove({ map: "arena", x: 0, y: -500 }).catch(/** Suppress errors */)
@@ -281,11 +281,11 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { return attackTheseTypesRanger(bot, ["cutebee"], information.friends) },
             attackWhileIdle: true,
             move: async () => {
-                const nearby = bot.getNearestMonster("cutebee")
+                const nearby = bot.getEntity({ returnNearest: true, type: "cutebee" })
                 if (nearby) {
-                    if (!nearby.monster.target) {
+                    if (!nearby.target) {
                         // The cutebee will avoid 99.9% of our attacks, so let's try to walk in front of it so that we can aggro it
-                        await goToAggroMonster(bot, nearby.monster)
+                        await goToAggroMonster(bot, nearby)
                     } else {
                         await goToNearestWalkableToMonster(bot, ["cutebee"])
                     }
@@ -457,11 +457,11 @@ function prepareWarrior(bot: Warrior) {
             attackWhileIdle: true,
             equipment: { mainhand: "candycanesword", offhand: "ololipop" },
             move: async () => {
-                const nearby = bot.getNearestMonster("cutebee")
+                const nearby = bot.getEntity({ returnNearest: true, type: "cutebee" })
                 if (nearby) {
-                    if (!nearby.monster.target) {
+                    if (!nearby.target) {
                         // The cutebee will avoid 99.9% of our attacks, so let's try to walk in front of it so that we can aggro it
-                        await goToAggroMonster(bot, nearby.monster)
+                        await goToAggroMonster(bot, nearby)
                     } else {
                         await goToNearestWalkableToMonster(bot, ["cutebee"])
                     }

@@ -6,13 +6,14 @@ const SCRIPT_NAME = "default"
 const MERCHANT = "attackMer"
 // You can run up to 3 attacking characters and 1 merchant at a time.
 const ATTACKING_CHARACTERS = ["attackMag", "attackMag2", "attackMag3"]
-const CHARACTERS = [merchant, ...ATTACKING_CHARACTERS]
+const CHARACTERS = [MERCHANT, ...ATTACKING_CHARACTERS]
 const MONSTER = "bee"
 
 if (!character.controller) {
     // We are the main character, let's start our other characters
     for (const friend of CHARACTERS) {
         if (friend == character.id) continue // It's us, continue
+        stop_character(friend, SCRIPT_NAME)
         start_character(friend, SCRIPT_NAME)
     }
 

@@ -278,7 +278,7 @@ async function startWarrior(bot: Warrior) {
             // Enter the crypt that the merchant is in
             if (merchant.in !== bot.in) await bot.smartMove(merchant)
 
-            const nearest = bot.getNearestMonster()?.monster
+            const nearest = bot.getEntity({ returnNearest: true })
             if (!nearest && !bot.smartMoving) {
                 // No nearby monsters, go to the end of the crypt
                 bot.smartMove(cryptEnd).catch(e => console.error(e))

@@ -554,8 +554,8 @@ export async function goToPriestIfHurt(bot: Character, priest: Character): Promi
 
 export async function goToSpecialMonster(bot: Character, type: MonsterName): Promise<unknown> {
     // Look for it nearby
-    let nearby = bot.getNearestMonster(type)
-    if (nearby) return bot.smartMove(nearby.monster, { getWithin: bot.range - 10, useBlink: true })
+    let nearby = bot.getEntity({ returnNearest: true, type: type })
+    if (nearby) return bot.smartMove(nearby, { getWithin: bot.range - 10, useBlink: true })
 
     // Look for it in the server data
     if (bot.S && bot.S[type] && bot.S[type].live && bot.S[type]["x"] !== undefined && bot.S[type]["y"] !== undefined) {
@@ -572,8 +572,8 @@ export async function goToSpecialMonster(bot: Character, type: MonsterName): Pro
         // Move to the next spawn
         await bot.smartMove(spawn, { getWithin: bot.range - 10 })
 
-        nearby = bot.getNearestMonster(type)
-        if (nearby) return bot.smartMove(nearby.monster, { getWithin: bot.range - 10, useBlink: true })
+        nearby = bot.getEntity({ returnNearest: true, type: type })
+        if (nearby) return bot.smartMove(nearby, { getWithin: bot.range - 10, useBlink: true })
     }
 }
 
@@ -661,7 +661,7 @@ export async function goToNearestWalkableToMonster(bot: Character, types: Monste
 
 export function kiteInCircle(bot: Character, type: MonsterName, center: IPosition, radius = 100, angle = Math.PI / 2.5): Promise<IPosition> {
     if (AL.Pathfinder.canWalkPath(bot, center)) {
-        const nearest = bot.getNearestMonster(type)?.monster
+        const nearest = bot.getEntity({ returnNearest: true, type: type })
         if (nearest) {
             // There's a monster nearby
             const angleFromCenterToMonsterGoing = Math.atan2(nearest.going_y - center.y, nearest.going_x - center.x)

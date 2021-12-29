@@ -134,7 +134,7 @@ async function startRogue(bot: Rogue, trilaterationIndex: number) {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            const slenderman = bot.getNearestMonster("slenderman")?.monster
+            const slenderman = bot.getEntity({ returnNearest: true, type: "slenderman" })
             if (slenderman) slenderID = slenderman.id
 
             await attackTheseTypesRogue(bot, ["slenderman"])
@@ -176,7 +176,7 @@ async function startRogue(bot: Rogue, trilaterationIndex: number) {
             await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot)
 
-            const slenderman = bot.getNearestMonster("slenderman")?.monster
+            const slenderman = bot.getEntity({ returnNearest: true, type: "slenderman" })
             if (slenderman) slenderID = slenderman.id
 
             if (!bot.s.invis) {

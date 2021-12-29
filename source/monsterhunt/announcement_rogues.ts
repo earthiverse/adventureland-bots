@@ -62,10 +62,10 @@ function prepareRogue(bot: Rogue) {
             attack: async () => { await attackTheseTypesRogue(bot, ["nerfedmummy", "franky"], information.friends) },
             equipment: { orb: "jacko" },
             move: async () => {
-                const nearest = bot.getNearestMonster("franky")
-                if (nearest && nearest.distance > 25) {
+                const nearest = bot.getEntity({ returnNearest: true, type: "franky" })
+                if (nearest && AL.Tools.distance(bot, nearest) > 25) {
                     // Move close to Franky because other characters might help blast away mummies
-                    await bot.smartMove(nearest.monster, { getWithin: 25 })
+                    await bot.smartMove(nearest, { getWithin: 25 })
                 } else {
                     if (bot.S.franky as ServerInfoDataLive) requestMagiportService(bot, bot.S.franky as IPosition)
                     await goToSpecialMonster(bot, "franky")
@@ -95,7 +95,7 @@ function prepareRogue(bot: Rogue) {
             attackWhileIdle: true,
             equipment: { orb: "jacko" },
             move: async () => {
-                const grinch = bot.getNearestMonster("grinch")?.monster
+                const grinch = bot.getEntity({ returnNearest: true, type: "grinch" })
                 if (grinch) {
                     await bot.smartMove(grinch, { getWithin: bot.range - 10 })
                 } else {
