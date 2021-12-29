@@ -7,8 +7,15 @@ export class SingleCharacter<Type> {
     private timeouts = new Map<string, NodeJS.Timeout>()
     private stopped = false
 
-    public constructor(character: Type) {
+    public constructor(character: Type, initialStrategy?: Single_Strategy<Type>) {
         this.character = character
+        this.strategy = initialStrategy
+
+        // Start the loops
+        this.attackLoop()
+        this.healLoop()
+        this.lootLoop()
+        this.moveLoop()
     }
 
     public setStrategy(strategy: Single_Strategy<Type>) {
