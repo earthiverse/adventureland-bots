@@ -22,24 +22,24 @@ export class SingleChar<Type extends PingCompensatedCharacter> {
     public constructor(bot: Type, initialStrategy?: SingleCharStrategy<Type>) {
         this.bot = bot
 
-        this.setStrategies(initialStrategy)
+        this.applyStrategy(initialStrategy)
     }
 
-    public setStrategies(strategy: SingleCharStrategy<Type>) {
+    public applyStrategy(strategy: SingleCharStrategy<Type>) {
         if (!strategy) return // No strategy
 
         for (const [name, fn] of strategy.loops) {
             if (fn == undefined) {
                 // Stop the loop
-                if (this.loops.has(name)) console.log(`Strategy '${strategy.name}' is stopping the '${name}' loop`)
+                // if (this.loops.has(name)) console.log(`Strategy '${strategy.name}' is stopping the '${name}' loop`)
                 this.loops.delete(name)
             } else if (this.loops.has(name)) {
                 // Change the loop
-                if (this.loops.has(name)) console.log(`Strategy '${strategy.name}' is changing the '${name}' loop`)
+                // if (this.loops.has(name)) console.log(`Strategy '${strategy.name}' is changing the '${name}' loop`)
                 this.loops.set(name, fn)
             } else {
                 // Start the loop
-                console.log(`Strategy '${strategy.name}' is adding the '${name}' loop`)
+                // console.log(`Strategy '${strategy.name}' is adding the '${name}' loop`)
                 this.loops.set(name, fn)
 
                 const newLoop = async () => {
