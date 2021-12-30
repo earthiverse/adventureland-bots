@@ -11,11 +11,11 @@ export abstract class Single_BaseStrategy<Type extends PingCompensatedCharacter>
         this.loops = new Map<string, Loop<Type>>()
 
         this.loops.set("heal", {
-            fn: this.heal,
+            fn: async (bot: Type) => { await this.heal(bot) },
             interval: 250
         })
         this.loops.set("loot", {
-            fn: this.loot,
+            fn: async (bot: Type) => { await this.loot(bot) },
             interval: 250
         })
     }
@@ -81,21 +81,21 @@ export class Single_BasicAttackAndMoveStrategy<Type extends PingCompensatedChara
         this.types = types
         console.log(`debug (constructor): this.types is ${this.types}`)
         this.name += ` (${types.join(", ")})`
+        console.log(`debug (constructor): this.name is ${this.name}`)
 
         this.loops.set("attack", {
-            fn: this.attack,
+            fn: async (bot: Type) => { await this.attack(bot) },
             interval: 100
         })
 
         this.loops.set("move", {
-            fn: this.move,
+            fn: async (bot: Type) => { await this.move(bot) },
             interval: 250
         })
     }
 
     async attack(bot: Type) {
         if (!bot.canUse("attack")) return
-        console.log(`debug (attack): this.types is ${this.types}`)
         const nearest = bot.getEntity({ returnNearest: true, typeList: this.types })
         if (nearest && AL.Tools.distance(bot, nearest) < bot.range) {
             await bot.basicAttack(nearest.id)
@@ -103,16 +103,18 @@ export class Single_BasicAttackAndMoveStrategy<Type extends PingCompensatedChara
     }
 
     async move(bot: Type) {
-        console.log(`debug (move): this.types is ${this.types}`)
+        if (bot.rip) {
+            await bot.respawn()
+            return
+        }
+
         const nearest = bot.getEntity({ returnNearest: true, typeList: this.types })
         if (!nearest) {
             if (!bot.smartMoving) {
                 bot.smartMove(this.types[0])
             }
         } else if (AL.Tools.distance(bot, nearest) > bot.range) {
-            if (!bot.smartMoving && !bot.moving) {
-                bot.smartMove(nearest, { getWithin: bot.range / 2 })
-            }
+            bot.smartMove(nearest, { getWithin: bot.range / 2 })
         }
     }
 }
