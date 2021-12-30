@@ -1,16 +1,24 @@
 import AL, { MonsterName, PingCompensatedCharacter } from "alclient"
 import { sleep } from "../../base/general.js"
+import { Loop, Loops, SingleCharStrategy } from "./context.js"
 
-export interface Single_Strategy<Type> {
-    name: string
-    attack(bot: Type): Promise<void>
-    heal(bot: Type): Promise<void>
-    loot(bot: Type): Promise<void>
-    move(bot: Type): Promise<void>
-}
+export abstract class Single_BaseStrategy<Type extends PingCompensatedCharacter> implements SingleCharStrategy<Type> {
+    public name: string
+    public loops: Loops<Type>
 
-export abstract class Single_BaseStrategy<Type extends PingCompensatedCharacter> implements Single_Strategy<Type> {
-    public abstract attack(bot: Type): Promise<void>
+    public constructor() {
+        this.name = "BaseStrategy"
+        this.loops = new Map<string, Loop<Type>>()
+
+        this.loops.set("heal", {
+            fn: this.heal,
+            interval: 250
+        })
+        this.loops.set("loot", {
+            fn: this.loot,
+            interval: 250
+        })
+    }
 
     async heal(bot: Type) {
         if (bot.rip) return
@@ -61,22 +69,33 @@ export abstract class Single_BaseStrategy<Type extends PingCompensatedCharacter>
         if (chest) await bot.openChest(chest[0])
         else return sleep(100)
     }
-
-    public abstract move(bot: Type): Promise<void>
-    public name: string
 }
 
 export class Single_BasicAttackAndMoveStrategy<Type extends PingCompensatedCharacter> extends Single_BaseStrategy<Type> {
-    public name = "basic_strategy"
+    public name = "BasicAttackAndMoveStrategy"
     public types: MonsterName[]
 
     public constructor(types: MonsterName[]) {
         super()
+
         this.types = types
+        console.log(`debug (constructor): this.types is ${this.types}`)
         this.name += ` (${types.join(", ")})`
+
+        this.loops.set("attack", {
+            fn: this.attack,
+            interval: 100
+        })
+
+        this.loops.set("move", {
+            fn: this.move,
+            interval: 250
+        })
     }
 
     async attack(bot: Type) {
+        if (!bot.canUse("attack")) return
+        console.log(`debug (attack): this.types is ${this.types}`)
         const nearest = bot.getEntity({ returnNearest: true, typeList: this.types })
         if (nearest && AL.Tools.distance(bot, nearest) < bot.range) {
             await bot.basicAttack(nearest.id)
@@ -84,6 +103,7 @@ export class Single_BasicAttackAndMoveStrategy<Type extends PingCompensatedChara
     }
 
     async move(bot: Type) {
+        console.log(`debug (move): this.types is ${this.types}`)
         const nearest = bot.getEntity({ returnNearest: true, typeList: this.types })
         if (!nearest) {
             if (!bot.smartMoving) {

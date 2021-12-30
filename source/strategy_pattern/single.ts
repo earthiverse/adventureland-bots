@@ -1,5 +1,5 @@
 import AL from "alclient"
-import { SingleCharacter } from "./single/context.js"
+import { SingleChar } from "./single/context.js"
 import { Single_BasicAttackAndMoveStrategy } from "./single/strategy.js"
 
 async function run() {
@@ -8,7 +8,7 @@ async function run() {
     await AL.Pathfinder.prepare(AL.Game.G)
 
     const strategy = new Single_BasicAttackAndMoveStrategy(["goo"])
-    const ranger = new SingleCharacter(await AL.Game.startRanger("earthiverse", "US", "III"), strategy)
+    const ranger = new SingleChar(await AL.Game.startRanger("earthiverse", "US", "III"), strategy)
 
     setInterval(async () => {
         // do strategy changes here
