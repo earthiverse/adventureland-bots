@@ -1,5 +1,5 @@
 import AL, { Merchant, Priest, Ranger, Warrior, GMap, ServerInfoDataLive, IPosition, SlotType, ItemName } from "alclient"
-import { goToAggroMonster, goToNearestWalkableToMonster, goToNPC, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
+import { goToAggroMonster, goToNearestWalkableToMonster, goToNPC, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, moveInCircle, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesMerchant } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
@@ -1427,7 +1427,7 @@ function prepareWarrior(bot: Warrior) {
                 if (!stompy) {
                     await goToSpecialMonster(bot, "stompy")
                 } else {
-                    kiteInCircle(bot, "stompy", stompy, 20, Math.PI / 2)
+                    moveInCircle(bot, stompy, 20, Math.PI / 2)
                 }
             },
             requireCtype: "priest"
