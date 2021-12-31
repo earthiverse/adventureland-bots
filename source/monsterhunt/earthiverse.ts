@@ -1426,7 +1426,7 @@ function prepareWarrior(bot: Warrior) {
                 const stompy = bot.getEntity({ type: "stompy" })
                 if (!stompy) {
                     await goToSpecialMonster(bot, "stompy")
-                } else if (!bot.moving && !stompy.moving) {
+                } else {
                     kiteInCircle(bot, "stompy", stompy, 20, Math.PI / 2)
                 }
             },
