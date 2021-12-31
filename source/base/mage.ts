@@ -221,9 +221,10 @@ export async function magiportFriendsIfNotNearby(bot: Mage, information: Informa
     if (information.bot2.name !== bot.id && myTarget == information.bot2.target) offerMagiport(information.bot2.bot)
     if (information.bot3.name !== bot.id && myTarget == information.bot3.target) offerMagiport(information.bot3.bot)
 }
+
 export function magiportStrangerIfNotNearby(bot: Mage, id: string): void {
     if (!bot.canUse("magiport")) return // Can't use magiport
-    if (lastMagiport.get(id) <= Date.now() - 5000) return // Recently offered a magiport
+    if (lastMagiport.get(id) > Date.now() - 5000) return // Recently offered a magiport
     if (id == bot.id) return // It's us!
 
     const player = bot.players.get(id)

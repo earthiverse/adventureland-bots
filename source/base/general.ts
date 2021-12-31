@@ -711,6 +711,8 @@ export function requestMagiportService(bot: Character, targetLocation: IPosition
         _id: 0, map: 1, name: 1, x: 1, y: 1
     }).lean().exec().then((players) => {
         for (const player of players) {
+            if (AL.Tools.distance(targetLocation, player) > within) continue // They're too far away from the target
+
             if (["Bjarny", "lolwutpear", "shoopdawhoop", "ytmnd", "facilitating", "gratuitously", "hypothesized"].includes(player.name)) bot.sendCM([player.name], "magiport")
             else if (player.name == "Clarity") bot.sendCM([player.name], "magiport_please_dad")
 
