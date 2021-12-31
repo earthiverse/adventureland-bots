@@ -1422,7 +1422,13 @@ function prepareWarrior(bot: Warrior) {
             equipment: aoeEquipment,
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
-                await goToSpecialMonster(bot, "stompy")
+
+                const stompy = bot.getEntity({ type: "stompy" })
+                if (!stompy) {
+                    await goToSpecialMonster(bot, "stompy")
+                } else if (!bot.moving && !stompy.moving) {
+                    kiteInCircle(bot, "stompy", stompy, 20, Math.PI / 2)
+                }
             },
             requireCtype: "priest"
         },
@@ -1478,7 +1484,7 @@ function prepareWarrior(bot: Warrior) {
         },
         xscorpion: {
             attack: async () => { return await attackTheseTypesWarrior(bot, ["xscorpion"], information.friends, { maximumTargets: 3 }) },
-            equipment: burnEquipment,
+            equipment: aoeEquipment,
             move: async () => { await bot.smartMove({ map: "halloween", x: -325, y: 750 }) },
             requireCtype: "priest"
         }
