@@ -8,7 +8,7 @@ const SEND_ALDATA = true
 const NOTABLE_NPCS: string[] = ["Angel", "Kane"]
 
 const PEEK = false
-const PEEK_CHARS = ["earthRan2", "earthRan3", "earthMag2", "earthWar2", "earthWar3", "earthRog", "earthRog2", "earthPal"]
+const PEEK_CHARS = ["earthRan2", "earthRan3", "earthPri2", "earthWar2", "earthWar3", "earthRog", "earthRog2", "earthPal"]
 
 async function run() {
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
