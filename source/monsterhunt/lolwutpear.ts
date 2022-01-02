@@ -38,7 +38,7 @@ const information: Information = {
 
 function prepareMage(bot: Mage) {
     const strategy: Strategy = {
-        defaultTarget: "armadillo",
+        defaultTarget: "croc",
         // eslint-disable-next-line sort-keys
         arcticbee: {
             attack: async () => { await attackTheseTypesMage(bot, ["arcticbee"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.goo.hp + 1 }) },

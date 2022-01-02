@@ -1,4 +1,4 @@
-import AL, { Constants, IPosition, Mage, ServerIdentifier, ServerRegion } from "alclient"
+import AL, { IPosition, Mage, ServerIdentifier, ServerRegion } from "alclient"
 import { startTrackerLoop } from "../base/general.js"
 import { Information } from "../definitions/bot.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMerchant, startPhoenixFarmer } from "./runners.js"
