@@ -244,11 +244,12 @@ function startSupportPriest(bot: Priest) {
 
     startPartyHealLoop(bot, information.friends)
 
-    bot.socket.on("achievement_progress", (data: AchievementProgressData) => {
-        if (data.name == "firehazard") {
-            console.log(`Firehazard Progress (${bot.id}): ${(data as AchievementProgressDataFirehazard).count}/${(data as AchievementProgressDataFirehazard).needed}`)
-        }
-    })
+    // Use something that won't cause burn
+    const wand = bot.locateItem("wand", bot.items, { locked: true, returnHighestLevel: true })
+    if (wand) {
+        if (bot.slots.offhand) bot.unequip("offhand")
+        bot.equip(wand)
+    }
 
     async function attackLoop() {
         try {
