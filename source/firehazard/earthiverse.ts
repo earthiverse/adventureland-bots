@@ -63,7 +63,7 @@ async function startFirehazardRanger(bot: Ranger) {
 
     bot.socket.on("achievement_progress", (data: AchievementProgressData) => {
         if (data.name == "firehazard") {
-            console.log(`Firehazard Progress: ${(data as AchievementProgressDataFirehazard).count}/${(data as AchievementProgressDataFirehazard).needed}`)
+            console.log(`Firehazard Progress (${bot.id}): ${(data as AchievementProgressDataFirehazard).count}/${(data as AchievementProgressDataFirehazard).needed}`)
         }
     })
 
@@ -243,6 +243,12 @@ function startSupportPriest(bot: Priest) {
     startUpgradeLoop(bot)
 
     startPartyHealLoop(bot, information.friends)
+
+    bot.socket.on("achievement_progress", (data: AchievementProgressData) => {
+        if (data.name == "firehazard") {
+            console.log(`Firehazard Progress (${bot.id}): ${(data as AchievementProgressDataFirehazard).count}/${(data as AchievementProgressDataFirehazard).needed}`)
+        }
+    })
 
     async function attackLoop() {
         try {

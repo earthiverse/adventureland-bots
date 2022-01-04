@@ -480,7 +480,7 @@ export async function goMining(bot: Merchant): Promise<void> {
     if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe")) return // We don't have a pickaxe
 
     bot.closeMerchantStand()
-    await bot.smartMove(miningSpot) // Move to mining sppot
+    await bot.smartMove(miningSpot) // Move to mining spot
 
     // Equip pickaxe if we don't have it already equipped
     const mainhand = bot.slots.mainhand?.name
