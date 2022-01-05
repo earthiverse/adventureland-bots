@@ -80,17 +80,20 @@ async function startFirehazardRanger(bot: Ranger) {
                 for (const entity of bot.getEntities({
                     couldGiveCredit: true,
                     typeList: ["mummy"],
+                    willBurnToDeath: false,
+                    willDieToProjectiles: false,
                     withinRange: bot.range
                 })) {
                     if (entity.hp < bot.attack * 4) continue // Low HP, don't attack it
-
                     targets.push(entity.id)
                 }
 
-                // TODO: implement 3shot and 5shot
-
-                if (targets.length > 0) {
-                    bot.basicAttack(targets[0])
+                if (targets.length >= 5 && bot.canUse("5shot")) {
+                    await bot.fiveShot(targets[0], targets[1], targets[2], targets[3], targets[4])
+                } else if (targets.length >= 3 && bot.canUse("3shot")) {
+                    await bot.threeShot(targets[0], targets[1], targets[2])
+                } else if (targets.length > 0) {
+                    await bot.basicAttack(targets[0])
                 }
             }
         } catch (e) {
