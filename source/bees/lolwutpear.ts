@@ -26,9 +26,6 @@ async function startMage(bot: Mage, positionOffset: { x: number, y: number } = {
     startPartyLoop(bot, partyLeader, partyMembers)
     startSellLoop(bot, { ...ITEMS_TO_SELL, "beewings": 9999, "hpamulet": 2, "hpbelt": 2, "ringsj": 2, "stinger": 2 })
 
-    // Send kouin wanderers things
-    startSendStuffAllowlistLoop(bot, "kouin", ["wcap", "wshoes"], 999_999_999)
-
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return

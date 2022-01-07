@@ -76,14 +76,27 @@ async function startFirehazardRanger(bot: Ranger) {
             }
 
             if (bot.canUse("attack")) {
-                const targets = []
-                for (const entity of bot.getEntities({
+                const entities = bot.getEntities({
                     couldGiveCredit: true,
                     typeList: ["mummy"],
                     willBurnToDeath: false,
                     willDieToProjectiles: false,
                     withinRange: bot.range
-                })) {
+                })
+
+                entities.sort((a, b) => {
+                    // Burning -> higher priority
+                    const a_isBurning = a.s.burned !== undefined
+                    const b_isBurning = b.s.burned !== undefined
+                    if (a_isBurning && !b_isBurning) return -1
+                    else if (b_isBurning && !a_isBurning) return 1
+
+                    // Lower HP -> higher priority
+                    return a.hp - b.hp
+                })
+
+                const targets = []
+                for (const entity of entities) {
                     if (entity.hp < bot.attack * 4) continue // Low HP, don't attack it
                     targets.push(entity.id)
                 }
@@ -271,12 +284,26 @@ function startSupportPriest(bot: Priest) {
 
             // Attack only if it's targeting our warrior, and it won't burn to death
             if (bot.canUse("attack")) {
-                for (const entity of bot.getEntities({
+                const entities = bot.getEntities({
                     targetingPartyMember: true,
                     willBurnToDeath: false,
                     willDieToProjectiles: false,
                     withinRange: bot.range
-                })) {
+                })
+
+                entities.sort((a, b) => {
+                    // Burning -> higher priority
+                    const a_isBurning = a.s.burned !== undefined
+                    const b_isBurning = b.s.burned !== undefined
+                    if (a_isBurning && !b_isBurning) return -1
+                    else if (b_isBurning && !a_isBurning) return 1
+
+                    // Lower HP -> higher priority
+                    return a.hp - b.hp
+                })
+
+                for (const entity of entities) {
+                    if (!entity.s?.burned && information.bot1?.bot && entity.hp > information.bot1.bot.attack * 4) continue // Don't attack high hp targets unless they're burning
                     if (bot.canKillInOneShot(entity)) {
                         for (const friend of information.friends) {
                             if (!friend) continue
