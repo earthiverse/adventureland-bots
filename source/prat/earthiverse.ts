@@ -48,13 +48,6 @@ async function startWarrior(bot: Warrior) {
     startHardshellLoop(bot)
     startWarcryLoop(bot)
 
-    await bot.unequip("mainhand")
-    await bot.unequip("offhand")
-    const mainhandSlot = bot.locateItem("vhammer", bot.items, { locked: true, returnHighestLevel: true })
-    await bot.equip(mainhandSlot, "mainhand")
-    const offhandSlot = bot.locateItem("glolipop", bot.items, { locked: true, returnHighestLevel: true })
-    await bot.equip(offhandSlot, "offhand")
-
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return // Stop if disconnected
@@ -68,8 +61,19 @@ async function startWarrior(bot: Warrior) {
                 return
             }
 
+            const promises: Promise<unknown>[] = []
+            if (bot.slots.offhand?.name !== "glolipop") {
+                const offhandSlot = bot.locateItem("glolipop", bot.items, { locked: true, returnHighestLevel: true })
+                promises.push(bot.equip(offhandSlot, "offhand"))
+            }
+            if (bot.slots.mainhand?.name !== "vhammer") {
+                const offhandSlot = bot.locateItem("glolipop", bot.items, { locked: true, returnHighestLevel: true })
+                promises.push(bot.equip(offhandSlot, "offhand"))
+            }
+
             // Idle strategy
-            await attackTheseTypesWarrior(bot, ["prat"], friends)
+            promises.push(attackTheseTypesWarrior(bot, ["prat"], friends))
+            await Promise.all(promises)
         } catch (e) {
             console.error(e)
         }
