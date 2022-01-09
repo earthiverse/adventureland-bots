@@ -62,13 +62,13 @@ async function startWarrior(bot: Warrior) {
             }
 
             const promises: Promise<unknown>[] = []
-            if (bot.slots.offhand?.name !== "glolipop") {
-                const offhandSlot = bot.locateItem("glolipop", bot.items, { locked: true, returnHighestLevel: true })
-                promises.push(bot.equip(offhandSlot, "offhand"))
-            }
             if (bot.slots.mainhand?.name !== "vhammer") {
-                const offhandSlot = bot.locateItem("glolipop", bot.items, { locked: true, returnHighestLevel: true })
-                promises.push(bot.equip(offhandSlot, "offhand"))
+                const item = bot.locateItem("vhammer", bot.items, { locked: true, returnHighestLevel: true })
+                promises.push(bot.equip(item, "mainhand"))
+            }
+            if (bot.slots.offhand?.name !== "glolipop") {
+                const item = bot.locateItem("glolipop", bot.items, { locked: true, returnHighestLevel: true })
+                promises.push(bot.equip(item, "offhand"))
             }
 
             // Idle strategy
