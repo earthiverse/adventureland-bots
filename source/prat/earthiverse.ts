@@ -48,6 +48,13 @@ async function startWarrior(bot: Warrior) {
     startHardshellLoop(bot)
     startWarcryLoop(bot)
 
+    await bot.unequip("mainhand")
+    await bot.unequip("offhand")
+    const mainhandSlot = bot.locateItem("vhammer", bot.items, { locked: true, returnHighestLevel: true })
+    await bot.equip(mainhandSlot, "mainhand")
+    const offhandSlot = bot.locateItem("glolipop", bot.items, { locked: true, returnHighestLevel: true })
+    await bot.equip(offhandSlot, "offhand")
+
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return // Stop if disconnected
@@ -111,7 +118,7 @@ async function startWarrior(bot: Warrior) {
                 await bot.smartMove("elixirluck")
             }
 
-            moveInCircle(bot, level1PratsNearDoor, 20, Math.PI / 2)
+            moveInCircle(bot, level1PratsNearDoor, 20, Math.PI / 2).catch(() => { /** Suppress warnings */ })
         } catch (e) {
             console.error(e)
         }
