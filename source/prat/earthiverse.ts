@@ -72,7 +72,7 @@ async function startWarrior(bot: Warrior) {
             }
 
             // Idle strategy
-            promises.push(attackTheseTypesWarrior(bot, ["prat"], friends))
+            promises.push(attackTheseTypesWarrior(bot, ["prat"], friends, { disableStomp: true }))
             await Promise.all(promises)
         } catch (e) {
             console.error(e)
