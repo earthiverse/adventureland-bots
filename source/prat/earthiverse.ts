@@ -118,7 +118,7 @@ async function startWarrior(bot: Warrior) {
                 await bot.smartMove("elixirluck")
             }
 
-            moveInCircle(bot, level1PratsNearDoor, 20, Math.PI / 2).catch(() => { /** Suppress warnings */ })
+            moveInCircle(bot, level1PratsNearDoor, 30, Math.PI / 4).catch(() => { /** Suppress warnings */ })
         } catch (e) {
             console.error(e)
         }
