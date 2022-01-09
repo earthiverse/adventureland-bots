@@ -34,6 +34,9 @@ export const desertlandPorcupines: IPosition = { map: "desertland", x: -829, y: 
 export const halloweenSafeSnakes: IPosition = { map: "halloween", x: 346.5, y: -747 }
 export const halloweenMiniMushes: IPosition = { map: "halloween", x: 16, y: 630.5 }
 
+// Level1
+export const level1PratsNearDoor: IPosition = { map: "level1", x: -11, y: 114.5 }
+
 // Tunnel
 export const miningSpot: IPosition = { map: "tunnel", x: -280, y: -10 }
 

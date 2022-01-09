@@ -18,7 +18,7 @@ export const MAIN_CHARACTERS = ["WarriorMain", "MageMain", "MerchantMain", "Prie
 
 export const ITEMS_TO_HOLD: Set<ItemName> = new Set([
     // Things we keep on ourselves
-    "computer", "tracker", "xptome",
+    "computer", "supercomputer", "tracker", "xptome",
     // Boosters
     "luckbooster", "goldbooster", "xpbooster",
     // Potions

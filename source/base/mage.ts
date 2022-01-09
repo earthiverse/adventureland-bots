@@ -12,38 +12,39 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
     targetingPlayer?: string
 } = {}): Promise<void> {
     if (bot.c.town) return // Don't attack if teleporting
+
+    const attackPriority = (a: Entity, b: Entity): boolean => {
+        // Order in array
+        const a_index = types.indexOf(a.type)
+        const b_index = types.indexOf(b.type)
+        if (a_index < b_index) return true
+        else if (a_index > b_index) return false
+
+        // Has a target -> higher priority
+        if (a.target && !b.target) return true
+        else if (!a.target && b.target) return false
+
+        // Could die -> lower priority
+        const a_couldDie = a.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)
+        const b_couldDie = b.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)
+        if (!a_couldDie && b_couldDie) return true
+        else if (a_couldDie && !b_couldDie) return false
+
+        // Will burn to death -> lower priority
+        const a_willBurn = a.willBurnToDeath()
+        const b_willBurn = b.willBurnToDeath()
+        if (!a_willBurn && b_willBurn) return true
+        else if (a_willBurn && !b_willBurn) return false
+
+        // Lower HP -> higher priority
+        if (a.hp < b.hp) return true
+        else if (a.hp > b.hp) return false
+
+        // Closer -> higher priority
+        return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
+    }
+
     if (bot.canUse("attack")) {
-        const attackPriority = (a: Entity, b: Entity): boolean => {
-            // Order in array
-            const a_index = types.indexOf(a.type)
-            const b_index = types.indexOf(b.type)
-            if (a_index < b_index) return true
-            else if (a_index > b_index) return false
-
-            // Has a target -> higher priority
-            if (a.target && !b.target) return true
-            else if (!a.target && b.target) return false
-
-            // Could die -> lower priority
-            const a_couldDie = a.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)
-            const b_couldDie = b.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)
-            if (!a_couldDie && b_couldDie) return true
-            else if (a_couldDie && !b_couldDie) return false
-
-            // Will burn to death -> lower priority
-            const a_willBurn = a.willBurnToDeath()
-            const b_willBurn = b.willBurnToDeath()
-            if (!a_willBurn && b_willBurn) return true
-            else if (a_willBurn && !b_willBurn) return false
-
-            // Lower HP -> higher priority
-            if (a.hp < b.hp) return true
-            else if (a.hp > b.hp) return false
-
-            // Closer -> higher priority
-            return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
-        }
-
         const targets = new FastPriorityQueue<Entity>(attackPriority)
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
@@ -184,6 +185,7 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
 
     // Cburst when we have a lot of mp
     if (bot.canUse("cburst") && !options.disableCburst && bot.mp > bot.max_mp - 500) {
+        const targets = new FastPriorityQueue<Entity>(attackPriority)
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
             typeList: types,
@@ -192,8 +194,11 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
             withinRange: bot.range
         })) {
             if (entity.immune) continue // Entity won't take damage from cburst
-            await bot.cburst([[entity.id, Math.min(entity.hp * 2, bot.mp - 500)]])
+            targets.add(entity)
         }
+
+        const target = targets.peek()
+        if (target) await bot.cburst([[target.id, Math.min(target.hp * 2, bot.mp - 500)]])
     }
 }
 
