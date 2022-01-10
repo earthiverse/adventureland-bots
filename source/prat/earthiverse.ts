@@ -1,6 +1,7 @@
 import AL, { Character, Merchant, Priest, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { region, identifier } from "../crabs/runners.js"
 import { startMerchant, startPriest, startWarrior } from "./shared.js"
+import { level1PratsNearDoor } from "../base/locations.js"
 
 const merchant_ID = "earthMer"
 const priest_ID = "earthPri"
@@ -52,7 +53,7 @@ async function run() {
                 if (warrior) warrior.disconnect()
                 warrior = await AL.Game.startWarrior(name, region, identifier)
                 friends[1] = warrior
-                startWarrior(warrior, merchant_ID, friends, "vhammer", "glolipop")
+                startWarrior(warrior, merchant_ID, friends, "vhammer", "glolipop", level1PratsNearDoor)
                 warrior.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -78,7 +79,7 @@ async function run() {
                 if (priest) priest.disconnect()
                 priest = await AL.Game.startPriest(name, region, identifier)
                 friends[2] = priest
-                startPriest(priest, merchant_ID, friends)
+                startPriest(priest, merchant_ID, friends, level1PratsNearDoor)
                 priest.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)

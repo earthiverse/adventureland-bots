@@ -1,6 +1,5 @@
 import AL, { Character, Warrior, Priest, Merchant, IPosition, MonsterName, ServerInfoDataLive, ItemName } from "alclient"
 import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, startTrackerLoop, LOOP_MS, FRIENDLY_ROGUES, sleep, moveInCircle, ANNOUNCEMENT_CHARACTERS, LOLWUTPEAR_CHARACTERS, MY_CHARACTERS } from "../base/general.js"
-import { level1PratsNearDoor } from "../base/locations.js"
 import { startMluckLoop, doBanking, doEmergencyBanking, goFishing, goMining } from "../base/merchant.js"
 import { startDarkBlessingLoop, startPartyHealLoop, attackTheseTypesPriest } from "../base/priest.js"
 import { startChargeLoop, startHardshellLoop, startWarcryLoop, attackTheseTypesWarrior } from "../base/warrior.js"
@@ -30,7 +29,7 @@ async function startShared(bot: Character, merchant: string, friends: Character[
     startUpgradeLoop(bot)
 }
 
-export async function startWarrior(bot: Warrior, merchant: string, friends: Character[], mainhand: ItemName, offhand: ItemName) {
+export async function startWarrior(bot: Warrior, merchant: string, friends: Character[], mainhand: ItemName, offhand: ItemName, location: IPosition) {
     startShared(bot, merchant, friends)
     startTrackerLoop(bot)
 
@@ -112,7 +111,7 @@ export async function startWarrior(bot: Warrior, merchant: string, friends: Char
                 await bot.smartMove("elixirluck")
             }
 
-            moveInCircle(bot, level1PratsNearDoor, 30, Math.PI / 4).catch(() => { /** Suppress warnings */ })
+            moveInCircle(bot, location, 30, Math.PI / 4).catch(() => { /** Suppress warnings */ })
         } catch (e) {
             console.error(e)
         }
@@ -121,7 +120,7 @@ export async function startWarrior(bot: Warrior, merchant: string, friends: Char
     moveLoop()
 }
 
-export async function startPriest(bot: Priest, merchant: string, friends: Character[]) {
+export async function startPriest(bot: Priest, merchant: string, friends: Character[], location: IPosition) {
     startShared(bot, merchant, friends)
 
     startDarkBlessingLoop(bot)
@@ -190,7 +189,7 @@ export async function startPriest(bot: Priest, merchant: string, friends: Charac
                 await bot.smartMove("elixirluck")
             }
 
-            await bot.smartMove(level1PratsNearDoor)
+            await bot.smartMove(location)
         } catch (e) {
             console.error(e)
         }

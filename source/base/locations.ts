@@ -36,6 +36,7 @@ export const halloweenMiniMushes: IPosition = { map: "halloween", x: 16, y: 630.
 
 // Level1
 export const level1PratsNearDoor: IPosition = { map: "level1", x: -11, y: 114.5 }
+export const level1PratsNearLedge: IPosition = { map: "level1", x: -154, y: 695.5 }
 
 // Tunnel
 export const miningSpot: IPosition = { map: "tunnel", x: -280, y: -10 }
