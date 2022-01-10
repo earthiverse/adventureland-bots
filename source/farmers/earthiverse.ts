@@ -110,7 +110,7 @@ async function run() {
             try {
                 if (rogue) rogue.disconnect()
                 rogue = await AL.Game.startRogue(name, region, identifier)
-                friends[2] = rogue
+                friends[3] = rogue
                 startRogue(rogue, merchant_ID, friends)
                 rogue.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
