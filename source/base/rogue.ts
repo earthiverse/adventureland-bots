@@ -115,6 +115,33 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
         await bot.basicAttack(target.id)
     }
 
+    if (bot.canUse("mentalburst")) {
+        const targets: Entity[] = []
+        for (const entity of bot.getEntities({
+            couldGiveCredit: true,
+            targetingPartyMember: options.targetingPartyMember,
+            targetingPlayer: options.targetingPlayer,
+            typeList: types,
+            willDieToProjectiles: false,
+            withinRange: (bot.range * bot.G.skills.mentalburst.range_multiplier) + bot.G.skills.mentalburst.range_bonus
+        })) {
+            if (entity.immune) continue // Entity won't take damage from mentalburst
+            if (!bot.canKillInOneShot(entity, "mentalburst")) continue
+            targets.push(entity)
+        }
+
+        if (targets.length) {
+            const target = targets[0]
+            for (const friend of friends) {
+                if (!friend) continue // No friend
+                if (friend.id == bot.id) continue // Don't delete it from our own list
+                if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                friend.deleteEntity(target.id)
+            }
+            await bot.mentalBurst(target.id)
+        }
+    }
+
     if (!options.disableQuickPunch && bot.canUse("quickpunch")) {
         const targets = new FastPriorityQueue<Entity>(attackPriority)
         for (const entity of bot.getEntities({
