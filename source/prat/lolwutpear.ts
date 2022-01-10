@@ -1,8 +1,9 @@
 import AL, { Character, Merchant, Priest, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { level1PratsNearLedge } from "../base/locations.js"
-import { region, identifier } from "../crabs/runners.js"
 import { startMerchant, startPriest, startWarrior } from "./shared.js"
 
+const region: ServerRegion = "US"
+const identifier: ServerIdentifier = "I"
 const merchant_ID = "orlyowl"
 const priest_ID = "over9000"
 const warrior_ID = "fgsfds"
