@@ -43,7 +43,7 @@ export async function startMage(bot: Mage, merchant: string, friends: Character[
             }
 
             // Idle strategy
-            await attackTheseTypesMage(bot, ["croc", "armadillo"], friends)
+            await attackTheseTypesMage(bot, ["porcupine"], friends)
         } catch (e) {
             console.error(e)
         }
