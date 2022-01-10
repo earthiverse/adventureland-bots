@@ -1,5 +1,5 @@
 import AL, { Character, Warrior, Priest, Merchant, IPosition, MonsterName, ServerInfoDataLive, ItemName } from "alclient"
-import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, startTrackerLoop, LOOP_MS, FRIENDLY_ROGUES, sleep, moveInCircle, ANNOUNCEMENT_CHARACTERS, LOLWUTPEAR_CHARACTERS, MY_CHARACTERS, startBuyFriendsReplenishablesLoop } from "../base/general.js"
+import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, LOOP_MS, FRIENDLY_ROGUES, sleep, moveInCircle, startBuyFriendsReplenishablesLoop } from "../base/general.js"
 import { startMluckLoop, doBanking, doEmergencyBanking, goFishing, goMining } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { startDarkBlessingLoop, startPartyHealLoop, attackTheseTypesPriest } from "../base/priest.js"
@@ -29,7 +29,6 @@ async function startShared(bot: Character, merchant: string, friends: Character[
 
 export async function startWarrior(bot: Warrior, merchant: string, friends: Character[], mainhand: ItemName, offhand: ItemName, location: IPosition) {
     startShared(bot, merchant, friends)
-    startTrackerLoop(bot)
 
     startChargeLoop(bot)
     startHardshellLoop(bot)

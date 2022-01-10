@@ -1,4 +1,5 @@
 import AL, { Character, Mage, Merchant, ServerIdentifier, ServerRegion } from "alclient"
+import { startTrackerLoop } from "../base/general.js"
 import { startMage } from "../porcupines/shared.js"
 import { startMerchant } from "../prat/shared.js"
 
@@ -30,7 +31,7 @@ async function run() {
                 if (merchant) merchant.disconnect()
                 merchant = await AL.Game.startMerchant(name, region, identifier)
                 friends[0] = merchant
-                startMerchant(merchant, friends, { map: "main", x: 0, y: -100 })
+                startMerchant(merchant, friends, { map: "main", x: -25, y: -100 })
                 merchant.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -49,7 +50,7 @@ async function run() {
     }
     startMerchantLoop(merchant_ID, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startMageLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
+    const startMage1Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
@@ -57,6 +58,7 @@ async function run() {
                 mage1 = await AL.Game.startMage(name, region, identifier)
                 friends[1] = mage1
                 startMage(mage1, merchant_ID, friends)
+                startTrackerLoop(mage1)
                 mage1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -73,7 +75,7 @@ async function run() {
         }
         loopBot()
     }
-    startMageLoop(mage1_ID, region, identifier).catch(() => { /* ignore errors */ })
+    startMage1Loop(mage1_ID, region, identifier).catch(() => { /* ignore errors */ })
 
     const startMage2Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters

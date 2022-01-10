@@ -1,6 +1,7 @@
 import AL, { Character, Merchant, Priest, Ranger, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { startMerchant, startPriest, startWarrior } from "../prat/shared.js"
 import { level1PratsNearDoor } from "../base/locations.js"
+import { startTrackerLoop } from "../base/general.js"
 
 const region: ServerRegion = "US"
 const identifier: ServerIdentifier = "I"
@@ -57,6 +58,7 @@ async function run() {
                 warrior = await AL.Game.startWarrior(name, region, identifier)
                 friends[1] = warrior
                 startWarrior(warrior, merchant_ID, friends, "vhammer", "glolipop", level1PratsNearDoor)
+                startTrackerLoop(warrior)
                 warrior.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)

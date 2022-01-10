@@ -1,4 +1,5 @@
 import AL, { Character, Mage, Merchant, Priest, ServerIdentifier, ServerRegion, Warrior } from "alclient"
+import { startTrackerLoop } from "../base/general.js"
 import { level1PratsNearLedge } from "../base/locations.js"
 import { startMage } from "../crocs/shared.js"
 import { startMerchant, startPriest, startWarrior } from "../prat/shared.js"
@@ -31,7 +32,7 @@ async function run() {
                 if (merchant) merchant.disconnect()
                 merchant = await AL.Game.startMerchant(name, region, identifier)
                 friends[0] = merchant
-                startMerchant(merchant, friends, { map: "main", x: 0, y: -100 })
+                startMerchant(merchant, friends, { map: "main", x: 25, y: -100 })
                 merchant.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -58,6 +59,7 @@ async function run() {
                 warrior = await AL.Game.startWarrior(name, region, identifier)
                 friends[1] = warrior
                 startWarrior(warrior, merchant_ID, friends, "vhammer", "ololipop", level1PratsNearLedge)
+                startTrackerLoop(warrior)
                 warrior.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
