@@ -1,4 +1,4 @@
-import AL, { Character, Merchant, Priest, ServerIdentifier, ServerRegion, Warrior } from "alclient"
+import AL, { Character, Merchant, Priest, Ranger, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { startMerchant, startPriest, startWarrior } from "../prat/shared.js"
 import { level1PratsNearDoor } from "../base/locations.js"
 
