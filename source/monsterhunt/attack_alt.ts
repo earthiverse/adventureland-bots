@@ -8,7 +8,7 @@ import { startMerchant, startPaladin, startRanger, startRogue } from "./shared.j
 
 const TARGET_REGION: ServerRegion = "US"
 const TARGET_IDENTIFIER: ServerIdentifier = "I"
-const partyLeader = "attackRan"
+const partyLeader = "attacking"
 const partyMembers = ["attacking", "attackPal", "attackRog"]
 
 const information: Information = {
