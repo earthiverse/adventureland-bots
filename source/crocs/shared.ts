@@ -1,6 +1,6 @@
 import AL, { Character, IPosition, Mage } from "alclient"
 import { FRIENDLY_ROGUES, ITEMS_TO_HOLD, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
-import { attackTheseTypesMage } from "../base/mage"
+import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 
 async function startShared(bot: Character, merchant: string, friends: Character[]) {
