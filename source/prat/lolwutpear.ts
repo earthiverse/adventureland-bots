@@ -2,9 +2,9 @@ import AL, { Character, Merchant, Priest, ServerIdentifier, ServerRegion, Warrio
 import { region, identifier } from "../crabs/runners.js"
 import { startMerchant, startPriest, startWarrior } from "./shared.js"
 
-const merchant_ID = "earthMer"
-const priest_ID = "earthPri"
-const warrior_ID = "earthWar"
+const merchant_ID = "orlyowl"
+const priest_ID = "over9000"
+const warrior_ID = "fgsfds"
 
 let merchant: Merchant
 let priest: Priest
@@ -52,7 +52,7 @@ async function run() {
                 if (warrior) warrior.disconnect()
                 warrior = await AL.Game.startWarrior(name, region, identifier)
                 friends[1] = warrior
-                startWarrior(warrior, merchant_ID, friends, "vhammer", "glolipop")
+                startWarrior(warrior, merchant_ID, friends, "vhammer", "ololipop")
                 warrior.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
