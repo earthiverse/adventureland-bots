@@ -1,5 +1,5 @@
 import AL, { Character, Warrior, Priest, Merchant, IPosition, MonsterName, ServerInfoDataLive, ItemName } from "alclient"
-import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, startTrackerLoop, LOOP_MS, FRIENDLY_ROGUES, sleep, moveInCircle, ANNOUNCEMENT_CHARACTERS, LOLWUTPEAR_CHARACTERS, MY_CHARACTERS } from "../base/general.js"
+import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, startTrackerLoop, LOOP_MS, FRIENDLY_ROGUES, sleep, moveInCircle, ANNOUNCEMENT_CHARACTERS, LOLWUTPEAR_CHARACTERS, MY_CHARACTERS, startBuyFriendsReplenishablesLoop } from "../base/general.js"
 import { startMluckLoop, doBanking, doEmergencyBanking, goFishing, goMining } from "../base/merchant.js"
 import { startDarkBlessingLoop, startPartyHealLoop, attackTheseTypesPriest } from "../base/priest.js"
 import { startChargeLoop, startHardshellLoop, startWarcryLoop, attackTheseTypesWarrior } from "../base/warrior.js"
@@ -201,6 +201,7 @@ export async function startPriest(bot: Priest, merchant: string, friends: Charac
 export async function startMerchant(bot: Merchant, friends: Character[], standPlace: IPosition) {
     startShared(bot, bot.id, friends)
 
+    startBuyFriendsReplenishablesLoop(bot, friends)
     startMluckLoop(bot)
     startPartyLoop(bot, bot.id)
 

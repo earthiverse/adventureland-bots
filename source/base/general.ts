@@ -808,7 +808,7 @@ export function startBuyLoop(bot: Character, itemsToBuy = ITEMS_TO_BUY, replenis
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("buyloop", setTimeout(async () => { buyLoop() }, LOOP_MS))
+        bot.timeouts.set("buyLoop", setTimeout(async () => { buyLoop() }, LOOP_MS))
     }
     buyLoop()
 }
@@ -849,7 +849,7 @@ export function startBuyFriendsReplenishablesLoop(bot: Character, friends: Chara
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("buyfriendspotionsloop", setTimeout(async () => { buyFriendsReplenishablesLoop() }, LOOP_MS))
+        bot.timeouts.set("buyFriendsReplenishablesLoop", setTimeout(async () => { buyFriendsReplenishablesLoop() }, LOOP_MS))
     }
     buyFriendsReplenishablesLoop()
 }
