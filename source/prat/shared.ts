@@ -1,11 +1,9 @@
 import AL, { Character, Warrior, Priest, Merchant, IPosition, MonsterName, ServerInfoDataLive, ItemName } from "alclient"
 import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, startTrackerLoop, LOOP_MS, FRIENDLY_ROGUES, sleep, moveInCircle, ANNOUNCEMENT_CHARACTERS, LOLWUTPEAR_CHARACTERS, MY_CHARACTERS, startBuyFriendsReplenishablesLoop } from "../base/general.js"
 import { startMluckLoop, doBanking, doEmergencyBanking, goFishing, goMining } from "../base/merchant.js"
+import { partyLeader, partyMembers } from "../base/party.js"
 import { startDarkBlessingLoop, startPartyHealLoop, attackTheseTypesPriest } from "../base/priest.js"
 import { startChargeLoop, startHardshellLoop, startWarcryLoop, attackTheseTypesWarrior } from "../base/warrior.js"
-
-const partyLeader = "earthWar"
-const partyMembers = [...MY_CHARACTERS, ...ANNOUNCEMENT_CHARACTERS, ...LOLWUTPEAR_CHARACTERS]
 
 async function startShared(bot: Character, merchant: string, friends: Character[]) {
     startAvoidStacking(bot)
