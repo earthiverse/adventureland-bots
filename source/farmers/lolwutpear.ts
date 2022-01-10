@@ -109,7 +109,7 @@ async function run() {
                 if (mage) mage.disconnect()
                 mage = await AL.Game.startMage(name, region, identifier)
                 friends[3] = mage
-                startMage(mage, merchant_ID, friends, level1PratsNearLedge)
+                startMage(mage, merchant_ID, friends)
                 mage.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)

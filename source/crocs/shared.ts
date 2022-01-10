@@ -1,5 +1,6 @@
 import AL, { Character, IPosition, Mage } from "alclient"
-import { FRIENDLY_ROGUES, ITEMS_TO_HOLD, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
+import { FRIENDLY_ROGUES, goToNearestWalkableToMonster, ITEMS_TO_HOLD, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
+import { mainCrocs } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 
@@ -25,7 +26,7 @@ async function startShared(bot: Character, merchant: string, friends: Character[
     startUpgradeLoop(bot)
 }
 
-export async function startMage(bot: Mage, merchant: string, friends: Character[], location: IPosition) {
+export async function startMage(bot: Mage, merchant: string, friends: Character[]) {
     startShared(bot, merchant, friends)
 
     async function attackLoop() {
@@ -91,7 +92,7 @@ export async function startMage(bot: Mage, merchant: string, friends: Character[
                 await bot.smartMove("elixirluck")
             }
 
-            await bot.smartMove(location)
+            goToNearestWalkableToMonster(bot, ["croc"], mainCrocs, bot.range - 25).catch(() => { /** Suppress errors */ })
         } catch (e) {
             console.error(e)
         }
