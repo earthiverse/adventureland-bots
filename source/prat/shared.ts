@@ -1,5 +1,5 @@
 import AL, { Character, Warrior, Priest, Merchant, IPosition, MonsterName, ServerInfoDataLive, ItemName } from "alclient"
-import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, LOOP_MS, FRIENDLY_ROGUES, sleep, moveInCircle, startBuyFriendsReplenishablesLoop } from "../base/general.js"
+import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, LOOP_MS, FRIENDLY_ROGUES, sleep, moveInCircle, startBuyFriendsReplenishablesLoop, REPLENISHABLES_TO_BUY } from "../base/general.js"
 import { startMluckLoop, doBanking, doEmergencyBanking, goFishing, goMining } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { startDarkBlessingLoop, startPartyHealLoop, attackTheseTypesPriest } from "../base/priest.js"
@@ -264,15 +264,31 @@ export async function startMerchant(bot: Merchant, friends: Character[], standPl
                 }
             }
 
-            // get stuff from our friends
             for (const friend of friends) {
                 if (!friend) continue
+                if (friend.id == bot.id) continue
+
+                // Get stuff from our friends
                 if (friend.isFull()) {
                     await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                     lastBankVisit = Date.now()
                     await doBanking(bot)
                     bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                     return
+                }
+
+                // Buy stuff for our friends
+                if (!(friend.hasItem("computer") || friend.hasItem("supercomputer"))
+                && (bot.hasItem("computer") || bot.hasItem("supercomputer"))) {
+                    // Go buy replenishables for them, since they don't have a computer
+                    for (const [item, amount] of REPLENISHABLES_TO_BUY) {
+                        if (friend.countItem(item) > amount * 0.25) continue // They have enough
+                        if (!bot.canBuy(item)) continue // We can't buy them this for them
+                        await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+
+                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                        return
+                    }
                 }
             }
 
@@ -308,7 +324,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], standPl
                 }
 
                 // Find other characters that need mluck and go find them
-                const charactersToMluck = await AL.PlayerModel.find({
+                const playersToMLuck = await AL.PlayerModel.find({
                     $or: [{ "s.mluck": undefined },
                         { "s.mluck.f": { "$ne": bot.id }, "s.mluck.strong": undefined }],
                     lastSeen: { $gt: Date.now() - 120000 },
@@ -321,12 +337,12 @@ export async function startMerchant(bot: Merchant, friends: Character[], standPl
                     x: 1,
                     y: 1
                 }).lean().exec()
-                for (const stwarrior of charactersToMluck) {
+                for (const player of playersToMLuck) {
                     // Move to them, and we'll automatically mluck them
-                    if (AL.Tools.distance(bot, stwarrior) > bot.G.skills.mluck.range) {
+                    if (AL.Tools.distance(bot, player) > bot.G.skills.mluck.range) {
                         await bot.closeMerchantStand()
-                        console.log(`[merchant] We are moving to ${stwarrior.name} to mluck them!`)
-                        await bot.smartMove(stwarrior, { getWithin: bot.G.skills.mluck.range / 2 })
+                        console.log(`[merchant] We are moving to ${player.name} to mluck them!`)
+                        await bot.smartMove(player, { getWithin: bot.G.skills.mluck.range / 2 })
                     }
 
                     setTimeout(async () => { moveLoop() }, 250)
