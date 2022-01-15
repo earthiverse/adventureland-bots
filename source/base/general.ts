@@ -997,7 +997,7 @@ export function startExchangeLoop(bot: Character, itemsToExchange = ITEMS_TO_EXC
 
             if (bot.q.exchange) {
                 // We are exchanging, we have to wait
-                bot.timeouts.set("exchangeloop", setTimeout(async () => { exchangeLoop() }, bot.q.exchange.ms))
+                bot.timeouts.set("exchangeLoop", setTimeout(async () => { exchangeLoop() }, bot.q.exchange.ms))
                 return
             }
 
@@ -1028,7 +1028,7 @@ export function startExchangeLoop(bot: Character, itemsToExchange = ITEMS_TO_EXC
             console.error(e)
         }
 
-        bot.timeouts.set("exchangeloop", setTimeout(async () => { exchangeLoop() }, LOOP_MS))
+        bot.timeouts.set("exchangeLoop", setTimeout(async () => { exchangeLoop() }, LOOP_MS))
     }
     exchangeLoop()
 }
@@ -1083,7 +1083,7 @@ export function startHealLoop(bot: Character): void {
             console.error(e)
         }
 
-        bot.timeouts.set("healloop", setTimeout(async () => { healLoop() }, Math.max(LOOP_MS, bot.getCooldown("use_hp"))))
+        bot.timeouts.set("healLoop", setTimeout(async () => { healLoop() }, Math.max(LOOP_MS, bot.getCooldown("use_hp"))))
     }
     healLoop()
 }
@@ -1124,6 +1124,18 @@ export function startLootLoop(bot: Character, friends: Character[] = []): void {
                     }
                 }
                 if (nearFriend) continue
+                if (bot.party) {
+                    for (const id in bot.partyData?.party) {
+                        if (id == bot.id) continue // It's us
+                        const partyMember = bot.partyData.party[id]
+                        if (Tools.distance(partyMember, chest) <= 800) {
+                        // Close enough for them to loot
+                            nearFriend = true
+                            break
+                        }
+                    }
+                    if (nearFriend) continue
+                }
 
                 for (const friend of friends) {
                     if (!friend) continue // No friend
