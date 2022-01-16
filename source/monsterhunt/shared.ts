@@ -759,7 +759,7 @@ export async function startRogue(bot: Rogue, information: Information, strategy:
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("attack"), bot.getCooldown("quickstab"), bot.getCooldown("mentalburst")))))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("attack"), bot.canUse("quickpunch") ? bot.getCooldown("quickpunch") : 1000, bot.canUse("quickstab") ? bot.getCooldown("quickstab") : 1000, bot.canUse("mentalburst") ? bot.getCooldown("mentalburst") : 1000))))
     }
     attackLoop()
 }
