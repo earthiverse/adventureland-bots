@@ -1,5 +1,5 @@
 import AL, { Character, CMData, Constants, Entity, IPosition, LimitDCReportData, Mage, Merchant, MonsterName, Paladin, Priest, Ranger, Rogue, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Warrior } from "alclient"
-import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, ITEMS_TO_HOLD, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
+import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, ITEMS_TO_HOLD, LOOP_MS, REPLENISHABLES_TO_BUY, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMage, magiportStrangerIfNotNearby } from "../base/mage.js"
 import { attackTheseTypesMerchant, doBanking, doEmergencyBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
@@ -291,6 +291,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
 
             // Get some holiday spirit if it's Christmas
             if (bot.S && bot.S.holidayseason && !bot.s.holidayspirit) {
+                await bot.closeMerchantStand()
                 await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                 // TODO: Improve ALClient by making this a function
                 bot.socket.emit("interaction", { type: "newyear_tree" })
@@ -302,6 +303,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
             if (!bot.s.rspeed) {
                 const friendlyRogue = await AL.PlayerModel.findOne({ lastSeen: { $gt: Date.now() - 120_000 }, name: { $in: friendlyRogues }, serverIdentifier: bot.server.name, serverRegion: bot.server.region }).lean().exec()
                 if (friendlyRogue) {
+                    await bot.closeMerchantStand()
                     await bot.smartMove(friendlyRogue, { getWithin: 20 })
                     if (!bot.s.rspeed) await sleep(2500)
                     if (!bot.s.rspeed) friendlyRogues.splice(friendlyRogues.indexOf(friendlyRogue.id), 1) // They're not giving rspeed, remove them from our list
@@ -329,15 +331,33 @@ export async function startMerchant(bot: Merchant, information: Information, str
                 }
             }
 
-            // get stuff from our friends
             for (const friend of information.friends) {
                 if (!friend) continue
+                if (friend.id == bot.id) continue
+
+                // Get stuff from our friends
                 if (friend.isFull()) {
+                    await bot.closeMerchantStand()
                     await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                     lastBankVisit = Date.now()
                     await doBanking(bot)
                     bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                     return
+                }
+
+                // Buy stuff for our friends
+                if (!(friend.hasItem("computer") || friend.hasItem("supercomputer"))
+                && (bot.hasItem("computer") || bot.hasItem("supercomputer"))) {
+                    // Go buy replenishables for them, since they don't have a computer
+                    for (const [item, amount] of REPLENISHABLES_TO_BUY) {
+                        if (friend.countItem(item) > amount * 0.25) continue // They have enough
+                        if (!bot.canBuy(item)) continue // We can't buy them this for them
+                        await bot.closeMerchantStand()
+                        await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+
+                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                        return
+                    }
                 }
             }
 

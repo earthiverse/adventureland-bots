@@ -226,6 +226,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], standPl
 
             // Get some holiday spirit if it's Christmas
             if (bot.S && bot.S.holidayseason && !bot.s.holidayspirit) {
+                await bot.closeMerchantStand()
                 await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                 // TODO: Improve ALClient by making this a function
                 bot.socket.emit("interaction", { type: "newyear_tree" })
@@ -237,6 +238,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], standPl
             if (!bot.s.rspeed) {
                 const friendlyRogue = await AL.PlayerModel.findOne({ lastSeen: { $gt: Date.now() - 120_000 }, name: { $in: friendlyRogues }, serverIdentifier: bot.server.name, serverRegion: bot.server.region }).lean().exec()
                 if (friendlyRogue) {
+                    await bot.closeMerchantStand()
                     await bot.smartMove(friendlyRogue, { getWithin: 20 })
                     if (!bot.s.rspeed) await sleep(2500)
                     if (!bot.s.rspeed) friendlyRogues.splice(friendlyRogues.indexOf(friendlyRogue.id), 1) // They're not giving rspeed, remove them from our list
@@ -270,6 +272,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], standPl
 
                 // Get stuff from our friends
                 if (friend.isFull()) {
+                    await bot.closeMerchantStand()
                     await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                     lastBankVisit = Date.now()
                     await doBanking(bot)
@@ -284,6 +287,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], standPl
                     for (const [item, amount] of REPLENISHABLES_TO_BUY) {
                         if (friend.countItem(item) > amount * 0.25) continue // They have enough
                         if (!bot.canBuy(item)) continue // We can't buy them this for them
+                        await bot.closeMerchantStand()
                         await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
 
                         bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
