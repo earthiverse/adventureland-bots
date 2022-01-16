@@ -1,4 +1,4 @@
-import AL, { Character, Warrior, Priest, Merchant, IPosition, MonsterName, ServerInfoDataLive, ItemName } from "alclient"
+import AL, { Character, Warrior, Priest, Merchant, IPosition, MonsterName, ServerInfoDataLive, ItemName, Tools } from "alclient"
 import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, LOOP_MS, FRIENDLY_ROGUES, sleep, moveInCircle, startBuyFriendsReplenishablesLoop, REPLENISHABLES_TO_BUY } from "../base/general.js"
 import { startMluckLoop, doBanking, doEmergencyBanking, goFishing, goMining } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "../base/party.js"
@@ -108,7 +108,7 @@ export async function startWarrior(bot: Warrior, merchant: string, friends: Char
                 await bot.smartMove("elixirluck")
             }
 
-            moveInCircle(bot, location, 30, Math.PI / 4).catch(() => { /** Suppress warnings */ })
+            await moveInCircle(bot, location, 30, Math.PI / 4).catch(() => { /** Suppress warnings */ })
         } catch (e) {
             console.error(e)
         }

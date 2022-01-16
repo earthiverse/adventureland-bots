@@ -685,7 +685,7 @@ export function moveInCircle(bot: Character, center: IPosition, radius = 125, an
         const angleFromCenterToCurrent = Math.atan2(bot.y - center.y, bot.x - center.x)
         const endGoalAngle = angleFromCenterToCurrent + angle
         const endGoal = { x: center.x + radius * Math.cos(endGoalAngle), y: center.y + radius * Math.sin(endGoalAngle) }
-        return bot.move(endGoal.x, endGoal.y)
+        bot.move(endGoal.x, endGoal.y).catch(() => { /** Suppress errors */ })
     } else {
         // Move to where we can walk
         return bot.smartMove(center, { getWithin: radius })

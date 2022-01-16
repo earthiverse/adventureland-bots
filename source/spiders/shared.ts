@@ -1,5 +1,5 @@
-import AL, { Character, IPosition, ItemName, Rogue } from "alclient"
-import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, LOOP_MS, moveInCircle, goToNearestWalkableToMonster } from "../base/general.js"
+import AL, { Character, Rogue } from "alclient"
+import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, LOOP_MS, goToNearestWalkableToMonster } from "../base/general.js"
 import { mainSpiders } from "../base/locations.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
@@ -81,7 +81,7 @@ export async function startRogue(bot: Rogue, merchant: string, friends: Characte
                 await bot.smartMove("elixirluck")
             }
 
-            goToNearestWalkableToMonster(bot, ["spider"], mainSpiders, bot.range - 25).catch(() => { /** Suppress errors */ })
+            await goToNearestWalkableToMonster(bot, ["spider"], mainSpiders, bot.range - 25).catch(() => { /** Suppress errors */ })
         } catch (e) {
             console.error(e)
         }
