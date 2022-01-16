@@ -680,7 +680,7 @@ export function kiteInCircle(bot: Character, type: MonsterName, center: IPositio
     }
 }
 
-export function moveInCircle(bot: Character, center: IPosition, radius = 125, angle = Math.PI / 2.5): Promise<IPosition> {
+export async function moveInCircle(bot: Character, center: IPosition, radius = 125, angle = Math.PI / 2.5): Promise<IPosition> {
     if (AL.Pathfinder.canWalkPath(bot, center)) {
         const angleFromCenterToCurrent = Math.atan2(bot.y - center.y, bot.x - center.x)
         const endGoalAngle = angleFromCenterToCurrent + angle

@@ -92,7 +92,7 @@ export async function startMage(bot: Mage, merchant: string, friends: Character[
                 await bot.smartMove("elixirluck")
             }
 
-            await goToNearestWalkableToMonster(bot, ["croc"], mainCrocs, bot.range - 25).catch(() => { /** Suppress errors */ })
+            await goToNearestWalkableToMonster(bot, ["croc"], mainCrocs, bot.range - 25)
         } catch (e) {
             console.error(e)
         }

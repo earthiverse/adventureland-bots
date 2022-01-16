@@ -108,7 +108,7 @@ export async function startWarrior(bot: Warrior, merchant: string, friends: Char
                 await bot.smartMove("elixirluck")
             }
 
-            await moveInCircle(bot, location, 30, Math.PI / 4).catch(() => { /** Suppress warnings */ })
+            await moveInCircle(bot, location, 30, Math.PI / 4)
         } catch (e) {
             console.error(e)
         }

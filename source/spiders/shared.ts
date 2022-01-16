@@ -81,7 +81,7 @@ export async function startRogue(bot: Rogue, merchant: string, friends: Characte
                 await bot.smartMove("elixirluck")
             }
 
-            await goToNearestWalkableToMonster(bot, ["spider"], mainSpiders, bot.range - 25).catch(() => { /** Suppress errors */ })
+            await goToNearestWalkableToMonster(bot, ["spider"], mainSpiders, bot.range - 25)
         } catch (e) {
             console.error(e)
         }
