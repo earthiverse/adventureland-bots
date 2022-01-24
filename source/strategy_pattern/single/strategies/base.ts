@@ -2,7 +2,6 @@ import { PingCompensatedCharacter } from "alclient"
 import { sleep } from "../../../base/general.js"
 import { Loop, Loops, SingleCharStrategy } from "../context.js"
 
-
 export class BaseStrategy<Type extends PingCompensatedCharacter> implements SingleCharStrategy<Type> {
     public name = "BaseStrategy"
     public loops: Loops<Type> = new Map<string, Loop<Type>>()
