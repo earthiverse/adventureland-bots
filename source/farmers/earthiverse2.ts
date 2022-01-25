@@ -33,6 +33,7 @@ async function run() {
             if (targetServer[0] !== avoidServer[0] || targetServer[1] !== avoidServer[1]) jrat_lastServer = targetServer
 
             jrat = await AL.Game.startRanger(jrat_ID, jrat_lastServer[0], jrat_lastServer[1])
+            friends[0] = jrat
             startJratRanger(jrat, "earthMer", friends, "firebow", "quiver")
         } catch (e) {
             console.error(e)
@@ -60,6 +61,7 @@ async function run() {
     const croc1ConnectLoop = async () => {
         try {
             croc1 = await AL.Game.startMage(croc1_ID, croc_server[0], croc_server[1])
+            friends[1] = croc1
             startCrocMage(croc1, "earthMer", friends, croc1_ID, MY_CHARACTERS)
         } catch (e) {
             console.error(e)
@@ -87,6 +89,7 @@ async function run() {
     const croc2ConnectLoop = async () => {
         try {
             croc2 = await AL.Game.startMage(croc2_ID, croc_server[0], croc_server[1])
+            friends[2] = croc2
             startCrocMage(croc2, "earthMer", friends, croc1_ID, MY_CHARACTERS)
         } catch (e) {
             console.error(e)
@@ -114,6 +117,7 @@ async function run() {
     const croc3ConnectLoop = async () => {
         try {
             croc3 = await AL.Game.startMage(croc3_ID, croc_server[0], croc_server[1])
+            friends[3] = croc3
             startCrocMage(croc3, "earthMer", friends, croc1_ID, MY_CHARACTERS)
         } catch (e) {
             console.error(e)
