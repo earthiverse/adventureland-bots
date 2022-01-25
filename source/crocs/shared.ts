@@ -2,9 +2,8 @@ import AL, { Character, Mage } from "alclient"
 import { FRIENDLY_ROGUES, goToNearestWalkableToMonster, ITEMS_TO_HOLD, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { mainCrocs } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
-import { partyLeader, partyMembers } from "../base/party.js"
 
-async function startShared(bot: Character, merchant: string, friends: Character[]) {
+async function startShared(bot: Character, merchant: string, friends: Character[], leader, members) {
     startAvoidStacking(bot)
     startBuyLoop(bot)
     startCompoundLoop(bot)
@@ -14,10 +13,10 @@ async function startShared(bot: Character, merchant: string, friends: Character[
     startHealLoop(bot)
     startLootLoop(bot, friends)
     if (bot.ctype !== "merchant") {
-        if (bot.id == partyLeader) {
-            startPartyLoop(bot, partyLeader, partyMembers)
+        if (bot.id == leader) {
+            startPartyLoop(bot, leader, members)
         } else {
-            bot.timeouts.set("partyLoop", setTimeout(async () => { startPartyLoop(bot, partyLeader, partyMembers) }, 2000))
+            bot.timeouts.set("partyLoop", setTimeout(async () => { startPartyLoop(bot, leader, members) }, 2000))
         }
     }
     startScareLoop(bot)
@@ -26,8 +25,8 @@ async function startShared(bot: Character, merchant: string, friends: Character[
     startUpgradeLoop(bot)
 }
 
-export async function startMage(bot: Mage, merchant: string, friends: Character[]) {
-    startShared(bot, merchant, friends)
+export async function startMage(bot: Mage, merchant: string, friends: Character[], partyLeader: string, partyMembers: string[]) {
+    startShared(bot, merchant, friends, partyLeader, partyMembers)
 
     async function attackLoop() {
         try {
