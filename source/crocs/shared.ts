@@ -1,6 +1,6 @@
 import AL, { Character, Mage } from "alclient"
-import { FRIENDLY_ROGUES, goToNearestWalkableToMonster, ITEMS_TO_HOLD, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
-import { mainCrocs } from "../base/locations.js"
+import { FRIENDLY_ROGUES, goToBankIfFull, goToNearestWalkableToMonster, goToPotionSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
+import { bankingPosition, mainCrocs } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 
 async function startShared(bot: Character, merchant: string, friends: Character[], leader, members) {
@@ -69,6 +69,28 @@ export async function startMage(bot: Mage, merchant: string, friends: Character[
                 bot.socket.emit("interaction", { type: "newyear_tree" })
                 bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, Math.min(...bot.pings) * 2))
                 return
+            }
+
+            await goToPotionSellerIfLow(bot)
+            await goToBankIfFull(bot)
+
+            if (bot.gold > 5_000_000) {
+                await bot.smartMove(bankingPosition) // Move to bank teller to give bank time to get ready
+
+                for (let i = 0; i < bot.isize; i++) {
+                    const item = bot.items[i]
+                    if (!item) continue // No item in this slot
+                    if (item.l == "l") continue // Don't send locked items
+                    if (ITEMS_TO_HOLD.has(item.name)) continue
+
+                    try {
+                        await bot.depositItem(i)
+                    } catch (e) {
+                        console.error(e)
+                    }
+                }
+
+                if (bot.gold > 1_000_000) await bot.depositGold(bot.gold - 1_000_000)
             }
 
             // Get some buffs from rogues
