@@ -1,6 +1,7 @@
 import AL, { Character, Mage, Merchant, Priest, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { startTrackerLoop } from "../base/general.js"
 import { level1PratsNearLedge } from "../base/locations.js"
+import { partyLeader, partyMembers } from "../base/party.js"
 import { startMage } from "../crocs/shared.js"
 import { startMerchant, startPriest, startWarrior } from "../prat/shared.js"
 
@@ -111,7 +112,7 @@ async function run() {
                 if (mage) mage.disconnect()
                 mage = await AL.Game.startMage(name, region, identifier)
                 friends[3] = mage
-                startMage(mage, merchant_ID, friends)
+                startMage(mage, merchant_ID, friends, partyLeader, partyMembers)
                 mage.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
