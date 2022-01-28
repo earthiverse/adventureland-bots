@@ -3,6 +3,7 @@ import FastPriorityQueue from "fastpriorityqueue"
 import { LOOP_MS } from "./general.js"
 
 export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], friends: Character[] = [], options: {
+    healStrangers?: boolean
     targetingPartyMember?: boolean
     targetingPlayer?: string
 } = {}): Promise<void> {
@@ -39,7 +40,7 @@ export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], 
         if (player.hp / player.max_hp > 0.8) continue // Player still has a lot of hp
 
         const isFriend = friends.some((friend) => { friend?.id == bot.id })
-        if (!isFriend && bot.party && bot.party !== player.party) continue // They're not our friend, and not in our party
+        if (!isFriend && bot.party && bot.party !== player.party && !options.healStrangers) continue // They're not our friend, not in our party, and we're not healing strangers
 
         players.add(player)
     }

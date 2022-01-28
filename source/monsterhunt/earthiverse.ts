@@ -193,9 +193,30 @@ function preparePriest(bot: Priest) {
             }
         },
         dragold: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["dragold"], information.friends) },
+            attack: async () => {
+                const dragold = bot.getEntity({ returnNearest: true, type: "dragold" })
+                if (dragold && dragold.target
+                    && bot.party && !bot.partyData.list.includes[dragold.target] // It's not targeting someone in our party
+                    && bot.canUse("scare", { ignoreEquipped: true })) {
+                    if (bot.canUse("absorb") && AL.Tools.distance(bot, bot.players.get(dragold.target)) < bot.G.skills.absorb.range) bot.absorbSins(dragold.target)
+                }
+                await attackTheseTypesPriest(bot, ["dragold"], information.friends, { healStrangers: true })
+            },
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
-            move: async () => { await goToSpecialMonster(bot, "dragold") },
+            move: async () => {
+                const dragold = bot.getEntity({ returnNearest: true, type: "dragold" })
+                if (dragold) {
+                    if (!bot.smartMoving) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
+                    else if (AL.Tools.distance(dragold, bot.smartMoving) > 100) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
+                } else if (bot.S.dragold?.live) {
+                    requestMagiportService(bot, bot.S.dragold as IPosition)
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "dragold").catch(e => console.error(e))
+                    else if (AL.Tools.distance(bot.S.dragold as IPosition, bot.smartMoving) > 100) {
+                        bot.smartMove(bot.S.dragold as IPosition, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
+                    }
+
+                }
+            },
         },
         fireroamer: {
             attack: async () => { await attackTheseTypesPriest(bot, ["fireroamer"], information.friends) },
@@ -203,7 +224,7 @@ function preparePriest(bot: Priest) {
             move: async () => { await bot.smartMove({ map: "desertland", x: 180, y: -675 }) },
         },
         franky: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["nerfedmummy", "franky"], information.friends) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["nerfedmummy", "franky"], information.friends, { healStrangers: true }) },
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
             move: async () => {
                 const nearest = bot.getEntity({ returnNearest: true, type: "franky" })
@@ -254,13 +275,13 @@ function preparePriest(bot: Priest) {
         },
         grinch: {
             attack: async () => {
-                await attackTheseTypesPriest(bot, ["grinch"], information.friends)
                 const grinch = bot.getEntity({ returnNearest: true, type: "grinch" })
                 if (grinch && grinch.target
                     && bot.party && !bot.partyData.list.includes[grinch.target] // It's not targeting someone in our party
                     && bot.canUse("scare", { ignoreEquipped: true })) {
                     if (bot.canUse("absorb") && AL.Tools.distance(bot, bot.players.get(grinch.target)) < bot.G.skills.absorb.range) bot.absorbSins(grinch.target)
                 }
+                await attackTheseTypesPriest(bot, ["grinch"], information.friends)
             },
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
@@ -294,7 +315,7 @@ function preparePriest(bot: Priest) {
             move: async () => { await bot.smartMove({ map: "main", x: -41.5, y: -282 }) },
         },
         icegolem: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["icegolem"], information.friends) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["icegolem"], information.friends, { healStrangers: true }) },
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
             move: async () => {
                 const iceGolem = bot.getEntity({ returnNearest: true, type: "icegolem" })
@@ -333,7 +354,7 @@ function preparePriest(bot: Priest) {
             move: async () => { await bot.smartMove({ map: "tunnel", x: -35, y: -329 }) },
         },
         mrgreen: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["mrgreen"], information.friends) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["mrgreen"], information.friends, { healStrangers: true }) },
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
             move: async () => {
                 if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as IPosition)
@@ -341,7 +362,7 @@ function preparePriest(bot: Priest) {
             },
         },
         mrpumpkin: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["mrpumpkin"], information.friends) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["mrpumpkin"], information.friends, { healStrangers: true }) },
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
             move: async () => {
                 if (bot.S.mrpumpkin as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrpumpkin as IPosition)
@@ -513,10 +534,10 @@ function preparePriest(bot: Priest) {
 
 function prepareRanger(bot: Ranger) {
     const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
-    const maxCritEquipment: { [T in SlotType]?: ItemName } = { helmet: "fury", mainhand: "crossbow", orb: "jacko" }
-    const maxRangeEquipment: { [T in SlotType]?: ItemName } = { helmet: "cyber", mainhand: "crossbow", orb: "jacko" }
-    const maxDamageEquipment: { [T in SlotType]?: ItemName } = { helmet: "cyber", mainhand: "firebow", orb: "jacko" }
-    const maxAttackSpeedEquipment: { [T in SlotType]?: ItemName } = { helmet: "cyber", mainhand: "hbow", orb: "orbofdex" }
+    const maxCritEquipment: { [T in SlotType]?: ItemName } = { chest: "wattire", gloves: "wgloves", helmet: "fury", mainhand: "crossbow", offhand: "t2quiver", orb: "orbofdex", pants: "wbreeches", shoes: "wingedboots" }
+    const maxRangeEquipment: { [T in SlotType]?: ItemName } = { chest: "wattire", gloves: "wgloves", helmet: "cyber", mainhand: "crossbow", offhand: "quiver", orb: "orbofdex", pants: "wbreeches", shoes: "wingedboots" }
+    const maxDamageEquipment: { [T in SlotType]?: ItemName } = { chest: "wattire", gloves: "wgloves", helmet: "cyber", mainhand: "firebow", offhand: "t2quiver", orb: "orbofdex", pants: "wbreeches", shoes: "wingedboots" }
+    const maxAttackSpeedEquipment: { [T in SlotType]?: ItemName } = { chest: "wattire", gloves: "wgloves", helmet: "cyber", mainhand: "hbow", offhand: "t2quiver", orb: "orbofdex", pants: "wbreeches", shoes: "wingedboots" }
 
     const strategy: Strategy = {
         defaultTarget: "spider",
@@ -536,13 +557,13 @@ function prepareRanger(bot: Ranger) {
         bat: {
             attack: async () => { await attackTheseTypesRanger(bot, ["bat"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: maxRangeEquipment,
             move: async () => { await bot.smartMove({ map: "cave", x: -194, y: -461 }) },
         },
         bbpompom: {
             attack: async () => { await attackTheseTypesRanger(bot, ["bbpompom"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: maxRangeEquipment,
             move: async () => { await bot.smartMove({ map: "winter_cave", x: 51, y: -164 }) },
         },
         bee: {
@@ -554,30 +575,30 @@ function prepareRanger(bot: Ranger) {
         bigbird: {
             attack: async () => { await attackTheseTypesRanger(bot, ["bigbird"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: 1343, y: 248 }) },
         },
         boar: {
             attack: async () => { await attackTheseTypesRanger(bot, ["boar"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await bot.smartMove({ map: "winterland", x: 20, y: -1109 }) },
         },
         booboo: {
             attack: async () => { await attackTheseTypesRanger(bot, ["booboo"], information.friends) },
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: maxRangeEquipment,
             move: async () => { await bot.smartMove({ map: "spookytown", x: 265, y: -645 }) },
         },
         bscorpion: {
             attack: async () => { return attackTheseTypesRanger(bot, ["bscorpion"], information.friends, { targetingPartyMember: true }) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await kiteInCircle(bot, "bscorpion", bscorpionSpawn) },
             requireCtype: "priest"
         },
         cgoo: {
             attack: async () => { return attackTheseTypesRanger(bot, ["cgoo"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: maxRangeEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["cgoo"], { map: "arena", x: 0, y: -500 }) },
         },
         crab: {
@@ -595,13 +616,13 @@ function prepareRanger(bot: Ranger) {
         croc: {
             attack: async () => { return attackTheseTypesRanger(bot, ["croc", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: maxAttackSpeedEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: 801, y: 1710 }) },
         },
         cutebee: {
             attack: async () => { return attackTheseTypesRanger(bot, ["cutebee"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxAttackSpeedEquipment,
             move: async () => {
                 const nearby = bot.getEntity({ returnNearest: true, type: "cutebee" })
                 if (nearby) {
@@ -618,19 +639,34 @@ function prepareRanger(bot: Ranger) {
         },
         dragold: {
             attack: async () => { return attackTheseTypesRanger(bot, ["dragold"], information.friends) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
-            move: async () => { await goToSpecialMonster(bot, "dragold") },
+            equipment: { chest: "harmor", gloves: "hgloves", helmet: "cyber", mainhand: "firebow", offhand: "t2quiver", orb: "test_orb", pants: "hpants", shoes: "wingedboots" },
+            move: async () => {
+                await goToPriestIfHurt(bot, information.bot1.bot)
+
+                const dragold = bot.getEntity({ returnNearest: true, type: "dragold" })
+                if (dragold) {
+                    if (!bot.smartMoving) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
+                    else if (AL.Tools.distance(dragold, bot.smartMoving) > 100) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
+                } else if (bot.S.dragold?.live) {
+                    requestMagiportService(bot, bot.S.dragold as IPosition)
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "dragold").catch(e => console.error(e))
+                    else if (AL.Tools.distance(bot.S.dragold as IPosition, bot.smartMoving) > 100) {
+                        bot.smartMove(bot.S.dragold as IPosition, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
+                    }
+
+                }
+            },
             requireCtype: "priest"
         },
         fireroamer: {
             attack: async () => { return attackTheseTypesRanger(bot, ["fireroamer"], information.friends, { targetingPartyMember: true }) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await bot.smartMove({ map: "desertland", x: 160, y: -675 }) },
             requireCtype: "priest"
         },
         franky: {
             attack: async () => { return attackTheseTypesRanger(bot, ["nerfedmummy", "franky"], information.friends) },
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => {
                 const nearest = bot.getEntity({ returnNearest: true, type: "franky" })
                 if (nearest && AL.Tools.distance(bot, nearest) > 25) {
@@ -645,20 +681,20 @@ function prepareRanger(bot: Ranger) {
         },
         fvampire: {
             attack: async () => { return attackTheseTypesRanger(bot, ["fvampire", "ghost"], information.friends) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await goToSpecialMonster(bot, "fvampire") },
             requireCtype: "priest"
         },
         ghost: {
             attack: async () => { return attackTheseTypesRanger(bot, ["ghost"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await bot.smartMove({ map: "halloween", x: 256, y: -1224 }) }
         },
         goldenbat: {
             attack: async () => { return attackTheseTypesRanger(bot, ["goldenbat"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: maxRangeEquipment,
             move: async () => { await goToSpecialMonster(bot, "goldenbat") },
         },
         goo: {
@@ -670,13 +706,13 @@ function prepareRanger(bot: Ranger) {
         greenjr: {
             attack: async () => { return attackTheseTypesRanger(bot, ["greenjr", "snake", "osnake"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await bot.smartMove("greenjr") },
         },
         grinch: {
             attack: async () => { return attackTheseTypesRanger(bot, ["grinch"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.S.grinch?.live && bot.S.grinch.hp <= 1_000_000) {
                     // Go to Kane when Grinch is nearing death for extra luck
@@ -708,7 +744,7 @@ function prepareRanger(bot: Ranger) {
         },
         icegolem: {
             attack: async () => { return attackTheseTypesRanger(bot, ["icegolem"], information.friends) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => {
                 const iceGolem = bot.getEntity({ returnNearest: true, type: "icegolem" })
                 if (!iceGolem) {
@@ -726,13 +762,13 @@ function prepareRanger(bot: Ranger) {
         iceroamer: {
             attack: async () => { return attackTheseTypesRanger(bot, ["iceroamer"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: maxRangeEquipment,
             move: async () => { await bot.smartMove({ map: "winterland", x: 1512, y: 104 }) },
         },
         jr: {
             attack: async () => { return attackTheseTypesRanger(bot, ["jr"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await goToSpecialMonster(bot, "jr") },
         },
         minimush: {
@@ -743,13 +779,13 @@ function prepareRanger(bot: Ranger) {
         },
         mole: {
             attack: async () => { return attackTheseTypesRanger(bot, ["mole"], information.friends, { targetingPartyMember: true }) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await bot.smartMove({ map: "tunnel", x: -15, y: -329 }) },
             requireCtype: "priest"
         },
         mrgreen: {
             attack: async () => { return attackTheseTypesRanger(bot, ["mrgreen"], information.friends) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as IPosition)
                 await goToSpecialMonster(bot, "mrgreen")
@@ -758,7 +794,7 @@ function prepareRanger(bot: Ranger) {
         },
         mrpumpkin: {
             attack: async () => { return await attackTheseTypesRanger(bot, ["mrpumpkin"], information.friends) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.S.mrpumpkin as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrpumpkin as IPosition)
                 await goToSpecialMonster(bot, "mrpumpkin")
@@ -767,25 +803,25 @@ function prepareRanger(bot: Ranger) {
         },
         mummy: {
             attack: async () => { return attackTheseTypesRanger(bot, ["mummy"], information.friends) },
-            equipment: { mainhand: "firebow", offhand: "quiver", orb: "jacko" },
+            equipment: maxRangeEquipment,
             move: async () => { await bot.smartMove({ map: "spookytown", x: 250, y: -1129 }) },
             requireCtype: "priest"
         },
         mvampire: {
             attack: async () => { return attackTheseTypesRanger(bot, ["mvampire", "bat"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await goToSpecialMonster(bot, "mvampire") },
         },
         nerfedmummy: {
             attack: async () => { return attackTheseTypesRanger(bot, ["nerfedmummy"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: maxRangeEquipment,
             move: async () => { await bot.smartMove("franky") },
         },
         oneeye: {
             attack: async () => { return attackTheseTypesRanger(bot, ["oneeye"], information.friends, { targetingPartyMember: true }) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await bot.smartMove({ map: "level2w", x: -175, y: 0 }) },
             requireCtype: "priest",
         },
@@ -798,12 +834,12 @@ function prepareRanger(bot: Ranger) {
         phoenix: {
             attack: async () => { return attackTheseTypesRanger(bot, ["phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await goToSpecialMonster(bot, "phoenix") },
         },
         plantoid: {
             attack: async () => { return attackTheseTypesRanger(bot, ["plantoid"], information.friends) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await bot.smartMove({ map: "desertland", x: -750, y: -125 }) },
             requireCtype: "priest"
         },
@@ -811,24 +847,24 @@ function prepareRanger(bot: Ranger) {
             // TODO: If we can 1shot with hbow, use that instead
             attack: async () => { return await attackTheseTypesRanger(bot, ["poisio"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: maxAttackSpeedEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: -121, y: 1360 }) },
         },
         porcupine: {
             attack: async () => { return attackTheseTypesRanger(bot, ["porcupine"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: maxAttackSpeedEquipment,
             move: async () => { await bot.smartMove({ map: "desertland", x: -829, y: 135 }) },
         },
         pppompom: {
             attack: async () => { return attackTheseTypesRanger(bot, ["pppompom"], information.friends, { targetingPartyMember: true }) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await bot.smartMove({ map: "level2n", x: 120, y: -170 }) },
             requireCtype: "priest"
         },
         prat: {
             attack: async () => { return attackTheseTypesRanger(bot, ["prat"], information.friends) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await bot.smartMove({ map: "level1", x: -280, y: 541 }) },
             requireCtype: "priest"
         },
@@ -836,7 +872,7 @@ function prepareRanger(bot: Ranger) {
             // TODO: Optimize positioning
             attack: async () => { return attackTheseTypesRanger(bot, ["rat"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: maxRangeEquipment,
             move: async () => { await bot.smartMove({ map: "mansion", x: 100, y: -225 }) },
         },
         rooster: {
@@ -848,12 +884,12 @@ function prepareRanger(bot: Ranger) {
         scorpion: {
             attack: async () => { return attackTheseTypesRanger(bot, ["scorpion", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: 1578, y: -168 }) },
         },
         skeletor: {
             attack: async () => { return attackTheseTypesRanger(bot, ["skeletor", "cgoo"], information.friends) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["skeletor"], { map: "arena", x: 380, y: -575 }) },
             requireCtype: "priest",
         },
@@ -881,19 +917,19 @@ function prepareRanger(bot: Ranger) {
         spider: {
             attack: async () => { return attackTheseTypesRanger(bot, ["spider", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: 948, y: -144 }) },
         },
         squig: {
             attack: async () => { return attackTheseTypesRanger(bot, ["squig", "squigtoad", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: maxRangeEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: -1175, y: 422 }) },
         },
         squigtoad: {
             attack: async () => { return attackTheseTypesRanger(bot, ["squigtoad", "squig", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: maxRangeEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: -1175, y: 422 }) },
         },
         stompy: {
@@ -931,7 +967,7 @@ function prepareRanger(bot: Ranger) {
         wabbit: {
             attack: async () => { return attackTheseTypesRanger(bot, ["wabbit"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxRangeEquipment,
             move: async () => { await goToSpecialMonster(bot, "wabbit") }
         },
         wolf: {
@@ -948,7 +984,7 @@ function prepareRanger(bot: Ranger) {
         },
         xscorpion: {
             attack: async () => { return await attackTheseTypesRanger(bot, ["xscorpion"], information.friends, { targetingPartyMember: true }) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await bot.smartMove({ map: "halloween", x: -325, y: 775 }) },
             requireCtype: "priest"
         }
@@ -1068,11 +1104,32 @@ function prepareWarrior(bot: Warrior) {
             },
         },
         dragold: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["dragold"], information.friends) },
+            attack: async () => {
+                const dragold = bot.getEntity({ returnNearest: true, type: "dragold" })
+                if (dragold
+                    && bot.party && !bot.partyData.list.includes[dragold.target] // It's not targeting someone in our party
+                    && bot.canUse("scare", { ignoreEquipped: true })) {
+                    if (bot.canUse("taunt") && AL.Tools.distance(dragold, bot) < bot.G.skills.taunt.range) bot.taunt(dragold.id)
+                    else if (bot.canUse("agitate") && AL.Tools.distance(bot, dragold) < bot.G.skills.agitate.range) bot.agitate()
+                }
+                await attackTheseTypesWarrior(bot, ["dragold"], information.friends)
+            },
             equipment: burnEquipment,
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
-                await goToSpecialMonster(bot, "dragold")
+
+                const dragold = bot.getEntity({ returnNearest: true, type: "dragold" })
+                if (dragold) {
+                    if (!bot.smartMoving) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
+                    else if (AL.Tools.distance(dragold, bot.smartMoving) > 100) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
+                } else if (bot.S.dragold?.live) {
+                    requestMagiportService(bot, bot.S.dragold as IPosition)
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "dragold").catch(e => console.error(e))
+                    else if (AL.Tools.distance(bot.S.dragold as IPosition, bot.smartMoving) > 100) {
+                        bot.smartMove(bot.S.dragold as IPosition, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
+                    }
+
+                }
             },
         },
         fireroamer: {
@@ -1128,18 +1185,18 @@ function prepareWarrior(bot: Warrior) {
         },
         grinch: {
             attack: async () => {
-                const kane = bot.players.get("Kane")
-                if (kane && AL.Tools.distance(bot, kane) < 400) {
-                    await attackTheseTypesWarrior(bot, ["grinch"], information.friends)
-                } else {
-                    await attackTheseTypesWarrior(bot, ["grinch"], information.friends, { disableStomp: true })
-                }
                 const grinch = bot.getEntity({ returnNearest: true, type: "grinch" })
                 if (grinch
                     && bot.party && !bot.partyData.list.includes[grinch.target] // It's not targeting someone in our party
                     && bot.canUse("scare", { ignoreEquipped: true })) {
                     if (bot.canUse("taunt") && AL.Tools.distance(grinch, bot) < bot.G.skills.taunt.range) bot.taunt(grinch.id)
                     else if (bot.canUse("agitate") && AL.Tools.distance(bot, grinch) < bot.G.skills.agitate.range) bot.agitate()
+                }
+                const kane = bot.players.get("Kane")
+                if (kane && AL.Tools.distance(bot, kane) < 400) {
+                    await attackTheseTypesWarrior(bot, ["grinch"], information.friends)
+                } else {
+                    await attackTheseTypesWarrior(bot, ["grinch"], information.friends, { disableStomp: true })
                 }
             },
             attackWhileIdle: true,
