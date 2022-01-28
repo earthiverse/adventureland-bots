@@ -202,7 +202,7 @@ function preparePriest(bot: Priest) {
                 }
                 await attackTheseTypesPriest(bot, ["dragold"], information.friends, { healStrangers: true })
             },
-            equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
+            equipment: { mainhand: "firestaff", offhand: "wbookhs", orb: "test_orb" },
             move: async () => {
                 const dragold = bot.getEntity({ returnNearest: true, type: "dragold" })
                 if (dragold) {
@@ -1114,7 +1114,7 @@ function prepareWarrior(bot: Warrior) {
                 }
                 await attackTheseTypesWarrior(bot, ["dragold"], information.friends)
             },
-            equipment: burnEquipment,
+            equipment: { ...burnEquipment, orb: "test_orb" },
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
 
