@@ -588,7 +588,7 @@ export async function startPriest(bot: Priest, information: Information, strateg
             }
 
             // Idle strategy
-            await attackTheseTypesPriest(bot, idleTargets, information.friends)
+            await attackTheseTypesPriest(bot, idleTargets, information.friends, { healStrangers: true })
 
             // Attack things targeting us
             if (bot.canUse("attack")) {
