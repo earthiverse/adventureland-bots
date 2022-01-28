@@ -13,7 +13,7 @@ export interface SingleCharStrategy<Type> {
 }
 
 export class SingleChar<Type extends PingCompensatedCharacter> {
-    private bot: Type
+    public bot: Type
 
     private loops: Loops<Type> = new Map<string, Loop<Type>>()
     private stopped = false
