@@ -552,7 +552,7 @@ export async function goToPriestIfHurt(bot: Character, priest: Character): Promi
     return bot.smartMove(priest, { getWithin: priest.range })
 }
 
-export async function goToSpecialMonster(bot: Character, type: MonsterName): Promise<unknown> {
+export async function goToSpecialMonster(bot: Character, type: MonsterName, options: { requestMagiport?: true} = {}): Promise<unknown> {
     // Look for it nearby
     let nearby = bot.getEntity({ returnNearest: true, type: type })
     if (nearby) return bot.smartMove(nearby, { getWithin: bot.range - 10, useBlink: true })
@@ -560,12 +560,16 @@ export async function goToSpecialMonster(bot: Character, type: MonsterName): Pro
     // Look for it in the server data
     if (bot.S && bot.S[type] && bot.S[type].live && bot.S[type]["x"] !== undefined && bot.S[type]["y"] !== undefined) {
         const destination = bot.S[type] as IPosition
+        if (options.requestMagiport) requestMagiportService(bot, destination)
         if (AL.Tools.distance(bot, destination) > bot.range) return bot.smartMove(destination, { getWithin: bot.range - 10, useBlink: true })
     }
 
     // Look for it in our database
     const special = await AL.EntityModel.findOne({ serverIdentifier: bot.server.name, serverRegion: bot.server.region, type: type }).lean().exec()
-    if (special) return bot.smartMove(special, { getWithin: bot.range - 10, useBlink: true })
+    if (special) {
+        if (options.requestMagiport) requestMagiportService(bot, bot.S.dragold as IPosition)
+        return bot.smartMove(special, { getWithin: bot.range - 10, useBlink: true })
+    }
 
     // Look for if there's a spawn for it
     for (const spawn of bot.locateMonster(type)) {

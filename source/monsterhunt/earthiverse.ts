@@ -64,7 +64,7 @@ function prepareMerchant(bot: Merchant) {
             attack: async () => { await attackTheseTypesMerchant(bot, ["snowman"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "dartgun", offhand: "wbook1" },
-            move: async () => { await goToSpecialMonster(bot, "snowman") }
+            move: async () => { await goToSpecialMonster(bot, "snowman", { requestMagiport: true }) }
         }
     }
     startMerchant(bot, information, strategy, { map: "main", x: 0, y: 0 }, partyLeader, partyMembers)
@@ -188,7 +188,7 @@ function preparePriest(bot: Priest) {
                         await goToNearestWalkableToMonster(bot, ["cutebee"])
                     }
                 } else {
-                    await goToSpecialMonster(bot, "cutebee")
+                    await goToSpecialMonster(bot, "cutebee", { requestMagiport: true })
                 }
             }
         },
@@ -232,8 +232,7 @@ function preparePriest(bot: Priest) {
                     // Move close to Franky because other characters might help blast away mummies
                     await bot.smartMove(nearest, { getWithin: 25 })
                 } else {
-                    if (bot.S.franky as ServerInfoDataLive) requestMagiportService(bot, bot.S.franky as IPosition)
-                    await goToSpecialMonster(bot, "franky")
+                    await goToSpecialMonster(bot, "franky", { requestMagiport: true })
                 }
             }
         },
@@ -247,7 +246,7 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["fvampire"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
-            move: async () => { await goToSpecialMonster(bot, "fvampire") },
+            move: async () => { await goToSpecialMonster(bot, "fvampire", { requestMagiport: true }) },
         },
         ghost: {
             attack: async () => { await attackTheseTypesPriest(bot, ["ghost"], information.friends) },
@@ -259,7 +258,7 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["goldenbat"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
-            move: async () => { await goToSpecialMonster(bot, "goldenbat") },
+            move: async () => { await goToSpecialMonster(bot, "goldenbat", { requestMagiport: true }) },
         },
         goo: {
             attack: async () => { await attackTheseTypesPriest(bot, ["goo"], information.friends) },
@@ -271,7 +270,7 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["greenjr", "snake", "osnake"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
-            move: async () => { await goToSpecialMonster(bot, "greenjr") },
+            move: async () => { await goToSpecialMonster(bot, "greenjr", { requestMagiport: true }) },
         },
         grinch: {
             attack: async () => {
@@ -340,7 +339,7 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["jr"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
-            move: async () => { await goToSpecialMonster(bot, "jr") },
+            move: async () => { await goToSpecialMonster(bot, "jr", { requestMagiport: true }) },
         },
         minimush: {
             attack: async () => { await attackTheseTypesPriest(bot, ["minimush", "phoenix"], information.friends) },
@@ -357,16 +356,14 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["mrgreen"], information.friends, { healStrangers: true }) },
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
             move: async () => {
-                if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as IPosition)
-                await goToSpecialMonster(bot, "mrgreen")
+                await goToSpecialMonster(bot, "mrgreen", { requestMagiport: true })
             },
         },
         mrpumpkin: {
             attack: async () => { await attackTheseTypesPriest(bot, ["mrpumpkin"], information.friends, { healStrangers: true }) },
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
             move: async () => {
-                if (bot.S.mrpumpkin as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrpumpkin as IPosition)
-                await goToSpecialMonster(bot, "mrpumpkin")
+                await goToSpecialMonster(bot, "mrpumpkin", { requestMagiport: true })
             },
         },
         mummy: {
@@ -378,13 +375,13 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["mvampire", "bat"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
-            move: async () => { await goToSpecialMonster(bot, "mvampire") },
+            move: async () => { await goToSpecialMonster(bot, "mvampire", { requestMagiport: true }) },
         },
         nerfedmummy: {
             attack: async () => { await attackTheseTypesPriest(bot, ["nerfedmummy"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
-            move: async () => { await goToSpecialMonster(bot, "franky") },
+            move: async () => { await goToSpecialMonster(bot, "franky", { requestMagiport: true }) },
         },
         oneeye: {
             attack: async () => { await attackTheseTypesPriest(bot, ["oneeye"], information.friends, { targetingPartyMember: true }) },
@@ -401,7 +398,7 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["phoenix"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
-            move: async () => { await goToSpecialMonster(bot, "phoenix") },
+            move: async () => { await goToSpecialMonster(bot, "phoenix", { requestMagiport: true }) },
         },
         plantoid: {
             attack: async () => { await attackTheseTypesPriest(bot, ["plantoid"], information.friends) },
@@ -464,8 +461,7 @@ function preparePriest(bot: Priest) {
             attackWhileIdle: true,
             equipment: { mainhand: "wand", orb: "jacko" },
             move: async () => {
-                if (bot.S.snowman as ServerInfoDataLive) requestMagiportService(bot, bot.S.snowman as IPosition)
-                await goToSpecialMonster(bot, "snowman")
+                await goToSpecialMonster(bot, "snowman", { requestMagiport: true })
             }
         },
         spider: {
@@ -489,7 +485,7 @@ function preparePriest(bot: Priest) {
         stompy: {
             attack: async () => { await attackTheseTypesPriest(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends, { targetingPartyMember: true }) },
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
-            move: async () => { await goToSpecialMonster(bot, "stompy") }
+            move: async () => { await goToSpecialMonster(bot, "stompy", { requestMagiport: true }) }
         },
         stoneworm: {
             attack: async () => { await attackTheseTypesPriest(bot, ["stoneworm"], information.friends) },
@@ -499,7 +495,7 @@ function preparePriest(bot: Priest) {
         // tinyp: {
         //     attack: async () => { await attackTheseTypesPriest(bot, ["tinyp"], information.friends, { targetingPartyMember: true }) },
         //     equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
-        //     move: async () => { await goToSpecialMonster(bot, "tinyp") },
+        //     move: async () => { await goToSpecialMonster(bot, "tinyp", { requestMagiport: true }) },
         // },
         tortoise: {
             attack: async () => { await attackTheseTypesPriest(bot, ["tortoise", "phoenix"], information.friends) },
@@ -511,7 +507,7 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["wabbit"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
-            move: async () => { await goToSpecialMonster(bot, "wabbit") },
+            move: async () => { await goToSpecialMonster(bot, "wabbit", { requestMagiport: true }) },
         },
         wolf: {
             attack: async () => { await attackTheseTypesPriest(bot, ["wolf"], information.friends) },
@@ -633,7 +629,7 @@ function prepareRanger(bot: Ranger) {
                         await goToNearestWalkableToMonster(bot, ["cutebee"])
                     }
                 } else {
-                    await goToSpecialMonster(bot, "cutebee")
+                    await goToSpecialMonster(bot, "cutebee", { requestMagiport: true })
                 }
             }
         },
@@ -673,8 +669,7 @@ function prepareRanger(bot: Ranger) {
                     // Move close to Franky because other characters might help blast away mummies
                     await bot.smartMove(nearest, { getWithin: 25 })
                 } else {
-                    if (bot.S.franky as ServerInfoDataLive) requestMagiportService(bot, bot.S.franky as IPosition)
-                    await goToSpecialMonster(bot, "franky")
+                    await goToSpecialMonster(bot, "franky", { requestMagiport: true })
                 }
             },
             requireCtype: "priest"
@@ -682,7 +677,7 @@ function prepareRanger(bot: Ranger) {
         fvampire: {
             attack: async () => { return attackTheseTypesRanger(bot, ["fvampire", "ghost"], information.friends) },
             equipment: maxDamageEquipment,
-            move: async () => { await goToSpecialMonster(bot, "fvampire") },
+            move: async () => { await goToSpecialMonster(bot, "fvampire", { requestMagiport: true }) },
             requireCtype: "priest"
         },
         ghost: {
@@ -695,7 +690,7 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { return attackTheseTypesRanger(bot, ["goldenbat"], information.friends) },
             attackWhileIdle: true,
             equipment: maxRangeEquipment,
-            move: async () => { await goToSpecialMonster(bot, "goldenbat") },
+            move: async () => { await goToSpecialMonster(bot, "goldenbat", { requestMagiport: true }) },
         },
         goo: {
             attack: async () => { return attackTheseTypesRanger(bot, ["goo"], information.friends) },
@@ -769,7 +764,7 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { return attackTheseTypesRanger(bot, ["jr"], information.friends) },
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
-            move: async () => { await goToSpecialMonster(bot, "jr") },
+            move: async () => { await goToSpecialMonster(bot, "jr", { requestMagiport: true }) },
         },
         minimush: {
             attack: async () => { return attackTheseTypesRanger(bot, ["minimush", "phoenix"], information.friends) },
@@ -787,8 +782,7 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { return attackTheseTypesRanger(bot, ["mrgreen"], information.friends) },
             equipment: maxDamageEquipment,
             move: async () => {
-                if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as IPosition)
-                await goToSpecialMonster(bot, "mrgreen")
+                await goToSpecialMonster(bot, "mrgreen", { requestMagiport: true })
             },
             requireCtype: "priest"
         },
@@ -796,8 +790,7 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { return await attackTheseTypesRanger(bot, ["mrpumpkin"], information.friends) },
             equipment: maxDamageEquipment,
             move: async () => {
-                if (bot.S.mrpumpkin as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrpumpkin as IPosition)
-                await goToSpecialMonster(bot, "mrpumpkin")
+                await goToSpecialMonster(bot, "mrpumpkin", { requestMagiport: true })
             },
             requireCtype: "priest"
         },
@@ -811,7 +804,7 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { return attackTheseTypesRanger(bot, ["mvampire", "bat"], information.friends) },
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
-            move: async () => { await goToSpecialMonster(bot, "mvampire") },
+            move: async () => { await goToSpecialMonster(bot, "mvampire", { requestMagiport: true }) },
         },
         nerfedmummy: {
             attack: async () => { return attackTheseTypesRanger(bot, ["nerfedmummy"], information.friends) },
@@ -835,7 +828,7 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { return attackTheseTypesRanger(bot, ["phoenix"], information.friends) },
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
-            move: async () => { await goToSpecialMonster(bot, "phoenix") },
+            move: async () => { await goToSpecialMonster(bot, "phoenix", { requestMagiport: true }) },
         },
         plantoid: {
             attack: async () => { return attackTheseTypesRanger(bot, ["plantoid"], information.friends) },
@@ -897,7 +890,7 @@ function prepareRanger(bot: Ranger) {
         //     attack: async () => { await attackTheseTypesRanger(bot, ["slenderman"], information.friends) },
         //     attackWhileIdle: true,
         //     equipment: maxCritEquipment,
-        //     move: async () => { await goToSpecialMonster(bot, "slenderman") },
+        //     move: async () => { await goToSpecialMonster(bot, "slenderman", { requestMagiport: true }) },
         // },
         snake: {
             attack: async () => { return attackTheseTypesRanger(bot, ["snake", "osnake"], information.friends) },
@@ -910,8 +903,7 @@ function prepareRanger(bot: Ranger) {
             attackWhileIdle: true,
             equipment: maxAttackSpeedEquipment,
             move: async () => {
-                if (bot.S.snowman as ServerInfoDataLive) requestMagiportService(bot, bot.S.snowman as IPosition)
-                await goToSpecialMonster(bot, "snowman")
+                await goToSpecialMonster(bot, "snowman", { requestMagiport: true })
             },
         },
         spider: {
@@ -935,7 +927,7 @@ function prepareRanger(bot: Ranger) {
         stompy: {
             attack: async () => { return attackTheseTypesRanger(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends, { targetingPartyMember: true }) },
             equipment: maxDamageEquipment,
-            move: async () => { await goToSpecialMonster(bot, "stompy") },
+            move: async () => { await goToSpecialMonster(bot, "stompy", { requestMagiport: true }) },
             requireCtype: "priest"
         },
         stoneworm: {
@@ -955,7 +947,7 @@ function prepareRanger(bot: Ranger) {
         //     },
         //     equipment: maxCritEquipment,
         //     move: async () => {
-        //         await goToSpecialMonster(bot, "tinyp")
+        //         await goToSpecialMonster(bot, "tinyp", { requestMagiport: true })
         //     },
         // },
         tortoise: {
@@ -968,7 +960,7 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { return attackTheseTypesRanger(bot, ["wabbit"], information.friends) },
             attackWhileIdle: true,
             equipment: maxRangeEquipment,
-            move: async () => { await goToSpecialMonster(bot, "wabbit") }
+            move: async () => { await goToSpecialMonster(bot, "wabbit", { requestMagiport: true }) }
         },
         wolf: {
             attack: async () => { return attackTheseTypesRanger(bot, ["wolf"], information.friends) },
@@ -1099,7 +1091,7 @@ function prepareWarrior(bot: Warrior) {
                         await goToNearestWalkableToMonster(bot, ["cutebee"])
                     }
                 } else {
-                    await goToSpecialMonster(bot, "cutebee")
+                    await goToSpecialMonster(bot, "cutebee", { requestMagiport: true })
                 }
             },
         },
@@ -1142,8 +1134,7 @@ function prepareWarrior(bot: Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["nerfedmummy", "franky"], information.friends) },
             equipment: burnEquipment,
             move: async () => {
-                if (bot.S.franky as ServerInfoDataLive) requestMagiportService(bot, bot.S.franky as IPosition)
-                await goToSpecialMonster(bot, "franky")
+                await goToSpecialMonster(bot, "franky", { requestMagiport: true })
             },
             requireCtype: "priest"
         },
@@ -1152,7 +1143,7 @@ function prepareWarrior(bot: Warrior) {
             equipment: burnEquipment,
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
-                await goToSpecialMonster(bot, "fvampire")
+                await goToSpecialMonster(bot, "fvampire", { requestMagiport: true })
             },
             requireCtype: "priest"
         },
@@ -1169,7 +1160,7 @@ function prepareWarrior(bot: Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["goldenbat"], information.friends) },
             attackWhileIdle: true,
             equipment: aoeEquipment,
-            move: async () => { await goToSpecialMonster(bot, "goldenbat") },
+            move: async () => { await goToSpecialMonster(bot, "goldenbat", { requestMagiport: true }) },
         },
         goo: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["goo"], information.friends) },
@@ -1181,7 +1172,7 @@ function prepareWarrior(bot: Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["greenjr", "snake", "osnake"], information.friends) },
             attackWhileIdle: true,
             equipment: burnEquipment,
-            move: async () => { await goToSpecialMonster(bot, "greenjr") },
+            move: async () => { await goToSpecialMonster(bot, "greenjr", { requestMagiport: true }) },
         },
         grinch: {
             attack: async () => {
@@ -1259,7 +1250,7 @@ function prepareWarrior(bot: Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["jr"], information.friends) },
             attackWhileIdle: true,
             equipment: burnEquipment,
-            move: async () => { await goToSpecialMonster(bot, "jr") },
+            move: async () => { await goToSpecialMonster(bot, "jr", { requestMagiport: true }) },
         },
         minimush: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["minimush", "phoenix"], information.friends, { disableAgitate: true }) },
@@ -1299,8 +1290,7 @@ function prepareWarrior(bot: Warrior) {
             },
             equipment: burnEquipment,
             move: async () => {
-                if (bot.S.mrgreen as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrgreen as IPosition)
-                await goToSpecialMonster(bot, "mrgreen")
+                await goToSpecialMonster(bot, "mrgreen", { requestMagiport: true })
             },
             requireCtype: "priest"
         },
@@ -1311,8 +1301,7 @@ function prepareWarrior(bot: Warrior) {
             },
             equipment: burnEquipment,
             move: async () => {
-                if (bot.S.mrpumpkin as ServerInfoDataLive) requestMagiportService(bot, bot.S.mrpumpkin as IPosition)
-                await goToSpecialMonster(bot, "mrpumpkin")
+                await goToSpecialMonster(bot, "mrpumpkin", { requestMagiport: true })
             },
             requireCtype: "priest"
         },
@@ -1339,13 +1328,13 @@ function prepareWarrior(bot: Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["mvampire", "bat"], information.friends) },
             attackWhileIdle: true,
             equipment: burnEquipment,
-            move: async () => { await goToSpecialMonster(bot, "mvampire") },
+            move: async () => { await goToSpecialMonster(bot, "mvampire", { requestMagiport: true }) },
         },
         nerfedmummy: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["nerfedmummy"], information.friends) },
             attackWhileIdle: true,
             equipment: burnEquipment,
-            move: async () => { await goToSpecialMonster(bot, "franky") },
+            move: async () => { await goToSpecialMonster(bot, "franky", { requestMagiport: true }) },
         },
         oneeye: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["oneeye"], information.friends, { maximumTargets: 1 }) },
@@ -1363,7 +1352,7 @@ function prepareWarrior(bot: Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["phoenix"], information.friends) },
             attackWhileIdle: true,
             equipment: burnEquipment,
-            move: async () => { await goToSpecialMonster(bot, "phoenix") },
+            move: async () => { await goToSpecialMonster(bot, "phoenix", { requestMagiport: true }) },
         },
         plantoid: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["plantoid"], information.friends, { maximumTargets: 1 }) },
@@ -1414,7 +1403,7 @@ function prepareWarrior(bot: Warrior) {
         //     attack: async () => { await attackTheseTypesWarrior(bot, ["slenderman"], information.friends) },
         //     attackWhileIdle: true,
         //     equipment: aoeEquipment,
-        //     move: async () => { await goToSpecialMonster(bot, "slenderman") },
+        //     move: async () => { await goToSpecialMonster(bot, "slenderman", { requestMagiport: true }) },
         // },
         snake: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["snake", "osnake"], information.friends, { disableAgitate: true }) },
@@ -1444,8 +1433,7 @@ function prepareWarrior(bot: Warrior) {
             attackWhileIdle: true,
             equipment: { mainhand: "candycanesword", offhand: "candycanesword", orb: "jacko" },
             move: async () => {
-                if (bot.S.snowman as ServerInfoDataLive) requestMagiportService(bot, bot.S.snowman as IPosition)
-                await goToSpecialMonster(bot, "snowman")
+                await goToSpecialMonster(bot, "snowman", { requestMagiport: true })
             },
         },
         spider: {
@@ -1485,7 +1473,7 @@ function prepareWarrior(bot: Warrior) {
 
                 const stompy = bot.getEntity({ type: "stompy" })
                 if (!stompy) {
-                    await goToSpecialMonster(bot, "stompy")
+                    await goToSpecialMonster(bot, "stompy", { requestMagiport: true })
                 } else {
                     moveInCircle(bot, stompy, 20, Math.PI / 2)
                 }
@@ -1514,7 +1502,7 @@ function prepareWarrior(bot: Warrior) {
         //         }
         //     },
         //     equipment: { mainhand: "basher", orb: "jacko" },
-        //     move: async () => { await goToSpecialMonster(bot, "tinyp") },
+        //     move: async () => { await goToSpecialMonster(bot, "tinyp", { requestMagiport: true }) },
         // },
         tortoise: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["tortoise", "phoenix"], information.friends) },
@@ -1526,7 +1514,7 @@ function prepareWarrior(bot: Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["wabbit"], information.friends) },
             attackWhileIdle: true,
             equipment: burnEquipment,
-            move: async () => { await goToSpecialMonster(bot, "wabbit") },
+            move: async () => { await goToSpecialMonster(bot, "wabbit", { requestMagiport: true }) },
         },
         wolf: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["wolf"], information.friends, { maximumTargets: 2 }) },
