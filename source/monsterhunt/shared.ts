@@ -455,10 +455,12 @@ export async function startMerchant(bot: Merchant, information: Information, str
                 const listData = ITEMS_TO_LIST[item]
 
                 for (const invItem of bot.locateItems(item, bot.items, { locked: false, special: false })) {
-                    const level = bot.items[invItem].level ?? 0
+                    const itemInfo = bot.items[invItem]
+                    const level = itemInfo.level ?? 0
                     const price = listData[level]
                     if (price) {
-                        await bot.listForSale(invItem, price)
+                        if (itemInfo.q !== undefined) await bot.listForSale(invItem, price)
+                        else await bot.listForSale(invItem, price, undefined, itemInfo.q)
                     }
                 }
             }
