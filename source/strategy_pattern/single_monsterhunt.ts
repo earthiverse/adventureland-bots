@@ -1,8 +1,8 @@
 import AL from "alclient"
-import { SingleChar } from "./single/context.js"
-import { BasicAttackAndMoveStrategy } from "./single/strategies/attack.js"
-import { BaseStrategy } from "./single/strategies/base.js"
-import { FinishMonsterHuntStrategy, GetMonsterHuntStrategy } from "./single/strategies/monsterhunt.js"
+import { Strategist } from "./context.js"
+import { BasicAttackAndMoveStrategy } from "./strategies/attack.js"
+import { BaseStrategy } from "./strategies/base.js"
+import { FinishMonsterHuntStrategy, GetMonsterHuntStrategy } from "./strategies/monsterhunt.js"
 
 async function run() {
     // Login and prepare pathfinding
@@ -11,7 +11,7 @@ async function run() {
 
     const baseStrategy = new BaseStrategy()
     const ranger = await AL.Game.startRanger("earthiverse", "US", "III")
-    const rangerContext = new SingleChar(ranger, baseStrategy)
+    const rangerContext = new Strategist(ranger, baseStrategy)
 
     const strategy = new BasicAttackAndMoveStrategy(["goo"])
     rangerContext.applyStrategy(strategy)

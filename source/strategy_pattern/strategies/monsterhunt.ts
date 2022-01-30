@@ -1,7 +1,7 @@
 import { PingCompensatedCharacter } from "alclient"
-import { Loop, Loops } from "../context.js"
+import { Loop, Loops, Strategy } from "../context.js"
 
-export class GetMonsterHuntStrategy<Type extends PingCompensatedCharacter> {
+export class GetMonsterHuntStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
     public name = "GetMonsterHuntStrategy"
     public loops: Loops<Type> = new Map<string, Loop<Type>>()
 
@@ -19,8 +19,8 @@ export class GetMonsterHuntStrategy<Type extends PingCompensatedCharacter> {
     }
 }
 
-export class FinishMonsterHuntStrategy<Type extends PingCompensatedCharacter> {
-    public name = "GetMonsterHuntStrategy"
+export class FinishMonsterHuntStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
+    public name = "FinishMonsterHuntStrategy"
     public loops: Loops<Type> = new Map<string, Loop<Type>>()
 
     public constructor() {

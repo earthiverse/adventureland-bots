@@ -13,7 +13,7 @@ export class BasicAttackAndMoveStrategy<Type extends PingCompensatedCharacter> {
 
         this.loops.set("attack", {
             fn: async (bot: Type) => { await this.attack(bot) },
-            interval: 100
+            interval: ["attack"]
         })
 
         this.loops.set("move", {
@@ -24,14 +24,14 @@ export class BasicAttackAndMoveStrategy<Type extends PingCompensatedCharacter> {
 
     async attack(bot: Type) {
         if (!bot.canUse("attack")) return
-        const nearest = bot.getEntity({ returnNearest: true, typeList: this.types })
+        const nearest = bot.getEntity({ couldGiveCredit: true, returnNearest: true, typeList: this.types, willDieToProjectiles: false })
         if (nearest && AL.Tools.distance(bot, nearest) < bot.range) {
             await bot.basicAttack(nearest.id)
         }
     }
 
     async move(bot: Type) {
-        const nearest = bot.getEntity({ returnNearest: true, typeList: this.types })
+        const nearest = bot.getEntity({ couldGiveCredit: true, returnNearest: true, typeList: this.types, willDieToProjectiles: false })
         if (!nearest) {
             if (!bot.smartMoving) {
                 bot.smartMove(this.types[0]).catch(() => { /** Suppress Error */ })

@@ -1,31 +1,32 @@
-import { PingCompensatedCharacter } from "alclient"
+import { PingCompensatedCharacter, SkillName } from "alclient"
 
 export type Loop<Type> = {
     fn: (bot: Type) => Promise<void>,
-    interval: number
+    /** If number, it will loop every this many ms. If SkillName, it will loop based on the cooldown of the skills in the array */
+    interval: SkillName[] | number
 }
 
 export type Loops<Type> = Map<string, Loop<Type>>
 
-export interface SingleCharStrategy<Type> {
+export interface Strategy<Type> {
     name: string
     loops: Loops<Type>
 }
 
-export class SingleChar<Type extends PingCompensatedCharacter> {
+export class Strategist<Type extends PingCompensatedCharacter> {
     public bot: Type
 
     private loops: Loops<Type> = new Map<string, Loop<Type>>()
     private stopped = false
     private timeouts = new Map<string, NodeJS.Timeout>()
 
-    public constructor(bot: Type, initialStrategy?: SingleCharStrategy<Type>) {
+    public constructor(bot: Type, initialStrategy?: Strategy<Type>) {
         this.bot = bot
 
         this.applyStrategy(initialStrategy)
     }
 
-    public applyStrategy(strategy: SingleCharStrategy<Type>) {
+    public applyStrategy(strategy: Strategy<Type>) {
         if (!strategy) return // No strategy
 
         for (const [name, fn] of strategy.loops) {
@@ -52,7 +53,13 @@ export class SingleChar<Type extends PingCompensatedCharacter> {
                     }
                     if (!this.stopped) {
                         const loop = this.loops.get(name)
-                        if (loop) this.timeouts.set(name, setTimeout(async () => { newLoop() }, loop.interval)) // Continue the loop
+                        if (loop) {
+                            if (typeof loop.interval == "number") this.timeouts.set(name, setTimeout(async () => { newLoop() }, loop.interval)) // Continue the loop
+                            else if (Array.isArray(loop.interval)) {
+                                const cooldown = Math.min(...loop.interval.map((skill) => this.bot.getCooldown(skill)))
+                                this.timeouts.set(name, setTimeout(async () => { newLoop() }, cooldown)) // Continue the loop
+                            }
+                        }
                     }
                 }
                 newLoop()
@@ -63,5 +70,6 @@ export class SingleChar<Type extends PingCompensatedCharacter> {
     public stop(): void {
         this.stopped = true
         for (const [, timeout] of this.timeouts) clearTimeout(timeout)
+        this.bot.disconnect()
     }
 }

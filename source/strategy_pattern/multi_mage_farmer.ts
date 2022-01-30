@@ -1,8 +1,8 @@
 import AL, { MonsterName } from "alclient"
-import { SingleChar } from "./single/context.js"
-import { BasicAttackAndMoveStrategy } from "./single/strategies/attack.js"
-import { BaseStrategy } from "./single/strategies/base.js"
-import { FinishMonsterHuntStrategy, GetMonsterHuntStrategy } from "./single/strategies/monsterhunt.js"
+import { Strategist } from "./context.js"
+import { BasicAttackAndMoveStrategy } from "./strategies/attack.js"
+import { BaseStrategy } from "./strategies/base.js"
+import { FinishMonsterHuntStrategy, GetMonsterHuntStrategy } from "./strategies/monsterhunt.js"
 
 const doableMonsters: MonsterName[] = ["bat", "bee", "crab", "goo"]
 const defaultMonster: MonsterName = "goo"
@@ -14,11 +14,11 @@ async function run() {
 
     const baseStrategy = new BaseStrategy()
     const mage1 = await AL.Game.startMage("earthMag", "US", "III")
-    const mage1Context = new SingleChar(mage1, baseStrategy)
+    const mage1Context = new Strategist(mage1, baseStrategy)
     const mage2 = await AL.Game.startMage("earthMag2", "US", "III")
-    const mage2Context = new SingleChar(mage2, baseStrategy)
+    const mage2Context = new Strategist(mage2, baseStrategy)
     const mage3 = await AL.Game.startMage("earthMag3", "US", "III")
-    const mage3Context = new SingleChar(mage3, baseStrategy)
+    const mage3Context = new Strategist(mage3, baseStrategy)
 
     for (const context of [mage1Context, mage2Context, mage3Context]) {
         setInterval(async () => {

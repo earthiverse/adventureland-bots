@@ -1,15 +1,15 @@
 import { PingCompensatedCharacter } from "alclient"
-import { sleep } from "../../../base/general.js"
-import { Loop, Loops, SingleCharStrategy } from "../context.js"
+import { sleep } from "../../base/general.js"
+import { Loop, Loops, Strategy } from "../context.js"
 
-export class BaseStrategy<Type extends PingCompensatedCharacter> implements SingleCharStrategy<Type> {
+export class BaseStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
     public name = "BaseStrategy"
     public loops: Loops<Type> = new Map<string, Loop<Type>>()
 
     public constructor() {
         this.loops.set("heal", {
             fn: async (bot: Type) => { await this.heal(bot) },
-            interval: 250
+            interval: ["use_hp", "regen_hp"]
         })
         this.loops.set("loot", {
             fn: async (bot: Type) => { await this.loot(bot) },
@@ -64,9 +64,7 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Sing
 
     async loot(bot: Type) {
         const [chest] = bot.chests
-        if (chest)
-            await bot.openChest(chest[0])
-        else
-            return sleep(100)
+        if (chest) await bot.openChest(chest[0])
+        else return sleep(100)
     }
 }
