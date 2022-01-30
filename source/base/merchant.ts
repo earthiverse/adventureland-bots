@@ -463,7 +463,7 @@ export async function goFishing(bot: Merchant): Promise<void> {
     if (!bot.hasItem("rod") && !bot.isEquipped("rod")) return // We don't have a rod
 
     bot.closeMerchantStand()
-    await bot.smartMove(mainFishingSpot) // Move to fishing sppot
+    await bot.smartMove(mainFishingSpot) // Move to fishing spot
 
     // Equip fishing rod if we don't have it already equipped
     const mainhand = bot.slots.mainhand?.name
@@ -539,6 +539,7 @@ export function startMluckLoop(bot: Merchant): void {
                     if (!player.s.mluck) {
                         await bot.mluck(player.id) // Give the mluck
                     } else if (!player.s.mluck.strong && player.s.mluck.f !== bot.id) {
+                        if (!bot.id.startsWith("earthMer") && player.s.mluck.f.startsWith("earthMer")) continue // Don't compete with earthiverse
                         await bot.mluck(player.id) // Steal the mluck
                     } else if ((!player.s.mluck.strong && player.s.mluck.ms < (bot.G.conditions.mluck.duration - 60000))
                         || (player.s.mluck.strong && player.s.mluck.f == bot.id && player.s.mluck.ms < (bot.G.conditions.mluck.duration - 60000))) {
@@ -550,7 +551,7 @@ export function startMluckLoop(bot: Merchant): void {
             console.error(e)
         }
 
-        bot.timeouts.set("mluckloop", setTimeout(async () => { mluckLoop() }, LOOP_MS))
+        bot.timeouts.set("mluckLoop", setTimeout(async () => { mluckLoop() }, LOOP_MS))
     }
     mluckLoop()
 }
