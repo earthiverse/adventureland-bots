@@ -1222,7 +1222,16 @@ function prepareWarrior(bot: Warrior) {
             move: async () => { await bot.smartMove({ map: "main", x: -81.5, y: -282 }) },
         },
         icegolem: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["icegolem"], information.friends) },
+            attack: async () => {
+                const icegolem = bot.getEntity({ returnNearest: true, type: "icegolem" })
+                if (icegolem
+                    && bot.party && !bot.partyData.list.includes[icegolem.target] // It's not targeting someone in our party
+                    && bot.canUse("scare", { ignoreEquipped: true })) {
+                    if (bot.canUse("taunt") && AL.Tools.distance(icegolem, bot) < bot.G.skills.taunt.range) bot.taunt(icegolem.id)
+                    else if (bot.canUse("agitate") && AL.Tools.distance(bot, icegolem) < bot.G.skills.agitate.range) bot.agitate()
+                }
+                await attackTheseTypesWarrior(bot, ["icegolem"], information.friends)
+            },
             equipment: burnEquipment,
             move: async () => {
                 const iceGolem = bot.getEntity({ returnNearest: true, type: "icegolem" })
