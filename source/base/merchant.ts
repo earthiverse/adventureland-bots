@@ -1,5 +1,5 @@
 import AL, { BankPackName, Character, Entity, ItemData, ItemName, Merchant, MonsterName } from "alclient"
-import { ITEMS_TO_CRAFT, ITEMS_TO_EXCHANGE, ITEMS_TO_HOLD, ITEMS_TO_SELL, LOOP_MS, sleep } from "./general.js"
+import { ITEMS_TO_CRAFT, ITEMS_TO_EXCHANGE, ITEMS_TO_HOLD, ITEMS_TO_LIST, ITEMS_TO_SELL, LOOP_MS, sleep } from "./general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "./locations.js"
 
 export const MERCHANT_GOLD_TO_HOLD = 100_000_000
@@ -191,7 +191,7 @@ export async function doEmergencyBanking(bot: Merchant, itemsToHold = MERCHANT_I
     // TODO: If we have an upgrade scroll in our inventory, find items to upgrade
 }
 
-export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOLD, itemsToHold = MERCHANT_ITEMS_TO_HOLD, itemsToSell = ITEMS_TO_SELL, itemsToCraft = ITEMS_TO_CRAFT, itemsToExchange = ITEMS_TO_EXCHANGE): Promise<void> {
+export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOLD, itemsToHold = MERCHANT_ITEMS_TO_HOLD, itemsToSell = ITEMS_TO_SELL, itemsToCraft = ITEMS_TO_CRAFT, itemsToExchange = ITEMS_TO_EXCHANGE, itemsToList = ITEMS_TO_LIST): Promise<void> {
     await bot.closeMerchantStand()
     await bot.smartMove(bankingPosition)
 
@@ -394,12 +394,12 @@ export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOL
         }
     }
 
-    // Withdraw exchangable items
+    // Withdraw exchangeable items
     for (let i = 0; i < bankItems.length && freeSpaces > 2; i++) {
         const item = bankItems[i]
         if (!item) continue // No item
 
-        if (!itemsToExchange.has(item.name)) continue // Not exchangable
+        if (!itemsToExchange.has(item.name)) continue // Not exchangeable
 
         const gInfo = bot.G.items[item.name]
         if (item.q < gInfo.e) continue // Not enough to exchange
@@ -433,6 +433,22 @@ export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOL
         if (item.l) continue // Item is locked
         if (item.p) continue // Item is special
         if (!((item.level ?? 0) <= itemsToSell[item.name])) continue // The item level is too high to sell
+
+        // Withdraw the item
+        const pack = `items${Math.floor(i / 42)}` as Exclude<BankPackName, "gold">
+        const slot = i % 42
+        await bot.withdrawItem(pack, slot)
+        freeSpaces--
+    }
+
+    // Withdraw items to list
+    for (let i = 0; i < bankItems.length && freeSpaces > 1; i++) {
+        const item = bankItems[i]
+        if (!item) continue // No item
+        if (item.l) continue // Item is locked
+        if (item.p) continue // Item is special
+        if (!itemsToList[item.name]) continue // We don't want to list the item
+        if (item.level !== undefined && !itemsToList[item.name][item.level]) continue // We don't want to list the item at its given level
 
         // Withdraw the item
         const pack = `items${Math.floor(i / 42)}` as Exclude<BankPackName, "gold">

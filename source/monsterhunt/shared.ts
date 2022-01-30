@@ -1,5 +1,5 @@
-import AL, { Character, CMData, Constants, Entity, IPosition, LimitDCReportData, Mage, Merchant, MonsterName, Paladin, Priest, Ranger, Rogue, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Warrior } from "alclient"
-import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, ITEMS_TO_HOLD, LOOP_MS, REPLENISHABLES_TO_BUY, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
+import AL, { Character, CMData, Constants, Entity, IPosition, ItemName, LimitDCReportData, Mage, Merchant, MonsterName, Paladin, Priest, Ranger, Rogue, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Warrior } from "alclient"
+import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, ITEMS_TO_HOLD, ITEMS_TO_LIST, LOOP_MS, REPLENISHABLES_TO_BUY, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMage, magiportStrangerIfNotNearby } from "../base/mage.js"
 import { attackTheseTypesMerchant, doBanking, doEmergencyBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
@@ -429,6 +429,47 @@ export async function startMerchant(bot: Merchant, information: Information, str
         bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
     }
     moveLoop()
+
+    async function merchantLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            if (!bot.stand || bot.rip) {
+                // Dead, or stand isn't open
+                bot.timeouts.set("merchantLoop", setTimeout(async () => { merchantLoop() }, LOOP_MS))
+                return
+            }
+
+            if (ITEMS_TO_LIST["tracker"] // We are selling trackers
+                && !bot.isListedForSale("tracker") // We don't have a tracker listed
+                && !bot.hasItem("tracker", bot.items, { locked: false }) // We don't have an unlocked tracker
+                && bot.countItem("monstertoken") > 4) { // We can trade tokens for one
+                // Buy a tracker with tokens
+                await bot.buyWithTokens("tracker")
+                const tracker = bot.locateItem("tracker", this.items, { locked: false })
+                await bot.listForSale(tracker, ITEMS_TO_LIST["tracker"][0])
+            }
+
+            for (const tL in ITEMS_TO_LIST) {
+                const item = tL as ItemName
+                const listData = ITEMS_TO_LIST[item]
+
+                for (const invItem of bot.locateItems(item, bot.items, { locked: false, special: false })) {
+                    const level = bot.items[invItem].level ?? 0
+                    const price = listData[level]
+                    if (price) {
+                        await bot.listForSale(invItem, price)
+                    }
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("merchantLoop", setTimeout(async () => { merchantLoop() }, LOOP_MS))
+    }
+    if (bot.id == "earthMer" || bot.id == "earthMer2") {
+        merchantLoop()
+    }
 }
 
 
