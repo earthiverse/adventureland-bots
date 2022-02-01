@@ -110,6 +110,7 @@ async function run() {
                 await Promise.all([mvampireChecker.smartMove({ map: "cave", x: -190.5, y: -1176.5 }).catch(e => console.error(e)), mvampireChecker.regenHP()])
                 mvampireChecker.disconnect()
                 mvampireChecker = undefined
+                AL.PlayerModel.updateOne({ name: botName }, { lastSeen: Date.now() - 60_000 }).exec().catch((e) => { console.error(e) })
             } catch (e) {
                 console.error(e)
                 if (mvampireChecker) mvampireChecker.disconnect()
@@ -145,6 +146,7 @@ async function run() {
                 await Promise.all([mvampireChecker2.smartMove({ map: "cave", x: 1244, y: -22.5 }).catch(e => console.error(e)), mvampireChecker2.regenHP()])
                 mvampireChecker2.disconnect()
                 mvampireChecker2 = undefined
+                AL.PlayerModel.updateOne({ name: botName }, { lastSeen: Date.now() - 60_000 }).exec().catch((e) => { console.error(e) })
             } catch (e) {
                 console.error(e)
                 if (mvampireChecker2) mvampireChecker2.disconnect()
@@ -180,6 +182,7 @@ async function run() {
                 await Promise.all([fvampireChecker.smartMove({ map: "halloween", x: -405.5, y: -1642.5 }).catch(e => console.error(e)), fvampireChecker.regenHP()])
                 fvampireChecker.disconnect()
                 fvampireChecker = undefined
+                AL.PlayerModel.updateOne({ name: botName }, { lastSeen: Date.now() - 60_000 }).exec().catch((e) => { console.error(e) })
             } catch (e) {
                 console.error(e)
                 if (fvampireChecker) fvampireChecker.disconnect()
@@ -215,6 +218,7 @@ async function run() {
                 await Promise.all([greenjrChecker.smartMove({ map: "halloween", x: -569, y: -511.5 }).catch(e => console.error(e)), greenjrChecker.regenHP()])
                 greenjrChecker.disconnect()
                 greenjrChecker = undefined
+                AL.PlayerModel.updateOne({ name: botName }, { lastSeen: Date.now() - 60_000 }).exec().catch((e) => { console.error(e) })
             } catch (e) {
                 console.error(e)
                 if (greenjrChecker) greenjrChecker.disconnect()
@@ -250,6 +254,7 @@ async function run() {
                 await Promise.all([jrChecker.smartMove({ map: "spookytown", x: -783.5, y: -301 }).catch(e => console.error(e)), jrChecker.regenHP()])
                 jrChecker.disconnect()
                 jrChecker = undefined
+                AL.PlayerModel.updateOne({ name: botName }, { lastSeen: Date.now() - 60_000 }).exec().catch((e) => { console.error(e) })
             } catch (e) {
                 console.error(e)
                 if (jrChecker) jrChecker.disconnect()
@@ -285,6 +290,7 @@ async function run() {
                 await Promise.all([stompyChecker.smartMove({ map: "winterland", x: 433, y: -2745 }).catch(e => console.error(e)), stompyChecker.regenHP()])
                 stompyChecker.disconnect()
                 stompyChecker = undefined
+                AL.PlayerModel.updateOne({ name: botName }, { lastSeen: Date.now() - 60_000 }).exec().catch((e) => { console.error(e) })
             } catch (e) {
                 console.error(e)
                 if (stompyChecker) stompyChecker.disconnect()
@@ -320,6 +326,7 @@ async function run() {
                 await Promise.all([newPlayersChecker.smartMove({ map: "main", x: -32, y: 787 }).catch(e => console.error(e)), newPlayersChecker.regenHP()])
                 newPlayersChecker.disconnect()
                 newPlayersChecker = undefined
+                AL.PlayerModel.updateOne({ name: botName }, { lastSeen: Date.now() - 60_000 }).exec().catch((e) => { console.error(e) })
             } catch (e) {
                 console.error(e)
                 if (newPlayersChecker) newPlayersChecker.disconnect()

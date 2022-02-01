@@ -9,7 +9,7 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
     public constructor() {
         this.loops.set("heal", {
             fn: async (bot: Type) => { await this.heal(bot) },
-            interval: ["use_hp", "regen_hp"]
+            interval: ["use_hp"]
         })
         this.loops.set("loot", {
             fn: async (bot: Type) => { await this.loot(bot) },

@@ -1,4 +1,4 @@
-import { PingCompensatedCharacter, SkillName } from "alclient"
+import AL, { PingCompensatedCharacter, SkillName } from "alclient"
 
 export type Loop<Type> = {
     fn: (bot: Type) => Promise<void>,
@@ -22,6 +22,8 @@ export class Strategist<Type extends PingCompensatedCharacter> {
 
     public constructor(bot: Type, initialStrategy?: Strategy<Type>) {
         this.bot = bot
+
+        this.bot.socket.on("disconnect", () => { this.reconnect() })
 
         this.applyStrategy(initialStrategy)
     }
@@ -63,6 +65,26 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                     }
                 }
                 newLoop()
+            }
+        }
+    }
+
+    public async reconnect(): Promise<void> {
+        if (this.bot.socket.connected) this.bot.disconnect()
+        if (this.bot.socket.disconnected) {
+            try {
+                await this.bot.connect()
+                this.bot.socket.on("disconnect", () => { this.reconnect() })
+            } catch (e) {
+                console.error(e)
+                const wait = /wait_(\d+)_second/.exec(e)
+                if (wait && wait[1]) {
+                    setTimeout(async () => { this.reconnect() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                } else if (/limits/.test(e)) {
+                    setTimeout(async () => { this.reconnect() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                } else {
+                    setTimeout(async () => { this.reconnect() }, 10000)
+                }
             }
         }
     }
