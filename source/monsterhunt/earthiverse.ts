@@ -501,19 +501,7 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["tiger"], information.friends, { targetingPartyMember: true }) },
             attackWhileIdle: true,
             equipment: { mainhand: "wand", orb: "jacko" },
-            move: async () => {
-                const tiger = bot.getEntity({ returnNearest: true, type: "tiger" })
-                if (tiger) {
-                    if (!bot.smartMoving) bot.smartMove(tiger, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
-                    else if (AL.Tools.distance(tiger, bot.smartMoving) > 100) bot.smartMove(tiger, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
-                } else if (bot.S.tiger?.live) {
-                    requestMagiportService(bot, bot.S.tiger as IPosition)
-                    if (!bot.smartMoving) goToSpecialMonster(bot, "tiger").catch(e => console.error(e))
-                    else if (AL.Tools.distance(bot.S.tiger as IPosition, bot.smartMoving) > 100) {
-                        bot.smartMove(bot.S.tiger as IPosition, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
-                    }
-                }
-            }
+            move: async () => { await goToSpecialMonster(bot, "tiger", { requestMagiport: true }) }
         },
         tortoise: {
             attack: async () => { await attackTheseTypesPriest(bot, ["tortoise", "phoenix"], information.friends) },
@@ -972,19 +960,7 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { return attackTheseTypesRanger(bot, ["tiger"], information.friends) },
             attackWhileIdle: true,
             equipment: maxAttackSpeedEquipment,
-            move: async () => {
-                const tiger = bot.getEntity({ returnNearest: true, type: "tiger" })
-                if (tiger) {
-                    if (!bot.smartMoving) bot.smartMove(tiger, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
-                    else if (AL.Tools.distance(tiger, bot.smartMoving) > 100) bot.smartMove(tiger, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
-                } else if (bot.S.tiger?.live) {
-                    requestMagiportService(bot, bot.S.tiger as IPosition)
-                    if (!bot.smartMoving) goToSpecialMonster(bot, "tiger").catch(e => console.error(e))
-                    else if (AL.Tools.distance(bot.S.tiger as IPosition, bot.smartMoving) > 100) {
-                        bot.smartMove(bot.S.tiger as IPosition, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
-                    }
-                }
-            }
+            move: async () => { await goToSpecialMonster(bot, "tiger", { requestMagiport: true }) }
         },
         tortoise: {
             attack: async () => { return attackTheseTypesRanger(bot, ["tortoise", "phoenix"], information.friends) },
@@ -1546,19 +1522,7 @@ function prepareWarrior(bot: Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["tiger"], information.friends) },
             attackWhileIdle: true,
             equipment: aoeEquipment,
-            move: async () => {
-                const tiger = bot.getEntity({ returnNearest: true, type: "tiger" })
-                if (tiger) {
-                    if (!bot.smartMoving) bot.smartMove(tiger, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
-                    else if (AL.Tools.distance(tiger, bot.smartMoving) > 100) bot.smartMove(tiger, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
-                } else if (bot.S.tiger?.live) {
-                    requestMagiportService(bot, bot.S.tiger as IPosition)
-                    if (!bot.smartMoving) goToSpecialMonster(bot, "tiger").catch(e => console.error(e))
-                    else if (AL.Tools.distance(bot.S.tiger as IPosition, bot.smartMoving) > 100) {
-                        bot.smartMove(bot.S.tiger as IPosition, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
-                    }
-                }
-            }
+            move: async () => { await goToSpecialMonster(bot, "tiger", { requestMagiport: true }) }
         },
         // tinyp: {
         //     attack: async () => {

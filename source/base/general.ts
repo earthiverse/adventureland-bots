@@ -591,8 +591,8 @@ export async function goToSpecialMonster(bot: Character, type: MonsterName, opti
 
     // Look for it in our database
     const special = await AL.EntityModel.findOne({ serverIdentifier: bot.server.name, serverRegion: bot.server.region, type: type }).lean().exec()
-    if (special) {
-        if (options.requestMagiport) requestMagiportService(bot, bot.S.dragold as IPosition)
+    if (special && special.x !== undefined && special.y !== undefined) {
+        if (options.requestMagiport) requestMagiportService(bot, special)
         return bot.smartMove(special, { getWithin: bot.range - 10, useBlink: true })
     }
 
