@@ -294,7 +294,9 @@ export async function getPriority2Entities(bot: Character): Promise<Entity[] | I
                 ],
                 serverIdentifier: bot.server.name,
                 serverRegion: bot.server.region,
-                type: { $in: solo }
+                type: { $in: solo },
+                x: { $ne: undefined },
+                y: { $ne: undefined }
             }
         },
         { $addFields: { __order: { $indexOfArray: [solo, "$type"] } } },
