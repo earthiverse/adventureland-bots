@@ -321,6 +321,12 @@ function prepareMage(bot: Mage) {
                 }
             }
         },
+        tiger: {
+            attack: async () => { await attackTheseTypesMage(bot, ["tiger"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },
+            move: async () => { await goToSpecialMonster(bot, "tiger") }
+        },
         tortoise: {
             attack: async () => { await attackTheseTypesMage(bot, ["tortoise", "frog"], information.friends) },
             attackWhileIdle: true,

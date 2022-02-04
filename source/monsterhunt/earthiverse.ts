@@ -497,6 +497,11 @@ function preparePriest(bot: Priest) {
         //     equipment: { mainhand: "firestaff", offhand: "wbook1", orb: "jacko" },
         //     move: async () => { await goToSpecialMonster(bot, "tinyp", { requestMagiport: true }) },
         // },
+        tiger: {
+            attack: async () => { await attackTheseTypesPriest(bot, ["tiger"], information.friends, { targetingPartyMember: true }) },
+            equipment: { mainhand: "wand", orb: "jacko" },
+            move: async () => { await goToSpecialMonster(bot, "tiger", { requestMagiport: true }) }
+        },
         tortoise: {
             attack: async () => { await attackTheseTypesPriest(bot, ["tortoise", "phoenix"], information.friends) },
             attackWhileIdle: true,
@@ -950,6 +955,12 @@ function prepareRanger(bot: Ranger) {
         //         await goToSpecialMonster(bot, "tinyp", { requestMagiport: true })
         //     },
         // },
+        tiger: {
+            attack: async () => { return attackTheseTypesRanger(bot, ["tiger"], information.friends) },
+            attackWhileIdle: true,
+            equipment: maxAttackSpeedEquipment,
+            move: async () => { await goToSpecialMonster(bot, "tiger", { requestMagiport: true }) }
+        },
         tortoise: {
             attack: async () => { return attackTheseTypesRanger(bot, ["tortoise", "phoenix"], information.friends) },
             attackWhileIdle: true,
@@ -1505,6 +1516,12 @@ function prepareWarrior(bot: Warrior) {
                 await goToNearestWalkableToMonster(bot, ["stoneworm"], { map: "spookytown", x: 717, y: 129 })
             },
             requireCtype: "priest"
+        },
+        tiger: {
+            attack: async () => { await attackTheseTypesWarrior(bot, ["tiger"], information.friends) },
+            attackWhileIdle: true,
+            equipment: aoeEquipment,
+            move: async () => { await goToSpecialMonster(bot, "tiger", { requestMagiport: true }) },
         },
         // tinyp: {
         //     attack: async () => {
