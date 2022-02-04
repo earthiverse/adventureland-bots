@@ -1735,7 +1735,7 @@ async function run() {
             if ((AL.Constants.SPECIAL_MONSTERS.includes(information.bot1.target) || AL.Constants.SPECIAL_MONSTERS.includes(information.bot2.target) || AL.Constants.SPECIAL_MONSTERS.includes(information.bot3.target)) // We're targeting a special monster
                 && !(information.bot1.bot.S?.halloween && ["mrgreen", "mrpumpkin", "slenderman"].includes(targetServer[2])) // Switch servers right away for special Halloween monsters
                 && !(information.bot1.bot.S?.holidayseason && ["grinch", "snowman"].includes(targetServer[2])) // Switch servers right away for special Christmas monsters
-                && !(information.bot1.bot.S?.lunarnewyear && ["dragold"].includes(targetServer[2])) // Switch servers right away for special Lunar New Year monsters
+                && !(information.bot1.bot.S?.lunarnewyear && ["dragold", "tiger"].includes(targetServer[2])) // Switch servers right away for special Lunar New Year monsters
             ) {
                 setTimeout(async () => { serverLoop() }, 1000)
                 return

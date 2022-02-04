@@ -61,7 +61,7 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
         // Very Rare Monsters
         "goldenbat", "cutebee",
         // Event Monsters
-        "pinkgoo", "wabbit",
+        "pinkgoo", "wabbit", "tiger",
         // Rare Monsters
         "snowman", "greenjr", "jr", "skeletor", "mvampire", "fvampire", "stompy"
     ]): Promise<[ServerRegion, ServerIdentifier, MonsterName]> {
@@ -86,7 +86,7 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
                             // These monsters don't need us to target them specifically, since they're co-op.
                             $or: [
                                 { target: undefined },
-                                { type: { $in: ["pinkgoo", "snowman", "wabbit"] } }
+                                { type: { $in: ["pinkgoo", "snowman", "tiger", "wabbit"] } }
                             ],
                             serverIdentifier: { $nin: ["PVP"] },
                             type: { $in: solo },
