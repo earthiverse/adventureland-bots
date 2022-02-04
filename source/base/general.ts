@@ -260,7 +260,7 @@ export async function getPriority2Entities(bot: Character): Promise<Entity[] | I
         // Very Rare Monsters
         "tinyp", "cutebee",
         // Event Monsters
-        "pinkgoo", "wabbit", "slenderman",
+        "pinkgoo", "wabbit", "slenderman", "tiger",
         // Rare Monsters
         "snowman", "greenjr", "jr", "skeletor", "mvampire", "fvampire", "stompy"
     ]

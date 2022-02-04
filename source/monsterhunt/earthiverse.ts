@@ -499,6 +499,7 @@ function preparePriest(bot: Priest) {
         // },
         tiger: {
             attack: async () => { await attackTheseTypesPriest(bot, ["tiger"], information.friends, { targetingPartyMember: true }) },
+            attackWhileIdle: true,
             equipment: { mainhand: "wand", orb: "jacko" },
             move: async () => {
                 const tiger = bot.getEntity({ returnNearest: true, type: "tiger" })
