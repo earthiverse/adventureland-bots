@@ -469,9 +469,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
         }
         bot.timeouts.set("merchantLoop", setTimeout(async () => { merchantLoop() }, LOOP_MS))
     }
-    if (bot.id == "earthMer" || bot.id == "earthMer2") {
-        merchantLoop()
-    }
+    merchantLoop()
 }
 
 

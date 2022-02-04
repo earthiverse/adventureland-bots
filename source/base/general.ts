@@ -787,8 +787,8 @@ export function startBuyLoop(bot: Character, itemsToBuy = ITEMS_TO_BUY, replenis
             if (Date.now() - CHECK_PONTY_EVERY_MS > lastPonty) {
                 for (const ponty of pontyLocations) {
                     if (AL.Tools.distance(bot, ponty) > AL.Constants.NPC_INTERACTION_DISTANCE) continue
-                    const pontyItems = await bot.getPontyItems()
                     lastPonty = Date.now()
+                    const pontyItems = await bot.getPontyItems()
                     for (const item of pontyItems) {
                         if (!item) continue
 
@@ -1344,7 +1344,7 @@ export function startScareLoop(bot: Character): void {
             console.error(e)
         }
 
-        bot.timeouts.set("scareloop", setTimeout(async () => { scareLoop() }, Math.max(250, bot.getCooldown("scare"))))
+        bot.timeouts.set("scareLoop", setTimeout(async () => { scareLoop() }, Math.max(250, bot.getCooldown("scare"))))
     }
 
     // If we have too many targets, we can't go through doors.
@@ -1372,11 +1372,12 @@ export function startScareLoop(bot: Character): void {
     scareLoop()
 }
 
-export function startSellLoop(bot: Character, itemsToSell: ItemLevelInfo = ITEMS_TO_SELL): void {
+export function startSellLoop(bot: Character, itemsToSell = ITEMS_TO_SELL, itemsToList = ITEMS_TO_LIST): void {
     async function sellLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
+            // Sell items to NPC
             if (bot.canSell()) {
                 // Sell things
                 for (let i = 0; i < bot.items.length; i++) {
@@ -1387,6 +1388,27 @@ export function startSellLoop(bot: Character, itemsToSell: ItemLevelInfo = ITEMS
                     if (!((item.level ?? 0) <= itemsToSell[item.name])) continue // We don't want to sell this item
 
                     await bot.sell(i, item.q ?? 1)
+                }
+            }
+
+            // Sell items to other merchants
+            for (const [, player] of bot.players) {
+                if (AL.Tools.distance(bot, player) > AL.Constants.NPC_INTERACTION_DISTANCE) continue // Too far away
+
+                for (const s in player.slots) {
+                    const slot = s as TradeSlotType
+                    const item = player.slots[slot]
+                    if (!item) continue // Nothing in the slot
+                    if (!item.rid) continue // Not a trade item
+                    if (!item.b) continue // They are selling, not buying
+
+                    const q = bot.locateItem(item.name, bot.items, { level: item.level, locked: false, special: false })
+                    if (q == undefined) continue // We don't have this item to sell
+                    const priceWanted = itemsToList?.[item.name]?.[item.level ?? 0]
+                    if (priceWanted == undefined) continue // We don't want to sell this item
+                    if (item.price >= priceWanted) {
+                        await bot.sellToMerchant(player.id, slot, item.rid, Math.min(q, item.q))
+                    }
                 }
             }
         } catch (e) {
