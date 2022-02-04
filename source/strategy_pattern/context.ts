@@ -35,7 +35,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
             if (fn == undefined) {
                 // Stop the loop
                 // if (this.loops.has(name)) console.log(`Strategy '${strategy.name}' is stopping the '${name}' loop`)
-                this.loops.delete(name)
+                this.stop(name)
             } else if (this.loops.has(name)) {
                 // Change the loop
                 // if (this.loops.has(name)) console.log(`Strategy '${strategy.name}' is changing the '${name}' loop`)
@@ -69,6 +69,10 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         }
     }
 
+    public applyStrategies(strategies: Strategy<Type>[]) {
+        for (const strategy of strategies) this.applyStrategy(strategy)
+    }
+
     public async reconnect(): Promise<void> {
         if (this.bot.socket.connected) this.bot.disconnect()
         if (this.bot.socket.disconnected) {
@@ -89,7 +93,16 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         }
     }
 
-    public stop(): void {
+    public stop(loopName: string): void {
+        // Delete the loop
+        this.loops.delete(loopName)
+
+        // Clear the timeout
+        const timeout = this.timeouts.get(loopName)
+        if (timeout) clearTimeout(timeout)
+    }
+
+    public stopAll(): void {
         this.stopped = true
         for (const [, timeout] of this.timeouts) clearTimeout(timeout)
         this.bot.disconnect()

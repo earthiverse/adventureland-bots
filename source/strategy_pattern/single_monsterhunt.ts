@@ -1,6 +1,6 @@
 import AL from "alclient"
 import { Strategist } from "./context.js"
-import { BasicAttackAndMoveStrategy } from "./strategies/attack.js"
+import { BasicAttackStrategy } from "./strategies/attack.js"
 import { BaseStrategy } from "./strategies/base.js"
 import { FinishMonsterHuntStrategy, GetMonsterHuntStrategy } from "./strategies/monsterhunt.js"
 
@@ -13,7 +13,7 @@ async function run() {
     const ranger = await AL.Game.startRanger("earthiverse", "US", "III")
     const rangerContext = new Strategist(ranger, baseStrategy)
 
-    const strategy = new BasicAttackAndMoveStrategy(["goo"])
+    const strategy = new BasicAttackStrategy(["goo"])
     rangerContext.applyStrategy(strategy)
 
     setInterval(async () => {
@@ -30,13 +30,13 @@ async function run() {
         }
 
         // Do Monster Hunt
-        if (["bat", "crab", "goo"].includes(ranger.s.monsterhunt.id)) {
-            rangerContext.applyStrategy(new BasicAttackAndMoveStrategy([ranger.s.monsterhunt.id]))
+        if (["bat", "bee", "crab", "goo", "poisio", "tortoise"].includes(ranger.s.monsterhunt.id)) {
+            rangerContext.applyStrategy(new BasicAttackStrategy([ranger.s.monsterhunt.id]))
             return
         }
 
         // Do Base Strategy
-        rangerContext.applyStrategy(new BasicAttackAndMoveStrategy(["goo"]))
+        rangerContext.applyStrategy(new BasicAttackStrategy(["goo"]))
     }, 1000)
 }
 run()
