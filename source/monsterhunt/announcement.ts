@@ -1,4 +1,4 @@
-import AL, { IPosition, Mage, Merchant } from "alclient"
+import AL, { IPosition, ItemName, Mage, Merchant, SlotType } from "alclient"
 import { goToNearestWalkableToMonster, goToNPC, goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
 import { desertlandPorcupines, halloweenMiniMushes, mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrabXs, mainCrocs, mainGoos, mainPoisios, mainScorpions, mainSquigs, offsetPosition, winterlandArcticBees } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
@@ -37,13 +37,16 @@ const information: Information = {
 }
 
 function prepareMage(bot: Mage) {
+    const maxAttackSpeedEquipment: { [T in SlotType]?: ItemName } = { amulet: "intamulet", belt: "intbelt", cape: "cape", chest: "wattire", gloves: "wgloves", helmet: "wcap", mainhand: "wand", offhand: "wbook0", orb: "jacko", pants: "wbreeches", shoes: "wshoes" }
+    const maxDamageEquipment: { [T in SlotType]?: ItemName } = { ...maxAttackSpeedEquipment, "mainhand": "firestaff" }
+
     const strategy: Strategy = {
         defaultTarget: "squigtoad",
         // eslint-disable-next-line sort-keys
         arcticbee: {
             attack: async () => { await attackTheseTypesMage(bot, ["arcticbee"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.goo.hp + 1 }) },
             attackWhileIdle: true,
-            equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
                     await bot.smartMove(offsetPosition(winterlandArcticBees, 50, 0), { useBlink: true })
@@ -57,7 +60,7 @@ function prepareMage(bot: Mage) {
         armadillo: {
             attack: async () => { await attackTheseTypesMage(bot, ["armadillo", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
                     await bot.smartMove(offsetPosition(mainArmadillos, -75, 75), { useBlink: true })
@@ -71,7 +74,7 @@ function prepareMage(bot: Mage) {
         bee: {
             attack: async () => { await attackTheseTypesMage(bot, ["bee"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.bee.hp + 1 }) },
             attackWhileIdle: true,
-            equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },
+            equipment: maxAttackSpeedEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
                     await bot.smartMove(offsetPosition(mainBeesNearTunnel, 25, 0), { useBlink: true })
@@ -85,7 +88,7 @@ function prepareMage(bot: Mage) {
         crab: {
             attack: async () => { await attackTheseTypesMage(bot, ["crab", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },
+            equipment: maxAttackSpeedEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
                     await bot.smartMove(offsetPosition(mainCrabs, -75, 75), { useBlink: true })
@@ -99,7 +102,7 @@ function prepareMage(bot: Mage) {
         crabx: {
             attack: async () => { await attackTheseTypesMage(bot, ["crabx", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
                     await goToNearestWalkableToMonster(bot, ["crabx", "phoenix"], offsetPosition(mainCrabXs, -75, 75), bot.range - 25)
@@ -113,7 +116,7 @@ function prepareMage(bot: Mage) {
         croc: {
             attack: async () => { await attackTheseTypesMage(bot, ["croc", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
                     await bot.smartMove(offsetPosition(mainCrocs, 0, 25), { useBlink: true })
@@ -126,7 +129,7 @@ function prepareMage(bot: Mage) {
         },
         franky: {
             attack: async () => { await attackTheseTypesMage(bot, ["nerfedmummy", "franky"], information.friends) },
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => {
                 const nearest = bot.getEntity({ returnNearest: true, type: "franky" })
                 if (nearest && AL.Tools.distance(bot, nearest) > 25) {
@@ -140,19 +143,19 @@ function prepareMage(bot: Mage) {
         frog: {
             attack: async () => { await attackTheseTypesMage(bot, ["frog", "tortoise"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["frog", "tortoise"]) },
         },
         goldenbat: {
             attack: async () => { await attackTheseTypesMage(bot, ["goldenbat"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await goToSpecialMonster(bot, "goldenbat") },
         },
         goo: {
             attack: async () => { await attackTheseTypesMage(bot, ["goo"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.goo.hp + 1 }) },
             attackWhileIdle: true,
-            equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },
+            equipment: maxAttackSpeedEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
                     await bot.smartMove(offsetPosition(mainGoos, 50, 0), { useBlink: true })
@@ -166,13 +169,13 @@ function prepareMage(bot: Mage) {
         greenjr: {
             attack: async () => { await attackTheseTypesMage(bot, ["greenjr", "snake", "osnake"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await goToSpecialMonster(bot, "greenjr") },
         },
         grinch: {
             attack: async () => { await attackTheseTypesMage(bot, ["grinch"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.S.grinch?.live && bot.S.grinch.hp <= 1_000_000) {
                     // Go to Kane when Grinch is nearing death for extra luck
@@ -198,13 +201,13 @@ function prepareMage(bot: Mage) {
         jr: {
             attack: async () => { await attackTheseTypesMage(bot, ["jr"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await goToSpecialMonster(bot, "jr") },
         },
         minimush: {
             attack: async () => { await attackTheseTypesMage(bot, ["minimush", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },
+            equipment: maxAttackSpeedEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
                     await bot.smartMove(offsetPosition(halloweenMiniMushes, -75, 75), { useBlink: true })
@@ -217,24 +220,24 @@ function prepareMage(bot: Mage) {
         },
         mrgreen: {
             attack: async () => { await attackTheseTypesMage(bot, ["mrgreen"], information.friends) },
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await goToSpecialMonster(bot, "mrgreen") },
         },
         mrpumpkin: {
             attack: async () => { await attackTheseTypesMage(bot, ["mrpumpkin"], information.friends) },
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await goToSpecialMonster(bot, "mrpumpkin") },
         },
         mvampire: {
             attack: async () => { await attackTheseTypesMage(bot, ["mvampire", "bat"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await goToSpecialMonster(bot, "mvampire") },
         },
         poisio: {
             attack: async () => { await attackTheseTypesMage(bot, ["poisio"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
                     await bot.smartMove(offsetPosition(mainPoisios, -75, 75), { useBlink: true })
@@ -248,7 +251,7 @@ function prepareMage(bot: Mage) {
         porcupine: {
             attack: async () => { await attackTheseTypesMage(bot, ["porcupine"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
                     await bot.smartMove(offsetPosition(desertlandPorcupines, -75, 75), { useBlink: true })
@@ -262,7 +265,7 @@ function prepareMage(bot: Mage) {
         rat: {
             attack: async () => { await attackTheseTypesMage(bot, ["goo"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },
+            equipment: maxAttackSpeedEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
                     await bot.smartMove({ map: "mansion", x: 240, y: -488 }, { useBlink: true })
@@ -276,7 +279,7 @@ function prepareMage(bot: Mage) {
         scorpion: {
             attack: async () => { await attackTheseTypesMage(bot, ["scorpion", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
                     await goToNearestWalkableToMonster(bot, ["scorpion", "phoenix"], offsetPosition(mainScorpions, -75, 75), bot.range - 25)
@@ -290,13 +293,13 @@ function prepareMage(bot: Mage) {
         snowman: {
             attack: async () => { await attackTheseTypesMage(bot, ["snowman"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },
+            equipment: maxAttackSpeedEquipment,
             move: async () => { await goToSpecialMonster(bot, "snowman") }
         },
         squig: {
             attack: async () => { await attackTheseTypesMage(bot, ["squig", "squigtoad", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
                     await bot.smartMove(offsetPosition(mainSquigs, -75, 75), { useBlink: true })
@@ -310,7 +313,7 @@ function prepareMage(bot: Mage) {
         squigtoad: {
             attack: async () => { await attackTheseTypesMage(bot, ["squigtoad", "squig", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
                     await bot.smartMove(offsetPosition(mainSquigs, -75, 75), { useBlink: true })
@@ -327,18 +330,18 @@ function prepareMage(bot: Mage) {
                 if (tiger) {
                     if (bot.slots.offhand && bot.slots.offhand.l) await bot.unequip("offhand")
                     if (bot.slots.mainhand && bot.slots.mainhand.l) await bot.unequip("mainhand")
-                    // if (bot.slots.helmet && bot.slots.helmet.l) await bot.unequip("helmet")
-                    // if (bot.slots.chest && bot.slots.chest.l) await bot.unequip("chest")
-                    // if (bot.slots.pants && bot.slots.pants.l) await bot.unequip("pants")
-                    // if (bot.slots.shoes && bot.slots.shoes.l) await bot.unequip("shoes")
-                    // if (bot.slots.gloves && bot.slots.gloves.l) await bot.unequip("gloves")
+                    if (bot.slots.helmet && bot.slots.helmet.l) await bot.unequip("helmet")
+                    if (bot.slots.chest && bot.slots.chest.l) await bot.unequip("chest")
+                    if (bot.slots.pants && bot.slots.pants.l) await bot.unequip("pants")
+                    if (bot.slots.shoes && bot.slots.shoes.l) await bot.unequip("shoes")
+                    if (bot.slots.gloves && bot.slots.gloves.l) await bot.unequip("gloves")
                     if (bot.slots.orb && bot.slots.orb.l) await bot.unequip("orb")
-                    // if (bot.slots.amulet && bot.slots.amulet.l) await bot.unequip("amulet")
+                    if (bot.slots.amulet && bot.slots.amulet.l) await bot.unequip("amulet")
                     // if (bot.slots.earring1 && bot.slots.earring1.l) await bot.unequip("earring1")
                     // if (bot.slots.earring2 && bot.slots.earring2.l) await bot.unequip("earring2")
                     // if (bot.slots.ring1 && bot.slots.ring1.l) await bot.unequip("ring1")
                     // if (bot.slots.ring2 && bot.slots.ring2.l) await bot.unequip("ring2")
-                    // if (bot.slots.cape && bot.slots.cape.l) await bot.unequip("cape")
+                    if (bot.slots.cape && bot.slots.cape.l) await bot.unequip("cape")
                 }
                 await attackTheseTypesMage(bot, ["tiger"], information.friends)
             },
@@ -355,7 +358,7 @@ function prepareMage(bot: Mage) {
         tortoise: {
             attack: async () => { await attackTheseTypesMage(bot, ["tortoise", "frog"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "firestaff", offhand: "wbook0", orb: "jacko" },
+            equipment: maxDamageEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["tortoise", "frog"]) },
         }
     }

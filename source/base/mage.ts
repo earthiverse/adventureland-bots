@@ -164,7 +164,7 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
             }
 
             if (targets.size && bot.mp >= mpNeeded) {
-            // Remove them from our friends' entities list, since we're going to kill them
+                // Remove them from our friends' entities list, since we're going to kill them
                 for (const [id] of targets) {
                     for (const friend of friends) {
                         if (!friend) continue // No friend
