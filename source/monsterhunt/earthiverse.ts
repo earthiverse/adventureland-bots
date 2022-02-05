@@ -498,9 +498,13 @@ function preparePriest(bot: Priest) {
         //     move: async () => { await goToSpecialMonster(bot, "tinyp", { requestMagiport: true }) },
         // },
         tiger: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["tiger"], information.friends, { targetingPartyMember: true }) },
+            attack: async () => {
+                if (bot.slots.offhand) await bot.unequip("offhand")
+                if (bot.slots.mainhand) await bot.unequip("mainhand")
+                await attackTheseTypesPriest(bot, ["tiger"], information.friends, { targetingPartyMember: true })
+            },
             attackWhileIdle: true,
-            equipment: { mainhand: "wand", orb: "jacko" },
+            equipment: { orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "tiger", { requestMagiport: true }) }
         },
         tortoise: {
@@ -956,12 +960,12 @@ function prepareRanger(bot: Ranger) {
         //         await goToSpecialMonster(bot, "tinyp", { requestMagiport: true })
         //     },
         // },
-        tiger: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["tiger"], information.friends) },
-            attackWhileIdle: true,
-            equipment: maxAttackSpeedEquipment,
-            move: async () => { await goToSpecialMonster(bot, "tiger", { requestMagiport: true }) }
-        },
+        // tiger: {
+        //     attack: async () => { return attackTheseTypesRanger(bot, ["tiger"], information.friends) },
+        //     attackWhileIdle: true,
+        //     equipment: maxAttackSpeedEquipment,
+        //     move: async () => { await goToSpecialMonster(bot, "tiger", { requestMagiport: true }) }
+        // },
         tortoise: {
             attack: async () => { return attackTheseTypesRanger(bot, ["tortoise", "phoenix"], information.friends) },
             attackWhileIdle: true,
@@ -1518,12 +1522,12 @@ function prepareWarrior(bot: Warrior) {
             },
             requireCtype: "priest"
         },
-        tiger: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["tiger"], information.friends) },
-            attackWhileIdle: true,
-            equipment: aoeEquipment,
-            move: async () => { await goToSpecialMonster(bot, "tiger", { requestMagiport: true }) }
-        },
+        // tiger: {
+        //     attack: async () => { await attackTheseTypesWarrior(bot, ["tiger"], information.friends) },
+        //     attackWhileIdle: true,
+        //     equipment: aoeEquipment,
+        //     move: async () => { await goToSpecialMonster(bot, "tiger", { requestMagiport: true }) }
+        // },
         // tinyp: {
         //     attack: async () => {
         //         const nearby = bot.getEntity({ returnNearest: true, type: "tinyp" })

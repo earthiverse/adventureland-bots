@@ -41,7 +41,7 @@ export const ITEMS_TO_EXCHANGE: Set<ItemName> = new Set([
     // // Halloween
     // "candy0", "candy1",
     // // Lunar New Year's
-    // "greenenvelope", "redenvelope", "redenvelopev2", "redenvelopev3",
+    // "greenenvelope", "redenvelope", "redenvelopev2", "redenvelopev3", "redenvelopev4",
     // // Easter
     // "basketofeggs",
     // // Boxes
@@ -60,7 +60,7 @@ export const ITEMS_TO_CRAFT: Set<ItemName> = new Set([
 export const ITEMS_TO_BUY: Set<ItemName> = new Set([
     // NOTE: Temporary for Christmas
     // // Exchangeables
-    // ...ITEMS_TO_EXCHANGE,
+    "5bucks", "gem0", "gem1", "gemfragment", "seashell", "leather", "candycane", "mistletoe", "ornament", "candy0", "candy1", "greenenvelope", "redenvelope", "redenvelopev2", "redenvelopev3", "redenvelopev4", "basketofeggs", "armorbox", "bugbountybox", "gift0", "gift1", "mysterybox", "weaponbox", "xbox",
     // // Belts
     // "dexbelt", "intbelt", "sbelt", "strbelt",
     // // Rings
@@ -92,9 +92,9 @@ export const ITEMS_TO_BUY: Set<ItemName> = new Set([
     // // Things we can exchange / craft with
     // "ascale", "bfur", "cscale", "cshell", "crabclaw", "electronics", "feather0", "frogt", "goldenegg", "goldingot", "goldnugget", "ink", "leather", "lotusf", "platinumingot", "platinumnugget", "pleather", "snakefang", "spores",
     // // Things to make xbox
-    // "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8",
+    "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8",
     // // Things to make easter basket
-    // "egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8",
+    "egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8",
     // // Essences
     // "essenceofether", "essenceoffire", "essenceoffrost", "essenceofgreed", "essenceoflife", "essenceofnature", "offering", "offeringp", "offeringx",
     // // Potions & consumables
@@ -104,7 +104,7 @@ export const ITEMS_TO_BUY: Set<ItemName> = new Set([
     // // Merchant Tools
     // "pickaxe", "rod",
     // // Keys
-    // "bkey", "cryptkey", "dkey", "frozenkey", "stonekey", "tombkey", "ukey",
+    "bkey", "cryptkey", "dkey", "frozenkey", "stonekey", "tombkey", "ukey",
     // // Misc. Things
     // "bottleofxp", "bugbountybox", "computer", "confetti", "cxjar", "emotionjar", "flute", "frozenstone", "monstertoken", "poison", "puppyer", "shadowstone", "snakeoil"
 ])

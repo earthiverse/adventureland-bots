@@ -322,9 +322,13 @@ function prepareMage(bot: Mage) {
             }
         },
         tiger: {
-            attack: async () => { await attackTheseTypesMage(bot, ["tiger"], information.friends) },
+            attack: async () => {
+                if (bot.slots.offhand) await bot.unequip("offhand")
+                if (bot.slots.mainhand) await bot.unequip("mainhand")
+                await attackTheseTypesMage(bot, ["tiger"], information.friends)
+            },
             attackWhileIdle: true,
-            equipment: { mainhand: "wand", offhand: "wbook0", orb: "jacko" },
+            equipment: { orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "tiger") }
         },
         tortoise: {
