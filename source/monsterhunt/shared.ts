@@ -200,10 +200,10 @@ export async function startMerchant(bot: Merchant, information: Information, str
     try {
         if (bot.slots.mainhand) await bot.unequip("mainhand")
         if (bot.slots.offhand) await bot.unequip("offhand")
-        const dartGun = bot.locateItem("dartgun", bot.items, { locked: true })
+        const dartGun = bot.locateItem("dartgun", bot.items, { returnHighestLevel: true })
         if (dartGun !== undefined) await bot.equip(dartGun, "mainhand")
-        const wbook0 = bot.locateItem("wbook0", bot.items, { locked: true })
-        const wbook1 = bot.locateItem("wbook1", bot.items, { locked: true })
+        const wbook0 = bot.locateItem("wbook0", bot.items, { returnHighestLevel: true })
+        const wbook1 = bot.locateItem("wbook1", bot.items, { returnHighestLevel: true })
         if (wbook0 !== undefined) await bot.equip(wbook0, "offhand")
         else if (wbook1 !== undefined) await bot.equip(wbook1, "offhand")
     } catch (e) {
@@ -248,7 +248,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
 
                         if (!bot.slots[slot]
                             || (bot.slots[slot] && bot.slots[slot].name !== itemName)) {
-                            const i = bot.locateItem(itemName)
+                            const i = bot.locateItem(itemName, bot.items, { returnHighestLevel: true })
                             if (i !== undefined) await bot.equip(i, slot)
                         }
                     }
@@ -529,7 +529,7 @@ export async function startPaladin(bot: Paladin, information: Information, strat
 
                         if (!bot.slots[slot]
                             || (bot.slots[slot] && bot.slots[slot].name !== itemName)) {
-                            const i = bot.locateItem(itemName)
+                            const i = bot.locateItem(itemName, bot.items, { returnHighestLevel: true })
                             if (i !== undefined) await bot.equip(i, slot)
                         }
                     }
@@ -618,7 +618,7 @@ export async function startPriest(bot: Priest, information: Information, strateg
 
                         if (!bot.slots[slot]
                             || (bot.slots[slot] && bot.slots[slot].name !== itemName)) {
-                            const i = bot.locateItem(itemName)
+                            const i = bot.locateItem(itemName, bot.items, { returnHighestLevel: true })
                             if (i !== undefined) await bot.equip(i, slot)
                         }
                     }
@@ -705,7 +705,7 @@ export async function startRanger(bot: Ranger, information: Information, strateg
 
                         if (!bot.slots[slot]
                             || (bot.slots[slot] && bot.slots[slot].name !== itemName)) {
-                            const i = bot.locateItem(itemName)
+                            const i = bot.locateItem(itemName, bot.items, { returnHighestLevel: true })
                             if (i !== undefined) await bot.equip(i, slot)
                         }
                     }
@@ -794,7 +794,7 @@ export async function startRogue(bot: Rogue, information: Information, strategy:
 
                         if (!bot.slots[slot]
                             || (bot.slots[slot] && bot.slots[slot].name !== itemName)) {
-                            const i = bot.locateItem(itemName)
+                            const i = bot.locateItem(itemName, bot.items, { returnHighestLevel: true })
                             if (i !== undefined) await bot.equip(i, slot)
                         }
                     }
@@ -885,7 +885,7 @@ export async function startWarrior(bot: Warrior, information: Information, strat
 
                         if (!bot.slots[slot]
                             || (bot.slots[slot] && bot.slots[slot].name !== itemName)) {
-                            const i = bot.locateItem(itemName)
+                            const i = bot.locateItem(itemName, bot.items, { returnHighestLevel: true })
                             if (i !== undefined) await bot.equip(i, slot)
                         }
                     }
