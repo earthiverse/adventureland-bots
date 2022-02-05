@@ -1,5 +1,5 @@
 import AL, { Character, CMData, Constants, Entity, IPosition, ItemName, LimitDCReportData, Mage, Merchant, MonsterName, Paladin, Priest, Ranger, Rogue, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Warrior } from "alclient"
-import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, ITEMS_TO_HOLD, ITEMS_TO_LIST, LOOP_MS, REPLENISHABLES_TO_BUY, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
+import { FRIENDLY_ROGUES, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, ITEMS_TO_BUY, ITEMS_TO_HOLD, ITEMS_TO_LIST, LOOP_MS, REPLENISHABLES_TO_BUY, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMage, magiportStrangerIfNotNearby } from "../base/mage.js"
 import { attackTheseTypesMerchant, doBanking, doEmergencyBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
@@ -939,7 +939,15 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
     })
 
     startAvoidStacking(bot)
-    startBuyLoop(bot)
+
+    if (bot.ctype == "merchant") {
+        // Keep scrolls stocked up to help avoid the inventory from filling up
+        const replenishables = [...REPLENISHABLES_TO_BUY]
+        replenishables.push(["cscroll0", 200], ["cscroll1", 20], ["cscroll2", 2], ["scroll0", 200], ["scroll1", 20], ["scroll2", 2])
+        startBuyLoop(bot, ITEMS_TO_BUY, REPLENISHABLES_TO_BUY)
+    } else {
+        startBuyLoop(bot)
+    }
     startCompoundLoop(bot)
     startCraftLoop(bot)
     if (bot.ctype !== "merchant") startElixirLoop(bot, "elixirluck")
