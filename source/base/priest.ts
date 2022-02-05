@@ -3,6 +3,7 @@ import FastPriorityQueue from "fastpriorityqueue"
 import { LOOP_MS } from "./general.js"
 
 export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], friends: Character[] = [], options: {
+    disableGhostLifeEssenceFarm?: boolean
     healStrangers?: boolean
     targetingPartyMember?: boolean
     targetingPlayer?: string
@@ -50,17 +51,17 @@ export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], 
         return
     }
 
-    // NOTE: Apparently this doesn't work!?
-    // // Heal entities that drop on hit if they are damaged
-    // for (const entity of bot.getEntities({ withinRange: bot.range })) {
-    //     if (!entity.drop_on_hit) continue
-    //     if (entity.hp == entity.max_hp) continue
-
-    //     await bot.heal(entity.id)
-    //     return
-    // }
-
     if (bot.isOnCooldown("scare")) return
+
+    // Heal ghost to farm life essence
+    if (!options.disableGhostLifeEssenceFarm && types.includes("ghost")) {
+        for (const entity of bot.getEntities({ type: "ghost", withinRange: bot.range })) {
+            if (entity.s.healed) continue
+
+            await bot.heal(entity.id)
+            return
+        }
+    }
 
     const attackPriority = (a: Entity, b: Entity): boolean => {
         // Order in array
