@@ -323,12 +323,26 @@ function prepareMage(bot: Mage) {
         },
         tiger: {
             attack: async () => {
-                if (bot.slots.offhand) await bot.unequip("offhand")
-                if (bot.slots.mainhand) await bot.unequip("mainhand")
+                const tiger = bot.getEntity({ returnNearest: true, type: "tiger" })
+                if (tiger) {
+                    if (bot.slots.offhand && bot.slots.offhand.l) await bot.unequip("offhand")
+                    if (bot.slots.mainhand && bot.slots.mainhand.l) await bot.unequip("mainhand")
+                    // if (bot.slots.helmet && bot.slots.helmet.l) await bot.unequip("helmet")
+                    // if (bot.slots.chest && bot.slots.chest.l) await bot.unequip("chest")
+                    // if (bot.slots.pants && bot.slots.pants.l) await bot.unequip("pants")
+                    // if (bot.slots.shoes && bot.slots.shoes.l) await bot.unequip("shoes")
+                    // if (bot.slots.gloves && bot.slots.gloves.l) await bot.unequip("gloves")
+                    if (bot.slots.orb && bot.slots.orb.l) await bot.unequip("orb")
+                    // if (bot.slots.amulet && bot.slots.amulet.l) await bot.unequip("amulet")
+                    // if (bot.slots.earring1 && bot.slots.earring1.l) await bot.unequip("earring1")
+                    // if (bot.slots.earring2 && bot.slots.earring2.l) await bot.unequip("earring2")
+                    // if (bot.slots.ring1 && bot.slots.ring1.l) await bot.unequip("ring1")
+                    // if (bot.slots.ring2 && bot.slots.ring2.l) await bot.unequip("ring2")
+                    // if (bot.slots.cape && bot.slots.cape.l) await bot.unequip("cape")
+                }
                 await attackTheseTypesMage(bot, ["tiger"], information.friends)
             },
             attackWhileIdle: true,
-            equipment: { orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "tiger") }
         },
         tortoise: {

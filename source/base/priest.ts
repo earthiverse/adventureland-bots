@@ -50,14 +50,15 @@ export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], 
         return
     }
 
-    // Heal entities that drop on hit if they are damaged
-    for (const entity of bot.getEntities({ withinRange: bot.range })) {
-        if (!entity.drop_on_hit) continue
-        if (entity.hp == entity.max_hp) continue
+    // NOTE: Apparently this doesn't work!?
+    // // Heal entities that drop on hit if they are damaged
+    // for (const entity of bot.getEntities({ withinRange: bot.range })) {
+    //     if (!entity.drop_on_hit) continue
+    //     if (entity.hp == entity.max_hp) continue
 
-        await bot.heal(entity.id)
-        return
-    }
+    //     await bot.heal(entity.id)
+    //     return
+    // }
 
     if (bot.isOnCooldown("scare")) return
 
