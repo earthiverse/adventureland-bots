@@ -71,7 +71,7 @@ function prepareMerchant(bot: Merchant) {
 }
 
 function preparePriest(bot: Priest) {
-    const maxAttackSpeedEquipment: { [T in SlotType]?: ItemName } = { amulet: "intamulet", belt: "intbelt", cape: "angelwings", chest: "wattire", earring1: "cearring", earring2: "cearring", gloves: "wgloves", helmet: "wcap", mainhand: "wand", orb: "jacko", pants: "wbreeches", ring1: "cring", ring2: "cring", shoes: "wshoes" }
+    const maxAttackSpeedEquipment: { [T in SlotType]?: ItemName } = { amulet: "intamulet", belt: "intbelt", cape: "angelwings", chest: "wattire", earring1: "cearring", earring2: "cearring", gloves: "wgloves", helmet: "wcap", mainhand: "wand", orb: "jacko", pants: "wbreeches", ring1: "cring", ring2: "cring", shoes: "wingedboots" }
     const maxDamageEquipment: { [T in SlotType]?: ItemName } = { ...maxAttackSpeedEquipment, mainhand: "firestaff", offhand: "wbook1" }
 
     const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
