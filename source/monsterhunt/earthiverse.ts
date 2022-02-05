@@ -519,7 +519,14 @@ function preparePriest(bot: Priest) {
                 await attackTheseTypesPriest(bot, ["tiger"], information.friends, { targetingPartyMember: true })
             },
             attackWhileIdle: true,
-            move: async () => { await goToSpecialMonster(bot, "tiger", { requestMagiport: true }) }
+            move: async () => {
+                const tiger = bot.getEntity({ returnNearest: true, type: "tiger" })
+                if (tiger) {
+                    bot.smartMove(tiger, { getWithin: 10 })
+                } else {
+                    await goToSpecialMonster(bot, "tiger", { requestMagiport: true })
+                }
+            }
         },
         tortoise: {
             attack: async () => { await attackTheseTypesPriest(bot, ["tortoise", "phoenix"], information.friends) },
