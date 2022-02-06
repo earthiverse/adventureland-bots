@@ -234,6 +234,12 @@ function prepareMage(bot: Mage) {
             equipment: maxDamageEquipment,
             move: async () => { await goToSpecialMonster(bot, "mvampire") },
         },
+        pinkgoo: {
+            attack: async () => { await attackTheseTypesMage(bot, ["pinkgoo"], information.friends) },
+            attackWhileIdle: true,
+            equipment: maxAttackSpeedEquipment,
+            move: async () => { await goToSpecialMonster(bot, "pinkgoo") },
+        },
         poisio: {
             attack: async () => { await attackTheseTypesMage(bot, ["poisio"], information.friends) },
             attackWhileIdle: true,

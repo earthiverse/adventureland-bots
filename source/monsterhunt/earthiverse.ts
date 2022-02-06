@@ -404,6 +404,12 @@ function preparePriest(bot: Priest) {
             equipment: maxDamageEquipment,
             move: async () => { await goToSpecialMonster(bot, "phoenix", { requestMagiport: true }) },
         },
+        pinkgoo: {
+            attack: async () => { await attackTheseTypesPriest(bot, ["pinkgoo"], information.friends) },
+            attackWhileIdle: true,
+            equipment: maxDamageEquipment,
+            move: async () => { await goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true }) },
+        },
         plantoid: {
             attack: async () => { await attackTheseTypesPriest(bot, ["plantoid"], information.friends) },
             equipment: maxDamageEquipment,
@@ -864,6 +870,12 @@ function prepareRanger(bot: Ranger) {
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
             move: async () => { await goToSpecialMonster(bot, "phoenix", { requestMagiport: true }) },
+        },
+        pinkgoo: {
+            attack: async () => { return attackTheseTypesRanger(bot, ["pinkgoo"], information.friends) },
+            attackWhileIdle: true,
+            equipment: maxAttackSpeedEquipment,
+            move: async () => { await goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true }) },
         },
         plantoid: {
             attack: async () => { return attackTheseTypesRanger(bot, ["plantoid"], information.friends) },
@@ -1414,6 +1426,12 @@ function prepareWarrior(bot: Warrior) {
             attackWhileIdle: true,
             equipment: burnEquipment,
             move: async () => { await goToSpecialMonster(bot, "phoenix", { requestMagiport: true }) },
+        },
+        pinkgoo: {
+            attack: async () => { await attackTheseTypesWarrior(bot, ["pinkgoo", "arcticbee", "bbpompom", "bee", "boar", "crab", "crabx", "croc", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "wolf", "wolfie"], information.friends) },
+            attackWhileIdle: true,
+            equipment: burnEquipment,
+            move: async () => { await goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true }) },
         },
         plantoid: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["plantoid"], information.friends, { maximumTargets: 1 }) },
