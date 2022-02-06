@@ -1119,7 +1119,7 @@ function prepareWarrior(bot: Warrior) {
             move: async () => { await goToNearestWalkableToMonster(bot, ["croc"], { map: "main", x: 781, y: 1710 }) },
         },
         cutebee: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["cutebee"], information.friends) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["cutebee", "bee", "crab", "croc", "goo", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad"], information.friends) },
             attackWhileIdle: true,
             equipment: burnEquipment,
             move: async () => {
@@ -1139,8 +1139,10 @@ function prepareWarrior(bot: Warrior) {
         dragold: {
             attack: async () => {
                 const dragold = bot.getEntity({ returnNearest: true, type: "dragold" })
+                const priest = bot.players.get(information.bot1.name)
                 if (dragold
                     && bot.party && !bot.partyData.list.includes[dragold.target] // It's not targeting someone in our party
+                    && priest && AL.Tools.distance(bot, priest) < priest.range
                     && bot.canUse("scare", { ignoreEquipped: true })) {
                     if (bot.canUse("taunt") && AL.Tools.distance(dragold, bot) < bot.G.skills.taunt.range) bot.taunt(dragold.id)
                     else if (bot.canUse("agitate") && AL.Tools.distance(bot, dragold) < bot.G.skills.agitate.range) bot.agitate()
@@ -1174,8 +1176,10 @@ function prepareWarrior(bot: Warrior) {
         franky: {
             attack: async () => {
                 const franky = bot.getEntity({ returnNearest: true, type: "franky" })
+                const priest = bot.players.get(information.bot1.name)
                 if (franky
                     && bot.party && !bot.partyData.list.includes[franky.target] // It's not targeting someone in our party
+                    && priest && AL.Tools.distance(bot, priest) < priest.range
                     && bot.canUse("scare", { ignoreEquipped: true })) {
                     if (bot.canUse("taunt") && AL.Tools.distance(franky, bot) < bot.G.skills.taunt.range) bot.taunt(franky.id)
                 }
@@ -1574,7 +1578,7 @@ function prepareWarrior(bot: Warrior) {
             move: async () => { await goToNearestWalkableToMonster(bot, ["tortoise"], { map: "main", x: -1144, y: 1118 }) },
         },
         wabbit: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["wabbit"], information.friends) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["wabbit", "arcticbee", "bbpompom", "bee", "boar", "crab", "crabx", "croc", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "wolf", "wolfie"], information.friends) },
             attackWhileIdle: true,
             equipment: burnEquipment,
             move: async () => { await goToSpecialMonster(bot, "wabbit", { requestMagiport: true }) },
