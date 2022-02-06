@@ -1178,10 +1178,9 @@ function prepareWarrior(bot: Warrior) {
                     && bot.party && !bot.partyData.list.includes[franky.target] // It's not targeting someone in our party
                     && bot.canUse("scare", { ignoreEquipped: true })) {
                     if (bot.canUse("taunt") && AL.Tools.distance(franky, bot) < bot.G.skills.taunt.range) bot.taunt(franky.id)
-                    else if (bot.canUse("agitate") && AL.Tools.distance(bot, franky) < bot.G.skills.agitate.range) bot.agitate()
                 }
-                await attackTheseTypesWarrior(bot, ["nerfedmummy", "franky"], information.friends) },
-            equipment: burnEquipment,
+                await attackTheseTypesWarrior(bot, ["nerfedmummy", "franky"], information.friends, { disableAgitate: true, disableCleave: true }) },
+            equipment: aoeEquipment,
             move: async () => {
                 await goToSpecialMonster(bot, "franky", { requestMagiport: true })
             },

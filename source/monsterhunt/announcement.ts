@@ -37,8 +37,8 @@ const information: Information = {
 }
 
 function prepareMage(bot: Mage) {
-    const maxAttackSpeedEquipment: { [T in SlotType]?: ItemName } = { amulet: "intamulet", belt: "intbelt", cape: "cape", chest: "wattire", gloves: "wgloves", helmet: "wcap", mainhand: "wand", offhand: "wbook0", orb: "jacko", pants: "wbreeches", shoes: "wshoes" }
-    const maxDamageEquipment: { [T in SlotType]?: ItemName } = { ...maxAttackSpeedEquipment, "mainhand": "firestaff" }
+    const maxAttackSpeedEquipment: { [T in SlotType]?: ItemName } = { amulet: "intamulet", belt: "intbelt", cape: "cape", chest: "wattire", gloves: "wgloves", helmet: "wcap", mainhand: "wand", offhand: "wbookhs", orb: "jacko", pants: "wbreeches", shoes: "wshoes" }
+    const maxDamageEquipment: { [T in SlotType]?: ItemName } = { ...maxAttackSpeedEquipment, "mainhand": "firestaff", offhand: "wbook0" }
 
     const strategy: Strategy = {
         defaultTarget: "squigtoad",
