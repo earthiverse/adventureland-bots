@@ -136,6 +136,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
         const agitateTargets: Entity[] = []
         let avoidAgitate = false
         for (const entity of bot.getEntities({
+            canDamage: true,
             withinRange: bot.G.skills.agitate.range,
         })) {
             if (entity.target == bot.id) continue // Already targeting me
@@ -325,7 +326,7 @@ export function startChargeLoop(bot: Warrior): void {
             console.error(e)
         }
 
-        bot.timeouts.set("chargeloop", setTimeout(async () => { chargeLoop() }, Math.max(LOOP_MS, bot.getCooldown("charge"))))
+        bot.timeouts.set("chargeLoop", setTimeout(async () => { chargeLoop() }, Math.max(LOOP_MS, bot.getCooldown("charge"))))
     }
     chargeLoop()
 }
@@ -352,7 +353,7 @@ export function startHardshellLoop(bot: Warrior): void {
             console.error(e)
         }
 
-        bot.timeouts.set("hardshellloop", setTimeout(async () => { hardshellLoop() }, Math.max(LOOP_MS, bot.getCooldown("hardshell"))))
+        bot.timeouts.set("hardshellLoop", setTimeout(async () => { hardshellLoop() }, Math.max(LOOP_MS, bot.getCooldown("hardshell"))))
     }
     hardshellLoop()
 }
@@ -367,7 +368,7 @@ export function startWarcryLoop(bot: Warrior): void {
             console.error(e)
         }
 
-        bot.timeouts.set("warcryloop", setTimeout(async () => { warcryLoop() }, Math.max(LOOP_MS, bot.getCooldown("warcry"))))
+        bot.timeouts.set("warcryLoop", setTimeout(async () => { warcryLoop() }, Math.max(LOOP_MS, bot.getCooldown("warcry"))))
     }
     warcryLoop()
 }

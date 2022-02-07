@@ -493,7 +493,7 @@ function preparePriest(bot: Priest) {
             move: async () => { await bot.smartMove({ map: "main", x: -1155, y: 422 }) },
         },
         stompy: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends, { targetingPartyMember: true }) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends) },
             equipment: maxDamageEquipment,
             move: async () => { await goToSpecialMonster(bot, "stompy", { requestMagiport: true }) }
         },
@@ -1612,7 +1612,7 @@ function prepareWarrior(bot: Warrior) {
                     if (bot.slots.ring2 && bot.slots.ring2.l) await bot.unequip("ring2")
                     if (bot.slots.cape && bot.slots.cape.l) await bot.unequip("cape")
                 }
-                await attackTheseTypesWarrior(bot, ["tiger", "arcticbee", "bat", "bbpompom", "bee", "boar", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "wolf", "wolfie"], information.friends, { disableAgitate: true, disableCleave: true })
+                await attackTheseTypesWarrior(bot, ["tiger", "arcticbee", "bat", "bbpompom", "bee", "boar", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "wolf", "wolfie"], information.friends, { disableAgitate: true, disableCleave: true, disableStomp: true })
             },
             attackWhileIdle: true,
             move: async () => {

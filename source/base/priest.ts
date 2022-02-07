@@ -96,6 +96,7 @@ export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], 
 
     const targets = new FastPriorityQueue<Entity>(attackPriority)
     for (const entity of bot.getEntities({
+        canDamage: true,
         couldGiveCredit: true,
         targetingPartyMember: options.targetingPartyMember,
         targetingPlayer: options.targetingPlayer,
@@ -153,7 +154,7 @@ export function startDarkBlessingLoop(bot: Priest): void {
             console.error(e)
         }
 
-        bot.timeouts.set("darkblessingloop", setTimeout(async () => { darkBlessingLoop() }, Math.max(LOOP_MS, bot.getCooldown("darkblessing"))))
+        bot.timeouts.set("darkblessingLoop", setTimeout(async () => { darkBlessingLoop() }, Math.max(LOOP_MS, bot.getCooldown("darkblessing"))))
     }
     darkBlessingLoop()
 }
@@ -164,7 +165,7 @@ export function startPartyHealLoop(bot: Priest, friends: Character[] = []): void
             if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.c.town) {
-                bot.timeouts.set("partyhealloop", setTimeout(async () => { partyHealLoop() }, bot.c.town.ms))
+                bot.timeouts.set("partyhealLoop", setTimeout(async () => { partyHealLoop() }, bot.c.town.ms))
                 return
             }
 
@@ -199,7 +200,7 @@ export function startPartyHealLoop(bot: Priest, friends: Character[] = []): void
             console.error(e)
         }
 
-        bot.timeouts.set("partyhealloop", setTimeout(async () => { partyHealLoop() }, Math.max(bot.getCooldown("partyheal"), LOOP_MS)))
+        bot.timeouts.set("partyhealLoop", setTimeout(async () => { partyHealLoop() }, Math.max(bot.getCooldown("partyheal"), LOOP_MS)))
     }
     partyHealLoop()
 }

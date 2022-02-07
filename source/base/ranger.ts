@@ -50,6 +50,7 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
     const threeShotTargets = new FastPriorityQueue<Entity>(priority)
     const fiveShotTargets = new FastPriorityQueue<Entity>(priority)
     for (const entity of bot.getEntities({
+        canDamage: true,
         couldGiveCredit: true,
         targetingPartyMember: options.targetingPartyMember,
         targetingPlayer: options.targetingPlayer,

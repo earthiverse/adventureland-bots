@@ -25,6 +25,7 @@ export async function attackTheseTypesMerchant(bot: Merchant, types: MonsterName
 
     const targets: Entity[] = []
     for (const entity of bot.getEntities({
+        canDamage: true,
         couldGiveCredit: true,
         typeList: types,
         willDieToProjectiles: false,

@@ -1,4 +1,4 @@
-import AL, { Character, Constants, Entity, Mage, MonsterName, Paladin, Tools } from "alclient"
+import AL, { Character, Entity, Mage, MonsterName, Paladin } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 
 export async function attackTheseTypesPaladin(bot: Paladin, types: MonsterName[], friends: Character[] = [], options: {
@@ -43,6 +43,7 @@ export async function attackTheseTypesPaladin(bot: Paladin, types: MonsterName[]
     if (bot.canUse("attack")) {
         const targets = new FastPriorityQueue<Entity>(attackPriority)
         for (const entity of bot.getEntities({
+            canDamage: true,
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,

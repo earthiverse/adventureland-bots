@@ -47,6 +47,7 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
     if (bot.canUse("attack")) {
         const targets = new FastPriorityQueue<Entity>(attackPriority)
         for (const entity of bot.getEntities({
+            canDamage: true,
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
@@ -92,6 +93,7 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
         // Cburst low HP monsters
         let mpNeeded = bot.G.skills.cburst.mp + bot.mp_cost
         for (const entity of bot.getEntities({
+            canDamage: true,
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
@@ -150,6 +152,7 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
         if (strangerNearby) {
             // Cburst monsters to kill steal
             for (const entity of bot.getEntities({
+                canDamage: true,
                 couldGiveCredit: true,
                 willDieToProjectiles: true,
                 withinRange: bot.range

@@ -48,6 +48,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
     if (bot.canUse("mentalburst")) {
         const targets: Entity[] = []
         for (const entity of bot.getEntities({
+            canDamage: true,
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
