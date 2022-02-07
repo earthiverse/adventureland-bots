@@ -348,6 +348,7 @@ function prepareMage(bot: Mage) {
         //             if (bot.slots.ring1 && bot.slots.ring1.l) await bot.unequip("ring1")
         //             if (bot.slots.ring2 && bot.slots.ring2.l) await bot.unequip("ring2")
         //             if (bot.slots.cape && bot.slots.cape.l) await bot.unequip("cape")
+        //             if (bot.slots.belt && bot.slots.belt.l) await bot.unequip("belt")
         //         }
         //         await attackTheseTypesMage(bot, ["tiger"], information.friends)
         //     },

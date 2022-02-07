@@ -525,6 +525,7 @@ function preparePriest(bot: Priest) {
         //             if (bot.slots.ring1 && bot.slots.ring1.l) await bot.unequip("ring1")
         //             if (bot.slots.ring2 && bot.slots.ring2.l) await bot.unequip("ring2")
         //             if (bot.slots.cape && bot.slots.cape.l) await bot.unequip("cape")
+        //             if (bot.slots.belt && bot.slots.belt.l) await bot.unequip("belt")
         //         }
         //         await attackTheseTypesPriest(bot, ["tiger"], information.friends)
         //     },
@@ -1015,6 +1016,7 @@ function prepareRanger(bot: Ranger) {
                     if (bot.slots.ring1 && bot.slots.ring1.l) await bot.unequip("ring1")
                     if (bot.slots.ring2 && bot.slots.ring2.l) await bot.unequip("ring2")
                     if (bot.slots.cape && bot.slots.cape.l) await bot.unequip("cape")
+                    if (bot.slots.belt && bot.slots.belt.l) await bot.unequip("belt")
                 }
                 await attackTheseTypesRanger(bot, ["tiger", "arcticbee", "bat", "bbpompom", "bee", "boar", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "wolf", "wolfie"], information.friends)
             },
@@ -1611,6 +1613,7 @@ function prepareWarrior(bot: Warrior) {
                     if (bot.slots.ring1 && bot.slots.ring1.l) await bot.unequip("ring1")
                     if (bot.slots.ring2 && bot.slots.ring2.l) await bot.unequip("ring2")
                     if (bot.slots.cape && bot.slots.cape.l) await bot.unequip("cape")
+                    if (bot.slots.belt && bot.slots.belt.l) await bot.unequip("belt")
                 }
                 await attackTheseTypesWarrior(bot, ["tiger", "arcticbee", "bat", "bbpompom", "bee", "boar", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "wolf", "wolfie"], information.friends, { disableAgitate: true, disableCleave: true, disableStomp: true })
             },
