@@ -1,14 +1,14 @@
-import AL, { GMap, IPosition, ItemName, Merchant, Rogue, ServerInfoDataLive, SlotType } from "alclient"
+import AL, { IPosition, ItemName, Merchant, Rogue, ServerInfoDataLive, SlotType } from "alclient"
 import { goToNearestWalkableToMonster, goToNPC, goToSpecialMonster, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
 import { mainBeesNearTunnel } from "../base/locations.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { attackTheseTypesRogue } from "../base/rogue.js"
-import { getTargetServerFromMonsters } from "../base/serverhop.js"
+import { getTargetServerFromPlayer } from "../base/serverhop.js"
 import { Information, Strategy } from "../definitions/bot.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startRogue, startMerchant } from "./shared.js"
 
-const TARGET_REGION = DEFAULT_REGION
-const TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
+let TARGET_REGION = DEFAULT_REGION
+let TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
 
 const information: Information = {
     friends: [undefined, undefined, undefined, undefined],
@@ -310,74 +310,56 @@ async function run() {
     }
     startRogue3Loop().catch(() => { /* ignore errors */ })
 
-    // const lastServerChangeTime = Date.now()
-    // const serverLoop = async () => {
-    //     try {
-    //         console.log("DEBUG: Checking target server...")
-    //         // We haven't logged in yet
-    //         if (!information.bot1.bot) {
-    //             console.log("DEBUG: We haven't logged in yet")
-    //             setTimeout(async () => { serverLoop() }, 1000)
-    //             return
-    //         }
+    let lastServerChangeTime = Date.now()
+    const serverLoop = async () => {
+        try {
+            console.log("DEBUG: Checking target server...")
+            // We haven't logged in yet
+            if (!information.bot1.bot) {
+                console.log("DEBUG: We haven't logged in yet")
+                setTimeout(async () => { serverLoop() }, 1000)
+                return
+            }
 
-    //         // Don't change servers too fast
-    //         if (lastServerChangeTime > Date.now() - AL.Constants.RECONNECT_TIMEOUT_MS) {
-    //             console.log("DEBUG: Don't change servers too fast")
-    //             setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime + AL.Constants.RECONNECT_TIMEOUT_MS - Date.now()))
-    //             return
-    //         }
+            // Don't change servers too fast
+            if (lastServerChangeTime > Date.now() - AL.Constants.RECONNECT_TIMEOUT_MS) {
+                console.log("DEBUG: Don't change servers too fast")
+                setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime + AL.Constants.RECONNECT_TIMEOUT_MS - Date.now()))
+                return
+            }
 
-    //         // Don't change servers if we're currently attacking something special.
-    //         if ((!information.bot1.bot.S?.halloween && !information.bot1.bot.S?.holidayseason)
-    //             && (AL.Constants.SPECIAL_MONSTERS.includes(information.bot1.target)
-    //             || AL.Constants.SPECIAL_MONSTERS.includes(information.bot2.target)
-    //             || AL.Constants.SPECIAL_MONSTERS.includes(information.bot3.target))) {
-    //             console.log(`DEBUG: We are targeting something special (${information.bot1.target}, ${information.bot2.target}, ${information.bot3.target})`)
-    //             setTimeout(async () => { serverLoop() }, 1000)
-    //             return
-    //         }
+            const currentRegion = information.bot1.bot.server.region
+            const currentIdentifier = information.bot1.bot.server.name
 
-    //         // Don't change servers if we're running a crypt
-    //         const merchantMap: GMap = AL.Game.G.maps[information.merchant?.bot?.map]
-    //         if (merchantMap && merchantMap.instance) {
-    //             console.log("DEBUG: Merchant is in an instance")
-    //             setTimeout(async () => { serverLoop() }, 1000)
-    //             return
-    //         }
+            const targetServer = await getTargetServerFromPlayer(currentRegion, currentIdentifier, partyLeader)
+            if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
+                // We're already on the correct server
+                console.log("DEBUG: We're already on the correct server")
+                setTimeout(async () => { serverLoop() }, 1000)
+                return
+            }
 
-    //         const currentRegion = information.bot1.bot.server.region
-    //         const currentIdentifier = information.bot1.bot.server.name
+            // Change servers to attack this entity
+            TARGET_REGION = targetServer[0]
+            TARGET_IDENTIFIER = targetServer[1]
+            console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${TARGET_REGION} ${TARGET_IDENTIFIER}`)
 
-    //         const targetServer = await getTargetServerFromMonsters(AL.Game.G, DEFAULT_REGION, DEFAULT_IDENTIFIER, ["mrpumpkin", "mrgreen"])
-    //         if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
-    //             // We're already on the correct server
-    //             console.log("DEBUG: We're already on the correct server")
-    //             setTimeout(async () => { serverLoop() }, 1000)
-    //             return
-    //         }
+            // Sleep to give a chance to loot
+            await sleep(5000)
 
-    //         // Change servers to attack this entity
-    //         TARGET_REGION = targetServer[0]
-    //         TARGET_IDENTIFIER = targetServer[1]
-    //         console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${TARGET_REGION} ${TARGET_IDENTIFIER}`)
-
-    //         // Sleep to give a chance to loot
-    //         await sleep(5000)
-
-    //         // Disconnect everyone
-    //         console.log("Disconnecting characters")
-    //         information.bot1.bot.disconnect(),
-    //         information.bot2.bot?.disconnect(),
-    //         information.bot3.bot?.disconnect(),
-    //         information.merchant.bot?.disconnect()
-    //         await sleep(5000)
-    //         lastServerChangeTime = Date.now()
-    //     } catch (e) {
-    //         console.error(e)
-    //     }
-    //     setTimeout(async () => { serverLoop() }, 1000)
-    // }
-    // serverLoop()
+            // Disconnect everyone
+            console.log("Disconnecting characters")
+            information.bot1.bot.disconnect(),
+            information.bot2.bot?.disconnect(),
+            information.bot3.bot?.disconnect(),
+            information.merchant.bot?.disconnect()
+            await sleep(5000)
+            lastServerChangeTime = Date.now()
+        } catch (e) {
+            console.error(e)
+        }
+        setTimeout(async () => { serverLoop() }, 1000)
+    }
+    serverLoop()
 }
 run()

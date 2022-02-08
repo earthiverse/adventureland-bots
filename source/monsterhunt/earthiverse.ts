@@ -9,8 +9,8 @@ import { attackTheseTypesWarrior } from "../base/warrior.js"
 import { Information, Strategy } from "../definitions/bot.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMerchant, startPriest, startRanger, startWarrior } from "./shared.js"
 
-const TARGET_REGION = DEFAULT_REGION
-const TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
+let TARGET_REGION = DEFAULT_REGION
+let TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
 
 const information: Information = {
     friends: [undefined, undefined, undefined, undefined],
@@ -1803,76 +1803,77 @@ async function run() {
     }
     startWarriorLoop().catch(() => { /* ignore errors */ })
 
-    // let lastServerChangeTime = Date.now()
-    // const serverLoop = async () => {
-    //     try {
-    //         console.log("DEBUG: Checking target server...")
-    //         // We haven't logged in yet
-    //         if (!information.bot1.bot) {
-    //             console.log("DEBUG: We haven't logged in yet")
-    //             setTimeout(async () => { serverLoop() }, 1000)
-    //             return
-    //         }
+    let lastServerChangeTime = Date.now()
+    const serverLoop = async () => {
+        try {
+            console.log("DEBUG: Checking target server...")
+            // We haven't logged in yet
+            if (!information.bot1.bot) {
+                console.log("DEBUG: We haven't logged in yet")
+                setTimeout(async () => { serverLoop() }, 1000)
+                return
+            }
 
-    //         // Don't change servers too fast
-    //         if (lastServerChangeTime > Date.now() - AL.Constants.RECONNECT_TIMEOUT_MS) {
-    //             console.log("DEBUG: Don't change servers too fast")
-    //             setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime + AL.Constants.RECONNECT_TIMEOUT_MS - Date.now()))
-    //             return
-    //         }
+            // Don't change servers too fast
+            if (lastServerChangeTime > Date.now() - AL.Constants.RECONNECT_TIMEOUT_MS) {
+                console.log("DEBUG: Don't change servers too fast")
+                setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime + AL.Constants.RECONNECT_TIMEOUT_MS - Date.now()))
+                return
+            }
 
-    //         // Don't change servers if we're running a crypt
-    //         const merchantMap: GMap = AL.Game.G.maps[information.merchant?.bot?.map]
-    //         if (merchantMap?.instance) {
-    //             console.log("DEBUG: Merchant is in an instance")
-    //             setTimeout(async () => { serverLoop() }, 1000)
-    //             return
-    //         }
+            // Don't change servers if we're running a crypt
+            const merchantMap: GMap = AL.Game.G.maps[information.merchant?.bot?.map]
+            if (merchantMap?.instance) {
+                console.log("DEBUG: Merchant is in an instance")
+                setTimeout(async () => { serverLoop() }, 1000)
+                return
+            }
 
-    //         const currentRegion = information.bot1.bot.server.region
-    //         const currentIdentifier = information.bot1.bot.server.name
-    //         const G = information.bot1.bot.G
+            const currentRegion = information.bot1.bot.server.region
+            const currentIdentifier = information.bot1.bot.server.name
+            const G = information.bot1.bot.G
 
-    //         const targetServer = await getTargetServerFromMonsters(G, DEFAULT_REGION, DEFAULT_IDENTIFIER)
+            const targetServer = await getTargetServerFromMonsters(G, DEFAULT_REGION, DEFAULT_IDENTIFIER)
 
-    //         // Don't change servers if we're currently attacking something special. (unless it's an event monster)
-    //         if ((AL.Constants.SPECIAL_MONSTERS.includes(information.bot1.target) || AL.Constants.SPECIAL_MONSTERS.includes(information.bot2.target) || AL.Constants.SPECIAL_MONSTERS.includes(information.bot3.target)) // We're targeting a special monster
-    //             && !(information.bot1.bot.S?.halloween && ["mrgreen", "mrpumpkin", "slenderman"].includes(targetServer[2])) // Switch servers right away for special Halloween monsters
-    //             && !(information.bot1.bot.S?.holidayseason && ["grinch", "snowman"].includes(targetServer[2])) // Switch servers right away for special Christmas monsters
-    //             && !(information.bot1.bot.S?.lunarnewyear && ["dragold", "tiger"].includes(targetServer[2])) // Switch servers right away for special Lunar New Year monsters
-    //         ) {
-    //             setTimeout(async () => { serverLoop() }, 1000)
-    //             return
-    //         }
+            // Don't change servers if we're currently attacking something special. (unless it's an event monster)
+            if ((AL.Constants.SPECIAL_MONSTERS.includes(information.bot1.target) || AL.Constants.SPECIAL_MONSTERS.includes(information.bot2.target) || AL.Constants.SPECIAL_MONSTERS.includes(information.bot3.target)) // We're targeting a special monster
+                && !(information.bot1.bot.S?.halloween && ["mrgreen", "mrpumpkin", "slenderman"].includes(targetServer[2])) // Switch servers right away for special Halloween monsters
+                && !(information.bot1.bot.S?.holidayseason && ["grinch", "snowman"].includes(targetServer[2])) // Switch servers right away for special Christmas monsters
+                && !(information.bot1.bot.S?.lunarnewyear && ["dragold", "tiger"].includes(targetServer[2])) // Switch servers right away for special Lunar New Year monsters
+                && !(information.bot1.bot.S?.valentines && ["pinkgoo"].includes(targetServer[2])) // Switch servers right away for special Valentines monsters
+            ) {
+                setTimeout(async () => { serverLoop() }, 1000)
+                return
+            }
 
-    //         if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
-    //             // We're already on the correct server
-    //             console.log("DEBUG: We're already on the correct server")
-    //             setTimeout(async () => { serverLoop() }, 1000)
-    //             return
-    //         }
+            if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
+                // We're already on the correct server
+                console.log("DEBUG: We're already on the correct server")
+                setTimeout(async () => { serverLoop() }, 1000)
+                return
+            }
 
-    //         // Change servers to attack this entity
-    //         TARGET_REGION = targetServer[0]
-    //         TARGET_IDENTIFIER = targetServer[1]
-    //         console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${TARGET_REGION} ${TARGET_IDENTIFIER}`)
+            // Change servers to attack this entity
+            TARGET_REGION = targetServer[0]
+            TARGET_IDENTIFIER = targetServer[1]
+            console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${TARGET_REGION} ${TARGET_IDENTIFIER}`)
 
-    //         // Sleep to give a chance to loot
-    //         await sleep(5000)
+            // Sleep to give a chance to loot
+            await sleep(5000)
 
-    //         // Disconnect everyone
-    //         console.log("Disconnecting characters")
-    //         information.bot1.bot.disconnect()
-    //         information.bot2.bot?.disconnect()
-    //         information.bot3.bot?.disconnect()
-    //         information.merchant.bot?.disconnect()
-    //         await sleep(5000)
-    //         lastServerChangeTime = Date.now()
-    //     } catch (e) {
-    //         console.error(e)
-    //     }
-    //     setTimeout(async () => { serverLoop() }, 1000)
-    // }
-    // serverLoop()
+            // Disconnect everyone
+            console.log("Disconnecting characters")
+            information.bot1.bot.disconnect()
+            information.bot2.bot?.disconnect()
+            information.bot3.bot?.disconnect()
+            information.merchant.bot?.disconnect()
+            await sleep(5000)
+            lastServerChangeTime = Date.now()
+        } catch (e) {
+            console.error(e)
+        }
+        setTimeout(async () => { serverLoop() }, 1000)
+    }
+    serverLoop()
 }
 run()
