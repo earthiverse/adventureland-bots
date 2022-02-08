@@ -1067,8 +1067,8 @@ function prepareRanger(bot: Ranger) {
 
 function prepareWarrior(bot: Warrior) {
     const aoeEquipment: { [T in SlotType]?: ItemName } = { amulet: "snring", belt: "strbelt", chest: "coat1", earring1: "strearring", earring2: "strearring", gloves: "gloves1", helmet: "helmet1", mainhand: "vhammer", offhand: "glolipop", orb: "jacko", pants: "pants1", ring1: "strring", ring2: "strring", shoes: "wingedboots" }
-    const burnEquipment: { [T in SlotType]?: ItemName } = { amulet: "snring", belt: "strbelt", chest: "coat1", earring1: "strearring", earring2: "strearring", gloves: "gloves1", helmet: "helmet1", mainhand: "fireblade", offhand: "fireblade", orb: "jacko", pants: "pants1", ring1: "strring", ring2: "strring", shoes: "wingedboots" }
-    const bowEquipment: { [T in SlotType]?: ItemName } = { amulet: "snring", belt: "strbelt", chest: "coat1", earring1: "strearring", earring2: "strearring", gloves: "gloves1", helmet: "helmet1", mainhand: "hbow", orb: "jacko", pants: "pants1", ring1: "strring", ring2: "strring", shoes: "wingedboots" }
+    const burnEquipment: { [T in SlotType]?: ItemName } = { ...aoeEquipment, mainhand: "fireblade", offhand: "fireblade" }
+    const bowEquipment: { [T in SlotType]?: ItemName } = { ...aoeEquipment, mainhand: "hbow" }
     const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
     const strategy: Strategy = {
         defaultTarget: "spider",
