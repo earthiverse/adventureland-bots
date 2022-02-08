@@ -572,10 +572,10 @@ function preparePriest(bot: Priest) {
 
 function prepareRanger(bot: Ranger) {
     const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
-    const maxCritEquipment: { [T in SlotType]?: ItemName } = { chest: "wattire", gloves: "wgloves", helmet: "fury", mainhand: "crossbow", offhand: "t2quiver", orb: "orbofdex", pants: "wbreeches", shoes: "wingedboots" }
-    const maxRangeEquipment: { [T in SlotType]?: ItemName } = { chest: "wattire", gloves: "wgloves", helmet: "cyber", mainhand: "crossbow", offhand: "quiver", orb: "orbofdex", pants: "wbreeches", shoes: "wingedboots" }
-    const maxDamageEquipment: { [T in SlotType]?: ItemName } = { chest: "wattire", gloves: "wgloves", helmet: "cyber", mainhand: "firebow", offhand: "t2quiver", orb: "orbofdex", pants: "wbreeches", shoes: "wingedboots" }
-    const maxAttackSpeedEquipment: { [T in SlotType]?: ItemName } = { chest: "wattire", gloves: "wgloves", helmet: "cyber", mainhand: "hbow", offhand: "t2quiver", orb: "orbofdex", pants: "wbreeches", shoes: "wingedboots" }
+    const maxCritEquipment: { [T in SlotType]?: ItemName } = { amulet: "dexamulet", belt: "dexbelt", cape: "bcape", chest: "wattire", earring1: "dexearring", earring2: "dexearring", gloves: "wgloves", helmet: "fury", mainhand: "crossbow", offhand: "t2quiver", orb: "orbofdex", pants: "wbreeches", ring1: "cring", ring2: "cring", shoes: "wingedboots" }
+    const maxRangeEquipment: { [T in SlotType]?: ItemName } = { ...maxCritEquipment, helmet: "cyber", offhand: "quiver" }
+    const maxDamageEquipment: { [T in SlotType]?: ItemName } = { ...maxCritEquipment, helmet: "cyber", mainhand: "firebow" }
+    const maxAttackSpeedEquipment: { [T in SlotType]?: ItemName } = { ...maxCritEquipment, helmet: "cyber", mainhand: "hbow" }
 
     const strategy: Strategy = {
         defaultTarget: "spider",

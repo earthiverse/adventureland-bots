@@ -1,9 +1,9 @@
-import AL, { Character, ChestData, Entity, GameResponseData, GMap, HitData, IEntity, InviteData, IPosition, ItemData, ItemName, Merchant, MonsterName, NPCName, Player, Tools, TradeSlotType } from "alclient"
+import AL, { Character, Entity, GameResponseData, GMap, HitData, IEntity, InviteData, IPosition, ItemData, ItemName, Merchant, MonsterName, NPCName, Player, Tools, TradeSlotType } from "alclient"
 import { ItemLevelInfo } from "../definitions/bot.js"
 import { bankingPosition, offsetPositionParty } from "./locations.js"
 
 export const LOOP_MS = 100
-export const CHECK_PONTY_EVERY_MS = 10_000 /** 10 seconds */
+export const CHECK_PONTY_EVERY_MS = 30_000 /** 30 seconds */
 export const CHECK_TRACKER_EVERY_MS = 600_000 /** 10 minutes */
 
 export const GOLD_TO_HOLD = 5_000_000
@@ -1274,7 +1274,7 @@ export function startPartyInviteLoop(bot: Character, player: string): void {
             console.error(e)
         }
 
-        bot.timeouts.set("partyinviteloop", setTimeout(async () => { partyInviteLoop() }, 10000))
+        bot.timeouts.set("partyInviteLoop", setTimeout(async () => { partyInviteLoop() }, 10000))
     }
     partyInviteLoop()
 }
@@ -1297,7 +1297,7 @@ export function startPontyLoop(bot: Character, itemsToBuy = ITEMS_TO_BUY): void 
             console.error(e)
         }
 
-        bot.timeouts.set("pontyloop", setTimeout(async () => { pontyLoop() }, 10000))
+        bot.timeouts.set("pontyLoop", setTimeout(async () => { pontyLoop() }, 10000))
     }
     pontyLoop()
 }
