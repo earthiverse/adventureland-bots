@@ -178,6 +178,8 @@ export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
     "bowofthedead": 7, "daggerofthedead": 7, "maceofthedead": 7, "pmaceofthedead": 6, "staffofthedead": 7,
     // Don't use as many offeringp on Christmas stuff
     "candycanesword": 7, "gcape": 7, "merry": 7, "ornamentstaff": 7, "xmace": 7,
+    // Don't use as many offeringp on Tiger stuff
+    "tigerhelmet": 7, "tigershield": 7
 }
 
 export const UPGRADE_COMPOUND_LIMIT: ItemLevelInfo = {
