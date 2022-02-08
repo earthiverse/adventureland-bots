@@ -11,7 +11,7 @@ import { attackTheseTypesPaladin } from "../base/paladin.js"
 
 const DEFAULT_TARGET: MonsterName = "spider"
 
-export const DEFAULT_REGION: ServerRegion = "EU"
+export const DEFAULT_REGION: ServerRegion = "ASIA"
 export const DEFAULT_IDENTIFIER: ServerIdentifier = "I"
 
 export async function getTarget(bot: Character, strategy: Strategy, information: Information): Promise<MonsterName> {
