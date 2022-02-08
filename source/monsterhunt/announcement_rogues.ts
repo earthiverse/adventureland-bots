@@ -136,6 +136,12 @@ function prepareRogue(bot: Rogue) {
             equipment: equipment,
             move: async () => { await goToSpecialMonster(bot, "mvampire") },
         },
+        pinkgoo: {
+            attack: async () => { await attackTheseTypesRogue(bot, ["pinkgoo"], information.friends) },
+            attackWhileIdle: true,
+            equipment: equipment,
+            move: async () => { await goToSpecialMonster(bot, "pinkgoo") },
+        },
         snowman: {
             attack: async () => { await attackTheseTypesRogue(bot, ["snowman"], information.friends) },
             equipment: equipment,
