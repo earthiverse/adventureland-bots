@@ -594,7 +594,7 @@ function prepareWarrior(bot: Warrior) {
 async function run() {
     // Login and prepare pathfinding
     await Promise.all([AL.Game.loginJSONFile("../../credentials_attack.json"), AL.Game.getGData(true)])
-    await AL.Pathfinder.prepare(AL.Game.G)
+    await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 
     // Start all characters
     console.log("Connecting...")

@@ -323,8 +323,8 @@ function preparePriest(bot: Priest) {
             move: async () => {
                 const iceGolem = bot.getEntity({ returnNearest: true, type: "icegolem" })
                 if (!iceGolem) {
-                    if (bot.S.icegolem as ServerInfoDataLive) requestMagiportService(bot, bot.S.icegolem as IPosition)
-                    await bot.smartMove({ map: "winterland", x: 783, y: 277 })
+                    if (bot.S.icegolem as ServerInfoDataLive) await requestMagiportService(bot, bot.S.icegolem as IPosition)
+                    // await bot.smartMove({ map: "winterland", x: 783, y: 277 })
                 }
                 if (iceGolem && !AL.Pathfinder.canWalkPath(bot, iceGolem)) {
                     // Cheat and walk across the water.
@@ -1681,7 +1681,7 @@ function prepareWarrior(bot: Warrior) {
 async function run() {
     // Login and prepare pathfinding
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
-    await AL.Pathfinder.prepare(AL.Game.G)
+    await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 
     // Start all characters
     console.log("Connecting...")

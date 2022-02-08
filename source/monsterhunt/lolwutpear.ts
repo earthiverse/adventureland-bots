@@ -383,7 +383,7 @@ function prepareMerchant(bot: Merchant) {
 async function run() {
     // Login and prepare pathfinding
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
-    await AL.Pathfinder.prepare(AL.Game.G)
+    await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 
     // Start all characters
     console.log("Connecting...")

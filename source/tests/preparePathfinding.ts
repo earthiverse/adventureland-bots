@@ -14,6 +14,11 @@ async function run() {
         console.log(`${roundedX},${roundedY}: ${Pathfinder.canStand({ map: "main", x: roundedX, y: roundedY })}`)
     }
 
+    console.log("Closest to ice golem from")
+    console.log(Pathfinder.findClosestNode("winterland", 717, 276))
+    console.log("Closest to ice golem to")
+    console.log(Pathfinder.findClosestNode("winterland", 734, 351))
+
     AL.Database.disconnect()
 }
 run()
