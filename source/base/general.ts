@@ -190,7 +190,8 @@ export const UPGRADE_COMPOUND_LIMIT: ItemLevelInfo = {
     "test_orb": 0, // No advantages for leveling this item
     "throwingstars": 0, // We're going to craft them in to fiery throwing stars
     "vitring": 2, // Level 2 vitrings are useful for crafting
-    "vorb": 0 // No advantages for leveling this item
+    "vorb": 0, // No advantages for leveling this item
+    "tigercape": 7, "bcape": 7 // I need better capes
 }
 
 export const REPLENISHABLES_TO_BUY: [ItemName, number][] = [
