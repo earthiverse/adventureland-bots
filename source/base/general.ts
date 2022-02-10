@@ -899,7 +899,7 @@ export function startBuyToUpgradeLoop(bot: Character, item: ItemName, quantity: 
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("upgradeloop", setTimeout(async () => { buyToUpgradeLoop() }, LOOP_MS))
+        bot.timeouts.set("upgradeLoop", setTimeout(async () => { buyToUpgradeLoop() }, LOOP_MS))
     }
     buyToUpgradeLoop()
 }
@@ -911,12 +911,12 @@ export function startCompoundLoop(bot: Character, itemsToSell: ItemLevelInfo = I
 
             if (bot.q.compound) {
                 // We are compounding, we have to wait
-                bot.timeouts.set("compoundloop", setTimeout(async () => { compoundLoop() }, bot.q.compound.ms))
+                bot.timeouts.set("compoundLoop", setTimeout(async () => { compoundLoop() }, bot.q.compound.ms))
                 return
             }
             if (bot.map.startsWith("bank")) {
                 // We are in the bank, we have to wait
-                bot.timeouts.set("compoundloop", setTimeout(async () => { compoundLoop() }, LOOP_MS))
+                bot.timeouts.set("compoundLoop", setTimeout(async () => { compoundLoop() }, LOOP_MS))
                 return
             }
 
@@ -978,7 +978,7 @@ export function startCompoundLoop(bot: Character, itemsToSell: ItemLevelInfo = I
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("compoundloop", setTimeout(async () => { compoundLoop() }, LOOP_MS))
+        bot.timeouts.set("compoundLoop", setTimeout(async () => { compoundLoop() }, LOOP_MS))
     }
     compoundLoop()
 }
@@ -1019,7 +1019,7 @@ export function startElixirLoop(bot: Character, elixir: ItemName): void {
             console.error(e)
         }
 
-        bot.timeouts.set("elixirloop", setTimeout(async () => { elixirLoop() }, 1000))
+        bot.timeouts.set("elixirLoop", setTimeout(async () => { elixirLoop() }, 1000))
     }
     elixirLoop()
 }

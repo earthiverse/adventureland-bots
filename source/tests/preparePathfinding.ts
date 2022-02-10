@@ -19,6 +19,15 @@ async function run() {
     console.log("Closest to ice golem to")
     console.log(Pathfinder.findClosestNode("winterland", 734, 351))
 
+    const now1 = performance.now()
+    await Pathfinder.getPath({ map: "main", x: 0, y: 0 }, { map: "spookytown", x: 0, y: 0 })
+    console.log(`Took ${performance.now() - now1}ms to perform the search from main to spookytown.`)
+
+
+    const now2 = performance.now()
+    await Pathfinder.getPath({ map: "main", x: 0, y: 0 }, { map: "main", x: -967, y: -169 })
+    console.log(`Took ${performance.now() - now2}ms to perform the search from main to crab door.`)
+
     AL.Database.disconnect()
 }
 run()
