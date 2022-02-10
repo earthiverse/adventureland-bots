@@ -105,7 +105,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
             let mainhandSlot: number
             const offhand = bot.slots.offhand?.name
             let offhandSlot: number
-            if (!bot.isEquipped("bataxe") && !bot.isEquipped("scythe")) {
+            if (!bot.isEquipped("bataxe") && !bot.isEquipped("scythe") && bot.esize > 0) {
                 const promises: Promise<unknown>[] = []
                 if (offhand) promises.push(bot.unequip("offhand").then((i) => { offhandSlot = i }))
                 mainhandSlot = bot.locateItem("scythe", bot.items, { locked: true })
@@ -115,7 +115,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
             }
 
             // We'll wait, there's a chance cleave could do a lot of damage and kill the entity, so we don't want to waste the attack
-            await bot.cleave()
+            if (bot.canUse("cleave")) await bot.cleave()
 
             // Re-equip if we changed weapons
             const promises: Promise<unknown>[] = []
@@ -259,7 +259,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                     let mainhandSlot: number
                     const offhand = bot.slots.offhand?.name
                     let offhandSlot: number
-                    if (!bot.isEquipped("basher") && !bot.isEquipped("wbasher")) {
+                    if (!bot.isEquipped("basher") && !bot.isEquipped("wbasher") && bot.esize > 0) {
                         const promises: Promise<unknown>[] = []
                         if (offhand) promises.push(bot.unequip("offhand").then((i) => { offhandSlot = i }))
                         mainhandSlot = bot.locateItem("basher", bot.items, { locked: true })
