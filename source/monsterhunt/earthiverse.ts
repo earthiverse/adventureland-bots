@@ -1,5 +1,6 @@
 import AL, { Merchant, Priest, Ranger, Warrior, GMap, ServerInfoDataLive, IPosition, SlotType, ItemName } from "alclient"
 import { goToAggroMonster, goToNearestWalkableToMonster, goToNPC, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, moveInCircle, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
+import { offsetPositionParty } from "../base/locations.js"
 import { attackTheseTypesMerchant } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
@@ -533,7 +534,7 @@ function preparePriest(bot: Priest) {
         //     move: async () => {
         //         const tiger = bot.getEntity({ returnNearest: true, type: "tiger" })
         //         if (tiger) {
-        //             bot.smartMove(tiger, { getWithin: 10 })
+        //             bot.smartMove(offsetPositionParty(tiger, bot), { getWithin: 10 })
         //         } else {
         //             await goToSpecialMonster(bot, "tiger", { requestMagiport: true })
         //         }
@@ -1024,7 +1025,7 @@ function prepareRanger(bot: Ranger) {
             move: async () => {
                 const tiger = bot.getEntity({ returnNearest: true, type: "tiger" })
                 if (tiger) {
-                    bot.smartMove(tiger, { getWithin: 10 })
+                    bot.smartMove(offsetPositionParty(tiger, bot), { getWithin: 10 })
                 } else {
                     await goToSpecialMonster(bot, "tiger", { requestMagiport: true })
                 }
@@ -1621,7 +1622,7 @@ function prepareWarrior(bot: Warrior) {
             move: async () => {
                 const tiger = bot.getEntity({ returnNearest: true, type: "tiger" })
                 if (tiger) {
-                    bot.smartMove(tiger, { getWithin: 10 })
+                    bot.smartMove(offsetPositionParty(tiger, bot), { getWithin: 10 })
                 } else {
                     await goToSpecialMonster(bot, "tiger", { requestMagiport: true })
                 }

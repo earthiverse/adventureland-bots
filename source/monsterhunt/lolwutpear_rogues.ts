@@ -1,6 +1,6 @@
 import AL, { GMap, IPosition, Merchant, Rogue, ServerInfoDataLive } from "alclient"
 import { goToNearestWalkableToMonster, goToNPC, goToSpecialMonster, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
-import { mainBeesNearTunnel } from "../base/locations.js"
+import { mainBeesNearTunnel, offsetPositionParty } from "../base/locations.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { attackTheseTypesRogue } from "../base/rogue.js"
 import { getTargetServerFromMonsters } from "../base/serverhop.js"
@@ -162,7 +162,7 @@ function prepareRogue(bot: Rogue) {
             move: async () => {
                 const tiger = bot.getEntity({ returnNearest: true, type: "tiger" })
                 if (tiger) {
-                    bot.smartMove(tiger, { getWithin: 10 })
+                    bot.smartMove(offsetPositionParty(tiger, bot), { getWithin: 10 })
                 } else {
                     await goToSpecialMonster(bot, "tiger", { requestMagiport: true })
                 }
