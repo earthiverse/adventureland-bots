@@ -356,7 +356,7 @@ function prepareMage(bot: Mage) {
         //     move: async () => {
         //         const tiger = bot.getEntity({ returnNearest: true, type: "tiger" })
         //         if (tiger) {
-        //             bot.smartMove(offsetPositionParty(tiger, bot), { getWithin: 10 })
+        //             bot.smartMove(offsetPositionParty(tiger, bot))
         //         } else {
         //             await goToSpecialMonster(bot, "tiger", { requestMagiport: true })
         //         }

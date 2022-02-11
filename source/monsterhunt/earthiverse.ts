@@ -534,7 +534,7 @@ function preparePriest(bot: Priest) {
         //     move: async () => {
         //         const tiger = bot.getEntity({ returnNearest: true, type: "tiger" })
         //         if (tiger) {
-        //             bot.smartMove(offsetPositionParty(tiger, bot), { getWithin: 10 })
+        //             bot.smartMove(offsetPositionParty(tiger, bot))
         //         } else {
         //             await goToSpecialMonster(bot, "tiger", { requestMagiport: true })
         //         }
@@ -874,7 +874,7 @@ function prepareRanger(bot: Ranger) {
             move: async () => { await goToSpecialMonster(bot, "phoenix", { requestMagiport: true }) },
         },
         pinkgoo: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["pinkgoo", "arcticbee", "bat", "bbpompom", "bee", "boar", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "wolf", "wolfie"], information.friends) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["pinkgoo", "arcticbee", "bat", "bbpompom", "bee", "boar", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise", "wolf", "wolfie"], information.friends) },
             attackWhileIdle: true,
             equipment: maxAttackSpeedEquipment,
             move: async () => { await goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true }) },
@@ -1019,13 +1019,13 @@ function prepareRanger(bot: Ranger) {
                     if (bot.slots.cape && bot.slots.cape.l && bot.esize > 1) await bot.unequip("cape")
                     if (bot.slots.belt && bot.slots.belt.l && bot.esize > 1) await bot.unequip("belt")
                 }
-                await attackTheseTypesRanger(bot, ["tiger", "arcticbee", "bat", "bbpompom", "bee", "boar", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "wolf", "wolfie"], information.friends)
+                await attackTheseTypesRanger(bot, ["tiger", "arcticbee", "bat", "bbpompom", "bee", "boar", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise", "wolf", "wolfie"], information.friends)
             },
             attackWhileIdle: true,
             move: async () => {
                 const tiger = bot.getEntity({ returnNearest: true, type: "tiger" })
                 if (tiger) {
-                    bot.smartMove(offsetPositionParty(tiger, bot), { getWithin: 10 })
+                    bot.smartMove(offsetPositionParty(tiger, bot))
                 } else {
                     await goToSpecialMonster(bot, "tiger", { requestMagiport: true })
                 }
@@ -1038,7 +1038,7 @@ function prepareRanger(bot: Ranger) {
             move: async () => { await goToNearestWalkableToMonster(bot, ["tortoise"], { map: "main", x: -1124, y: 1118 }) },
         },
         wabbit: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["wabbit", "arcticbee", "bat", "bbpompom", "bee", "boar", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "wolf", "wolfie"], information.friends) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["wabbit", "arcticbee", "bat", "bbpompom", "bee", "boar", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise", "wolf", "wolfie"], information.friends) },
             attackWhileIdle: true,
             equipment: maxRangeEquipment,
             move: async () => { await goToSpecialMonster(bot, "wabbit", { requestMagiport: true }) }
@@ -1159,7 +1159,7 @@ function prepareWarrior(bot: Warrior) {
             move: async () => { await goToNearestWalkableToMonster(bot, ["croc"], { map: "main", x: 781, y: 1710 }) },
         },
         cutebee: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["cutebee", "bee", "crab", "croc", "goo", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad"], information.friends) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["cutebee", "bee", "crab", "croc", "goo", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise"], information.friends) },
             attackWhileIdle: true,
             equipment: burnEquipment,
             move: async () => {
@@ -1456,7 +1456,7 @@ function prepareWarrior(bot: Warrior) {
             move: async () => { await goToSpecialMonster(bot, "phoenix", { requestMagiport: true }) },
         },
         pinkgoo: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["pinkgoo", "arcticbee", "bat", "bbpompom", "bee", "boar", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "wolf", "wolfie"], information.friends, { disableAgitate: true }) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["pinkgoo", "arcticbee", "bat", "bbpompom", "bee", "boar", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise", "wolf", "wolfie"], information.friends, { disableAgitate: true }) },
             attackWhileIdle: true,
             equipment: burnEquipment,
             move: async () => { await goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true }) },
@@ -1616,13 +1616,13 @@ function prepareWarrior(bot: Warrior) {
                     if (bot.slots.cape && bot.slots.cape.l && bot.esize > 1) await bot.unequip("cape")
                     if (bot.slots.belt && bot.slots.belt.l && bot.esize > 1) await bot.unequip("belt")
                 }
-                await attackTheseTypesWarrior(bot, ["tiger", "arcticbee", "bat", "bbpompom", "bee", "boar", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "wolf", "wolfie"], information.friends, { disableAgitate: true, disableCleave: true, disableStomp: true })
+                await attackTheseTypesWarrior(bot, ["tiger", "arcticbee", "bat", "bbpompom", "bee", "boar", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise", "wolf", "wolfie"], information.friends, { disableAgitate: true, disableCleave: true, disableStomp: true })
             },
             attackWhileIdle: true,
             move: async () => {
                 const tiger = bot.getEntity({ returnNearest: true, type: "tiger" })
                 if (tiger) {
-                    bot.smartMove(offsetPositionParty(tiger, bot), { getWithin: 10 })
+                    bot.smartMove(offsetPositionParty(tiger, bot))
                 } else {
                     await goToSpecialMonster(bot, "tiger", { requestMagiport: true })
                 }
@@ -1650,7 +1650,7 @@ function prepareWarrior(bot: Warrior) {
             move: async () => { await goToNearestWalkableToMonster(bot, ["tortoise"], { map: "main", x: -1144, y: 1118 }) },
         },
         wabbit: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["wabbit", "arcticbee", "bat", "bbpompom", "bee", "boar", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "wolf", "wolfie"], information.friends, { disableAgitate: true }) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["wabbit", "arcticbee", "bat", "bbpompom", "bee", "boar", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise", "wolf", "wolfie"], information.friends, { disableAgitate: true }) },
             attackWhileIdle: true,
             equipment: burnEquipment,
             move: async () => { await goToSpecialMonster(bot, "wabbit", { requestMagiport: true }) },
