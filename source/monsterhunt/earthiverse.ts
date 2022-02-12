@@ -1,4 +1,5 @@
 import AL, { Merchant, Priest, Ranger, Warrior, GMap, ServerInfoDataLive, IPosition, SlotType, ItemName } from "alclient"
+import { addSocket, startServer } from "algui"
 import { goToAggroMonster, goToNearestWalkableToMonster, goToNPC, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, moveInCircle, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
 import { offsetPositionParty } from "../base/locations.js"
 import { attackTheseTypesMerchant } from "../base/merchant.js"
@@ -1687,6 +1688,9 @@ async function run() {
     // Start all characters
     console.log("Connecting...")
 
+    // Start GUI
+    startServer(80, AL.Game.G)
+
     const startMerchantLoop = async () => {
         // Start the characters
         const loopBot = async () => {
@@ -1756,6 +1760,7 @@ async function run() {
                 information.friends[2] = information.bot2.bot
                 prepareRanger(information.bot2.bot as Ranger)
                 startTrackerLoop(information.bot2.bot)
+                addSocket(information.bot2.bot.id, information.bot2.bot.socket, information.bot2.bot)
                 information.bot2.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
