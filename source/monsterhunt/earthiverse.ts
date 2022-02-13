@@ -1703,6 +1703,7 @@ async function run() {
                 }
                 information.friends[0] = information.merchant.bot
                 prepareMerchant(information.merchant.bot)
+                addSocket(information.merchant.bot.id, information.merchant.bot.socket, information.merchant.bot)
                 information.merchant.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -1731,6 +1732,7 @@ async function run() {
                 information.bot1.bot = await AL.Game.startPriest(information.bot1.name, TARGET_REGION, TARGET_IDENTIFIER)
                 information.friends[1] = information.bot1.bot
                 preparePriest(information.bot1.bot as Priest)
+                addSocket(information.bot1.bot.id, information.bot1.bot.socket, information.bot1.bot)
                 information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -1789,6 +1791,7 @@ async function run() {
                 information.bot3.bot = await AL.Game.startWarrior(information.bot3.name, TARGET_REGION, TARGET_IDENTIFIER)
                 information.friends[3] = information.bot3.bot
                 prepareWarrior(information.bot3.bot as Warrior)
+                addSocket(information.bot3.bot.id, information.bot3.bot.socket, information.bot3.bot)
                 information.bot3.bot.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
