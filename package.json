@@ -6,7 +6,7 @@
   "type": "module",
   "dependencies": {
     "alclient": "^0.9.39",
-    "algui": "^0.1.11",
+    "algui": "^0.1.12",
     "axios": "^0.25.0",
     "console-table-printer": "^2.10.0",
     "fastpriorityqueue": "^0.7.1",
