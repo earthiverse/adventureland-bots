@@ -131,6 +131,20 @@ function prepareRogue(bot: Rogue) {
             equipment: { orb: "jacko" },
             move: async () => { await goToSpecialMonster(bot, "mvampire") },
         },
+        pinkgoo: {
+            attack: async () => { await attackTheseTypesRogue(bot, ["pinkgoo"], information.friends) },
+            attackWhileIdle: true,
+            move: async () => {
+                const pinkgoo = bot.getEntity({ returnNearest: true, type: "pinkgoo" })
+                if (pinkgoo) {
+                    const position = offsetPositionParty(pinkgoo, bot)
+                    if (AL.Pathfinder.canWalkPath(bot, position)) bot.move(position.x, position.y)
+                    else if (!bot.smartMoving || AL.Tools.distance(position, bot.smartMoving) > 100) bot.smartMove(position)
+                } else {
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true })
+                }
+            },
+        },
         snowman: {
             attack: async () => { await attackTheseTypesRogue(bot, ["snowman"], information.friends) },
             equipment: { orb: "jacko" },

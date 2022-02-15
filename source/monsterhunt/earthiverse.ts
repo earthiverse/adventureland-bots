@@ -410,7 +410,16 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["pinkgoo"], information.friends) },
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
-            move: async () => { await goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true }) },
+            move: async () => {
+                const pinkgoo = bot.getEntity({ returnNearest: true, type: "pinkgoo" })
+                if (pinkgoo) {
+                    const position = offsetPositionParty(pinkgoo, bot)
+                    if (AL.Pathfinder.canWalkPath(bot, position)) bot.move(position.x, position.y)
+                    else if (!bot.smartMoving || AL.Tools.distance(position, bot.smartMoving) > 100) bot.smartMove(position)
+                } else {
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true })
+                }
+            },
         },
         plantoid: {
             attack: async () => { await attackTheseTypesPriest(bot, ["plantoid"], information.friends) },
@@ -880,7 +889,16 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { return attackTheseTypesRanger(bot, ["pinkgoo", "arcticbee", "bat", "bbpompom", "bee", "boar", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise", "wolf", "wolfie"], information.friends) },
             attackWhileIdle: true,
             equipment: maxAttackSpeedEquipment,
-            move: async () => { await goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true }) },
+            move: async () => {
+                const pinkgoo = bot.getEntity({ returnNearest: true, type: "pinkgoo" })
+                if (pinkgoo) {
+                    const position = offsetPositionParty(pinkgoo, bot)
+                    if (AL.Pathfinder.canWalkPath(bot, position)) bot.move(position.x, position.y)
+                    else if (!bot.smartMoving || AL.Tools.distance(position, bot.smartMoving) > 100) bot.smartMove(position)
+                } else {
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true })
+                }
+            },
         },
         plantoid: {
             attack: async () => { return attackTheseTypesRanger(bot, ["plantoid"], information.friends) },
@@ -1464,7 +1482,16 @@ function prepareWarrior(bot: Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["pinkgoo", "arcticbee", "bat", "bbpompom", "bee", "boar", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise", "wolf", "wolfie"], information.friends, { disableAgitate: true }) },
             attackWhileIdle: true,
             equipment: burnEquipment,
-            move: async () => { await goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true }) },
+            move: async () => {
+                const pinkgoo = bot.getEntity({ returnNearest: true, type: "pinkgoo" })
+                if (pinkgoo) {
+                    const position = offsetPositionParty(pinkgoo, bot)
+                    if (AL.Pathfinder.canWalkPath(bot, position)) bot.move(position.x, position.y)
+                    else if (!bot.smartMoving || AL.Tools.distance(position, bot.smartMoving) > 100) bot.smartMove(position)
+                } else {
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true })
+                }
+            },
         },
         plantoid: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["plantoid"], information.friends, { maximumTargets: 1 }) },

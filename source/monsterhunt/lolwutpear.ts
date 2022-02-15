@@ -1,6 +1,6 @@
 import AL, { IPosition, ItemName, Mage, Merchant, SlotType } from "alclient"
 import { goToNearestWalkableToMonster, goToNPC, goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
-import { desertlandPorcupines, halloweenMiniMushes, mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrabXs, mainCrocs, mainGoos, mainPoisios, mainScorpions, mainSquigs, offsetPosition, winterlandArcticBees } from "../base/locations.js"
+import { desertlandPorcupines, halloweenMiniMushes, mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrabXs, mainCrocs, mainGoos, mainPoisios, mainScorpions, mainSquigs, offsetPosition, offsetPositionParty, winterlandArcticBees } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { getTargetServerFromPlayer } from "../base/serverhop.js"
@@ -238,7 +238,16 @@ function prepareMage(bot: Mage) {
             attack: async () => { await attackTheseTypesMage(bot, ["pinkgoo"], information.friends) },
             attackWhileIdle: true,
             equipment: maxAttackSpeedEquipment,
-            move: async () => { await goToSpecialMonster(bot, "pinkgoo") },
+            move: async () => {
+                const pinkgoo = bot.getEntity({ returnNearest: true, type: "pinkgoo" })
+                if (pinkgoo) {
+                    const position = offsetPositionParty(pinkgoo, bot)
+                    if (AL.Pathfinder.canWalkPath(bot, position)) bot.move(position.x, position.y)
+                    else if (!bot.smartMoving || AL.Tools.distance(position, bot.smartMoving) > 100) bot.smartMove(position)
+                } else {
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true })
+                }
+            },
         },
         poisio: {
             attack: async () => { await attackTheseTypesMage(bot, ["poisio"], information.friends) },
