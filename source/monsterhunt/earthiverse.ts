@@ -1238,14 +1238,15 @@ function prepareWarrior(bot: Warrior) {
         },
         franky: {
             attack: async () => {
-                const franky = bot.getEntity({ returnNearest: true, type: "franky" })
-                const priest = bot.players.get(information.bot1.name)
-                if (franky
-                    && bot.party && !bot.partyData.list.includes[franky.target] // It's not targeting someone in our party
-                    && priest && AL.Tools.distance(bot, priest) < priest.range
-                    && bot.canUse("scare", { ignoreEquipped: true })) {
-                    if (bot.canUse("taunt") && AL.Tools.distance(franky, bot) < bot.G.skills.taunt.range) bot.taunt(franky.id)
-                }
+                // NOTE: Disabling taunt until we have logic to move to the corner.
+                // const franky = bot.getEntity({ returnNearest: true, type: "franky" })
+                // const priest = bot.players.get(information.bot1.name)
+                // if (franky
+                //     && bot.party && !bot.partyData.list.includes[franky.target] // It's not targeting someone in our party
+                //     && priest && AL.Tools.distance(bot, priest) < priest.range
+                //     && bot.canUse("scare", { ignoreEquipped: true })) {
+                //     if (bot.canUse("taunt") && AL.Tools.distance(franky, bot) < bot.G.skills.taunt.range) bot.taunt(franky.id)
+                // }
                 await attackTheseTypesWarrior(bot, ["nerfedmummy", "franky"], information.friends, { disableAgitate: true, disableCleave: true }) },
             equipment: aoeEquipment,
             move: async () => {
