@@ -354,13 +354,15 @@ function prepareMage(bot: Mage) {
         //     },
         //     attackWhileIdle: true,
         //     move: async () => {
-        //         const tiger = bot.getEntity({ returnNearest: true, type: "tiger" })
-        //         if (tiger) {
-        //             bot.smartMove(offsetPositionParty(tiger, bot))
-        //         } else {
-        //             await goToSpecialMonster(bot, "tiger", { requestMagiport: true })
-        //         }
+        //     const tiger = bot.getEntity({ returnNearest: true, type: "tiger" })
+        //     if (tiger) {
+        //         const position = offsetPositionParty(tiger, bot)
+        //         if (AL.Pathfinder.canWalkPath(bot, position)) bot.move(position.x, position.y)
+        //         else if (!bot.smartMoving || AL.Tools.distance(position, bot.smartMoving) > 100) bot.smartMove(position)
+        //     } else {
+        //         if (!bot.smartMoving) goToSpecialMonster(bot, "tiger", { requestMagiport: true })
         //     }
+        // }
         // },
         tortoise: {
             attack: async () => { await attackTheseTypesMage(bot, ["tortoise", "frog"], information.friends) },
