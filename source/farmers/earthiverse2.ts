@@ -1,14 +1,14 @@
-import AL, { Character, Mage, Ranger, ServerIdentifier, ServerRegion } from "alclient"
+import AL, { Character, Mage, /*Ranger,*/ ServerIdentifier, ServerRegion } from "alclient"
 import { MY_CHARACTERS } from "../base/general.js"
-import { getTargetServerFromPlayer, getTargetServerFromDate } from "../base/serverhop.js"
+// import { getTargetServerFromPlayer, getTargetServerFromDate } from "../base/serverhop.js"
 import { startMage as startCrocMage } from "../crocs/shared.js"
-import { startRanger as startJratRanger } from "../jrats/shared.js"
+// import { startRanger as startJratRanger } from "../jrats/shared.js"
 
 // let jrat_lastServer: [ServerRegion, ServerIdentifier] = ["US", "II"]
 // const jrat_ID = "earthiverse"
 // let jrat: Ranger
 
-const croc_server: [ServerRegion, ServerIdentifier] = ["EU", "PVP"]
+const croc_server: [ServerRegion, ServerIdentifier] = ["US", "II"]
 const croc1_ID = "earthMag"
 const croc2_ID = "earthMag2"
 const croc3_ID = "earthMag3"
