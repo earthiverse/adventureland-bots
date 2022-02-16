@@ -1849,17 +1849,14 @@ async function run() {
     let lastServerChangeTime = Date.now()
     const serverLoop = async () => {
         try {
-            console.log("DEBUG: Checking target server...")
             // We haven't logged in yet
             if (!information.bot1.bot) {
-                console.log("DEBUG: We haven't logged in yet")
                 setTimeout(async () => { serverLoop() }, 1000)
                 return
             }
 
             // Don't change servers too fast
             if (lastServerChangeTime > Date.now() - AL.Constants.RECONNECT_TIMEOUT_MS) {
-                console.log("DEBUG: Don't change servers too fast")
                 setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime + AL.Constants.RECONNECT_TIMEOUT_MS - Date.now()))
                 return
             }
@@ -1867,7 +1864,6 @@ async function run() {
             // Don't change servers if we're running a crypt
             const merchantMap: GMap = AL.Game.G.maps[information.merchant?.bot?.map]
             if (merchantMap?.instance) {
-                console.log("DEBUG: Merchant is in an instance")
                 setTimeout(async () => { serverLoop() }, 1000)
                 return
             }
@@ -1891,7 +1887,6 @@ async function run() {
 
             if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
                 // We're already on the correct server
-                console.log("DEBUG: We're already on the correct server")
                 setTimeout(async () => { serverLoop() }, 1000)
                 return
             }
@@ -1905,7 +1900,7 @@ async function run() {
             await sleep(5000)
 
             // Disconnect everyone
-            console.log("Disconnecting characters")
+            console.log("Disconnecting characters...")
             information.bot1.bot.disconnect()
             information.bot2.bot?.disconnect()
             information.bot3.bot?.disconnect()
