@@ -1,5 +1,5 @@
 import AL, { ServerIdentifier, ServerRegion, MonsterName, Mage } from "alclient"
-import { goToBankIfFull, goToNearestWalkableToMonster, goToPotionSellerIfLow, ITEMS_TO_SELL, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startUpgradeLoop } from "../base/general.js"
+import { goToBankIfFull, goToNearestWalkableToMonster, goToPotionSellerIfLow, ITEMS_TO_SELL, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { Information } from "../definitions/bot.js"
 
@@ -43,7 +43,6 @@ async function startMage(bot: Mage) {
     startHealLoop(bot)
     startLootLoop(bot)
     startPartyLoop(bot, information.bot1.name, [information.bot1.name, information.bot2.name, information.bot3.name])
-    startPontyLoop(bot)
     startScareLoop(bot)
     startSellLoop(bot, { ...ITEMS_TO_SELL, "dexamulet": 1, "intamulet": 1, "stramulet": 1, "wbreeches": 1, "wgloves": 1 })
     startUpgradeLoop(bot)

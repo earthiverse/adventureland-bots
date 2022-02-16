@@ -1,5 +1,5 @@
 import AL, { IPosition, Priest, Warrior, ServerIdentifier, ServerRegion, Merchant, MonsterName, ServerInfoDataLive, Character, AchievementProgressData, AchievementProgressDataFirehazard, Tools, Ranger } from "alclient"
-import { ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
+import { ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
 import { startPartyHealLoop } from "../base/priest.js"
 import { Information } from "../definitions/bot.js"
@@ -50,7 +50,6 @@ async function startFirehazardRanger(bot: Ranger) {
     startHealLoop(bot)
     startLootLoop(bot)
     startPartyLoop(bot, information.bot1.name)
-    startPontyLoop(bot)
     startSellLoop(bot)
     startSendStuffDenylistLoop(bot, [information.merchant.name, information.merchant.nameAlt], ITEMS_TO_HOLD, 10_000_000)
     startTrackerLoop(bot)
@@ -157,7 +156,6 @@ async function startFirehazardWarrior(bot: Warrior) {
     startHealLoop(bot)
     startLootLoop(bot)
     startPartyLoop(bot, information.bot1.name)
-    startPontyLoop(bot)
     startSellLoop(bot)
     startSendStuffDenylistLoop(bot, [information.merchant.name, information.merchant.nameAlt], ITEMS_TO_HOLD, 10_000_000)
     startTrackerLoop(bot)
@@ -252,8 +250,6 @@ function startSupportPriest(bot: Priest) {
     startHealLoop(bot)
     startLootLoop(bot)
     startPartyLoop(bot, information.bot1.name)
-    startPontyLoop(bot)
-    startScareLoop(bot)
     startSellLoop(bot)
     startSendStuffDenylistLoop(bot, [information.merchant.name, information.merchant.nameAlt], ITEMS_TO_HOLD, 10_000_000)
     startUpgradeLoop(bot)
@@ -343,7 +339,6 @@ function startSupportPriest(bot: Priest) {
 function startMerchant(bot: Merchant, friends: Character[], holdPosition: IPosition) {
     startHealLoop(bot)
     startMluckLoop(bot)
-    startPontyLoop(bot)
     startUpgradeLoop(bot)
     startCompoundLoop(bot)
     startExchangeLoop(bot)

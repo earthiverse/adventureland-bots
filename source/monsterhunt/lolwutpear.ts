@@ -242,8 +242,8 @@ function prepareMage(bot: Mage) {
                 const pinkgoo = bot.getEntity({ returnNearest: true, type: "pinkgoo" })
                 if (pinkgoo) {
                     const position = offsetPositionParty(pinkgoo, bot)
-                    if (AL.Pathfinder.canWalkPath(bot, position)) bot.move(position.x, position.y)
-                    else if (!bot.smartMoving || AL.Tools.distance(position, bot.smartMoving) > 100) bot.smartMove(position)
+                    if (AL.Pathfinder.canWalkPath(bot, position)) bot.move(position.x, position.y).catch(() => { /* Suppress Warnings */ })
+                    else if (!bot.smartMoving || AL.Tools.distance(position, bot.smartMoving) > 100) bot.smartMove(position).catch(() => { /* Suppress Warnings */ })
                 } else {
                     if (!bot.smartMoving) goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true })
                 }
@@ -366,8 +366,8 @@ function prepareMage(bot: Mage) {
         //     const tiger = bot.getEntity({ returnNearest: true, type: "tiger" })
         //     if (tiger) {
         //         const position = offsetPositionParty(tiger, bot)
-        //         if (AL.Pathfinder.canWalkPath(bot, position)) bot.move(position.x, position.y)
-        //         else if (!bot.smartMoving || AL.Tools.distance(position, bot.smartMoving) > 100) bot.smartMove(position)
+        //         if (AL.Pathfinder.canWalkPath(bot, position)) bot.move(position.x, position.y).catch(() => { /* Suppress Warnings */ })
+        //         else if (!bot.smartMoving || AL.Tools.distance(position, bot.smartMoving) > 100) bot.smartMove(position).catch(() => { /* Suppress Warnings */ })
         //     } else {
         //         if (!bot.smartMoving) goToSpecialMonster(bot, "tiger", { requestMagiport: true })
         //     }

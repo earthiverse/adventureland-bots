@@ -1,5 +1,5 @@
 import AL, { CMData, DeathData, GameResponseData, IPosition, Rogue, MapName, Merchant, MonsterName, ServerIdentifier, ServerInfoData, ServerInfoDataLive, ServerRegion } from "alclient"
-import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startPartyLoop, startScareLoop, startAvoidStacking, sleep, startPontyLoop, ITEMS_TO_HOLD, startSendStuffDenylistLoop, startCompoundLoop, startCraftLoop, startUpgradeLoop, LOOP_MS, startTrackerLoop } from "../base/general.js"
+import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startPartyLoop, startScareLoop, startAvoidStacking, sleep, ITEMS_TO_HOLD, startSendStuffDenylistLoop, startCompoundLoop, startCraftLoop, startUpgradeLoop, LOOP_MS, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesRogue } from "../base/rogue.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { getTargetServerFromCurrentServer } from "../base/serverhop.js"
@@ -213,7 +213,6 @@ async function startMerchant(bot: Merchant) {
     startSellLoop(bot)
     startUpgradeLoop(bot)
 
-    startPontyLoop(bot)
     startMluckLoop(bot)
     startPartyLoop(bot, bot.id) // Let anyone who wants to party with me do so
 

@@ -1,5 +1,5 @@
 import AL, { Character, GameResponseData, IPosition, ItemDataTrade, Merchant, MonsterName, PingCompensatedCharacter, Player, Priest, ServerIdentifier, ServerRegion, TradeSlotType, Warrior } from "alclient"
-import { startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startPontyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPotionSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_SELL, goToNearestWalkableToMonster, startTrackerLoop, getFirstEmptyInventorySlot, startBuyFriendsReplenishablesLoop, startCraftLoop } from "../base/general.js"
+import { startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPotionSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_SELL, goToNearestWalkableToMonster, startTrackerLoop, getFirstEmptyInventorySlot, startBuyFriendsReplenishablesLoop, startCraftLoop } from "../base/general.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 import { stompPartyLeader, stompPartyMembers } from "../base/party.js"
@@ -216,7 +216,6 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
     startHealLoop(bot)
     startLootLoop(bot)
     startPartyLoop(bot, stompPartyLeader, stompPartyMembers)
-    startPontyLoop(bot)
     startSellLoop(bot)
     startUpgradeLoop(bot, { ...ITEMS_TO_SELL, "stick": 100 }) // Don't upgrade sticks
     startWarcryLoop(bot)
@@ -437,7 +436,6 @@ export async function startPriest(bot: Priest, merchantName: string): Promise<vo
     startLootLoop(bot)
     startPartyLoop(bot, stompPartyLeader, stompPartyMembers)
     startPartyHealLoop(bot)
-    startPontyLoop(bot)
     startSellLoop(bot)
     startUpgradeLoop(bot, { ...ITEMS_TO_SELL, "stick": 100 }) // Don't upgrade sticks
     startSendStuffDenylistLoop(bot, [merchantName])

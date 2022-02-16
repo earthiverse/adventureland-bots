@@ -1,5 +1,5 @@
-import AL, { Character, Constants, IPosition, Merchant, MonsterName, ServerIdentifier, ServerInfoDataLive, ServerRegion, Warrior } from "alclient"
-import { startPontyLoop, LOOP_MS, startCompoundLoop, startHealLoop, startLootLoop, startScareLoop, startSellLoop, startUpgradeLoop, startExchangeLoop, ITEMS_TO_SELL } from "../base/general.js"
+import AL, { Character, IPosition, Merchant, MonsterName, ServerIdentifier, ServerInfoDataLive, ServerRegion, Warrior } from "alclient"
+import { LOOP_MS, startCompoundLoop, startHealLoop, startLootLoop, startScareLoop, startSellLoop, startUpgradeLoop, startExchangeLoop, ITEMS_TO_SELL } from "../base/general.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
 import { stompPartyLeader } from "../base/party.js"
 import { identifier, region, startLeader, startMailBankKeysToEarthiverseLoop, startShared } from "./runners.js"
@@ -26,7 +26,6 @@ if (identifier == "PVP") {
 async function startMerchant(bot: Merchant, friends: Character[], holdPosition: IPosition): Promise<void> {
     startHealLoop(bot)
     startMluckLoop(bot)
-    startPontyLoop(bot)
     startUpgradeLoop(bot, { ... ITEMS_TO_SELL })
     startCompoundLoop(bot)
     startExchangeLoop(bot)

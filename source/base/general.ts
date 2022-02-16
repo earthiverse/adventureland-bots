@@ -806,7 +806,7 @@ export function startBuyLoop(bot: Character, itemsToBuy = ITEMS_TO_BUY, replenis
             }
 
             // Buy things from Ponty
-            if (Date.now() - CHECK_PONTY_EVERY_MS > lastPonty) {
+            if (Date.now() > lastPonty + CHECK_PONTY_EVERY_MS) {
                 for (const ponty of pontyLocations) {
                     if (AL.Tools.distance(bot, ponty) > AL.Constants.NPC_INTERACTION_DISTANCE) continue
                     lastPonty = Date.now()
@@ -822,6 +822,7 @@ export function startBuyLoop(bot: Character, itemsToBuy = ITEMS_TO_BUY, replenis
                             continue
                         }
                     }
+                    break
                 }
             }
 
@@ -1297,29 +1298,6 @@ export function startPartyInviteLoop(bot: Character, player: string): void {
         bot.timeouts.set("partyInviteLoop", setTimeout(async () => { partyInviteLoop() }, 10000))
     }
     partyInviteLoop()
-}
-
-export function startPontyLoop(bot: Character, itemsToBuy = ITEMS_TO_BUY): void {
-    const ponty = bot.locateNPC("secondhands")[0]
-    async function pontyLoop() {
-        try {
-            if (!bot.socket || bot.socket.disconnected) return
-
-            if (AL.Tools.distance(bot, ponty) < AL.Constants.NPC_INTERACTION_DISTANCE) {
-                const pontyData = await bot.getPontyItems()
-                for (const item of pontyData) {
-                    if (itemsToBuy.has(item.name)) {
-                        await bot.buyFromPonty(item)
-                    }
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        bot.timeouts.set("pontyLoop", setTimeout(async () => { pontyLoop() }, 10000))
-    }
-    pontyLoop()
 }
 
 export function startScareLoop(bot: Character): void {
