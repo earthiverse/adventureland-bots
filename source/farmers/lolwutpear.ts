@@ -2,8 +2,8 @@ import AL, { Character, Mage, Merchant, Priest, ServerIdentifier, ServerRegion, 
 import { startTrackerLoop } from "../base/general.js"
 import { level1PratsNearLedge } from "../base/locations.js"
 import { partyLeader, partyMembers } from "../base/party.js"
-import { startMage } from "../crocs/shared.js"
-import { startMerchant, startPriest, startWarrior } from "../prat/shared.js"
+import { startMage as startCrocMage } from "../crocs/shared.js"
+import { startMerchant, startPriest as startPratPriest, startWarrior as startPratWarrior } from "../prat/shared.js"
 
 const region: ServerRegion = "US"
 const identifier: ServerIdentifier = "I"
@@ -12,10 +12,10 @@ const merchant_ID = "orlyowl"
 const priest_ID = "over9000"
 const warrior_ID = "fgsfds"
 
-let mage: Mage // croc
-let merchant: Merchant // merchant
-let priest: Priest // prat
-let warrior: Warrior // prat
+let mage: Mage // crocs
+let merchant: Merchant
+let priest: Priest // prats
+let warrior: Warrior // prats
 const friends: Character[] = [undefined, undefined, undefined, undefined]
 
 async function run() {
@@ -59,7 +59,7 @@ async function run() {
                 if (warrior) warrior.disconnect()
                 warrior = await AL.Game.startWarrior(name, region, identifier)
                 friends[1] = warrior
-                startWarrior(warrior, merchant_ID, friends, "vhammer", "ololipop", level1PratsNearLedge)
+                startPratWarrior(warrior, merchant_ID, friends, "vhammer", "ololipop", level1PratsNearLedge)
                 startTrackerLoop(warrior)
                 warrior.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
@@ -86,7 +86,7 @@ async function run() {
                 if (priest) priest.disconnect()
                 priest = await AL.Game.startPriest(name, region, identifier)
                 friends[2] = priest
-                startPriest(priest, merchant_ID, friends, level1PratsNearLedge)
+                startPratPriest(priest, merchant_ID, friends, level1PratsNearLedge)
                 priest.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -112,7 +112,7 @@ async function run() {
                 if (mage) mage.disconnect()
                 mage = await AL.Game.startMage(name, region, identifier)
                 friends[3] = mage
-                startMage(mage, merchant_ID, friends, partyLeader, partyMembers)
+                startCrocMage(mage, merchant_ID, friends, partyLeader, partyMembers)
                 mage.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)

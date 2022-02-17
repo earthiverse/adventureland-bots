@@ -1,4 +1,5 @@
 import AL, { Character, Merchant, Priest, Rogue, ServerIdentifier, ServerRegion, Warrior } from "alclient"
+import { addSocket, startServer } from "algui"
 import { startMerchant, startPriest as startPratPriest, startWarrior as startPratWarrior } from "../prat/shared.js"
 import { level1PratsNearDoor } from "../base/locations.js"
 import { startTrackerLoop } from "../base/general.js"
@@ -12,15 +13,18 @@ const rogue_ID = "earthRog"
 const warrior_ID = "earthWar"
 
 let merchant: Merchant
-let priest: Priest
-let rogue: Rogue
-let warrior: Warrior
+let priest: Priest // prats
+let rogue: Rogue // spiders
+let warrior: Warrior // prats
 const friends: Character[] = [undefined, undefined, undefined, undefined]
 
 async function run() {
     // Login and prepare pathfinding
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
     await AL.Pathfinder.prepare(AL.Game.G)
+
+    // Start GUI
+    startServer(80, AL.Game.G)
 
     // Start all characters
     console.log("Connecting...")
@@ -33,6 +37,7 @@ async function run() {
                 merchant = await AL.Game.startMerchant(name, region, identifier)
                 friends[0] = merchant
                 startMerchant(merchant, friends, { map: "main", x: 0, y: -100 })
+                addSocket(merchant.id, merchant.socket, merchant)
                 merchant.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -59,6 +64,7 @@ async function run() {
                 warrior = await AL.Game.startWarrior(name, region, identifier)
                 friends[1] = warrior
                 startPratWarrior(warrior, merchant_ID, friends, "vhammer", "glolipop", level1PratsNearDoor)
+                addSocket(warrior.id, warrior.socket, warrior)
                 startTrackerLoop(warrior)
                 warrior.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
@@ -86,6 +92,7 @@ async function run() {
                 priest = await AL.Game.startPriest(name, region, identifier)
                 friends[2] = priest
                 startPratPriest(priest, merchant_ID, friends, level1PratsNearDoor)
+                addSocket(priest.id, priest.socket, priest)
                 priest.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -112,6 +119,7 @@ async function run() {
                 rogue = await AL.Game.startRogue(name, region, identifier)
                 friends[3] = rogue
                 startSpiderRogue(rogue, merchant_ID, friends)
+                addSocket(rogue.id, rogue.socket, rogue)
                 rogue.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)

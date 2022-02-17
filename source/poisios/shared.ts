@@ -1,6 +1,6 @@
 import AL, { Character, Mage } from "alclient"
 import { FRIENDLY_ROGUES, goToBankIfFull, goToNearestWalkableToMonster, goToPotionSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, sleep, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
-import { bankingPosition, desertlandPorcupines } from "../base/locations.js"
+import { bankingPosition, mainPoisios } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 
 async function startShared(bot: Character, merchant: string, friends: Character[], leader, members) {
@@ -42,7 +42,7 @@ export async function startMage(bot: Mage, merchant: string, friends: Character[
             }
 
             // Idle strategy
-            await attackTheseTypesMage(bot, ["porcupine"], friends)
+            await attackTheseTypesMage(bot, ["poisio", "bee"], friends)
         } catch (e) {
             console.error(e)
         }
@@ -113,7 +113,7 @@ export async function startMage(bot: Mage, merchant: string, friends: Character[
                 await bot.smartMove("elixirluck")
             }
 
-            await goToNearestWalkableToMonster(bot, ["porcupine"], desertlandPorcupines, bot.range - 25)
+            await goToNearestWalkableToMonster(bot, ["poisio"], mainPoisios, bot.range - 25)
         } catch (e) {
             console.error(e)
         }
