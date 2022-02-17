@@ -76,6 +76,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
     if (bot.canUse("attack")) {
         const targets = new FastPriorityQueue<Entity>(attackPriority)
         for (const entity of bot.getEntities({
+            canDamage: true,
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
@@ -119,6 +120,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
     if (bot.canUse("mentalburst")) {
         const targets: Entity[] = []
         for (const entity of bot.getEntities({
+            canDamage: true,
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
@@ -146,6 +148,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
     if (!options.disableQuickPunch && bot.canUse("quickpunch")) {
         const targets = new FastPriorityQueue<Entity>(attackPriority)
         for (const entity of bot.getEntities({
+            canDamage: true,
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
@@ -175,6 +178,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
     if (!options.disableQuickStab && bot.canUse("quickstab")) {
         const targets = new FastPriorityQueue<Entity>(attackPriority)
         for (const entity of bot.getEntities({
+            canDamage: true,
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
