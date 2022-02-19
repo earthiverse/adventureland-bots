@@ -12,12 +12,17 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
 
             if (done.has(owner)) continue
 
+            if (/\d+/.test(player)) {
+                console.log(`${player} is an entity. Removing...`)
+                continue
+            }
+
             console.log(`Researching ${player}...`)
 
             const data = await axios.get(`http://adventure.land/player/${player}`)
 
             // Get owner ID
-            for (const cookie of data.headers["set-cookie"]) {
+            for (const cookie of data.headers["set-cookie"] || []) {
                 const result = /^referrer=(\d+?);/.exec(cookie)
                 if (result) {
                     // We found the owner
