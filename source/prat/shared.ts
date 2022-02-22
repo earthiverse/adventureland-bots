@@ -112,7 +112,7 @@ export async function startWarrior(bot: Warrior, merchant: string, friends: Char
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 200))
     }
     moveLoop()
 }

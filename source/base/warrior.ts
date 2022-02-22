@@ -129,7 +129,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
         }
     }
 
-    if (bot.canUse("agitate") && !options.disableAgitate) {
+    if (!options.disableAgitate) {
         // Calculate how much courage we have left to spare
         const targetingMe = bot.calculateTargets()
 
@@ -176,8 +176,9 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
 
             agitateTargets.push(entity)
         }
+
         if (options.maximumTargets && bot.targets + agitateTargets.length > options.maximumTargets) avoidAgitate = true
-        if (!avoidAgitate && agitateTargets.length > 1) {
+        if (!avoidAgitate && agitateTargets.length > 1 && bot.canUse("agitate")) {
             bot.agitate().catch(e => console.error(e))
             bot.mp -= bot.G.skills.agitate.mp
         } else if (bot.canUse("taunt") && !(options.maximumTargets && bot.targets + 1 > options.maximumTargets)) {
@@ -187,6 +188,25 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                 bot.mp -= bot.G.skills.taunt.mp
                 break
             }
+        } else if (bot.canUse("zapperzap", { ignoreEquipped: true }) && !(options.maximumTargets && bot.targets + 1 > options.maximumTargets)) {
+            for (const target of agitateTargets) {
+                if (AL.Tools.distance(bot, target) > bot.G.skills.zapperzap.range) continue // Too far
+
+                const ringSlot: number = bot.locateItem("zapper", bot.items, { returnHighestLevel: true })
+                if (bot.isEquipped("zapper") || ringSlot !== undefined) {
+                    // Equip zapper
+                    if (ringSlot) bot.equip(ringSlot, "ring1")
+
+                    // Zap
+                    bot.zapperZap(target.id)
+                    bot.mp -= bot.G.skills.zapperzap.mp
+
+                    // Re-equip ring
+                    if (ringSlot) bot.equip(ringSlot, "ring1")
+                }
+                break
+            }
+
         }
     }
 

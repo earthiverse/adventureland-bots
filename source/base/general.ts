@@ -699,11 +699,11 @@ export async function goToNearestWalkableToMonster(bot: Character, types: Monste
 
     if (nearest && distance > getWithin) {
         const destination = offsetPositionParty(nearest, bot)
-        bot.move(destination.x, destination.y).catch(() => { /* Suppress errors */ })
+        bot.move(destination.x, destination.y, { resolveOnStart: true }).catch(() => { /* Suppress errors */ })
     } else if (!nearest && defaultPosition) {
         const destination = offsetPositionParty(defaultPosition, bot)
         if (AL.Pathfinder.canWalkPath(bot, destination)) {
-            bot.move(destination.x, destination.y).catch(() => { /* Suppress errors */ })
+            bot.move(destination.x, destination.y, { resolveOnStart: true }).catch(() => { /* Suppress errors */ })
         } else {
             return bot.smartMove(destination, { useBlink: true })
         }
@@ -738,7 +738,7 @@ export async function moveInCircle(bot: Character, center: IPosition, radius = 1
         const angleFromCenterToCurrent = Math.atan2(bot.y - center.y, bot.x - center.x)
         const endGoalAngle = angleFromCenterToCurrent + angle
         const endGoal = { x: center.x + radius * Math.cos(endGoalAngle), y: center.y + radius * Math.sin(endGoalAngle) }
-        bot.move(endGoal.x, endGoal.y).catch(() => { /** Suppress errors */ })
+        bot.move(endGoal.x, endGoal.y, { resolveOnStart: true }).catch(() => { /** Suppress errors */ })
     } else {
         // Move to where we can walk
         return bot.smartMove(center, { getWithin: radius })
