@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
-    "alclient": "^0.9.42",
+    "alclient": "^0.9.43",
     "algui": "^0.1.14",
     "axios": "^0.25.0",
     "console-table-printer": "^2.10.0",
