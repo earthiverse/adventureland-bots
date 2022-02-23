@@ -206,7 +206,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                     const ringSlot: number = bot.locateItem("zapper", bot.items, { returnHighestLevel: true })
                     if (bot.isEquipped("zapper") || (ringSlot !== undefined && bot.cc < 100)) {
                         // Equip zapper
-                        if (ringSlot) bot.equip(ringSlot, "ring1")
+                        if (ringSlot !== undefined) bot.equip(ringSlot, "ring1")
 
                         // Zap
                         bot.zapperZap(target.id)
@@ -215,7 +215,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                         agitateTargets.splice(i, 1) // Remove the entity from the agitate list
 
                         // Re-equip ring
-                        if (ringSlot) bot.equip(ringSlot, "ring1")
+                        if (ringSlot !== undefined) bot.equip(ringSlot, "ring1")
                     }
                     break
                 }
