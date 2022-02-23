@@ -1,5 +1,5 @@
 import AL, { Character, ItemName, Ranger } from "alclient"
-import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, FRIENDLY_ROGUES, LOOP_MS, sleep, moveInCircle, goToKiteMonster } from "../base/general.js"
+import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, LOOP_MS, sleep, moveInCircle, goToKiteMonster } from "../base/general.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 

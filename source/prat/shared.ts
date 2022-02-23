@@ -1,5 +1,5 @@
 import AL, { Character, Warrior, Priest, Merchant, IPosition, MonsterName, ServerInfoDataLive, ItemName } from "alclient"
-import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, LOOP_MS, FRIENDLY_ROGUES, sleep, moveInCircle, startBuyFriendsReplenishablesLoop, REPLENISHABLES_TO_BUY } from "../base/general.js"
+import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, LOOP_MS, moveInCircle, startBuyFriendsReplenishablesLoop, REPLENISHABLES_TO_BUY, goGetRspeedBuff } from "../base/general.js"
 import { startMluckLoop, doBanking, doEmergencyBanking, goFishing, goMining } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { startDarkBlessingLoop, startPartyHealLoop, attackTheseTypesPriest } from "../base/priest.js"
@@ -67,7 +67,6 @@ export async function startWarrior(bot: Warrior, merchant: string, friends: Char
     }
     attackLoop()
 
-    const friendlyRogues = FRIENDLY_ROGUES
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return // Stop if disconnected
@@ -89,16 +88,7 @@ export async function startWarrior(bot: Warrior, merchant: string, friends: Char
             }
 
             // Get some buffs from rogues
-            if (!bot.s.rspeed) {
-                const friendlyRogue = await AL.PlayerModel.findOne({ lastSeen: { $gt: Date.now() - 120_000 }, name: { $in: friendlyRogues }, serverIdentifier: bot.server.name, serverRegion: bot.server.region }).lean().exec()
-                if (friendlyRogue) {
-                    await bot.smartMove(friendlyRogue, { getWithin: 20 })
-                    if (!bot.s.rspeed) await sleep(2500)
-                    if (!bot.s.rspeed) friendlyRogues.splice(friendlyRogues.indexOf(friendlyRogue.id), 1) // They're not giving rspeed, remove them from our list
-                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
-                    return
-                }
-            }
+            await goGetRspeedBuff(bot)
 
             // Get a luck elixir
             if (!bot.slots.elixir
@@ -145,7 +135,6 @@ export async function startPriest(bot: Priest, merchant: string, friends: Charac
     }
     attackLoop()
 
-    const friendlyRogues = FRIENDLY_ROGUES
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return // Stop if disconnected
@@ -167,16 +156,7 @@ export async function startPriest(bot: Priest, merchant: string, friends: Charac
             }
 
             // Get some buffs from rogues
-            if (!bot.s.rspeed) {
-                const friendlyRogue = await AL.PlayerModel.findOne({ lastSeen: { $gt: Date.now() - 120_000 }, name: { $in: friendlyRogues }, serverIdentifier: bot.server.name, serverRegion: bot.server.region }).lean().exec()
-                if (friendlyRogue) {
-                    await bot.smartMove(friendlyRogue, { getWithin: 20 })
-                    if (!bot.s.rspeed) await sleep(2500)
-                    if (!bot.s.rspeed) friendlyRogues.splice(friendlyRogues.indexOf(friendlyRogue.id), 1) // They're not giving rspeed, remove them from our list
-                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
-                    return
-                }
-            }
+            await goGetRspeedBuff(bot)
 
             // Get a luck elixir
             if (!bot.slots.elixir
@@ -203,7 +183,6 @@ export async function startMerchant(bot: Merchant, friends: Character[], standPl
     startPartyLoop(bot, bot.id)
 
     let lastBankVisit = Number.MIN_VALUE
-    const friendlyRogues = FRIENDLY_ROGUES
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -235,17 +214,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], standPl
             }
 
             // Get some buffs from rogues
-            if (!bot.s.rspeed) {
-                const friendlyRogue = await AL.PlayerModel.findOne({ lastSeen: { $gt: Date.now() - 120_000 }, name: { $in: friendlyRogues }, serverIdentifier: bot.server.name, serverRegion: bot.server.region }).lean().exec()
-                if (friendlyRogue) {
-                    await bot.closeMerchantStand()
-                    await bot.smartMove(friendlyRogue, { getWithin: 20 })
-                    if (!bot.s.rspeed) await sleep(2500)
-                    if (!bot.s.rspeed) friendlyRogues.splice(friendlyRogues.indexOf(friendlyRogue.id), 1) // They're not giving rspeed, remove them from our list
-                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
-                    return
-                }
-            }
+            await goGetRspeedBuff(bot)
 
             // mluck our friends
             if (bot.canUse("mluck", { ignoreCooldown: true })) {

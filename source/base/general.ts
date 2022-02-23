@@ -8,7 +8,7 @@ export const CHECK_TRACKER_EVERY_MS = 600_000 /** 10 minutes */
 
 export const GOLD_TO_HOLD = 5_000_000
 
-export const FRIENDLY_ROGUES = ["copper", "Bjarna", "RisingVanir"]
+export const FRIENDLY_ROGUES = ["copper", "Bjarna", "RisingVanir", "earthRog"]
 
 export const MY_CHARACTERS = ["earthiverse", "earthMag", "earthMag2", "earthMag3", "earthMer", "earthMer2", "earthMer3", "earthPal", "earthPri", "earthPri2", "earthRan2", "earthRan3", "earthRog", "earthRog2", "earthRog3", "earthWar", "earthWar2", "earthWar3"]
 export const ANNOUNCEMENT_CHARACTERS = ["announcement", "battleworthy", "charmingness", "decisiveness", "enlightening", "facilitating", "gratuitously", "hypothesized", "illumination", "journalistic", "kaleidoscope", "logistically"]
@@ -420,6 +420,23 @@ export async function getMonsterHuntTargets(bot: Character, friends: Character[]
     }
 
     return targets
+}
+
+export async function goGetRspeedBuff(bot: Character): Promise<void> {
+    if (bot.s.rspeed) return // We already have it
+
+    const friendlyRogue = await AL.PlayerModel.findOne({
+        lastSeen: { $gt: Date.now() - 120_000 },
+        name: { $in: FRIENDLY_ROGUES },
+        rip: { $ne: true },
+        serverIdentifier: bot.server.name,
+        serverRegion: bot.server.region
+    }).lean().exec()
+    if (friendlyRogue) {
+        await bot.smartMove(friendlyRogue, { getWithin: 20 })
+        if (!bot.s.rspeed) await sleep(2500)
+        if (!bot.s.rspeed) FRIENDLY_ROGUES.splice(FRIENDLY_ROGUES.indexOf(friendlyRogue.id), 1) // They're not giving rspeed, remove them from our list
+    }
 }
 
 export async function goToAggroMonster(bot: Character, entity: Entity): Promise<unknown> {

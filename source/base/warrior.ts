@@ -209,7 +209,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                         if (ringSlot !== undefined) bot.equip(ringSlot, "ring1")
 
                         // Zap
-                        bot.zapperZap(target.id)
+                        bot.zapperZap(target.id).catch(e => console.error(e))
                         bot.mp -= bot.G.skills.zapperzap.mp
                         numNewTargets += 1
                         agitateTargets.splice(i, 1) // Remove the entity from the agitate list
