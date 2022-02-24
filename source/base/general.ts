@@ -1,4 +1,5 @@
 import AL, { Character, Entity, GameResponseData, GMap, HitData, IEntity, InviteData, IPosition, ItemData, ItemName, Merchant, MonsterName, NPCName, Player, Tools, TradeSlotType } from "alclient"
+import fs from "fs"
 import { ItemLevelInfo } from "../definitions/bot.js"
 import { bankingPosition, offsetPositionParty } from "./locations.js"
 
@@ -1040,6 +1041,33 @@ export function startCraftLoop(bot: Character, itemsToCraft = ITEMS_TO_CRAFT): v
         bot.timeouts.set("craftLoop", setTimeout(async () => { craftLoop() }, 1000))
     }
     craftLoop()
+}
+
+export function startDebugLoop(bot: Character): void {
+    const debugFile = `debug_${bot.id}.csv`
+    async function debugLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            // NOTE: Order these in the same order as below
+            const data = []
+            data.push(bot.entities.size)
+            data.push(bot.projectiles.size)
+            data.push(bot.socket.listenersAny().length)
+            fs.appendFileSync(debugFile, data.join(","))
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("debugLoop", setTimeout(async () => { debugLoop() }, 600000))
+    }
+
+    // NOTE: Order these in the same order as above
+    const fields = []
+    fields.push("# entities")
+    fields.push("# projectiles")
+    fields.push("# socket listeners")
+    fs.appendFileSync(debugFile, fields.join(","))
+    debugLoop()
 }
 
 export function startElixirLoop(bot: Character, elixir: ItemName): void {

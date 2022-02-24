@@ -2,7 +2,7 @@ import AL, { Character, Merchant, Priest, Rogue, ServerIdentifier, ServerRegion,
 import { addSocket, startServer } from "algui"
 import { startMerchant, startPriest as startPratPriest, startWarrior as startPratWarrior } from "../prat/shared.js"
 import { level1PratsNearDoor } from "../base/locations.js"
-import { startTrackerLoop } from "../base/general.js"
+import { startDebugLoop, startTrackerLoop } from "../base/general.js"
 import { startRogue as startSpiderRogue } from "../spiders/shared.js"
 
 const region: ServerRegion = "US"
@@ -38,6 +38,7 @@ async function run() {
                 friends[0] = merchant
                 startMerchant(merchant, friends, { map: "main", x: 0, y: -100 })
                 addSocket(merchant.id, merchant.socket, merchant)
+                startDebugLoop(merchant)
                 merchant.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -66,6 +67,7 @@ async function run() {
                 startPratWarrior(warrior, merchant_ID, friends, "vhammer", "glolipop", level1PratsNearDoor)
                 addSocket(warrior.id, warrior.socket, warrior)
                 startTrackerLoop(warrior)
+                startDebugLoop(warrior)
                 warrior.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -93,6 +95,7 @@ async function run() {
                 friends[2] = priest
                 startPratPriest(priest, merchant_ID, friends, level1PratsNearDoor)
                 addSocket(priest.id, priest.socket, priest)
+                startDebugLoop(priest)
                 priest.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -120,6 +123,7 @@ async function run() {
                 friends[3] = rogue
                 startSpiderRogue(rogue, merchant_ID, friends)
                 addSocket(rogue.id, rogue.socket, rogue)
+                startDebugLoop(rogue)
                 rogue.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
