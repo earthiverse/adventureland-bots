@@ -1062,8 +1062,15 @@ export function startDebugLoop(bot: Character, intense = false): void {
 
             // NOTE: Order these in the same order as below
             const data = []
+            data.push(Date.now())
             data.push(bot.entities.size)
             data.push(bot.projectiles.size)
+            let numListeners = 0
+            for (const name in (bot.socket as any)._callbacks) {
+                const event: any[] = (bot.socket as any)._callbacks[name]
+                numListeners += event.length
+            }
+            data.push(numListeners)
             data.push(bot.socket.listenersAny().length)
             fs.appendFileSync(debugFile, `${data.join(",")}\n`)
         } catch (e) {
@@ -1074,9 +1081,11 @@ export function startDebugLoop(bot: Character, intense = false): void {
 
     // NOTE: Order these in the same order as above
     const headers = []
+    headers.push("timestamp")
     headers.push("# entities")
     headers.push("# projectiles")
     headers.push("# socket listeners")
+    headers.push("# any-socket listeners")
     fs.appendFileSync(debugFile, `${headers.join(",")}\n`)
     debugLoop()
 }
