@@ -54,6 +54,8 @@ async function startMerchant(bot: Merchant) {
 
     async function moveLoop() {
         try {
+            if (!bot.socket || bot.socket.disconnected) return // Stop if disconnected
+
             if (bot.map == "crypt" || cryptData) {
                 // We're in the crypt
                 if (isCryptFinished(cryptData)) {

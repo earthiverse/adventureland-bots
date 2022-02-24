@@ -15,6 +15,8 @@ async function run() {
     /** 3: Setup Basics */
     async function moveLoop() {
         try {
+            if (!bot.socket || bot.socket.disconnected) return // Stop if disconnected
+
             const nearest = bot.getEntity({ returnNearest: true, type: "goo" })
             if (AL.Tools.distance(bot, nearest) > bot.range) await bot.move(bot.x + (nearest.x - bot.x) / 2, bot.y + (nearest.y - bot.y) / 2)
 
@@ -31,6 +33,8 @@ async function run() {
     let nextAttack: Date
     async function attackLoop() {
         try {
+            if (!bot.socket || bot.socket.disconnected) return // Stop if disconnected
+
             const nearest = bot.getEntity({ returnNearest: true, type: "goo" })
             if (nearest) {
                 await bot.basicAttack(nearest.id)

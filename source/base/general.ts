@@ -1045,6 +1045,16 @@ export function startCraftLoop(bot: Character, itemsToCraft = ITEMS_TO_CRAFT): v
 
 export function startDebugLoop(bot: Character): void {
     const debugFile = `debug_${bot.id}.csv`
+
+    bot.socket.on("game_response", (data: GameResponseData) => {
+        console.log("----- debugLoop game_response -------------------------------------------------")
+        if (typeof data == "string") {
+            console.debug(data)
+        } else if (typeof data == "object") {
+            console.debug(JSON.stringify(data, null, 2))
+        }
+    })
+
     async function debugLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -1481,7 +1491,7 @@ export function startSendStuffAllowlistLoop(bot: Character, sendTo: string, item
             const sendToPlayer = bot.players.get(sendTo)
 
             if (!sendToPlayer) {
-                bot.timeouts.set("sendstuffallowlistloop", setTimeout(async () => { sendStuffLoop() }, LOOP_MS))
+                bot.timeouts.set("sendStuffAllowListLoop", setTimeout(async () => { sendStuffLoop() }, LOOP_MS))
                 return
             }
 
@@ -1498,7 +1508,7 @@ export function startSendStuffAllowlistLoop(bot: Character, sendTo: string, item
                         await bot.sendItem(sendTo, i, item.q)
                     } catch (e) {
                         // They're probably full
-                        bot.timeouts.set("sendstuffdenylistloop", setTimeout(async () => { sendStuffLoop() }, 5000))
+                        bot.timeouts.set("sendStuffAllowListLoop", setTimeout(async () => { sendStuffLoop() }, 5000))
                         return
                     }
                 }
@@ -1507,7 +1517,7 @@ export function startSendStuffAllowlistLoop(bot: Character, sendTo: string, item
             console.error(e)
         }
 
-        bot.timeouts.set("sendstuffallowlistloop", setTimeout(async () => { sendStuffLoop() }, LOOP_MS))
+        bot.timeouts.set("sendStuffAllowListLoop", setTimeout(async () => { sendStuffLoop() }, LOOP_MS))
     }
     sendStuffLoop()
 }
@@ -1623,12 +1633,12 @@ export function startUpgradeLoop(bot: Character, itemsToSell: ItemLevelInfo = IT
 
             if (bot.q.upgrade) {
                 // We are upgrading, we have to wait
-                bot.timeouts.set("upgradeloop", setTimeout(async () => { upgradeLoop() }, bot.q.upgrade.ms))
+                bot.timeouts.set("upgradeLoop", setTimeout(async () => { upgradeLoop() }, bot.q.upgrade.ms))
                 return
             }
             if (bot.map.startsWith("bank")) {
                 // We are in the bank, we have to wait
-                bot.timeouts.set("upgradeloop", setTimeout(async () => { upgradeLoop() }, LOOP_MS))
+                bot.timeouts.set("upgradeLoop", setTimeout(async () => { upgradeLoop() }, LOOP_MS))
                 return
             }
 
@@ -1688,7 +1698,7 @@ export function startUpgradeLoop(bot: Character, itemsToSell: ItemLevelInfo = IT
             console.error(e)
         }
 
-        bot.timeouts.set("upgradeloop", setTimeout(async () => { upgradeLoop() }, LOOP_MS))
+        bot.timeouts.set("upgradeLoop", setTimeout(async () => { upgradeLoop() }, LOOP_MS))
     }
     upgradeLoop()
 }

@@ -156,6 +156,8 @@ async function startMerchant(bot: Merchant, friends: Character[], holdPosition: 
     }
     async function pvpMoveLoop() {
         try {
+            if (!bot.socket || bot.socket.disconnected) return // Stop if disconnected
+
             await bot.closeMerchantStand()
             await bot.smartMove(holdPosition)
         } catch (e) {
