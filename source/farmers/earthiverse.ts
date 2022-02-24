@@ -67,7 +67,7 @@ async function run() {
                 startPratWarrior(warrior, merchant_ID, friends, "vhammer", "glolipop", level1PratsNearDoor)
                 addSocket(warrior.id, warrior.socket, warrior)
                 startTrackerLoop(warrior)
-                startDebugLoop(warrior, true)
+                startDebugLoop(warrior)
                 warrior.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
