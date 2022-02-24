@@ -1063,7 +1063,9 @@ export function startDebugLoop(bot: Character, intense = false): void {
             // NOTE: Order these in the same order as below
             const data = []
             data.push(Date.now())
-            data.push(process.memoryUsage().heapUsed / 1024 / 1024)
+            const memory = process.memoryUsage()
+            data.push(memory.rss / 1024 / 1024)
+            data.push(memory.heapUsed / 1024 / 1024)
             data.push(bot.entities.size)
             data.push(bot.players.size)
             data.push(bot.chests.size)
@@ -1086,6 +1088,7 @@ export function startDebugLoop(bot: Character, intense = false): void {
     // NOTE: Order these in the same order as above
     const headers = []
     headers.push("timestamp")
+    headers.push("resident set memory (MB)")
     headers.push("heap memory (MB)")
     headers.push("# entities")
     headers.push("# players")
