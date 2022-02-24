@@ -1063,8 +1063,10 @@ export function startDebugLoop(bot: Character, intense = false): void {
             // NOTE: Order these in the same order as below
             const data = []
             data.push(Date.now())
+            data.push(process.memoryUsage().heapUsed / 1024 / 1024)
             data.push(bot.entities.size)
             data.push(bot.players.size)
+            data.push(bot.chests.size)
             data.push(AL.Database.nextUpdate.length)
             data.push(bot.projectiles.size)
             let numListeners = 0
@@ -1084,8 +1086,10 @@ export function startDebugLoop(bot: Character, intense = false): void {
     // NOTE: Order these in the same order as above
     const headers = []
     headers.push("timestamp")
+    headers.push("heap memory (MB)")
     headers.push("# entities")
     headers.push("# players")
+    headers.push("# chests")
     headers.push("# Database next updates")
     headers.push("# projectiles")
     headers.push("# socket listeners")
