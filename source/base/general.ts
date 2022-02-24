@@ -1043,17 +1043,18 @@ export function startCraftLoop(bot: Character, itemsToCraft = ITEMS_TO_CRAFT): v
     craftLoop()
 }
 
-export function startDebugLoop(bot: Character): void {
+export function startDebugLoop(bot: Character, intense = false): void {
     const debugFile = `debug_${bot.id}.csv`
 
-    bot.socket.on("game_response", (data: GameResponseData) => {
-        console.log("----- debugLoop game_response -------------------------------------------------")
-        if (typeof data == "string") {
-            console.debug(data)
-        } else if (typeof data == "object") {
-            console.debug(JSON.stringify(data, null, 2))
-        }
-    })
+    if (intense) {
+        bot.socket.onAny((event: string, data: unknown) => {
+            if (typeof data == "string") {
+                console.debug(`----- debugLoop: ${event}: ${data}`)
+            } else if (typeof data == "object") {
+                console.debug(`----- debugLoop: ${event}: ${JSON.stringify(data)}`)
+            }
+        })
+    }
 
     async function debugLoop() {
         try {
@@ -1064,7 +1065,7 @@ export function startDebugLoop(bot: Character): void {
             data.push(bot.entities.size)
             data.push(bot.projectiles.size)
             data.push(bot.socket.listenersAny().length)
-            fs.appendFileSync(debugFile, data.join(","))
+            fs.appendFileSync(debugFile, `${data.join(",")}\n`)
         } catch (e) {
             console.error(e)
         }
@@ -1072,11 +1073,11 @@ export function startDebugLoop(bot: Character): void {
     }
 
     // NOTE: Order these in the same order as above
-    const fields = []
-    fields.push("# entities")
-    fields.push("# projectiles")
-    fields.push("# socket listeners")
-    fs.appendFileSync(debugFile, fields.join(","))
+    const headers = []
+    headers.push("# entities")
+    headers.push("# projectiles")
+    headers.push("# socket listeners")
+    fs.appendFileSync(debugFile, `${headers.join(",")}\n`)
     debugLoop()
 }
 
