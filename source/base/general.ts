@@ -425,6 +425,7 @@ export async function getMonsterHuntTargets(bot: Character, friends: Character[]
 
 export async function goGetRspeedBuff(bot: Character): Promise<void> {
     if (bot.s.rspeed) return // We already have it
+    if (FRIENDLY_ROGUES.length == 0) return // We don't know any friendly rogues
 
     const friendlyRogue = await AL.PlayerModel.findOne({
         lastSeen: { $gt: Date.now() - 120_000 },

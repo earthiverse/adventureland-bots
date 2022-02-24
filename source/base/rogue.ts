@@ -45,6 +45,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
         return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
     }
 
+    // Use mentalburst if we can kill it in one shot to get extra MP
     if (bot.canUse("mentalburst")) {
         const targets: Entity[] = []
         for (const entity of bot.getEntities({
@@ -69,6 +70,58 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
                 if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
                 friend.deleteEntity(target.id)
             }
+            await bot.mentalBurst(target.id)
+        }
+    }
+
+    // See if we can kill it using a combo to regen MP
+    const canUseQuickPunch = bot.canUse("quickpunch")
+    const canUseQuickStab = bot.canUse("quickstab")
+    if (bot.canUse("mentalburst")
+        && ((canUseQuickPunch && bot.mp > bot.G.skills.mentalburst.mp + bot.G.skills.quickpunch.mp)
+         || (canUseQuickStab && bot.mp > bot.G.skills.mentalburst.mp + bot.G.skills.quickstab.mp))) {
+        const targets: Entity[] = []
+        for (const entity of bot.getEntities({
+            canDamage: true,
+            couldGiveCredit: true,
+            targetingPartyMember: options.targetingPartyMember,
+            targetingPlayer: options.targetingPlayer,
+            typeList: types,
+            willDieToProjectiles: false,
+            withinRange: bot.range
+        })) {
+            if (entity.immune) continue // Entity won't take damage from our combo
+
+            // If it can heal, don't try to combo
+            if (entity.lifesteal) continue
+            if (entity.abilities?.self_healing) continue
+
+            // If it can avoid our combo, don't try
+            if (entity.avoidance || entity.reflection || entity.evasion) continue
+
+            if (!bot.canKillInOneShot(entity, "mentalburst")) continue
+
+            const mentalBurstMinDamage = this.calculateDamageRange(entity, "mentalburst")[0]
+            const quickPunchMinDamage = canUseQuickPunch ? this.calculateDamageRange(entity, "quickpunch")[0] : 0
+            const quickStabMinDamage = canUseQuickStab ? this.calculateDamageRange(entity, "quickstab")[0] : 0
+
+            if (entity.hp < quickPunchMinDamage + quickStabMinDamage) continue // We'd kill it in one hit and not regain MP
+
+            if (mentalBurstMinDamage + quickPunchMinDamage + quickStabMinDamage < entity.hp) continue // We can't do enough damage to kill it with a combo
+
+            targets.push(entity)
+        }
+
+        if (targets.length) {
+            const target = targets[0]
+            for (const friend of friends) {
+                if (!friend) continue // No friend
+                if (friend.id == bot.id) continue // Don't delete it from our own list
+                if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                friend.deleteEntity(target.id)
+            }
+            if (canUseQuickPunch) bot.quickPunch(target.id)
+            if (canUseQuickStab) bot.quickStab(target.id)
             await bot.mentalBurst(target.id)
         }
     }
