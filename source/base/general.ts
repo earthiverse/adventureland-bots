@@ -1064,6 +1064,8 @@ export function startDebugLoop(bot: Character, intense = false): void {
             const data = []
             data.push(Date.now())
             data.push(bot.entities.size)
+            data.push(bot.players.size)
+            data.push(AL.Database.nextUpdate.length)
             data.push(bot.projectiles.size)
             let numListeners = 0
             for (const name in (bot.socket as any)._callbacks) {
@@ -1083,6 +1085,8 @@ export function startDebugLoop(bot: Character, intense = false): void {
     const headers = []
     headers.push("timestamp")
     headers.push("# entities")
+    headers.push("# players")
+    headers.push("# Database next updates")
     headers.push("# projectiles")
     headers.push("# socket listeners")
     headers.push("# any-socket listeners")
