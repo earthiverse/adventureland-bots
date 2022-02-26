@@ -1,6 +1,5 @@
 import AL, { Character, Mage, Merchant, ServerIdentifier, ServerRegion } from "alclient"
 import { startTrackerLoop } from "../base/general.js"
-import { partyLeader, partyMembers } from "../base/party.js"
 import { startMage as startPoisioMage } from "../poisios/shared.js"
 import { startMerchant } from "../prat/shared.js"
 
@@ -10,6 +9,9 @@ const mage1_ID = "attackMag"
 const mage2_ID = "attackMag2"
 const mage3_ID = "attackMag3"
 const merchant_ID = "attackMer"
+
+const partyLeader = mage1_ID
+const partyMembers = [mage1_ID, mage2_ID, mage3_ID]
 
 let mage1: Mage // poisio
 let mage2: Mage // poisio
