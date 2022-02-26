@@ -435,6 +435,7 @@ export async function goGetRspeedBuff(bot: Character): Promise<void> {
         serverRegion: bot.server.region
     }).lean().exec()
     if (friendlyRogue) {
+        if (bot.ctype == "merchant") (bot as Merchant).closeMerchantStand().catch()
         await bot.smartMove(friendlyRogue, { getWithin: 20 })
         if (!bot.s.rspeed) await sleep(2500)
         if (!bot.s.rspeed) FRIENDLY_ROGUES.splice(FRIENDLY_ROGUES.indexOf(friendlyRogue.id), 1) // They're not giving rspeed, remove them from our list
