@@ -80,14 +80,15 @@ if (character.controller) partyLoop()
 
 async function lootLoop() {
     try {
+        const parents = getParentsOfCharacters(true)
         for (const id in parent.chests) {
             // Don't open far away chests
             const chest = parent.chests[id]
             if (distance(character, chest) > 800) continue
 
             // Remove the chests from the others to lower call code cost opening already opened chests
-            for (const friendsParent of getParentsOfCharacters(true)) {
-                if (friendsParent == top) continue // Don't delete from
+            for (const friendsParent of parents) {
+                if (friendsParent == top) continue // Don't delete from top
                 delete friendsParent.chests[id]
             }
 
