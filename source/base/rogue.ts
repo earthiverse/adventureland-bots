@@ -78,8 +78,8 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
     const canUseQuickPunch = bot.canUse("quickpunch")
     const canUseQuickStab = bot.canUse("quickstab")
     if (bot.canUse("mentalburst")
-        && ((canUseQuickPunch && bot.mp > bot.G.skills.mentalburst.mp + bot.G.skills.quickpunch.mp)
-         || (canUseQuickStab && bot.mp > bot.G.skills.mentalburst.mp + bot.G.skills.quickstab.mp))) {
+        && ((canUseQuickPunch && bot.mp >= bot.G.skills.mentalburst.mp + bot.G.skills.quickpunch.mp)
+         || (canUseQuickStab && bot.mp >= bot.G.skills.mentalburst.mp + bot.G.skills.quickstab.mp))) {
         const targets: Entity[] = []
         for (const entity of bot.getEntities({
             canDamage: true,
