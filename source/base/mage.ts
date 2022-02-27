@@ -1,4 +1,4 @@
-import AL, { Character, Entity, Mage, MonsterName, Pathfinder, SlotType, TradeItemInfo, TradeSlotType } from "alclient"
+import AL, { ActionData, Character, Entity, Mage, MonsterName, Pathfinder, SlotType, TradeItemInfo, TradeSlotType } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { Information } from "../definitions/bot"
 
@@ -242,3 +242,9 @@ export function magiportStrangerIfNotNearby(bot: Mage, id: string): void {
     bot.magiport(id).catch(e => console.error(e))
     lastMagiport.set(id, Date.now())
 }
+
+// export function startKillSteal(bot: Mage) {
+//     bot.socket.on("action", (data: ActionData) => {
+
+//     })
+// }

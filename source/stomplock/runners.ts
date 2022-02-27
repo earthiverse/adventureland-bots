@@ -49,9 +49,8 @@ export async function startMailBankKeysToEarthiverseLoop(bot: Character): Promis
 
             const bankKey = bot.locateItem("bkey")
             if (bankKey !== undefined) {
-                // TODO: Implement these in ALClient
-                bot.socket.emit("imove", { "a": 0, "b": bankKey })
-                bot.socket.emit("mail", { item: true, message: "sell it", subject: "bank key!", to: "earthiverse" })
+                bot.swapItems(0, bankKey)
+                bot.sendMail("earthiverse", "bank key!", "sell it", true)
             }
         } catch (e) {
             console.error

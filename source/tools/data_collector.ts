@@ -1,5 +1,5 @@
 import axios from "axios"
-import AL, { Character, NewMapData, ServerData } from "alclient"
+import AL, { Character, NewMapData, ServerInfoData } from "alclient"
 import { getTargetServerFromDate, SERVER_HOP_SERVERS } from "../base/serverhop.js"
 
 const servers = SERVER_HOP_SERVERS
@@ -20,7 +20,7 @@ async function run() {
 
         if (SEND_ALDATA) {
             // Server Status
-            observer.socket.on("server_info", async (data: ServerData) => {
+            observer.socket.on("server_info", async (data: ServerInfoData) => {
                 const statuses = Object.keys(data).filter(k => { return typeof data[k] === "object" }).map(e => {
                     data[e].eventname = e
                     data[e].server_region = region
