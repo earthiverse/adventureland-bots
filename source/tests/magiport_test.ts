@@ -1,5 +1,5 @@
 import AL from "alclient"
-import { sleep } from "../base/general"
+import { sleep } from "../base/general.js"
 
 async function run() {
     // Prepare pathfinding
