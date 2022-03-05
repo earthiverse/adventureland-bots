@@ -423,7 +423,7 @@ export async function getMonsterHuntTargets(bot: Character, friends: Character[]
     return targets
 }
 
-export async function goGetRspeedBuff(bot: Character): Promise<void> {
+export async function goGetRspeedBuff(bot: Character, msToWait = 10000): Promise<void> {
     if (bot.s.rspeed) return // We already have it
     if (FRIENDLY_ROGUES.length == 0) return // We don't know any friendly rogues
 
@@ -436,9 +436,26 @@ export async function goGetRspeedBuff(bot: Character): Promise<void> {
     }).lean().exec()
     if (friendlyRogue) {
         if (bot.ctype == "merchant") (bot as Merchant).closeMerchantStand().catch()
-        await bot.smartMove(friendlyRogue, { getWithin: 20 })
-        if (!bot.s.rspeed) await sleep(2500)
-        if (!bot.s.rspeed) FRIENDLY_ROGUES.splice(FRIENDLY_ROGUES.indexOf(friendlyRogue.id), 1) // They're not giving rspeed, remove them from our list
+        await bot.smartMove(friendlyRogue, { getWithin: 20, useBlink: true })
+        if (["earthRog"].includes(friendlyRogue.id)) return // Don't remove earthRog from the list, they're probably just low MP
+
+        // Wait a bit for rspeed
+        if (!bot.s.rspeed) {
+            const rspeedReceived = new Promise<boolean>((resolve) => {
+                const interval = setInterval(() => {
+                    if (bot.s.rspeed) {
+                        clearInterval(interval)
+                        resolve(true)
+                    }
+                }, 250)
+                setTimeout(() => {
+                    if (!bot.s.rspeed) FRIENDLY_ROGUES.splice(FRIENDLY_ROGUES.indexOf(friendlyRogue.id), 1) // They're not giving rspeed, remove them from our list
+                    clearInterval(interval)
+                    resolve(false)
+                }, msToWait)
+            })
+            await rspeedReceived
+        }
     }
 }
 
