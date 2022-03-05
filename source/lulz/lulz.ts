@@ -4,7 +4,7 @@ import bodyParser from "body-parser"
 import { body, validationResult } from "express-validator"
 
 import AL, { Character } from "alclient"
-import { startSharedRanger } from "../crabs/runners.js"
+import { startSharedMage as startCrabMage, startSharedRanger as startCrabRanger } from "../crabs/runners.js"
 
 const MAX_CHARACTERS = 8
 
@@ -51,8 +51,26 @@ app.post("/",
                     if (index !== -1) friends.splice(index, 1)
                 })
                 online[req.body.char] = ranger
-                startSharedRanger(ranger, friends)
-                return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
+                friends.push(ranger)
+                if (req.body.monster == "crab") {
+                    startCrabRanger(ranger, friends)
+                    return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
+                }
+            }
+            if (req.body.char_type == "mage") {
+                const mage = new AL.Mage(req.body.user, req.body.auth, req.body.char, AL.Game.G, AL.Game.servers["US"]["I"])
+                await mage.connect()
+                mage.socket.on("disconnect", () => {
+                    delete online[req.body.char]
+                    const index = friends.indexOf(mage)
+                    if (index !== -1) friends.splice(index, 1)
+                })
+                online[req.body.char] = mage
+                friends.push(mage)
+                if (req.body.monster == "crab") {
+                    startCrabMage(mage, friends)
+                    return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
+                }
             }
         } catch (e) {
             return res.status(500).send(e)
