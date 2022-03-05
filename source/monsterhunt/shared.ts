@@ -46,7 +46,7 @@ export async function getTarget(bot: Character, strategy: Strategy, information:
             if (realEntity.couldGiveCreditForKill(bot)) return realEntity.type
 
             // Update the database to let others know that this entity is taken
-            AL.Database.nextUpdate.set(`${bot.server.name}${bot.server.region}${entity.name}`, Date.now() + Constants.MONGO_UPDATE_MS)
+            AL.Database.nextUpdate.set(`${bot.server.name}${bot.server.region}${realEntity.id}`, Date.now() + Constants.MONGO_UPDATE_MS)
             await AL.EntityModel.updateOne({ name: realEntity.id, serverIdentifier: bot.serverData.name, serverRegion: bot.serverData.region, type: realEntity.type },
                 { hp: realEntity.hp, lastSeen: Date.now(), level: realEntity.level, map: realEntity.map, target: realEntity.target, x: realEntity.x, y: realEntity.y },
                 { upsert: true }).lean().exec()

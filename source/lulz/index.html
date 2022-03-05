@@ -1,0 +1,37 @@
+<form action="/" method="post">
+    <label for="user">User ID: </label>
+    <input id="user" type="text" name="user" placeholder="16 digit user id"><br>
+    <label for="auth">Auth: </label>
+    <input id="auth" type="text" name="auth" placeholder="21 character auth code"><br>
+    <label for="char">Character ID: </label>
+    <input id="char" type="text" name="char" placeholder="16 digit character code"><br>
+    <label for="char_type">Character Type: </label>
+    <select name="char_type">
+        <option>ranger</option>
+    </select>
+    <label for="monster">Monster: </label>
+    <select name="monster">
+        <option>crab</option>
+    </select>
+    <input type="submit" value="Start">
+</form>
+<br>
+<pre>
+NOTES:
+    - Characters will start on US I
+    - Characters will not sell, transfer, or bank items they collect
+    - Characters will heal and
+    - Characters will buy MP and HP potions
+
+How to stop:
+    1) Run parent.api_call("disconnect_character", {name: "character_id_here"}) in Adventure Land from another character.
+</pre>
+<br>
+<pre>
+// Start a character, then run this code to get the values:
+show_json({
+    "user_id": parent.user_id,
+    "auth": parent.user_auth,
+    "char_id": parent.real_id
+})
+</pre>

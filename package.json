@@ -8,7 +8,11 @@
     "alclient": "^0.9.49",
     "algui": "^0.1.14",
     "axios": "^0.25.0",
+    "body-parser": "^1.19.2",
     "console-table-printer": "^2.10.0",
+    "copyfiles": "^2.4.1",
+    "express": "^4.17.3",
+    "express-validator": "^6.14.0",
     "fastpriorityqueue": "^0.7.1",
     "node-trilateration": "^1.0.0",
     "queue-promise": "^2.2.1"
@@ -20,6 +24,7 @@
     "typescript": "^4.5.5"
   },
   "scripts": {
+    "build": "tsc && copyfiles --up 1 source/**/*.html build",
     "lint": "eslint */**.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

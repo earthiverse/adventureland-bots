@@ -1,6 +1,8 @@
-import AL, { Constants, GMap, Mage, MapName, MonsterName, ServerIdentifier, ServerRegion, Tools } from "alclient"
+import AL, { Character, GMap, Mage, MapName, MonsterName, Ranger, ServerIdentifier, ServerRegion, Tools } from "alclient"
 import { startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToPotionSellerIfLow, goToBankIfFull } from "../base/general.js"
+import { mainCrabs, offsetPositionParty } from "../base/locations.js"
 import { partyLeader, partyMembers } from "../base/party.js"
+import { attackTheseTypesRanger } from "../base/ranger.js"
 
 export type Boundary = { x: [number, number], y: [number, number] }
 
@@ -160,6 +162,57 @@ export async function startShared(bot: Mage, targets: MonsterName[], friends: Ma
         } catch (e) {
             console.error(e)
         }
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+    }
+    moveLoop()
+}
+
+export async function startSharedRanger(bot: Ranger, friends: Character[]) {
+    startHealLoop(bot)
+    startLootLoop(bot)
+    startPartyLoop(bot, "earthMer")
+
+    async function attackLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            if (
+                bot.rip // We are dead
+                || bot.c.town // We are teleporting to town
+            ) {
+                // We are dead
+                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                return
+            }
+
+            await attackTheseTypesRanger(bot, ["crab"], friends, { disableHuntersMark: true, disableSupershot: true })
+        } catch (e) {
+            console.error(e)
+        }
+        setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack")))
+    }
+    attackLoop()
+
+    async function moveLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            // If we are dead, respawn
+            if (bot.rip) {
+                await bot.respawn()
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+                return
+            }
+
+            if (bot.party) {
+                await bot.smartMove(offsetPositionParty(mainCrabs, bot))
+            } else {
+                await bot.smartMove(mainCrabs)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }
