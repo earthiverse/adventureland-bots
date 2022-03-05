@@ -1,4 +1,5 @@
 import AL from "alclient"
+import { sleep } from "../base/general"
 
 async function run() {
     // Prepare pathfinding
@@ -23,6 +24,7 @@ async function run() {
     // promises.push(target.smartMove({ map: "arena", x: 1100, y: 0 }))
     promises.push(magiporter.smartMove({ map: "arena", x: 150, y: 40 }))
     promises.push(supporter.smartMove({ map: "main", x: 0, y: 0 }))
+    promises.push(sleep(10000)) // Can't attack right away from spawning
     await Promise.all(promises)
 
     // Blink -> Magiport -> Attack
