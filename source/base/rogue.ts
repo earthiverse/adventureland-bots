@@ -273,7 +273,7 @@ export function startRSpeedLoop(bot: Rogue, options: {
             // Give rogue speed to friends
             if (!options.disableGiveToFriends && bot.canUse("rspeed")) {
                 for (const [, player] of bot.players) {
-                    if (player.s.rspeed && player.s.rspeed.ms > 300_000) continue // Already has rogue speed
+                    if (player.s.rspeed?.ms > 300_000) continue // Already has rogue speed
                     if (bot.party !== player.party && bot.owner !== player.owner) continue // Not a friend
                     if (AL.Tools.distance(bot, player) > bot.G.skills.rspeed.range) continue // Too far away
 
@@ -285,7 +285,7 @@ export function startRSpeedLoop(bot: Rogue, options: {
             // Give rogue speed to random players
             if (!options.enableGiveToStrangers && bot.canUse("rspeed")) {
                 for (const [, player] of bot.players) {
-                    if (player.s.rspeed && player.s.rspeed.ms > 300_000) continue // Already has rogue speed
+                    if (player.s.rspeed?.ms > 300_000) continue // Already has rogue speed
                     if (AL.Tools.distance(bot, player) > bot.G.skills.rspeed.range) continue // Too far away
 
                     await bot.rspeed(player.id)
@@ -297,7 +297,7 @@ export function startRSpeedLoop(bot: Rogue, options: {
             if (options.giveToThesePlayers && bot.canUse("rspeed")) {
                 for (const [, player] of bot.players) {
                     if (!options.giveToThesePlayers.includes(player.id)) continue // Not in the list
-                    if (player.s.rspeed && player.s.rspeed.ms > 300_000) continue // Already has rogue speed
+                    if (player.s.rspeed?.ms > 300_000) continue // Already has rogue speed
                     if (AL.Tools.distance(bot, player) > bot.G.skills.rspeed.range) continue // Too far away
 
                     await bot.rspeed(player.id)

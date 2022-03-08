@@ -178,7 +178,7 @@ export const ITEMS_TO_SELL: ItemLevelInfo = {
 // Sanity check
 for (const itemName in ITEMS_TO_SELL) {
     if (ITEMS_TO_BUY.has(itemName as ItemName)) {
-        console.warn(`Removing ${itemName} from ITEMS_TO_BUY because it's in ITEMS_TO_SELL.`)
+        console.warn(`Removing ${itemName} from ITEMS_TO_SELL because it's in ITEMS_TO_BUY.`)
         delete ITEMS_TO_SELL[itemName]
     }
 }
@@ -449,7 +449,8 @@ export async function goGetRspeedBuff(bot: Character, msToWait = 10000): Promise
                     }
                 }, 250)
                 setTimeout(() => {
-                    if (!bot.s.rspeed) FRIENDLY_ROGUES.splice(FRIENDLY_ROGUES.indexOf(friendlyRogue.id), 1) // They're not giving rspeed, remove them from our list
+                    const index = FRIENDLY_ROGUES.indexOf(friendlyRogue.id)
+                    if (!bot.s.rspeed && index !== -1) FRIENDLY_ROGUES.splice(index, 1) // They're not giving rspeed, remove them from our list
                     clearInterval(interval)
                     resolve(false)
                 }, msToWait)
