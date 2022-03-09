@@ -283,7 +283,7 @@ export function startRSpeedLoop(bot: Rogue, options: {
             }
 
             // Give rogue speed to random players
-            if (!options.enableGiveToStrangers && bot.canUse("rspeed")) {
+            if (options.enableGiveToStrangers && bot.canUse("rspeed")) {
                 for (const [, player] of bot.players) {
                     if (player.s.rspeed?.ms > 300_000) continue // Already has rogue speed
                     if (AL.Tools.distance(bot, player) > bot.G.skills.rspeed.range) continue // Too far away
