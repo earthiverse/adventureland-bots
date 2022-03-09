@@ -1092,12 +1092,15 @@ export function startDebugLoop(bot: Character, intense = false): void {
             data.push(AL.Database.nextUpdate.length)
             data.push(bot.projectiles.size)
             let numListeners = 0
+            const listeners = new Map<string, number>()
             for (const name in (bot.socket as any)._callbacks) {
                 const event: any[] = (bot.socket as any)._callbacks[name]
+                listeners.set(name, event.length)
                 numListeners += event.length
             }
             data.push(numListeners)
             data.push(bot.socket.listenersAny().length)
+            data.push(JSON.stringify(Object.fromEntries(listeners)))
             fs.appendFileSync(debugFile, `${data.join(",")}\n`)
         } catch (e) {
             console.error(e)
@@ -1117,6 +1120,7 @@ export function startDebugLoop(bot: Character, intense = false): void {
     headers.push("# projectiles")
     headers.push("# socket listeners")
     headers.push("# any-socket listeners")
+    headers.push("socket listener counts")
     fs.appendFileSync(debugFile, `${headers.join(",")}\n`)
     debugLoop()
 }
