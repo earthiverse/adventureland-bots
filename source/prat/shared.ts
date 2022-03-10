@@ -287,9 +287,9 @@ export async function startMerchant(bot: Merchant, friends: Character[], standPl
                     if (!(bot.S[type] as ServerInfoDataLive).target) continue
                     if (bot.S[type]["x"] == undefined || bot.S[type]["y"] == undefined) continue // No location data
 
-                    if (AL.Tools.distance(bot, (bot.S[type] as IPosition)) > 100) {
+                    if (AL.Tools.distance(bot, (bot.S[type] as IPosition)) > 25) {
                         await bot.closeMerchantStand()
-                        await bot.smartMove((bot.S[type] as IPosition), { getWithin: 100 })
+                        await bot.smartMove((bot.S[type] as IPosition), { getWithin: 25 })
                     }
 
                     bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
