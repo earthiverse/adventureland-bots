@@ -42,7 +42,7 @@ export async function startMage(bot: Mage, merchant: string, friends: Character[
             }
 
             // Idle strategy
-            await attackTheseTypesMage(bot, ["poisio", "bee"], friends)
+            await attackTheseTypesMage(bot, ["poisio", "bee"], friends, { cburstWhenHPLessThan: 200 })
         } catch (e) {
             console.error(e)
         }
