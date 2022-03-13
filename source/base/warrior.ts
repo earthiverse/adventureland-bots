@@ -219,7 +219,6 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                     }
                     break
                 }
-
             }
         }
     }
@@ -257,6 +256,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
         }
 
         const targets = new FastPriorityQueue<Entity>(priority)
+        const numTargets = bot.calculateTargets()
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
@@ -265,6 +265,12 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
             willDieToProjectiles: false,
             withinRange: bot.range
         })) {
+            if (!entity.target && options.maximumTargets
+                 && (numTargets.magical + numTargets.physical + numTargets.pure) >= options.maximumTargets) {
+                // Attacking this entity will push us over our maximumTargets, so don't attack
+                continue
+            }
+
             targets.add(entity)
         }
         if (targets.size) {
@@ -288,7 +294,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                 }
 
                 if (!avoidStomp) {
-                // Equip to bash if we don't have it already equipped
+                    // Equip to bash if we don't have it already equipped
                     const mainhand = bot.slots.mainhand?.name
                     let mainhandSlot: number
                     const offhand = bot.slots.offhand?.name
