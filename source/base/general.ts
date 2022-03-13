@@ -9,7 +9,7 @@ export const CHECK_TRACKER_EVERY_MS = 600_000 /** 10 minutes */
 
 export const GOLD_TO_HOLD = 5_000_000
 
-export const FRIENDLY_ROGUES = ["copper", "Bjarna", "RisingVanir", "earthRog"]
+export const FRIENDLY_ROGUES = ["copper", "Bjarna", "RisingVanir", "DripDrop", "earthRog"]
 
 export const MY_CHARACTERS = ["earthiverse", "earthMag", "earthMag2", "earthMag3", "earthMer", "earthMer2", "earthMer3", "earthPal", "earthPri", "earthPri2", "earthRan2", "earthRan3", "earthRog", "earthRog2", "earthRog3", "earthWar", "earthWar2", "earthWar3"]
 export const ANNOUNCEMENT_CHARACTERS = ["announcement", "battleworthy", "charmingness", "decisiveness", "enlightening", "facilitating", "gratuitously", "hypothesized", "illumination", "journalistic", "kaleidoscope", "logistically"]
