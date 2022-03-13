@@ -44,49 +44,6 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
         return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
     }
 
-    if (bot.canUse("attack")) {
-        const targets = new FastPriorityQueue<Entity>(attackPriority)
-        for (const entity of bot.getEntities({
-            canDamage: true,
-            couldGiveCredit: true,
-            targetingPartyMember: options.targetingPartyMember,
-            targetingPlayer: options.targetingPlayer,
-            typeList: types,
-            willDieToProjectiles: false,
-            withinRange: bot.range
-        })) {
-            targets.add(entity)
-        }
-
-        const target = targets.peek()
-        if (!target) return // No target
-
-        if (bot.canKillInOneShot(target)) {
-            for (const friend of friends) {
-                if (!friend) continue // No friend
-                if (friend.id == bot.id) continue // Don't delete it from our own list
-                if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
-                friend.deleteEntity(target.id)
-            }
-        }
-
-        // Use our friends to energize for the attack speed boost
-        if (!bot.s.energized && !options.disableEnergize) {
-            for (const friend of friends) {
-                if (!friend) continue // Friend is missing
-                if (friend.socket.disconnected) continue // Friend is disconnected
-                if (friend.id == bot.id) continue // Can't energize ourselves
-                if (AL.Tools.distance(bot, friend) > bot.G.skills.energize.range) continue // Too far away
-                if (!friend.canUse("energize")) continue // Friend can't use energize
-
-                // Energize!
-                (friend as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp))).catch(e => console.error(e))
-                break
-            }
-        }
-        await bot.basicAttack(target.id)
-    }
-
     if (bot.canUse("cburst") && !options.disableCburst) {
         const targets = new Map<string, number>()
 
@@ -184,6 +141,49 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
                 await bot.cburst(cburstTargets)
             }
         }
+    }
+
+    if (bot.canUse("attack")) {
+        const targets = new FastPriorityQueue<Entity>(attackPriority)
+        for (const entity of bot.getEntities({
+            canDamage: true,
+            couldGiveCredit: true,
+            targetingPartyMember: options.targetingPartyMember,
+            targetingPlayer: options.targetingPlayer,
+            typeList: types,
+            willDieToProjectiles: false,
+            withinRange: bot.range
+        })) {
+            targets.add(entity)
+        }
+
+        const target = targets.peek()
+        if (!target) return // No target
+
+        if (bot.canKillInOneShot(target)) {
+            for (const friend of friends) {
+                if (!friend) continue // No friend
+                if (friend.id == bot.id) continue // Don't delete it from our own list
+                if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                friend.deleteEntity(target.id)
+            }
+        }
+
+        // Use our friends to energize for the attack speed boost
+        if (!bot.s.energized && !options.disableEnergize) {
+            for (const friend of friends) {
+                if (!friend) continue // Friend is missing
+                if (friend.socket.disconnected) continue // Friend is disconnected
+                if (friend.id == bot.id) continue // Can't energize ourselves
+                if (AL.Tools.distance(bot, friend) > bot.G.skills.energize.range) continue // Too far away
+                if (!friend.canUse("energize")) continue // Friend can't use energize
+
+                // Energize!
+                (friend as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp))).catch(e => console.error(e))
+                break
+            }
+        }
+        await bot.basicAttack(target.id)
     }
 
     // Cburst when we have a lot of mp
