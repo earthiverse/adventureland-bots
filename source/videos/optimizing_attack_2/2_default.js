@@ -1,10 +1,9 @@
 /* eslint-disable no-undef */
-load_code("base") // Performs the healing, looting, and movement for us
+load_code("base")
 
 // Script variables
 const SCRIPT_NAME = "default"
 const MERCHANT = "attackMer"
-// You can run up to 3 attacking characters and 1 merchant at a time.
 const ATTACKING_CHARACTERS = ["attackMag", "attackMag2", "attackMag3"]
 const CHARACTERS = [MERCHANT, ...ATTACKING_CHARACTERS]
 const MONSTER = "bee"
@@ -22,6 +21,7 @@ if (!character.controller) {
 }
 
 async function attackLoop() {
+    // This loop is the same as where we left off in the first video
     try {
         const nearest = get_nearest_monster({ type: MONSTER })
         if (!nearest) {
