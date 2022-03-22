@@ -1,4 +1,4 @@
-import AL, { Character, Entity, GameResponseData, GMap, HitData, IEntity, InviteData, IPosition, ItemData, ItemName, Merchant, MonsterName, NPCName, Player, Tools, TradeSlotType } from "alclient"
+import AL, { Character, Entity, GameResponseData, GMap, HitData, IEntity, InviteData, IPosition, ItemData, ItemName, MapName, Merchant, MonsterName, NPCName, Player, Tools, TradeSlotType } from "alclient"
 import fs from "fs"
 import { ItemLevelInfo } from "../definitions/bot.js"
 import { bankingPosition, offsetPositionParty } from "./locations.js"
@@ -873,6 +873,17 @@ export function startBuyLoop(bot: Character, itemsToBuy = ITEMS_TO_BUY, replenis
                     if (!item.rid) continue // Not a trade item
                     if (item.b) continue // They are buying, not selling
 
+                    let buyableFromNPC = false
+                    for (const map in bot.G.maps) {
+                        if (buyableFromNPC == true) break
+                        if (bot.G.maps[map as MapName].ignore) continue
+                        for (const npc of (bot.G.maps[map as MapName] as GMap).npcs) {
+                            if (buyableFromNPC == true) break
+                            if (bot.G.npcs[npc.id].items == undefined) continue
+                            buyableFromNPC = bot.G.npcs[npc.id].items.includes(item.name)
+                        }
+                    }
+
                     const q = item.q === undefined ? 1 : item.q
 
                     // Join new giveaways if we're a merchant
@@ -885,7 +896,7 @@ export function startBuyLoop(bot: Character, itemsToBuy = ITEMS_TO_BUY, replenis
                     const cost = bot.calculateItemCost(item)
                     if (bot.gold >= item.price &&
                         ((item.price < cost * 0.6) // Item is lower price than G, which means we could sell it to an NPC straight away and make a profit...
-                        || (itemsToBuy.has(item.name) && item.price <= cost * AL.Constants.PONTY_MARKUP)) // Item is the same, or lower price than Ponty would sell it for, and we want it.
+                        || (itemsToBuy.has(item.name) && !buyableFromNPC && item.price <= cost * AL.Constants.PONTY_MARKUP)) // Item is the same, or lower price than Ponty would sell it for, and we want it.
                     ) {
                         await bot.buyFromMerchant(player.id, slot, item.rid, q)
                         continue
