@@ -63,7 +63,7 @@ function getBestTargets(options = {}) {
 async function attackLoop() {
     try {
         // We are now using custom logic that includes checking the ignore list
-        const best = getBestTargets({ type: MONSTER })[0]
+        const best = getBestTargets({ max_range: character.range, type: MONSTER })[0]
         if (!best) {
             set_message("No Monsters")
         } else if (can_attack(best)) {

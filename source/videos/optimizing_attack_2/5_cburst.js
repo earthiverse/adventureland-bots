@@ -65,22 +65,21 @@ function getBestTargets(options = {}) {
 
 async function attackLoop() {
     try {
-        const target = getBestTargets({ max_range: character.range, type: MONSTER })[0]
-        if (!target) {
+        const best = getBestTargets({ max_range: character.range, type: MONSTER })[0]
+        if (!best) {
             set_message("No Monsters")
             setTimeout(async () => { attackLoop() }, Math.max(1, ms_to_next_skill("attack")))
             return
         }
 
-        if (canUse("attack")
-            && distance(character, target) < character.range) {
+        if (canUse("attack")) {
             set_message("Attacking")
 
-            if (canKillInOneShot(target)) ignoreEntityOnOtherCharacters(target)
+            if (canKillInOneShot(best)) ignoreEntityOnOtherCharacters(best)
 
             getEnergizeFromFriend()
 
-            await attack(target)
+            await attack(best)
             reduce_cooldown("attack", Math.min(...parent.pings))
         }
 

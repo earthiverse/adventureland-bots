@@ -51,18 +51,18 @@ function getBestTargets(options = {}) {
 
 async function attackLoop() {
     try {
-        const nearest = getBestTargets({ type: MONSTER })[0]
-        if (!nearest) {
+        const best = getBestTargets({ max_range: character.range, type: MONSTER })[0]
+        if (!best) {
             set_message("No Monsters")
-        } else if (can_attack(nearest)) {
+        } else if (can_attack(best)) {
             set_message("Attacking")
 
-            if (canKillInOneShot(nearest)) ignoreEntityOnOtherCharacters(nearest)
+            if (canKillInOneShot(best)) ignoreEntityOnOtherCharacters(best)
 
             /** Let's use our other characters to energize each other */
             getEnergizeFromFriend()
 
-            await attack(nearest)
+            await attack(best)
             reduce_cooldown("attack", Math.min(...parent.pings))
         }
     } catch (e) {

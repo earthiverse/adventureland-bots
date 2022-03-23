@@ -5,12 +5,6 @@
  * The following code is used in `default` and later scripts
  *****************************************************************************/
 
-// Constants
-const MPOT0_RECOVERY = G.items.mpot0.gives[0][1]
-const MPOT1_RECOVERY = G.items.mpot1.gives[0][1]
-const HPOT0_RECOVERY = G.items.hpot0.gives[0][1]
-const HPOT1_RECOVERY = G.items.hpot1.gives[0][1]
-
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
@@ -153,6 +147,10 @@ function startStatisticsLoop(scriptName, characters) {
     statisticsLoop()
 }
 
+const MPOT0_RECOVERY = G.items.mpot0.gives[0][1]
+const MPOT1_RECOVERY = G.items.mpot1.gives[0][1]
+const HPOT0_RECOVERY = G.items.hpot0.gives[0][1]
+const HPOT1_RECOVERY = G.items.hpot1.gives[0][1]
 async function regenLoop() {
     try {
         const hpRatio = character.hp / character.max_hp
@@ -168,7 +166,7 @@ async function regenLoop() {
         }
 
         if (mpRatio < hpRatio) {
-            // We want to heal MP
+            // We want to regen MP
             const mpot0 = locate_item("mpot0")
             const mpot1 = locate_item("mpot1")
 
@@ -186,7 +184,7 @@ async function regenLoop() {
                 setTimeout(() => { reduce_cooldown("use_hp", minPing) }, 2 * minPing)
             }
         } else if (character.hp !== character.max_hp) {
-            // We want to heal HP
+            // We want to regen HP
             const hpot0 = locate_item("hpot0")
             const hpot1 = locate_item("hpot1")
 

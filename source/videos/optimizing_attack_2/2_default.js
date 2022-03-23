@@ -24,7 +24,7 @@ async function attackLoop() {
     // This loop is the same as where we left off in the first video
     try {
         const nearest = get_nearest_monster({ type: MONSTER })
-        if (!nearest) {
+        if (!nearest || distance(character, nearest) > character.range) {
             set_message("No Monsters")
         } else if (can_attack(nearest)) {
             set_message("Attacking")
