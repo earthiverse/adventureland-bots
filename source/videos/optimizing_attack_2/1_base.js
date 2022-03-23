@@ -211,6 +211,11 @@ async function regenLoop() {
 }
 regenLoop()
 
+const POTIONS_TO_HOLD = {
+    "hpot1": 2500,
+    "mpot1": 2500
+}
+const SEND_POTIONS_AT_RATIO = 0.9 // We will send potions if they drop below (POTIONS_TO_HOLD[itemName] * REPLENISH_AT_RATIO) quantity for the given item.
 async function buyAndSendPotionsLoop(names) {
     try {
         // If we don't have a computer don't buy and send potions.
@@ -221,27 +226,24 @@ async function buyAndSendPotionsLoop(names) {
         for (const friend of getCharacters(true)) {
             if (distance(character, friend) > 400) continue // Friend is too far away
 
-            const toHold = {
-                "hpot1": 2500,
-                "mpot1": 2500
-            }
+            const potionsToSend = { ...POTIONS_TO_HOLD }
 
             for (let i = 0; i < friend.isize; i++) {
                 const item = friend.items[i]
                 if (!item) continue // No item in this slot
-                if (!toHold[item.name]) continue // Not interested in this item
-                toHold[item.name] -= item.q
-                if (toHold[item.name] < 0) delete toHold[item.name]
+                if (!potionsToSend[item.name]) continue // Not interested in this item
+                potionsToSend[item.name] -= item.q // We found some in our inventory, don't buy as many
             }
 
-            for (const itemName in toHold) {
-                const qToSend = toHold[itemName]
-                const ourQ = quantity(itemName)
-                const ourQAfterSending = ourQ - qToSend
+            for (const itemName in potionsToSend) {
+                const qToHold = POTIONS_TO_HOLD[itemName]
+                const qToSend = potionsToSend[itemName]
 
-                // Buy enough so we have 2500 on the merchant after sending
-                if (ourQAfterSending < 2500) await buy(itemName, 1000 - qToSend)
-                await buy(itemName, qToSend)
+                if (qToSend < (qToHold * (1 - SEND_POTIONS_AT_RATIO))) continue // They have enough to not trigger sending more
+
+                const ourQ = quantity(itemName)
+                const qToBuy = qToHold + qToSend - ourQ
+                if (qToBuy > 0) await buy(itemName, qToBuy)
                 await send_item(friend.id, locate_item(itemName), qToSend)
             }
         }
@@ -251,6 +253,8 @@ async function buyAndSendPotionsLoop(names) {
     setTimeout(async () => { buyAndSendPotionsLoop(names) }, 1000)
 }
 
+const GOLD_TO_HOLD = 1_000_000
+const SEND_GOLD_AT_RATIO = 1.1 // We will send gold when we reach (GOLD_TO_HOLD * SEND_GOLD_AT_RATIO) gold.
 async function sendStuffLoop(name) {
     try {
         const sendTo = parent.entities[name]
@@ -264,7 +268,7 @@ async function sendStuffLoop(name) {
                 await send_item(name, i, item.q ?? 1)
             }
 
-            if (character.gold > 1_000_000) await send_gold(sendTo, character.gold - 1_000_000)
+            if (character.gold > (GOLD_TO_HOLD * SEND_GOLD_AT_RATIO)) await send_gold(sendTo, character.gold - GOLD_TO_HOLD)
         }
     } catch (e) {
         console.error(e)
