@@ -469,6 +469,7 @@ function canUse(skill, options = {}) {
 // Overwrite the can_use function with our new & improved one
 parent.can_use = canUse
 
+const MP_TO_RESERVE = 500
 /**
  * This function will check if there is a mage we are controlling nearby that can use energize.
  * If it can, we will use energize on that mage.
@@ -484,7 +485,7 @@ function getEnergizeFromFriend(amount = 1) {
         if (distance(friend, character) > G.skills.energize.range) continue // We are too far away from our friend
 
         // Let's request an energize from our friend!
-        friendP.use_skill("energize", character.id, amount)
+        friendP.use_skill("energize", character.id, Math.max(1, Math.min(friend.mp - MP_TO_RESERVE, amount)))
     }
 }
 
@@ -493,7 +494,7 @@ function getEnergizeFromFriend(amount = 1) {
  *****************************************************************************/
 
 const PROJECTILES = new Map()
-const STALE_MS = 5000
+const PROJECTILES_STALE_MS = 5000
 game.on("action", (data) => {
     // A projectile was fired, add it to our map
     data.date = Date.now()
@@ -505,7 +506,7 @@ game.on("hit", (data) => {
 
     // clean old projectiles (they might have went off-screen)
     for (const [pid, old] of PROJECTILES) {
-        if (Date.now() - old.date > STALE_MS) {
+        if (Date.now() - old.date > PROJECTILES_STALE_MS) {
             PROJECTILES.delete(pid)
         }
     }
