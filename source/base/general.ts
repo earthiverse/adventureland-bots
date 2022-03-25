@@ -465,7 +465,7 @@ export async function goToAggroMonster(bot: Character, entity: Entity): Promise<
             const angle = Math.atan2(entity.going_y - entity.y, entity.going_x - entity.x)
             const destination = { map: entity.map, x: entity.x + Math.cos(angle) * lead, y: entity.y + Math.sin(angle) * lead }
             if (AL.Pathfinder.canWalkPath(bot, destination)) {
-                bot.move(destination.x, destination.y).catch(() => { /* Suppress errors */ })
+                bot.move(destination.x, destination.y, { resolveOnStart: true }).catch(() => { /* Suppress errors */ })
             } else {
                 return bot.smartMove(destination)
             }
@@ -545,7 +545,7 @@ export function goToKiteMonster(bot: Character, options: {
         potentialSpot = { map: bot.map, x: bot.x + distanceToMove * Math.cos(angleFromBotToMonster + angle), y: bot.y + distanceToMove * Math.sin(angleFromBotToMonster + angle) }
     }
     if (AL.Pathfinder.canWalkPath(bot, potentialSpot)) {
-        bot.move(potentialSpot.x, potentialSpot.y).catch(() => { /* Suppress errors */ })
+        bot.move(potentialSpot.x, potentialSpot.y, { resolveOnStart: true }).catch(() => { /* Suppress errors */ })
     } else if (AL.Pathfinder.canStand(potentialSpot) && !bot.smartMoving) {
         bot.smartMove(potentialSpot, { avoidTownWarps: true }).catch(() => { /* Suppress errors */ })
     }
@@ -753,12 +753,12 @@ export function kiteInCircle(bot: Character, type: MonsterName, center: IPositio
             const angleFromCenterToMonsterGoing = Math.atan2(nearest.going_y - center.y, nearest.going_x - center.x)
             const endGoalAngle = angleFromCenterToMonsterGoing + angle
             const endGoal = offsetPositionParty({ x: center.x + radius * Math.cos(endGoalAngle), y: center.y + radius * Math.sin(endGoalAngle) }, bot)
-            bot.move(endGoal.x, endGoal.y).catch(e => console.error(e))
+            bot.move(endGoal.x, endGoal.y, { resolveOnStart: true }).catch(e => console.error(e))
         } else {
             // There isn't a monster nearby
             const angleFromSpawnToBot = Math.atan2(bot.y - center.y, bot.x - center.x)
             const endGoal = offsetPositionParty({ x: center.x + radius * Math.cos(angleFromSpawnToBot), y: center.y + radius * Math.sin(angleFromSpawnToBot) }, bot)
-            return bot.move(endGoal.x, endGoal.y)
+            return bot.move(endGoal.x, endGoal.y, { resolveOnStart: true })
         }
     } else {
         // Move to where we can walk
