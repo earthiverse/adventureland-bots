@@ -83,11 +83,12 @@ if (character.ctype == "mage") {
         } catch (e) {
             console.error(e)
         }
+        setTimeout(async () => { attackLoop() }, Math.max(1, Math.min(ms_to_next_skill("attack"))))
     }
 } if (character.ctype == "ranger") {
     attackLoop = async () => {
+        const minPing = Math.min(...parent.pings)
         try {
-            const minPing = Math.min(...parent.pings)
             const targets = getBestTargets({ max_range: character.range, type: MONSTER })
             if (targets.length == 0) {
                 set_message("No Monsters")
@@ -125,10 +126,13 @@ if (character.ctype == "mage") {
                 for (const target of fiveShotTargets) if (canKillInOneShot(target, "5shot")) ignoreEntityOnOtherCharacters(target)
 
                 // Only energize up to what we can't regen with a potion
-                getEnergizeFromFriend(Math.max(1, character.max_mp - MPOT1_RECOVERY - character.mp))
+                if (character.mp < 500) getEnergizeFromFriend(Math.max(1, character.max_mp - MPOT1_RECOVERY - character.mp))
 
+                // use_skill isn't await-able yet, so we will await a failed attack to calculate the ping compensation
+                // it shouldn't cause too much extra code cost
                 await use_skill("5shot", fiveShotTargets.reduce((ids, target) => [...ids, target.id], []))
-                setTimeout(() => { reduce_cooldown("attack", minPing) }, 2 * minPing)
+                await attack(fiveShotTargets[0])
+                reduce_cooldown("attack", minPing)
             } else if (canUse("3shot") && threeShotTargets.length >= 3) {
                 set_message("3shotting")
 
@@ -136,16 +140,21 @@ if (character.ctype == "mage") {
                     if (canKillInOneShot(target, "5shot")) ignoreEntityOnOtherCharacters(target)
                 }
 
-                getEnergizeFromFriend(Math.max(1, character.max_mp - MPOT1_RECOVERY - character.mp))
+                if (character.mp < 500) getEnergizeFromFriend(Math.max(1, character.max_mp - MPOT1_RECOVERY - character.mp))
 
+                // use_skill isn't await-able yet, so we will await a failed attack to calculate the ping compensation
+                // it shouldn't cause too much extra code cost
                 await use_skill("3shot", threeShotTargets.reduce((ids, target) => [...ids, target.id], []))
-                setTimeout(() => { reduce_cooldown("attack", minPing) }, 2 * minPing)
+                await attack(threeShotTargets[0])
+                reduce_cooldown("attack", minPing)
             } else if (canUse("attack")) {
+                const target = targets[0]
+
                 set_message("Attacking")
 
                 if (canKillInOneShot(target)) ignoreEntityOnOtherCharacters(target)
 
-                getEnergizeFromFriend(Math.max(1, character.max_mp - MPOT1_RECOVERY - character.mp))
+                if (character.mp < 1000) getEnergizeFromFriend(Math.max(1, character.max_mp - MPOT1_RECOVERY - character.mp))
 
                 await attack(target)
                 reduce_cooldown("attack", minPing)
@@ -153,9 +162,9 @@ if (character.ctype == "mage") {
         } catch (e) {
             console.error(e)
         }
+        setTimeout(async () => { attackLoop() }, Math.max(1, Math.min(ms_to_next_skill("attack"))))
     }
 }
-setTimeout(async () => { attackLoop() }, Math.max(1, Math.min(ms_to_next_skill("attack"), ms_to_next_skill("cburst"))))
 
 if (character.ctype == "merchant") {
     buyAndSendPotionsLoop(ATTACKING_CHARACTERS)

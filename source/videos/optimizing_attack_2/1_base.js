@@ -255,6 +255,7 @@ const GOLD_TO_HOLD = 1_000_000
 const SEND_GOLD_AT_RATIO = 1.1 // We will send gold when we reach (GOLD_TO_HOLD * SEND_GOLD_AT_RATIO) gold.
 async function sendStuffLoop(name) {
     try {
+        const friendSendTo = getCharacter(name)
         const sendTo = parent.entities[name]
         if (sendTo && distance(character, sendTo) < 400) {
             for (let i = 0; i < character.isize; i++) {
@@ -262,6 +263,11 @@ async function sendStuffLoop(name) {
                 if (!item) continue // No item
                 if (item.l) continue // Don't send locked items
                 if (["hpot1", "mpot1", "tracker", "computer"].includes(item.name)) continue // Don't send important items
+
+                if (friendSendTo) {
+                    // We're controlling the character to send to
+                    if (friendSendTo.esize == 0) continue // They don't have free space
+                }
 
                 await send_item(name, i, item.q ?? 1)
             }
