@@ -12,7 +12,7 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
 
             if (done.has(owner)) continue
 
-            if (/[1-9]?\d+/.test(player)) {
+            if (Number.isInteger(player)) {
                 console.log(`${player} is an entity. Removing...`)
                 await AL.PlayerModel.deleteOne({ name: player }).exec()
                 continue
