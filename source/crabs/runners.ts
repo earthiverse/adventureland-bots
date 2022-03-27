@@ -1,4 +1,4 @@
-import AL, { Character, GMap, Mage, MapName, MonsterName, Ranger, ServerIdentifier, ServerRegion, Tools } from "alclient"
+import AL, { Character, GMap, Mage, MapName, MonsterName, Ranger, ServerIdentifier, ServerRegion } from "alclient"
 import { startBuyLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, goToPotionSellerIfLow, goToBankIfFull } from "../base/general.js"
 import { mainCrabs, offsetPositionParty } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"

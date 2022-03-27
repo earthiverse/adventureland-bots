@@ -3,8 +3,9 @@ import path from "path"
 import bodyParser from "body-parser"
 import { body, validationResult } from "express-validator"
 
-import AL, { Character } from "alclient"
-import { startSharedMage as startCrabMage, startSharedRanger as startCrabRanger } from "../crabs/runners.js"
+import AL, { Character, ItemName } from "alclient"
+import { startLulzMage as startCrabMage, startLulzRanger as startCrabRanger } from "./crabs.js"
+import { ItemLevelInfo } from "../definitions/bot.js"
 
 const MAX_CHARACTERS = 8
 
@@ -19,6 +20,16 @@ app.get("/", (_req, res) => {
 
 const online: { [T in string]?: Character } = {}
 const friends: Character[] = []
+const replenishables: [ItemName, number][] = [["hpot1", 2500], ["mpot1", 2500]]
+const itemsToSell: ItemLevelInfo = {
+    cclaw: 1,
+    crabclaw: 1,
+    hpamulet: 1,
+    hpbelt: 1,
+    ringsj: 1,
+    wcap: 1,
+    wshoes: 1
+}
 
 app.post("/",
     body("user").trim().isLength({ max: 16, min: 16 }).withMessage("User IDs are exactly 16 digits."),
@@ -53,7 +64,7 @@ app.post("/",
                 online[req.body.char] = ranger
                 friends.push(ranger)
                 if (req.body.monster == "crab") {
-                    startCrabRanger(ranger, friends)
+                    startCrabRanger(ranger, friends, replenishables, itemsToSell)
                     return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
                 }
             }
@@ -68,7 +79,7 @@ app.post("/",
                 online[req.body.char] = mage
                 friends.push(mage)
                 if (req.body.monster == "crab") {
-                    startCrabMage(mage, friends)
+                    startCrabMage(mage, friends, replenishables, itemsToSell)
                     return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
                 }
             }
