@@ -7,6 +7,10 @@ const ATTACKING_CHARACTERS = ["attackMag", "attackMag2", "attacking"]
 const CHARACTERS = [MERCHANT, ...ATTACKING_CHARACTERS]
 const MONSTER = "bee"
 
+const CBURST_WHEN_MAX_MP_WITHIN = 500
+const CBURST_WHEN_ENTITY_HP_LESS_THAN = 200
+const MP_TO_RESERVE = 500
+
 if (character.ctype == "merchant") {
     for (const friend of CHARACTERS) {
         if (friend == character.id) continue
@@ -17,18 +21,16 @@ if (character.ctype == "merchant") {
     setTimeout(() => { startStatisticsLoop(SCRIPT_NAME, CHARACTERS) }, 60000)
 }
 
-// We are replacing `get_nearest_target` with our own function so that we can filter the ignored entities.
 function getBestTargets(options = {}) {
     const entities = []
 
     for (const id in parent.entities) {
         const entity = parent.entities[id]
-        if (entity.type !== "monster") continue // It's not a monster, ignore it
-        if (entity.dead || !entity.visible) continue // It's dead
+        if (entity.type !== "monster") continue
+        if (entity.dead || !entity.visible) continue
 
-        if (parent.IGNORE.includes(id)) continue // It's in our ignore list
+        if (parent.IGNORE.includes(id)) continue
 
-        // You can filter to only get entities under a certain amount of hp, for example: { "max_hp": 200 }
         if (options.max_hp && entity.hp > options.max_hp) continue
 
         if (options.max_range && distance(character, entity) > options.max_range) continue
@@ -63,8 +65,8 @@ let attackLoop = undefined
 if (character.ctype == "mage") {
     attackLoop = async () => {
         try {
-            const target = getBestTargets({ max_range: character.range, type: MONSTER })[0]
-            if (!target) {
+            const best = getBestTargets({ max_range: character.range, type: MONSTER })[0]
+            if (!best) {
                 set_message("No Monsters")
                 setTimeout(async () => { attackLoop() }, Math.max(1, ms_to_next_skill("attack")))
                 return
@@ -73,17 +75,45 @@ if (character.ctype == "mage") {
             if (canUse("attack")) {
                 set_message("Attacking")
 
-                if (canKillInOneShot(target)) ignoreEntityOnOtherCharacters(target)
+                if (canKillInOneShot(best)) ignoreEntityOnOtherCharacters(best)
 
-                // Don't energize or cburst, the ranger will request a lot of mana instead.
+                // We won't energize the mages anymore, we'll only energize the ranger because the ranger
+                // will use a lot of high mp skills now, and we can use the mages as MP batteries.
 
-                await attack(target)
+                await attack(best)
                 reduce_cooldown("attack", Math.min(...parent.pings))
+            }
+
+            if (canUse("cburst") && character.mp > (MP_TO_RESERVE + G.skills.cburst.mp)) {
+                let targets = getBestTargets({ max_hp: CBURST_WHEN_ENTITY_HP_LESS_THAN, max_range: character.range, type: MONSTER })
+                if (targets.length == 0 && character.mp >= (character.max_mp - CBURST_WHEN_MAX_MP_WITHIN)) {
+                    targets = getBestTargets({ max_range: character.range, type: MONSTER })
+                }
+                if (targets.length) {
+                    const cbursts = []
+                    let remaining_mp = character.mp - MP_TO_RESERVE - G.skills.cburst.mp
+                    for (const target of targets) {
+                        if (remaining_mp <= 0) break
+
+                        const mpRequiredToKill = Math.ceil(1.1 * target.hp / G.skills.cburst.ratio)
+                        const mpToUse = Math.min(remaining_mp, mpRequiredToKill)
+
+                        if (mpToUse == mpRequiredToKill) {
+                            ignoreEntityOnOtherCharacters(target)
+                        }
+
+                        cbursts.push([target.id, mpToUse])
+                        remaining_mp -= mpToUse
+                    }
+
+                    use_skill("cburst", cbursts)
+                    parent.next_skill["cburst"] = new Date(Date.now() + G.skills.cburst.cooldown)
+                }
             }
         } catch (e) {
             console.error(e)
         }
-        setTimeout(async () => { attackLoop() }, Math.max(1, Math.min(ms_to_next_skill("attack"))))
+        setTimeout(async () => { attackLoop() }, Math.max(1, Math.min(ms_to_next_skill("attack"), ms_to_next_skill("cburst"))))
     }
 } if (character.ctype == "ranger") {
     attackLoop = async () => {
@@ -126,7 +156,7 @@ if (character.ctype == "mage") {
                 for (const target of fiveShotTargets) if (canKillInOneShot(target, "5shot")) ignoreEntityOnOtherCharacters(target)
 
                 // Only energize up to what we can't regen with a potion
-                if (character.mp < 500) getEnergizeFromFriend(Math.max(1, character.max_mp - MPOT1_RECOVERY - character.mp))
+                if (character.mp < 500) getEnergizeFromFriend(Math.max(1, character.max_mp - character.mp))
 
                 // use_skill isn't await-able yet, so we will await a failed attack to calculate the ping compensation
                 // it shouldn't cause too much extra code cost
@@ -140,7 +170,7 @@ if (character.ctype == "mage") {
                     if (canKillInOneShot(target, "5shot")) ignoreEntityOnOtherCharacters(target)
                 }
 
-                if (character.mp < 500) getEnergizeFromFriend(Math.max(1, character.max_mp - MPOT1_RECOVERY - character.mp))
+                if (character.mp < 500) getEnergizeFromFriend(Math.max(1, character.max_mp - character.mp))
 
                 // use_skill isn't await-able yet, so we will await a failed attack to calculate the ping compensation
                 // it shouldn't cause too much extra code cost
@@ -154,7 +184,7 @@ if (character.ctype == "mage") {
 
                 if (canKillInOneShot(target)) ignoreEntityOnOtherCharacters(target)
 
-                if (character.mp < 1000) getEnergizeFromFriend(Math.max(1, character.max_mp - MPOT1_RECOVERY - character.mp))
+                if (character.mp < 500) getEnergizeFromFriend(Math.max(1, character.max_mp - character.mp))
 
                 await attack(target)
                 reduce_cooldown("attack", minPing)

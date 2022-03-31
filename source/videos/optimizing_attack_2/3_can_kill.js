@@ -33,6 +33,7 @@ function getBestTargets(options = {}) {
 
         // You can target a specific monster, for example: { "type": "bee" }
         if (options.type && entity.mtype !== options.type) continue
+
         // You can target a set of specific monsters, for example: { "types": ["bee", "goo"] }
         if (options.types && !options.types.includes(entity.mtype)) continue
 

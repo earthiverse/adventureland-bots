@@ -27,6 +27,7 @@ function getBestTargets(options = {}) {
 
         if (parent.IGNORE.includes(id)) continue
 
+        if (options.max_range && distance(character, entity) > options.max_range) continue
         if (options.type && entity.mtype !== options.type) continue
         if (options.types && !options.types.includes(entity.mtype)) continue
 

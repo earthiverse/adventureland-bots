@@ -21,16 +21,16 @@ if (character.ctype == "merchant") {
     setTimeout(() => { startStatisticsLoop(SCRIPT_NAME, CHARACTERS) }, 60000)
 }
 
-// We are replacing `get_nearest_target` with our own function so that we can filter the ignored entities.
+
 function getBestTargets(options = {}) {
     const entities = []
 
     for (const id in parent.entities) {
         const entity = parent.entities[id]
-        if (entity.type !== "monster") continue // It's not a monster, ignore it
-        if (entity.dead || !entity.visible) continue // It's dead
+        if (entity.type !== "monster") continue
+        if (entity.dead || !entity.visible) continue
 
-        if (parent.IGNORE.includes(id)) continue // It's in our ignore list
+        if (parent.IGNORE.includes(id)) continue
 
         // You can filter to only get entities under a certain amount of hp, for example: { "max_hp": 200 }
         if (options.max_hp && entity.hp > options.max_hp) continue
@@ -42,16 +42,12 @@ function getBestTargets(options = {}) {
         entities.push(entity)
     }
 
-    // We can prioritize the entities however we want now, whereas before it was only by distance
     entities.sort((a, b) => {
-        // Has a target -> higher priority
         if (a.target && !b.target) return -1
         if (b.target && !a.target) return 1
 
-        // Lower HP -> higher priority
         if (a.hp !== b.hp) return a.hp - b.hp
 
-        // Closer -> higher priority
         const d_a = distance(character, a)
         const d_b = distance(character, b)
         if (d_a !== d_b) return d_a - d_b
@@ -59,7 +55,6 @@ function getBestTargets(options = {}) {
         return 0
     })
 
-    // We will return all entities, so that this function can be used with skills that target multiple entities in the future
     return entities
 }
 

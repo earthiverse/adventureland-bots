@@ -37,7 +37,6 @@ function getCharacter(name) {
 }
 function getParentsOfCharacters(excludeSelf = true) {
     const parents = []
-
     for (const iframe of top.$("iframe")) {
         const char = iframe.contentWindow.character
         if (!char) continue // Character isn't loaded yet
@@ -55,7 +54,10 @@ function getParentOfCharacter(name) {
     for (const iframe of top.$("iframe")) {
         const char = iframe.contentWindow.character
         if (!char) continue // Character isn't loaded yet
-        if (char.name == name) return iframe.contentWindow
+        if (char.name == name) {
+            if (!char.controller) return top
+            else return iframe.contentWindow
+        }
     }
 }
 
@@ -116,33 +118,83 @@ function filterPartyRequests(name) {
 }
 if (!character.controller) on_party_request = filterPartyRequests
 
+const TEN_MINUTES_MS = 10 * 60 * 1000
+const getSum = arr => arr.reduce((p, c) => p + c, 0)
+const getAverage = arr => getSum(arr) / arr.length
+
 /**
  * Shows statistics every 10 minutes
  * @param {*} scriptName Name of the script, so we can keep track
  * @param {*} characters List of characters to track
  */
 function startStatisticsLoop(scriptName, characters) {
-    const tenMinutesInMs = 10 * 60 * 1000
-    let numKilled = 0
+    // Setup kills object
+    const kills = {}
+    for (const char of characters) kills[char] = {}
+
     game.on("hit", (data) => {
-        if (!characters.includes(data.actor)) return // Not our character
-        if (data.kill) numKilled += 1
+        const player = data.actor
+        const skill = data.source
+
+        if (!data.kill) return // Not a kill
+        if (!characters.includes(player)) return // Not us
+
+        // Add kill to kills object
+        const charKills = kills[player]
+        if (!charKills[skill]) charKills[skill] = 1
+        else charKills[skill] += 1
     })
-    statisticsLoop = () => {
+    const statisticsLoop = function () {
         try {
-            show_json({
+            const statistics = {
                 script: scriptName,
-                numKilled: numKilled,
-                pings: parent.pings,
-                level: character.level,
-                server: server
-            })
-            started = Date.now()
-            numKilled = 0
+                server: {
+                    region: server.region,
+                    id: server.id
+                },
+                characters: [],
+                totalKills: 0
+            }
+            for (const id in kills) {
+                const char = getCharacter(id)
+                const charP = getParentOfCharacter(id)
+
+                // Add all kills to totalKills
+                for (const skill in kills[id]) {
+                    statistics.totalKills += kills[id][skill]
+                }
+
+                const minPing = Math.min(...charP.pings)
+                const maxPing = Math.max(...charP.pings)
+                const avgPing = getAverage(charP.pings)
+
+                const charStatistics = {
+                    name: id,
+                    kills: kills[id],
+                    ping: {
+                        min: minPing,
+                        max: maxPing,
+                        avg: avgPing
+                    },
+                    level: char.level,
+                    xp: 100 * char.xp / char.max_xp
+                }
+
+                statistics.characters.push(charStatistics)
+            }
+
+            show_json(statistics)
+
+            // Reset kills to 0
+            for (const id in kills) {
+                for (const skill in kills[id]) {
+                    kills[id][skill] = 0
+                }
+            }
         } catch (e) {
             console.error(e)
         }
-        setTimeout(() => { statisticsLoop() }, tenMinutesInMs)
+        setTimeout(() => { statisticsLoop() }, TEN_MINUTES_MS)
     }
     statisticsLoop()
 }
@@ -475,7 +527,6 @@ function canUse(skill, options = {}) {
 // Overwrite the can_use function with our new & improved one
 parent.can_use = canUse
 
-const MP_TO_RESERVE = 500
 /**
  * This function will check if there is a mage we are controlling nearby that can use energize.
  * If it can, we will use energize on that mage.
@@ -491,7 +542,8 @@ function getEnergizeFromFriend(amount = 1) {
         if (distance(friend, character) > G.skills.energize.range) continue // We are too far away from our friend
 
         // Let's request an energize from our friend!
-        friendP.use_skill("energize", character.id, Math.max(1, Math.min(friend.mp - MP_TO_RESERVE, amount)))
+        friendP.use_skill("energize", character.id, Math.max(1, Math.min(friend.mp, amount)))
+        break
     }
 }
 
