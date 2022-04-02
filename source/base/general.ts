@@ -441,7 +441,7 @@ export async function goGetRspeedBuff(bot: Character, msToWait = 10000): Promise
     let closest = -1
     for (let i = 0; i < friendlyRogues.length; i++) {
         const location = friendlyRogues[i]
-        const potentialPath = await Pathfinder.getPath(this, location)
+        const potentialPath = await Pathfinder.getPath(bot, location)
         const distance = Pathfinder.computePathCost(potentialPath)
         if (distance < closestDistance) {
             closest = i
