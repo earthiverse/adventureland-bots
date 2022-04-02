@@ -1,4 +1,5 @@
-import AL, { Character, Entity, GameResponseData, GMap, HitData, IEntity, InviteData, IPosition, ItemData, ItemName, MapName, Merchant, MonsterName, NPCName, Player, Tools, TradeSlotType } from "alclient"
+import AL, { Character, Entity, GameResponseData, GMap, HitData, IEntity, InviteData, IPosition, ItemData, ItemName, MapName, Merchant, MonsterName, NPCName, Pathfinder, Player, Tools, TradeSlotType } from "alclient"
+import { PathfinderOptions } from "alclient/build/definitions/pathfinder"
 import fs from "fs"
 import { ItemLevelInfo } from "../definitions/bot.js"
 import { bankingPosition, offsetPositionParty } from "./locations.js"
@@ -422,13 +423,33 @@ export async function goGetRspeedBuff(bot: Character, msToWait = 10000): Promise
     if (bot.s.rspeed) return // We already have it
     if (FRIENDLY_ROGUES.length == 0) return // We don't know any friendly rogues
 
-    const friendlyRogue = await AL.PlayerModel.findOne({
+    const friendlyRogues = await AL.PlayerModel.find({
         lastSeen: { $gt: Date.now() - 120_000 },
         name: { $in: FRIENDLY_ROGUES },
         rip: { $ne: true },
         serverIdentifier: bot.server.name,
         serverRegion: bot.server.region
     }).lean().exec()
+
+    const options: PathfinderOptions = {}
+    options.costs = {
+        town: bot.speed * (4 + (Math.min(bot.ping, 1000) / 500)), // Set it to 4s of movement, because it takes 3s to channel + it could be cancelled.
+        transport: bot.speed * (Math.min(bot.ping, 1000) / 500) // Based on how long it takes to confirm with the server
+    }
+
+    let closestDistance: number = Number.MAX_VALUE
+    let closest = -1
+    for (let i = 0; i < friendlyRogues.length; i++) {
+        const location = friendlyRogues[i]
+        const potentialPath = await Pathfinder.getPath(this, location)
+        const distance = Pathfinder.computePathCost(potentialPath)
+        if (distance < closestDistance) {
+            closest = i
+            closestDistance = distance
+        }
+    }
+    const friendlyRogue = friendlyRogues[closest]
+
     if (friendlyRogue) {
         if (bot.ctype == "merchant") (bot as Merchant).closeMerchantStand().catch()
         await bot.smartMove(friendlyRogue, { getWithin: 20, useBlink: true })
