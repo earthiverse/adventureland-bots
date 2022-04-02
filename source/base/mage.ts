@@ -1,4 +1,4 @@
-import AL, { ActionData, Character, Entity, Mage, MonsterName, Pathfinder, SlotType, TradeItemInfo, TradeSlotType } from "alclient"
+import AL, { Character, Entity, Mage, MonsterName, Pathfinder, SlotType, TradeItemInfo, TradeSlotType } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { Information } from "../definitions/bot"
 
@@ -8,12 +8,13 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
     cburstWhenHPLessThan?: number
     disableCburst?: boolean
     disableEnergize?: boolean
+    disableZapper?: boolean
     targetingPartyMember?: boolean
     targetingPlayer?: string
 } = {}): Promise<void> {
     if (bot.c.town) return // Don't attack if teleporting
 
-    const attackPriority = (a: Entity, b: Entity): boolean => {
+    const priority = (a: Entity, b: Entity): boolean => {
         // Order in array
         const a_index = types.indexOf(a.type)
         const b_index = types.indexOf(b.type)
@@ -144,7 +145,7 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
     }
 
     if (bot.canUse("attack")) {
-        const targets = new FastPriorityQueue<Entity>(attackPriority)
+        const targets = new FastPriorityQueue<Entity>(priority)
         for (const entity of bot.getEntities({
             canDamage: true,
             couldGiveCredit: true,
@@ -188,7 +189,7 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
 
     // Cburst when we have a lot of mp
     if (bot.canUse("cburst") && !options.disableCburst && bot.mp > bot.max_mp - 500) {
-        const targets = new FastPriorityQueue<Entity>(attackPriority)
+        const targets = new FastPriorityQueue<Entity>(priority)
         for (const entity of bot.getEntities({
             couldGiveCredit: true,
             typeList: types,
@@ -202,6 +203,41 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
 
         const target = targets.peek()
         if (target) await bot.cburst([[target.id, Math.min(target.hp * 2, bot.mp - 500)]])
+    }
+
+    if (!options.disableZapper && bot.canUse("zapperzap", { ignoreEquipped: true }) && bot.cc < 100) {
+        const targets = new FastPriorityQueue<Entity>(priority)
+        for (const entity of bot.getEntities({
+            canDamage: true,
+            couldGiveCredit: true,
+            targetingPartyMember: options.targetingPartyMember,
+            targetingPlayer: options.targetingPlayer,
+            typeList: types,
+            willDieToProjectiles: false,
+            withinRange: bot.G.skills.zapperzap.range
+        })) {
+            if (!bot.canKillInOneShot(entity, "zapperzap")) continue
+
+            targets.add(entity)
+        }
+
+        if (targets.size) {
+            const target = targets.peek()
+
+            const zapper: number = bot.locateItem("zapper", bot.items, { returnHighestLevel: true })
+            if (bot.isEquipped("zapper") || (zapper !== undefined)) {
+                // Equip zapper
+                if (zapper !== undefined) bot.equip(zapper, "ring1")
+
+                // Zap
+                const promises: Promise<unknown>[] = []
+                promises.push(bot.zapperZap(target.id).catch(e => console.error(e)))
+
+                // Re-equip ring
+                if (zapper !== undefined) promises.push(bot.equip(zapper, "ring1"))
+                await Promise.all(promises)
+            }
+        }
     }
 }
 

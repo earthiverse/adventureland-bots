@@ -9,7 +9,8 @@ export async function attackTheseTypesPaladin(bot: Paladin, types: MonsterName[]
     targetingPlayer?: string
 } = {}): Promise<void> {
     if (bot.c.town) return // Don't attack if teleporting
-    const attackPriority = (a: Entity, b: Entity): boolean => {
+
+    const priority = (a: Entity, b: Entity): boolean => {
         // Order in array
         const a_index = types.indexOf(a.type)
         const b_index = types.indexOf(b.type)
@@ -41,7 +42,7 @@ export async function attackTheseTypesPaladin(bot: Paladin, types: MonsterName[]
     }
 
     if (bot.canUse("attack")) {
-        const targets = new FastPriorityQueue<Entity>(attackPriority)
+        const targets = new FastPriorityQueue<Entity>(priority)
         for (const entity of bot.getEntities({
             canDamage: true,
             couldGiveCredit: true,

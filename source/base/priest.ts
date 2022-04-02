@@ -4,12 +4,11 @@ import { LOOP_MS } from "./general.js"
 
 export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], friends: Character[] = [], options: {
     disableGhostLifeEssenceFarm?: boolean
+    disableZapper?: boolean
     healStrangers?: boolean
     targetingPartyMember?: boolean
     targetingPlayer?: string
 } = {}): Promise<void> {
-    if (!bot.canUse("attack")) return // We can't attack
-
     // Adjust options
     if (options.targetingPlayer && options.targetingPlayer == bot.id) options.targetingPlayer = undefined
 
@@ -94,54 +93,89 @@ export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], 
         return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
     }
 
-    const targets = new FastPriorityQueue<Entity>(attackPriority)
-    for (const entity of bot.getEntities({
-        canDamage: true,
-        couldGiveCredit: true,
-        targetingPartyMember: options.targetingPartyMember,
-        targetingPlayer: options.targetingPlayer,
-        typeList: types,
-        willDieToProjectiles: false,
-        withinRange: bot.range
-    })) {
-        targets.add(entity)
+    if (bot.canUse("attack")) {
+        const targets = new FastPriorityQueue<Entity>(attackPriority)
+        for (const entity of bot.getEntities({
+            canDamage: true,
+            couldGiveCredit: true,
+            targetingPartyMember: options.targetingPartyMember,
+            targetingPlayer: options.targetingPlayer,
+            typeList: types,
+            willDieToProjectiles: false,
+            withinRange: bot.range
+        })) {
+            targets.add(entity)
+        }
+        if (targets.size == 0) return // No target
+
+        const target = targets.peek()
+        const canKill = bot.canKillInOneShot(target)
+
+        // Apply curse if we can't kill it in one shot and we have enough MP
+        if (bot.canUse("curse") && bot.mp > (bot.mp_cost + bot.G.skills.curse.mp) && !canKill && !target.immune) {
+            bot.curse(target.id).catch(e => console.error(e))
+        }
+
+        // Use our friends to energize for the attack speed boost
+        if (!bot.s.energized) {
+            for (const friend of friends) {
+                if (!friend) continue // No friend
+                if (friend.socket.disconnected) continue // Friend is disconnected
+                if (friend.id == bot.id) continue // Can't energize ourselves
+                if (AL.Tools.distance(bot, friend) > bot.G.skills.energize.range) continue // Too far away
+                if (!friend.canUse("energize")) continue // Friend can't use energize
+
+                // Energize!
+                (friend as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp))).catch(e => console.error(e))
+                break
+            }
+        }
+
+        // Remove them from our friends' entities list if we're going to kill it
+        if (canKill) {
+            for (const friend of friends) {
+                if (!friend) continue // No friend
+                if (friend.id == bot.id) continue // Don't delete it from our own list
+                if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                friend.deleteEntity(target.id)
+            }
+        }
+
+        await bot.basicAttack(target.id)
     }
-    if (targets.size == 0) return // No target
 
-    const target = targets.peek()
-    const canKill = bot.canKillInOneShot(target)
+    if (!options.disableZapper && bot.canUse("zapperzap", { ignoreEquipped: true }) && bot.cc < 100) {
+        const targets = new FastPriorityQueue<Entity>(attackPriority)
+        for (const entity of bot.getEntities({
+            couldGiveCredit: true,
+            targetingPartyMember: options.targetingPartyMember,
+            targetingPlayer: options.targetingPlayer,
+            typeList: types,
+            willDieToProjectiles: false,
+            withinRange: bot.G.skills.zapperzap.range
+        })) {
+            if (!bot.canKillInOneShot(entity, "zapperzap")) continue
+            targets.add(entity)
+        }
 
-    // Apply curse if we can't kill it in one shot and we have enough MP
-    if (bot.canUse("curse") && bot.mp > (bot.mp_cost + bot.G.skills.curse.mp) && !canKill && !target.immune) {
-        bot.curse(target.id).catch(e => console.error(e))
-    }
+        if (targets.size) {
+            const target = targets.peek()
 
-    // Use our friends to energize for the attack speed boost
-    if (!bot.s.energized) {
-        for (const friend of friends) {
-            if (!friend) continue // No friend
-            if (friend.socket.disconnected) continue // Friend is disconnected
-            if (friend.id == bot.id) continue // Can't energize ourselves
-            if (AL.Tools.distance(bot, friend) > bot.G.skills.energize.range) continue // Too far away
-            if (!friend.canUse("energize")) continue // Friend can't use energize
+            const zapper: number = bot.locateItem("zapper", bot.items, { returnHighestLevel: true })
+            if (bot.isEquipped("zapper") || (zapper !== undefined)) {
+                // Equip zapper
+                if (zapper !== undefined) bot.equip(zapper, "ring1")
 
-            // Energize!
-            (friend as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp))).catch(e => console.error(e))
-            break
+                // Zap
+                const promises: Promise<unknown>[] = []
+                promises.push(bot.zapperZap(target.id).catch(e => console.error(e)))
+
+                // Re-equip ring
+                if (zapper !== undefined) promises.push(bot.equip(zapper, "ring1"))
+                await Promise.all(promises)
+            }
         }
     }
-
-    // Remove them from our friends' entities list if we're going to kill it
-    if (canKill) {
-        for (const friend of friends) {
-            if (!friend) continue // No friend
-            if (friend.id == bot.id) continue // Don't delete it from our own list
-            if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
-            friend.deleteEntity(target.id)
-        }
-    }
-
-    await bot.basicAttack(target.id)
 }
 
 export function startDarkBlessingLoop(bot: Priest): void {

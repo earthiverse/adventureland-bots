@@ -6,6 +6,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
     disableMentalBurst?: boolean
     disableQuickPunch?: boolean
     disableQuickStab?: boolean
+    disableZapper?: boolean
     targetingPartyMember?: boolean
     targetingPlayer?: string
 } = {}): Promise<void> {
@@ -14,7 +15,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
     // Adjust options
     if (options.targetingPlayer && options.targetingPlayer == bot.id) options.targetingPlayer = undefined
 
-    const attackPriority = (a: Entity, b: Entity): boolean => {
+    const priority = (a: Entity, b: Entity): boolean => {
         // Order in array
         const a_index = types.indexOf(a.type)
         const b_index = types.indexOf(b.type)
@@ -127,7 +128,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
     }
 
     if (bot.canUse("attack")) {
-        const targets = new FastPriorityQueue<Entity>(attackPriority)
+        const targets = new FastPriorityQueue<Entity>(priority)
         for (const entity of bot.getEntities({
             canDamage: true,
             couldGiveCredit: true,
@@ -199,7 +200,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
     }
 
     if (!options.disableQuickPunch && bot.canUse("quickpunch")) {
-        const targets = new FastPriorityQueue<Entity>(attackPriority)
+        const targets = new FastPriorityQueue<Entity>(priority)
         for (const entity of bot.getEntities({
             canDamage: true,
             couldGiveCredit: true,
@@ -229,7 +230,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
     }
 
     if (!options.disableQuickStab && bot.canUse("quickstab")) {
-        const targets = new FastPriorityQueue<Entity>(attackPriority)
+        const targets = new FastPriorityQueue<Entity>(priority)
         for (const entity of bot.getEntities({
             canDamage: true,
             couldGiveCredit: true,
@@ -256,6 +257,39 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
         }
 
         if (target) await bot.quickStab(target.id)
+    }
+
+    if (!options.disableZapper && bot.canUse("zapperzap", { ignoreEquipped: true }) && bot.cc < 100) {
+        const targets = new FastPriorityQueue<Entity>(priority)
+        for (const entity of bot.getEntities({
+            couldGiveCredit: true,
+            targetingPartyMember: options.targetingPartyMember,
+            targetingPlayer: options.targetingPlayer,
+            typeList: types,
+            willDieToProjectiles: false,
+            withinRange: bot.G.skills.zapperzap.range
+        })) {
+            if (!bot.canKillInOneShot(entity, "zapperzap")) continue
+            targets.add(entity)
+        }
+
+        if (targets.size) {
+            const target = targets.peek()
+
+            const zapper: number = bot.locateItem("zapper", bot.items, { returnHighestLevel: true })
+            if (bot.isEquipped("zapper") || (zapper !== undefined)) {
+                // Equip zapper
+                if (zapper !== undefined) bot.equip(zapper, "ring1")
+
+                // Zap
+                const promises: Promise<unknown>[] = []
+                promises.push(bot.zapperZap(target.id).catch(e => console.error(e)))
+
+                // Re-equip ring
+                if (zapper !== undefined) promises.push(bot.equip(zapper, "ring1"))
+                await Promise.all(promises)
+            }
+        }
     }
 }
 

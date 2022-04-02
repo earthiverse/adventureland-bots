@@ -8,6 +8,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
     disableAgitate?: boolean
     disableCleave?: boolean
     disableStomp?: boolean
+    disableZapper?: boolean
     maximumTargets?: number
 } = {}): Promise<void> {
     if (bot.c.town) return // Don't attack if teleporting
@@ -203,10 +204,10 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                     const target = agitateTargets[i]
                     if (AL.Tools.distance(bot, target) > bot.G.skills.zapperzap.range) continue // Too far to zap
 
-                    const ringSlot: number = bot.locateItem("zapper", bot.items, { returnHighestLevel: true })
-                    if (bot.isEquipped("zapper") || (ringSlot !== undefined && bot.cc < 100)) {
+                    const zapper: number = bot.locateItem("zapper", bot.items, { returnHighestLevel: true })
+                    if (bot.isEquipped("zapper") || (zapper !== undefined && bot.cc < 100)) {
                         // Equip zapper
-                        if (ringSlot !== undefined) bot.equip(ringSlot, "ring1")
+                        if (zapper !== undefined) bot.equip(zapper, "ring1")
 
                         // Zap
                         bot.zapperZap(target.id).catch(e => console.error(e))
@@ -215,7 +216,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                         agitateTargets.splice(i, 1) // Remove the entity from the agitate list
 
                         // Re-equip ring
-                        if (ringSlot !== undefined) bot.equip(ringSlot, "ring1")
+                        if (zapper !== undefined) bot.equip(zapper, "ring1")
                     }
                     break
                 }
@@ -223,41 +224,42 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
         }
     }
 
+    const priority = (a: Entity, b: Entity): boolean => {
+        // Order in array
+        const a_index = types.indexOf(a.type)
+        const b_index = types.indexOf(b.type)
+        if (a_index < b_index) return true
+        else if (a_index > b_index) return false
+
+        // Has a target -> higher priority
+        if (a.target && !b.target) return true
+        else if (!a.target && b.target) return false
+
+        // Could die -> lower priority
+        const a_couldDie = a.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)
+        const b_couldDie = b.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)
+        if (!a_couldDie && b_couldDie) return true
+        else if (a_couldDie && !b_couldDie) return false
+
+        // Will burn to death -> lower priority
+        const a_willBurn = a.willBurnToDeath()
+        const b_willBurn = b.willBurnToDeath()
+        if (!a_willBurn && b_willBurn) return true
+        else if (a_willBurn && !b_willBurn) return false
+
+        // Lower HP -> higher priority
+        if (a.hp < b.hp) return true
+        else if (a.hp > b.hp) return false
+
+        // Closer -> higher priority
+        return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
+    }
+
     if (bot.canUse("attack")) {
-        const priority = (a: Entity, b: Entity): boolean => {
-            // Order in array
-            const a_index = types.indexOf(a.type)
-            const b_index = types.indexOf(b.type)
-            if (a_index < b_index) return true
-            else if (a_index > b_index) return false
-
-            // Has a target -> higher priority
-            if (a.target && !b.target) return true
-            else if (!a.target && b.target) return false
-
-            // Could die -> lower priority
-            const a_couldDie = a.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)
-            const b_couldDie = b.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)
-            if (!a_couldDie && b_couldDie) return true
-            else if (a_couldDie && !b_couldDie) return false
-
-            // Will burn to death -> lower priority
-            const a_willBurn = a.willBurnToDeath()
-            const b_willBurn = b.willBurnToDeath()
-            if (!a_willBurn && b_willBurn) return true
-            else if (a_willBurn && !b_willBurn) return false
-
-            // Lower HP -> higher priority
-            if (a.hp < b.hp) return true
-            else if (a.hp > b.hp) return false
-
-            // Closer -> higher priority
-            return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
-        }
-
         const targets = new FastPriorityQueue<Entity>(priority)
         const numTargets = bot.calculateTargets()
         for (const entity of bot.getEntities({
+            canDamage: true,
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
@@ -349,6 +351,41 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
             }
 
             await bot.basicAttack(entity.id)
+        }
+    }
+
+    if (!options.disableZapper && bot.canUse("zapperzap", { ignoreEquipped: true }) && bot.cc < 100) {
+        const targets = new FastPriorityQueue<Entity>(priority)
+        for (const entity of bot.getEntities({
+            canDamage: true,
+            couldGiveCredit: true,
+            targetingPartyMember: options.targetingPartyMember,
+            targetingPlayer: options.targetingPlayer,
+            typeList: types,
+            willDieToProjectiles: false,
+            withinRange: bot.G.skills.zapperzap.range
+        })) {
+            if (!bot.canKillInOneShot(entity, "zapperzap")) continue
+
+            targets.add(entity)
+        }
+
+        if (targets.size) {
+            const target = targets.peek()
+
+            const zapper: number = bot.locateItem("zapper", bot.items, { returnHighestLevel: true })
+            if (bot.isEquipped("zapper") || (zapper !== undefined)) {
+                // Equip zapper
+                if (zapper !== undefined) bot.equip(zapper, "ring1")
+
+                // Zap
+                const promises: Promise<unknown>[] = []
+                promises.push(bot.zapperZap(target.id).catch(e => console.error(e)))
+
+                // Re-equip ring
+                if (zapper !== undefined) promises.push(bot.equip(zapper, "ring1"))
+                await Promise.all(promises)
+            }
         }
     }
 }

@@ -3,11 +3,13 @@ import FastPriorityQueue from "fastpriorityqueue"
 
 export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], friends: Character[] = [], options: {
     disableHuntersMark?: boolean
+    disableMultiShot?: boolean
     disableSupershot?: boolean
+    disableZapper?: boolean
     targetingPartyMember?: boolean
     targetingPlayer?: string
 } = {}): Promise<void> {
-    if (!bot.canUse("attack")) return // We can't attack
+    if (bot.c.town) return // Don't attack if teleporting
 
     // Adjust options
     if (options.targetingPlayer && options.targetingPlayer == bot.id) options.targetingPlayer = undefined
@@ -110,8 +112,6 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
         }
     }
 
-    if (targets.size == 0) return // No targets
-
     const target = targets.peek()
 
     // Apply huntersmark if we can't kill it in one shot and we have enough MP
@@ -138,7 +138,7 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
         }
     }
 
-    if (bot.canUse("5shot") && fiveShotTargets.size >= 5) {
+    if (!options.disableMultiShot && bot.canUse("5shot") && fiveShotTargets.size >= 5) {
         const entities: Entity[] = []
         while (entities.length < 5) entities.push(fiveShotTargets.poll())
 
@@ -155,7 +155,7 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
         }
 
         await bot.fiveShot(entities[0].id, entities[1].id, entities[2].id, entities[3].id, entities[4].id)
-    } else if (bot.canUse("3shot") && threeShotTargets.size >= 3) {
+    } else if (!options.disableMultiShot && bot.canUse("3shot") && threeShotTargets.size >= 3) {
         const entities: Entity[] = []
         while (entities.length < 3) entities.push(threeShotTargets.poll())
 
@@ -172,7 +172,7 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
         }
 
         await bot.threeShot(entities[0].id, entities[1].id, entities[2].id)
-    } else {
+    } else if (bot.canUse("attack") && targets.size > 0) {
         const entity = targets.poll()
 
         // Remove them from our friends' entities list if we're going to kill it
@@ -190,31 +190,65 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
         await bot.basicAttack(entity.id)
     }
 
-    if (!bot.canUse("supershot") || (options && options.disableSupershot)) return
-
-    const supershotTargets = new FastPriorityQueue<Entity>(priority)
-    for (const entity of bot.getEntities({
-        couldGiveCredit: true,
-        targetingPartyMember: options.targetingPartyMember,
-        targetingPlayer: options.targetingPlayer,
-        typeList: types,
-        willDieToProjectiles: false,
-        withinRange: bot.range * bot.G.skills.supershot.range_multiplier
-    })) {
-        // If we can kill something guaranteed, break early
-        if (bot.canKillInOneShot(entity, "supershot")) {
-            for (const friend of friends) {
-                if (!friend) continue // No friend
-                if (friend.id == bot.id) continue // Don't delete it from our own list
-                if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
-                friend.deleteEntity(entity.id)
+    if (!options.disableSupershot && bot.canUse("supershot")) {
+        const supershotTargets = new FastPriorityQueue<Entity>(priority)
+        for (const entity of bot.getEntities({
+            couldGiveCredit: true,
+            targetingPartyMember: options.targetingPartyMember,
+            targetingPlayer: options.targetingPlayer,
+            typeList: types,
+            willDieToProjectiles: false,
+            withinRange: bot.range * bot.G.skills.supershot.range_multiplier
+        })) {
+            // If we can kill something guaranteed, break early
+            if (bot.canKillInOneShot(entity, "supershot")) {
+                for (const friend of friends) {
+                    if (!friend) continue // No friend
+                    if (friend.id == bot.id) continue // Don't delete it from our own list
+                    if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                    friend.deleteEntity(entity.id)
+                }
+                await bot.superShot(entity.id)
+                supershotTargets
+                break
             }
-            await bot.superShot(entity.id)
-            return
+
+            supershotTargets.add(entity)
         }
 
-        supershotTargets.add(entity)
+        if (bot.canUse("supershot") && supershotTargets.size > 0) await bot.superShot(supershotTargets.peek().id)
     }
 
-    if (supershotTargets.size > 0) await bot.superShot(supershotTargets.peek().id)
+    if (!options.disableZapper && bot.canUse("zapperzap", { ignoreEquipped: true }) && bot.cc < 100) {
+        const targets = new FastPriorityQueue<Entity>(priority)
+        for (const entity of bot.getEntities({
+            couldGiveCredit: true,
+            targetingPartyMember: options.targetingPartyMember,
+            targetingPlayer: options.targetingPlayer,
+            typeList: types,
+            willDieToProjectiles: false,
+            withinRange: bot.G.skills.zapperzap.range
+        })) {
+            if (!bot.canKillInOneShot(entity, "zapperzap")) continue
+            targets.add(entity)
+        }
+
+        if (targets.size) {
+            const target = targets.peek()
+
+            const zapper: number = bot.locateItem("zapper", bot.items, { returnHighestLevel: true })
+            if (bot.isEquipped("zapper") || (zapper !== undefined)) {
+                // Equip zapper
+                if (zapper !== undefined) bot.equip(zapper, "ring1")
+
+                // Zap
+                const promises: Promise<unknown>[] = []
+                promises.push(bot.zapperZap(target.id).catch(e => console.error(e)))
+
+                // Re-equip ring
+                if (zapper !== undefined) promises.push(bot.equip(zapper, "ring1"))
+                await Promise.all(promises)
+            }
+        }
+    }
 }
