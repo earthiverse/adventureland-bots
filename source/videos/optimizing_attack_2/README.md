@@ -14,4 +14,20 @@ This has the logic for moving, healing, and looting. We load this code in every 
 
 ### 2_default.js
 
-This script is the baseline if you run the `6_reduce_cooldown.js` code from the previous video on three characters.
+In this script, we run three characters using the `6_reduce_cooldown.js` code from the previous video.
+
+### 3_can_kill.js
+
+In this script, we create an alternative to `get_nearest_monster` and create an entity ignore list that we share between our characters.
+
+### 4_energize.js
+
+In this script, we take advantage of the mage's ability to `energize` for a short period of increased attack speed.
+
+### 5_cburst.js
+
+In this script, we take advantage of the mage's ability to `cburst` to help use up our mana.
+
+### 6_5shot.js
+
+In this script, we swap out one of our mages for a ranger and take advantage of the ranger's ability to `3shot` and `5shot` multiple targets.
