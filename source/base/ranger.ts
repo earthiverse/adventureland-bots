@@ -113,28 +113,29 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
     }
 
     const target = targets.peek()
-
-    // Apply huntersmark if we can't kill it in one shot and we have enough MP
-    if (bot.canUse("huntersmark")
+    if (target) {
+        // Apply huntersmark if we can't kill it in one shot and we have enough MP
+        if (bot.canUse("huntersmark")
         && !options.disableHuntersMark
         && !target.immune
         && bot.mp > (bot.mp_cost + bot.G.skills.huntersmark.mp)
         && !bot.canKillInOneShot(target)) {
-        bot.huntersMark(target.id).catch(e => console.error(e))
-    }
+            bot.huntersMark(target.id).catch(e => console.error(e))
+        }
 
-    // Use our friends to energize for the attack speed boost
-    if (!bot.s.energized) {
-        for (const friend of friends) {
-            if (!friend) continue // No friend
-            if (friend.socket.disconnected) continue // Friend is disconnected
-            if (friend.id == bot.id) continue // Can't energize ourselves
-            if (AL.Tools.distance(bot, friend) > bot.G.skills.energize.range) continue // Too far away
-            if (!friend.canUse("energize")) continue // Friend can't use energize
+        // Use our friends to energize for the attack speed boost
+        if (!bot.s.energized) {
+            for (const friend of friends) {
+                if (!friend) continue // No friend
+                if (friend.socket.disconnected) continue // Friend is disconnected
+                if (friend.id == bot.id) continue // Can't energize ourselves
+                if (AL.Tools.distance(bot, friend) > bot.G.skills.energize.range) continue // Too far away
+                if (!friend.canUse("energize")) continue // Friend can't use energize
 
-            // Energize!
-            (friend as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp))).catch(e => console.error(e))
-            break
+                // Energize!
+                (friend as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp))).catch(e => console.error(e))
+                break
+            }
         }
     }
 
