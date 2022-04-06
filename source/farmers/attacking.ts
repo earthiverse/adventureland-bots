@@ -1,21 +1,21 @@
-import AL, { Character, Mage, Merchant, ServerIdentifier, ServerRegion } from "alclient"
+import AL, { Character, Merchant, Priest, Ranger, ServerIdentifier, ServerRegion } from "alclient"
 import { startTrackerLoop } from "../base/general.js"
-import { startMage as startPoisioMage } from "../poisios/shared.js"
+import { startPriest as startSnakePriest, startRanger as startSnakeRanger } from "../snakes/shared.js"
 import { startMerchant } from "../prat/shared.js"
 
 const region: ServerRegion = "US"
 const identifier: ServerIdentifier = "II"
-const mage1_ID = "attackMag"
-const mage2_ID = "attackMag2"
-const mage3_ID = "attackMag3"
+const ranger_ID = "attackRan2"
+const priest1_ID = "attackPri2"
+const priest2_ID = "attackPri3"
 const merchant_ID = "attackMer"
 
-const partyLeader = mage1_ID
-const partyMembers = [mage1_ID, mage2_ID, mage3_ID]
+const partyLeader = ranger_ID
+const partyMembers = [ranger_ID, priest1_ID, priest2_ID]
 
-let mage1: Mage // poisio
-let mage2: Mage // poisio
-let mage3: Mage // poisio
+let ranger: Ranger
+let priest1: Priest
+let priest2: Priest
 let merchant: Merchant // merchant
 const friends: Character[] = [undefined, undefined, undefined, undefined]
 
@@ -53,19 +53,19 @@ async function run() {
     }
     startMerchantLoop(merchant_ID, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startMage1Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
+    const startRangerLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (mage1) mage1.disconnect()
-                mage1 = await AL.Game.startMage(name, region, identifier)
-                friends[1] = mage1
-                startPoisioMage(mage1, merchant_ID, friends, partyLeader, partyMembers)
-                startTrackerLoop(mage1)
-                mage1.socket.on("disconnect", async () => { loopBot() })
+                if (ranger) ranger.disconnect()
+                ranger = await AL.Game.startRanger(name, region, identifier)
+                friends[1] = ranger
+                startSnakeRanger(ranger, merchant_ID, friends, partyLeader, partyMembers)
+                startTrackerLoop(ranger)
+                ranger.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (mage1) mage1.disconnect()
+                if (ranger) ranger.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -78,20 +78,20 @@ async function run() {
         }
         loopBot()
     }
-    startMage1Loop(mage1_ID, region, identifier).catch(() => { /* ignore errors */ })
+    startRangerLoop(ranger_ID, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startMage2Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
+    const startPriest1Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (mage2) mage2.disconnect()
-                mage2 = await AL.Game.startMage(name, region, identifier)
-                friends[2] = mage2
-                startPoisioMage(mage2, merchant_ID, friends, partyLeader, partyMembers)
-                mage2.socket.on("disconnect", async () => { loopBot() })
+                if (priest1) priest1.disconnect()
+                priest1 = await AL.Game.startPriest(name, region, identifier)
+                friends[2] = priest1
+                startSnakePriest(priest1, merchant_ID, friends, partyLeader, partyMembers)
+                priest1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (mage2) mage2.disconnect()
+                if (priest1) priest1.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -104,20 +104,20 @@ async function run() {
         }
         loopBot()
     }
-    startMage2Loop(mage2_ID, region, identifier).catch(() => { /* ignore errors */ })
+    startPriest1Loop(priest1_ID, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startMage3Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
+    const startPriest2Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (mage3) mage3.disconnect()
-                mage3 = await AL.Game.startMage(name, region, identifier)
-                friends[3] = mage3
-                startPoisioMage(mage3, merchant_ID, friends, partyLeader, partyMembers)
-                mage3.socket.on("disconnect", async () => { loopBot() })
+                if (priest2) priest2.disconnect()
+                priest2 = await AL.Game.startPriest(name, region, identifier)
+                friends[3] = priest2
+                startSnakePriest(priest2, merchant_ID, friends, partyLeader, partyMembers)
+                priest2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (mage3) mage3.disconnect()
+                if (priest2) priest2.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -130,6 +130,6 @@ async function run() {
         }
         loopBot()
     }
-    startMage3Loop(mage3_ID, region, identifier).catch(() => { /* ignore errors */ })
+    startPriest2Loop(priest2_ID, region, identifier).catch(() => { /* ignore errors */ })
 }
 run()
