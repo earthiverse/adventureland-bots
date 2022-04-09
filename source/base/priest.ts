@@ -14,46 +14,48 @@ export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], 
 
     if (bot.c.town) return // Don't attack if teleporting
 
-    const healPriority = (a: Player, b: Player) => {
+    if (bot.canUse("heal")) {
+        const healPriority = (a: Player, b: Player) => {
         // Heal our friends first
-        const a_isFriend = friends.some((friend) => { friend?.id == a.id })
-        const b_isFriend = friends.some((friend) => { friend?.id == b.id })
-        if (a_isFriend && !b_isFriend) return true
-        else if (b_isFriend && !a_isFriend) return false
+            const a_isFriend = friends.some((friend) => { friend?.id == a.id })
+            const b_isFriend = friends.some((friend) => { friend?.id == b.id })
+            if (a_isFriend && !b_isFriend) return true
+            else if (b_isFriend && !a_isFriend) return false
 
-        // Heal those with lower HP first
-        const a_hpRatio = a.hp / a.max_hp
-        const b_hpRatio = b.hp / b.max_hp
-        if (a_hpRatio < b_hpRatio) return true
-        else if (b_hpRatio < a_hpRatio) return false
+            // Heal those with lower HP first
+            const a_hpRatio = a.hp / a.max_hp
+            const b_hpRatio = b.hp / b.max_hp
+            if (a_hpRatio < b_hpRatio) return true
+            else if (b_hpRatio < a_hpRatio) return false
 
-        // Heal closer players
-        return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
-    }
-    const players = new FastPriorityQueue<Character | Player>(healPriority)
-    // Potentially heal ourself
-    if (bot.hp / bot.max_hp <= 0.8) players.add(bot)
-    // Potentially heal others
-    for (const [, player] of bot.players) {
-        if (AL.Tools.distance(bot, player) > bot.range) continue // Too far away to heal
-        if (player.rip) continue // Player is already dead
-        if (player.hp / player.max_hp > 0.8) continue // Player still has a lot of hp
+            // Heal closer players
+            return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
+        }
+        const players = new FastPriorityQueue<Character | Player>(healPriority)
+        // Potentially heal ourself
+        if (bot.hp / bot.max_hp <= 0.8) players.add(bot)
+        // Potentially heal others
+        for (const [, player] of bot.players) {
+            if (AL.Tools.distance(bot, player) > bot.range) continue // Too far away to heal
+            if (player.rip) continue // Player is already dead
+            if (player.hp / player.max_hp > 0.8) continue // Player still has a lot of hp
 
-        const isFriend = friends.some((friend) => { friend?.id == bot.id })
-        if (!isFriend && bot.party && bot.party !== player.party && !options.healStrangers) continue // They're not our friend, not in our party, and we're not healing strangers
+            const isFriend = friends.some((friend) => { friend?.id == bot.id })
+            if (!isFriend && bot.party && bot.party !== player.party && !options.healStrangers) continue // They're not our friend, not in our party, and we're not healing strangers
 
-        players.add(player)
-    }
-    const toHeal = players.peek()
-    if (toHeal) {
-        await bot.heal(toHeal.id)
-        return
+            players.add(player)
+        }
+        const toHeal = players.peek()
+        if (toHeal) {
+            await bot.heal(toHeal.id)
+            return
+        }
     }
 
     if (bot.isOnCooldown("scare")) return
 
     // Heal ghost to farm life essence
-    if (!options.disableGhostLifeEssenceFarm && types.includes("ghost")) {
+    if (!options.disableGhostLifeEssenceFarm && types.includes("ghost") && bot.canUse("heal")) {
         for (const entity of bot.getEntities({ type: "ghost", withinRange: bot.range })) {
             if (entity.s.healed) continue
 

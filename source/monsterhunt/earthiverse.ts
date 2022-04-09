@@ -1876,6 +1876,7 @@ async function run() {
 
             // Don't change servers if we're currently attacking something special. (unless it's an event monster)
             if ((AL.Constants.SPECIAL_MONSTERS.includes(information.bot1.target) || AL.Constants.SPECIAL_MONSTERS.includes(information.bot2.target) || AL.Constants.SPECIAL_MONSTERS.includes(information.bot3.target)) // We're targeting a special monster
+                && !(information.bot1.bot.S.egghunt && ["wabbit"].includes(targetServer[2])) // Switch servers right away for special Easter monsters
                 && !(information.bot1.bot.S?.halloween && ["mrgreen", "mrpumpkin", "slenderman"].includes(targetServer[2])) // Switch servers right away for special Halloween monsters
                 && !(information.bot1.bot.S?.holidayseason && ["grinch", "snowman"].includes(targetServer[2])) // Switch servers right away for special Christmas monsters
                 && !(information.bot1.bot.S?.lunarnewyear && ["dragold", "tiger"].includes(targetServer[2])) // Switch servers right away for special Lunar New Year monsters
