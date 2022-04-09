@@ -97,7 +97,7 @@ export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], 
 
     if (bot.canUse("attack")) {
         const targets = new FastPriorityQueue<Entity>(attackPriority)
-        for (const entity of bot.getEntities({
+        for (const target of bot.getEntities({
             canDamage: true,
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
@@ -106,7 +106,7 @@ export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], 
             willDieToProjectiles: false,
             withinRange: bot.range
         })) {
-            targets.add(entity)
+            targets.add(target)
         }
         if (targets.size == 0) return // No target
 

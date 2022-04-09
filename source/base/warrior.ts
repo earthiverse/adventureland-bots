@@ -37,26 +37,26 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                 break
             }
         }
-        for (const entity of bot.getEntities({
+        for (const target of bot.getEntities({
             withinRange: bot.G.skills.cleave.range + bot.xrange,
         })) {
-            if (options.targetingPlayer && !entity.target) {
+            if (options.targetingPlayer && !target.target) {
                 // We don't want to aggro things
                 avoidCleave = true
                 break
             }
-            if (entity.target == bot.id) {
+            if (target.target == bot.id) {
                 couldCleaveNearby = true
                 continue // Already targeting me
             }
-            if (!entity.isTauntable(bot)) continue // Already has a target
-            if (!types.includes(entity.type) || avoidCleave) {
+            if (!target.isTauntable(bot)) continue // Already has a target
+            if (!types.includes(target.type) || avoidCleave) {
                 // A monster we don't want to attack is here, don't cleave
                 avoidCleave = true
                 break
             }
 
-            switch (entity.damage_type) {
+            switch (target.damage_type) {
                 case "magical":
                     if (bot.mcourage > targetingMe.magical) targetingMe.magical += 1 // We can tank one more magical monster
                     else {
@@ -83,7 +83,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                     break
             }
 
-            cleaveTargets.push(entity)
+            cleaveTargets.push(target)
         }
         if (options.maximumTargets && cleaveTargets.length + bot.targets > options.maximumTargets) avoidCleave = true
         if (!avoidCleave && (cleaveTargets.length > 1 || couldCleaveNearby)) {
@@ -136,19 +136,20 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
 
         const agitateTargets: Entity[] = []
         let avoidAgitate = false
-        for (const entity of bot.getEntities({
+        for (const target of bot.getEntities({
             canDamage: true,
+            couldGiveCredit: true,
             targetingMe: false,
             withinRange: bot.G.skills.agitate.range,
         })) {
-            if (!entity.isTauntable(bot)) continue // Not tauntable
-            if (!types.includes(entity.type) || avoidAgitate) {
+            if (!target.isTauntable(bot)) continue // Not tauntable
+            if (!types.includes(target.type) || avoidAgitate) {
                 // A monster we don't want to attack is here, don't agitate
                 avoidAgitate = true
                 continue // Don't break, we could still taunt what we want to kill
             }
 
-            switch (entity.damage_type) {
+            switch (target.damage_type) {
                 case "magical":
                     if (bot.mcourage > targetingMe.magical) targetingMe.magical += 1 // We can tank one more magical monster
                     else {
@@ -175,7 +176,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                     break
             }
 
-            agitateTargets.push(entity)
+            agitateTargets.push(target)
         }
 
         // If agitating would push us over our maximum targets setting, don't agitate
@@ -203,6 +204,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                 for (let i = 0; i < agitateTargets.length; i++) {
                     const target = agitateTargets[i]
                     if (AL.Tools.distance(bot, target) > bot.G.skills.zapperzap.range) continue // Too far to zap
+                    if (target.target) continue // Don't zap if they have a target, we can't take aggro with a zapper
 
                     const zapper: number = bot.locateItem("zapper", bot.items, { returnHighestLevel: true })
                     if (bot.isEquipped("zapper") || (zapper !== undefined && bot.cc < 100)) {
@@ -258,7 +260,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
     if (bot.canUse("attack")) {
         const targets = new FastPriorityQueue<Entity>(priority)
         const numTargets = bot.calculateTargets()
-        for (const entity of bot.getEntities({
+        for (const target of bot.getEntities({
             canDamage: true,
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
@@ -267,22 +269,22 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
             willDieToProjectiles: false,
             withinRange: bot.range
         })) {
-            if (!entity.target && options.maximumTargets
+            if (!target.target && options.maximumTargets
                  && (numTargets.magical + numTargets.physical + numTargets.pure) >= options.maximumTargets) {
                 // Attacking this entity will push us over our maximumTargets, so don't attack
                 continue
             }
 
-            targets.add(entity)
+            targets.add(target)
         }
         if (targets.size) {
-            const entity = targets.peek()
-            const canKill = bot.canKillInOneShot(entity)
+            const target = targets.peek()
+            const canKill = bot.canKillInOneShot(target)
 
             if (!canKill && !options.disableStomp
             && bot.mp > bot.G.skills.stomp.mp + bot.mp_cost
             && bot.canUse("stomp", { ignoreEquipped: true })
-            && (!entity.s.stunned || entity.s.stunned.ms < (Math.min(...bot.pings) * 3))
+            && (!target.s.stunned || target.s.stunned.ms < (Math.min(...bot.pings) * 3))
             && (bot.isEquipped("basher") || bot.isEquipped("wbasher") || bot.hasItem("basher") || bot.hasItem("wbasher"))) {
                 let avoidStomp = false
                 if (bot.isPVP()) {
@@ -330,8 +332,8 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                 for (const friend of friends) {
                     if (!friend) continue // No friend
                     if (friend.id == bot.id) continue // Don't delete it from our own list
-                    if (AL.Constants.SPECIAL_MONSTERS.includes(entity.type)) continue // Don't delete special monsters
-                    friend.deleteEntity(entity.id)
+                    if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                    friend.deleteEntity(target.id)
                 }
             }
 
@@ -350,13 +352,13 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                 }
             }
 
-            await bot.basicAttack(entity.id)
+            await bot.basicAttack(target.id)
         }
     }
 
     if (!options.disableZapper && bot.canUse("zapperzap", { ignoreEquipped: true }) && bot.cc < 100) {
         const targets = new FastPriorityQueue<Entity>(priority)
-        for (const entity of bot.getEntities({
+        for (const target of bot.getEntities({
             canDamage: true,
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
@@ -365,9 +367,9 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
             willDieToProjectiles: false,
             withinRange: bot.G.skills.zapperzap.range
         })) {
-            if (!bot.canKillInOneShot(entity, "zapperzap")) continue
+            if (!bot.canKillInOneShot(target, "zapperzap")) continue
 
-            targets.add(entity)
+            targets.add(target)
         }
 
         if (targets.size) {
@@ -415,16 +417,7 @@ export function startHardshellLoop(bot: Warrior): void {
 
             if (bot.hp < bot.max_hp * 0.75
                 && bot.canUse("hardshell")) {
-                let isBeingAttackedByPhysicalMonster = false
-                for (const [, entity] of bot.entities) {
-                    if (entity.target !== bot.id) continue // Not targeting us
-                    if (entity.damage_type !== "physical") continue // Not physical
-
-                    isBeingAttackedByPhysicalMonster = true
-                    break
-                }
-
-                if (isBeingAttackedByPhysicalMonster) await bot.hardshell()
+                if (bot.calculateTargets().physical > 0) await bot.hardshell()
             }
         } catch (e) {
             console.error(e)

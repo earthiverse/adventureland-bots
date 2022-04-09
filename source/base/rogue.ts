@@ -48,8 +48,8 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
 
     // Use mentalburst if we can kill it in one shot to get extra MP
     if (bot.canUse("mentalburst")) {
-        const targets: Entity[] = []
-        for (const entity of bot.getEntities({
+        const targets = new FastPriorityQueue<Entity>(priority)
+        for (const target of bot.getEntities({
             canDamage: true,
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
@@ -58,13 +58,13 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
             willDieToProjectiles: false,
             withinRange: (bot.range * bot.G.skills.mentalburst.range_multiplier) + bot.G.skills.mentalburst.range_bonus
         })) {
-            if (entity.immune) continue // Entity won't take damage from mentalburst
-            if (!bot.canKillInOneShot(entity, "mentalburst")) continue
-            targets.push(entity)
+            if (target.immune) continue // Entity won't take damage from mentalburst
+            if (!bot.canKillInOneShot(target, "mentalburst")) continue
+            targets.add(target)
         }
 
-        if (targets.length) {
-            const target = targets[0]
+        const target = targets.peek()
+        if (target) {
             for (const friend of friends) {
                 if (!friend) continue // No friend
                 if (friend.id == bot.id) continue // Don't delete it from our own list
@@ -81,8 +81,8 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
     if (bot.canUse("mentalburst")
         && ((canUseQuickPunch && bot.mp >= bot.G.skills.mentalburst.mp + bot.G.skills.quickpunch.mp)
          || (canUseQuickStab && bot.mp >= bot.G.skills.mentalburst.mp + bot.G.skills.quickstab.mp))) {
-        const targets: Entity[] = []
-        for (const entity of bot.getEntities({
+        const targets = new FastPriorityQueue<Entity>(priority)
+        for (const target of bot.getEntities({
             canDamage: true,
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
@@ -91,30 +91,30 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
             willDieToProjectiles: false,
             withinRange: bot.range
         })) {
-            if (entity.immune) continue // Entity won't take damage from our combo
+            if (target.immune) continue // Entity won't take damage from our combo
 
             // If it can heal, don't try to combo
-            if (entity.lifesteal) continue
-            if (entity.abilities?.self_healing) continue
+            if (target.lifesteal) continue
+            if (target.abilities?.self_healing) continue
 
             // If it can avoid our combo, don't try
-            if (entity.avoidance || entity.reflection || entity.evasion) continue
+            if (target.avoidance || target.reflection || target.evasion) continue
 
-            if (!bot.canKillInOneShot(entity, "mentalburst")) continue
+            if (!bot.canKillInOneShot(target, "mentalburst")) continue
 
-            const mentalBurstMinDamage = this.calculateDamageRange(entity, "mentalburst")[0]
-            const quickPunchMinDamage = canUseQuickPunch ? this.calculateDamageRange(entity, "quickpunch")[0] : 0
-            const quickStabMinDamage = canUseQuickStab ? this.calculateDamageRange(entity, "quickstab")[0] : 0
+            const mentalBurstMinDamage = this.calculateDamageRange(target, "mentalburst")[0]
+            const quickPunchMinDamage = canUseQuickPunch ? this.calculateDamageRange(target, "quickpunch")[0] : 0
+            const quickStabMinDamage = canUseQuickStab ? this.calculateDamageRange(target, "quickstab")[0] : 0
 
-            if (entity.hp < quickPunchMinDamage + quickStabMinDamage) continue // We'd kill it in one hit and not regain MP
+            if (target.hp < quickPunchMinDamage + quickStabMinDamage) continue // We'd kill it in one hit and not regain MP
 
-            if (mentalBurstMinDamage + quickPunchMinDamage + quickStabMinDamage < entity.hp) continue // We can't do enough damage to kill it with a combo
+            if (mentalBurstMinDamage + quickPunchMinDamage + quickStabMinDamage < target.hp) continue // We can't do enough damage to kill it with a combo
 
-            targets.push(entity)
+            targets.add(target)
         }
 
-        if (targets.length) {
-            const target = targets[0]
+        const target = targets.peek()
+        if (target) {
             for (const friend of friends) {
                 if (!friend) continue // No friend
                 if (friend.id == bot.id) continue // Don't delete it from our own list
@@ -129,7 +129,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
 
     if (bot.canUse("attack")) {
         const targets = new FastPriorityQueue<Entity>(priority)
-        for (const entity of bot.getEntities({
+        for (const target of bot.getEntities({
             canDamage: true,
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
@@ -138,7 +138,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
             willDieToProjectiles: false,
             withinRange: bot.range
         })) {
-            targets.add(entity)
+            targets.add(target)
         }
 
         const target = targets.peek()
@@ -172,8 +172,8 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
     }
 
     if (bot.canUse("mentalburst")) {
-        const targets: Entity[] = []
-        for (const entity of bot.getEntities({
+        const targets = new FastPriorityQueue<Entity>(priority)
+        for (const target of bot.getEntities({
             canDamage: true,
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
@@ -182,13 +182,13 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
             willDieToProjectiles: false,
             withinRange: (bot.range * bot.G.skills.mentalburst.range_multiplier) + bot.G.skills.mentalburst.range_bonus
         })) {
-            if (entity.immune) continue // Entity won't take damage from mentalburst
-            if (!bot.canKillInOneShot(entity, "mentalburst")) continue
-            targets.push(entity)
+            if (target.immune) continue // Entity won't take damage from mentalburst
+            if (!bot.canKillInOneShot(target, "mentalburst")) continue
+            targets.add(target)
         }
 
-        if (targets.length) {
-            const target = targets[0]
+        const target = targets.peek()
+        if (target) {
             for (const friend of friends) {
                 if (!friend) continue // No friend
                 if (friend.id == bot.id) continue // Don't delete it from our own list
@@ -215,18 +215,17 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
         }
 
         const target = targets.peek()
-        if (!target) return // No target
-
-        if (bot.canKillInOneShot(target, "quickpunch")) {
-            for (const friend of friends) {
-                if (!friend) continue // No friend
-                if (friend.id == bot.id) continue // Don't delete it from our own list
-                if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
-                friend.deleteEntity(target.id)
+        if (target) {
+            if (bot.canKillInOneShot(target, "quickpunch")) {
+                for (const friend of friends) {
+                    if (!friend) continue // No friend
+                    if (friend.id == bot.id) continue // Don't delete it from our own list
+                    if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                    friend.deleteEntity(target.id)
+                }
             }
+            await bot.quickPunch(target.id)
         }
-
-        if (target) await bot.quickPunch(target.id)
     }
 
     if (!options.disableQuickStab && bot.canUse("quickstab")) {
@@ -245,18 +244,17 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
         }
 
         const target = targets.peek()
-        if (!target) return // No target
-
-        if (bot.canKillInOneShot(target, "quickstab")) {
-            for (const friend of friends) {
-                if (!friend) continue // No friend
-                if (friend.id == bot.id) continue // Don't delete it from our own list
-                if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
-                friend.deleteEntity(target.id)
+        if (target) {
+            if (bot.canKillInOneShot(target, "quickstab")) {
+                for (const friend of friends) {
+                    if (!friend) continue // No friend
+                    if (friend.id == bot.id) continue // Don't delete it from our own list
+                    if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                    friend.deleteEntity(target.id)
+                }
             }
+            await bot.quickStab(target.id)
         }
-
-        if (target) await bot.quickStab(target.id)
     }
 
     if (!options.disableZapper && bot.canUse("zapperzap", { ignoreEquipped: true }) && bot.cc < 100) {
