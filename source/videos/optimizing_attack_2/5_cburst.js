@@ -21,7 +21,6 @@ if (character.ctype == "merchant") {
     setTimeout(() => { startStatisticsLoop(SCRIPT_NAME, CHARACTERS) }, 60000)
 }
 
-
 function getBestTargets(options = {}) {
     const entities = []
 

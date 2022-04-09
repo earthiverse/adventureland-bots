@@ -1,5 +1,10 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-undef */
+
+const fs = require("fs")
+
+if (!parent.paused) pause()
 
 /******************************************************************************
  * The following code is used in `default` and later scripts
@@ -122,6 +127,7 @@ const TEN_MINUTES_MS = 10 * 60 * 1000
 const getSum = arr => arr.reduce((p, c) => p + c, 0)
 const getAverage = arr => getSum(arr) / arr.length
 
+const STATS_FOLDER = "C:\\Users\\Hyprk\\Desktop\\stats\\"
 /**
  * Shows statistics every 10 minutes
  * @param {*} scriptName Name of the script, so we can keep track
@@ -183,7 +189,14 @@ function startStatisticsLoop(scriptName, characters) {
                 statistics.characters.push(charStatistics)
             }
 
-            show_json(statistics)
+            const folderExists = fs.existsSync(STATS_FOLDER)
+            if (statistics.totalKills > 0 && folderExists) {
+                const file = `${STATS_FOLDER}${scriptName}_${Date.now()}.json`
+                game_log(`Writing statistics to ${file}...`)
+                fs.writeFileSync(file, JSON.stringify(statistics))
+            } else if (!folderExists) {
+                show_json(statistics)
+            }
 
             // Reset kills to 0
             for (const id in kills) {
