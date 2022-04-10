@@ -486,7 +486,7 @@ export async function goGetRspeedBuff(bot: Character, msToWait = 10000): Promise
 
     if (friendlyRogue) {
         if (bot.ctype == "merchant") (bot as Merchant).closeMerchantStand().catch()
-        await bot.smartMove(friendlyRogue, { getWithin: 20, useBlink: true })
+        await bot.smartMove(friendlyRogue, { getWithin: 20, stopIfTrue: () => bot.s.rspeed !== undefined, useBlink: true })
         if (["earthRog"].includes(friendlyRogue.id)) return // Don't remove earthRog from the list, they're probably just low MP
 
         // Wait a bit for rspeed
@@ -691,15 +691,15 @@ export async function goToPriestIfHurt(bot: Character, priest: Character): Promi
 
 export async function goToSpecialMonster(bot: Character, type: MonsterName, options: { requestMagiport?: true} = {}): Promise<unknown> {
     const stopIfTrue = (): boolean => {
-        const entity = bot.getEntity({ canWalkTo: true, type: type })
-        return entity !== undefined
+        const target = bot.getEntity({ canWalkTo: true, type: type })
+        return target !== undefined
     }
 
     // Look for it nearby
-    let nearby = bot.getEntity({ returnNearest: true, type: type })
-    if (nearby) {
-        await bot.smartMove(nearby, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
-        return bot.smartMove(nearby, { getWithin: bot.range - 10, useBlink: true })
+    let target = bot.getEntity({ returnNearest: true, type: type })
+    if (target) {
+        await bot.smartMove(target, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
+        return bot.smartMove(target, { getWithin: bot.range - 10, useBlink: true })
     }
 
     // Look for it in the server data
@@ -710,10 +710,10 @@ export async function goToSpecialMonster(bot: Character, type: MonsterName, opti
     }
 
     // Look for it in our database
-    const special = await AL.EntityModel.findOne({ serverIdentifier: bot.server.name, serverRegion: bot.server.region, type: type }).lean().exec()
-    if (special && special.x !== undefined && special.y !== undefined) {
-        if (options.requestMagiport) requestMagiportService(bot, special)
-        return bot.smartMove(special, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
+    const dbTarget = await AL.EntityModel.findOne({ serverIdentifier: bot.server.name, serverRegion: bot.server.region, type: type }).lean().exec()
+    if (dbTarget && dbTarget.x !== undefined && dbTarget.y !== undefined) {
+        if (options.requestMagiport) requestMagiportService(bot, dbTarget)
+        return bot.smartMove(dbTarget, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
     }
 
     // Look for if there's a spawn for it
@@ -721,8 +721,40 @@ export async function goToSpecialMonster(bot: Character, type: MonsterName, opti
         // Move to the next spawn
         await bot.smartMove(spawn, { getWithin: bot.range - 10, stopIfTrue: () => bot.getEntity({ type: type }) !== undefined })
 
-        nearby = bot.getEntity({ returnNearest: true, type: type })
-        if (nearby) return bot.smartMove(nearby, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
+        target = bot.getEntity({ returnNearest: true, type: type })
+        if (target) return bot.smartMove(target, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
+    }
+
+    // Go through all the spawns on the map to look for it
+    if (dbTarget && dbTarget.x == undefined && dbTarget.y == undefined && dbTarget.map) {
+        const spawns: IPosition[] = []
+
+        const gMap = this.G.maps[dbTarget.map as MapName] as GMap
+        if (gMap.ignore) return
+        if (gMap.instance || !gMap.monsters || gMap.monsters.length == 0) return // Map is unreachable, or there are no monsters
+
+        for (const spawn of gMap.monsters) {
+            const gMonster = bot.G.monsters[spawn.type]
+            if (gMonster.aggro >= 100 || gMonster.rage >= 100) continue // Skip aggro spawns
+            if (spawn.boundary) {
+                spawns.push({ "map": dbTarget.map, "x": (spawn.boundary[0] + spawn.boundary[2]) / 2, "y": (spawn.boundary[1] + spawn.boundary[3]) / 2 })
+            } else if (spawn.boundaries) {
+                for (const boundary of spawn.boundaries) {
+                    spawns.push({ "map": boundary[0], "x": (boundary[1] + boundary[3]) / 2, "y": (boundary[2] + boundary[4]) / 2 })
+                }
+            }
+        }
+
+        // Sort to improve efficiency a little
+        spawns.sort((a, b) => a.x - b.x)
+
+        for (const spawn of spawns) {
+            // Move to the next spawn
+            await bot.smartMove(spawn, { getWithin: bot.range - 10, stopIfTrue: () => bot.getEntity({ type: type }) !== undefined })
+
+            target = bot.getEntity({ returnNearest: true, type: type })
+            if (target) return bot.smartMove(target, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
+        }
     }
 }
 
