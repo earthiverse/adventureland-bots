@@ -686,35 +686,43 @@ export async function goToPriestIfHurt(bot: Character, priest: Character): Promi
     if (bot.hp > bot.max_hp / 2) return // We still have over half our HP
     if (!priest) return // Priest is not available
 
-    return bot.smartMove(priest, { getWithin: priest.range })
+    return bot.smartMove(priest, { getWithin: priest.range, stopIfTrue: () => bot.hp >= bot.max_hp * 0.6 })
 }
 
 export async function goToSpecialMonster(bot: Character, type: MonsterName, options: { requestMagiport?: true} = {}): Promise<unknown> {
+    const stopIfTrue = (): boolean => {
+        const entity = bot.getEntity({ type: type })
+        return entity && Pathfinder.canWalkPath(bot, entity)
+    }
+
     // Look for it nearby
     let nearby = bot.getEntity({ returnNearest: true, type: type })
-    if (nearby) return bot.smartMove(nearby, { getWithin: bot.range - 10, useBlink: true })
+    if (nearby) {
+        await bot.smartMove(nearby, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
+        return bot.smartMove(nearby, { getWithin: bot.range - 10, useBlink: true })
+    }
 
     // Look for it in the server data
     if (bot.S && bot.S[type] && bot.S[type].live && bot.S[type]["x"] !== undefined && bot.S[type]["y"] !== undefined) {
         const destination = bot.S[type] as IPosition
         if (options.requestMagiport) requestMagiportService(bot, destination)
-        if (AL.Tools.distance(bot, destination) > bot.range) return bot.smartMove(destination, { getWithin: bot.range - 10, useBlink: true })
+        if (AL.Tools.distance(bot, destination) > bot.range) return bot.smartMove(destination, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
     }
 
     // Look for it in our database
     const special = await AL.EntityModel.findOne({ serverIdentifier: bot.server.name, serverRegion: bot.server.region, type: type }).lean().exec()
     if (special && special.x !== undefined && special.y !== undefined) {
         if (options.requestMagiport) requestMagiportService(bot, special)
-        return bot.smartMove(special, { getWithin: bot.range - 10, useBlink: true })
+        return bot.smartMove(special, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
     }
 
     // Look for if there's a spawn for it
     for (const spawn of bot.locateMonster(type)) {
         // Move to the next spawn
-        await bot.smartMove(spawn, { getWithin: bot.range - 10 })
+        await bot.smartMove(spawn, { getWithin: bot.range - 10, stopIfTrue: () => bot.getEntity({ type: type }) !== undefined })
 
         nearby = bot.getEntity({ returnNearest: true, type: type })
-        if (nearby) return bot.smartMove(nearby, { getWithin: bot.range - 10, useBlink: true })
+        if (nearby) return bot.smartMove(nearby, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
     }
 }
 
@@ -793,10 +801,10 @@ export async function goToNearestWalkableToMonster(bot: Character, types: Monste
         if (AL.Pathfinder.canWalkPath(bot, destination)) {
             bot.move(destination.x, destination.y, { resolveOnStart: true }).catch(() => { /* Suppress errors */ })
         } else {
-            return bot.smartMove(destination, { useBlink: true })
+            return bot.smartMove(destination, { stopIfTrue: () => bot.getEntity({ typeList: types }) !== undefined, useBlink: true })
         }
     } else if (!nearest) {
-        return bot.smartMove(types[0], { useBlink: true })
+        return bot.smartMove(types[0], { stopIfTrue: () => bot.getEntity({ typeList: types }) !== undefined, useBlink: true })
     }
 }
 
