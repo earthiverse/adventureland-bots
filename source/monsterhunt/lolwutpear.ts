@@ -378,6 +378,12 @@ function prepareMage(bot: Mage) {
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["tortoise", "frog"]) },
+        },
+        wabbit: {
+            attack: async () => { return attackTheseTypesMage(bot, ["wabbit", "arcticbee", "bat", "bee", "boar", "cgoo", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "greenjr", "hen", "jr", "minimush", "osnake", "phoenix", "poisio", "rooster", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise"], information.friends) },
+            attackWhileIdle: true,
+            equipment: maxDamageEquipment,
+            move: async () => { await goToSpecialMonster(bot, "wabbit") }
         }
     }
 
