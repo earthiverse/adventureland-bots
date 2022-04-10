@@ -312,7 +312,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
                         if (AL.Tools.distance(bot, friend) > bot.G.skills.mluck.range) {
                             await bot.closeMerchantStand()
                             console.log(`[merchant] We are moving to ${friend.name} to mluck them!`)
-                            await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2, stopIfTrue: () => friend.s.mluck?.ms >= 120000 || Tools.distance(bot.smartMoving, friend) > bot.G.skills.mluck.range })
+                            await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2, stopIfTrue: () => (friend.s.mluck?.strong && friend.s.mluck?.ms >= 120000) || Tools.distance(bot.smartMoving, friend) > bot.G.skills.mluck.range })
                         }
 
                         bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
