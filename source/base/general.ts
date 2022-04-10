@@ -730,7 +730,7 @@ export async function goToSpecialMonster(bot: Character, type: MonsterName, opti
         || (bot.S && bot.S[type] && bot.S[type].live && bot.S[type]["x"] !== undefined && bot.S[type]["y"] !== undefined)) {
         const spawns: IPosition[] = []
 
-        const gMap = this.G.maps[(dbTarget.map ?? bot.S[type]["map"]) as MapName] as GMap
+        const gMap = bot.G.maps[(dbTarget.map ?? bot.S[type]["map"]) as MapName] as GMap
         if (gMap.ignore) return
         if (gMap.instance || !gMap.monsters || gMap.monsters.length == 0) return // Map is unreachable, or there are no monsters
 
