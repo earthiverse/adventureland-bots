@@ -1061,7 +1061,7 @@ function prepareRanger(bot: Ranger) {
             move: async () => { await goToNearestWalkableToMonster(bot, ["tortoise"], { map: "main", x: -1124, y: 1118 }) },
         },
         wabbit: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["wabbit", "arcticbee", "bat", "bbpompom", "bee", "boar", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise", "wolf", "wolfie"], information.friends) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["wabbit", "arcticbee", "bat", "bbpompom", "bee", "boar", "cgoo", "crab", "cutebee", "crabx", "croc", "fvampire", "ghost", "goldenbat", "goo", "greenjr", "hen", "jr", "minimush", "mole", "mvampire", "osnake", "phoenix", "poisio", "rooster", "scorpion", "snake", "spider", "stoneworm", "stompy", "squig", "squigtoad", "tortoise", "wolf", "wolfie", "xscorpion"], information.friends) },
             attackWhileIdle: true,
             equipment: maxRangeEquipment,
             move: async () => { await goToSpecialMonster(bot, "wabbit", { requestMagiport: true }) }
@@ -1685,7 +1685,7 @@ function prepareWarrior(bot: Warrior) {
             move: async () => { await goToNearestWalkableToMonster(bot, ["tortoise"], { map: "main", x: -1144, y: 1118 }) },
         },
         wabbit: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["wabbit", "arcticbee", "bat", "bbpompom", "bee", "boar", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise", "wolf", "wolfie"], information.friends, { disableAgitate: true }) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["wabbit", "arcticbee", "bat", "bbpompom", "bee", "boar", "cgoo", "crab", "cutebee", "crabx", "croc", "fvampire", "ghost", "goldenbat", "goo", "greenjr", "hen", "jr", "minimush", "mole", "mvampire", "osnake", "phoenix", "poisio", "rooster", "scorpion", "snake", "spider", "stoneworm", "stompy", "squig", "squigtoad", "tortoise", "wolf", "wolfie", "xscorpion"], information.friends, { disableAgitate: true }) },
             attackWhileIdle: true,
             equipment: burnEquipment,
             move: async () => { await goToSpecialMonster(bot, "wabbit", { requestMagiport: true }) },
