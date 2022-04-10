@@ -691,8 +691,8 @@ export async function goToPriestIfHurt(bot: Character, priest: Character): Promi
 
 export async function goToSpecialMonster(bot: Character, type: MonsterName, options: { requestMagiport?: true} = {}): Promise<unknown> {
     const stopIfTrue = (): boolean => {
-        const entity = bot.getEntity({ type: type })
-        return entity && Pathfinder.canWalkPath(bot, entity)
+        const entity = bot.getEntity({ canWalkTo: true, type: type })
+        return entity !== undefined
     }
 
     // Look for it nearby
@@ -777,23 +777,16 @@ export async function goToNPCShopIfFull(bot: Character, itemsToSell = ITEMS_TO_S
 }
 
 export async function goToNearestWalkableToMonster(bot: Character, types: MonsterName[], defaultPosition?: IPosition, getWithin = bot.range): Promise<unknown> {
-    let nearest: IPosition
-    let distance = Number.MAX_VALUE
-    for (const entity of bot.getEntities({
+    const nearest = bot.getEntity({
         canWalkTo: true,
         couldGiveCredit: true,
+        returnNearest: true,
         typeList: types,
         willBurnToDeath: false,
         willDieToProjectiles: false
-    })) {
-        const d = AL.Tools.distance(bot, entity)
-        if (d < distance) {
-            nearest = entity
-            distance = d
-        }
-    }
+    })
 
-    if (nearest && distance > getWithin) {
+    if (nearest && Tools.distance(bot, nearest) > getWithin) {
         const destination = offsetPositionParty(nearest, bot)
         bot.move(destination.x, destination.y, { resolveOnStart: true }).catch(() => { /* Suppress errors */ })
     } else if (!nearest && defaultPosition) {
@@ -801,10 +794,10 @@ export async function goToNearestWalkableToMonster(bot: Character, types: Monste
         if (AL.Pathfinder.canWalkPath(bot, destination)) {
             bot.move(destination.x, destination.y, { resolveOnStart: true }).catch(() => { /* Suppress errors */ })
         } else {
-            return bot.smartMove(destination, { stopIfTrue: () => bot.getEntity({ typeList: types }) !== undefined, useBlink: true })
+            return bot.smartMove(destination, { stopIfTrue: () => bot.getEntity({ canWalkTo: true, typeList: types }) !== undefined, useBlink: true })
         }
     } else if (!nearest) {
-        return bot.smartMove(types[0], { stopIfTrue: () => bot.getEntity({ typeList: types }) !== undefined, useBlink: true })
+        return bot.smartMove(types[0], { stopIfTrue: () => bot.getEntity({ canWalkTo: true, typeList: types }) !== undefined, useBlink: true })
     }
 }
 
