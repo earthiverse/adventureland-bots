@@ -1,4 +1,4 @@
-import AL, { BankPackName, Character, Entity, ItemData, ItemName, Merchant, MonsterName } from "alclient"
+import AL, { BankPackName, Character, Constants, Entity, ItemData, ItemName, Merchant, MonsterName } from "alclient"
 import { ITEMS_TO_CRAFT, ITEMS_TO_EXCHANGE, ITEMS_TO_HOLD, ITEMS_TO_LIST, ITEMS_TO_SELL, LOOP_MS, sleep } from "./general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "./locations.js"
 
@@ -458,6 +458,16 @@ export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOL
         await bot.withdrawItem(pack, slot)
         freeSpaces--
     }
+
+    // Swap items that are overflowing in inventory if we have space
+    for (let i = bot.isize; i < bot.items.length; i++) {
+        const item = bot.items[i]
+        if (!item) continue
+        const empty = bot.getFirstEmptyInventorySlot()
+        if (!empty) break
+        await bot.swapItems(i, empty)
+    }
+
 }
 
 export async function goFishing(bot: Merchant): Promise<void> {
