@@ -367,9 +367,8 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
             willDieToProjectiles: false,
             withinRange: bot.G.skills.zapperzap.range
         })) {
-            if (!bot.canKillInOneShot(target, "zapperzap")) continue
-
-            targets.add(target)
+            // Zap if we can kill it in one shot, or we have a lot of mp
+            if (bot.canKillInOneShot(target, "zapperzap") || bot.mp >= bot.max_mp - 500) targets.add(target)
         }
 
         if (targets.size) {

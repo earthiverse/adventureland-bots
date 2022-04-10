@@ -2,9 +2,7 @@ import AL, { Character, Entity, Mage, MonsterName, Paladin } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 
 export async function attackTheseTypesPaladin(bot: Paladin, types: MonsterName[], friends: Character[] = [], options: {
-    disableMentalBurst?: boolean
-    disableQuickPunch?: boolean
-    disableQuickStab?: boolean
+    disableZapper?: boolean
     targetingPartyMember?: boolean
     targetingPlayer?: string
 } = {}): Promise<void> {
@@ -83,5 +81,39 @@ export async function attackTheseTypesPaladin(bot: Paladin, types: MonsterName[]
         }
 
         await bot.basicAttack(target.id)
+    }
+
+    if (!options.disableZapper && bot.canUse("zapperzap", { ignoreEquipped: true }) && bot.cc < 100) {
+        const targets = new FastPriorityQueue<Entity>(priority)
+        for (const target of bot.getEntities({
+            canDamage: true,
+            couldGiveCredit: true,
+            targetingPartyMember: options.targetingPartyMember,
+            targetingPlayer: options.targetingPlayer,
+            typeList: types,
+            willDieToProjectiles: false,
+            withinRange: bot.G.skills.zapperzap.range
+        })) {
+            // Zap if we can kill it in one shot, or we have a lot of mp
+            if (bot.canKillInOneShot(target, "zapperzap") || bot.mp >= bot.max_mp - 500) targets.add(target)
+        }
+
+        if (targets.size) {
+            const target = targets.peek()
+
+            const zapper: number = bot.locateItem("zapper", bot.items, { returnHighestLevel: true })
+            if (bot.isEquipped("zapper") || (zapper !== undefined)) {
+                // Equip zapper
+                if (zapper !== undefined) bot.equip(zapper, "ring1")
+
+                // Zap
+                const promises: Promise<unknown>[] = []
+                promises.push(bot.zapperZap(target.id).catch(e => console.error(e)))
+
+                // Re-equip ring
+                if (zapper !== undefined) promises.push(bot.equip(zapper, "ring1"))
+                await Promise.all(promises)
+            }
+        }
     }
 }

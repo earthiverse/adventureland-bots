@@ -259,7 +259,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
 
     if (!options.disableZapper && bot.canUse("zapperzap", { ignoreEquipped: true }) && bot.cc < 100) {
         const targets = new FastPriorityQueue<Entity>(priority)
-        for (const entity of bot.getEntities({
+        for (const target of bot.getEntities({
             couldGiveCredit: true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
@@ -267,8 +267,8 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
             willDieToProjectiles: false,
             withinRange: bot.G.skills.zapperzap.range
         })) {
-            if (!bot.canKillInOneShot(entity, "zapperzap")) continue
-            targets.add(entity)
+            // Zap if we can kill it in one shot, or we have a lot of mp
+            if (bot.canKillInOneShot(target, "zapperzap") || bot.mp >= bot.max_mp - 500) targets.add(target)
         }
 
         if (targets.size) {
