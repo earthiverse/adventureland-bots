@@ -201,6 +201,8 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
             willDieToProjectiles: false,
             withinRange: bot.range * bot.G.skills.supershot.range_multiplier
         })) {
+            if (!bot.G.skills.supershot.pierces_immunity && target.immune) continue
+
             // If we can kill something guaranteed, break early
             if (bot.canKillInOneShot(target, "supershot")) {
                 for (const friend of friends) {
@@ -230,7 +232,8 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
             willDieToProjectiles: false,
             withinRange: bot.G.skills.zapperzap.range
         })) {
-            if (target.immune) continue // You can't zap immune targets
+            if (!bot.G.skills.zapperzap.pierces_immunity && target.immune) continue
+
             // Zap if we can kill it in one shot, or we have a lot of mp
             if (bot.canKillInOneShot(target, "zapperzap") || bot.mp >= bot.max_mp - 500) targets.add(target)
         }
