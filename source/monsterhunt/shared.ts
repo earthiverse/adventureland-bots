@@ -329,8 +329,6 @@ export async function startMerchant(bot: Merchant, information: Information, str
                 if (friend.isFull()) {
                     await bot.closeMerchantStand()
                     await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, stopIfTrue: () => bot.isFull() || !friend.isFull() || Tools.distance(bot.smartMoving, friend) > 400 })
-                    lastBankVisit = Date.now()
-                    await doBanking(bot)
                     bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                     return
                 }
