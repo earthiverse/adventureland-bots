@@ -1,4 +1,4 @@
-import AL, { Character, CMData, Constants, Entity, IPosition, ItemName, LimitDCReportData, Mage, Merchant, MonsterName, Paladin, Priest, Ranger, Rogue, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Warrior } from "alclient"
+import AL, { Character, CMData, Constants, Entity, IPosition, ItemName, LimitDCReportData, Mage, Merchant, MonsterName, Paladin, Priest, Ranger, Rogue, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Tools, Warrior } from "alclient"
 import { getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, goGetRspeedBuff, ITEMS_TO_BUY, ITEMS_TO_HOLD, ITEMS_TO_LIST, LOOP_MS, REPLENISHABLES_TO_BUY, startAvoidStacking, startBuyFriendsReplenishablesLoop, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMage, magiportStrangerIfNotNearby } from "../base/mage.js"
 import { attackTheseTypesMerchant, doBanking, doEmergencyBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
@@ -312,7 +312,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
                         if (AL.Tools.distance(bot, friend) > bot.G.skills.mluck.range) {
                             await bot.closeMerchantStand()
                             console.log(`[merchant] We are moving to ${friend.name} to mluck them!`)
-                            await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2 })
+                            await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2, stopIfTrue: () => friend.s.mluck?.ms >= 120000 || Tools.distance(bot.smartMoving, friend) > bot.G.skills.mluck.range })
                         }
 
                         bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
@@ -328,7 +328,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
                 // Get stuff from our friends
                 if (friend.isFull()) {
                     await bot.closeMerchantStand()
-                    await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+                    await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, stopIfTrue: () => bot.isFull() || !friend.isFull() || Tools.distance(bot.smartMoving, friend) > 400 })
                     lastBankVisit = Date.now()
                     await doBanking(bot)
                     bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
@@ -343,7 +343,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
                         if (friend.countItem(item) > amount * 0.25) continue // They have enough
                         if (!bot.canBuy(item)) continue // We can't buy them this for them
                         await bot.closeMerchantStand()
-                        await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+                        await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, stopIfTrue: () => !bot.canBuy(item) || friend.countItem(item) > amount * 0.25 || Tools.distance(bot.smartMoving, friend) > 400 })
 
                         bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                         return

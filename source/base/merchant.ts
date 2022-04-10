@@ -195,6 +195,7 @@ export async function doEmergencyBanking(bot: Merchant, itemsToHold = MERCHANT_I
 export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOLD, itemsToHold = MERCHANT_ITEMS_TO_HOLD, itemsToSell = ITEMS_TO_SELL, itemsToCraft = ITEMS_TO_CRAFT, itemsToExchange = ITEMS_TO_EXCHANGE, itemsToList = ITEMS_TO_LIST): Promise<void> {
     await bot.closeMerchantStand()
     await bot.smartMove(bankingPosition)
+    await bot.openMerchantStand()
 
     // Deposit extra gold, or get more gold
     const excessGold = bot.gold - goldToHold
