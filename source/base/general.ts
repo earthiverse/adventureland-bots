@@ -691,8 +691,10 @@ export async function goToPriestIfHurt(bot: Character, priest: Character): Promi
 
 export async function goToSpecialMonster(bot: Character, type: MonsterName, options: { requestMagiport?: true} = {}): Promise<unknown> {
     const stopIfTrue = (): boolean => {
-        const target = bot.getEntity({ canWalkTo: true, type: type })
-        return target !== undefined
+        const target = bot.getEntity({ type: type })
+        if (!target) return false // No target, don't stop
+        if (Pathfinder.canWalkPath(bot, target)) return true // We can walk to it, stop!
+        if (Tools.distance(bot.smartMoving, target) > 250) return true // It's moved quite a bit, stop!
     }
 
     // Look for it nearby
