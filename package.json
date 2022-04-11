@@ -5,8 +5,8 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
-    "alclient": "^0.9.72",
-    "algui": "^0.1.14",
+    "alclient": "^0.9.73",
+    "algui": "^0.1.15",
     "axios": "^0.25.0",
     "body-parser": "^1.19.2",
     "console-table-printer": "^2.10.0",
