@@ -414,7 +414,9 @@ function canKillInOneShot(entity, skill = "attack") {
     const damage_type = G.skills[skill].damage_type ?? G.classes[character.ctype].damage_type
 
     // Check if it can avoid our shot
-    if (entity.avoidance) return false
+    // TODO: `entity.avoidance` isn't set currently, but it *should* be.
+    //       If it gets added in the future, you can simplify the if to be `if(entity.avoidance)`.
+    if (G.monsters[entity.mtype].avoidance) return false
     if (damage_type == "magical" && entity.reflection) return false
     if (damage_type == "physical" && entity.evasion) return false
 
