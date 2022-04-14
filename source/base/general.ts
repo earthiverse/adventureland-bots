@@ -169,19 +169,19 @@ export const ITEMS_TO_LIST: {
     "goldenegg": {
         0: 999_999_999
     },
-    "cryptkey": {
-        0: 6_000_000
-    },
-    "frozenkey": {
-        0: 8_000_000
-    },
-    "monstertoken": {
-        0: 400_000
-    },
-    "resistancering": {
-        0: 25_000_000,
-        1: 76_000_000,
-    },
+    // "cryptkey": {
+    //     0: 6_000_000
+    // },
+    // "frozenkey": {
+    //     0: 8_000_000
+    // },
+    // "monstertoken": {
+    //     0: 400_000
+    // },
+    // "resistancering": {
+    //     0: 25_000_000,
+    //     1: 76_000_000,
+    // },
     "tracker": {
         0: 1_600_000
     }
