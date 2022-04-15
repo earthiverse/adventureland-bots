@@ -51,7 +51,7 @@ export function offsetPosition(position: IPosition, x: number, y: number): IPosi
 export function offsetPositionParty(position: IPosition, bot: Character, offsetAmount = 10): IPosition {
     const offset = { x: 0, y: 0 }
     if (bot.party) {
-        switch (bot.partyData.list.indexOf(bot.id)) {
+        switch (bot.partyData?.list.indexOf(bot.id)) {
             case 1:
                 offset.x = offsetAmount
                 break
