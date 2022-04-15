@@ -1159,18 +1159,18 @@ export function startCraftLoop(bot: Character, itemsToCraft = ITEMS_TO_CRAFT): v
     craftLoop()
 }
 
-export function startDebugLoop(bot: Character, intense = false): void {
+const DEBUG_EVENTS_ALL = new Map<string, [Date, string, string][]>()
+export function startDebugLoop(bot: Character): void {
     const debugFile = `debug_${bot.id}.csv`
 
-    if (intense) {
-        bot.socket.onAny((event: string, data: unknown) => {
-            if (typeof data == "string") {
-                console.debug(`----- debugLoop: ${event}: ${data}`)
-            } else if (typeof data == "object") {
-                console.debug(`----- debugLoop: ${event}: ${JSON.stringify(data)}`)
-            }
-        })
-    }
+    const DEBUG_EVENTS: [Date, string, string][] = new Array(1000)
+    DEBUG_EVENTS_ALL.set(bot.id, DEBUG_EVENTS)
+
+    let i = 0
+    bot.socket.onAny((event: string, data: unknown) => {
+        DEBUG_EVENTS[i] = [new Date(), event, JSON.stringify(data)]
+        i = (i + 1) % 1000
+    })
 
     async function debugLoop() {
         try {
@@ -1219,6 +1219,19 @@ export function startDebugLoop(bot: Character, intense = false): void {
     headers.push("socket listener counts")
     fs.appendFileSync(debugFile, `${headers.join(",")}\n`)
     debugLoop()
+}
+
+export function writeLast1000Events(bot: Character, filename: string, extra?: string) {
+    const events = DEBUG_EVENTS_ALL.get(bot.id)
+    if (!events) {
+        console.debug("You didn't startDebugLoop(), you silly goose!!")
+        return
+    }
+    console.debug(`WRITING LAST 1000 EVENTS TO ${filename}!`)
+    let prepare = extra ? `${extra}\n\n` : ""
+    events.sort((a, b) => { return a?.[0].getTime() - b?.[0].getTime() })
+    for (const [date, event, data] of events) { prepare += `${date.toISOString()}: ${event} - ${data}\n` }
+    fs.writeFileSync(filename, prepare)
 }
 
 export function startElixirLoop(bot: Character, elixir: ItemName): void {
