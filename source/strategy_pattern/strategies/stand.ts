@@ -1,7 +1,7 @@
 import { Merchant } from "alclient"
 import { Loop, Loops, Strategy } from "../context.js"
 
-export class OpenStandWhenMovingStrategy<Type extends Merchant> implements Strategy<Type> {
+export class ToggleStandByMovement<Type extends Merchant> implements Strategy<Type> {
     public name = "OpenStandWhenMovingStrategy"
     public loops: Loops<Type> = new Map<string, Loop<Type>>()
 

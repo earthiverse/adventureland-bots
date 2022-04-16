@@ -176,19 +176,39 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
     } else if (bot.canUse("attack") && targets.size > 0) {
         const target = targets.poll()
 
-        // Remove them from our friends' entities list if we're going to kill it
-        if (bot.canKillInOneShot(target)) {
-            for (const friend of friends) {
-                if (!friend) continue // No friend
-                if (friend.id == bot.id) continue // Don't delete it from our own list
-                if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
-                friend.deleteEntity(target.id)
+        const damage = bot.calculateDamageRange(target)
+        const piercingDamage = bot.canUse("piercingshot") ? bot.calculateDamageRange(target, "piercingshot") : [0, 0]
+
+        if (piercingDamage[0] > damage[0]) {
+            // Piercing shot will do more damage
+
+            // Remove them from our friends' entities list if we're going to kill it
+            if (bot.canKillInOneShot(target, "piercingshot")) {
+                for (const friend of friends) {
+                    if (!friend) continue // No friend
+                    if (friend.id == bot.id) continue // Don't delete it from our own list
+                    if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                    friend.deleteEntity(target.id)
+                }
             }
+
+            await bot.piercingShot(target.id)
+
+        } else {
+            // Normal attack will do more damage
+
+            // Remove them from our friends' entities list if we're going to kill it
+            if (bot.canKillInOneShot(target)) {
+                for (const friend of friends) {
+                    if (!friend) continue // No friend
+                    if (friend.id == bot.id) continue // Don't delete it from our own list
+                    if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                    friend.deleteEntity(target.id)
+                }
+            }
+
+            await bot.basicAttack(target.id)
         }
-
-        // TODO: Check if it makes sense to do a piercing shot, and do so if it does.
-
-        await bot.basicAttack(target.id)
     }
 
     if (!options.disableSupershot && bot.canUse("supershot")) {

@@ -5,7 +5,7 @@ import { BaseStrategy } from "./strategies/base.js"
 import { FinishMonsterHuntStrategy, GetMonsterHuntStrategy } from "./strategies/monsterhunt.js"
 import { BasicMoveStrategy, HoldPositionMoveStrategy } from "./strategies/move.js"
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategies/party.js"
-import { OpenStandWhenMovingStrategy } from "./strategies/stand.js"
+import { ToggleStandByMovement } from "./strategies/stand.js"
 
 /**
  * This script will farm monsterhunt tokens using 3 mages. Mages are nice because they can
@@ -78,7 +78,7 @@ async function run() {
 
     // Merchant
     const merchantMoveStrategy = new HoldPositionMoveStrategy(merchantHoldPosition)
-    const merchantStandStrategy = new OpenStandWhenMovingStrategy()
+    const merchantStandStrategy = new ToggleStandByMovement()
 
     // Mages
     setInterval(async () => {
