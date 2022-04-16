@@ -390,6 +390,47 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
             }
         }
     }
+
+    if (!options.disableZapper && bot.canUse("zapperzap", { ignoreEquipped: true }) && bot.cc < 100) {
+        let strangerNearby = false
+        for (const [, player] of bot.players) {
+            if (player.isFriendly(bot)) continue // They are friendly
+
+            const distance = AL.Tools.distance(bot, player)
+            if (distance > bot.range + player.range + 100) continue // They are far away
+
+            strangerNearby = true
+            break
+        }
+        if (strangerNearby) {
+            // Cburst monsters to kill steal
+            for (const target of bot.getEntities({
+                canDamage: true,
+                couldGiveCredit: true,
+                willDieToProjectiles: true,
+                withinRange: bot.range
+            })) {
+                if (target.immune) continue // Entity won't take damage from cburst
+                if (target.target) continue // Already has a target
+                if (target.xp < 0) continue // Don't try to kill steal pets
+
+                const zapper: number = bot.locateItem("zapper", bot.items, { returnHighestLevel: true })
+                if (bot.isEquipped("zapper") || (zapper !== undefined)) {
+                // Equip zapper
+                    if (zapper !== undefined) bot.equip(zapper, "ring1")
+
+                    // Zap
+                    const promises: Promise<unknown>[] = []
+                    promises.push(bot.zapperZap(target.id).catch(e => console.error(e)))
+
+                    // Re-equip ring
+                    if (zapper !== undefined) promises.push(bot.equip(zapper, "ring1"))
+                    await Promise.all(promises)
+                    break
+                }
+            }
+        }
+    }
 }
 
 export function startChargeLoop(bot: Warrior): void {
