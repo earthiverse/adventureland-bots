@@ -28,7 +28,7 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
             // Over 1 year old -- Keep weekly
             if (lastDate - achievement.date < ONE_WEEK_IN_MS) {
                 // Delete this hourly data
-                console.log(`deleting ${achievement.name} @ ${achievement.date} (over 1 year, same week)`)
+                console.log(`deleting ${achievement.name} @ ${achievement.date} (over 1 year, same week) (${achievement._id})`)
                 idsToDelete.push(achievement._id)
                 continue
             }
@@ -36,7 +36,7 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
             // Over one month old -- Keep daily
             if (lastDate - achievement.date < ONE_DAY_IN_MS) {
                 // Delete this hourly data
-                console.log(`deleting ${achievement.name} @ ${achievement.date} (over 1 month, same day)`)
+                console.log(`deleting ${achievement.name} @ ${achievement.date} (over 1 month, same day) (${achievement._id})`)
                 idsToDelete.push(achievement._id)
                 continue
             }
@@ -44,7 +44,7 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
             // Over one week old -- Keep hourly
             if (lastDate - achievement.date < ONE_HOUR_IN_MS) {
                 // Delete this hourly data
-                console.log(`deleting ${achievement.name} @ ${achievement.date} (over 1 week, same hour)`)
+                console.log(`deleting ${achievement.name} @ ${achievement.date} (over 1 week, same hour) (${achievement._id})`)
                 idsToDelete.push(achievement._id)
                 continue
             }
@@ -52,7 +52,7 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
             // Less than 1 week old -- Keep 15 minutes
             if (lastDate - achievement.date < 900000) {
                 // Delete this 15 minute data
-                console.log(`deleting ${achievement.name} @ ${achievement.date} (within 1 week, same 15 minute interval)`)
+                console.log(`deleting ${achievement.name} @ ${achievement.date} (within 1 week, same 15 minute interval) (${achievement._id})`)
                 idsToDelete.push(achievement._id)
                 continue
             }
