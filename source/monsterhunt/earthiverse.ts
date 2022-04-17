@@ -326,7 +326,7 @@ function preparePriest(bot: Priest) {
                 const iceGolem = bot.getEntity({ returnNearest: true, type: "icegolem" })
                 if (!iceGolem) {
                     if (bot.S.icegolem as ServerInfoDataLive) await requestMagiportService(bot, bot.S.icegolem as IPosition)
-                    // await bot.smartMove({ map: "winterland", x: 783, y: 277 })
+                    await bot.smartMove({ map: "winterland", x: 783, y: 277 })
                 }
                 if (iceGolem && !AL.Pathfinder.canWalkPath(bot, iceGolem)) {
                     // Cheat and walk across the water.

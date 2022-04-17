@@ -179,7 +179,7 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
         const damage = bot.calculateDamageRange(target)
         const piercingDamage = bot.canUse("piercingshot") ? bot.calculateDamageRange(target, "piercingshot") : [0, 0]
 
-        if (piercingDamage[0] > damage[0]) {
+        if (!target.immune && piercingDamage[0] > damage[0]) {
             // Piercing shot will do more damage
 
             // Remove them from our friends' entities list if we're going to kill it
@@ -193,7 +193,6 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
             }
 
             await bot.piercingShot(target.id)
-
         } else {
             // Normal attack will do more damage
 
