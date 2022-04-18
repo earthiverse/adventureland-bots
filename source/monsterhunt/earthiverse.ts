@@ -1596,16 +1596,12 @@ function prepareWarrior(bot: Warrior) {
         },
         stompy: {
             attack: async () => {
-                // Taunt extra wolves so the ranger can 3shot
-                const stompy = bot.getEntity({ returnNearest: true, type: "stompy" })
-                if (stompy && stompy.level <= 1 && bot.canUse("taunt")) {
-                    const wolvesTargetingMe = bot.getEntities({ targetingMe: true, type: "wolf" })
-                    const wolvesToTarget = bot.getEntities({ couldGiveCredit: true, targetingMe: false, type: "wolf", withinRange: bot.G.skills.taunt.range })
-                    if (wolvesTargetingMe.length < 2 && wolvesToTarget.length > 0) {
-                        bot.taunt(wolvesToTarget[0].id).catch(e => console.error(e))
-                    }
+                const priest = information.bot1.bot
+                if (priest && priest.canUse("heal", { ignoreCooldown: true }) && AL.Tools.distance(bot, priest) < priest.range) {
+                    await attackTheseTypesWarrior(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends)
+                } else {
+                    await attackTheseTypesWarrior(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends, { disableAgitate: true })
                 }
-                await attackTheseTypesWarrior(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends, { disableAgitate: true })
             },
             equipment: aoeEquipment,
             move: async () => {
