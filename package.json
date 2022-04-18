@@ -6,7 +6,7 @@
   "type": "module",
   "dependencies": {
     "alclient": "^0.9.80",
-    "algui": "^0.1.18",
+    "algui": "^0.1.19",
     "axios": "^0.25.0",
     "body-parser": "^1.19.2",
     "console-table-printer": "^2.10.0",
