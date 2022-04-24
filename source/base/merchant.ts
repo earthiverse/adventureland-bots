@@ -468,11 +468,30 @@ export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOL
         await bot.swapItems(i, empty)
     }
 
+    await bot.closeMerchantStand()
 }
 
 export async function goFishing(bot: Merchant): Promise<void> {
     if (!bot.canUse("fishing", { ignoreEquipped: true })) return
-    if (!bot.hasItem("rod") && !bot.isEquipped("rod")) return // We don't have a rod
+    if (!bot.hasItem("rod") && !bot.isEquipped("rod")) {
+        if (bot.esize <= 3) return // We don't have space to craft a rod
+        bot.closeMerchantStand()
+
+        // Do banking, but get spider silk, too
+        if (!bot.hasItem("spidersilk")) {
+            const newItemsToHold = new Set<ItemName>(MERCHANT_ITEMS_TO_HOLD)
+            newItemsToHold.add("spidersilk")
+            newItemsToHold.add("staff")
+            await doBanking(bot, MERCHANT_GOLD_TO_HOLD, newItemsToHold)
+            if (!bot.hasItem("spidersilk")) return // We don't have spider silk
+            if (bot.esize <= 2) return // We don't have space to craft a rod
+        }
+
+        await bot.smartMove("main", { avoidTownWarps: true })
+        await bot.buy("staff")
+        if (!bot.canCraft("rod")) await bot.smartMove("craftsman", { getWithin: 300 })
+        await bot.craft("rod")
+    }
 
     bot.closeMerchantStand()
     await bot.smartMove(mainFishingSpot) // Move to fishing spot
@@ -505,7 +524,27 @@ export async function goFishing(bot: Merchant): Promise<void> {
 
 export async function goMining(bot: Merchant): Promise<void> {
     if (!bot.canUse("mining", { ignoreEquipped: true })) return
-    if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe")) return // We don't have a pickaxe
+    if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe")) {
+        if (bot.esize <= 4) return // We don't have space to craft a pickaxe
+        bot.closeMerchantStand()
+
+        // Do banking, but get spider silk, too
+        if (!bot.hasItem("spidersilk")) {
+            const newItemsToHold = new Set<ItemName>(MERCHANT_ITEMS_TO_HOLD)
+            newItemsToHold.add("spidersilk")
+            newItemsToHold.add("staff")
+            newItemsToHold.add("blade")
+            await doBanking(bot, MERCHANT_GOLD_TO_HOLD, newItemsToHold)
+            if (!bot.hasItem("spidersilk")) return // We don't have spider silk
+            if (bot.esize <= 3) return // We don't have space to craft a pickaxe
+        }
+
+        await bot.smartMove("main", { avoidTownWarps: true })
+        await bot.buy("staff")
+        await bot.buy("blade")
+        if (!bot.canCraft("pickaxe")) await bot.smartMove("craftsman", { getWithin: 300 })
+        await bot.craft("pickaxe")
+    }
 
     bot.closeMerchantStand()
     await bot.smartMove(miningSpot) // Move to mining spot

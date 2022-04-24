@@ -1,4 +1,4 @@
-import AL, { Pathfinder } from "alclient"
+import AL, { IPosition, Pathfinder } from "alclient"
 
 async function run() {
     // Login and prepare pathfinding
@@ -14,10 +14,17 @@ async function run() {
         console.log(`${roundedX},${roundedY}: ${Pathfinder.canStand({ map: "main", x: roundedX, y: roundedY })}`)
     }
 
-    console.log("Closest to ice golem from")
-    console.log(Pathfinder.findClosestNode("winterland", 717, 276))
-    console.log("Closest to ice golem to")
-    console.log(Pathfinder.findClosestNode("winterland", 734, 351))
+    const closestTo = (position: IPosition) => {
+        console.log(`Closest node to ${position.map}:${position.x},${position.y}`)
+        console.log(Pathfinder.findClosestNode(position.map, position.x, position.y).id)
+    }
+
+    closestTo({ map: "main", x: -312, y: 150 })
+    closestTo({ map: "main", x: -335, y: 159 })
+    closestTo({ map: "arena", x: 200, y: -361 })
+    closestTo({ map: "arena", x: 227, y: -390 })
+    closestTo({ map: "arena", x: 564, y: -333 })
+    closestTo({ map: "arena", x: 535, y: -358 })
 
     const now1 = performance.now()
     await Pathfinder.getPath({ map: "main", x: 0, y: 0 }, { map: "spookytown", x: 0, y: 0 })
