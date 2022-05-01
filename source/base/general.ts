@@ -852,9 +852,11 @@ export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName
         }
 
         if (lastD) {
+            // We're in range of one or more monsters, move as much as we can to the next monster without going outside of the attack range of all existing monsters
             bot.smartMove(target, { getWithin: d - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         } else {
-            bot.smartMove(target, { getWithin: bot.range - 25, resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+            // We're out of range of all monsters
+            bot.smartMove(target, { resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         }
         return
     }
