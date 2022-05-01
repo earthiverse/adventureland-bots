@@ -862,7 +862,7 @@ export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName
     if (lastD) {
         if (defaultPosition) {
             // Move towards center of default position
-            bot.smartMove(defaultPosition, { getWithin: Tools.distance(bot, defaultPosition) - (bot.range - lastD) }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(defaultPosition, bot), { getWithin: Tools.distance(bot, defaultPosition) - (bot.range - lastD) }).catch(() => { /** Suppress Error */ })
         } else {
             // Move towards center of closest spawn
             const locations: IPosition[] = []
@@ -874,12 +874,12 @@ export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName
                 const d_b = AL.Tools.distance(bot, b)
                 return d_a - d_b
             })
-            bot.smartMove(locations[0], { getWithin: Tools.distance(bot, locations[0]) - (bot.range - lastD) }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(locations[0], bot), { getWithin: Tools.distance(bot, locations[0]) - (bot.range - lastD) }).catch(() => { /** Suppress Error */ })
         }
     } else if (!bot.smartMoving) {
         // No targets nearby, move to spawn
         if (defaultPosition) {
-            bot.smartMove(defaultPosition).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(defaultPosition, bot)).catch(() => { /** Suppress Error */ })
         } else {
             const locations: IPosition[] = []
             for (const type of types) {
@@ -890,7 +890,7 @@ export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName
                 const d_b = AL.Tools.distance(bot, b)
                 return d_a - d_b
             })
-            bot.smartMove(locations[0]).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(locations[0], bot)).catch(() => { /** Suppress Error */ })
         }
     }
 }
