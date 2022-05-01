@@ -854,7 +854,7 @@ export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName
         if (lastD) {
             bot.smartMove(target, { getWithin: d - (bot.range - lastD) }).catch(() => { /** Suppress Error */ })
         } else {
-            bot.smartMove(target, { getWithin: bot.range }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(target, { getWithin: bot.range - 25 }).catch(() => { /** Suppress Error */ })
         }
         return
     }
