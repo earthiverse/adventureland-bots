@@ -255,6 +255,32 @@ export const REPLENISHABLES_TO_BUY: [ItemName, number][] = [
     ["xptome", 1]
 ]
 
+export function calculateAttackLoopCooldown(bot: Character): number {
+    let cooldown = bot.getCooldown("attack")
+
+    // Use zapper cooldown, if we have one
+    if (bot.hasItem("zapper") && bot.canUse("zapperzap", { ignoreCooldown: true, ignoreEquipped: true })) cooldown = Math.min(cooldown, bot.getCooldown("zapperzap"))
+
+    if (bot.ctype == "mage") {
+        if (bot.canUse("cburst", { ignoreCooldown: true })) cooldown = Math.min(cooldown, bot.getCooldown("cburst"))
+        // NOTE: We don't currently use burst in the attack logic, so we're not checking it here
+    } else if (bot.ctype == "ranger") {
+        if (bot.canUse("supershot", { ignoreCooldown: true })) cooldown = Math.min(cooldown, bot.getCooldown("supershot"))
+        // NOTE: We don't currently use poison arrow in the attack logic, so we're not checking it here
+    } else if (bot.ctype == "rogue") {
+        if (bot.canUse("quickpunch", { ignoreCooldown: true })) cooldown = Math.min(cooldown, bot.getCooldown("quickpunch"))
+        if (bot.canUse("quickstab", { ignoreCooldown: true })) cooldown = Math.min(cooldown, bot.getCooldown("quickstab"))
+        if (bot.canUse("mentalburst", { ignoreCooldown: true })) cooldown = Math.min(cooldown, bot.getCooldown("mentalburst"))
+    } else if (bot.ctype == "warrior") {
+        if (bot.canUse("agitate", { ignoreCooldown: true })) cooldown = Math.min(cooldown, bot.getCooldown("agitate"))
+        if ((bot.hasItem("bataxe") || bot.hasItem("scythe")) && bot.canUse("cleave", { ignoreCooldown: true, ignoreEquipped: true })) cooldown = Math.min(cooldown, bot.getCooldown("cleave"))
+        if (bot.canUse("taunt", { ignoreCooldown: true })) cooldown = Math.min(cooldown, bot.getCooldown("taunt"))
+        if ((bot.hasItem("basher") || bot.hasItem("wbasher")) && bot.canUse("stomp", { ignoreCooldown: true, ignoreEquipped: true })) cooldown = Math.min(cooldown, bot.getCooldown("stomp"))
+    }
+
+    return Math.max(LOOP_MS, cooldown)
+}
+
 export function getFirstEmptyInventorySlot(items: ItemData[]): number {
     for (let i = 0; i < items.length; i++) {
         const item = items[i]

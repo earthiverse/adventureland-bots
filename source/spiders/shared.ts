@@ -1,5 +1,5 @@
 import AL, { Character, Rogue } from "alclient"
-import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, LOOP_MS, goToNearestWalkableToMonster2 } from "../base/general.js"
+import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, LOOP_MS, goToNearestWalkableToMonster2, calculateAttackLoopCooldown } from "../base/general.js"
 import { mainSpiders } from "../base/locations.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
@@ -49,7 +49,7 @@ export async function startRogue(bot: Rogue, merchant: string, friends: Characte
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("attack"), bot.canUse("quickpunch") ? bot.getCooldown("quickpunch") : 1000, bot.canUse("quickstab") ? bot.getCooldown("quickstab") : 1000, bot.canUse("mentalburst") ? bot.getCooldown("mentalburst") : 1000))))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, calculateAttackLoopCooldown(bot)))
     }
     attackLoop()
 
