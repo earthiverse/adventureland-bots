@@ -32,7 +32,6 @@ export class AcceptPartyRequestStrategy<Type extends PingCompensatedCharacter> i
     }
 }
 
-
 export class RequestPartyStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
     public name = "RequestPartyStrategy"
     public loops: Loops<Type> = new Map<string, Loop<Type>>()

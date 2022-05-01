@@ -835,6 +835,66 @@ export async function goToNearestWalkableToMonster(bot: Character, types: Monste
     }
 }
 
+export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName[], defaultPosition?: IPosition): void {
+    const targets = bot.getEntities({ canDamage: true, couldGiveCredit: true, typeList: types, willBurnToDeath: false, willDieToProjectiles: false })
+    targets.sort((a, b) => {
+        const d_a = AL.Tools.distance(bot, a)
+        const d_b = AL.Tools.distance(bot, b)
+        return d_a - d_b
+    })
+
+    let lastD = 0
+    for (const target of targets) {
+        const d = AL.Tools.distance(bot, target)
+        if (d < bot.range) {
+            lastD = d
+            continue
+        }
+
+        if (lastD) {
+            bot.smartMove(target, { getWithin: d - (bot.range - lastD) }).catch(() => { /** Suppress Error */ })
+        } else {
+            bot.smartMove(target, { getWithin: bot.range }).catch(() => { /** Suppress Error */ })
+        }
+        return
+    }
+
+    if (lastD) {
+        if (defaultPosition) {
+            // Move towards center of default position
+            bot.smartMove(defaultPosition, { getWithin: Tools.distance(bot, defaultPosition) - (bot.range - lastD) }).catch(() => { /** Suppress Error */ })
+        } else {
+            // Move towards center of closest spawn
+            const locations: IPosition[] = []
+            for (const type of types) {
+                locations.push(...bot.locateMonster(type))
+            }
+            locations.sort((a, b) => {
+                const d_a = AL.Tools.distance(bot, a)
+                const d_b = AL.Tools.distance(bot, b)
+                return d_a - d_b
+            })
+            bot.smartMove(locations[0], { getWithin: Tools.distance(bot, locations[0]) - (bot.range - lastD) }).catch(() => { /** Suppress Error */ })
+        }
+    } else if (!bot.smartMoving) {
+        // No targets nearby, move to spawn
+        if (defaultPosition) {
+            bot.smartMove(defaultPosition).catch(() => { /** Suppress Error */ })
+        } else {
+            const locations: IPosition[] = []
+            for (const type of types) {
+                locations.push(...bot.locateMonster(type))
+            }
+            locations.sort((a, b) => {
+                const d_a = AL.Tools.distance(bot, a)
+                const d_b = AL.Tools.distance(bot, b)
+                return d_a - d_b
+            })
+            bot.smartMove(locations[0]).catch(() => { /** Suppress Error */ })
+        }
+    }
+}
+
 export function kiteInCircle(bot: Character, type: MonsterName, center: IPosition, radius = 100, angle = Math.PI / 2.5): Promise<IPosition> {
     if (AL.Pathfinder.canWalkPath(bot, center)) {
         const nearest = bot.getEntity({ returnNearest: true, type: type })
@@ -1731,7 +1791,7 @@ export function startServerPartyInviteLoop(bot: Character, ignore = [bot.id], se
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            const players = await bot.getPlayers()
+            const players = await bot.getServerPlayers()
             for (const player of players) {
                 if (player.name == bot.id) continue // It's us!
                 if (bot.party && player.party == bot.party) continue // They're already in our party

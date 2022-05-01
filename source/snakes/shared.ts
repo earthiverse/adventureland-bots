@@ -1,5 +1,5 @@
 import AL, { Character, Mage, Priest, Ranger } from "alclient"
-import { goGetRspeedBuff, goToBankIfFull, goToNearestWalkableToMonster, goToPotionSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
+import { goGetRspeedBuff, goToBankIfFull, goToNearestWalkableToMonster2, goToPotionSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { bankingPosition, halloweenSafeSnakes } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
@@ -105,7 +105,7 @@ export async function startMage(bot: Mage, merchant: string, friends: Character[
                 await bot.smartMove("elixirluck")
             }
 
-            await goToNearestWalkableToMonster(bot, ["snake", "osnake"], halloweenSafeSnakes, bot.range - 25)
+            await goToNearestWalkableToMonster2(bot, ["snake", "osnake"], halloweenSafeSnakes)
         } catch (e) {
             console.error(e)
         }
@@ -192,7 +192,7 @@ export async function startPriest(bot: Priest, merchant: string, friends: Charac
                 await bot.smartMove("elixirluck")
             }
 
-            await goToNearestWalkableToMonster(bot, ["snake", "osnake"], halloweenSafeSnakes, bot.range - 25)
+            await goToNearestWalkableToMonster2(bot, ["snake", "osnake"], halloweenSafeSnakes)
         } catch (e) {
             console.error(e)
         }
@@ -279,7 +279,7 @@ export async function startRanger(bot: Ranger, merchant: string, friends: Charac
                 await bot.smartMove("elixirluck")
             }
 
-            await goToNearestWalkableToMonster(bot, ["snake", "osnake"], halloweenSafeSnakes, bot.range - 25)
+            await goToNearestWalkableToMonster2(bot, ["snake", "osnake"], halloweenSafeSnakes)
         } catch (e) {
             console.error(e)
         }
