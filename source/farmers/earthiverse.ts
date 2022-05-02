@@ -1,20 +1,20 @@
-import AL, { Character, Merchant, Priest, Rogue, ServerIdentifier, ServerRegion, Warrior } from "alclient"
+import AL, { Character, Merchant, Priest, Ranger, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { addSocket, startServer } from "algui"
 import { startMerchant, startPriest as startPratPriest, startWarrior as startPratWarrior } from "../prat/shared.js"
 import { level1PratsNearDoor } from "../base/locations.js"
 import { startTrackerLoop } from "../base/general.js"
-import { startRogue as startSpiderRogue } from "../spiders/shared.js"
+import { startRanger as startBoarRanger } from "../boars/shared.js"
 
 const region: ServerRegion = "US"
 const identifier: ServerIdentifier = "I"
 const merchant_ID = "earthMer"
 const priest_ID = "earthPri"
-const rogue_ID = "earthRog"
+const ranger_ID = "earthiverse"
 const warrior_ID = "earthWar"
 
 let merchant: Merchant
 let priest: Priest // prats
-let rogue: Rogue // spiders
+let ranger: Ranger // boars
 let warrior: Warrior // prats
 const friends: Character[] = [undefined, undefined, undefined, undefined]
 
@@ -111,19 +111,19 @@ async function run() {
     }
     startPriestLoop(priest_ID, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startRogueLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
+    const startRangerLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (rogue) rogue.disconnect()
-                rogue = await AL.Game.startRogue(name, region, identifier)
-                friends[3] = rogue
-                startSpiderRogue(rogue, merchant_ID, friends)
-                addSocket(rogue.id, rogue.socket, rogue)
-                rogue.socket.on("disconnect", async () => { loopBot() })
+                if (ranger) ranger.disconnect()
+                ranger = await AL.Game.startRanger(name, region, identifier)
+                friends[3] = ranger
+                startBoarRanger(ranger, merchant_ID, friends)
+                addSocket(ranger.id, ranger.socket, ranger)
+                ranger.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (rogue) rogue.disconnect()
+                if (ranger) ranger.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -136,6 +136,6 @@ async function run() {
         }
         loopBot()
     }
-    startRogueLoop(rogue_ID, region, identifier).catch(() => { /* ignore errors */ })
+    startRangerLoop(ranger_ID, region, identifier).catch(() => { /* ignore errors */ })
 }
 run()
