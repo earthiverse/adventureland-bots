@@ -1,7 +1,7 @@
 import AL, { Character, Merchant, Priest, Ranger, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { addSocket, startServer } from "algui"
-import { startMerchant, startPriest as startPratPriest, startWarrior as startPratWarrior } from "../prat/shared.js"
-import { level1PratsNearDoor } from "../base/locations.js"
+import { startMerchant, startPriest as startXScorpionPriest, startWarrior as startXScorpionWarrior } from "../xscorpions/shared.js"
+import { halloweenXScorpions } from "../base/locations.js"
 import { startTrackerLoop } from "../base/general.js"
 import { startRanger as startBoarRanger } from "../boars/shared.js"
 
@@ -13,9 +13,9 @@ const ranger_ID = "earthiverse"
 const warrior_ID = "earthWar"
 
 let merchant: Merchant
-let priest: Priest // prats
+let priest: Priest // xscorpions
 let ranger: Ranger // boars
-let warrior: Warrior // prats
+let warrior: Warrior // xscorpions
 const friends: Character[] = [undefined, undefined, undefined, undefined]
 
 async function run() {
@@ -63,7 +63,7 @@ async function run() {
                 if (warrior) warrior.disconnect()
                 warrior = await AL.Game.startWarrior(name, region, identifier)
                 friends[1] = warrior
-                startPratWarrior(warrior, merchant_ID, friends, "vhammer", "glolipop", level1PratsNearDoor)
+                startXScorpionWarrior(warrior, merchant_ID, friends, "vhammer", "glolipop", halloweenXScorpions)
                 addSocket(warrior.id, warrior.socket, warrior)
                 startTrackerLoop(warrior)
                 warrior.socket.on("disconnect", async () => { loopBot() })
@@ -91,7 +91,7 @@ async function run() {
                 if (priest) priest.disconnect()
                 priest = await AL.Game.startPriest(name, region, identifier)
                 friends[2] = priest
-                startPratPriest(priest, merchant_ID, friends, level1PratsNearDoor)
+                startXScorpionPriest(priest, merchant_ID, friends, halloweenXScorpions)
                 addSocket(priest.id, priest.socket, priest)
                 priest.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {

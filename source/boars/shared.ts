@@ -1,5 +1,6 @@
 import AL, { Character, Ranger } from "alclient"
 import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, LOOP_MS, goToNearestWalkableToMonster2, calculateAttackLoopCooldown } from "../base/general.js"
+import { winterlandBoars } from "../base/locations.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 
@@ -41,8 +42,8 @@ export async function startRanger(bot: Ranger, merchant: string, friends: Charac
                 return
             }
 
-            // Idle strategy
-            await attackTheseTypesRanger(bot, ["boar"], friends)
+            // Boar Strategy
+            await attackTheseTypesRanger(bot, ["boar"], friends, { disableHuntersMark: true, disableSupershot: true })
         } catch (e) {
             console.error(e)
         }
@@ -78,7 +79,7 @@ export async function startRanger(bot: Ranger, merchant: string, friends: Charac
                 await bot.smartMove("elixirluck")
             }
 
-            await goToNearestWalkableToMonster2(bot, ["boar"])
+            await goToNearestWalkableToMonster2(bot, ["boar"], winterlandBoars)
         } catch (e) {
             console.error(e)
         }
