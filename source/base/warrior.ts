@@ -188,26 +188,14 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
             bot.mp -= bot.G.skills.agitate.mp
         } else if (!(options.maximumTargets && bot.targets + 1 > options.maximumTargets)) {
             let numNewTargets = 0
-            if (bot.canUse("taunt") && agitateTargets.length) {
-                for (let i = 0; i < agitateTargets.length; i++) {
-                    const target = agitateTargets[i]
-                    if (AL.Tools.distance(bot, target) > bot.G.skills.taunt.range) continue // Too far to taunt
-                    bot.taunt(target.id).catch(e => console.error(e))
-                    bot.mp -= bot.G.skills.taunt.mp
-                    numNewTargets += 1
-                    agitateTargets.splice(i, 1) // Remove the entity from the agitate list
-                    break
-                }
-            }
-
-            if (bot.canUse("zapperzap", { ignoreEquipped: true }) && agitateTargets.length && !(options.maximumTargets && bot.targets + numNewTargets + 1 > options.maximumTargets)) {
+            if (bot.canUse("zapperzap", { ignoreEquipped: true }) && agitateTargets.length) {
                 for (let i = 0; i < agitateTargets.length; i++) {
                     const target = agitateTargets[i]
                     if (AL.Tools.distance(bot, target) > bot.G.skills.zapperzap.range) continue // Too far to zap
                     if (target.target) continue // Don't zap if they have a target, we can't take aggro with a zapper
 
                     const zapper: number = bot.locateItem("zapper", bot.items, { returnHighestLevel: true })
-                    if (bot.isEquipped("zapper") || (zapper !== undefined && bot.cc < 100)) {
+                    if ((bot.isEquipped("zapper") || (zapper !== undefined) && bot.cc < 100)) {
                         // Equip zapper
                         if (zapper !== undefined) bot.equip(zapper, "ring1")
 
@@ -220,6 +208,18 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                         // Re-equip ring
                         if (zapper !== undefined) bot.equip(zapper, "ring1")
                     }
+                    break
+                }
+            }
+
+            if (bot.canUse("taunt") && agitateTargets.length && !(options.maximumTargets && bot.targets + numNewTargets + 1 > options.maximumTargets)) {
+                for (let i = 0; i < agitateTargets.length; i++) {
+                    const target = agitateTargets[i]
+                    if (AL.Tools.distance(bot, target) > bot.G.skills.taunt.range) continue // Too far to taunt
+                    bot.taunt(target.id).catch(e => console.error(e))
+                    bot.mp -= bot.G.skills.taunt.mp
+                    numNewTargets += 1
+                    agitateTargets.splice(i, 1) // Remove the entity from the agitate list
                     break
                 }
             }
