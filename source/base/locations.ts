@@ -29,6 +29,7 @@ export const cryptEnd: IPosition = { map: "crypt", x: 2689.64, y: 505.06 }
 
 // Desertland
 export const desertlandPorcupines: IPosition = { map: "desertland", x: -829, y: 135 }
+export const desertlandScorpions: IPosition = { map: "desertland", x: 390.675, y: -1422.46 }
 
 // Halloween
 export const halloweenSafeSnakes: IPosition = { map: "halloween", x: 346.5, y: -747 }
