@@ -278,7 +278,8 @@ export function calculateAttackLoopCooldown(bot: Character): number {
         if ((bot.hasItem("basher") || bot.hasItem("wbasher")) && bot.canUse("stomp", { ignoreCooldown: true, ignoreEquipped: true })) cooldown = Math.min(cooldown, bot.getCooldown("stomp"))
     }
 
-    return Math.max(LOOP_MS, cooldown)
+    // NOTE: We want the attack loop to be a lot tighter than the normal LOOP_MS, because it's more important
+    return Math.max(LOOP_MS / 10, cooldown)
 }
 
 export function getFirstEmptyInventorySlot(items: ItemData[]): number {
