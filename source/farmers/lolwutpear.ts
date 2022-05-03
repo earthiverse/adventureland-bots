@@ -2,7 +2,7 @@ import AL, { Character, Mage, Merchant, Priest, ServerIdentifier, ServerRegion, 
 import { startTrackerLoop } from "../base/general.js"
 import { level1PratsNearLedge } from "../base/locations.js"
 import { partyLeader, partyMembers } from "../base/party.js"
-import { startMage as startSnakeMage } from "../snakes/shared.js"
+import { startMage as startSquigtoadMage } from "../squigtoads/shared.js"
 import { startMerchant, startPriest as startPratPriest, startWarrior as startPratWarrior } from "../prat/shared.js"
 
 const region: ServerRegion = "US"
@@ -12,7 +12,7 @@ const merchant_ID = "orlyowl"
 const priest_ID = "over9000"
 const warrior_ID = "fgsfds"
 
-let mage: Mage // crocs
+let mage: Mage // squigtoads
 let merchant: Merchant
 let priest: Priest // prats
 let warrior: Warrior // prats
@@ -112,7 +112,7 @@ async function run() {
                 if (mage) mage.disconnect()
                 mage = await AL.Game.startMage(name, region, identifier)
                 friends[3] = mage
-                startSnakeMage(mage, merchant_ID, friends, partyLeader, partyMembers)
+                startSquigtoadMage(mage, merchant_ID, friends, partyLeader, partyMembers)
                 mage.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
