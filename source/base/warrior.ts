@@ -188,7 +188,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
             bot.mp -= bot.G.skills.agitate.mp
         } else if (!(options.maximumTargets && bot.targets + 1 > options.maximumTargets)) {
             let numNewTargets = 0
-            if (bot.canUse("zapperzap", { ignoreEquipped: true }) && agitateTargets.length) {
+            if (!options.disableZapper && bot.canUse("zapperzap", { ignoreEquipped: true }) && agitateTargets.length) {
                 for (let i = 0; i < agitateTargets.length; i++) {
                     const target = agitateTargets[i]
                     if (AL.Tools.distance(bot, target) > bot.G.skills.zapperzap.range) continue // Too far to zap
@@ -202,6 +202,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                         // Zap
                         bot.zapperZap(target.id).catch(e => console.error(e))
                         bot.mp -= bot.G.skills.zapperzap.mp
+                        target.target = bot.id
                         numNewTargets += 1
                         agitateTargets.splice(i, 1) // Remove the entity from the agitate list
 
@@ -216,6 +217,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                 for (let i = 0; i < agitateTargets.length; i++) {
                     const target = agitateTargets[i]
                     if (AL.Tools.distance(bot, target) > bot.G.skills.taunt.range) continue // Too far to taunt
+                    if (target.target == bot.id) continue // They're targeting us already
                     bot.taunt(target.id).catch(e => console.error(e))
                     bot.mp -= bot.G.skills.taunt.mp
                     numNewTargets += 1
