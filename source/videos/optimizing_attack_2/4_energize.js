@@ -7,7 +7,7 @@ const ATTACKING_CHARACTERS = ["attackMag", "attackMag2", "attackMag3"]
 const CHARACTERS = [MERCHANT, ...ATTACKING_CHARACTERS]
 const MONSTER = "bee"
 
-if (character.ctype == "merchant") {
+if (!character.controller) {
     for (const friend of CHARACTERS) {
         if (friend == character.id) continue
         stop_character(friend, SCRIPT_NAME)

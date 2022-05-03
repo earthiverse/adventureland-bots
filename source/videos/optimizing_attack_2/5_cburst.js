@@ -11,7 +11,7 @@ const CBURST_WHEN_MAX_MP_WITHIN = 500
 const CBURST_WHEN_ENTITY_HP_LESS_THAN = 200
 const MP_TO_RESERVE = 500
 
-if (character.ctype == "merchant") {
+if (!character.controller) {
     for (const friend of CHARACTERS) {
         if (friend == character.id) continue
         stop_character(friend, SCRIPT_NAME)
