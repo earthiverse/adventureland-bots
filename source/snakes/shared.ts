@@ -44,7 +44,7 @@ export async function startMage(bot: Mage, merchant: string, friends: Character[
             }
 
             // Idle strategy
-            await attackTheseTypesMage(bot, ["snake", "osnake"], friends)
+            await attackTheseTypesMage(bot, ["osnake", "snake"], friends)
         } catch (e) {
             console.error(e)
         }
@@ -105,7 +105,7 @@ export async function startMage(bot: Mage, merchant: string, friends: Character[
                 await bot.smartMove("elixirluck")
             }
 
-            await goToNearestWalkableToMonster2(bot, ["snake", "osnake"], halloweenSafeSnakes)
+            await goToNearestWalkableToMonster2(bot, ["osnake", "snake"], halloweenSafeSnakes)
         } catch (e) {
             console.error(e)
         }
@@ -131,7 +131,7 @@ export async function startPriest(bot: Priest, merchant: string, friends: Charac
             }
 
             // Idle strategy
-            await attackTheseTypesPriest(bot, ["snake", "osnake"], friends)
+            await attackTheseTypesPriest(bot, ["osnake", "snake"], friends)
         } catch (e) {
             console.error(e)
         }
@@ -192,7 +192,7 @@ export async function startPriest(bot: Priest, merchant: string, friends: Charac
                 await bot.smartMove("elixirluck")
             }
 
-            await goToNearestWalkableToMonster2(bot, ["snake", "osnake"], halloweenSafeSnakes)
+            await goToNearestWalkableToMonster2(bot, ["osnake", "snake"], halloweenSafeSnakes)
         } catch (e) {
             console.error(e)
         }
@@ -218,7 +218,7 @@ export async function startRanger(bot: Ranger, merchant: string, friends: Charac
             }
 
             // Idle strategy
-            await attackTheseTypesRanger(bot, ["snake", "osnake"], friends)
+            await attackTheseTypesRanger(bot, ["osnake", "snake"], friends)
         } catch (e) {
             console.error(e)
         }
@@ -279,7 +279,7 @@ export async function startRanger(bot: Ranger, merchant: string, friends: Charac
                 await bot.smartMove("elixirluck")
             }
 
-            await goToNearestWalkableToMonster2(bot, ["snake", "osnake"], halloweenSafeSnakes)
+            await goToNearestWalkableToMonster2(bot, ["osnake", "snake"], halloweenSafeSnakes)
         } catch (e) {
             console.error(e)
         }
