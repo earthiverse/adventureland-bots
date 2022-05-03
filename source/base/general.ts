@@ -1,4 +1,4 @@
-import AL, { Character, Entity, GameResponseData, GMap, HitData, IEntity, InviteData, IPosition, ItemData, ItemName, MapName, Merchant, MonsterName, NPCName, Pathfinder, Player, Tools, TradeSlotType } from "alclient"
+import AL, { Character, Entity, GameResponseData, GMap, HitData, IEntity, InviteData, IPosition, ItemData, ItemName, MapName, Merchant, MonsterName, NPCName, Pathfinder, Player, SlotType, Tools, TradeSlotType } from "alclient"
 import { PathfinderOptions } from "alclient/build/definitions/pathfinder"
 import fs from "fs"
 import { ItemLevelInfo } from "../definitions/bot.js"
@@ -288,6 +288,18 @@ export function getFirstEmptyInventorySlot(items: ItemData[]): number {
         if (!item) return i
     }
     return undefined
+}
+
+export function ensureEquipped(bot: Character, item: ItemName, slot: SlotType): boolean {
+    if (bot.slots[slot]?.name != item) {
+        const index = bot.locateItem(item)
+        if (index !== undefined) {
+            bot.equip(index).catch(() => { /* Suppress Errors */ })
+            return true
+        }
+        return false
+    }
+    return true
 }
 
 /**
