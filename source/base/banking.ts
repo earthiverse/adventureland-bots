@@ -1,5 +1,16 @@
 /* eslint-disable sort-keys */
-import AL from "alclient"
+import AL, { BankPackName, Character, CharacterType, ItemData, ItemName } from "alclient"
+import { ITEMS_TO_HOLD } from "./general"
+import { bankingPosition } from "./locations"
+
+export type ItemCount = {
+    name: ItemName
+    level?: number
+    /** How many of this item @ this level do we have? */
+    q: number
+    /** How many spaces are the items taking up in inventory / bank space? */
+    inventorySpaces: number
+}
 
 /**
  * This function will aggregate the bank, the inventories of all characters,
@@ -7,7 +18,7 @@ import AL from "alclient"
  * we own in total.
  * @param owner The owner to get items for (e.g.: `bot.owner`)
  */
-export async function getItemCountsForEverything(owner: string) {
+export async function getItemCountsForEverything(owner: string): Promise<ItemCount[]> {
     return await AL.BankModel.aggregate([
         {
             /** Find our bank **/
@@ -51,7 +62,12 @@ export async function getItemCountsForEverything(owner: string) {
                                 { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 17] }, {}] } }
                             ]
                         },
-                        cond: { $ne: ["$$this.v", null] }
+                        cond: {
+                            $and: [
+                                { $ne: ["$$this.v", null] },
+                                { $ne: ["$$this.b", undefined] }
+                            ]
+                        }
                     }
                 }
             }
@@ -164,9 +180,238 @@ export async function getItemCountsForEverything(owner: string) {
         {
             $sort: {
                 name: 1,
-                q: -1,
                 level: -1,
+                q: -1,
             }
         }
     ])
+}
+
+/**
+ * This function will get inventory slots that aren't holding important items, so even
+ * if our inventory is full of junk, we can still swap things from bank accounts to
+ * compound and upgrade
+ * @param bot
+ */
+function getUnimportantInventorySlots(bot: Character, itemsToHold = ITEMS_TO_HOLD): number[] {
+    const slots: number[] = []
+
+    for (let i = 0; i < bot.items.length; i++) {
+        const slot = bot.items[i]
+        if (!slot) {
+            slots.push(i)
+            continue
+        }
+        if (slot.l) continue // Hold locked items
+        if (itemsToHold.has(slot.name)) continue
+        if (slot.name.startsWith("cscroll")
+            || slot.name.startsWith("scroll")
+            || slot.name.startsWith("offering")) continue // Hold items used for upgrading
+        slots.unshift(i)
+    }
+
+    return slots
+}
+
+/**
+ * This function will return the number of items we can compound / upgrade without
+ * worrying about losing the item.
+ *
+ * NOTE: Upgrade and compound lower level items first!
+ *
+ * NOTE: This does not take in to account titled items (shiny, glitched, etc.)
+ *
+ * @param item the item name you are considering compounding or upgrading
+ * @param currentCount the number of items you have of this item
+ * @returns the number of this item we are okay to compound or upgrade
+ */
+function getNumOkayToCompoundOrUpgrade(item: ItemName, currentCount: number): number {
+    const gItem = AL.Game.G.items[item]
+    let classMultiplier = 4
+    if (gItem.class?.length == 1) {
+        if (gItem.class[0] == "merchant") {
+            classMultiplier = 1
+        } else {
+            classMultiplier = 3
+        }
+    }
+
+    let twoHandMultiplier = 1
+    for (const characterType in AL.Game.G.classes) {
+        const cType = characterType as CharacterType
+        const gClass = AL.Game.G.classes[cType]
+        if (!gItem.class?.includes(cType)) continue // This weapon can't be used on this character type
+        if (gClass.mainhand[gItem.wtype] && gClass.offhand[gItem.wtype]) {
+            // We can equip two of these on some character type
+            twoHandMultiplier = 2
+            break
+        }
+    }
+    if (gItem.type == "ring" || gItem.type == "earring") {
+        twoHandMultiplier = 2
+    }
+
+    const multiplier = twoHandMultiplier * classMultiplier
+    return multiplier - currentCount
+}
+
+/**
+ * Get a list of indexes of items to compound or upgrade. The function will move you to the
+ * bank and withdraw items to compound or upgrade
+ * @param bot
+ * @param counts
+ * @returns A nested array of indexes to compound or upgrade. If there are 3 items in the sub array, you should compound. If it's one item, you should upgrade.
+ */
+export async function getItemsToCompoundOrUpgrade(bot: Character, counts?: ItemCount[]): Promise<number[][]> {
+    if (bot.map !== "bank") {
+        await bot.closeMerchantStand()
+        await bot.smartMove(bankingPosition)
+    }
+    if (!counts) counts = await getItemCountsForEverything(bot.owner)
+
+    const okayToCompoundOrUpgrade: {
+        pack: BankPackName | "inventory"
+        name: ItemName
+        level: number
+        index: number
+    }[] = []
+
+    let currentName: ItemName
+    let currentLevel: number
+    let currentCount: number
+    for (let i = 0; i < counts.length; i++) {
+        const count = counts[i]
+        if (count.level == undefined) continue // Not compoundable/upgradable
+        if (count.name !== currentName) {
+            currentName = count.name
+            currentLevel = count.level
+            currentCount = getNumOkayToCompoundOrUpgrade(currentName, count.inventorySpaces)
+        } else {
+            currentLevel = count.level
+            currentCount += count.inventorySpaces
+        }
+
+        if (currentCount > 0) {
+            // We're going to find all the items at the same or lower level, so find the next item for the next loop iteration
+            for (let j = i + 1; j < counts.length; j++) {
+                const count2 = counts[j]
+                if (count2.name !== currentName) break
+                i = j
+            }
+
+            const parseInventory = (inventory: ItemData[], inventoryName: BankPackName | "inventory") => {
+                for (let i = 0; i < inventory.length; i++) {
+                    const slot = inventory[i]
+                    if (!slot) continue
+                    if (slot.name !== currentName) continue
+                    if (slot.level > currentLevel) continue
+                    if (slot.level == currentLevel) {
+                        if (currentCount <= 0) continue
+                        else currentCount -= 1
+                    }
+                    if (slot.l) continue // It's locked!?
+
+                    okayToCompoundOrUpgrade.push({
+                        pack: inventoryName,
+                        name: currentName,
+                        level: slot.level,
+                        index: i
+                    })
+                }
+            }
+
+            // Consider the items in our inventory first
+            parseInventory(this.items, "inventory")
+
+            // Find all of the items in our bank
+            for (const pack in bot.bank) {
+                if (pack == "gold") continue
+                const packName = pack as BankPackName
+                parseInventory(this.bank[packName], packName)
+            }
+        }
+    }
+
+    okayToCompoundOrUpgrade.sort((a, b) => {
+        if (a.name !== b.name) return a.name.localeCompare(b.name)
+        if (a.level !== b.level) return a.level - b.level
+    })
+
+    // Remove compoundables that we don't have three of
+    for (let i = 0; i < okayToCompoundOrUpgrade.length; i++) {
+        const okay = okayToCompoundOrUpgrade[i]
+        const gData = AL.Game.G.items[okay.name]
+        if (gData.compound) {
+            const okay2 = okayToCompoundOrUpgrade[i + 1]
+            if (okay.name !== okay2.name || okay.level !== okay2.level) {
+                // Not enough to compound, remove
+                okayToCompoundOrUpgrade.splice(i, 1)
+                i -= 1
+                continue
+            }
+            const okay3 = okayToCompoundOrUpgrade[i + 2]
+            if (okay.name !== okay3.name || okay.level !== okay3.level) {
+                // Not enough to compound, remove
+                okayToCompoundOrUpgrade.splice(i, 2)
+                i -= 1
+                continue
+            }
+            i += 2
+        }
+    }
+
+    okayToCompoundOrUpgrade.sort((a, b) => {
+        // Withdraw lower level items first
+        if (a.level !== b.level) return a.level - b.level
+    })
+
+    const inventorySlots = getUnimportantInventorySlots(bot)
+    inventorySlots.pop() // Keep one empty space in case we need to buy a scroll
+
+    // This is our list of indexes that contain items that are okay to compound or upgrade
+    const indexes: number[][] = []
+
+    const specialWithdraw = async (pack: BankPackName, bankIndex: number): Promise<number> => {
+        const index = inventorySlots.pop()
+        if (this.items[index] !== undefined) {
+            // Check if this inventory index was also an okayToCompoundOrUpgrade item
+            for (const okay of okayToCompoundOrUpgrade) {
+                if (okay.pack !== "inventory") continue
+                if (okay.index !== index) continue
+
+                // We're depositing it, update its index in case we need to withdraw it again
+                okay.pack = pack
+                okay.index = bankIndex
+                break
+            }
+        }
+        await bot.withdrawItem(pack, bankIndex, index)
+        return index
+    }
+
+    // Withdraw items to our inventory
+    for (let i = 0; i < okayToCompoundOrUpgrade.length; i++) {
+        if (inventorySlots.length <= 0) break // No more free slots
+        const okay = okayToCompoundOrUpgrade[i]
+        const gInfo = AL.Game.G.items[okay.name]
+        if (gInfo.compound && inventorySlots.length >= 3) {
+            // Withdraw the three compoundable items, and combine the three indexes
+            const compoundIndexes: number[] = []
+            if (okay.pack !== "inventory") compoundIndexes.push(await specialWithdraw(okay.pack, okay.index))
+            else compoundIndexes.push(inventorySlots.splice(inventorySlots.indexOf(okay.index), 1)[0])
+            const okay2 = okayToCompoundOrUpgrade[i + 1]
+            if (okay2.pack !== "inventory") compoundIndexes.push(await specialWithdraw(okay2.pack, okay2.index))
+            else compoundIndexes.push(inventorySlots.splice(inventorySlots.indexOf(okay2.index), 1)[0])
+            const okay3 = okayToCompoundOrUpgrade[i + 2]
+            if (okay3.pack !== "inventory") compoundIndexes.push(await specialWithdraw(okay3.pack, okay3.index))
+            else compoundIndexes.push(inventorySlots.splice(inventorySlots.indexOf(okay3.index), 1)[0])
+            indexes.push(compoundIndexes)
+        } else {
+            // Withdraw the one upgradable item
+            if (okay.pack !== "inventory") indexes.push([await specialWithdraw(okay.pack, okay.index)])
+            else indexes.push([inventorySlots.splice(inventorySlots.indexOf(okay.index), 1)[0]])
+        }
+    }
+
+    return indexes
 }
