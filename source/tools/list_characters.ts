@@ -10,27 +10,27 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
         const character = AL.Game.characters[cName]
         const opts: RowOptionsRaw = { color: undefined }
         switch (character.type) {
-        case "mage":
-            opts.color = "blue"
-            break
-        case "merchant":
-            opts.color = "cyan"
-            break
-        case "paladin":
-            opts.color = "white"
-            break
-        case "priest":
-            opts.color = "magenta"
-            break
-        case "ranger":
-            opts.color = "green"
-            break
-        case "rogue":
-            opts.color = "yellow"
-            break
-        case "warrior":
-            opts.color = "red"
-            break
+            case "mage":
+                opts.color = "blue"
+                break
+            case "merchant":
+                opts.color = "cyan"
+                break
+            case "paladin":
+                opts.color = "white"
+                break
+            case "priest":
+                opts.color = "magenta"
+                break
+            case "ranger":
+                opts.color = "green"
+                break
+            case "rogue":
+                opts.color = "yellow"
+                break
+            case "warrior":
+                opts.color = "red"
+                break
         }
         // eslint-disable-next-line sort-keys
         info.addRow({ name: character.name, type: character.type, level: character.level, online: character.online ? "online" : undefined }, opts)
