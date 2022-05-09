@@ -1,6 +1,6 @@
 import AL, { Character, Mage } from "alclient"
 import { goGetRspeedBuff, goToBankIfFull, goToNearestWalkableToMonster2, goToPotionSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
-import { bankingPosition, desertlandScorpions } from "../base/locations.js"
+import { bankingPosition, mainScorpions } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 
 async function startShared(bot: Character, merchant: string, friends: Character[], leader, members) {
@@ -103,7 +103,7 @@ export async function startMage(bot: Mage, merchant: string, friends: Character[
                 await bot.smartMove("elixirluck")
             }
 
-            await goToNearestWalkableToMonster2(bot, ["scorpion"], desertlandScorpions)
+            await goToNearestWalkableToMonster2(bot, ["scorpion"], mainScorpions)
         } catch (e) {
             console.error(e)
         }
