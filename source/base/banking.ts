@@ -1,7 +1,7 @@
 /* eslint-disable sort-keys */
-import AL, { BankPackName, Character, CharacterType, ItemData, ItemName } from "alclient"
-import { ITEMS_TO_HOLD } from "./general"
-import { bankingPosition } from "./locations"
+import AL, { BankPackName, Character, CharacterType, ItemData, ItemName, MapName } from "alclient"
+import { ITEMS_TO_HOLD } from "./general.js"
+import { bankingPosition } from "./locations.js"
 
 export type ItemCount = {
     name: ItemName
@@ -321,13 +321,13 @@ export async function getItemsToCompoundOrUpgrade(bot: Character, counts?: ItemC
             }
 
             // Consider the items in our inventory first
-            parseInventory(this.items, "inventory")
+            parseInventory(bot.items, "inventory")
 
             // Find all of the items in our bank
             for (const pack in bot.bank) {
                 if (pack == "gold") continue
                 const packName = pack as BankPackName
-                parseInventory(this.bank[packName], packName)
+                parseInventory(bot.bank[packName], packName)
             }
         }
     }
@@ -373,7 +373,7 @@ export async function getItemsToCompoundOrUpgrade(bot: Character, counts?: ItemC
 
     const specialWithdraw = async (pack: BankPackName, bankIndex: number): Promise<number> => {
         const index = inventorySlots.pop()
-        if (this.items[index] !== undefined) {
+        if (bot.items[index] !== undefined) {
             // Check if this inventory index was also an okayToCompoundOrUpgrade item
             for (const okay of okayToCompoundOrUpgrade) {
                 if (okay.pack !== "inventory") continue
@@ -385,7 +385,17 @@ export async function getItemsToCompoundOrUpgrade(bot: Character, counts?: ItemC
                 break
             }
         }
-        await bot.withdrawItem(pack, bankIndex, index)
+
+        // Move to the correct map
+        const bankPackNum = Number.parseInt(pack.substring(5, 7))
+        let targetMap: MapName = "bank"
+        if (bankPackNum <= 7) targetMap = "bank"
+        else if (bankPackNum >= 8 && bankPackNum <= 23) targetMap = "bank_b"
+        else if (bankPackNum >= 24) targetMap = "bank_u"
+        if (bot.map !== targetMap) await bot.smartMove(targetMap, { getWithin: 10000 })
+
+        if (bankPackNum)
+            await bot.withdrawItem(pack, bankIndex, index)
         return index
     }
 
