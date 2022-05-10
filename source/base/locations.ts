@@ -9,6 +9,7 @@ export const mainCrabs: IPosition = { map: "main", x: -1202.5, y: -66 }
 export const mainCrabXs: IPosition = { map: "main", x: -984, y: 1762 }
 export const mainCrocs: IPosition = { map: "main", x: 801, y: 1710 }
 export const mainFishingSpot: IPosition = { map: "main", x: -1198, y: -288 }
+export const mainFrogs: IPosition = { map: "main", x: -1124.5, y: 1118 }
 export const mainGoos: IPosition = { map: "main", x: -64, y: 787 }
 export const mainPoisios: IPosition = { map: "main", x: -121, y: 1360 }
 export const mainScorpions: IPosition = { map: "main", x: 1577.5, y: -168 }
@@ -16,6 +17,7 @@ export const mainSnakes: IPosition = { map: "main", x: -82, y: 1901 }
 export const mainSpiders: IPosition = { map: "main", x: 948, y: -144 }
 export const mainSquigs: IPosition = { map: "main", x: -1175.5, y: 422 }
 export const mainSquigtoads = mainSquigs
+export const mainTortoises = mainFrogs
 
 // Bank
 export const bankingPosition: IPosition = { map: "bank", x: 0, y: -200 }

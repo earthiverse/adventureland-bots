@@ -1,7 +1,8 @@
 import AL, { Character, Mage, Merchant, ServerIdentifier, ServerRegion } from "alclient"
 import { startTrackerLoop } from "../base/general.js"
 import { partyLeader, partyMembers } from "../base/party.js"
-import { startMage as startScorpionMage } from "../scorpions/shared.js"
+import { startMage as startFrogMage } from "../frogs/shared.js"
+import { startMage as startSnakeMage } from "../snakes/shared.js"
 import { startMerchant } from "../prat/shared.js"
 
 const region: ServerRegion = "US"
@@ -11,9 +12,9 @@ const mage2_ID = "gratuitously"
 const mage3_ID = "hypothesized"
 const merchant_ID = "decisiveness"
 
-let mage1: Mage // poisio
-let mage2: Mage // poisio
-let mage3: Mage // poisio
+let mage1: Mage // frogs / tortoises
+let mage2: Mage // snakes
+let mage3: Mage // snakes
 let merchant: Merchant // merchant
 const friends: Character[] = [undefined, undefined, undefined, undefined]
 
@@ -58,7 +59,7 @@ async function run() {
                 if (mage1) mage1.disconnect()
                 mage1 = await AL.Game.startMage(name, region, identifier)
                 friends[1] = mage1
-                startScorpionMage(mage1, merchant_ID, friends, partyLeader, partyMembers)
+                startFrogMage(mage1, merchant_ID, friends, partyLeader, partyMembers)
                 startTrackerLoop(mage1)
                 mage1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
@@ -85,7 +86,7 @@ async function run() {
                 if (mage2) mage2.disconnect()
                 mage2 = await AL.Game.startMage(name, region, identifier)
                 friends[2] = mage2
-                startScorpionMage(mage2, merchant_ID, friends, partyLeader, partyMembers)
+                startSnakeMage(mage2, merchant_ID, friends, partyLeader, partyMembers)
                 mage2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -111,7 +112,7 @@ async function run() {
                 if (mage3) mage3.disconnect()
                 mage3 = await AL.Game.startMage(name, region, identifier)
                 friends[3] = mage3
-                startScorpionMage(mage3, merchant_ID, friends, partyLeader, partyMembers)
+                startSnakeMage(mage3, merchant_ID, friends, partyLeader, partyMembers)
                 mage3.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)

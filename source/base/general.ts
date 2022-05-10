@@ -1264,7 +1264,7 @@ const DEBUG_EVENTS_ALL = new Map<string, [Date, string, string][]>()
 export function startDebugLoop(bot: Character): void {
     const debugFile = `debug_${bot.id}.csv`
 
-    const DEBUG_EVENTS: [Date, string, string][] = new Array(1000)
+    const DEBUG_EVENTS: [Date, string, string][] = []
     DEBUG_EVENTS_ALL.set(bot.id, DEBUG_EVENTS)
 
     let i = 0
@@ -1329,10 +1329,17 @@ export function writeLast1000Events(bot: Character, filename: string, extra?: st
         return
     }
     console.debug(`WRITING LAST 1000 EVENTS TO ${filename}!`)
-    let prepare = extra ? `${extra}\n\n` : ""
-    events.sort((a, b) => { return a?.[0].getTime() - b?.[0].getTime() })
-    for (const [date, event, data] of events) { prepare += `${date.toISOString()}: ${event} - ${data}\n` }
-    fs.writeFileSync(filename, prepare)
+
+    try {
+        let prepare = extra ? `${extra}\n\n` : ""
+        events.sort((a, b) => { return a?.[0].getTime() - b?.[0].getTime() })
+        for (const [date, event, data] of events) { prepare += `${date.toISOString()}: ${event} - ${data}\n` }
+        fs.writeFileSync(filename, prepare)
+    } catch (e) {
+        console.error(e)
+        console.error(events)
+        fs.writeFileSync(filename, `${e}`)
+    }
 }
 
 export function startElixirLoop(bot: Character, elixir: ItemName): void {
