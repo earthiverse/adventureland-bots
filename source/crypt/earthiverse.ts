@@ -66,7 +66,7 @@ async function startMerchant(bot: Merchant) {
                     return
                 } else {
                     // Wait in the crypt until we are finished
-                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                     return
                 }
             }
@@ -130,7 +130,7 @@ async function startPriest(bot: Priest) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -195,7 +195,7 @@ async function startRanger(bot: Ranger) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -264,7 +264,7 @@ async function startWarrior(bot: Warrior) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 

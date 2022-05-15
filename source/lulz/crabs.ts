@@ -44,14 +44,14 @@ export async function startLulzMage(bot: Mage, friends: Character[], replenishab
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
             // If we need to sell, or buy more potions, go to main
             if (bot.esize <= 2 || bot.countItem("hpot1") < 10 || bot.countItem("mpot1") < 10) {
                 await bot.smartMove("hpot1", { getWithin: 300 })
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
             }
 
             // Get some holiday spirit if it's Christmas
@@ -114,14 +114,14 @@ export async function startLulzRanger(bot: Ranger, friends: Character[], repleni
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
             // If we need to sell, or buy more potions, go to main
             if (bot.esize <= 2 || bot.countItem("hpot1") < 10 || bot.countItem("mpot1") < 10) {
                 await bot.smartMove("hpot1", { getWithin: 300 })
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
             }
 
             // Get some holiday spirit if it's Christmas

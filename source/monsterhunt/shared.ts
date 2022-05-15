@@ -276,7 +276,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -962,7 +962,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
                 // If we are dead, respawn
                 if (bot.rip) {
                     await bot.respawn()
-                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                     return
                 }
 

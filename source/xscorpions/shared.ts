@@ -74,7 +74,7 @@ export async function startWarrior(bot: Warrior, merchant: string, friends: Char
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -102,7 +102,7 @@ export async function startWarrior(bot: Warrior, merchant: string, friends: Char
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 200))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }
@@ -142,7 +142,7 @@ export async function startPriest(bot: Priest, merchant: string, friends: Charac
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -190,7 +190,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], standPl
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 

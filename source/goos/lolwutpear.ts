@@ -41,7 +41,7 @@ async function startRogue(bot: Rogue, positionOffset: { x: number, y: number } =
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -53,7 +53,7 @@ async function startRogue(bot: Rogue, positionOffset: { x: number, y: number } =
             console.error(e)
         }
 
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 500))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }

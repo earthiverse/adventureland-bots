@@ -45,7 +45,7 @@ async function startWarrior(bot: Warrior) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
@@ -57,7 +57,7 @@ async function startWarrior(bot: Warrior) {
             console.error(e)
         }
 
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 1000))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }
