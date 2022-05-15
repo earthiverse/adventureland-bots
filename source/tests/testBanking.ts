@@ -13,9 +13,8 @@ async function run() {
 
     try {
         const everything = await getItemCountsForEverything(earthMer2.owner)
-        console.log(everything)
 
-        const okay = await getItemsToCompoundOrUpgrade(earthMer2)
+        const okay = await getItemsToCompoundOrUpgrade(earthMer2, everything)
         console.log(okay)
 
         earthMer2.disconnect()

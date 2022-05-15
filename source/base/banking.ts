@@ -1,7 +1,7 @@
 /* eslint-disable sort-keys */
 import AL, { BankPackName, Character, CharacterType, ItemData, ItemName, MapName } from "alclient"
-import { ITEMS_TO_HOLD } from "./general.js"
 import { bankingPosition } from "./locations.js"
+import { MERCHANT_ITEMS_TO_HOLD } from "./merchant.js"
 
 export type ItemCount = {
     name: ItemName
@@ -11,6 +11,9 @@ export type ItemCount = {
     /** How many spaces are the items taking up in inventory / bank space? */
     inventorySpaces: number
 }
+
+/** If the length is 1, the items should be upgraded. If the length is 3, the items should be compounded. */
+export type IndexesToCompoundOrUpgrade = number[][]
 
 /**
  * This function will aggregate the bank, the inventories of all characters,
@@ -193,7 +196,7 @@ export async function getItemCountsForEverything(owner: string): Promise<ItemCou
  * compound and upgrade
  * @param bot
  */
-function getUnimportantInventorySlots(bot: Character, itemsToHold = ITEMS_TO_HOLD): number[] {
+function getUnimportantInventorySlots(bot: Character, itemsToHold = MERCHANT_ITEMS_TO_HOLD): number[] {
     const slots: number[] = []
 
     for (let i = 0; i < bot.items.length; i++) {
@@ -225,7 +228,7 @@ function getUnimportantInventorySlots(bot: Character, itemsToHold = ITEMS_TO_HOL
  * @param currentCount the number of items you have of this item
  * @returns the number of this item we are okay to compound or upgrade
  */
-function getNumOkayToCompoundOrUpgrade(item: ItemName, currentCount: number): number {
+export function getNumOkayToCompoundOrUpgrade(item: ItemName, currentCount: number): number {
     const gItem = AL.Game.G.items[item]
     let classMultiplier = 4
     if (gItem.class?.length == 1) {
@@ -252,7 +255,7 @@ function getNumOkayToCompoundOrUpgrade(item: ItemName, currentCount: number): nu
     }
 
     const multiplier = twoHandMultiplier * classMultiplier
-    return multiplier - currentCount
+    return currentCount - multiplier
 }
 
 /**
@@ -302,10 +305,11 @@ export async function getItemsToCompoundOrUpgrade(bot: Character, counts?: ItemC
             const parseInventory = (inventory: ItemData[], inventoryName: BankPackName | "inventory") => {
                 for (let i = 0; i < inventory.length; i++) {
                     const slot = inventory[i]
-                    if (!slot) continue
-                    if (slot.name !== currentName) continue
-                    if (slot.level > currentLevel) continue
+                    if (!slot) continue // empty slot
+                    if (slot.name !== currentName) continue // different item
+                    if (slot.level > currentLevel) continue // different level
                     if (slot.level == currentLevel) {
+                        // We want to withdraw only a certain amount of this level's items, and all items that are a lower level
                         if (currentCount <= 0) continue
                         else currentCount -= 1
                     }
@@ -394,8 +398,7 @@ export async function getItemsToCompoundOrUpgrade(bot: Character, counts?: ItemC
         else if (bankPackNum >= 24) targetMap = "bank_u"
         if (bot.map !== targetMap) await bot.smartMove(targetMap, { getWithin: 10000 })
 
-        if (bankPackNum)
-            await bot.withdrawItem(pack, bankIndex, index)
+        await bot.withdrawItem(pack, bankIndex, index)
         return index
     }
 
@@ -416,6 +419,7 @@ export async function getItemsToCompoundOrUpgrade(bot: Character, counts?: ItemC
             if (okay3.pack !== "inventory") compoundIndexes.push(await specialWithdraw(okay3.pack, okay3.index))
             else compoundIndexes.push(inventorySlots.splice(inventorySlots.indexOf(okay3.index), 1)[0])
             indexes.push(compoundIndexes)
+            i += 2
         } else {
             // Withdraw the one upgradable item
             if (okay.pack !== "inventory") indexes.push([await specialWithdraw(okay.pack, okay.index)])
