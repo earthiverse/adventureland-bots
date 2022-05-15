@@ -109,7 +109,7 @@ export async function startMage(bot: Mage, merchant: string, friends: Character[
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }
@@ -196,7 +196,7 @@ export async function startPriest(bot: Priest, merchant: string, friends: Charac
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }
@@ -283,7 +283,7 @@ export async function startRanger(bot: Ranger, merchant: string, friends: Charac
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }

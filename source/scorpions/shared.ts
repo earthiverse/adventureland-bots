@@ -107,7 +107,7 @@ export async function startMage(bot: Mage, merchant: string, friends: Character[
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 }
