@@ -119,7 +119,7 @@ export async function startLulzRanger(bot: Ranger, friends: Character[], repleni
             }
 
             // If we need to sell, or buy more potions, go to main
-            if (bot.esize <= 2 || bot.countItem("hpot1") < 10 || bot.countItem("mpot1") < 10) {
+            if (bot.esize <= 2 || ((bot.countItem("hpot1") < 10 || bot.countItem("mpot1") < 10) && bot.gold > 100_000)) {
                 await bot.smartMove("hpot1", { getWithin: 300 })
                 bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
             }
