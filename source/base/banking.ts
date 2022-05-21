@@ -196,7 +196,7 @@ export async function getItemCountsForEverything(owner: string): Promise<ItemCou
  * compound and upgrade
  * @param bot
  */
-function getUnimportantInventorySlots(bot: Character, itemsToHold = MERCHANT_ITEMS_TO_HOLD): number[] {
+export function getUnimportantInventorySlots(bot: Character, itemsToHold = MERCHANT_ITEMS_TO_HOLD): number[] {
     const slots: number[] = []
 
     for (let i = 0; i < bot.items.length; i++) {

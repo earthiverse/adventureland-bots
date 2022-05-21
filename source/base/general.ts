@@ -428,7 +428,7 @@ export async function getMonsterHuntTargets(bot: Character, friends: Character[]
     let lookupOthers = false
     for (const partyMemberID of bot.partyData.list) {
         if (!mhIDs.includes(partyMemberID)) {
-            const partyMember = bot.entities.get(partyMemberID)
+            const partyMember = bot.players.get(partyMemberID)
             if (partyMember) {
                 mhIDs.push(partyMemberID)
                 if (!partyMember.s.monsterhunt || partyMember.s.monsterhunt.c == 0) continue
