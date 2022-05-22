@@ -2,7 +2,7 @@ import AL, { Character, Mage, Merchant, ServerIdentifier, ServerRegion } from "a
 import { startTrackerLoop } from "../base/general.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { startMage as startFrogMage } from "../frogs/shared.js"
-import { startMage as startSnakeMage } from "../snakes/shared.js"
+import { startMage as startMinimushMage } from "../minimush/shared.js"
 import { startMerchant } from "../prat/shared.js"
 
 const region: ServerRegion = "US"
@@ -13,8 +13,8 @@ const mage3_ID = "hypothesized"
 const merchant_ID = "decisiveness"
 
 let mage1: Mage // frogs / tortoises
-let mage2: Mage // snakes
-let mage3: Mage // snakes
+let mage2: Mage // minimushes
+let mage3: Mage // minimushes
 let merchant: Merchant // merchant
 const friends: Character[] = [undefined, undefined, undefined, undefined]
 
@@ -86,7 +86,7 @@ async function run() {
                 if (mage2) mage2.disconnect()
                 mage2 = await AL.Game.startMage(name, region, identifier)
                 friends[2] = mage2
-                startSnakeMage(mage2, merchant_ID, friends, partyLeader, partyMembers)
+                startMinimushMage(mage2, merchant_ID, friends, partyLeader, partyMembers)
                 mage2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -112,7 +112,7 @@ async function run() {
                 if (mage3) mage3.disconnect()
                 mage3 = await AL.Game.startMage(name, region, identifier)
                 friends[3] = mage3
-                startSnakeMage(mage3, merchant_ID, friends, partyLeader, partyMembers)
+                startMinimushMage(mage3, merchant_ID, friends, partyLeader, partyMembers)
                 mage3.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
