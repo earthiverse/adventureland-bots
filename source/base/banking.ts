@@ -15,6 +15,45 @@ export type ItemCount = {
 /** If the length is 1, the items should be upgraded. If the length is 3, the items should be compounded. */
 export type IndexesToCompoundOrUpgrade = number[][]
 
+const DONT_UPGRADE = {
+    stop: 0
+}
+const ULTRA_RARE = {
+    offeringp: 1,
+    offering: 2
+}
+export const ITEM_OFFERINGS: {
+    [T in ItemName]?: {
+        /** What level should we start using an offeringp at? */
+        "offeringp"?: number
+        /** What level should we start using an offering at? */
+        "offering"?: number
+        /** What level should we stop leveling the item at? */
+        "stop"?: number
+    }
+} = {
+    fury: ULTRA_RARE,
+    lostearring: {
+        // Level 2 is the best for exchanging
+        stop: 2
+    },
+    starkillers: ULTRA_RARE,
+    stick: {
+        // We craft with level 9 sticks
+        stop: 9
+    },
+    suckerpunch: ULTRA_RARE,
+    supermittens: ULTRA_RARE,
+    t3bow: ULTRA_RARE,
+    test_orb: DONT_UPGRADE,
+    throwingstars: DONT_UPGRADE,
+    vitring: {
+        // We craft with level 2 vit rings
+        stop: 2
+    },
+    vorb: DONT_UPGRADE
+}
+
 /**
  * This function will aggregate the bank, the inventories of all characters,
  * and the items equipped on all characters so we can see how many of each item
@@ -188,6 +227,14 @@ export async function getItemCountsForEverything(owner: string): Promise<ItemCou
             }
         }
     ])
+}
+
+/**
+ * Calculates what offering (if any) we should use to compound or upgrade the item
+ * @param item The item data
+ */
+export function getOfferingToUse(item: ItemData): ItemName {
+    return undefined
 }
 
 /**
@@ -428,4 +475,17 @@ export async function getItemsToCompoundOrUpgrade(bot: Character, counts?: ItemC
     }
 
     return indexes
+}
+
+export async function upgradeOrCompoundItems(bot: Character, allIndexes: IndexesToCompoundOrUpgrade) {
+    // for (const indexes of allIndexes) {
+    //     const item = bot.items[indexes[0]]
+    //     const offering =
+    //     if (allIndexes.length == 1) {
+
+    //     } else if (allIndexes.length == 3) {
+
+    //     }
+    // }
+    // return
 }

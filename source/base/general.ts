@@ -61,70 +61,66 @@ export const ITEMS_TO_CRAFT: Set<ItemName> = new Set([
 
 export const ITEMS_TO_BUY: Set<ItemName> = new Set([
     // NOTE: Temporary for Christmas
-    // // Exchangeables
+    // Exchangeables
     "5bucks", "gem0", "gem1", "gemfragment", "seashell", "leather", "candycane", "mistletoe", "ornament", "candy0", "candy1", "greenenvelope", "redenvelope", "redenvelopev2", "redenvelopev3", "redenvelopev4", "basketofeggs", "armorbox", "bugbountybox", "gift0", "gift1", "mysterybox", "weaponbox", "xbox",
-    // // Belts
+    // Belts
     "dexbelt", "intbelt",
     // "dexbelt", "intbelt", "sbelt", "strbelt",
-    // // Rings
-    "cring",
-    // "cring", "ctristone", /*"dexring",*/ "goldring", /*"intring",*/ "ringofluck", "strring", "suckerpunch", "trigger", "tristone", "vring",
-    // // Earrings
-    "cearring",
-    // "cearring", "dexearring", /*"intearring",*/ "lostearring", /*"strearring",*/
-    // // Amulets
-    "snring",
-    // "amuletofm", "dexamulet", "intamulet", "mpxamulet", "northstar", "skullamulet", "snring", /*"stramulet",*/ "t2dexamulet", "t2intamulet", "t2stramulet",
-    // // Orbs
-    "rabbitsfoot", "vorb",
-    // "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull", "vorb",
-    // // Offhands
-    "wbook1", "wbookhs",
-    // "exoarm", "wbook0", "wbook1",
-    // // Shields
+    // Rings
+    "cring", "ctristone", "goldring", "ringofluck", "strring", "suckerpunch", "trigger", "tristone", "vring",
+    // Earrings
+    "cearring", "dexearring", "lostearring",
+    // Amulets
+    "amuletofm", "dexamulet", "intamulet", "mpxamulet", "northstar", "skullamulet", "snring", "t2dexamulet", "t2intamulet", "t2stramulet",
+    // Orbs
+    "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull", "vorb",
+    // Offhands
+    "exoarm", "wbook1", "wbookhs",
+    // Shields
     "mshield", "t2quiver", "xshield",
     // "t2quiver", "lantern", "mshield", /*"quiver",*/ "sshield", "xshield",
-    // // Capes
-    "angelwings", "bcape", "stealthcape", "vcape",
+    // Capes
+    "angelwings", "bcape", "cape", "stealthcape", "vcape",
     // "angelwings", "bcape", "cape", "ecape", "fcape", "gcape", "stealthcape", "vcape",
-    // // Shoes
-    "xboots",
+    // Shoes
+    "wingedboots", "wshoes", "xboots",
     // "eslippers", "hboots", "mrnboots", "mwboots", /*"shoes1",*/ "vboots", "wingedboots", "wshoes", "xboots",
-    // // Pants
-    "xpants",
+    // Pants
+    "wbreeches", "xpants",
     // /*"frankypants",*/ "hpants", "mrnpants", "mwpants", /*"pants1",*/ "starkillers", "wbreeches", "xpants",
-    // // Armor
-    "xarmor",
+    // Armor
+    "luckyt", "tshirt88", "xarmor",
     // "cdragon", /*"coat1",*/ "harmor", "luckyt", "mcape", "mrnarmor", "mwarmor", "tshirt0", "tshirt1", "tshirt2", "tshirt3", "tshirt4", "tshirt6", "tshirt7", "tshirt8", "tshirt88", "tshirt9", "vattire", "warpvest", "wattire", "xarmor",
     // // Helmets
-    "cyber", "fury",
+    "cyber", "fury", "wcap", "xhelmet",
     // "cyber", "eears", "fury", /*"helmet1",*/ "hhelmet", "mchat", "mmhat", "mphat", "mrnhat", "mwhelmet", "oxhelmet", "partyhat", "rednose", "wcap", "xhelmet",
-    // // Gloves
+    // Gloves
+    "wgloves", "xgloves",
     // /*"gloves1",*/ "goldenpowerglove", "handofmidas", "hgloves", "mittens", "mpxgloves", "mrngloves", "mwgloves", "poker", "powerglove", "supermittens", "vgloves", "wgloves", "xgloves",
-    // // Good weapons
-    "basher", "bataxe", "crossbow", "dartgun", "firebow", "frostbow", "firestars", "pinkie", "scythe", "t3bow", "wblade",
+    // Good weapons
+    "basher", "bataxe", "crossbow", "dartgun", "firebow", "firestars", "frostbow", "firestars", "pinkie", "scythe", "t3bow", "wblade",
     // "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "fireblade", "firebow", "firestaff", "firestars", "frostbow", "froststaff", "gbow", "glolipop", "gstaff", "harbringer", "heartwood", "hbow", "hdagger", "merry", "ololipop", "oozingterror", "ornamentstaff", "pinkie", "pmace", "scythe", "snowflakes", "t2bow", "t3bow", /*"throwingstars",*/ "vdagger", "vhammer", "vstaff", "vsword", "wblade",
-    // // Things we can exchange / craft with
+    // Things we can exchange / craft with
     "ascale", "bfur", "crabclaw", "ink", "leather", "lotusf", "goldenegg", "goldingot", "goldnugget", "platinumingot", "platinumnugget", "pleather",
     // "ascale", "bfur", "cscale", "cshell", "crabclaw", "electronics", "feather0", "frogt", "goldenegg", "goldingot", "goldnugget", "ink", "leather", "lotusf", "platinumingot", "platinumnugget", "pleather", "snakefang", "spores",
-    // // Things to make xbox
+    // Things to make xbox
     "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8",
-    // // Things to make easter basket
+    // Things to make easter basket
     "egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8",
-    // // Essences
+    // Essences
     "essenceofether", "essenceoffire", "essenceoffrost", "essenceofgreed", "essenceoflife", "essenceofnature", "offering", "offeringp", "offeringx",
-    // // Potions & consumables
+    // Potions & consumables
     "bunnyelixir", "candypop", "hotchocolate", "vblood",
     // "bunnyelixir", "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate", "vblood",
-    // // High level scrolls
+    // High level scrolls
     "forscroll",
     // "cscroll3", "scroll3", "scroll4", "forscroll", "luckscroll", "manastealscroll",
-    // // Merchant Tools
-    // "pickaxe", "rod",
-    // // Keys
+    // Merchant Tools
+    "pickaxe", "rod",
+    // Keys
     "bkey", "cryptkey", "dkey", "frozenkey", "stonekey", "tombkey", "ukey",
-    // // Misc. Things
-    "bottleofxp", "bugbountybox", "computer", "cxjar", "emotionjar", "flute", "monstertoken", "puppyer", "shadowstone", "snakeoil"
+    // Misc. Things
+    "bottleofxp", "bugbountybox", "computer", "cxjar", "emotionjar", "flute", "monstertoken", "poison", "puppyer", "shadowstone", "snakeoil", "supercomputer"
     // "bottleofxp", "bugbountybox", "computer", "confetti", "cxjar", "emotionjar", "flute", "frozenstone", "monstertoken", "poison", "puppyer", "shadowstone", "snakeoil"
 ])
 
