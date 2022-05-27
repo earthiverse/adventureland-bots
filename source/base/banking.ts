@@ -22,7 +22,37 @@ const ULTRA_RARE = {
     offeringp: 1,
     offering: 2
 }
-export const ITEM_OFFERINGS: {
+/** What we do with upgradable items that are common at level 0 */
+const DEFAULT_UPGRADE_BASE_COMMON = {
+    offeringp: 8,
+    offering: 9
+}
+/** What we do with upgradable items that are high at level 0 */
+const DEFAULT_UPGRADE_BASE_HIGH = {
+    offeringp: 6,
+    offering: 8
+}
+/** What we do with upgradable items that are rare at level 0 */
+const DEFAULT_UPGRADE_BASE_RARE = {
+    offeringp: 4,
+    offering: 7
+}
+/** What we do with compoundable items that are common at level 0 */
+const DEFAULT_COMPOUND_BASE_COMMON = {
+    offeringp: 3,
+    offering: 4
+}
+/** What we do with compoundable items that are high at level 0 */
+const DEFAULT_COMPOUND_BASE_HIGH = {
+    offeringp: 2,
+    offering: 3
+}
+/** What we do with compoundable items that are rare at level 0 */
+const DEFAULT_COMPOUND_BASE_RARE = {
+    offeringp: 1,
+    offering: 2
+}
+export const ITEM_UPGRADE_CONF: {
     [T in ItemName]?: {
         /** What level should we start using an offeringp at? */
         "offeringp"?: number
@@ -234,6 +264,63 @@ export async function getItemCountsForEverything(owner: string): Promise<ItemCou
  * @param item The item data
  */
 export function getOfferingToUse(item: ItemData): ItemName {
+    const gItem = AL.Game.G.items[item.name]
+    const conf = ITEM_UPGRADE_CONF[item.name]
+    if (conf) {
+        // We have special configuration about this item
+        if (item.level >= conf?.offering) {
+            return "offering"
+        } else if (item.level >= conf?.offeringp) {
+            return "offeringp"
+        }
+    } else if (gItem.compound) {
+        if (gItem.grades[0] > 0) {
+            // Common at base 0
+            if (item.level >= DEFAULT_COMPOUND_BASE_COMMON.offering) {
+                return "offering"
+            } else if (item.level >= DEFAULT_COMPOUND_BASE_COMMON.offeringp) {
+                return "offeringp"
+            }
+        } else if (gItem.grades[1] > 0) {
+            // High at base 0
+            if (item.level >= DEFAULT_COMPOUND_BASE_HIGH.offering) {
+                return "offering"
+            } else if (item.level >= DEFAULT_COMPOUND_BASE_HIGH.offeringp) {
+                return "offeringp"
+            }
+        } else if (gItem.grades[2] > 0) {
+            // Rare at base 0
+            if (item.level >= DEFAULT_COMPOUND_BASE_RARE.offering) {
+                return "offering"
+            } else if (item.level >= DEFAULT_COMPOUND_BASE_RARE.offeringp) {
+                return "offeringp"
+            }
+        }
+    } else if (gItem.upgrade) {
+        if (gItem.grades[0] > 0) {
+            // Common at base 0
+            if (item.level >= DEFAULT_UPGRADE_BASE_COMMON.offering) {
+                return "offering"
+            } else if (item.level >= DEFAULT_UPGRADE_BASE_COMMON.offeringp) {
+                return "offeringp"
+            }
+        } else if (gItem.grades[1] > 0) {
+            // High at base 0
+            if (item.level >= DEFAULT_UPGRADE_BASE_HIGH.offering) {
+                return "offering"
+            } else if (item.level >= DEFAULT_UPGRADE_BASE_HIGH.offeringp) {
+                return "offeringp"
+            }
+        } else if (gItem.grades[2] > 0) {
+            // Rare at base 0
+            if (item.level >= DEFAULT_UPGRADE_BASE_RARE.offering) {
+                return "offering"
+            } else if (item.level >= DEFAULT_UPGRADE_BASE_RARE.offeringp) {
+                return "offeringp"
+            }
+        }
+    }
+
     return undefined
 }
 
@@ -478,14 +565,31 @@ export async function getItemsToCompoundOrUpgrade(bot: Character, counts?: ItemC
 }
 
 export async function upgradeOrCompoundItems(bot: Character, allIndexes: IndexesToCompoundOrUpgrade) {
-    // for (const indexes of allIndexes) {
-    //     const item = bot.items[indexes[0]]
-    //     const offering =
-    //     if (allIndexes.length == 1) {
+    for (const indexes of allIndexes) {
+        const item = bot.items[indexes[0]]
 
-    //     } else if (allIndexes.length == 3) {
+        // Check if we want to upgrade / compound the item
+        const conf = ITEM_UPGRADE_CONF[item.name]
+        if (item.level >= conf?.stop) {
+            console.debug(`We don't want to upgrade ${item.name} past level ${conf.stop}.`)
+            continue
+        }
 
-    //     }
-    // }
-    // return
+        const offering = getOfferingToUse(item)
+        let offeringIndex: number
+        if (offering) {
+            offeringIndex = bot.locateItem(offering, bot.items)
+            if (offeringIndex == undefined) {
+                console.debug(`We want to upgrade or compound a level ${item.level} ${item.name}, but we want to use ${offering} as an offering, and we don't have any.`)
+                continue
+            }
+        }
+
+        if (allIndexes.length == 1) {
+            // We want to upgrade this item
+        } else if (allIndexes.length == 3) {
+            // We want to compound these items
+        }
+    }
+    return
 }

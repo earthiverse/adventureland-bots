@@ -3,6 +3,7 @@ import { PathfinderOptions } from "alclient/build/definitions/pathfinder"
 import fs from "fs"
 import { ItemLevelInfo } from "../definitions/bot.js"
 import { bankingPosition, offsetPositionParty } from "./locations.js"
+import { sortClosestDistance } from "./sort.js"
 
 export const LOOP_MS = 100
 export const CHECK_PONTY_EVERY_MS = 30_000 /** 30 seconds */
@@ -602,7 +603,7 @@ export function goToKiteMonster(bot: Character, options: {
     let nearest: Entity
     let distance: number = Number.MAX_VALUE
     for (const entity of bot.getEntities(options)) {
-        const d = AL.Tools.distance(bot, entity)
+        const d = AL.Tools.squaredDistance(bot, entity)
         if (d < distance) {
             distance = d
             nearest = entity
@@ -872,11 +873,7 @@ export async function goToNearestWalkableToMonster(bot: Character, types: Monste
 
 export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName[], defaultPosition?: IPosition): void {
     const targets = bot.getEntities({ canDamage: true, couldGiveCredit: true, typeList: types, willBurnToDeath: false, willDieToProjectiles: false })
-    targets.sort((a, b) => {
-        const d_a = AL.Tools.distance(bot, a)
-        const d_b = AL.Tools.distance(bot, b)
-        return d_a - d_b
-    })
+    targets.sort(sortClosestDistance(bot))
 
     let lastD = 0
     for (const target of targets) {
@@ -906,28 +903,20 @@ export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName
             for (const type of types) {
                 locations.push(...bot.locateMonster(type))
             }
-            locations.sort((a, b) => {
-                const d_a = AL.Tools.distance(bot, a)
-                const d_b = AL.Tools.distance(bot, b)
-                return d_a - d_b
-            })
+            locations.sort(sortClosestDistance(bot))
             bot.smartMove(offsetPositionParty(locations[0], bot), { getWithin: Tools.distance(bot, locations[0]) - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         }
     } else if (!bot.smartMoving) {
         // No targets nearby, move to spawn
         if (defaultPosition) {
-            bot.smartMove(offsetPositionParty(defaultPosition, bot)).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(defaultPosition, bot), { resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         } else {
             const locations: IPosition[] = []
             for (const type of types) {
                 locations.push(...bot.locateMonster(type))
             }
-            locations.sort((a, b) => {
-                const d_a = AL.Tools.distance(bot, a)
-                const d_b = AL.Tools.distance(bot, b)
-                return d_a - d_b
-            })
-            bot.smartMove(offsetPositionParty(locations[0], bot)).catch(() => { /** Suppress Error */ })
+            locations.sort(sortClosestDistance(bot))
+            bot.smartMove(offsetPositionParty(locations[0], bot), { resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         }
     }
 }

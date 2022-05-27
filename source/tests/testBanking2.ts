@@ -7,7 +7,7 @@ async function run() {
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
     await AL.Pathfinder.prepare(AL.Game.G)
 
-    const earthMer2 = await AL.Game.startMerchant("earthMer", "ASIA", "I")
+    const earthMer2 = await AL.Game.startMerchant("earthMer2", "ASIA", "I")
     startDebugLoop(earthMer2)
 
     try {

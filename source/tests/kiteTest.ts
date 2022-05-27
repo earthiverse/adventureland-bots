@@ -1,5 +1,5 @@
 import AL, { Mage, MonsterName, ServerIdentifier, ServerRegion } from "alclient"
-import { startHealLoop, startLootLoop, startAvoidStacking, goToKiteMonster, LOOP_MS, startScareLoop } from "../base/general.js"
+import { startHealLoop, startLootLoop, startAvoidStacking, goToKiteStuff, LOOP_MS, startScareLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 
 /** Config */
@@ -48,7 +48,7 @@ async function startKite(bot: Mage) {
             const nearest = bot.getEntity({ returnNearest: true, typeList: targets })
             if (!nearest) await bot.smartMove(targets[0], { getWithin: 200 })
 
-            goToKiteMonster(bot, { kiteDistance: bot.range - 25, typeList: targets })
+            goToKiteStuff(bot, { typeList: targets })
         } catch (e) {
             console.error(e)
         }

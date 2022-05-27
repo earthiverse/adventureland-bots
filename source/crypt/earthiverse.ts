@@ -1,5 +1,5 @@
-import AL, { Character, Constants, Mage, Merchant, MonsterName, Priest, Ranger, ServerIdentifier, ServerRegion, Warrior } from "alclient"
-import { goToKiteMonster, goToNearestWalkableToMonster, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
+import AL, { Character, Mage, Merchant, MonsterName, Priest, Ranger, ServerIdentifier, ServerRegion, Warrior } from "alclient"
+import { goToKiteStuff, goToNearestWalkableToMonster, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
 import { batCaveCryptEntrance, cryptEnd, cryptWaitingSpot } from "../base/locations.js"
 import { startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
@@ -294,32 +294,32 @@ async function startWarrior(bot: Warrior) {
                 switch (nearest.type) {
                     case "a1": // Spike
                     case "bat": // Spike spawns bats
-                        goToKiteMonster(bot, { stayWithinAttackingRange: true, type: "a1" })
+                        goToKiteStuff(bot, { type: "a1" })
                         break
                     case "a2": // Bill
-                        goToKiteMonster(bot, { stayWithinAttackingRange: true, type: "a2" })
+                        goToKiteStuff(bot, { type: "a2" })
                         break
                     case "a3": // Lestat
-                        goToKiteMonster(bot, { stayWithinAttackingRange: true, type: "a3" })
+                        goToKiteStuff(bot, { type: "a3" })
                         break
                     case "a4": // Orlok
                     case "zapper0": // Orlok spawns zappers
-                        goToKiteMonster(bot, { stayWithinAttackingRange: true, type: "a4" })
+                        goToKiteStuff(bot, { type: "a4" })
                         break
                     case "a5": // Elena
-                        goToKiteMonster(bot, { stayWithinAttackingRange: true, type: "a5" })
+                        goToKiteStuff(bot, { type: "a5" })
                         break
                     case "a6": // Marceline
-                        goToKiteMonster(bot, { type: "a6" })
+                        goToKiteStuff(bot, { type: "a6" })
                         break
                     case "a7": // Lucinda
-                        goToKiteMonster(bot, { stayWithinAttackingRange: true, type: "a7" })
+                        goToKiteStuff(bot, { type: "a7" })
                         break
                     case "a8": // Angel
-                        goToKiteMonster(bot, { type: "a8" })
+                        goToKiteStuff(bot, { type: "a8" })
                         break
                     case "vbat":
-                        goToKiteMonster(bot, { stayWithinAttackingRange: true, type: "vbat" })
+                        goToKiteStuff(bot, { type: "vbat" })
                         break
                 }
             }

@@ -1,5 +1,5 @@
 import AL, { Character, ItemName, Ranger } from "alclient"
-import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, LOOP_MS, sleep, moveInCircle, goToKiteMonster } from "../base/general.js"
+import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, LOOP_MS, goToKiteStuff } from "../base/general.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 
@@ -84,7 +84,7 @@ export async function startRanger(bot: Ranger, merchant: string, friends: Charac
             if (bot.map !== "jail") await bot.warpToJail()
 
             const jRats = bot.getEntities({ type: "jrat" })
-            if (jRats.length) goToKiteMonster(bot, { kiteDistance: bot.G.monsters.jrat.range * 2, type: "jrat" })
+            if (jRats.length) goToKiteStuff(bot, { type: "jrat" })
             else if (!bot.smartMoving) { bot.smartMove("jrat") }
         } catch (e) {
             console.error(e)

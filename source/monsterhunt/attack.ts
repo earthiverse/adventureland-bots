@@ -1,5 +1,5 @@
 import AL, { Merchant, Priest, Ranger, Warrior, ServerInfoDataLive, IPosition } from "alclient"
-import { goToAggroMonster, goToKiteMonster, goToNearestWalkableToMonster, goToSpecialMonster, requestMagiportService, startTrackerLoop } from "../base/general.js"
+import { goToAggroMonster, goToKiteStuff, goToNearestWalkableToMonster, goToSpecialMonster, requestMagiportService, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 import { attackTheseTypesWarrior } from "../base/warrior.js"
@@ -71,7 +71,7 @@ function preparePriest(bot: Priest) {
             move: async () => {
                 const nearest = bot.getEntity({ returnNearest: true, type: "cgoo" })
                 if (nearest) {
-                    goToKiteMonster(bot, { typeList: ["cgoo"] })
+                    goToKiteStuff(bot, { typeList: ["cgoo"] })
                 } else if (!bot.smartMoving) {
                     bot.smartMove({ map: "arena", x: 650, y: -500 }).catch(/** Suppress errors */)
                 }
@@ -246,7 +246,7 @@ function prepareRanger(bot: Ranger) {
             move: async () => {
                 const nearest = bot.getEntity({ returnNearest: true, type: "cgoo" })
                 if (nearest) {
-                    goToKiteMonster(bot, { typeList: ["cgoo"] })
+                    goToKiteStuff(bot, { typeList: ["cgoo"] })
                 } else if (!bot.smartMoving) {
                     bot.smartMove({ map: "arena", x: 0, y: -500 }).catch(/** Suppress errors */)
                 }

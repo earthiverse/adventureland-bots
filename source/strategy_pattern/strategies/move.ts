@@ -1,4 +1,6 @@
 import AL, { IPosition, MonsterName, PingCompensatedCharacter, Tools } from "alclient"
+import { offsetPositionParty } from "../../base/locations.js"
+import { sortClosestDistance } from "../../base/sort.js"
 import { Loop, Loops, Strategy } from "../context.js"
 
 export class BasicMoveStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
@@ -57,11 +59,7 @@ export class ImprovedMoveStrategy<Type extends PingCompensatedCharacter> impleme
 
     private async move(bot: Type) {
         const targets = bot.getEntities({ canDamage: true, couldGiveCredit: true, typeList: this.types, willBurnToDeath: false, willDieToProjectiles: false })
-        targets.sort((a, b) => {
-            const d_a = AL.Tools.distance(bot, a)
-            const d_b = AL.Tools.distance(bot, b)
-            return d_a - d_b
-        })
+        targets.sort(sortClosestDistance(bot))
 
         // Move to next monster
         let lastD = 0
@@ -73,25 +71,25 @@ export class ImprovedMoveStrategy<Type extends PingCompensatedCharacter> impleme
             }
 
             if (lastD) {
-                bot.smartMove(target, { getWithin: d - (bot.range - lastD) }).catch(() => { /** Suppress Error */ })
+                bot.smartMove(target, { getWithin: d - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
             } else {
-                bot.smartMove(target, { getWithin: bot.range }).catch(() => { /** Suppress Error */ })
+                bot.smartMove(target, { resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
             }
             return
         }
 
         if (lastD) {
-            // TODO: Move towards center of spawn
-            const locations = bot.locateMonster(this.types[0])
-            locations.sort((a, b) => {
-                const d_a = AL.Tools.distance(bot, a)
-                const d_b = AL.Tools.distance(bot, b)
-                return d_a - d_b
-            })
-            bot.smartMove(locations[0], { getWithin: Tools.distance(bot, locations[0]) - (bot.range - lastD) }).catch(() => { /** Suppress Error */ })
+            // Move towards center of closest spawn
+            const locations: IPosition[] = []
+            for (const type of this.types) locations.push(...bot.locateMonster(type))
+            locations.sort(sortClosestDistance(bot))
+            bot.smartMove(offsetPositionParty(locations[0], bot), { getWithin: Tools.distance(bot, locations[0]) - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         } else if (!bot.smartMoving) {
             // No targets nearby, move to spawn
-            bot.smartMove(this.types[0]).catch(() => { /** Suppress Error */ })
+            const locations: IPosition[] = []
+            for (const type of this.types) locations.push(...bot.locateMonster(type))
+            locations.sort(sortClosestDistance(bot))
+            bot.smartMove(offsetPositionParty(locations[0], bot), { resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         }
     }
 }
