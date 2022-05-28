@@ -1,4 +1,4 @@
-import AL, { Character, Entity, GameResponseData, GMap, HitData, IEntity, InviteData, IPosition, ItemData, ItemName, MapName, Merchant, MonsterName, NPCName, Pathfinder, Player, SlotType, Tools, TradeSlotType } from "alclient"
+import AL, { Character, Entity, GameResponseData, GMap, HitData, IEntity, InviteData, IPosition, ItemData, ItemName, MapName, Merchant, MonsterName, NPCName, Pathfinder, Player, ServerIdentifier, ServerRegion, SlotType, Tools, TradeSlotType } from "alclient"
 import { PathfinderOptions } from "alclient/build/definitions/pathfinder"
 import fs from "fs"
 import { ItemLevelInfo } from "../definitions/bot.js"
@@ -417,7 +417,13 @@ export async function getMonsterHuntTargets(bot: Character, friends: Character[]
         if (!friend) continue
         mhIDs.push(friend.id)
 
+        // Check if they've already completed it
         if (!friend.s.monsterhunt || friend.s.monsterhunt.c == 0) continue
+
+        // Check if it's for a different server
+        const [region, id] = friend.s.monsterhunt.sn.split(" ") as [ServerRegion, ServerIdentifier]
+        if (bot.serverData.region !== region || bot.serverData.name !== id) continue
+
         data.push(friend.s.monsterhunt)
     }
 

@@ -977,11 +977,14 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
 
                 // Turn in our monsterhunt if we can
                 if (bot.s.monsterhunt && bot.s.monsterhunt.c == 0) {
-                    await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1, useBlink: true })
-                    await bot.finishMonsterHuntQuest()
-                    await bot.getMonsterHuntQuest()
-                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
-                    return
+                    const [region, id] = bot.s.monsterhunt.sn.split(" ") as [ServerRegion, ServerIdentifier]
+                    if (region == bot.serverData.region && id == bot.serverData.name) {
+                        await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1, useBlink: true })
+                        await bot.finishMonsterHuntQuest()
+                        await bot.getMonsterHuntQuest()
+                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
+                        return
+                    }
                 }
 
                 // Get some holiday spirit if it's Christmas
