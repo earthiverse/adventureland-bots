@@ -3,7 +3,7 @@ import path from "path"
 import bodyParser from "body-parser"
 import { body, validationResult } from "express-validator"
 
-import AL, { Character, ItemName } from "alclient"
+import AL, { Character, ItemName, Mage, Ranger } from "alclient"
 import { startLulzMage as startCrabMage, startLulzRanger as startCrabRanger } from "./crabs.js"
 import { ItemLevelInfo } from "../definitions/bot.js"
 
@@ -31,6 +31,96 @@ const itemsToSell: ItemLevelInfo = {
     wshoes: 1
 }
 
+const startRangerLoop = async (userID: string, userAuth: string, characterID: string) => {
+    // Start the characters
+    const loopBot = async () => {
+        try {
+            let bot = online[characterID] as Ranger
+            if (bot) bot.disconnect()
+            bot = new AL.Ranger(userID, userAuth, characterID, AL.Game.G, AL.Game.servers["US"]["I"])
+            await bot.connect()
+
+            // Rebuild friends
+            friends.splice(0, friends.length)
+            for (const char in online)friends.push(online[char])
+
+            online[characterID] = bot
+            await startCrabRanger(bot, friends, replenishables, itemsToSell)
+            bot.socket.on("disconnect", async () => {
+                if (online[characterID]) loopBot()
+            })
+            bot.socket.on("code_eval", (data) => {
+                if (data == "stop" || data == "disconnect") {
+                    delete online[characterID]
+                    const index = friends.indexOf(bot)
+                    if (index !== -1) friends.splice(index, 1)
+                    bot.disconnect()
+                }
+            })
+        } catch (e) {
+            console.error(e)
+            const bot = online[characterID] as Ranger
+            if (bot) bot.disconnect()
+            const wait = /wait_(\d+)_second/.exec(e)
+            if (wait && wait[1]) {
+                setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
+            } else if (/limits/.test(e)) {
+                setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+            } else if (/ingame/.test(e)) {
+                setTimeout(async () => { loopBot() }, 500)
+            } else {
+                setTimeout(async () => { loopBot() }, 10000)
+            }
+        }
+    }
+    loopBot()
+}
+
+const startMageLoop = async (userID: string, userAuth: string, characterID: string) => {
+    // Start the characters
+    const loopBot = async () => {
+        try {
+            let bot = online[characterID] as Mage
+            if (bot) bot.disconnect()
+            bot = new AL.Mage(userID, userAuth, characterID, AL.Game.G, AL.Game.servers["US"]["I"])
+            await bot.connect()
+
+            // Rebuild friends
+            friends.splice(0, friends.length)
+            for (const char in online)friends.push(online[char])
+
+            online[characterID] = bot
+            await startCrabMage(bot, friends, replenishables, itemsToSell)
+            bot.socket.on("disconnect", async () => {
+                if (online[characterID]) loopBot()
+            })
+            bot.socket.on("code_eval", (data) => {
+                if (data == "stop" || data == "disconnect") {
+                    delete online[characterID]
+                    const index = friends.indexOf(bot)
+                    if (index !== -1) friends.splice(index, 1)
+                    bot.disconnect()
+                }
+            })
+        } catch (e) {
+            console.error(e)
+            const bot = online[characterID] as Ranger
+            if (bot) bot.disconnect()
+            const wait = /wait_(\d+)_second/.exec(e)
+            if (wait && wait[1]) {
+                setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
+            } else if (/limits/.test(e)) {
+                setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+            } else if (/ingame/.test(e)) {
+                setTimeout(async () => { loopBot() }, 500)
+            } else {
+                setTimeout(async () => { loopBot() }, 10000)
+            }
+        }
+    }
+    loopBot()
+}
+
 app.post("/",
     body("user").trim().isLength({ max: 16, min: 16 }).withMessage("User IDs are exactly 16 digits."),
     body("user").trim().isNumeric().withMessage("User IDs are numeric"),
@@ -54,32 +144,14 @@ app.post("/",
 
         try {
             if (req.body.char_type == "ranger") {
-                const ranger = new AL.Ranger(req.body.user, req.body.auth, req.body.char, AL.Game.G, AL.Game.servers["US"]["I"])
-                await ranger.connect()
-                ranger.socket.on("disconnect", () => {
-                    delete online[req.body.char]
-                    const index = friends.indexOf(ranger)
-                    if (index !== -1) friends.splice(index, 1)
-                })
-                online[req.body.char] = ranger
-                friends.push(ranger)
                 if (req.body.monster == "crab") {
-                    startCrabRanger(ranger, friends, replenishables, itemsToSell)
+                    startRangerLoop(req.body.user, req.body.auth, req.body.char)
                     return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
                 }
             }
             if (req.body.char_type == "mage") {
-                const mage = new AL.Mage(req.body.user, req.body.auth, req.body.char, AL.Game.G, AL.Game.servers["US"]["I"])
-                await mage.connect()
-                mage.socket.on("disconnect", () => {
-                    delete online[req.body.char]
-                    const index = friends.indexOf(mage)
-                    if (index !== -1) friends.splice(index, 1)
-                })
-                online[req.body.char] = mage
-                friends.push(mage)
                 if (req.body.monster == "crab") {
-                    startCrabMage(mage, friends, replenishables, itemsToSell)
+                    startMageLoop(req.body.user, req.body.auth, req.body.char)
                     return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
                 }
             }
