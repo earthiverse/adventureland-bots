@@ -1,7 +1,7 @@
 import AL, { Merchant, Priest, Ranger, Warrior, GMap, ServerInfoDataLive, IPosition, SlotType, ItemName } from "alclient"
 import { addSocket, startServer } from "algui"
-import { goToAggroMonster, goToNearestWalkableToMonster, goToNPC, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, moveInCircle, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
-import { offsetPositionParty } from "../base/locations.js"
+import { goToAggroMonster, goToNearestWalkableToMonster, goToNearestWalkableToMonster2, goToNPC, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, moveInCircle, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
+import { mainCrabs, mainGoos, offsetPositionParty } from "../base/locations.js"
 import { attackTheseTypesMerchant } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
@@ -41,26 +41,36 @@ const information: Information = {
 }
 
 function prepareMerchant(bot: Merchant) {
-    const chickenCoop = bot.locateMonster("hen")[0]
-    const goos = bot.locateMonster("goo")[0]
     const strategy: Strategy = {
+        bee: {
+            attack: async () => { await attackTheseTypesMerchant(bot, ["bee"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "dartgun", offhand: "wbook1", ring1: "zapper" },
+            move: async () => { await goToNearestWalkableToMonster2(bot, ["bee"], mainCrabs) }
+        },
+        crab: {
+            attack: async () => { await attackTheseTypesMerchant(bot, ["crab"], information.friends) },
+            attackWhileIdle: true,
+            equipment: { mainhand: "dartgun", offhand: "wbook1", ring1: "zapper" },
+            move: async () => { await goToNearestWalkableToMonster2(bot, ["crab"], mainCrabs) }
+        },
         goo: {
             attack: async () => { await attackTheseTypesMerchant(bot, ["goo"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "dartgun", offhand: "wbook1" },
-            move: async () => { await bot.smartMove(goos) }
+            equipment: { mainhand: "dartgun", offhand: "wbook1", ring1: "zapper" },
+            move: async () => { await goToNearestWalkableToMonster2(bot, ["goo"], mainGoos) }
         },
         hen: {
             attack: async () => { await attackTheseTypesMerchant(bot, ["hen"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "dartgun", offhand: "wbook1" },
-            move: async () => { await bot.smartMove(chickenCoop) }
+            equipment: { mainhand: "dartgun", offhand: "wbook1", ring1: "zapper" },
+            move: async () => { await goToNearestWalkableToMonster2(bot, ["hen", "rooster"]) }
         },
         rooster: {
             attack: async () => { await attackTheseTypesMerchant(bot, ["rooster"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "dartgun", offhand: "wbook1" },
-            move: async () => { await bot.smartMove(chickenCoop) }
+            equipment: { mainhand: "dartgun", offhand: "wbook1", ring1: "zapper" },
+            move: async () => { await goToNearestWalkableToMonster2(bot, ["hen", "rooster"]) }
         },
         snowman: {
             attack: async () => { await attackTheseTypesMerchant(bot, ["snowman"], information.friends) },

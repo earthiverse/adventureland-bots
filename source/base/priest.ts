@@ -192,14 +192,14 @@ export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], 
             break
         }
         if (strangerNearby) {
-            // Cburst monsters to kill steal
+            // Zap monsters to kill steal
             for (const target of bot.getEntities({
                 canDamage: true,
                 couldGiveCredit: true,
                 willDieToProjectiles: true,
                 withinRange: bot.range
             })) {
-                if (target.immune) continue // Entity won't take damage from cburst
+                if (target.immune) continue // Entity won't take damage from zap
                 if (target.target) continue // Already has a target
                 if (target.xp < 0) continue // Don't try to kill steal pets
 

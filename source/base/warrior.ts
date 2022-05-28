@@ -1,6 +1,7 @@
 import AL, { Character, Entity, Mage, MonsterName, Warrior } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { LOOP_MS } from "./general.js"
+import { sortPriority } from "./sort.js"
 
 export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[], friends: Character[] = [], options: {
     targetingPartyMember?: boolean
@@ -228,36 +229,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
         }
     }
 
-    const priority = (a: Entity, b: Entity): boolean => {
-        // Order in array
-        const a_index = types.indexOf(a.type)
-        const b_index = types.indexOf(b.type)
-        if (a_index < b_index) return true
-        else if (a_index > b_index) return false
-
-        // Has a target -> higher priority
-        if (a.target && !b.target) return true
-        else if (!a.target && b.target) return false
-
-        // Could die -> lower priority
-        const a_couldDie = a.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)
-        const b_couldDie = b.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)
-        if (!a_couldDie && b_couldDie) return true
-        else if (a_couldDie && !b_couldDie) return false
-
-        // Will burn to death -> lower priority
-        const a_willBurn = a.willBurnToDeath()
-        const b_willBurn = b.willBurnToDeath()
-        if (!a_willBurn && b_willBurn) return true
-        else if (a_willBurn && !b_willBurn) return false
-
-        // Lower HP -> higher priority
-        if (a.hp < b.hp) return true
-        else if (a.hp > b.hp) return false
-
-        // Closer -> higher priority
-        return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
-    }
+    const priority = sortPriority(bot, types)
 
     if (bot.canUse("attack")) {
         const targets = new FastPriorityQueue<Entity>(priority)
@@ -405,14 +377,14 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
             break
         }
         if (strangerNearby) {
-            // Cburst monsters to kill steal
+            // Zap monsters to kill steal
             for (const target of bot.getEntities({
                 canDamage: true,
                 couldGiveCredit: true,
                 willDieToProjectiles: true,
                 withinRange: bot.range
             })) {
-                if (target.immune) continue // Entity won't take damage from cburst
+                if (target.immune) continue // Entity won't take damage from zap
                 if (target.target) continue // Already has a target
                 if (target.xp < 0) continue // Don't try to kill steal pets
 
