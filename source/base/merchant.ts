@@ -575,11 +575,11 @@ export async function goFishing(bot: Merchant): Promise<void> {
 
         await merchantSmartMove(bot, "main", { avoidTownWarps: true })
         await bot.buy("staff")
-        if (!bot.canCraft("rod")) await bot.smartMove("craftsman", { getWithin: 300 })
+        if (!bot.canCraft("rod")) await bot.smartMove("craftsman", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
         await bot.craft("rod")
     }
 
-    await merchantSmartMove(bot, mainFishingSpot) // Move to fishing spot
+    await merchantSmartMove(bot, mainFishingSpot, { attackWhileMoving: true }) // Move to fishing spot
 
     // Equip fishing rod if we don't have it already equipped
     const mainhand = bot.slots.mainhand?.name
@@ -627,11 +627,11 @@ export async function goMining(bot: Merchant): Promise<void> {
         await merchantSmartMove(bot, "main", { avoidTownWarps: true })
         await bot.buy("staff")
         await bot.buy("blade")
-        if (!bot.canCraft("pickaxe")) await bot.smartMove("craftsman", { getWithin: 300 })
+        if (!bot.canCraft("pickaxe")) await bot.smartMove("craftsman", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
         await bot.craft("pickaxe")
     }
 
-    await merchantSmartMove(bot, miningSpot) // Move to mining spot
+    await merchantSmartMove(bot, miningSpot, { attackWhileMoving: true }) // Move to mining spot
 
     // Equip pickaxe if we don't have it already equipped
     const mainhand = bot.slots.mainhand?.name
@@ -659,9 +659,18 @@ export async function goMining(bot: Merchant): Promise<void> {
     await Promise.all(promises)
 }
 
-export async function merchantSmartMove(bot: Merchant, location: IPosition | MapName | NPCName, options?: SmartMoveOptions) {
+export async function merchantSmartMove(bot: Merchant, location: IPosition | MapName | NPCName, options: SmartMoveOptions & { attackWhileMoving?: boolean} = {}) {
     bot.closeMerchantStand().catch((e) => { console.error(e) })
-    if (!bot.isEquipped("broom") && bot.hasItem("broom")) bot.equip(bot.locateItem("broom", bot.items, { returnHighestLevel: true })).catch((e) => { console.error(e) })
+    if (options.attackWhileMoving) {
+        const promises: Promise<void>[] = []
+        if (!bot.isEquipped("dartgun") && bot.hasItem("dartgun")) promises.push(bot.equip(bot.locateItem("dartgun", bot.items, { returnHighestLevel: true }), "mainhand"))
+        if (!bot.isEquipped("wbook1") && bot.hasItem("wbook1")) promises.push(bot.equip(bot.locateItem("wbook1", bot.items, { returnHighestLevel: true }), "offhand"))
+        else if (!bot.isEquipped("wbook0") && bot.hasItem("wbook0")) promises.push(bot.equip(bot.locateItem("wbook0", bot.items, { returnHighestLevel: true }), "offhand"))
+        if (!bot.isEquipped("zapper") && bot.hasItem("zapper")) promises.push(bot.equip(bot.locateItem("zapper", bot.items, { returnHighestLevel: true }), "ring1"))
+        await Promise.all(promises)
+    } else {
+        if (!bot.isEquipped("broom") && bot.hasItem("broom")) bot.equip(bot.locateItem("broom", bot.items, { returnHighestLevel: true })).catch((e) => { console.error(e) })
+    }
     await bot.smartMove(location, options)
 }
 

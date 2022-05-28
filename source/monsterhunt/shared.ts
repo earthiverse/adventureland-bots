@@ -206,8 +206,8 @@ export async function startMerchant(bot: Merchant, information: Information, str
         if (dartGun !== undefined) await bot.equip(dartGun, "mainhand")
         const wbook0 = bot.locateItem("wbook0", bot.items, { returnHighestLevel: true })
         const wbook1 = bot.locateItem("wbook1", bot.items, { returnHighestLevel: true })
-        if (wbook0 !== undefined) await bot.equip(wbook0, "offhand")
-        else if (wbook1 !== undefined) await bot.equip(wbook1, "offhand")
+        if (wbook1 !== undefined) await bot.equip(wbook1, "offhand")
+        else if (wbook0 !== undefined) await bot.equip(wbook0, "offhand")
     } catch (e) {
         console.error(e)
     }
@@ -294,7 +294,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
 
             // Get some holiday spirit if it's Christmas
             if (bot.S && bot.S.holidayseason && !bot.s.holidayspirit) {
-                await merchantSmartMove(bot, "newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+                await merchantSmartMove(bot, "newyear_tree", { attackWhileMoving: true, getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                 // TODO: Improve ALClient by making this a function
                 bot.socket.emit("interaction", { type: "newyear_tree" })
                 bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, Math.min(...bot.pings) * 2))
@@ -313,7 +313,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
                         // Move to them, and we'll automatically mluck them
                         if (AL.Tools.distance(bot, friend) > bot.G.skills.mluck.range) {
                             console.log(`[merchant] We are moving to ${friend.name} to mluck them!`)
-                            await merchantSmartMove(bot, friend, { getWithin: bot.G.skills.mluck.range / 2, stopIfTrue: () => (friend.s.mluck?.strong && friend.s.mluck?.ms >= 120000) || Tools.distance(bot.smartMoving, friend) > bot.G.skills.mluck.range })
+                            await merchantSmartMove(bot, friend, { attackWhileMoving: true, getWithin: bot.G.skills.mluck.range / 2, stopIfTrue: () => (friend.s.mluck?.strong && friend.s.mluck?.ms >= 120000) || Tools.distance(bot.smartMoving, friend) > bot.G.skills.mluck.range })
                         }
 
                         bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
@@ -328,7 +328,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
 
                 // Get stuff from our friends
                 if (friend.isFull()) {
-                    await merchantSmartMove(bot, friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, stopIfTrue: () => bot.isFull() || !friend.isFull() || Tools.distance(bot.smartMoving, friend) > 400 })
+                    await merchantSmartMove(bot, friend, { attackWhileMoving: true, getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, stopIfTrue: () => bot.isFull() || !friend.isFull() || Tools.distance(bot.smartMoving, friend) > 400 })
                     bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                     return
                 }
@@ -340,7 +340,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
                     for (const [item, amount] of REPLENISHABLES_TO_BUY) {
                         if (friend.countItem(item) > amount * 0.25) continue // They have enough
                         if (!bot.canBuy(item)) continue // We can't buy them this for them
-                        await merchantSmartMove(bot, friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, stopIfTrue: () => !bot.canBuy(item) || friend.countItem(item) > amount * 0.25 || Tools.distance(bot.smartMoving, friend) > 400 })
+                        await merchantSmartMove(bot, friend, { attackWhileMoving: true, getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, stopIfTrue: () => !bot.canBuy(item) || friend.countItem(item) > amount * 0.25 || Tools.distance(bot.smartMoving, friend) > 400 })
 
                         bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                         return
@@ -371,7 +371,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
                     if (bot.S[type]["x"] == undefined || bot.S[type]["y"] == undefined) continue // No location data
 
                     if (AL.Tools.distance(bot, (bot.S[type] as IPosition)) > 100) {
-                        await merchantSmartMove(bot, (bot.S[type] as IPosition), { getWithin: 100 })
+                        await merchantSmartMove(bot, (bot.S[type] as IPosition), { attackWhileMoving: true, getWithin: 100 })
                     }
 
                     bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
@@ -396,7 +396,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
                     // Move to them, and we'll automatically mluck them
                     if (AL.Tools.distance(bot, stranger) > bot.G.skills.mluck.range) {
                         console.log(`[merchant] We are moving to ${stranger.name} to mluck them!`)
-                        await merchantSmartMove(bot, stranger, { getWithin: bot.G.skills.mluck.range / 2 })
+                        await merchantSmartMove(bot, stranger, { attackWhileMoving: true, getWithin: bot.G.skills.mluck.range / 2 })
                     }
 
                     setTimeout(async () => { moveLoop() }, 250)
@@ -407,6 +407,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
             // Hang out near crabs
             if (!bot.isEquipped("dartgun") && bot.hasItem("dartgun")) await bot.equip(bot.locateItem("dartgun", bot.items, { returnHighestLevel: true }), "mainhand")
             if (!bot.isEquipped("wbook1") && bot.hasItem("wbook1")) await bot.equip(bot.locateItem("wbook1", bot.items, { returnHighestLevel: true }), "offhand")
+            else if (!bot.isEquipped("wbook0") && bot.hasItem("wbook0")) await bot.equip(bot.locateItem("wbook0", bot.items, { returnHighestLevel: true }), "offhand")
             if (!bot.isEquipped("zapper") && bot.hasItem("zapper")) await bot.equip(bot.locateItem("zapper", bot.items, { returnHighestLevel: true }), "ring1")
             await bot.smartMove(mainCrabs)
             await bot.openMerchantStand()

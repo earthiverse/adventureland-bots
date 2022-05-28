@@ -51,7 +51,7 @@ export async function startLulzMage(bot: Mage, friends: Character[], replenishab
 
             // If we need to sell, or buy more potions, go to main
             if (bot.esize <= 2 || bot.countItem("hpot1") < 10 || bot.countItem("mpot1") < 10) {
-                await bot.smartMove("hpot1", { getWithin: 300 })
+                await bot.smartMove("hpot1", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                 bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
             }
 
@@ -121,7 +121,7 @@ export async function startLulzRanger(bot: Ranger, friends: Character[], repleni
 
             // If we need to sell, or buy more potions, go to main
             if (bot.esize <= 2 || ((bot.countItem("hpot1") < 10 || bot.countItem("mpot1") < 10) && bot.gold > 100_000)) {
-                await bot.smartMove("hpot1", { getWithin: 300 })
+                await bot.smartMove("hpot1", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                 bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
             }
 
@@ -191,7 +191,7 @@ export async function startLulzWarrior(bot: Warrior, friends: Character[], reple
 
             // If we need to sell, or buy more potions, go to main
             if (bot.esize <= 2 || ((bot.countItem("hpot1") < 10 || bot.countItem("mpot1") < 10) && bot.gold > 100_000)) {
-                await bot.smartMove("hpot1", { getWithin: 300 })
+                await bot.smartMove("hpot1", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                 bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
             }
 
