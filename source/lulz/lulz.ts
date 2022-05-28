@@ -132,7 +132,7 @@ const startWarriorLoop = async (userID: string, userAuth: string, characterID: s
 
             // Rebuild friends
             friends.splice(0, friends.length)
-            for (const char in online)friends.push(online[char])
+            for (const char in online) friends.push(online[char])
 
             online[characterID] = bot
             await startCrabWarrior(bot, friends, replenishables, itemsToSell)
