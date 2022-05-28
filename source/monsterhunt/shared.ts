@@ -1,13 +1,14 @@
-import AL, { Character, CMData, Constants, Entity, IPosition, ItemName, LimitDCReportData, Mage, Merchant, MonsterName, Paladin, Priest, Ranger, Rogue, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Tools, Warrior } from "alclient"
+import AL, { Character, CMData, Constants, Entity, IPosition, ItemName, LimitDCReportData, Mage, Merchant, MonsterName, NPCName, Paladin, Priest, Ranger, Rogue, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, SmartMoveOptions, Tools, Warrior } from "alclient"
 import { calculateAttackLoopCooldown, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, goGetRspeedBuff, ITEMS_TO_BUY, ITEMS_TO_HOLD, ITEMS_TO_LIST, LOOP_MS, REPLENISHABLES_TO_BUY, startAvoidStacking, startBuyFriendsReplenishablesLoop, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMage, magiportStrangerIfNotNearby } from "../base/mage.js"
-import { attackTheseTypesMerchant, doBanking, doEmergencyBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
+import { attackTheseTypesMerchant, doBanking, doEmergencyBanking, goFishing, goMining, merchantSmartMove, startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 import { attackTheseTypesWarrior, startChargeLoop, startHardshellLoop, startWarcryLoop } from "../base/warrior.js"
 import { Information, Strategy } from "../definitions/bot.js"
 import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
 import { attackTheseTypesPaladin } from "../base/paladin.js"
+import { mainCrabs } from "../base/locations.js"
 
 const DEFAULT_TARGET: MonsterName = "spider"
 
@@ -218,6 +219,8 @@ export async function startMerchant(bot: Merchant, information: Information, str
             if (
                 bot.rip // We are dead
                 || bot.c.town // We are teleporting to town
+                || bot.c.fishing // We are fishing
+                || bot.c.mining // We are mining
             ) {
                 // We are dead
                 bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
@@ -291,8 +294,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
 
             // Get some holiday spirit if it's Christmas
             if (bot.S && bot.S.holidayseason && !bot.s.holidayspirit) {
-                await bot.closeMerchantStand()
-                await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+                await merchantSmartMove(bot, "newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                 // TODO: Improve ALClient by making this a function
                 bot.socket.emit("interaction", { type: "newyear_tree" })
                 bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, Math.min(...bot.pings) * 2))
@@ -310,9 +312,8 @@ export async function startMerchant(bot: Merchant, information: Information, str
                     if (!friend.s.mluck || !friend.s.mluck.strong || friend.s.mluck.ms < 120000) {
                         // Move to them, and we'll automatically mluck them
                         if (AL.Tools.distance(bot, friend) > bot.G.skills.mluck.range) {
-                            await bot.closeMerchantStand()
                             console.log(`[merchant] We are moving to ${friend.name} to mluck them!`)
-                            await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2, stopIfTrue: () => (friend.s.mluck?.strong && friend.s.mluck?.ms >= 120000) || Tools.distance(bot.smartMoving, friend) > bot.G.skills.mluck.range })
+                            await merchantSmartMove(bot, friend, { getWithin: bot.G.skills.mluck.range / 2, stopIfTrue: () => (friend.s.mluck?.strong && friend.s.mluck?.ms >= 120000) || Tools.distance(bot.smartMoving, friend) > bot.G.skills.mluck.range })
                         }
 
                         bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
@@ -327,8 +328,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
 
                 // Get stuff from our friends
                 if (friend.isFull()) {
-                    await bot.closeMerchantStand()
-                    await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, stopIfTrue: () => bot.isFull() || !friend.isFull() || Tools.distance(bot.smartMoving, friend) > 400 })
+                    await merchantSmartMove(bot, friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, stopIfTrue: () => bot.isFull() || !friend.isFull() || Tools.distance(bot.smartMoving, friend) > 400 })
                     bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                     return
                 }
@@ -340,8 +340,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
                     for (const [item, amount] of REPLENISHABLES_TO_BUY) {
                         if (friend.countItem(item) > amount * 0.25) continue // They have enough
                         if (!bot.canBuy(item)) continue // We can't buy them this for them
-                        await bot.closeMerchantStand()
-                        await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, stopIfTrue: () => !bot.canBuy(item) || friend.countItem(item) > amount * 0.25 || Tools.distance(bot.smartMoving, friend) > 400 })
+                        await merchantSmartMove(bot, friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, stopIfTrue: () => !bot.canBuy(item) || friend.countItem(item) > amount * 0.25 || Tools.distance(bot.smartMoving, friend) > 400 })
 
                         bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                         return
@@ -351,14 +350,14 @@ export async function startMerchant(bot: Merchant, information: Information, str
 
             // Go fishing if we can
             await goFishing(bot)
-            if (!bot.isOnCooldown("fishing") && (bot.hasItem("rod") || bot.isEquipped("rod"))) {
+            if (bot.canUse("fishing", { ignoreEquipped: true })) {
                 bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
 
             // Go mining if we can
             await goMining(bot)
-            if (!bot.isOnCooldown("mining") && (bot.hasItem("pickaxe") || bot.isEquipped("pickaxe"))) {
+            if (bot.canUse("mining", { ignoreEquipped: true })) {
                 bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
@@ -372,8 +371,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
                     if (bot.S[type]["x"] == undefined || bot.S[type]["y"] == undefined) continue // No location data
 
                     if (AL.Tools.distance(bot, (bot.S[type] as IPosition)) > 100) {
-                        await bot.closeMerchantStand()
-                        await bot.smartMove((bot.S[type] as IPosition), { getWithin: 100 })
+                        await merchantSmartMove(bot, (bot.S[type] as IPosition), { getWithin: 100 })
                     }
 
                     bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
@@ -397,9 +395,8 @@ export async function startMerchant(bot: Merchant, information: Information, str
                 for (const stranger of charactersToMluck) {
                     // Move to them, and we'll automatically mluck them
                     if (AL.Tools.distance(bot, stranger) > bot.G.skills.mluck.range) {
-                        await bot.closeMerchantStand()
                         console.log(`[merchant] We are moving to ${stranger.name} to mluck them!`)
-                        await bot.smartMove(stranger, { getWithin: bot.G.skills.mluck.range / 2 })
+                        await merchantSmartMove(bot, stranger, { getWithin: bot.G.skills.mluck.range / 2 })
                     }
 
                     setTimeout(async () => { moveLoop() }, 250)
@@ -407,14 +404,17 @@ export async function startMerchant(bot: Merchant, information: Information, str
                 }
             }
 
-            // Hang out in town
-            await bot.smartMove(standPlace)
+            // Hang out near crabs
+            if (!bot.isEquipped("dartgun") && bot.hasItem("dartgun")) await bot.equip(bot.locateItem("dartgun", bot.items, { returnHighestLevel: true }), "mainhand")
+            if (!bot.isEquipped("wbook1") && bot.hasItem("wbook1")) await bot.equip(bot.locateItem("wbook1", bot.items, { returnHighestLevel: true }), "offhand")
+            if (!bot.isEquipped("zapper") && bot.hasItem("zapper")) await bot.equip(bot.locateItem("zapper", bot.items, { returnHighestLevel: true }), "ring1")
+            await bot.smartMove(mainCrabs)
             await bot.openMerchantStand()
         } catch (e) {
             console.error(e)
         }
 
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
     }
     moveLoop()
 

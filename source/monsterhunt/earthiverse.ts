@@ -1736,11 +1736,11 @@ async function run() {
         const loopBot = async () => {
             try {
                 if (information.merchant.bot) information.merchant.bot.disconnect()
-                if (TARGET_REGION == DEFAULT_REGION && TARGET_IDENTIFIER == DEFAULT_IDENTIFIER) {
-                    information.merchant.bot = await AL.Game.startMerchant(information.merchant.name, TARGET_REGION, TARGET_IDENTIFIER)
-                } else {
-                    information.merchant.bot = await AL.Game.startMerchant(information.merchant.nameAlt, TARGET_REGION, TARGET_IDENTIFIER)
-                }
+                // if (TARGET_REGION == DEFAULT_REGION && TARGET_IDENTIFIER == DEFAULT_IDENTIFIER) {
+                information.merchant.bot = await AL.Game.startMerchant(information.merchant.name, TARGET_REGION, TARGET_IDENTIFIER)
+                // } else {
+                //     information.merchant.bot = await AL.Game.startMerchant(information.merchant.nameAlt, TARGET_REGION, TARGET_IDENTIFIER)
+                // }
                 information.friends[0] = information.merchant.bot
                 prepareMerchant(information.merchant.bot)
                 addSocket(information.merchant.bot.id, information.merchant.bot.socket, information.merchant.bot)

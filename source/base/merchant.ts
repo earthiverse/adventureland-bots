@@ -1,4 +1,4 @@
-import AL, { BankPackName, Character, Entity, ItemData, ItemName, Merchant, MonsterName } from "alclient"
+import AL, { BankPackName, Character, Entity, IPosition, ItemData, ItemName, MapName, Merchant, MonsterName, NPCName, SmartMoveOptions } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { ITEMS_TO_CRAFT, ITEMS_TO_EXCHANGE, ITEMS_TO_HOLD, ITEMS_TO_LIST, ITEMS_TO_SELL, LOOP_MS, sleep } from "./general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "./locations.js"
@@ -15,6 +15,8 @@ export const MERCHANT_ITEMS_TO_HOLD: Set<ItemName> = new Set([
     "cscroll0", "cscroll1", "cscroll2", "cscroll3", "scroll0", "scroll1", "scroll2", "scroll3", "scroll4", "strscroll", "intscroll", "dexscroll",
     // Prims
     "offering", "offeringp",
+    // Broom for speed
+    "broom",
     // Fishing Rod and Pickaxe
     "pickaxe", "rod",
     // Main Items
@@ -167,7 +169,7 @@ export async function doEmergencyBanking(bot: Merchant, itemsToHold = MERCHANT_I
         if (itemsToHold.has(item.name)) continue // We want to hold this item
         if ((item.level ?? 0) <= itemsToSell[item.name]) {
             // We can go sell this item
-            await bot.smartMove("main")
+            await merchantSmartMove(bot, "main", { avoidTownWarps: true })
             await sleep(5000) // Leaving the bank doesn't free up our character right away
             if (bot.items[i]) await bot.sell(i, item.q ?? 1)
             return // We sold something to free up space, go do whatever now.
@@ -258,7 +260,7 @@ export async function doEmergencyBanking(bot: Merchant, itemsToHold = MERCHANT_I
     }
     if (sellThese.length) {
         // Go sell the items
-        await bot.smartMove("main")
+        await merchantSmartMove(bot, "main", { avoidTownWarps: true })
         await sleep(5000) // Leaving the bank doesn't free up our character right away
         for (const i of sellThese) {
             const item = bot.items[i]
@@ -278,8 +280,7 @@ export async function doEmergencyBanking(bot: Merchant, itemsToHold = MERCHANT_I
 }
 
 export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOLD, itemsToHold = MERCHANT_ITEMS_TO_HOLD, itemsToSell = ITEMS_TO_SELL, itemsToCraft = ITEMS_TO_CRAFT, itemsToExchange = ITEMS_TO_EXCHANGE, itemsToList = ITEMS_TO_LIST): Promise<void> {
-    await bot.closeMerchantStand()
-    await bot.smartMove(bankingPosition)
+    await merchantSmartMove(bot, bankingPosition)
     await bot.openMerchantStand()
 
     // Deposit extra gold, or get more gold
@@ -572,14 +573,13 @@ export async function goFishing(bot: Merchant): Promise<void> {
             if (bot.esize <= 2) return // We don't have space to craft a rod
         }
 
-        await bot.smartMove("main", { avoidTownWarps: true })
+        await merchantSmartMove(bot, "main", { avoidTownWarps: true })
         await bot.buy("staff")
         if (!bot.canCraft("rod")) await bot.smartMove("craftsman", { getWithin: 300 })
         await bot.craft("rod")
     }
 
-    bot.closeMerchantStand()
-    await bot.smartMove(mainFishingSpot) // Move to fishing spot
+    await merchantSmartMove(bot, mainFishingSpot) // Move to fishing spot
 
     // Equip fishing rod if we don't have it already equipped
     const mainhand = bot.slots.mainhand?.name
@@ -589,7 +589,7 @@ export async function goFishing(bot: Merchant): Promise<void> {
     if (!bot.isEquipped("rod")) {
         const promises: Promise<unknown>[] = []
         if (offhand) promises.push(bot.unequip("offhand").then((i) => { offhandSlot = i }))
-        mainhandSlot = bot.locateItem("rod", bot.items)
+        mainhandSlot = bot.locateItem("rod")
         promises.push(bot.equip(mainhandSlot))
         await Promise.all(promises)
     }
@@ -624,15 +624,14 @@ export async function goMining(bot: Merchant): Promise<void> {
             if (bot.esize <= 3) return // We don't have space to craft a pickaxe
         }
 
-        await bot.smartMove("main", { avoidTownWarps: true })
+        await merchantSmartMove(bot, "main", { avoidTownWarps: true })
         await bot.buy("staff")
         await bot.buy("blade")
         if (!bot.canCraft("pickaxe")) await bot.smartMove("craftsman", { getWithin: 300 })
         await bot.craft("pickaxe")
     }
 
-    bot.closeMerchantStand()
-    await bot.smartMove(miningSpot) // Move to mining spot
+    await merchantSmartMove(bot, miningSpot) // Move to mining spot
 
     // Equip pickaxe if we don't have it already equipped
     const mainhand = bot.slots.mainhand?.name
@@ -642,7 +641,7 @@ export async function goMining(bot: Merchant): Promise<void> {
     if (!bot.isEquipped("pickaxe")) {
         const promises: Promise<unknown>[] = []
         if (offhand) promises.push(bot.unequip("offhand").then((i) => { offhandSlot = i }))
-        mainhandSlot = bot.locateItem("pickaxe", bot.items)
+        mainhandSlot = bot.locateItem("pickaxe")
         promises.push(bot.equip(mainhandSlot))
         await Promise.all(promises)
     }
@@ -658,6 +657,12 @@ export async function goMining(bot: Merchant): Promise<void> {
         if (offhandSlot !== undefined) promises.push(bot.equip(offhandSlot, "offhand"))
     }
     await Promise.all(promises)
+}
+
+export async function merchantSmartMove(bot: Merchant, location: IPosition | MapName | NPCName, options?: SmartMoveOptions) {
+    bot.closeMerchantStand().catch((e) => { console.error(e) })
+    if (!bot.isEquipped("broom") && bot.hasItem("broom")) bot.equip(bot.locateItem("broom", bot.items, { returnHighestLevel: true })).catch((e) => { console.error(e) })
+    await bot.smartMove(location, options)
 }
 
 export function startMluckLoop(bot: Merchant): void {
