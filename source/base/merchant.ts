@@ -59,7 +59,6 @@ export async function attackTheseTypesMerchant(bot: Merchant, types: MonsterName
         }
     }
 
-
     if (!options.disableZapper && bot.canUse("zapperzap", { ignoreEquipped: true }) && bot.cc < 100) {
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const target of bot.getEntities({

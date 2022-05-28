@@ -1,6 +1,6 @@
 import AL, { Character, ItemName, Mage, Ranger, Warrior } from "alclient"
 import { startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startAvoidStacking, startScareLoop, goToNearestWalkableToMonster2 } from "../base/general.js"
-import { mainCrabs, offsetPositionParty } from "../base/locations.js"
+import { mainGoos, offsetPositionParty } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 import { attackTheseTypesWarrior } from "../base/warrior.js"
@@ -8,7 +8,7 @@ import { ItemLevelInfo } from "../definitions/bot.js"
 
 const LOOP_MS = 10
 
-export async function startLulzCrabMage(bot: Mage, friends: Character[], replenishables: [ItemName, number][], itemsToSell: ItemLevelInfo) {
+export async function startLulzGooMage(bot: Mage, friends: Character[], replenishables: [ItemName, number][], itemsToSell: ItemLevelInfo) {
     startAvoidStacking(bot)
     startBuyLoop(bot, new Set(), replenishables)
     startHealLoop(bot)
@@ -30,7 +30,7 @@ export async function startLulzCrabMage(bot: Mage, friends: Character[], repleni
                 return
             }
 
-            await attackTheseTypesMage(bot, ["crab"], friends)
+            await attackTheseTypesMage(bot, ["goo"], friends)
         } catch (e) {
             console.error(e)
         }
@@ -66,9 +66,9 @@ export async function startLulzCrabMage(bot: Mage, friends: Character[], repleni
 
             // Go farm
             if (bot.party) {
-                await bot.smartMove(offsetPositionParty(mainCrabs, bot))
+                await bot.smartMove(offsetPositionParty(mainGoos, bot))
             } else {
-                await bot.smartMove(mainCrabs)
+                await bot.smartMove(mainGoos)
             }
         } catch (e) {
             console.error(e)
@@ -78,7 +78,7 @@ export async function startLulzCrabMage(bot: Mage, friends: Character[], repleni
     moveLoop()
 }
 
-export async function startLulzCrabRanger(bot: Ranger, friends: Character[], replenishables: [ItemName, number][], itemsToSell: ItemLevelInfo) {
+export async function startLulzGooRanger(bot: Ranger, friends: Character[], replenishables: [ItemName, number][], itemsToSell: ItemLevelInfo) {
     startAvoidStacking(bot)
     startBuyLoop(bot, new Set(), replenishables)
     startHealLoop(bot)
@@ -100,7 +100,7 @@ export async function startLulzCrabRanger(bot: Ranger, friends: Character[], rep
                 return
             }
 
-            await attackTheseTypesRanger(bot, ["crab"], friends, { disableHuntersMark: true, disableSupershot: true })
+            await attackTheseTypesRanger(bot, ["goo"], friends, { disableHuntersMark: true, disableSupershot: true })
         } catch (e) {
             console.error(e)
         }
@@ -136,9 +136,9 @@ export async function startLulzCrabRanger(bot: Ranger, friends: Character[], rep
 
             // Go farm
             if (bot.party) {
-                await bot.smartMove(offsetPositionParty(mainCrabs, bot))
+                await bot.smartMove(offsetPositionParty(mainGoos, bot))
             } else {
-                await bot.smartMove(mainCrabs)
+                await bot.smartMove(mainGoos)
             }
         } catch (e) {
             console.error(e)
@@ -148,7 +148,7 @@ export async function startLulzCrabRanger(bot: Ranger, friends: Character[], rep
     moveLoop()
 }
 
-export async function startLulzCrabWarrior(bot: Warrior, friends: Character[], replenishables: [ItemName, number][], itemsToSell: ItemLevelInfo) {
+export async function startLulzGooWarrior(bot: Warrior, friends: Character[], replenishables: [ItemName, number][], itemsToSell: ItemLevelInfo) {
     startAvoidStacking(bot)
     startBuyLoop(bot, new Set(), replenishables)
     startHealLoop(bot)
@@ -170,7 +170,7 @@ export async function startLulzCrabWarrior(bot: Warrior, friends: Character[], r
                 return
             }
 
-            await attackTheseTypesWarrior(bot, ["crab"], friends)
+            await attackTheseTypesWarrior(bot, ["goo"], friends)
         } catch (e) {
             console.error(e)
         }
@@ -205,7 +205,7 @@ export async function startLulzCrabWarrior(bot: Warrior, friends: Character[], r
             }
 
             // Go farm
-            await goToNearestWalkableToMonster2(bot, ["crab"], mainCrabs)
+            await goToNearestWalkableToMonster2(bot, ["goo"], mainGoos)
         } catch (e) {
             console.error(e)
         }

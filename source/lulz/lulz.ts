@@ -4,8 +4,10 @@ import bodyParser from "body-parser"
 import { body, validationResult } from "express-validator"
 
 import AL, { Character, ItemName, Mage, Ranger, Warrior } from "alclient"
-import { startLulzMage as startCrabMage, startLulzRanger as startCrabRanger, startLulzWarrior as startCrabWarrior } from "./crabs.js"
+import { startLulzCrabMage, startLulzCrabRanger, startLulzCrabWarrior } from "./crabs.js"
 import { ItemLevelInfo } from "../definitions/bot.js"
+import { startLulzBeeMage, startLulzBeeRanger, startLulzBeeWarrior } from "./bees.js"
+import { startLulzGooMage, startLulzGooRanger, startLulzGooWarrior } from "./goos.js"
 
 const MAX_CHARACTERS = 8
 
@@ -22,16 +24,20 @@ const online: { [T in string]?: Character } = {}
 const friends: Character[] = []
 const replenishables: [ItemName, number][] = [["hpot1", 2500], ["mpot1", 2500]]
 const itemsToSell: ItemLevelInfo = {
+    beewings: 1,
     cclaw: 1,
     crabclaw: 1,
+    gslime: 1,
+    gstaff: 1,
     hpamulet: 1,
     hpbelt: 1,
     ringsj: 1,
+    stinger: 1,
     wcap: 1,
     wshoes: 1
 }
 
-const startRangerLoop = async (userID: string, userAuth: string, characterID: string) => {
+const startRangerLoop = async (userID: string, userAuth: string, characterID: string, script: (bot: Ranger, friends: Character[], replenishables: [ItemName, number][], itemsToSell: ItemLevelInfo) => Promise<void>) => {
     // Start the characters
     const loopBot = async () => {
         try {
@@ -45,7 +51,7 @@ const startRangerLoop = async (userID: string, userAuth: string, characterID: st
             for (const char in online)friends.push(online[char])
 
             online[characterID] = bot
-            await startCrabRanger(bot, friends, replenishables, itemsToSell)
+            await script(bot, friends, replenishables, itemsToSell)
             bot.socket.on("disconnect", async () => {
                 if (online[characterID]) loopBot()
             })
@@ -76,7 +82,7 @@ const startRangerLoop = async (userID: string, userAuth: string, characterID: st
     loopBot()
 }
 
-const startMageLoop = async (userID: string, userAuth: string, characterID: string) => {
+const startMageLoop = async (userID: string, userAuth: string, characterID: string, script: (bot: Mage, friends: Character[], replenishables: [ItemName, number][], itemsToSell: ItemLevelInfo) => Promise<void>) => {
     // Start the characters
     const loopBot = async () => {
         try {
@@ -90,7 +96,7 @@ const startMageLoop = async (userID: string, userAuth: string, characterID: stri
             for (const char in online)friends.push(online[char])
 
             online[characterID] = bot
-            await startCrabMage(bot, friends, replenishables, itemsToSell)
+            await script(bot, friends, replenishables, itemsToSell)
             bot.socket.on("disconnect", async () => {
                 if (online[characterID]) loopBot()
             })
@@ -121,7 +127,7 @@ const startMageLoop = async (userID: string, userAuth: string, characterID: stri
     loopBot()
 }
 
-const startWarriorLoop = async (userID: string, userAuth: string, characterID: string) => {
+const startWarriorLoop = async (userID: string, userAuth: string, characterID: string, script: (bot: Warrior, friends: Character[], replenishables: [ItemName, number][], itemsToSell: ItemLevelInfo) => Promise<void>) => {
     // Start the characters
     const loopBot = async () => {
         try {
@@ -135,7 +141,7 @@ const startWarriorLoop = async (userID: string, userAuth: string, characterID: s
             for (const char in online) friends.push(online[char])
 
             online[characterID] = bot
-            await startCrabWarrior(bot, friends, replenishables, itemsToSell)
+            await script(bot, friends, replenishables, itemsToSell)
             bot.socket.on("disconnect", async () => {
                 if (online[characterID]) loopBot()
             })
@@ -180,7 +186,7 @@ app.post("/",
         }
 
         if (online[req.body.char]) {
-            return res.status(500).send(`There is a character with the ID '${req.body.char}' already running?`)
+            return res.status(200).send(`There is a character with the ID '${req.body.char}' already running. Stop the character first to change its settings.`)
         }
 
         if (Object.keys(online).length > MAX_CHARACTERS) {
@@ -188,19 +194,39 @@ app.post("/",
         }
 
         try {
-            if (req.body.char_type == "mage") {
-                if (req.body.monster == "crab") {
-                    startMageLoop(req.body.user, req.body.auth, req.body.char)
+            const charType = req.body.char_type
+            const monster = req.body.monster
+            if (charType == "mage") {
+                if (monster == "bee") {
+                    await startMageLoop(req.body.user, req.body.auth, req.body.char, startLulzBeeMage)
+                    return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
+                } else if (monster == "crab") {
+                    await startMageLoop(req.body.user, req.body.auth, req.body.char, startLulzCrabMage)
+                    return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
+                } else if (monster == "goo") {
+                    await startMageLoop(req.body.user, req.body.auth, req.body.char, startLulzGooMage)
                     return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
                 }
-            } else if (req.body.char_type == "ranger") {
-                if (req.body.monster == "crab") {
-                    startRangerLoop(req.body.user, req.body.auth, req.body.char)
+            } else if (charType == "ranger") {
+                if (monster == "bee") {
+                    await startRangerLoop(req.body.user, req.body.auth, req.body.char, startLulzBeeRanger)
+                    return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
+                } else if (monster == "crab") {
+                    await startRangerLoop(req.body.user, req.body.auth, req.body.char, startLulzCrabRanger)
+                    return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
+                } else if (monster == "goo") {
+                    await startRangerLoop(req.body.user, req.body.auth, req.body.char, startLulzGooRanger)
                     return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
                 }
-            } else if (req.body.char_type == "warrior") {
-                if (req.body.monster == "crab") {
-                    startWarriorLoop(req.body.user, req.body.auth, req.body.char)
+            } else if (charType == "warrior") {
+                if (monster == "bee") {
+                    await startWarriorLoop(req.body.user, req.body.auth, req.body.char, startLulzBeeWarrior)
+                    return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
+                } else if (monster == "crab") {
+                    await startWarriorLoop(req.body.user, req.body.auth, req.body.char, startLulzCrabWarrior)
+                    return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
+                } else if (monster == "goo") {
+                    await startWarriorLoop(req.body.user, req.body.auth, req.body.char, startLulzGooWarrior)
                     return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
                 }
             }
