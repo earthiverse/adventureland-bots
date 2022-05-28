@@ -256,7 +256,7 @@ export function calculateAttackLoopCooldown(bot: Character): number {
     let cooldown = bot.getCooldown("attack")
 
     // Use zapper cooldown, if we have one
-    if (bot.hasItem("zapper") && bot.canUse("zapperzap", { ignoreCooldown: true, ignoreEquipped: true })) cooldown = Math.min(cooldown, bot.getCooldown("zapperzap"))
+    if ((bot.hasItem("zapper") || bot.isEquipped("zapper")) && bot.canUse("zapperzap", { ignoreCooldown: true, ignoreEquipped: true })) cooldown = Math.min(cooldown, bot.getCooldown("zapperzap"))
 
     if (bot.ctype == "mage") {
         if (bot.canUse("cburst", { ignoreCooldown: true })) cooldown = Math.min(cooldown, bot.getCooldown("cburst"))
