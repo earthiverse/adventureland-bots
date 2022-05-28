@@ -1012,7 +1012,8 @@ export function startBuyLoop(bot: Character, itemsToBuy = ITEMS_TO_BUY, replenis
             for (const [item, amount] of replenishablesToBuy) {
                 if (bot.canBuy(item)) {
                     const num = bot.countItem(item)
-                    if (num < amount) await bot.buy(item, amount - num)
+                    const numToBuy = Math.min(amount - num, Math.floor(this.gold / AL.Game.G.items[item].g))
+                    if (numToBuy > 0) await bot.buy(item, numToBuy)
                 }
             }
 
