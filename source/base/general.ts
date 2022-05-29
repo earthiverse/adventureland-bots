@@ -101,6 +101,8 @@ export const ITEMS_TO_BUY: Set<ItemName> = new Set([
     // Good weapons
     "basher", "bataxe", "crossbow", "dartgun", "firebow", "firestars", "frostbow", "firestars", "pinkie", "scythe", "t3bow", "wblade",
     // "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "fireblade", "firebow", "firestaff", "firestars", "frostbow", "froststaff", "gbow", "glolipop", "gstaff", "harbringer", "heartwood", "hbow", "hdagger", "merry", "ololipop", "oozingterror", "ornamentstaff", "pinkie", "pmace", "scythe", "snowflakes", "t2bow", "t3bow", /*"throwingstars",*/ "vdagger", "vhammer", "vstaff", "vsword", "wblade",
+    // Interesting weapons
+    "broom",
     // Things we can exchange / craft with
     "ascale", "bfur", "crabclaw", "ink", "leather", "lotusf", "goldenegg", "goldingot", "goldnugget", "platinumingot", "platinumnugget", "pleather",
     // "ascale", "bfur", "cscale", "cshell", "crabclaw", "electronics", "feather0", "frogt", "goldenegg", "goldingot", "goldnugget", "ink", "leather", "lotusf", "platinumingot", "platinumnugget", "pleather", "snakefang", "spores",
