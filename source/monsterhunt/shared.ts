@@ -139,6 +139,16 @@ export async function startMage(bot: Mage, information: Information, strategy: S
                         const itemName = strategy[target].equipment[slot]
                         const wType = bot.G.items[itemName].wtype
 
+                        if (bot.slots[slot]?.name == itemName) {
+                            // We already have it equipped, see if there's a higher level item to equip
+                            const alternative = bot.locateItem(itemName, bot.items, { returnHighestLevel: true })
+                            if (alternative !== undefined && bot.items[alternative].level > bot.slots[slot].level) {
+                                // We have a higher level item in our inventory, equip that instead
+                                await bot.equip(alternative, slot)
+                            }
+                            continue
+                        }
+
                         if (bot.G.classes[bot.ctype].doublehand[wType]) {
                             // Check if we have something in our offhand, we need to unequip it.
                             if (bot.slots.offhand) await bot.unequip("offhand")
@@ -235,6 +245,16 @@ export async function startMerchant(bot: Merchant, information: Information, str
                         const slot = s as SlotType
                         const itemName = strategy[information.merchant.target].equipment[slot]
                         const wType = bot.G.items[itemName].wtype
+
+                        if (bot.slots[slot]?.name == itemName) {
+                            // We already have it equipped, see if there's a higher level item to equip
+                            const alternative = bot.locateItem(itemName, bot.items, { returnHighestLevel: true })
+                            if (alternative !== undefined && bot.items[alternative].level > bot.slots[slot].level) {
+                                // We have a higher level item in our inventory, equip that instead
+                                await bot.equip(alternative, slot)
+                            }
+                            continue
+                        }
 
                         if (bot.G.classes[bot.ctype].doublehand[wType]) {
                             // Check if we have something in our offhand, we need to unequip it.
@@ -502,6 +522,16 @@ export async function startPaladin(bot: Paladin, information: Information, strat
                         const itemName = strategy[target].equipment[slot]
                         const wType = bot.G.items[itemName].wtype
 
+                        if (bot.slots[slot]?.name == itemName) {
+                            // We already have it equipped, see if there's a higher level item to equip
+                            const alternative = bot.locateItem(itemName, bot.items, { returnHighestLevel: true })
+                            if (alternative !== undefined && bot.items[alternative].level > bot.slots[slot].level) {
+                                // We have a higher level item in our inventory, equip that instead
+                                await bot.equip(alternative, slot)
+                            }
+                            continue
+                        }
+
                         if (bot.G.classes[bot.ctype].doublehand[wType]) {
                             // Check if we have something in our offhand, we need to unequip it.
                             if (bot.slots.offhand) await bot.unequip("offhand")
@@ -591,6 +621,16 @@ export async function startPriest(bot: Priest, information: Information, strateg
                         const itemName = strategy[target].equipment[slot]
                         const wType = bot.G.items[itemName].wtype
 
+                        if (bot.slots[slot]?.name == itemName) {
+                            // We already have it equipped, see if there's a higher level item to equip
+                            const alternative = bot.locateItem(itemName, bot.items, { returnHighestLevel: true })
+                            if (alternative !== undefined && bot.items[alternative].level > bot.slots[slot].level) {
+                                // We have a higher level item in our inventory, equip that instead
+                                await bot.equip(alternative, slot)
+                            }
+                            continue
+                        }
+
                         if (bot.G.classes[bot.ctype].doublehand[wType]) {
                             // Check if we have something in our offhand, we need to unequip it.
                             if (bot.slots.offhand) await bot.unequip("offhand")
@@ -677,6 +717,16 @@ export async function startRanger(bot: Ranger, information: Information, strateg
                         const slot = s as SlotType
                         const itemName = strategy[target].equipment[slot]
                         const wType = bot.G.items[itemName].wtype
+
+                        if (bot.slots[slot]?.name == itemName) {
+                            // We already have it equipped, see if there's a higher level item to equip
+                            const alternative = bot.locateItem(itemName, bot.items, { returnHighestLevel: true })
+                            if (alternative !== undefined && bot.items[alternative].level > bot.slots[slot].level) {
+                                // We have a higher level item in our inventory, equip that instead
+                                await bot.equip(alternative, slot)
+                            }
+                            continue
+                        }
 
                         if (bot.G.classes[bot.ctype].doublehand[wType]) {
                             // Check if we have something in our offhand, we need to unequip it.
@@ -766,6 +816,16 @@ export async function startRogue(bot: Rogue, information: Information, strategy:
                         const slot = s as SlotType
                         const itemName = strategy[target].equipment[slot]
                         const wType = bot.G.items[itemName].wtype
+
+                        if (bot.slots[slot]?.name == itemName) {
+                            // We already have it equipped, see if there's a higher level item to equip
+                            const alternative = bot.locateItem(itemName, bot.items, { returnHighestLevel: true })
+                            if (alternative !== undefined && bot.items[alternative].level > bot.slots[slot].level) {
+                                // We have a higher level item in our inventory, equip that instead
+                                await bot.equip(alternative, slot)
+                            }
+                            continue
+                        }
 
                         if (bot.G.classes[bot.ctype].doublehand[wType]) {
                             // Check if we have something in our offhand, we need to unequip it.
@@ -857,6 +917,16 @@ export async function startWarrior(bot: Warrior, information: Information, strat
                         const slot = s as SlotType
                         const itemName = strategy[target].equipment[slot]
                         const wType = bot.G.items[itemName].wtype
+
+                        if (bot.slots[slot]?.name == itemName) {
+                            // We already have it equipped, see if there's a higher level item to equip
+                            const alternative = bot.locateItem(itemName, bot.items, { returnHighestLevel: true })
+                            if (alternative !== undefined && bot.items[alternative].level > bot.slots[slot].level) {
+                                // We have a higher level item in our inventory, equip that instead
+                                await bot.equip(alternative, slot)
+                            }
+                            continue
+                        }
 
                         if (bot.G.classes[bot.ctype].doublehand[wType]) {
                             // Check if we have something in our offhand, we need to unequip it.
