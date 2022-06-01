@@ -1,4 +1,4 @@
-import { PingCompensatedCharacter } from "alclient"
+import { Constants, PingCompensatedCharacter } from "alclient"
 import { Loop, Loops, Strategy } from "../context.js"
 
 export class GetMonsterHuntStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
@@ -32,7 +32,7 @@ export class FinishMonsterHuntStrategy<Type extends PingCompensatedCharacter> im
 
     async turnInMonsterHunt(bot: Type) {
         if (!bot.s.monsterhunt) return // We already have a monster hunt
-        await bot.smartMove("monsterhunter", { getWithin: 350 })
+        await bot.smartMove("monsterhunter", { getWithin: Constants.NPC_INTERACTION_DISTANCE / 2 })
         await bot.finishMonsterHuntQuest()
     }
 }

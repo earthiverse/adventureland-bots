@@ -1049,7 +1049,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
                 if (bot.s.monsterhunt && bot.s.monsterhunt.c == 0) {
                     const [region, id] = bot.s.monsterhunt.sn.split(" ") as [ServerRegion, ServerIdentifier]
                     if (region == bot.serverData.region && id == bot.serverData.name) {
-                        await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1, useBlink: true })
+                        await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, useBlink: true })
                         await bot.finishMonsterHuntQuest()
                         await bot.getMonsterHuntQuest()
                         bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
