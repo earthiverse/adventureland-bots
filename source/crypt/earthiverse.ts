@@ -152,7 +152,10 @@ async function startPriest(bot: Priest) {
             }
 
             // Enter the crypt that the merchant is in
-            if (merchant.in !== bot.in) await bot.smartMove(merchant)
+            if (merchant.in !== bot.in) {
+                console.debug(`merchant is in '${merchant.in}'`)
+                await bot.smartMove(merchant)
+            }
 
             // Follow the tank really closely
             await bot.smartMove(friends[3], { getWithin: 10, resolveOnFinalMoveStart: true })
