@@ -320,6 +320,7 @@ async function startWarrior(bot: Warrior) {
             }
 
             if (nearest) {
+                if (bot.smartMoving) await bot.stopSmartMove()
                 switch (nearest.type) {
                     case "a1": // Spike
                     case "bat": // Spike spawns bats
