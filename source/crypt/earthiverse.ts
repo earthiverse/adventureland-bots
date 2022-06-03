@@ -1,4 +1,5 @@
-import AL, { Character, ItemName, Mage, Merchant, MonsterName, Priest, Ranger, ServerIdentifier, ServerRegion, SlotInfo, SlotType, Warrior } from "alclient"
+import AL, { Character, ItemName, Mage, Merchant, MonsterName, Priest, Ranger, ServerIdentifier, ServerRegion, SlotType, Warrior } from "alclient"
+import { addSocket, startServer } from "algui"
 import { calculateAttackLoopCooldown, goToKiteStuff, goToNearestWalkableToMonster, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
 import { batCaveCryptEntrance, cryptEnd, cryptWaitingSpot } from "../base/locations.js"
 import { startMluckLoop } from "../base/merchant.js"
@@ -367,6 +368,9 @@ async function run() {
     // Start all characters
     console.log("Connecting...")
 
+    // Start GUI
+    startServer(80, AL.Game.G)
+
     const startMerchantLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
@@ -375,6 +379,7 @@ async function run() {
                 merchant = await AL.Game.startMerchant(name, region, identifier)
                 friends[0] = merchant
                 startMerchant(merchant)
+                addSocket(merchant.id, merchant.socket, merchant)
                 merchant.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -401,6 +406,7 @@ async function run() {
                 priest = await AL.Game.startPriest(name, region, identifier)
                 friends[1] = priest
                 startPriest(priest)
+                addSocket(priest.id, priest.socket, priest)
                 priest.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -428,6 +434,7 @@ async function run() {
                 friends[2] = ranger
                 startRanger(ranger)
                 startTrackerLoop(ranger)
+                addSocket(ranger.id, ranger.socket, ranger)
                 ranger.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -454,6 +461,7 @@ async function run() {
                 warrior = await AL.Game.startWarrior(name, region, identifier)
                 friends[3] = warrior
                 startWarrior(warrior)
+                addSocket(warrior.id, warrior.socket, warrior)
                 warrior.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
