@@ -1,5 +1,5 @@
-import AL, { Character, Mage, Merchant, MonsterName, Priest, Ranger, ServerIdentifier, ServerRegion, Warrior } from "alclient"
-import { goToKiteStuff, goToNearestWalkableToMonster, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
+import AL, { Character, ItemName, Mage, Merchant, MonsterName, Priest, Ranger, ServerIdentifier, ServerRegion, SlotInfo, SlotType, Warrior } from "alclient"
+import { calculateAttackLoopCooldown, goToKiteStuff, goToNearestWalkableToMonster, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
 import { batCaveCryptEntrance, cryptEnd, cryptWaitingSpot } from "../base/locations.js"
 import { startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
@@ -10,7 +10,7 @@ import { isCryptFinished, startCrypt } from "./shared.js"
 
 /** Config */
 const region: ServerRegion = "US"
-const identifier: ServerIdentifier = "II"
+const identifier: ServerIdentifier = "I"
 const merchantName = "earthMer"
 const mageName = "earthMag"
 const priestName = "earthPri"
@@ -94,12 +94,19 @@ async function startPriest(bot: Priest) {
     startPartyHealLoop(bot, friends)
 
     // Equipment
-    const firestaff = bot.locateItem("firestaff", bot.items, { locked: true })
-    if (firestaff !== undefined) await bot.equip(firestaff)
-    const wbook1 = bot.locateItem("wbook1", bot.items, { locked: true })
-    if (wbook1 !== undefined) await bot.equip(wbook1)
-    const jacko = bot.locateItem("jacko", bot.items, { locked: true })
-    if (jacko !== undefined) await bot.equip(jacko)
+    const equipment: { [T in SlotType]?: ItemName} = {
+        chest: "harmor",
+        gloves: "xgloves",
+        helmet: "hhelmet",
+        mainhand: "firestaff",
+        offhand: "wbook1",
+        orb: "jacko",
+        pants: "hpants"
+    }
+    for (const slot in equipment) {
+        const item = bot.locateItem(equipment[slot], bot.items, { returnHighestLevel: true })
+        if (item !== undefined) await bot.equip(item, slot as SlotType)
+    }
 
     async function attackLoop() {
         try {
@@ -118,7 +125,7 @@ async function startPriest(bot: Priest) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, calculateAttackLoopCooldown(bot)))
     }
     attackLoop()
 
@@ -138,7 +145,7 @@ async function startPriest(bot: Priest) {
                 // Farm bats if our merchant isn't in a crypt
                 let index = 0
                 if (bot.party) index = bot.partyData.list.indexOf(bot.id)
-                await goToNearestWalkableToMonster(bot, ["mvampire", "fvampire", "phoenix", "goldenbat", "bat"], batLocations[index % batLocations.length])
+                await goToNearestWalkableToMonster(bot, ["goldenbat", "mvampire", "fvampire", "phoenix", "bat"], batLocations[index % batLocations.length])
                 bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
@@ -147,7 +154,7 @@ async function startPriest(bot: Priest) {
             if (merchant.in !== bot.in) await bot.smartMove(merchant)
 
             // Follow the tank really closely
-            await bot.smartMove(friends[3], { getWithin: 10 })
+            await bot.smartMove(friends[3], { getWithin: 10, resolveOnFinalMoveStart: true })
         } catch (e) {
             console.error(e)
         }
@@ -160,11 +167,19 @@ async function startRanger(bot: Ranger) {
     startShared(bot)
 
     // Equipment
-    if (bot.slots.offhand) await bot.unequip("offhand")
-    const crossbow = bot.locateItem("crossbow", bot.items, { locked: true })
-    if (crossbow !== undefined) await bot.equip(crossbow)
-    const jacko = bot.locateItem("jacko", bot.items, { locked: true })
-    if (jacko !== undefined) await bot.equip(jacko)
+    const equipment: { [T in SlotType]?: ItemName} = {
+        chest: "harmor",
+        gloves: "hgloves",
+        helmet: "cyber",
+        mainhand: "crossbow",
+        offhand: "t2quiver",
+        orb: "jacko",
+        pants: "hpants"
+    }
+    for (const slot in equipment) {
+        const item = bot.locateItem(equipment[slot], bot.items, { returnHighestLevel: true })
+        if (item !== undefined) await bot.equip(item, slot as SlotType)
+    }
 
     async function attackLoop() {
         try {
@@ -183,7 +198,7 @@ async function startRanger(bot: Ranger) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, calculateAttackLoopCooldown(bot)))
     }
     attackLoop()
 
@@ -203,7 +218,7 @@ async function startRanger(bot: Ranger) {
                 // Farm bats if our merchant isn't in a crypt
                 let index = 0
                 if (bot.party) index = bot.partyData.list.indexOf(bot.id)
-                await goToNearestWalkableToMonster(bot, ["mvampire", "fvampire", "phoenix", "goldenbat", "bat"], batLocations[index % batLocations.length])
+                await goToNearestWalkableToMonster(bot, ["goldenbat", "mvampire", "fvampire", "phoenix", "bat"], batLocations[index % batLocations.length])
                 bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }
@@ -212,7 +227,7 @@ async function startRanger(bot: Ranger) {
             if (merchant.in !== bot.in) await bot.smartMove(merchant)
 
             // Follow the tank really closely
-            await bot.smartMove(friends[3], { getWithin: 20 })
+            await bot.smartMove(friends[3], { getWithin: 20, resolveOnFinalMoveStart: true })
         } catch (e) {
             console.error(e)
         }
@@ -229,6 +244,19 @@ async function startWarrior(bot: Warrior) {
     startWarcryLoop(bot)
 
     // Equipment
+    const equipment: { [T in SlotType]?: ItemName} = {
+        chest: "harmor",
+        gloves: "xgloves",
+        helmet: "hhelmet",
+        mainhand: "bataxe",
+        orb: "jacko",
+        pants: "hpants"
+    }
+    if (bot.slots.offhand) await bot.unequip("offhand")
+    for (const slot in equipment) {
+        const item = bot.locateItem(equipment[slot], bot.items, { returnHighestLevel: true })
+        if (item !== undefined) await bot.equip(item, slot as SlotType)
+    }
     if (bot.slots.offhand) await bot.unequip("offhand")
     const bataxe = bot.locateItem("bataxe", bot.items, { locked: true })
     if (bataxe !== undefined) await bot.equip(bataxe)
@@ -252,7 +280,7 @@ async function startWarrior(bot: Warrior) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, calculateAttackLoopCooldown(bot)))
     }
     attackLoop()
 
@@ -272,7 +300,7 @@ async function startWarrior(bot: Warrior) {
                 // Farm bats if our merchant isn't in a crypt
                 let index = 0
                 if (bot.party) index = bot.partyData.list.indexOf(bot.id)
-                await goToNearestWalkableToMonster(bot, ["mvampire", "fvampire", "phoenix", "goldenbat", "bat"], batLocations[index % batLocations.length])
+                await goToNearestWalkableToMonster(bot, ["goldenbat", "mvampire", "fvampire", "phoenix", "bat"], batLocations[index % batLocations.length])
                 bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                 return
             }

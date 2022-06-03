@@ -22,6 +22,10 @@ app.get("/", (_req, res) => {
 
 const online: { [T in string]?: Character } = {}
 const friends: Character[] = []
+function rebuildFriends() {
+    friends.splice(0, friends.length)
+    for (const char in online) friends.push(online[char])
+}
 const replenishables: [ItemName, number][] = [["hpot1", 2500], ["mpot1", 2500]]
 const itemsToSell: ItemLevelInfo = {
     beewings: 1,
@@ -44,11 +48,11 @@ const startRangerLoop = async (userID: string, userAuth: string, characterID: st
             let bot = online[characterID] as Ranger
             if (bot) bot.disconnect()
             bot = new AL.Ranger(userID, userAuth, characterID, AL.Game.G, AL.Game.servers["US"]["I"])
-            await bot.connect()
+
+            online[characterID] = bot
 
             // Rebuild friends
-            friends.splice(0, friends.length)
-            for (const char in online)friends.push(online[char])
+            rebuildFriends()
 
             online[characterID] = bot
             await script(bot, friends, replenishables, itemsToSell)
@@ -58,8 +62,7 @@ const startRangerLoop = async (userID: string, userAuth: string, characterID: st
             bot.socket.on("code_eval", (data) => {
                 if (data == "stop" || data == "disconnect") {
                     delete online[characterID]
-                    const index = friends.indexOf(bot)
-                    if (index !== -1) friends.splice(index, 1)
+                    rebuildFriends()
                     bot.disconnect()
                 }
             })
@@ -89,11 +92,11 @@ const startMageLoop = async (userID: string, userAuth: string, characterID: stri
             let bot = online[characterID] as Mage
             if (bot) bot.disconnect()
             bot = new AL.Mage(userID, userAuth, characterID, AL.Game.G, AL.Game.servers["US"]["I"])
-            await bot.connect()
+
+            online[characterID] = bot
 
             // Rebuild friends
-            friends.splice(0, friends.length)
-            for (const char in online)friends.push(online[char])
+            rebuildFriends()
 
             online[characterID] = bot
             await script(bot, friends, replenishables, itemsToSell)
@@ -103,8 +106,7 @@ const startMageLoop = async (userID: string, userAuth: string, characterID: stri
             bot.socket.on("code_eval", (data) => {
                 if (data == "stop" || data == "disconnect") {
                     delete online[characterID]
-                    const index = friends.indexOf(bot)
-                    if (index !== -1) friends.splice(index, 1)
+                    rebuildFriends()
                     bot.disconnect()
                 }
             })
@@ -136,11 +138,11 @@ const startWarriorLoop = async (userID: string, userAuth: string, characterID: s
             bot = new AL.Warrior(userID, userAuth, characterID, AL.Game.G, AL.Game.servers["US"]["I"])
             await bot.connect()
 
-            // Rebuild friends
-            friends.splice(0, friends.length)
-            for (const char in online) friends.push(online[char])
-
             online[characterID] = bot
+
+            // Rebuild friends
+            rebuildFriends()
+
             await script(bot, friends, replenishables, itemsToSell)
             bot.socket.on("disconnect", async () => {
                 if (online[characterID]) loopBot()
@@ -148,8 +150,7 @@ const startWarriorLoop = async (userID: string, userAuth: string, characterID: s
             bot.socket.on("code_eval", (data) => {
                 if (data == "stop" || data == "disconnect") {
                     delete online[characterID]
-                    const index = friends.indexOf(bot)
-                    if (index !== -1) friends.splice(index, 1)
+                    rebuildFriends()
                     bot.disconnect()
                 }
             })

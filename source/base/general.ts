@@ -711,7 +711,7 @@ export function goToKiteStuff(bot: Character, options?: KiteOptions): void {
         }
     }
 
-    bot.move(bot.x + vector.x, bot.y + vector.y).catch(e => console.error(e))
+    bot.move(bot.x + vector.x, bot.y + vector.y, { resolveOnStart: true }).catch(e => console.error(e))
 }
 
 export async function goToNPC(bot: Character, name: NPCName) {
