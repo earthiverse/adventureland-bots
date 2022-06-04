@@ -1,4 +1,4 @@
-import AL, { Character, ItemName, Mage, Merchant, MonsterName, Priest, Ranger, ServerIdentifier, ServerRegion, SlotType, Warrior } from "alclient"
+import AL, { Character, ItemName, Mage, Merchant, MonsterName, Priest, Ranger, ServerIdentifier, ServerRegion, SlotType, Tools, Warrior } from "alclient"
 import { addSocket, startServer } from "algui"
 import { calculateAttackLoopCooldown, goToKiteStuff, goToNearestWalkableToMonster, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
 import { batCaveCryptEntrance, cryptEnd, cryptWaitingSpot } from "../base/locations.js"
@@ -172,7 +172,7 @@ async function startRanger(bot: Ranger) {
         chest: "harmor",
         gloves: "hgloves",
         helmet: "cyber",
-        mainhand: "crossbow",
+        mainhand: "pouchbow",
         offhand: "t2quiver",
         orb: "jacko",
         pants: "hpants"
@@ -249,7 +249,8 @@ async function startWarrior(bot: Warrior) {
         chest: "harmor",
         gloves: "xgloves",
         helmet: "hhelmet",
-        mainhand: "bataxe",
+        mainhand: "glolipop",
+        offhand: "candycanesword",
         orb: "jacko",
         pants: "hpants"
     }
@@ -308,6 +309,14 @@ async function startWarrior(bot: Warrior) {
 
             // Enter the crypt that the merchant is in
             if (merchant.in !== bot.in) await bot.smartMove(merchant)
+
+            // Wait for our friends to catch up
+            if (Tools.distance(bot, friends[1]) > 400
+            || Tools.distance(bot, friends[2]) > 400) {
+                if (bot.smartMoving) bot.stopSmartMove()
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                return
+            }
 
             const nearest = bot.getEntity({ returnNearest: true })
             if (!nearest && !bot.smartMoving) {
