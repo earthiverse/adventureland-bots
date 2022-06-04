@@ -716,8 +716,8 @@ export function goToKiteStuff(bot: Character, options?: KiteOptions): void {
         const distanceToEntity = AL.Tools.distance(bot, entity)
         if (distanceToEntity < bot.range) continue // We are close to this entity
         const angleFromBotToEntity = Math.atan2(entity.y - bot.y, entity.x - bot.x)
-        vector.x += Math.cos(angleFromBotToEntity) * (bot.range - distanceToEntity)
-        vector.y += Math.sin(angleFromBotToEntity) * (bot.range - distanceToEntity)
+        vector.x += Math.cos(angleFromBotToEntity) * (distanceToEntity - bot.range)
+        vector.y += Math.sin(angleFromBotToEntity) * (distanceToEntity - bot.range)
     }
 
     bot.move(bot.x + vector.x, bot.y + vector.y, { resolveOnStart: true }).catch(e => console.error(e))
