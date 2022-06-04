@@ -261,16 +261,11 @@ async function startWarrior(bot: Warrior) {
         orb: "jacko",
         pants: "hpants"
     }
-    if (bot.slots.offhand) await bot.unequip("offhand")
+    if (equipment.offhand == undefined) await bot.unequip("offhand")
     for (const slot in equipment) {
         const item = bot.locateItem(equipment[slot], bot.items, { returnHighestLevel: true })
         if (item !== undefined) await bot.equip(item, slot as SlotType)
     }
-    if (bot.slots.offhand) await bot.unequip("offhand")
-    const bataxe = bot.locateItem("bataxe", bot.items, { locked: true })
-    if (bataxe !== undefined) await bot.equip(bataxe)
-    const jacko = bot.locateItem("jacko", bot.items, { locked: true })
-    if (jacko !== undefined) await bot.equip(jacko)
 
     async function attackLoop() {
         try {

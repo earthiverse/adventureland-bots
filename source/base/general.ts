@@ -716,8 +716,8 @@ export function goToKiteStuff(bot: Character, options?: KiteOptions): void {
     if (closestEntity) {
         const distanceToEntity = Tools.distance(bot, closestEntity)
         const angleFromBotToEntity = Math.atan2(closestEntity.y - bot.y, closestEntity.x - bot.x)
-        vector.x -= Math.cos(angleFromBotToEntity) * Math.min(50, Math.max(0, distanceToEntity - bot.range))
-        vector.y -= Math.sin(angleFromBotToEntity) * Math.min(50, Math.max(0, distanceToEntity - bot.range))
+        vector.x += Math.cos(angleFromBotToEntity) * Math.min(50, Math.max(0, distanceToEntity - bot.range))
+        vector.y += Math.sin(angleFromBotToEntity) * Math.min(50, Math.max(0, distanceToEntity - bot.range))
     }
 
     bot.move(bot.x + vector.x, bot.y + vector.y, { resolveOnStart: true }).catch(e => console.error(e))
