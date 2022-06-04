@@ -332,9 +332,12 @@ async function startWarrior(bot: Warrior) {
                 if (bot.smartMoving) await bot.stopSmartMove()
                 switch (nearest.type) {
                     case "a1": // Spike
-                    case "bat": // Spike spawns bats
-                        goToKiteStuff(bot, { type: "a1" })
+                    case "bat": {
+                        // Spike spawns bats, stand on top of spike to optimize splash damage
+                        const spike = bot.getEntity({ type: "a1" })
+                        if (spike) bot.smartMove(spike)
                         break
+                    }
                     case "a2": // Bill
                         goToKiteStuff(bot, { type: "a2" })
                         break
@@ -342,9 +345,12 @@ async function startWarrior(bot: Warrior) {
                         goToKiteStuff(bot, { type: "a3" })
                         break
                     case "a4": // Orlok
-                    case "zapper0": // Orlok spawns zappers
-                        goToKiteStuff(bot, { type: "a4" })
+                    case "zapper0": {
+                        // Orlok spawns zappers, stand on top of Orlok to optimize splash damage
+                        const orlok = bot.getEntity({ type: "a4" })
+                        if (orlok) bot.smartMove(orlok)
                         break
+                    }
                     case "a5": // Elena
                         goToKiteStuff(bot, { type: "a5" })
                         break
