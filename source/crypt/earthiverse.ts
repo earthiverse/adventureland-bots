@@ -19,7 +19,7 @@ const rangerName = "earthiverse"
 const warriorName = "earthWar"
 const partyLeader = merchantName
 const partyMembers = [merchantName, priestName, rangerName, mageName, warriorName]
-const targets: MonsterName[] = ["goldenbat", "bat", "zapper0", "mvampire", "phoenix", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "vbat"]
+const targets: MonsterName[] = ["goldenbat", "mvampire", "phoenix", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "vbat", "bat", "zapper0"]
 
 let merchant: Merchant
 let priest: Priest
