@@ -232,6 +232,7 @@ async function startPriest(bot: Priest) {
         orb: "jacko",
         pants: "hpants"
     }
+    if (!equipment.offhand && bot.slots.offhand) await bot.unequip("offhand")
     for (const slot in equipment) {
         const item = bot.locateItem(equipment[slot], bot.items, { returnHighestLevel: true })
         if (item !== undefined) await bot.equip(item, slot as SlotType)
@@ -302,6 +303,7 @@ async function startRanger(bot: Ranger) {
         orb: "jacko",
         pants: "hpants"
     }
+    if (!equipment.offhand && bot.slots.offhand) await bot.unequip("offhand")
     for (const slot in equipment) {
         const item = bot.locateItem(equipment[slot], bot.items, { returnHighestLevel: true })
         if (item !== undefined) await bot.equip(item, slot as SlotType)
@@ -372,7 +374,7 @@ async function startMage(bot: Mage) {
         pants: "hpants",
         shoes: "vboots"
     }
-    if (equipment.offhand == undefined) await bot.unequip("offhand")
+    if (!equipment.offhand && bot.slots.offhand) await bot.unequip("offhand")
     for (const slot in equipment) {
         const item = bot.locateItem(equipment[slot], bot.items, { returnHighestLevel: true })
         if (item !== undefined) await bot.equip(item, slot as SlotType)
