@@ -666,7 +666,7 @@ export function goToKiteStuff(bot: Character, options?: KiteOptions): void {
     if (options == undefined) options = {}
     if (options.kitePlayers == undefined) options.kitePlayers = bot.isPVP()
     if (options.kiteMonsters == undefined) options.kiteMonsters = true
-    if (options.numWallChecks) options.numWallChecks = 16
+    if (!options.numWallChecks) options.numWallChecks = 16
     if (!options.padding) options.padding = (Math.min(...bot.pings) / 500) * bot.speed
     if (!options.weighting) options.weighting = { 500: 1, 400: 2, 300: 3, 200: 4, 100: 5, 50: 6, 25: 7, 10: 8, 1: 9 }
 
@@ -709,6 +709,15 @@ export function goToKiteStuff(bot: Character, options?: KiteOptions): void {
             const distanceToMonster = AL.Tools.distance(bot, monster)
             if (distanceToMonster > (bot.range + options.padding)) continue // We are out of range of this character
         }
+    }
+
+    // Get closer to monsters
+    for (const entity of bot.getEntities(options)) {
+        const distanceToEntity = AL.Tools.distance(bot, entity)
+        if (distanceToEntity < bot.range) continue // We are close to this entity
+        const angleFromBotToEntity = Math.atan2(entity.y - bot.y, entity.x - bot.x)
+        vector.x += Math.cos(angleFromBotToEntity) * (bot.range - distanceToEntity)
+        vector.y += Math.sin(angleFromBotToEntity) * (bot.range - distanceToEntity)
     }
 
     bot.move(bot.x + vector.x, bot.y + vector.y, { resolveOnStart: true }).catch(e => console.error(e))

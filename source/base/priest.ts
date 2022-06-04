@@ -16,7 +16,7 @@ export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], 
 
     if (bot.canUse("heal")) {
         const healPriority = (a: Player, b: Player) => {
-        // Heal our friends first
+            // Heal our friends first
             const a_isFriend = friends.some((friend) => { friend?.id == a.id })
             const b_isFriend = friends.some((friend) => { friend?.id == b.id })
             if (a_isFriend && !b_isFriend) return true

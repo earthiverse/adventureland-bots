@@ -351,6 +351,9 @@ async function startWarrior(bot: Warrior) {
                     case "vbat":
                         goToKiteStuff(bot, { type: "vbat" })
                         break
+                    default:
+                        console.debug(`We don't have a handler to move to ${nearest.type}!`)
+                        break
                 }
             }
         } catch (e) {
