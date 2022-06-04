@@ -1,28 +1,38 @@
-import AL, { MonsterName } from "alclient"
+import AL, { Character, IPosition, MonsterName } from "alclient"
 import { CryptData } from "../definitions/bot"
 
-export function startCrypt(instance: string): CryptData {
-    const data: CryptData = {
-        instance: instance,
-        remaining: {}
+export const CRYPT_MONSTERS: MonsterName[] = ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "vbat"]
+
+export function addCryptMonstersToDB(bot: Character) {
+    if (bot.map !== "crypt") throw "Only call this function in a crypt."
+
+    const data = []
+    const now = Date.now()
+
+    for (const monster of AL.Game.G.maps[bot.map].monsters) {
+        const gMonster = AL.Game.G.monsters[monster.type]
+        const x = (monster.boundary[0] + monster.boundary[2]) / 2
+        const y = (monster.boundary[1] + monster.boundary[3]) / 2
+        data.push({
+            updateOne: {
+                filter: { in: bot.in, map: bot.map, serverIdentifier: bot.serverData.name, serverRegion: bot.serverData.region, type: monster.type },
+                update: { hp: gMonster.hp, lastSeen: now, target: null, x: x, y: y },
+                upsert: true
+            }
+        })
     }
-    for (const monster of AL.Game.G.maps.crypt.monsters) {
-        if (data[monster.type] === undefined) data.remaining[monster.type] = 0
-        if (monster.count == 0) {
-            // It's a special monster that will spawn after another type dies
-            data.remaining[monster.type] += 1
-        } else {
-            data.remaining[monster.type] += monster.count
-        }
-    }
-    return data
+
+    AL.EntityModel.bulkWrite(data)
 }
 
-export function isCryptFinished(data: CryptData): boolean {
-    if (data == undefined) return true // No crypt data, assume finished
+export async function getCryptMonsterLocation(bot: Character): Promise<IPosition> {
+    const nearby = bot.getEntity({ returnNearest: true, typeList: CRYPT_MONSTERS })
+    if (nearby) return nearby
 
-    for (const m in data.remaining) {
-        if (data.remaining[m as MonsterName] !== 0) return false // Something remains
-    }
-    return true
+    const db = await AL.EntityModel.find({
+        type: { $in: CRYPT_MONSTERS }
+    }).sort({
+        lastSeen: -1
+    }).lean().exec()
+    return db[0]
 }

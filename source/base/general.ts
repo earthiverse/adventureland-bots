@@ -169,10 +169,10 @@ export const ITEMS_TO_LIST: {
         0: 999_999_999
     },
     // "cryptkey": {
-    //     0: 6_000_000
+    //     0: 5_000_000
     // },
     // "frozenkey": {
-    //     0: 8_000_000
+    //     0: 7_500_000
     // },
     // "monstertoken": {
     //     0: 400_000
@@ -654,7 +654,6 @@ export type KiteOptions = {
     kiteMonsters?: boolean
     kitePlayers?: boolean
     numWallChecks?: number
-    padding?: number
     type?: MonsterName
     typeList?: MonsterName[]
     weighting?: {
@@ -667,14 +666,13 @@ export function goToKiteStuff(bot: Character, options?: KiteOptions): void {
     if (options.kitePlayers == undefined) options.kitePlayers = bot.isPVP()
     if (options.kiteMonsters == undefined) options.kiteMonsters = true
     if (!options.numWallChecks) options.numWallChecks = 16
-    if (!options.padding) options.padding = (Math.min(...bot.pings) / 500) * bot.speed
     if (!options.weighting) options.weighting = { 500: 1, 400: 2, 300: 3, 200: 4, 100: 5, 50: 6, 25: 7, 10: 8, 1: 9 }
 
     // Send out feelers for walls
     const vector = { x: 0, y: 0 }
     for (const weightString in options.weighting) {
         const checkDistance = Number.parseInt(weightString)
-        const checkWeight = options.weighting[weightString]
+        const checkWeight = options.weighting[checkDistance]
 
         let angleFromBotToWall = 0
         for (let i = 0; i < options.numWallChecks; i++) {
@@ -694,40 +692,47 @@ export function goToKiteStuff(bot: Character, options?: KiteOptions): void {
         for (const [, player] of bot.players) {
             if (player.isFriendly(bot)) continue // We are friends, yay!
             const distanceToPlayer = AL.Tools.distance(bot, player)
-            if (distanceToPlayer > (player.range + options.padding)) continue // We are out of range of this character
+            let idealDistance: number
+            if (bot.range > player.range) {
+                // We out-range them
+                idealDistance = Math.min(bot.range, player.range + player.speed)
+            } else {
+                // They out-range us
+                if (player.speed > bot.speed) {
+                    // They out-run us
+                    idealDistance = bot.range - player.speed
+                } else {
+                    idealDistance = bot.range - bot.speed
+                }
+            }
 
             const angleFromBotToPlayer = Math.atan2(player.y - bot.y, player.x - bot.x)
-            vector.x -= Math.cos(angleFromBotToPlayer) * (player.range + options.padding - distanceToPlayer)
-            vector.y -= Math.sin(angleFromBotToPlayer) * (player.range + options.padding - distanceToPlayer)
+            vector.x += Math.cos(angleFromBotToPlayer) * (distanceToPlayer - idealDistance)
+            vector.y += Math.sin(angleFromBotToPlayer) * (distanceToPlayer - idealDistance)
         }
     }
 
     // Stay away from monsters
     if (options.kiteMonsters) {
         for (const monster of bot.getEntities(options)) {
-            if (monster.range > bot.range - options.padding) continue // We can't outrange this monster
             const distanceToMonster = AL.Tools.distance(bot, monster)
-            if (distanceToMonster > (bot.range + options.padding)) continue // We are out of range of this character
-        }
-    }
-
-    // Get closer to monsters
-    const closestEntity = bot.getEntity({ ...options, returnNearest: true })
-    if (closestEntity) {
-        const checkDistance = Math.min(50, Math.max(0, Tools.distance(bot, closestEntity) - bot.range))
-        const checkWeight = checkDistance / options.numWallChecks
-        const angleFromBotToEntity = Math.atan2(closestEntity.y - bot.y, closestEntity.x - bot.x)
-        let angleDiff = 0
-        for (let i = 0; i < options.numWallChecks; i++) {
-            const x = Math.cos(angleFromBotToEntity + angleDiff) * checkDistance
-            const y = Math.sin(angleFromBotToEntity + angleDiff) * checkDistance
-            const canWalk = AL.Pathfinder.canWalkPath(bot, { x: bot.x + x, y: bot.y + y })
-            if (canWalk) {
-                vector.x += Math.cos(angleFromBotToEntity + angleDiff) * checkWeight
-                vector.y += Math.sin(angleFromBotToEntity + angleDiff) * checkWeight
+            let idealDistance: number
+            if (bot.range > monster.range) {
+                // We out-range them
+                idealDistance = Math.min(bot.range, monster.range + monster.speed)
+            } else {
+                // They out-range us
+                if (monster.speed > bot.speed) {
+                    // They out-run us
+                    idealDistance = bot.range - monster.speed
+                } else {
+                    idealDistance = bot.range - bot.speed
+                }
             }
-            if (angleDiff < 0) angleDiff = -(angleDiff - (Math.PI) / options.numWallChecks)
-            else angleDiff = -(angleDiff + (Math.PI) / options.numWallChecks)
+
+            const angleFromBotToMonster = Math.atan2(monster.y - bot.y, monster.x - bot.x)
+            vector.x += Math.cos(angleFromBotToMonster) * (distanceToMonster - idealDistance)
+            vector.y += Math.sin(angleFromBotToMonster) * (distanceToMonster - idealDistance)
         }
     }
 
