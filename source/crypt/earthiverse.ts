@@ -72,6 +72,13 @@ async function startMerchant(bot: Merchant) {
                 }
             }
 
+            // If we are dead, respawn
+            if (bot.rip) {
+                await bot.respawn()
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                return
+            }
+
             if (bot.hasItem("cryptkey")) {
                 // We have a key, we enter the crypt
                 await bot.smartMove(cryptWaitingSpot)
