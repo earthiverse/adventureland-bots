@@ -1039,7 +1039,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
 
                 // Get a MH if we're on the default server and we don't have one
                 if (!bot.s.monsterhunt && bot.server.name == defaultIdentifier && bot.server.region == defaultRegion) {
-                    await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 1, useBlink: true })
+                    await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, useBlink: true })
                     await bot.getMonsterHuntQuest()
                     bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
                     return
