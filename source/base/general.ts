@@ -168,12 +168,12 @@ export const ITEMS_TO_LIST: {
     "goldenegg": {
         0: 999_999_999
     },
-    // "cryptkey": {
-    //     0: 5_000_000
-    // },
-    // "frozenkey": {
-    //     0: 7_500_000
-    // },
+    "cryptkey": {
+        0: 5_000_000
+    },
+    "frozenkey": {
+        0: 7_500_000
+    },
     // "monstertoken": {
     //     0: 400_000
     // },
