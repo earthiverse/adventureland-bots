@@ -4,13 +4,13 @@ import { LOOP_MS } from "./general.js"
 import { sortPriority } from "./sort.js"
 
 export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[], friends: Character[] = [], options: {
-    targetingPartyMember?: boolean
-    targetingPlayer?: string
     disableAgitate?: boolean
     disableCleave?: boolean
     disableStomp?: boolean
     disableZapper?: boolean
     maximumTargets?: number
+    targetingPartyMember?: boolean
+    targetingPlayer?: string
 } = {}): Promise<void> {
     if (bot.c.town) return // Don't attack if teleporting
 

@@ -202,7 +202,7 @@ async function startRanger(bot: Ranger) {
             }
 
             // Idle strategy
-            await attackTheseTypesRanger(bot, targets, friends)
+            await attackTheseTypesRanger(bot, targets, friends, { maximumTargets: 1 })
         } catch (e) {
             console.error(e)
         }
@@ -280,7 +280,7 @@ async function startWarrior(bot: Warrior) {
             }
 
             // Idle strategy
-            await attackTheseTypesWarrior(bot, targets, friends)
+            await attackTheseTypesWarrior(bot, targets, friends, { maximumTargets: 1 })
         } catch (e) {
             console.error(e)
         }

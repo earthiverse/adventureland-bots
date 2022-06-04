@@ -714,10 +714,21 @@ export function goToKiteStuff(bot: Character, options?: KiteOptions): void {
     // Get closer to monsters
     const closestEntity = bot.getEntity({ ...options, returnNearest: true })
     if (closestEntity) {
-        const distanceToEntity = Tools.distance(bot, closestEntity)
+        const checkDistance = Math.min(50, Math.max(0, Tools.distance(bot, closestEntity) - bot.range))
+        const checkWeight = checkDistance / options.numWallChecks
         const angleFromBotToEntity = Math.atan2(closestEntity.y - bot.y, closestEntity.x - bot.x)
-        vector.x += Math.cos(angleFromBotToEntity) * Math.min(50, Math.max(0, distanceToEntity - bot.range))
-        vector.y += Math.sin(angleFromBotToEntity) * Math.min(50, Math.max(0, distanceToEntity - bot.range))
+        let angleDiff = 0
+        for (let i = 0; i < options.numWallChecks; i++) {
+            const x = Math.cos(angleFromBotToEntity + angleDiff) * checkDistance
+            const y = Math.sin(angleFromBotToEntity + angleDiff) * checkDistance
+            const canWalk = AL.Pathfinder.canWalkPath(bot, { x: bot.x + x, y: bot.y + y })
+            if (canWalk) {
+                vector.x += Math.cos(angleFromBotToEntity + angleDiff) * checkWeight
+                vector.y += Math.sin(angleFromBotToEntity + angleDiff) * checkWeight
+            }
+            if (angleDiff < 0) angleDiff = -(angleDiff - (Math.PI) / options.numWallChecks)
+            else angleDiff = -(angleDiff + (Math.PI) / options.numWallChecks)
+        }
     }
 
     bot.move(bot.x + vector.x, bot.y + vector.y, { resolveOnStart: true }).catch(e => console.error(e))

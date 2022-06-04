@@ -7,6 +7,7 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
     disableMultiShot?: boolean
     disableSupershot?: boolean
     disableZapper?: boolean
+    maximumTargets?: number
     targetingPartyMember?: boolean
     targetingPlayer?: string
 } = {}): Promise<void> {
@@ -41,9 +42,8 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
             continue
         }
 
-        let addedToThreeShotTargets = false
-
         // Check if we can kill it in one hit without gaining additional fear
+        let addedToThreeShotTargets = false
         if (target.hp <= bot.calculateDamageRange(bot, "5shot")[0]) {
             fiveShotTargets.add(target)
             threeShotTargets.add(target)
@@ -53,10 +53,11 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
             addedToThreeShotTargets = true
         }
 
+        if (options.maximumTargets <= targetingMe.magical + targetingMe.physical + targetingMe.pure) continue // We want to limit our number of targets
         switch (target.damage_type) {
             case "magical":
                 if (bot.mcourage > targetingMe.magical) {
-                // We can tank one more magical monster
+                    // We can tank one more magical monster
                     if (!addedToThreeShotTargets) threeShotTargets.add(target)
                     fiveShotTargets.add(target)
                     targetingMe.magical += 1
@@ -65,7 +66,7 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
                 break
             case "physical":
                 if (bot.courage > targetingMe.physical) {
-                // We can tank one more physical monster
+                    // We can tank one more physical monster
                     if (!addedToThreeShotTargets)threeShotTargets.add(target)
                     fiveShotTargets.add(target)
                     targetingMe.physical += 1
@@ -74,7 +75,7 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
                 break
             case "pure":
                 if (bot.pcourage > targetingMe.pure) {
-                // We can tank one more pure monster
+                    // We can tank one more pure monster
                     if (!addedToThreeShotTargets)threeShotTargets.add(target)
                     fiveShotTargets.add(target)
                     targetingMe.pure += 1
@@ -146,39 +147,47 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
 
         await bot.threeShot(targets[0].id, targets[1].id, targets[2].id)
     } else if (bot.canUse("attack") && targets.size > 0) {
-        const target = targets.poll()
+        let target = targets.poll()
+        while (target) {
+            const damage = bot.calculateDamageRange(target)
+            const piercingDamage = bot.canUse("piercingshot") ? bot.calculateDamageRange(target, "piercingshot") : [0, 0]
 
-        const damage = bot.calculateDamageRange(target)
-        const piercingDamage = bot.canUse("piercingshot") ? bot.calculateDamageRange(target, "piercingshot") : [0, 0]
+            const canKillPiercing = bot.canKillInOneShot(target, "piercingshot")
+            if (!target.immune && piercingDamage[0] > damage[0] && (options.maximumTargets > bot.targets || canKillPiercing)) {
+                // Piercing shot will do more damage
 
-        if (!target.immune && piercingDamage[0] > damage[0]) {
-            // Piercing shot will do more damage
+                // Remove them from our friends' entities list if we're going to kill it
+                if (canKillPiercing) {
+                    for (const friend of friends) {
+                        if (!friend) continue // No friend
+                        if (friend.id == bot.id) continue // Don't delete it from our own list
+                        if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                        friend.deleteEntity(target.id)
+                    }
+                }
 
-            // Remove them from our friends' entities list if we're going to kill it
-            if (bot.canKillInOneShot(target, "piercingshot")) {
-                for (const friend of friends) {
-                    if (!friend) continue // No friend
-                    if (friend.id == bot.id) continue // Don't delete it from our own list
-                    if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
-                    friend.deleteEntity(target.id)
+                await bot.piercingShot(target.id)
+                break
+            } else {
+                // Normal attack will do the same, or more damage
+                const canKill = bot.canKillInOneShot(target)
+
+                if (options.maximumTargets > bot.targets || canKill) {
+                    // Remove them from our friends' entities list if we're going to kill it
+                    if (canKill) {
+                        for (const friend of friends) {
+                            if (!friend) continue // No friend
+                            if (friend.id == bot.id) continue // Don't delete it from our own list
+                            if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                            friend.deleteEntity(target.id)
+                        }
+                    }
+                    await bot.basicAttack(target.id)
+                    break
                 }
             }
 
-            await bot.piercingShot(target.id)
-        } else {
-            // Normal attack will do more damage
-
-            // Remove them from our friends' entities list if we're going to kill it
-            if (bot.canKillInOneShot(target)) {
-                for (const friend of friends) {
-                    if (!friend) continue // No friend
-                    if (friend.id == bot.id) continue // Don't delete it from our own list
-                    if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
-                    friend.deleteEntity(target.id)
-                }
-            }
-
-            await bot.basicAttack(target.id)
+            target = targets.poll()
         }
     }
 
@@ -193,6 +202,7 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
             withinRange: bot.range * bot.G.skills.supershot.range_multiplier
         })) {
             if (!bot.G.skills.supershot.pierces_immunity && target.immune) continue
+            if (target.target == undefined && options.maximumTargets <= bot.targets) continue // Don't aggro more than our maximum
 
             // If we can kill something guaranteed, break early
             if (bot.canKillInOneShot(target, "supershot")) {
@@ -224,6 +234,7 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
             withinRange: bot.G.skills.zapperzap.range
         })) {
             if (!bot.G.skills.zapperzap.pierces_immunity && target.immune) continue
+            if (target.target == undefined && options.maximumTargets <= bot.targets) continue // Don't aggro more than our maximum
 
             // Zap if we can kill it in one shot, or we have a lot of mp
             if (bot.canKillInOneShot(target, "zapperzap") || bot.mp >= bot.max_mp - 500) targets.add(target)

@@ -19,12 +19,8 @@ async function run() {
         console.log(Pathfinder.findClosestNode(position.map, position.x, position.y).id)
     }
 
-    closestTo({ map: "main", x: -312, y: 150 })
-    closestTo({ map: "main", x: -335, y: 159 })
-    closestTo({ map: "arena", x: 200, y: -361 })
-    closestTo({ map: "arena", x: 227, y: -390 })
-    closestTo({ map: "arena", x: 564, y: -333 })
-    closestTo({ map: "arena", x: 535, y: -358 })
+    closestTo({ map: "cave", x: 120, y: -1050 })
+    closestTo({ map: "cave", x: 24, y: -1074 })
 
     const now1 = performance.now()
     await Pathfinder.getPath({ map: "main", x: 0, y: 0 }, { map: "spookytown", x: 0, y: 0 })
