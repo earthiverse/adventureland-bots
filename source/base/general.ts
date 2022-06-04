@@ -712,15 +712,13 @@ export function goToKiteStuff(bot: Character, options?: KiteOptions): void {
     }
 
     // Get closer to monsters
-    for (const entity of bot.getEntities(options)) {
-        const distanceToEntity = AL.Tools.distance(bot, entity)
-        if (distanceToEntity < bot.range) continue // We are close to this entity
-        const angleFromBotToEntity = Math.atan2(entity.y - bot.y, entity.x - bot.x)
-        vector.x += Math.cos(angleFromBotToEntity) * (distanceToEntity - bot.range)
-        vector.y += Math.sin(angleFromBotToEntity) * (distanceToEntity - bot.range)
-    }
+    const closestEntity = bot.getEntity({ ...options, returnNearest: true })
+    if (closestEntity && !bot.smartMoving && !bot.moving && Tools.distance(bot, closestEntity) > bot.range) {
+        bot.smartMove(closestEntity, { getWithin: bot.range }).catch()
+    } else {
 
-    bot.move(bot.x + vector.x, bot.y + vector.y, { resolveOnStart: true }).catch(e => console.error(e))
+        bot.move(bot.x + vector.x, bot.y + vector.y, { resolveOnStart: true }).catch(e => console.error(e))
+    }
 }
 
 export async function goToNPC(bot: Character, name: NPCName) {
