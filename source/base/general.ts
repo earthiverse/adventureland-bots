@@ -1653,11 +1653,18 @@ export function startScareLoop(bot: Character): void {
             let incomingDamage = 0
             for (const [, entity] of bot.entities) {
                 if (entity.target !== bot.id) continue
-                if (AL.Tools.distance(bot, entity) > entity.range + Math.min(...bot.pings) / 500 * entity.speed) continue // Too far away from us to attack us
+                if (AL.Tools.distance(bot, entity) > entity.range + entity.speed) continue // Too far away from us to attack us
                 incomingDamage += entity.calculateDamageRange(bot)[1]
             }
 
-            // TODO: Check if any projectiles are coming from us to them. If they are, don't scare, wait for them to hit.
+            // If any projectiles are coming from us, wait for them to hit before scaring
+            for (const [, projectile] of bot.projectiles) {
+                if (projectile.attacker == bot.id) {
+                    // Wait until the projectile hits to scare
+                    setTimeout(async () => { scareLoop() }, projectile.eta + 1)
+                    return
+                }
+            }
 
             if (bot.canUse("scare", { ignoreEquipped: true })
                 && (bot.hasItem("jacko") || bot.isEquipped("jacko"))

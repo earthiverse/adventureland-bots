@@ -14,6 +14,8 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
 } = {}): Promise<void> {
     if (bot.c.town) return // Don't attack if teleporting
 
+    if (bot.isOnCooldown("scare")) return
+
     // Adjust options
     if (options.targetingPlayer && options.targetingPlayer == bot.id) options.targetingPlayer = undefined
     if (options.targetingPlayer || options.targetingPartyMember) options.disableAgitate = true

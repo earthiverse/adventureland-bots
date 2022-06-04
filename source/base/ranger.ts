@@ -13,6 +13,8 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
 } = {}): Promise<void> {
     if (bot.c.town) return // Don't attack if teleporting
 
+    if (bot.isOnCooldown("scare")) return
+
     // Adjust options
     if (options.targetingPlayer && options.targetingPlayer == bot.id) options.targetingPlayer = undefined
 

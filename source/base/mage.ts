@@ -15,6 +15,8 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
 } = {}): Promise<void> {
     if (bot.c.town) return // Don't attack if teleporting
 
+    if (bot.isOnCooldown("scare")) return
+
     const priority = sortPriority(bot, types)
 
     if (bot.canUse("cburst") && !options.disableCburst) {
