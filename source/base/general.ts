@@ -680,7 +680,7 @@ export function goToKiteStuff(bot: Character, options?: KiteOptions): void {
         for (let i = 0; i < options.numWallChecks; i++) {
             const x = Math.cos(angleFromBotToWall) * checkDistance
             const y = Math.sin(angleFromBotToWall) * checkDistance
-            const canWalk = AL.Pathfinder.canWalkPath(bot, { x: x, y: y })
+            const canWalk = AL.Pathfinder.canWalkPath(bot, { x: bot.x + x, y: bot.y + y })
             if (!canWalk) {
                 vector.x -= Math.cos(angleFromBotToWall) * checkWeight
                 vector.y -= Math.sin(angleFromBotToWall) * checkWeight
