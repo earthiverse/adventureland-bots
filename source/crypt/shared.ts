@@ -27,7 +27,6 @@ export function addCryptMonstersToDB(bot: Character) {
 export function getNearestCryptMonster(bot: Character): Entity {
     const nearby = bot.getEntity({ returnNearest: true, typeList: CRYPT_MONSTERS })
     if (nearby) {
-        console.log(`${nearby.type} is level ${nearby.level}`)
         if (nearby.type == "a8") {
             if (nearby.level <= 2) return nearby
         } else {
