@@ -396,21 +396,21 @@ async function startMage(bot: Mage) {
                 return
             }
 
-            // Idle strategy
-            const nearest = bot.getEntity({ couldGiveCredit: true, returnNearest: true })
-            if (nearest && nearest.target && nearest.speed > bot.speed && !nearest.s.frozen && bot.canUse("snowball")) {
-                await bot.throwSnowball(nearest.id)
-            }
-
             // Angel is dangerous, keep our distance
             const angel = bot.getEntity({ type: "a8" })
-            if (angel && Tools.distance(bot, angel) < angel.range + angel.speed) {
+            if (angel && Tools.distance(bot, angel) < angel.range + angel.charge) {
                 // Don't attack angel
                 if (angel.target == bot.id && bot.canUse("scare")) {
                     await bot.scare()
                 }
                 await attackTheseTypesMage(bot, ["goldenbat", "mvampire", "phoenix", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "vbat", "bat", "zapper0"], friends)
             } else {
+                // Throw snowballs at fast enemies
+                const nearest = bot.getEntity({ couldGiveCredit: true, returnNearest: true })
+                if (nearest && nearest.target && nearest.charge > bot.speed && !nearest.s.frozen && bot.canUse("snowball")) {
+                    await bot.throwSnowball(nearest.id)
+                }
+
                 await attackTheseTypesMage(bot, targets, friends)
             }
 

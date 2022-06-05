@@ -719,9 +719,9 @@ export function goToKiteStuff(bot: Character, options?: KiteOptions): void {
             let idealDistance: number
             if (bot.range > monster.range) {
                 // We out-range them
-                if (bot.speed > monster.speed) {
+                if (bot.speed > monster.charge) {
                     // We out-run them
-                    idealDistance = Math.min(bot.range, monster.range + monster.speed)
+                    idealDistance = Math.min(bot.range, monster.range + monster.charge)
                 } else {
                     idealDistance = bot.range
                 }
@@ -729,7 +729,7 @@ export function goToKiteStuff(bot: Character, options?: KiteOptions): void {
                 // They out-range us
                 if (monster.speed > bot.speed) {
                     // They out-run us
-                    idealDistance = bot.range - monster.speed
+                    idealDistance = bot.range - monster.charge
                 } else {
                     idealDistance = bot.range - bot.speed
                 }
