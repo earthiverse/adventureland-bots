@@ -506,13 +506,13 @@ async function startWarrior(bot: Warrior) {
 
     // Equipment
     const equipment: { [T in SlotType]?: ItemName} = {
-        chest: "harmor",
-        gloves: "hgloves",
-        helmet: "hhelmet",
-        mainhand: "gstaff",
-        orb: "jacko",
-        pants: "hpants",
-        shoes: "vboots"
+        chest: "coat1",
+        gloves: "gloves1",
+        helmet: "helmet1",
+        mainhand: "vhammer",
+        offhand: "glolipop",
+        orb: "orbofstr",
+        pants: "pants1"
     }
     if (!equipment.offhand && bot.slots.offhand) await bot.unequip("offhand")
     for (const slot in equipment) {
