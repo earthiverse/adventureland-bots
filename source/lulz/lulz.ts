@@ -3,7 +3,7 @@ import path from "path"
 import bodyParser from "body-parser"
 import { body, validationResult } from "express-validator"
 
-import AL, { Character, ItemName, Mage, Ranger, Warrior } from "alclient"
+import AL, { Character, CharacterType, ItemName, Ranger } from "alclient"
 import { startLulzCrabMage, startLulzCrabRanger, startLulzCrabWarrior } from "./crabs.js"
 import { ItemLevelInfo } from "../definitions/bot.js"
 import { startLulzBeeMage, startLulzBeeRanger, startLulzBeeWarrior } from "./bees.js"
@@ -41,101 +41,33 @@ const itemsToSell: ItemLevelInfo = {
     wshoes: 1
 }
 
-const startRangerLoop = async (userID: string, userAuth: string, characterID: string, script: (bot: Ranger, friends: Character[], replenishables: [ItemName, number][], itemsToSell: ItemLevelInfo) => Promise<void>) => {
-    // Start the characters
+const startCharacterLoop = async (type: CharacterType, userID: string, userAuth: string, characterID: string, script: (bot: Character, friends: Character[], replenishables: [ItemName, number][], itemsToSell: ItemLevelInfo) => Promise<void>) => {
     const loopBot = async () => {
         try {
-            let bot = online[characterID] as Ranger
+            let bot = online[characterID]
             if (bot) bot.disconnect()
-            bot = new AL.Ranger(userID, userAuth, characterID, AL.Game.G, AL.Game.servers["US"]["I"])
-
-            online[characterID] = bot
-
-            // Rebuild friends
-            rebuildFriends()
-
-            online[characterID] = bot
-            await script(bot, friends, replenishables, itemsToSell)
-            bot.socket.on("disconnect", async () => {
-                if (online[characterID]) loopBot()
-            })
-            bot.socket.on("code_eval", (data) => {
-                if (data == "stop" || data == "disconnect") {
-                    delete online[characterID]
-                    rebuildFriends()
-                    bot.disconnect()
-                }
-            })
-        } catch (e) {
-            console.error(e)
-            const bot = online[characterID] as Ranger
-            if (bot) bot.disconnect()
-            const wait = /wait_(\d+)_second/.exec(e)
-            if (wait && wait[1]) {
-                setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
-            } else if (/limits/.test(e)) {
-                setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
-            } else if (/ingame/.test(e)) {
-                setTimeout(async () => { loopBot() }, 500)
-            } else {
-                setTimeout(async () => { loopBot() }, 10000)
+            switch (type) {
+                case "mage":
+                    bot = new AL.Mage(userID, userAuth, characterID, AL.Game.G, AL.Game.servers["US"]["I"])
+                    break
+                case "paladin":
+                    bot = new AL.Mage(userID, userAuth, characterID, AL.Game.G, AL.Game.servers["US"]["I"])
+                    break
+                case "priest":
+                    bot = new AL.Priest(userID, userAuth, characterID, AL.Game.G, AL.Game.servers["US"]["I"])
+                    break
+                case "ranger":
+                    bot = new AL.Ranger(userID, userAuth, characterID, AL.Game.G, AL.Game.servers["US"]["I"])
+                    break
+                case "rogue":
+                    bot = new AL.Rogue(userID, userAuth, characterID, AL.Game.G, AL.Game.servers["US"]["I"])
+                    break
+                case "warrior":
+                    bot = new AL.Warrior(userID, userAuth, characterID, AL.Game.G, AL.Game.servers["US"]["I"])
+                    break
+                default:
+                    throw `Unsupported character type: ${type}`
             }
-        }
-    }
-    loopBot()
-}
-
-const startMageLoop = async (userID: string, userAuth: string, characterID: string, script: (bot: Mage, friends: Character[], replenishables: [ItemName, number][], itemsToSell: ItemLevelInfo) => Promise<void>) => {
-    // Start the characters
-    const loopBot = async () => {
-        try {
-            let bot = online[characterID] as Mage
-            if (bot) bot.disconnect()
-            bot = new AL.Mage(userID, userAuth, characterID, AL.Game.G, AL.Game.servers["US"]["I"])
-
-            online[characterID] = bot
-
-            // Rebuild friends
-            rebuildFriends()
-
-            online[characterID] = bot
-            await script(bot, friends, replenishables, itemsToSell)
-            bot.socket.on("disconnect", async () => {
-                if (online[characterID]) loopBot()
-            })
-            bot.socket.on("code_eval", (data) => {
-                if (data == "stop" || data == "disconnect") {
-                    delete online[characterID]
-                    rebuildFriends()
-                    bot.disconnect()
-                }
-            })
-        } catch (e) {
-            console.error(e)
-            const bot = online[characterID] as Ranger
-            if (bot) bot.disconnect()
-            const wait = /wait_(\d+)_second/.exec(e)
-            if (wait && wait[1]) {
-                setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
-            } else if (/limits/.test(e)) {
-                setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
-            } else if (/ingame/.test(e)) {
-                setTimeout(async () => { loopBot() }, 500)
-            } else {
-                setTimeout(async () => { loopBot() }, 10000)
-            }
-        }
-    }
-    loopBot()
-}
-
-const startWarriorLoop = async (userID: string, userAuth: string, characterID: string, script: (bot: Warrior, friends: Character[], replenishables: [ItemName, number][], itemsToSell: ItemLevelInfo) => Promise<void>) => {
-    // Start the characters
-    const loopBot = async () => {
-        try {
-            let bot = online[characterID] as Warrior
-            if (bot) bot.disconnect()
-            bot = new AL.Warrior(userID, userAuth, characterID, AL.Game.G, AL.Game.servers["US"]["I"])
             await bot.connect()
 
             online[characterID] = bot
@@ -143,6 +75,7 @@ const startWarriorLoop = async (userID: string, userAuth: string, characterID: s
             // Rebuild friends
             rebuildFriends()
 
+            online[characterID] = bot
             await script(bot, friends, replenishables, itemsToSell)
             bot.socket.on("disconnect", async () => {
                 if (online[characterID]) loopBot()
@@ -199,35 +132,35 @@ app.post("/",
             const monster = req.body.monster
             if (charType == "mage") {
                 if (monster == "bee") {
-                    await startMageLoop(req.body.user, req.body.auth, req.body.char, startLulzBeeMage)
+                    await startCharacterLoop(charType, req.body.user, req.body.auth, req.body.char, startLulzBeeMage)
                     return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
                 } else if (monster == "crab") {
-                    await startMageLoop(req.body.user, req.body.auth, req.body.char, startLulzCrabMage)
+                    await startCharacterLoop(charType, req.body.user, req.body.auth, req.body.char, startLulzCrabMage)
                     return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
                 } else if (monster == "goo") {
-                    await startMageLoop(req.body.user, req.body.auth, req.body.char, startLulzGooMage)
+                    await startCharacterLoop(charType, req.body.user, req.body.auth, req.body.char, startLulzGooMage)
                     return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
                 }
             } else if (charType == "ranger") {
                 if (monster == "bee") {
-                    await startRangerLoop(req.body.user, req.body.auth, req.body.char, startLulzBeeRanger)
+                    await startCharacterLoop(charType, req.body.user, req.body.auth, req.body.char, startLulzBeeRanger)
                     return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
                 } else if (monster == "crab") {
-                    await startRangerLoop(req.body.user, req.body.auth, req.body.char, startLulzCrabRanger)
+                    await startCharacterLoop(charType, req.body.user, req.body.auth, req.body.char, startLulzCrabRanger)
                     return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
                 } else if (monster == "goo") {
-                    await startRangerLoop(req.body.user, req.body.auth, req.body.char, startLulzGooRanger)
+                    await startCharacterLoop(charType, req.body.user, req.body.auth, req.body.char, startLulzGooRanger)
                     return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
                 }
             } else if (charType == "warrior") {
                 if (monster == "bee") {
-                    await startWarriorLoop(req.body.user, req.body.auth, req.body.char, startLulzBeeWarrior)
+                    await startCharacterLoop(charType, req.body.user, req.body.auth, req.body.char, startLulzBeeWarrior)
                     return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
                 } else if (monster == "crab") {
-                    await startWarriorLoop(req.body.user, req.body.auth, req.body.char, startLulzCrabWarrior)
+                    await startCharacterLoop(charType, req.body.user, req.body.auth, req.body.char, startLulzCrabWarrior)
                     return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
                 } else if (monster == "goo") {
-                    await startWarriorLoop(req.body.user, req.body.auth, req.body.char, startLulzGooWarrior)
+                    await startCharacterLoop(charType, req.body.user, req.body.auth, req.body.char, startLulzGooWarrior)
                     return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
                 }
             }
