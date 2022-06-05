@@ -666,7 +666,7 @@ export function goToKiteStuff(bot: Character, options?: KiteOptions): void {
     if (options.kitePlayers == undefined) options.kitePlayers = bot.isPVP()
     if (options.kiteMonsters == undefined) options.kiteMonsters = true
     if (!options.numWallChecks) options.numWallChecks = 16
-    if (!options.weighting) options.weighting = { 500: 50, 400: 50, 300: 50, 200: 50, 100: 50, 50: 50, 25: 50, 10: 50, 1: 50 }
+    if (!options.weighting) options.weighting = { 200: 25, 100: 25, 50: 25, 25: 25, 10: 25, 1: 25 }
 
     // Send out feelers for walls
     const vector = { x: 0, y: 0 }

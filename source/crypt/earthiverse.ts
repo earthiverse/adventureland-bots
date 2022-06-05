@@ -324,7 +324,6 @@ async function startRanger(bot: Ranger) {
                 return
             }
 
-            // Idle strategy
             await attackTheseTypesRanger(bot, ["a8"], friends, { targetingPartyMember: true })
             await attackTheseTypesRanger(bot, ["goldenbat", "mvampire", "phoenix", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "vbat", "bat", "zapper0"], friends)
         } catch (e) {

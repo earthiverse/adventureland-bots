@@ -1,5 +1,4 @@
 import AL, { Character, IPosition, MonsterName } from "alclient"
-import { CryptData } from "../definitions/bot"
 
 export const CRYPT_MONSTERS: MonsterName[] = ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "vbat"]
 
@@ -27,9 +26,10 @@ export function addCryptMonstersToDB(bot: Character) {
 
 export async function getCryptMonsterLocation(bot: Character): Promise<IPosition> {
     const nearby = bot.getEntity({ returnNearest: true, typeList: CRYPT_MONSTERS })
-    if (nearby) return nearby
+    if (nearby && nearby.level <= 1) return nearby
 
     const db = await AL.EntityModel.find({
+        level: { $le: 1 },
         type: { $in: CRYPT_MONSTERS }
     }).sort({
         lastSeen: -1
