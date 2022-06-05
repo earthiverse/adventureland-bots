@@ -26,11 +26,18 @@ export function addCryptMonstersToDB(bot: Character) {
 
 export async function getCryptMonsterLocation(bot: Character): Promise<IPosition> {
     const nearby = bot.getEntity({ returnNearest: true, typeList: CRYPT_MONSTERS })
-    if (nearby && nearby.level <= 1) return nearby
+    if (nearby) {
+        if (nearby.type == "a8") if (nearby.level <= 2) return nearby
+        else return nearby
+    }
 
     const db = await AL.EntityModel.find({
-        level: { $le: 1 },
-        type: { $in: CRYPT_MONSTERS }
+        $or: [{
+            level: { $or: [{ $eq: null }, { $le: 2 }] },
+            type: "a8",
+        }, {
+            type: { $in: CRYPT_MONSTERS, $nin: ["a8"] }
+        }],
     }).sort({
         lastSeen: -1
     }).lean().exec()
