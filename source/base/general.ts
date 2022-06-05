@@ -36,7 +36,7 @@ export const ITEMS_TO_EXCHANGE: Set<ItemName> = new Set([
     // // Gem Fragments for t2 amulets
     // "gemfragment",
     // // Seashells for potions
-    // "seashell",
+    "seashell",
     // // Leather for capes
     // "leather",
     // // Christmas
@@ -56,8 +56,10 @@ export const ITEMS_TO_CRAFT: Set<ItemName> = new Set([
     "firestars", "resistancering", "wingedboots", "frostbow",
     // Event items
     "basketofeggs", "xbox",
+    // Higher level elixirs
+    "elixirdex1", "elixirint1", "elixirstr1", "elixirvit1", "elixirdex2", "elixirint2", "elixirstr2", "elixirvit2",
     // Wanderer's items
-    // "wattire", "wshoes", "wbreeches", "wcap", "wgloves"
+    "wattire", "wshoes", "wbreeches", "wcap", "wgloves"
 ])
 
 export const ITEMS_TO_BUY: Set<ItemName> = new Set([
