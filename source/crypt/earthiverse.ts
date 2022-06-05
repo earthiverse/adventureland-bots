@@ -132,20 +132,6 @@ async function startMerchant(bot: Merchant) {
                     bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
                     return
                 }
-
-                // Buy stuff for our friends
-                if (!(friend.hasItem("computer") || friend.hasItem("supercomputer"))
-                && (bot.hasItem("computer") || bot.hasItem("supercomputer"))) {
-                    // Go buy replenishables for them, since they don't have a computer
-                    for (const [item, amount] of REPLENISHABLES_TO_BUY) {
-                        if (friend.countItem(item) > amount * 0.25) continue // They have enough
-                        if (!bot.canBuy(item)) continue // We can't buy them this for them
-                        await merchantSmartMove(bot, friend, { attackWhileMoving: true, getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, stopIfTrue: () => !bot.canBuy(item) || friend.countItem(item) > amount * 0.25 || Tools.distance(bot.smartMoving, friend) > 400 })
-
-                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
-                        return
-                    }
-                }
             }
 
             // Go fishing if we can
