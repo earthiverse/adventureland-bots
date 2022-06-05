@@ -33,7 +33,7 @@ export async function getCryptMonsterLocation(bot: Character): Promise<IPosition
 
     const db = await AL.EntityModel.find({
         $or: [{
-            $or: [{ level: null }, { level: { $le: 2 } }],
+            $or: [{ level: null }, { level: { $lte: 2 } }],
             type: "a8",
         }, {
             type: { $in: CRYPT_MONSTERS, $nin: ["a8"] }
