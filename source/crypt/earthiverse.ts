@@ -253,8 +253,8 @@ async function startPriest(bot: Priest) {
                 return
             }
 
-            // Idle strategy
-            await attackTheseTypesPriest(bot, targets, friends)
+            await attackTheseTypesPriest(bot, ["a8"], friends, { targetingPartyMember: true })
+            await attackTheseTypesPriest(bot, ["goldenbat", "mvampire", "phoenix", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "vbat", "bat", "zapper0"], friends)
         } catch (e) {
             console.error(e)
         }
@@ -325,7 +325,8 @@ async function startRanger(bot: Ranger) {
             }
 
             // Idle strategy
-            await attackTheseTypesRanger(bot, targets, friends, { maximumTargets: 1 })
+            await attackTheseTypesRanger(bot, ["a8"], friends, { targetingPartyMember: true })
+            await attackTheseTypesRanger(bot, ["goldenbat", "mvampire", "phoenix", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "vbat", "bat", "zapper0"], friends)
         } catch (e) {
             console.error(e)
         }
@@ -400,6 +401,19 @@ async function startMage(bot: Mage) {
             if (nearest && nearest.target && nearest.speed > bot.speed && !nearest.s.frozen && bot.canUse("snowball")) {
                 await bot.throwSnowball(nearest.id)
             }
+
+            // Angel is dangerous, keep our distance
+            const angel = bot.getEntity({ type: "a8" })
+            if (angel && Tools.distance(bot, angel) < angel.range + angel.speed) {
+                // Don't attack angel
+                if (angel.target == bot.id && bot.canUse("scare")) {
+                    await bot.scare()
+                }
+                await attackTheseTypesMage(bot, ["goldenbat", "mvampire", "phoenix", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "vbat", "bat", "zapper0"], friends)
+            } else {
+                await attackTheseTypesMage(bot, targets, friends)
+            }
+
             await attackTheseTypesMage(bot, targets, friends)
         } catch (e) {
             console.error(e)

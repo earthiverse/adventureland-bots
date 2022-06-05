@@ -1701,7 +1701,7 @@ export function startScareLoop(bot: Character): void {
             console.error(e)
         }
 
-        bot.timeouts.set("scareLoop", setTimeout(async () => { scareLoop() }, Math.max(250, bot.getCooldown("scare"))))
+        bot.timeouts.set("scareLoop", setTimeout(async () => { scareLoop() }, Math.max(LOOP_MS, bot.getCooldown("scare"))))
     }
 
     // If we have too many targets, we can't go through doors.
