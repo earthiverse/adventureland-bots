@@ -1,12 +1,12 @@
 import AL, { Character, IPosition, ItemName, Mage, Merchant, MonsterName, Priest, Ranger, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Tools, Warrior } from "alclient"
 import { addSocket, startServer } from "algui"
-import { calculateAttackLoopCooldown, goGetRspeedBuff, goToKiteStuff, goToNearestWalkableToMonster, ITEMS_TO_HOLD, LOOP_MS, REPLENISHABLES_TO_BUY, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
+import { calculateAttackLoopCooldown, goGetRspeedBuff, goToKiteStuff, goToNearestWalkableToMonster, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
 import { batCaveCryptEntrance, cryptEnd, cryptWaitingSpot, mainCrabs, offsetPositionParty } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { doBanking, doEmergencyBanking, goFishing, goMining, merchantSmartMove, startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
-// import { startChargeLoop, startHardshellLoop, startWarcryLoop, attackTheseTypesWarrior } from "../base/warrior.js"
+import { attackTheseTypesWarrior, startChargeLoop, startHardshellLoop, startWarcryLoop } from "../base/warrior.js"
 import { addCryptMonstersToDB, getCryptMonsterLocation, getNearestCryptMonster } from "./shared.js"
 
 /** Config */
@@ -24,8 +24,8 @@ const targets: MonsterName[] = ["goldenbat", "mvampire", "phoenix", "a1", "a2", 
 let merchant: Merchant
 let priest: Priest
 let ranger: Ranger
-let mage: Mage
-// let warrior: Warrior
+// let mage: Mage
+let warrior: Warrior
 const friends: [Merchant, Priest, Ranger, Mage | Warrior] = [undefined, undefined, undefined, undefined]
 
 const LAST_LOCATION_CHECK = 0
@@ -497,6 +497,157 @@ async function startMage(bot: Mage) {
     moveLoop()
 }
 
+async function startWarrior(bot: Warrior) {
+    startShared(bot)
+
+    startChargeLoop(bot)
+    startHardshellLoop(bot)
+    startWarcryLoop(bot)
+
+    // Equipment
+    const equipment: { [T in SlotType]?: ItemName} = {
+        chest: "harmor",
+        gloves: "hgloves",
+        helmet: "hhelmet",
+        mainhand: "gstaff",
+        orb: "jacko",
+        pants: "hpants",
+        shoes: "vboots"
+    }
+    if (!equipment.offhand && bot.slots.offhand) await bot.unequip("offhand")
+    for (const slot in equipment) {
+        const item = bot.locateItem(equipment[slot], bot.items, { returnHighestLevel: true })
+        if (item !== undefined) await bot.equip(item, slot as SlotType)
+    }
+
+    async function attackLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return // Stop if disconnected
+
+            if (
+                bot.rip // We are dead
+                || bot.c.town // We are teleporting to town
+            ) {
+                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                return
+            }
+
+            // Angel is dangerous, keep our distance
+            const angel = bot.getEntity({ type: "a8" })
+            if (angel && Tools.distance(bot, angel) < angel.range + angel.charge) {
+                // Don't attack angel
+                if (angel.target == bot.id && bot.canUse("scare")) {
+                    await bot.scare()
+                }
+                await attackTheseTypesWarrior(bot, ["goldenbat", "mvampire", "phoenix", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "vbat", "bat", "zapper0"], friends)
+            } else {
+                // Throw snowballs at fast enemies
+                const nearest = getNearestCryptMonster(bot)
+                if (nearest && nearest.target && nearest.charge > bot.speed && !nearest.s.frozen && bot.canUse("snowball")) {
+                    await bot.throwSnowball(nearest.id)
+                }
+
+                await attackTheseTypesWarrior(bot, targets, friends)
+            }
+
+            await attackTheseTypesWarrior(bot, targets, friends)
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, calculateAttackLoopCooldown(bot)))
+    }
+    attackLoop()
+
+    const batLocations = bot.locateMonster("bat")
+    async function moveLoop() {
+        try {
+            if (!bot.socket || bot.socket.disconnected) return
+
+            // If we are dead, respawn
+            if (bot.rip) {
+                await bot.respawn()
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                return
+            }
+
+            if (LOCATION == undefined) {
+                // Farm bats if we don't have any crypt monsters
+                let index = 0
+                if (bot.party) index = bot.partyData.list.indexOf(bot.id)
+                await goToNearestWalkableToMonster(bot, ["goldenbat", "mvampire", "fvampire", "phoenix", "bat"], batLocations[index % batLocations.length])
+                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                return
+            }
+
+            const stopLogic = () => {
+                // We're near a crypt monster
+                const nearest = getNearestCryptMonster(bot)
+                if (nearest) return true
+
+                // We need to wait for our friends to catch up
+                if (Tools.distance(bot, friends[1]) > 400
+                || Tools.distance(bot, friends[2]) > 400) {
+                    return true
+                }
+            }
+
+            // Go to the location it tells us there's a crypt monster at
+            await bot.smartMove(LOCATION, { stopIfTrue: stopLogic, useBlink: false })
+
+            const nearest = getNearestCryptMonster(bot)
+            if (!nearest) {
+                // No nearby monsters, go to the end of the crypt
+                await bot.smartMove(cryptEnd, { stopIfTrue: stopLogic, useBlink: false })
+            } else {
+                switch (nearest.type) {
+                    case "a1": // Spike
+                    case "bat": {
+                        // Spike spawns bats, stand on top of spike to optimize splash damage
+                        const spike = bot.getEntity({ type: "a1" })
+                        if (spike) bot.smartMove(spike)
+                        break
+                    }
+                    case "a2": // Bill
+                        goToKiteStuff(bot, { type: "a2" })
+                        break
+                    case "a3": // Lestat
+                        goToKiteStuff(bot, { type: "a3" })
+                        break
+                    case "a4": // Orlok
+                    case "zapper0": {
+                        // Orlok spawns zappers, stand on top of Orlok to optimize splash damage
+                        const orlok = bot.getEntity({ type: "a4" })
+                        if (orlok) bot.smartMove(orlok)
+                        break
+                    }
+                    case "a5": // Elena
+                        goToKiteStuff(bot, { type: "a5" })
+                        break
+                    case "a6": // Marceline
+                        goToKiteStuff(bot, { type: "a6" })
+                        break
+                    case "a7": // Lucinda
+                        goToKiteStuff(bot, { type: "a7" })
+                        break
+                    case "a8": // Angel
+                        goToKiteStuff(bot, { type: "a8" })
+                        break
+                    case "vbat":
+                        goToKiteStuff(bot, { type: "vbat" })
+                        break
+                    default:
+                        console.debug(`We don't have a handler to move to ${nearest.type}!`)
+                        break
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+    }
+    moveLoop()
+}
+
 async function run() {
     // Login and prepare pathfinding
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
@@ -590,46 +741,19 @@ async function run() {
     }
     startRangerLoop(rangerName, region, identifier).catch(() => { /* ignore errors */ })
 
-    // const startWarriorLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
-    //     // Start the characters
-    //     const loopBot = async () => {
-    //         try {
-    //             if (warrior) warrior.disconnect()
-    //             warrior = await AL.Game.startWarrior(name, region, identifier)
-    //             friends[3] = warrior
-    //             startWarrior(warrior)
-    //             addSocket(warrior.id, warrior.socket, warrior)
-    //             warrior.socket.on("disconnect", async () => { loopBot() })
-    //         } catch (e) {
-    //             console.error(e)
-    //             if (warrior) warrior.disconnect()
-    //             const wait = /wait_(\d+)_second/.exec(e)
-    //             if (wait && wait[1]) {
-    //                 setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
-    //             } else if (/limits/.test(e)) {
-    //                 setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
-    //             } else {
-    //                 setTimeout(async () => { loopBot() }, 10000)
-    //             }
-    //         }
-    //     }
-    //     loopBot()
-    // }
-    // startWarriorLoop(warriorName, region, identifier).catch(() => { /* ignore errors */ })
-
-    const startMageLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
+    const startWarriorLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (mage) mage.disconnect()
-                mage = await AL.Game.startMage(name, region, identifier)
-                friends[3] = mage
-                startMage(mage)
-                addSocket(mage.id, mage.socket, mage)
-                mage.socket.on("disconnect", async () => { loopBot() })
+                if (warrior) warrior.disconnect()
+                warrior = await AL.Game.startWarrior(name, region, identifier)
+                friends[3] = warrior
+                startWarrior(warrior)
+                addSocket(warrior.id, warrior.socket, warrior)
+                warrior.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (mage) mage.disconnect()
+                if (warrior) warrior.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -642,6 +766,33 @@ async function run() {
         }
         loopBot()
     }
-    startMageLoop(mageName, region, identifier).catch(() => { /* ignore errors */ })
+    startWarriorLoop(warriorName, region, identifier).catch(() => { /* ignore errors */ })
+
+    // const startMageLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
+    //     // Start the characters
+    //     const loopBot = async () => {
+    //         try {
+    //             if (mage) mage.disconnect()
+    //             mage = await AL.Game.startMage(name, region, identifier)
+    //             friends[3] = mage
+    //             startMage(mage)
+    //             addSocket(mage.id, mage.socket, mage)
+    //             mage.socket.on("disconnect", async () => { loopBot() })
+    //         } catch (e) {
+    //             console.error(e)
+    //             if (mage) mage.disconnect()
+    //             const wait = /wait_(\d+)_second/.exec(e)
+    //             if (wait && wait[1]) {
+    //                 setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+    //             } else if (/limits/.test(e)) {
+    //                 setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+    //             } else {
+    //                 setTimeout(async () => { loopBot() }, 10000)
+    //             }
+    //         }
+    //     }
+    //     loopBot()
+    // }
+    // startMageLoop(mageName, region, identifier).catch(() => { /* ignore errors */ })
 }
 run()
