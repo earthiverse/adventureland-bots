@@ -7,7 +7,7 @@ import { doBanking, doEmergencyBanking, goFishing, goMining, merchantSmartMove, 
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 // import { startChargeLoop, startHardshellLoop, startWarcryLoop, attackTheseTypesWarrior } from "../base/warrior.js"
-import { addCryptMonstersToDB, CRYPT_MONSTERS, getCryptMonsterLocation } from "./shared.js"
+import { addCryptMonstersToDB, getCryptMonsterLocation, getNearestCryptMonster } from "./shared.js"
 
 /** Config */
 const region: ServerRegion = "US"
@@ -405,7 +405,7 @@ async function startMage(bot: Mage) {
                 await attackTheseTypesMage(bot, ["goldenbat", "mvampire", "phoenix", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "vbat", "bat", "zapper0"], friends)
             } else {
                 // Throw snowballs at fast enemies
-                const nearest = bot.getEntity({ couldGiveCredit: true, returnNearest: true })
+                const nearest = getNearestCryptMonster(bot)
                 if (nearest && nearest.target && nearest.charge > bot.speed && !nearest.s.frozen && bot.canUse("snowball")) {
                     await bot.throwSnowball(nearest.id)
                 }
@@ -444,7 +444,7 @@ async function startMage(bot: Mage) {
 
             const stopLogic = () => {
                 // We're near a crypt monster
-                const nearest = bot.getEntity({ typeList: CRYPT_MONSTERS })
+                const nearest = getNearestCryptMonster(bot)
                 if (nearest) return true
 
                 // We need to wait for our friends to catch up
@@ -457,7 +457,7 @@ async function startMage(bot: Mage) {
             // Go to the location it tells us there's a crypt monster at
             await bot.smartMove(LOCATION, { stopIfTrue: stopLogic, useBlink: false })
 
-            const nearest = bot.getEntity({ returnNearest: true })
+            const nearest = getNearestCryptMonster(bot)
             if (!nearest) {
                 // No nearby monsters, go to the end of the crypt
                 await bot.smartMove(cryptEnd, { stopIfTrue: stopLogic, useBlink: false })
