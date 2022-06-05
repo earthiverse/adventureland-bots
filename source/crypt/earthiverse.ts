@@ -31,6 +31,9 @@ const friends: [Merchant, Priest, Ranger, Mage | Warrior] = [undefined, undefine
 const LAST_LOCATION_CHECK = 0
 let LOCATION: IPosition
 
+// Hold snowballs, too
+ITEMS_TO_HOLD.add("snowball")
+
 async function startShared(bot: Character) {
     startAvoidStacking(bot)
     startBuyLoop(bot)
@@ -393,6 +396,10 @@ async function startMage(bot: Mage) {
             }
 
             // Idle strategy
+            const nearest = bot.getEntity({ couldGiveCredit: true, returnNearest: true })
+            if (nearest && nearest.target && nearest.speed > bot.speed && !nearest.s.frozen && bot.canUse("snowball")) {
+                await bot.throwSnowball(nearest.id)
+            }
             await attackTheseTypesMage(bot, targets, friends)
         } catch (e) {
             console.error(e)
