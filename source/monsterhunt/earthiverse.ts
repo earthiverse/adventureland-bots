@@ -1,4 +1,4 @@
-import AL, { Merchant, Priest, Ranger, Warrior, GMap, ServerInfoDataLive, IPosition, SlotType, ItemName } from "alclient"
+import AL, { Merchant, Priest, Ranger, Warrior, GMap, ServerInfoDataLive, IPosition, SlotType, ItemName, Tools } from "alclient"
 import { addSocket, startServer } from "algui"
 import { goToAggroMonster, goToNearestWalkableToMonster, goToNearestWalkableToMonster2, goToNPC, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, moveInCircle, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
 import { mainCrabs, mainGoos, offsetPositionParty } from "../base/locations.js"
@@ -1396,14 +1396,14 @@ function prepareWarrior(bot: Warrior) {
         mole: {
             attack: async () => {
                 // Agitate low level monsters that we can tank so the ranger can kill them quickly with 3shot and 5shot.
-                if (bot.canUse("agitate") && bot.players.has(information.bot1.name)) {
+                if (bot.canUse("agitate") && Tools.distance(bot, information.bot1?.bot) < information.bot1?.bot?.range) {
                     let shouldAgitate = true
                     const toAgitate = []
                     for (const [, entity] of bot.entities) {
                         if (AL.Tools.distance(bot, entity) > bot.G.skills.agitate.range) continue // Too far to agitate
                         if (entity.target == bot.name) continue // Already targeting us
                         if (entity.type !== "mole" || entity.level > 3) {
-                        // Only agitate low level moles
+                            // Only agitate low level moles
                             shouldAgitate = false
                             break
                         }
@@ -1564,21 +1564,23 @@ function prepareWarrior(bot: Warrior) {
         snowman: {
             attack: async () => {
                 // Agitate bees to farm them while attacking the snowman
-                let shouldAgitate = false
-                for (const entity of bot.getEntities({
-                    couldGiveCredit: true,
-                    targetingMe: false,
-                    withinRange: bot.G.skills.agitate.range
-                })) {
-                    if (entity.type !== "snowman" && !strategy[entity.type]?.attackWhileIdle) {
+                if (bot.canUse("agitate")) {
+                    let shouldAgitate = false
+                    for (const entity of bot.getEntities({
+                        couldGiveCredit: true,
+                        targetingMe: false,
+                        withinRange: bot.G.skills.agitate.range
+                    })) {
+                        if (entity.type !== "snowman" && !strategy[entity.type]?.attackWhileIdle) {
                         // Something else is here, don't agitate
-                        shouldAgitate = false
-                        break
+                            shouldAgitate = false
+                            break
+                        }
+                        shouldAgitate = true
                     }
-                    shouldAgitate = true
+                    if (shouldAgitate) bot.agitate()
                 }
-                if (shouldAgitate && bot.canUse("agitate")) bot.agitate()
-                await attackTheseTypesWarrior(bot, ["snowman"], information.friends)
+                await attackTheseTypesWarrior(bot, ["snowman"], information.friends, { disableStomp: true })
             },
             attackWhileIdle: true,
             equipment: { mainhand: "candycanesword", offhand: "candycanesword", orb: "jacko" },
@@ -1608,9 +1610,9 @@ function prepareWarrior(bot: Warrior) {
             attack: async () => {
                 const priest = information.bot1.bot
                 if (priest && priest.canUse("heal", { ignoreCooldown: true }) && AL.Tools.distance(bot, priest) < priest.range) {
-                    await attackTheseTypesWarrior(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends)
+                    await attackTheseTypesWarrior(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends, { disableStomp: true })
                 } else {
-                    await attackTheseTypesWarrior(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends, { disableAgitate: true })
+                    await attackTheseTypesWarrior(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends, { disableAgitate: true, disableStomp: true })
                 }
             },
             equipment: aoeEquipment,
