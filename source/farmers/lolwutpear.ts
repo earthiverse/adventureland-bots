@@ -10,8 +10,8 @@ const region: ServerRegion = "US"
 const identifier: ServerIdentifier = "I"
 const mage_ID = "lolwutpear"
 const merchant_ID = "orlyowl"
-const mage2_ID = "over9000"
-const mage3_ID = "fgsfds"
+const mage2_ID = "shoopdawhoop"
+const mage3_ID = "ytmnd"
 
 let mage: Mage // squigtoads
 let merchant: Merchant
