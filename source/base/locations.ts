@@ -5,6 +5,7 @@ export const mainArmadillos: IPosition = { map: "main", x: 526, y: 1846 }
 export const mainBeesNearTunnel: IPosition = { map: "main", x: 152, y: 1487 }
 export const mainBeesNearGoos: IPosition = { map: "main", x: 546, y: 1059 }
 export const mainBeesNearRats: IPosition = { map: "main", x: 625, y: 725 }
+export const mainBigBirds: IPosition = { map: "main", x: 1343, y: 248 }
 export const mainCrabs: IPosition = { map: "main", x: -1202.5, y: -66 }
 export const mainCrabXs: IPosition = { map: "main", x: -984, y: 1762 }
 export const mainCrocs: IPosition = { map: "main", x: 801, y: 1710 }

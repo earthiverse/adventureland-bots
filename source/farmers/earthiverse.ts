@@ -1,7 +1,6 @@
 import AL, { Character, Merchant, Priest, Ranger, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { addSocket, startServer } from "algui"
-import { startMerchant, startPriest as startXScorpionPriest, startWarrior as startXScorpionWarrior } from "../xscorpions/shared.js"
-import { halloweenXScorpions } from "../base/locations.js"
+import { startMerchant, startPriest as startBigBirdPriest, startWarrior as startBigBirdWarrior } from "../bigbird/shared.js"
 import { startTrackerLoop } from "../base/general.js"
 import { startRanger as startBoarRanger } from "../boars/shared.js"
 
@@ -13,9 +12,9 @@ const ranger_ID = "earthiverse"
 const warrior_ID = "earthWar"
 
 let merchant: Merchant
-let priest: Priest // xscorpions
+let priest: Priest // bigbirds
 let ranger: Ranger // boars
-let warrior: Warrior // xscorpions
+let warrior: Warrior // bigbirds
 const friends: Character[] = [undefined, undefined, undefined, undefined]
 
 async function run() {
@@ -63,7 +62,7 @@ async function run() {
                 if (warrior) warrior.disconnect()
                 warrior = await AL.Game.startWarrior(name, region, identifier)
                 friends[1] = warrior
-                startXScorpionWarrior(warrior, merchant_ID, friends, "vhammer", "glolipop", halloweenXScorpions)
+                startBigBirdWarrior(warrior, merchant_ID, friends, "vhammer", "glolipop")
                 addSocket(warrior.id, warrior.socket, warrior)
                 startTrackerLoop(warrior)
                 warrior.socket.on("disconnect", async () => { loopBot() })
@@ -91,7 +90,7 @@ async function run() {
                 if (priest) priest.disconnect()
                 priest = await AL.Game.startPriest(name, region, identifier)
                 friends[2] = priest
-                startXScorpionPriest(priest, merchant_ID, friends, halloweenXScorpions)
+                startBigBirdPriest(priest, merchant_ID, friends)
                 addSocket(priest.id, priest.socket, priest)
                 priest.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
