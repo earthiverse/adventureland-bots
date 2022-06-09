@@ -2,7 +2,7 @@ import AL, { Character, Mage, Merchant, ServerIdentifier, ServerRegion } from "a
 import { startTrackerLoop } from "../base/general.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { startMage as startSquigtoadMage } from "../squigtoads/shared.js"
-import { startMage as startMiniMushMage } from "../minimush/shared.js"
+import { startMage as startRatMage } from "../rats/shared.js"
 import { startMerchant } from "../prat/shared.js"
 
 
@@ -15,8 +15,8 @@ const mage3_ID = "ytmnd"
 
 let mage: Mage // squigtoads
 let merchant: Merchant
-let mage2: Mage // minimush
-let mage3: Mage // minimush
+let mage2: Mage // rat
+let mage3: Mage // rat
 const friends: Character[] = [undefined, undefined, undefined, undefined]
 
 async function run() {
@@ -60,7 +60,7 @@ async function run() {
                 if (mage3) mage3.disconnect()
                 mage3 = await AL.Game.startMage(name, region, identifier)
                 friends[1] = mage3
-                startMiniMushMage(mage3, merchant_ID, friends, partyLeader, partyMembers)
+                startRatMage(mage3, merchant_ID, friends, partyLeader, partyMembers)
                 startTrackerLoop(mage3)
                 mage3.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
@@ -87,7 +87,7 @@ async function run() {
                 if (mage2) mage2.disconnect()
                 mage2 = await AL.Game.startMage(name, region, identifier)
                 friends[2] = mage2
-                startMiniMushMage(mage2, merchant_ID, friends, partyLeader, partyMembers)
+                startRatMage(mage2, merchant_ID, friends, partyLeader, partyMembers)
                 mage2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
