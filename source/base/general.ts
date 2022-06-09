@@ -360,7 +360,9 @@ export async function getPriority2Entities(bot: Character): Promise<Entity[] | I
         // Event Monsters
         "pinkgoo", "wabbit", "slenderman", "tiger",
         // Rare Monsters
-        "snowman", "greenjr", "jr", "skeletor", "mvampire", "fvampire", "stompy"
+        "snowman", "greenjr", "jr", "skeletor", "mvampire", "fvampire", "stompy",
+        // Crypt Monsters
+        "vbat", "a2"
     ]
     const nearby = bot.getEntities({
         couldGiveCredit: true,
@@ -1302,6 +1304,11 @@ export function startDebugLoop(bot: Character): void {
 
     let i = 0
     bot.socket.onAny((event: string, data: unknown) => {
+        DEBUG_EVENTS[i] = [new Date(), event, JSON.stringify(data)]
+        i = (i + 1) % 1000
+    })
+
+    bot.socket.onAnyOutgoing((event: string, data: unknown) => {
         DEBUG_EVENTS[i] = [new Date(), event, JSON.stringify(data)]
         i = (i + 1) % 1000
     })

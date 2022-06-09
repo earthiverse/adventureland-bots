@@ -91,6 +91,11 @@ function preparePriest(bot: Priest) {
     const strategy: Strategy = {
         defaultTarget: "spider",
         // eslint-disable-next-line sort-keys
+        a2: {
+            attack: async () => { await attackTheseTypesPriest(bot, ["a2"], information.friends) },
+            equipment: maxDamageEquipment,
+            move: async () => { await goToSpecialMonster(bot, "a2", { requestMagiport: true }) },
+        },
         arcticbee: {
             attack: async () => { await attackTheseTypesPriest(bot, ["arcticbee"], information.friends) },
             attackWhileIdle: true,
@@ -568,6 +573,11 @@ function preparePriest(bot: Priest) {
             equipment: maxDamageEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["tortoise"], { map: "main", x: -1104, y: 1118 }) },
         },
+        vbat: {
+            attack: async () => { await attackTheseTypesPriest(bot, ["vbat"], information.friends) },
+            equipment: maxDamageEquipment,
+            move: async () => { await goToSpecialMonster(bot, "vbat", { requestMagiport: true }) },
+        },
         wabbit: {
             attack: async () => { await attackTheseTypesPriest(bot, ["wabbit"], information.friends) },
             attackWhileIdle: true,
@@ -603,6 +613,11 @@ function prepareRanger(bot: Ranger) {
     const strategy: Strategy = {
         defaultTarget: "spider",
         // eslint-disable-next-line sort-keys
+        a2: {
+            attack: async () => { await attackTheseTypesRanger(bot, ["a2"], information.friends) },
+            equipment: maxDamageEquipment,
+            move: async () => { await goToSpecialMonster(bot, "a2", { requestMagiport: true }) },
+        },
         arcticbee: {
             attack: async () => { await attackTheseTypesRanger(bot, ["arcticbee"], information.friends) },
             attackWhileIdle: true,
@@ -1070,6 +1085,11 @@ function prepareRanger(bot: Ranger) {
             equipment: maxRangeEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["tortoise"], { map: "main", x: -1124, y: 1118 }) },
         },
+        vbat: {
+            attack: async () => { await attackTheseTypesRanger(bot, ["vbat"], information.friends) },
+            equipment: maxDamageEquipment,
+            move: async () => { await goToSpecialMonster(bot, "vbat", { requestMagiport: true }) },
+        },
         wabbit: {
             attack: async () => { return attackTheseTypesRanger(bot, ["wabbit", "arcticbee", "bat", "bbpompom", "bee", "boar", "cgoo", "crab", "cutebee", "crabx", "croc", "fvampire", "ghost", "goldenbat", "goo", "greenjr", "hen", "jr", "minimush", "mole", "mvampire", "osnake", "phoenix", "poisio", "rooster", "scorpion", "snake", "spider", "stoneworm", "stompy", "squig", "squigtoad", "tortoise", "wolf", "wolfie", "xscorpion"], information.friends) },
             attackWhileIdle: true,
@@ -1107,6 +1127,11 @@ function prepareWarrior(bot: Warrior) {
     const strategy: Strategy = {
         defaultTarget: "spider",
         // eslint-disable-next-line sort-keys
+        a2: {
+            attack: async () => { await attackTheseTypesWarrior(bot, ["vbat"], information.friends, { disableAgitate: true }) },
+            equipment: burnEquipment,
+            move: async () => { await goToSpecialMonster(bot, "vbat", { requestMagiport: true }) },
+        },
         arcticbee: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["arcticbee"], information.friends) },
             attackWhileIdle: true,
@@ -1691,6 +1716,11 @@ function prepareWarrior(bot: Warrior) {
             attackWhileIdle: true,
             equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster(bot, ["tortoise"], { map: "main", x: -1144, y: 1118 }) },
+        },
+        vbat: {
+            attack: async () => { await attackTheseTypesWarrior(bot, ["vbat"], information.friends, { disableAgitate: true }) },
+            equipment: burnEquipment,
+            move: async () => { await goToSpecialMonster(bot, "vbat", { requestMagiport: true }) },
         },
         wabbit: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["wabbit", "arcticbee", "bat", "bbpompom", "bee", "boar", "cgoo", "crab", "cutebee", "crabx", "croc", "fvampire", "ghost", "goldenbat", "goo", "greenjr", "hen", "jr", "minimush", "mole", "mvampire", "osnake", "phoenix", "poisio", "rooster", "scorpion", "snake", "spider", "stoneworm", "stompy", "squig", "squigtoad", "tortoise", "wolf", "wolfie", "xscorpion"], information.friends, { disableAgitate: true }) },

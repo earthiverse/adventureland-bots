@@ -1,21 +1,22 @@
-import AL, { Character, Mage, Merchant, Priest, ServerIdentifier, ServerRegion, Warrior } from "alclient"
+import AL, { Character, Mage, Merchant, ServerIdentifier, ServerRegion } from "alclient"
 import { startTrackerLoop } from "../base/general.js"
-import { level1PratsNearLedge } from "../base/locations.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { startMage as startSquigtoadMage } from "../squigtoads/shared.js"
-import { startMerchant, startPriest as startPratPriest, startWarrior as startPratWarrior } from "../prat/shared.js"
+import { startMage as startMiniMushMage } from "../minimush/shared.js"
+import { startMerchant } from "../prat/shared.js"
+
 
 const region: ServerRegion = "US"
 const identifier: ServerIdentifier = "I"
 const mage_ID = "lolwutpear"
 const merchant_ID = "orlyowl"
-const priest_ID = "over9000"
-const warrior_ID = "fgsfds"
+const mage2_ID = "over9000"
+const mage3_ID = "fgsfds"
 
 let mage: Mage // squigtoads
 let merchant: Merchant
-let priest: Priest // prats
-let warrior: Warrior // prats
+let mage2: Mage // minimush
+let mage3: Mage // minimush
 const friends: Character[] = [undefined, undefined, undefined, undefined]
 
 async function run() {
@@ -56,15 +57,15 @@ async function run() {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (warrior) warrior.disconnect()
-                warrior = await AL.Game.startWarrior(name, region, identifier)
-                friends[1] = warrior
-                startPratWarrior(warrior, merchant_ID, friends, "vhammer", "ololipop", level1PratsNearLedge)
-                startTrackerLoop(warrior)
-                warrior.socket.on("disconnect", async () => { loopBot() })
+                if (mage3) mage3.disconnect()
+                mage3 = await AL.Game.startMage(name, region, identifier)
+                friends[1] = mage3
+                startMiniMushMage(mage3, merchant_ID, friends, partyLeader, partyMembers)
+                startTrackerLoop(mage3)
+                mage3.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (warrior) warrior.disconnect()
+                if (mage3) mage3.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -77,20 +78,20 @@ async function run() {
         }
         loopBot()
     }
-    startWarriorLoop(warrior_ID, region, identifier).catch(() => { /* ignore errors */ })
+    startWarriorLoop(mage3_ID, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startPriestLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
+    const startMage2Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (priest) priest.disconnect()
-                priest = await AL.Game.startPriest(name, region, identifier)
-                friends[2] = priest
-                startPratPriest(priest, merchant_ID, friends, level1PratsNearLedge)
-                priest.socket.on("disconnect", async () => { loopBot() })
+                if (mage2) mage2.disconnect()
+                mage2 = await AL.Game.startMage(name, region, identifier)
+                friends[2] = mage2
+                startMiniMushMage(mage2, merchant_ID, friends, partyLeader, partyMembers)
+                mage2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (priest) priest.disconnect()
+                if (mage2) mage2.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -103,7 +104,7 @@ async function run() {
         }
         loopBot()
     }
-    startPriestLoop(priest_ID, region, identifier).catch(() => { /* ignore errors */ })
+    startMage2Loop(mage2_ID, region, identifier).catch(() => { /* ignore errors */ })
 
     const startMageLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
