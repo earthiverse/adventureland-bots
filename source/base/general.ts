@@ -1638,7 +1638,7 @@ export function startPartyLoop(bot: Character, leader: string, partyMembers?: st
 
             if (!bot.party) {
                 await bot.sendPartyRequest(leader)
-            } else if (bot.partyData?.list && !bot.partyData.list.includes(leader)) {
+            } else if (!(bot.partyData?.list?.includes(leader))) {
                 // await bot.leaveParty()
                 await bot.sendPartyRequest(leader)
             }
@@ -1656,7 +1656,7 @@ export function startPartyInviteLoop(bot: Character, player: string): void {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            if (bot.partyData?.list && !bot.partyData.list.includes(player) /** Only invite if they're missing */
+            if (!bot.partyData?.list?.includes(player) /** Only invite if they're missing */
                 && bot.partyData.list.length < 9 /** Don't invite if we're at capacity */) {
                 bot.sendPartyInvite(player)
             }
