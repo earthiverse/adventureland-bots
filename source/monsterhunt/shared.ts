@@ -1,5 +1,5 @@
 import AL, { Character, CMData, Constants, Entity, IPosition, ItemName, LimitDCReportData, Mage, Merchant, MonsterName, NPCName, Paladin, Priest, Ranger, Rogue, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, SmartMoveOptions, Tools, Warrior } from "alclient"
-import { calculateAttackLoopCooldown, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, goGetRspeedBuff, ITEMS_TO_BUY, ITEMS_TO_HOLD, ITEMS_TO_LIST, LOOP_MS, REPLENISHABLES_TO_BUY, startAvoidStacking, startBuyFriendsReplenishablesLoop, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
+import { calculateAttackLoopCooldown, checkOnlyEveryMS, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, goGetRspeedBuff, ITEMS_TO_BUY, ITEMS_TO_HOLD, ITEMS_TO_LIST, LOOP_MS, REPLENISHABLES_TO_BUY, startAvoidStacking, startBuyFriendsReplenishablesLoop, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMage, magiportStrangerIfNotNearby } from "../base/mage.js"
 import { attackTheseTypesMerchant, doBanking, doEmergencyBanking, goFishing, goMining, merchantSmartMove, startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
@@ -291,7 +291,6 @@ export async function startMerchant(bot: Merchant, information: Information, str
     }
     attackLoop()
 
-    let lastBankVisit = Number.MIN_VALUE
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -304,8 +303,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
             }
 
             // If we are full, let's go to the bank
-            if (bot.isFull() || lastBankVisit < Date.now() - 120000 || bot.hasPvPMarkedItem()) {
-                lastBankVisit = Date.now()
+            if (checkOnlyEveryMS(`${bot.id}_bank`, 120000) || bot.isFull() || bot.hasPvPMarkedItem()) {
                 await doBanking(bot)
                 await doEmergencyBanking(bot)
                 bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
@@ -322,7 +320,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
             }
 
             // Get some buffs from rogues
-            await goGetRspeedBuff(bot)
+            if (checkOnlyEveryMS(`${bot.id}_rspeed`, 10000)) await goGetRspeedBuff(bot)
 
             // mluck our friends
             if (bot.canUse("mluck", { ignoreCooldown: true })) {
@@ -1067,7 +1065,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
                 }
 
                 // Get some buffs from rogues
-                await goGetRspeedBuff(bot)
+                if (checkOnlyEveryMS(`${bot.id}_rspeed`, 10000)) await goGetRspeedBuff(bot)
 
                 // NOTE: I don't know if it's implemented incorrectly, but @Wizard implied that it no longer (never in the first place?)
                 //       gives blessing to other players, only your own.

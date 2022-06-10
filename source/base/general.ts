@@ -1033,6 +1033,16 @@ export function requestMagiportService(bot: Character, targetLocation: IPosition
     })
 }
 
+const lastCheck = new Map<string, number>()
+export function checkOnlyEveryMS(key: string, msSince = 5000) {
+    const last = lastCheck.get(key)
+    if (last && last < Date.now() - msSince) {
+        lastCheck.set(key, Date.now())
+        return true
+    }
+    return false
+}
+
 export function sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms))
 }

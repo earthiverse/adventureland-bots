@@ -1,5 +1,5 @@
 import AL, { Character, Mage, Priest, Ranger } from "alclient"
-import { goGetRspeedBuff, goToBankIfFull, goToNearestWalkableToMonster2, goToPotionSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
+import { checkOnlyEveryMS, goGetRspeedBuff, goToBankIfFull, goToNearestWalkableToMonster2, goToPotionSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { bankingPosition, mainSquigs } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
@@ -95,7 +95,7 @@ export async function startMage(bot: Mage, merchant: string, friends: Character[
             }
 
             // Get some buffs from rogues
-            await goGetRspeedBuff(bot)
+            if (checkOnlyEveryMS(`${bot.id}_rspeed`, 10000)) await goGetRspeedBuff(bot)
 
             // Get a luck elixir
             if (!bot.slots.elixir
@@ -182,7 +182,7 @@ export async function startPriest(bot: Priest, merchant: string, friends: Charac
             }
 
             // Get some buffs from rogues
-            await goGetRspeedBuff(bot)
+            if (checkOnlyEveryMS(`${bot.id}_rspeed`, 10000)) await goGetRspeedBuff(bot)
 
             // Get a luck elixir
             if (!bot.slots.elixir
@@ -269,7 +269,7 @@ export async function startRanger(bot: Ranger, merchant: string, friends: Charac
             }
 
             // Get some buffs from rogues
-            await goGetRspeedBuff(bot)
+            if (checkOnlyEveryMS(`${bot.id}_rspeed`, 10000)) await goGetRspeedBuff(bot)
 
             // Get a luck elixir
             if (!bot.slots.elixir

@@ -1,5 +1,5 @@
 import AL, { Character, Warrior, Priest, Merchant, IPosition, MonsterName, ServerInfoDataLive, ItemName } from "alclient"
-import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, LOOP_MS, moveInCircle, startBuyFriendsReplenishablesLoop, REPLENISHABLES_TO_BUY, goGetRspeedBuff, calculateAttackLoopCooldown } from "../base/general.js"
+import { startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, ITEMS_TO_HOLD, startUpgradeLoop, LOOP_MS, moveInCircle, startBuyFriendsReplenishablesLoop, REPLENISHABLES_TO_BUY, goGetRspeedBuff, calculateAttackLoopCooldown, checkOnlyEveryMS } from "../base/general.js"
 import { mainBigBirds } from "../base/locations.js"
 import { startMluckLoop, doBanking, doEmergencyBanking, goFishing, goMining } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "../base/party.js"
@@ -89,7 +89,7 @@ export async function startWarrior(bot: Warrior, merchant: string, friends: Char
             }
 
             // Get some buffs from rogues
-            await goGetRspeedBuff(bot)
+            if (checkOnlyEveryMS(`${bot.id}_rspeed`, 10000)) await goGetRspeedBuff(bot)
 
             // Get a luck elixir
             if (!bot.slots.elixir
@@ -157,7 +157,7 @@ export async function startPriest(bot: Priest, merchant: string, friends: Charac
             }
 
             // Get some buffs from rogues
-            await goGetRspeedBuff(bot)
+            if (checkOnlyEveryMS(`${bot.id}_rspeed`, 10000)) await goGetRspeedBuff(bot)
 
             // Get a luck elixir
             if (!bot.slots.elixir
@@ -215,7 +215,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], standPl
             }
 
             // Get some buffs from rogues
-            await goGetRspeedBuff(bot)
+            if (checkOnlyEveryMS(`${bot.id}_rspeed`, 10000)) await goGetRspeedBuff(bot)
 
             // mluck our friends
             if (bot.canUse("mluck", { ignoreCooldown: true })) {
