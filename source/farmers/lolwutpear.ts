@@ -1,22 +1,21 @@
-import AL, { Character, Mage, Merchant, ServerIdentifier, ServerRegion } from "alclient"
+import AL, { Character, Mage, Merchant, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { startTrackerLoop } from "../base/general.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { startMage as startSquigtoadMage } from "../squigtoads/shared.js"
-import { startMage as startRatMage } from "../rats/shared.js"
+import { startWarrior as startBBPomPomWarrior } from "../bbpompom/shared.js"
 import { startMerchant } from "../prat/shared.js"
-
 
 const region: ServerRegion = "US"
 const identifier: ServerIdentifier = "I"
-const mage_ID = "lolwutpear"
+const char1_ID = "lolwutpear"
+const char2_ID = "fgsfds"
+const char3_ID = "fsjal"
 const merchant_ID = "orlyowl"
-const mage2_ID = "shoopdawhoop"
-const mage3_ID = "ytmnd"
 
-let mage: Mage // squigtoads
+let char1: Mage // squigtoads
+let char2: Warrior // bbpompoms
+let char3: Warrior // bbpompoms
 let merchant: Merchant
-let mage2: Mage // rat
-let mage3: Mage // rat
 const friends: Character[] = [undefined, undefined, undefined, undefined]
 
 async function run() {
@@ -53,19 +52,18 @@ async function run() {
     }
     startMerchantLoop(merchant_ID, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startWarriorLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
+    const startChar1Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (mage3) mage3.disconnect()
-                mage3 = await AL.Game.startMage(name, region, identifier)
-                friends[1] = mage3
-                startRatMage(mage3, merchant_ID, friends, partyLeader, partyMembers)
-                startTrackerLoop(mage3)
-                mage3.socket.on("disconnect", async () => { loopBot() })
+                if (char1) char1.disconnect()
+                char1 = await AL.Game.startMage(name, region, identifier)
+                friends[3] = char1
+                startSquigtoadMage(char1, merchant_ID, friends, partyLeader, partyMembers)
+                char1.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (mage3) mage3.disconnect()
+                if (char1) char1.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -78,20 +76,20 @@ async function run() {
         }
         loopBot()
     }
-    startWarriorLoop(mage3_ID, region, identifier).catch(() => { /* ignore errors */ })
+    startChar1Loop(char1_ID, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startMage2Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
+    const startChar2Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (mage2) mage2.disconnect()
-                mage2 = await AL.Game.startMage(name, region, identifier)
-                friends[2] = mage2
-                startRatMage(mage2, merchant_ID, friends, partyLeader, partyMembers)
-                mage2.socket.on("disconnect", async () => { loopBot() })
+                if (char2) char2.disconnect()
+                char2 = await AL.Game.startWarrior(name, region, identifier)
+                friends[2] = char2
+                startBBPomPomWarrior(char2, merchant_ID, friends, partyLeader, partyMembers)
+                char2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (mage2) mage2.disconnect()
+                if (char2) char2.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -104,20 +102,21 @@ async function run() {
         }
         loopBot()
     }
-    startMage2Loop(mage2_ID, region, identifier).catch(() => { /* ignore errors */ })
+    startChar2Loop(char2_ID, region, identifier).catch(() => { /* ignore errors */ })
 
-    const startMageLoop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
+    const startChar3Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         // Start the characters
         const loopBot = async () => {
             try {
-                if (mage) mage.disconnect()
-                mage = await AL.Game.startMage(name, region, identifier)
-                friends[3] = mage
-                startSquigtoadMage(mage, merchant_ID, friends, partyLeader, partyMembers)
-                mage.socket.on("disconnect", async () => { loopBot() })
+                if (char3) char3.disconnect()
+                char3 = await AL.Game.startWarrior(name, region, identifier)
+                friends[1] = char3
+                startBBPomPomWarrior(char3, merchant_ID, friends, partyLeader, partyMembers)
+                startTrackerLoop(char3)
+                char3.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
-                if (mage) mage.disconnect()
+                if (char3) char3.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
                     setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
@@ -130,6 +129,6 @@ async function run() {
         }
         loopBot()
     }
-    startMageLoop(mage_ID, region, identifier).catch(() => { /* ignore errors */ })
+    startChar3Loop(char3_ID, region, identifier).catch(() => { /* ignore errors */ })
 }
 run()
