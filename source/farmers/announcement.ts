@@ -4,6 +4,7 @@ import { partyLeader, partyMembers } from "../base/party.js"
 import { startMage as startFrogMage } from "../frogs/shared.js"
 import { startWarrior as startBBPomPomWarrior } from "../bbpompom/shared.js"
 import { startMerchant } from "../prat/shared.js"
+import { winterCaveBBPomPomsNearDoor } from "../base/locations.js"
 
 const region: ServerRegion = "US"
 const identifier: ServerIdentifier = "I"
@@ -86,7 +87,7 @@ async function run() {
                 if (char2) char2.disconnect()
                 char2 = await AL.Game.startWarrior(name, region, identifier)
                 friends[2] = char2
-                startBBPomPomWarrior(char2, merchant_ID, friends, partyLeader, partyMembers)
+                startBBPomPomWarrior(char2, merchant_ID, friends, partyLeader, partyMembers, winterCaveBBPomPomsNearDoor)
                 char2.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
@@ -112,7 +113,7 @@ async function run() {
                 if (char3) char3.disconnect()
                 char3 = await AL.Game.startWarrior(name, region, identifier)
                 friends[3] = char3
-                startBBPomPomWarrior(char3, merchant_ID, friends, partyLeader, partyMembers)
+                startBBPomPomWarrior(char3, merchant_ID, friends, partyLeader, partyMembers, winterCaveBBPomPomsNearDoor)
                 char3.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)

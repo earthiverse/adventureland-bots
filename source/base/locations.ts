@@ -50,6 +50,10 @@ export const miningSpot: IPosition = { map: "tunnel", x: -280, y: -10 }
 export const winterlandArcticBees: IPosition = { map: "winterland", x: 1082, y: -873 }
 export const winterlandBoars: IPosition = { map: "winterland", x: 19.5, y: -1109 }
 
+// Winter Cave
+export const winterCaveBBPomPomsNearDoor: IPosition = { map: "winter_cave", x: 51, y: -164 }
+export const winterCaveBBPomPomsAbove: IPosition = { map: "winter_cave", x: -82.5, y: -949 }
+
 export function offsetPosition(position: IPosition, x: number, y: number): IPosition {
     return { in: position.in, map: position.map, x: position.x + x, y: position.y + y }
 }

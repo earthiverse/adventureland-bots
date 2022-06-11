@@ -1,4 +1,4 @@
-import AL, { Character, Warrior } from "alclient"
+import AL, { Character, IPosition, Warrior } from "alclient"
 import { checkOnlyEveryMS, goGetRspeedBuff, goToBankIfFull, goToNearestWalkableToMonster2, goToPotionSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { bankingPosition } from "../base/locations.js"
 import { attackTheseTypesWarrior, startChargeLoop, startHardshellLoop, startWarcryLoop } from "../base/warrior.js"
@@ -25,7 +25,7 @@ async function startShared(bot: Character, merchant: string, friends: Character[
     startUpgradeLoop(bot)
 }
 
-export async function startWarrior(bot: Warrior, merchant: string, friends: Character[], partyLeader: string, partyMembers: string[]) {
+export async function startWarrior(bot: Warrior, merchant: string, friends: Character[], partyLeader: string, partyMembers: string[], location: IPosition) {
     startShared(bot, merchant, friends, partyLeader, partyMembers)
 
     startChargeLoop(bot)
@@ -107,7 +107,7 @@ export async function startWarrior(bot: Warrior, merchant: string, friends: Char
                 await bot.smartMove("elixirluck")
             }
 
-            await goToNearestWalkableToMonster2(bot, ["bbpompom"])
+            await goToNearestWalkableToMonster2(bot, ["bbpompom"], location)
         } catch (e) {
             console.error(e)
         }
