@@ -1,12 +1,11 @@
 import { Merchant } from "alclient"
-import { Loop, Loops, Strategy } from "../context.js"
+import { Loop, LoopName, Strategy } from "../context.js"
 
 export class ToggleStandByMovement<Type extends Merchant> implements Strategy<Type> {
-    public name = "OpenStandWhenMovingStrategy"
-    public loops: Loops<Type> = new Map<string, Loop<Type>>()
+    public loops = new Map<LoopName, Loop<Type>>()
 
     public constructor() {
-        this.loops.set("stand", {
+        this.loops.set("merchant_stand", {
             fn: async (bot: Type) => { await this.checkStand(bot) },
             interval: 100
         })

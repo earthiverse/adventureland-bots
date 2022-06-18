@@ -1,6 +1,6 @@
-import AL, { ServerIdentifier, ServerRegion, MonsterName, Mage } from "alclient"
+import AL, { ServerIdentifier, ServerRegion, MonsterName, Ranger } from "alclient"
 import { goToBankIfFull, goToNearestWalkableToMonster, goToPotionSellerIfLow, ITEMS_TO_SELL, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startUpgradeLoop } from "../base/general.js"
-import { attackTheseTypesMage } from "../base/mage.js"
+import { attackTheseTypesRanger } from "../base/ranger.js"
 import { Information } from "../definitions/bot.js"
 
 const DEFAULT_REGION: ServerRegion = "EU"
@@ -13,17 +13,17 @@ const information: Information = {
     // eslint-disable-next-line sort-keys
     bot1: {
         bot: undefined,
-        name: "lolwutpear",
+        name: "morbintime",
         target: undefined
     },
     bot2: {
         bot: undefined,
-        name: "shoopdawhoop",
+        name: "prettysus",
         target: undefined
     },
     bot3: {
         bot: undefined,
-        name: "ytmnd",
+        name: undefined,
         target: undefined
     },
     merchant: {
@@ -34,7 +34,7 @@ const information: Information = {
     }
 }
 
-async function startMage(bot: Mage) {
+async function startRanger(bot: Ranger) {
     startAvoidStacking(bot)
     startBuyLoop(bot)
     startCompoundLoop(bot)
@@ -47,15 +47,10 @@ async function startMage(bot: Mage) {
     startSellLoop(bot, { ...ITEMS_TO_SELL, "dexamulet": 1, "intamulet": 1, "stramulet": 1, "wbreeches": 1, "wgloves": 1 })
     startUpgradeLoop(bot)
 
-    if (!bot.isEquipped("wand")) {
-        const wand = bot.locateItem("wand", bot.items, { locked: true })
-        if (wand !== undefined) await bot.equip(wand)
-    }
-
     async function attackLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
-            await attackTheseTypesMage(bot, TARGETS, information.friends, { cburstWhenHPLessThan: 301 })
+            await attackTheseTypesRanger(bot, TARGETS, information.friends)
         } catch (e) {
             console.error(e)
         }
@@ -77,7 +72,7 @@ async function startMage(bot: Mage) {
             await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot)
 
-            if (bot.id == information.bot1.name){
+            if (bot.id == information.bot1.name) {
                 await goToNearestWalkableToMonster(bot, TARGETS, { map: "halloween", x: -589, y: -335 })
             } else if (bot.id == information.bot2.name) {
                 await goToNearestWalkableToMonster(bot, TARGETS, { map: "halloween", x: -488, y: -708 })
@@ -101,12 +96,12 @@ async function run() {
     // Start all characters
     console.log("Connecting...")
 
-    const startMage1Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
+    const startRanger1Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         const connectLoop = async () => {
             try {
-                information.bot1.bot = await AL.Game.startMage(name, region, identifier)
+                information.bot1.bot = await AL.Game.startRanger(name, region, identifier)
                 information.friends[1] = information.bot1.bot
-                startMage(information.bot1.bot as Mage)
+                startRanger(information.bot1.bot as Ranger)
             } catch (e) {
                 console.error(e)
                 if (information.bot1.bot) information.bot1.bot.disconnect()
@@ -131,14 +126,14 @@ async function run() {
         setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
         setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
     }
-    startMage1Loop(information.bot1.name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
+    startRanger1Loop(information.bot1.name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
 
-    const startMage2Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
+    const startRanger2Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
         const connectLoop = async () => {
             try {
-                information.bot2.bot = await AL.Game.startMage(name, region, identifier)
+                information.bot2.bot = await AL.Game.startRanger(name, region, identifier)
                 information.friends[2] = information.bot2.bot
-                startMage(information.bot2.bot as Mage)
+                startRanger(information.bot2.bot as Ranger)
             } catch (e) {
                 console.error(e)
                 if (information.bot2.bot) information.bot2.bot.disconnect()
@@ -163,38 +158,6 @@ async function run() {
         setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
         setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
     }
-    startMage2Loop(information.bot2.name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
-
-    const startMage3Loop = async (name: string, region: ServerRegion, identifier: ServerIdentifier) => {
-        const connectLoop = async () => {
-            try {
-                information.bot3.bot = await AL.Game.startMage(name, region, identifier)
-                information.friends[3] = information.bot3.bot
-                startMage(information.bot3.bot as Mage)
-            } catch (e) {
-                console.error(e)
-                if (information.bot3.bot) information.bot3.bot.disconnect()
-                information.bot3.bot = undefined
-            }
-            const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
-        }
-
-        const disconnectLoop = async () => {
-            try {
-                if (information.bot3.bot) information.bot3.bot.disconnect()
-                information.bot3.bot = undefined
-            } catch (e) {
-                console.error(e)
-            }
-            const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
-        }
-
-        const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
-        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
-    }
-    startMage3Loop(information.bot3.name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
+    startRanger2Loop(information.bot2.name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
 }
 run()

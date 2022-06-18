@@ -14,9 +14,9 @@ export const GOLD_TO_HOLD = 5_000_000
 export const FRIENDLY_ROGUES = ["copper", "Bjarna", "RisingVanir", "DripDrop", "earthRog"]
 
 export const MY_CHARACTERS = ["earthiverse", "earthMag", "earthMag2", "earthMag3", "earthMer", "earthMer2", "earthMer3", "earthPal", "earthPri", "earthPri2", "earthRan2", "earthRan3", "earthRog", "earthRog2", "earthRog3", "earthWar", "earthWar2", "earthWar3"]
-export const ANNOUNCEMENT_CHARACTERS = ["announcement", "battleworthy", "charmingness", "decisiveness", "enlightening", "facilitating", "gratuitously", "hypothesized", "illumination", "journalistic", "kaleidoscope", "logistically"]
+export const ANNOUNCEMENT_CHARACTERS = ["announcement", "battleworthy", "charmingness", "decisiveness", "enlightening", "facilitating", "gratuitously", "hypothesized", "illumination", "journalistic", "kaleidoscope", "logistically", "mythological", "nanoparticle"]
 export const KOUIN_CHARACTERS = ["bataxedude", "cclair", "fathergreen", "kakaka", "kekeke", "kouin", "kukuku", "mule0", "mule1", "mule2", "mule3", "mule5", "mule6", "mule7", "mule8", "mule9", "mule10", "piredude"]
-export const LOLWUTPEAR_CHARACTERS = ["fgsfds", "fsjal", "funny", "gaben", "lolwutpear", "longcat", "orlyowl", "over9000", "rickroll", "rule34", "shoopdawhoop", "wombocombo", "ytmnd"]
+export const LOLWUTPEAR_CHARACTERS = ["fgsfds", "fsjal", "funny", "gaben", "lolwutpear", "longcat", "morbintime", "orlyowl", "over9000", "prettysus", "rickroll", "rule34", "shoopdawhoop", "wombocombo", "ytmnd"]
 export const MAIN_CHARACTERS = ["WarriorMain", "MageMain", "MerchantMain", "PriestMain", "RangerMain", "PaladinMain", "RogueMain", "RogueSub"]
 
 export const ITEMS_TO_HOLD: Set<ItemName> = new Set([

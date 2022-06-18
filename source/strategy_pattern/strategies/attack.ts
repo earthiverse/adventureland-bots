@@ -1,19 +1,16 @@
 import AL, { MonsterName, PingCompensatedCharacter } from "alclient"
-import { Loop, Loops, Strategy } from "../context.js"
+import { Loop, LoopName, Strategy } from "../context.js"
 
 export class BasicAttackStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
-    public name = "BasicAttackStrategy"
-    public loops: Loops<Type> = new Map<string, Loop<Type>>()
+    public loops = new Map<LoopName, Loop<Type>>()
 
     public types: MonsterName[]
 
     public constructor(type: MonsterName | MonsterName[]) {
         if (Array.isArray(type)) {
             this.types = type
-            this.name += ` (${type.join(", ")})`
         } else {
             this.types = [type]
-            this.name += ` (${type})`
         }
 
         this.loops.set("attack", {

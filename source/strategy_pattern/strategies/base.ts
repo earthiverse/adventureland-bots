@@ -1,12 +1,12 @@
 import { PingCompensatedCharacter } from "alclient"
-import { sleep } from "../../base/general.js"
-import { Loop, Loops, Strategy } from "../context.js"
+import { Loop, LoopName, Strategy } from "../context.js"
 
 export class BaseStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
-    public name = "BaseStrategy"
-    public loops: Loops<Type> = new Map<string, Loop<Type>>()
+    public loops = new Map<LoopName, Loop<Type>>()
+    private characters: PingCompensatedCharacter[]
 
-    public constructor() {
+    public constructor(characters?: PingCompensatedCharacter[]) {
+        this.characters = characters ?? []
         this.loops.set("heal", {
             fn: async (bot: Type) => { await this.heal(bot) },
             interval: ["use_hp"]
@@ -63,8 +63,15 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
     }
 
     async loot(bot: Type) {
-        const [chest] = bot.chests
-        if (chest) await bot.openChest(chest[0])
-        else return sleep(100)
+        // Delete the chest from other characters so we can save code call cost
+        for (const [id] of bot.chests) {
+            for (const character of this.characters) {
+                if (bot == character) continue // Don't delete the chest from ourself
+                character.chests.delete(id)
+            }
+
+            // Open the chest
+            await bot.openChest(id)
+        }
     }
 }

@@ -1,10 +1,9 @@
 import { InviteData, PingCompensatedCharacter } from "alclient"
 import { partyLeader } from "../../base/party.js"
-import { Loop, Loops, Strategy } from "../context.js"
+import { Loop, LoopName, Strategy } from "../context.js"
 
 export class AcceptPartyRequestStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
-    public name = "RequestPartyStrategy"
-    public loops: Loops<Type> = new Map<string, Loop<Type>>()
+    public loops = new Map<LoopName, Loop<Type>>()
 
     public membersList: string[]
 
@@ -33,8 +32,7 @@ export class AcceptPartyRequestStrategy<Type extends PingCompensatedCharacter> i
 }
 
 export class RequestPartyStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
-    public name = "RequestPartyStrategy"
-    public loops: Loops<Type> = new Map<string, Loop<Type>>()
+    public loops = new Map<LoopName, Loop<Type>>()
 
     public partyLeader: string
 

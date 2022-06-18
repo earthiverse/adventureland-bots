@@ -1,8 +1,9 @@
 import AL, { Character, Merchant, Priest, Ranger, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { addSocket, startServer } from "algui"
-import { startMerchant, startPriest as startBigBirdPriest, startWarrior as startBigBirdWarrior } from "../bigbird/shared.js"
+import { startPriest as startBigBirdPriest, startWarrior as startBigBirdWarrior } from "../bigbird/shared.js"
 import { startTrackerLoop } from "../base/general.js"
 import { startRanger as startBoarRanger } from "../boars/shared.js"
+import { startMerchant } from "../prat/shared.js"
 
 const region: ServerRegion = "US"
 const identifier: ServerIdentifier = "I"

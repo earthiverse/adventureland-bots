@@ -1,21 +1,18 @@
 import AL, { IPosition, MonsterName, PingCompensatedCharacter, Tools } from "alclient"
 import { offsetPositionParty } from "../../base/locations.js"
 import { sortClosestDistance } from "../../base/sort.js"
-import { Loop, Loops, Strategy } from "../context.js"
+import { Loop, LoopName, Strategy } from "../context.js"
 
 export class BasicMoveStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
-    public name = "BasicMoveStrategy"
-    public loops: Loops<Type> = new Map<string, Loop<Type>>()
+    public loops = new Map<LoopName, Loop<Type>>()
 
     public types: MonsterName[]
 
     public constructor(type: MonsterName | MonsterName[]) {
         if (Array.isArray(type)) {
             this.types = type
-            this.name += ` (${type.join(", ")})`
         } else {
             this.types = [type]
-            this.name += ` (${type})`
         }
 
         this.loops.set("move", {
@@ -37,18 +34,16 @@ export class BasicMoveStrategy<Type extends PingCompensatedCharacter> implements
 }
 
 export class ImprovedMoveStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
-    public name = "ImprovedMoveStrategy"
-    public loops: Loops<Type> = new Map<string, Loop<Type>>()
+    public loops = new Map<LoopName, Loop<Type>>()
 
     public types: MonsterName[]
+    protected spawns: IPosition[]
 
     public constructor(type: MonsterName | MonsterName[]) {
         if (Array.isArray(type)) {
             this.types = type
-            this.name += ` (${type.join(", ")})`
         } else {
             this.types = [type]
-            this.name += ` (${type})`
         }
 
         this.loops.set("move", {
@@ -78,25 +73,27 @@ export class ImprovedMoveStrategy<Type extends PingCompensatedCharacter> impleme
             return
         }
 
+        // Get the spawns if we haven't yet
+        // TODO: Move locateMonster to Pathfinder and move this to the constructor
+        if (!this.spawns) {
+            this.spawns = []
+            for (const type of this.types) this.spawns.push(...bot.locateMonster(type))
+        }
+
         if (lastD) {
             // Move towards center of closest spawn
-            const locations: IPosition[] = []
-            for (const type of this.types) locations.push(...bot.locateMonster(type))
-            locations.sort(sortClosestDistance(bot))
-            bot.smartMove(offsetPositionParty(locations[0], bot), { getWithin: Tools.distance(bot, locations[0]) - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+            this.spawns.sort(sortClosestDistance(bot))
+            bot.smartMove(offsetPositionParty(this.spawns[0], bot), { getWithin: Tools.distance(bot, this.spawns[0]) - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         } else if (!bot.smartMoving) {
             // No targets nearby, move to spawn
-            const locations: IPosition[] = []
-            for (const type of this.types) locations.push(...bot.locateMonster(type))
-            locations.sort(sortClosestDistance(bot))
-            bot.smartMove(offsetPositionParty(locations[0], bot), { resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+            this.spawns.sort(sortClosestDistance(bot))
+            bot.smartMove(offsetPositionParty(this.spawns[0], bot), { resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         }
     }
 }
 
 export class HoldPositionMoveStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
-    public name = "HoldPositionMoveStrategy"
-    public loops: Loops<Type> = new Map<string, Loop<Type>>()
+    public loops = new Map<LoopName, Loop<Type>>()
 
     public location: IPosition
 

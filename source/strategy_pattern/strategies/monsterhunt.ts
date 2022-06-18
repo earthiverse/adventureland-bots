@@ -1,9 +1,8 @@
 import { Constants, PingCompensatedCharacter } from "alclient"
-import { Loop, Loops, Strategy } from "../context.js"
+import { Loop, LoopName, Strategy } from "../context.js"
 
 export class GetMonsterHuntStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
-    public name = "GetMonsterHuntStrategy"
-    public loops: Loops<Type> = new Map<string, Loop<Type>>()
+    public loops = new Map<LoopName, Loop<Type>>()
 
     public constructor() {
         this.loops.set("move", {
@@ -20,8 +19,7 @@ export class GetMonsterHuntStrategy<Type extends PingCompensatedCharacter> imple
 }
 
 export class FinishMonsterHuntStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
-    public name = "FinishMonsterHuntStrategy"
-    public loops: Loops<Type> = new Map<string, Loop<Type>>()
+    public loops = new Map<LoopName, Loop<Type>>()
 
     public constructor() {
         this.loops.set("move", {

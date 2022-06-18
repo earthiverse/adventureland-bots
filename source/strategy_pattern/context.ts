@@ -6,19 +6,26 @@ export type Loop<Type> = {
     interval: SkillName[] | number
 }
 
-export type Loops<Type> = Map<string, Loop<Type>>
+export type LoopName =
+    | "attack"
+    | "heal"
+    | "loot"
+    | "merchant_stand"
+    | "move"
+    | "party"
+
+export type Loops<Type> = Map<LoopName, Loop<Type>>
 
 export interface Strategy<Type> {
-    name: string
     loops: Loops<Type>
 }
 
 export class Strategist<Type extends PingCompensatedCharacter> {
     public bot: Type
 
-    private loops: Loops<Type> = new Map<string, Loop<Type>>()
+    private loops: Loops<Type> = new Map<LoopName, Loop<Type>>()
     private stopped = false
-    private timeouts = new Map<string, NodeJS.Timeout>()
+    private timeouts = new Map<LoopName, NodeJS.Timeout>()
 
     public constructor(bot: Type, initialStrategy?: Strategy<Type>) {
         this.bot = bot
@@ -35,7 +42,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
             if (fn == undefined) {
                 // Stop the loop
                 // if (this.loops.has(name)) console.log(`Strategy '${strategy.name}' is stopping the '${name}' loop`)
-                this.stop(name)
+                this.stopLoop(name)
             } else if (this.loops.has(name)) {
                 // Change the loop
                 // if (this.loops.has(name)) console.log(`Strategy '${strategy.name}' is changing the '${name}' loop`)
@@ -92,7 +99,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         }
     }
 
-    public stop(loopName: string): void {
+    public stopLoop(loopName: LoopName): void {
         // Delete the loop
         this.loops.delete(loopName)
 
@@ -101,7 +108,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         if (timeout) clearTimeout(timeout)
     }
 
-    public stopAll(): void {
+    public stop(): void {
         this.stopped = true
         for (const [, timeout] of this.timeouts) clearTimeout(timeout)
         this.bot.disconnect()
