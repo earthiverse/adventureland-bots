@@ -1,5 +1,5 @@
 import AL, { Character, IPosition, Warrior } from "alclient"
-import { checkOnlyEveryMS, goGetRspeedBuff, goToBankIfFull, goToNearestWalkableToMonster2, goToPotionSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
+import { calculateAttackLoopCooldown, checkOnlyEveryMS, goGetRspeedBuff, goToBankIfFull, goToNearestWalkableToMonster2, goToPotionSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { bankingPosition } from "../base/locations.js"
 import { attackTheseTypesWarrior, startChargeLoop, startHardshellLoop, startWarcryLoop } from "../base/warrior.js"
 
@@ -50,7 +50,7 @@ export async function startWarrior(bot: Warrior, merchant: string, friends: Char
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("attack"), bot.getCooldown("cburst")))))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, calculateAttackLoopCooldown(bot)))
     }
     attackLoop()
 

@@ -1,5 +1,5 @@
 import AL, { Character, Mage } from "alclient"
-import { checkOnlyEveryMS, goGetRspeedBuff, goToBankIfFull, goToNearestWalkableToMonster, goToPotionSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
+import { calculateAttackLoopCooldown, checkOnlyEveryMS, goGetRspeedBuff, goToBankIfFull, goToNearestWalkableToMonster, goToPotionSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { bankingPosition, desertlandPorcupines } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 
@@ -46,7 +46,7 @@ export async function startMage(bot: Mage, merchant: string, friends: Character[
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("attack"), bot.getCooldown("cburst")))))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, calculateAttackLoopCooldown(bot)))
     }
     attackLoop()
 

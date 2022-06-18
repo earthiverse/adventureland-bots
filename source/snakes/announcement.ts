@@ -1,5 +1,5 @@
 import AL, { ServerIdentifier, ServerRegion, MonsterName, Ranger } from "alclient"
-import { goToBankIfFull, goToNearestWalkableToMonster, goToPotionSellerIfLow, ITEMS_TO_SELL, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startUpgradeLoop } from "../base/general.js"
+import { calculateAttackLoopCooldown, goToBankIfFull, goToNearestWalkableToMonster, goToPotionSellerIfLow, ITEMS_TO_SELL, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 import { Information } from "../definitions/bot.js"
 
@@ -54,7 +54,7 @@ async function startRanger(bot: Ranger) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("attack"), bot.getCooldown("cburst")))))
+        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, calculateAttackLoopCooldown(bot)))
     }
     attackLoop()
 
