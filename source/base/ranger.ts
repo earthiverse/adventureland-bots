@@ -149,47 +149,39 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
 
         await bot.threeShot(targets[0].id, targets[1].id, targets[2].id)
     } else if (bot.canUse("attack") && targets.size > 0) {
-        let target = targets.poll()
-        while (target) {
-            const damage = bot.calculateDamageRange(target)
-            const piercingDamage = bot.canUse("piercingshot") ? bot.calculateDamageRange(target, "piercingshot") : [0, 0]
+        const target = targets.poll()
+        const damage = bot.calculateDamageRange(target)
+        const piercingDamage = bot.canUse("piercingshot") ? bot.calculateDamageRange(target, "piercingshot") : [0, 0]
 
-            const canKillPiercing = bot.canKillInOneShot(target, "piercingshot")
-            if (!target.immune && piercingDamage[0] > damage[0] && (options.maximumTargets > bot.targets || canKillPiercing)) {
-                // Piercing shot will do more damage
+        const canKillPiercing = bot.canKillInOneShot(target, "piercingshot")
+        if (!target.immune && piercingDamage[0] > damage[0] && (options.maximumTargets > bot.targets || canKillPiercing)) {
+            // Piercing shot will do more damage
 
-                // Remove them from our friends' entities list if we're going to kill it
-                if (canKillPiercing) {
-                    for (const friend of friends) {
-                        if (!friend) continue // No friend
-                        if (friend.id == bot.id) continue // Don't delete it from our own list
-                        if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
-                        friend.deleteEntity(target.id)
-                    }
-                }
-
-                await bot.piercingShot(target.id)
-                break
-            } else {
-                // Normal attack will do the same, or more damage
-                const canKill = bot.canKillInOneShot(target)
-
-                if (options.maximumTargets > bot.targets || canKill) {
-                    // Remove them from our friends' entities list if we're going to kill it
-                    if (canKill) {
-                        for (const friend of friends) {
-                            if (!friend) continue // No friend
-                            if (friend.id == bot.id) continue // Don't delete it from our own list
-                            if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
-                            friend.deleteEntity(target.id)
-                        }
-                    }
-                    await bot.basicAttack(target.id)
-                    break
+            // Remove them from our friends' entities list if we're going to kill it
+            if (canKillPiercing) {
+                for (const friend of friends) {
+                    if (!friend) continue // No friend
+                    if (friend.id == bot.id) continue // Don't delete it from our own list
+                    if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                    friend.deleteEntity(target.id)
                 }
             }
 
-            target = targets.poll()
+            await bot.piercingShot(target.id)
+        } else {
+            // Normal attack will do the same, or more damage
+            const canKill = bot.canKillInOneShot(target)
+
+            // Remove them from our friends' entities list if we're going to kill it
+            if (canKill) {
+                for (const friend of friends) {
+                    if (!friend) continue // No friend
+                    if (friend.id == bot.id) continue // Don't delete it from our own list
+                    if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
+                    friend.deleteEntity(target.id)
+                }
+            }
+            await bot.basicAttack(target.id)
         }
     }
 

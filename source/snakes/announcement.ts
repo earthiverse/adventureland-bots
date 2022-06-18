@@ -1,5 +1,5 @@
 import AL, { ServerIdentifier, ServerRegion, MonsterName, Ranger } from "alclient"
-import { calculateAttackLoopCooldown, goToBankIfFull, goToNearestWalkableToMonster, goToPotionSellerIfLow, ITEMS_TO_SELL, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startUpgradeLoop } from "../base/general.js"
+import { calculateAttackLoopCooldown, goToBankIfFull, goToNearestWalkableToMonster, goToPotionSellerIfLow, ITEMS_TO_SELL, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startCraftLoop, startDebugLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startUpgradeLoop, writeLast1000Events } from "../base/general.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 import { Information } from "../definitions/bot.js"
 
@@ -45,6 +45,7 @@ async function startRanger(bot: Ranger) {
     startPartyLoop(bot, information.bot1.name, [information.bot1.name, information.bot2.name, information.bot3.name])
     startScareLoop(bot)
     startSellLoop(bot, { ...ITEMS_TO_SELL, "dexamulet": 1, "intamulet": 1, "stramulet": 1, "wbreeches": 1, "wgloves": 1 })
+    startDebugLoop(bot)
     startUpgradeLoop(bot)
 
     async function attackLoop() {
@@ -52,6 +53,7 @@ async function startRanger(bot: Ranger) {
             if (!bot.socket || bot.socket.disconnected) return
             await attackTheseTypesRanger(bot, TARGETS, information.friends)
         } catch (e) {
+            writeLast1000Events(bot, `${Date.now()}_${bot.id}.log`, e)
             console.error(e)
         }
         bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, calculateAttackLoopCooldown(bot)))
