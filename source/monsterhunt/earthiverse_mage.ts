@@ -1,4 +1,4 @@
-import AL, { Merchant, Priest, Warrior, GMap, ServerInfoDataLive, IPosition, Mage } from "alclient"
+import AL, { Merchant, Priest, Warrior, GMap, ServerInfoDataLive, IPosition, Mage, Pathfinder } from "alclient"
 import { goToAggroMonster, goToNearestWalkableToMonster, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesMage, magiportFriendsIfNotNearby } from "../base/mage.js"
 import { attackTheseTypesMerchant } from "../base/merchant.js"
@@ -39,8 +39,8 @@ const information: Information = {
 }
 
 function prepareMerchant(bot: Merchant) {
-    const chickenCoop = bot.locateMonster("hen")[0]
-    const goos = bot.locateMonster("goo")[0]
+    const chickenCoop = Pathfinder.locateMonster("hen")[0]
+    const goos = Pathfinder.locateMonster("goo")[0]
     const strategy: Strategy = {
         goo: {
             attack: async () => { await attackTheseTypesMerchant(bot, ["goo"], information.friends) },
@@ -71,7 +71,7 @@ function prepareMerchant(bot: Merchant) {
 }
 
 function preparePriest(bot: Priest) {
-    const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
+    const bscorpionSpawn = Pathfinder.locateMonster("bscorpion")[0]
     const strategy: Strategy = {
         defaultTarget: "spider",
         // eslint-disable-next-line sort-keys
@@ -473,7 +473,7 @@ function preparePriest(bot: Priest) {
 }
 
 function prepareMage(bot: Mage) {
-    const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
+    const bscorpionSpawn = Pathfinder.locateMonster("bscorpion")[0]
     const strategy: Strategy = {
         defaultTarget: "spider",
         // eslint-disable-next-line sort-keys
@@ -932,7 +932,7 @@ function prepareMage(bot: Mage) {
 }
 
 function prepareWarrior(bot: Warrior) {
-    const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
+    const bscorpionSpawn = Pathfinder.locateMonster("bscorpion")[0]
     const strategy: Strategy = {
         defaultTarget: "spider",
         // eslint-disable-next-line sort-keys

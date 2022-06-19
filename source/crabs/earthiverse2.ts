@@ -1,4 +1,4 @@
-import AL, { Ranger, ServerIdentifier, ServerRegion } from "alclient"
+import AL, { Pathfinder, Ranger, ServerIdentifier, ServerRegion } from "alclient"
 import { goToBankIfFull, goToPotionSellerIfLow, LOOP_MS, startBuyLoop, startHealLoop, startLootLoop, startSellLoop } from "../base/general.js"
 import { attackTheseTypesRanger } from "../base/ranger.js"
 
@@ -28,7 +28,7 @@ async function startRanger(bot: Ranger) {
     }
     attackLoop()
 
-    const crabSpawn = bot.locateMonster("crab")[0]
+    const crabSpawn = Pathfinder.locateMonster("crab")[0]
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return

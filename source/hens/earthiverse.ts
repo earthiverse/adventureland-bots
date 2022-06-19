@@ -1,4 +1,4 @@
-import AL, { Entity, ServerIdentifier, ServerRegion, Warrior } from "alclient"
+import AL, { Entity, Pathfinder, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { goToBankIfFull, goToPotionSellerIfLow, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
 import { attackTheseTypesWarrior } from "../base/warrior.js"
 
@@ -29,7 +29,7 @@ async function startWarrior(bot: Warrior) {
     }
     attackLoop()
 
-    const chickenCoop = bot.locateMonster("rooster")[0]
+    const chickenCoop = Pathfinder.locateMonster("rooster")[0]
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return

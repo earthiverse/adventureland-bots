@@ -1,4 +1,4 @@
-import AL, { Character, IPosition, Mage, Merchant, MonsterName, ServerIdentifier, ServerInfoDataLive, ServerRegion } from "alclient"
+import AL, { Character, IPosition, Mage, Merchant, MonsterName, Pathfinder, ServerIdentifier, ServerInfoDataLive, ServerRegion } from "alclient"
 import { goToBankIfFull, goToPotionSellerIfLow, LOOP_MS, startAvoidStacking, startBuyFriendsReplenishablesLoop, startBuyLoop, startCompoundLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
@@ -24,7 +24,7 @@ export async function startPhoenixFarmer(bot: Mage, friends: Character[], mercha
     startPartyLoop(bot, phoenixPartyLeader, phoenixPartyMembers)
     startUpgradeLoop(bot)
 
-    const phoenixSpawns = bot.locateMonster("phoenix")
+    const phoenixSpawns = Pathfinder.locateMonster("phoenix")
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return

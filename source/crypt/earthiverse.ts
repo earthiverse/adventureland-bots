@@ -1,4 +1,4 @@
-import AL, { Character, IPosition, ItemName, Mage, Merchant, MonsterName, Priest, Ranger, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Tools, Warrior } from "alclient"
+import AL, { Character, IPosition, ItemName, Mage, Merchant, MonsterName, Pathfinder, Priest, Ranger, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Tools, Warrior } from "alclient"
 import { addSocket, startServer } from "algui"
 import { calculateAttackLoopCooldown, checkOnlyEveryMS, goGetRspeedBuff, goToKiteStuff, goToNearestWalkableToMonster, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
 import { batCaveCryptEntrance, cryptEnd, cryptWaitingSpot, mainCrabs, offsetPositionParty } from "../base/locations.js"
@@ -248,7 +248,7 @@ async function startPriest(bot: Priest) {
     }
     attackLoop()
 
-    const batLocations = bot.locateMonster("bat")
+    const batLocations = Pathfinder.locateMonster("bat")
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -319,7 +319,7 @@ async function startRanger(bot: Ranger) {
     }
     attackLoop()
 
-    const batLocations = bot.locateMonster("bat")
+    const batLocations = Pathfinder.locateMonster("bat")
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -407,7 +407,7 @@ async function startMage(bot: Mage) {
     }
     attackLoop()
 
-    const batLocations = bot.locateMonster("bat")
+    const batLocations = Pathfinder.locateMonster("bat")
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -558,7 +558,7 @@ async function startWarrior(bot: Warrior) {
     }
     attackLoop()
 
-    const batLocations = bot.locateMonster("bat")
+    const batLocations = Pathfinder.locateMonster("bat")
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return

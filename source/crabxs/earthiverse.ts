@@ -1,4 +1,4 @@
-import AL, { MonsterName, ServerIdentifier, ServerRegion, Warrior } from "alclient"
+import AL, { MonsterName, Pathfinder, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, goToNearestWalkableToMonster, ITEMS_TO_SELL, startScareLoop } from "../base/general.js"
 import { attackTheseTypesWarrior, startChargeLoop, startWarcryLoop } from "../base/warrior.js"
 
@@ -37,7 +37,7 @@ async function startWarrior(bot: Warrior) {
     }
     attackLoop()
 
-    const crabXSpawn = bot.locateMonster("crabx")[0]
+    const crabXSpawn = Pathfinder.locateMonster("crabx")[0]
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return

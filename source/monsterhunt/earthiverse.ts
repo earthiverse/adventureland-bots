@@ -1,4 +1,4 @@
-import AL, { Merchant, Priest, Ranger, Warrior, GMap, ServerInfoDataLive, IPosition, SlotType, ItemName, Tools } from "alclient"
+import AL, { Merchant, Priest, Ranger, Warrior, GMap, ServerInfoDataLive, IPosition, SlotType, ItemName, Tools, Pathfinder } from "alclient"
 import { addSocket, startServer } from "algui"
 import { goToAggroMonster, goToNearestWalkableToMonster, goToNearestWalkableToMonster2, goToNPC, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, moveInCircle, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
 import { mainCrabs, mainGoos, offsetPositionParty } from "../base/locations.js"
@@ -86,7 +86,7 @@ function preparePriest(bot: Priest) {
     const maxAttackSpeedEquipment: { [T in SlotType]?: ItemName } = { amulet: "intamulet", belt: "intbelt", cape: "angelwings", chest: "wattire", earring1: "cearring", earring2: "cearring", gloves: "wgloves", helmet: "wcap", mainhand: "wand", orb: "jacko", pants: "wbreeches", ring1: "cring", ring2: "cring", shoes: "wingedboots" }
     const maxDamageEquipment: { [T in SlotType]?: ItemName } = { ...maxAttackSpeedEquipment, mainhand: "firestaff", offhand: "wbook1" }
 
-    const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
+    const bscorpionSpawn = Pathfinder.locateMonster("bscorpion")[0]
 
     const strategy: Strategy = {
         defaultTarget: "spider",
@@ -604,7 +604,7 @@ function preparePriest(bot: Priest) {
 }
 
 function prepareRanger(bot: Ranger) {
-    const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
+    const bscorpionSpawn = Pathfinder.locateMonster("bscorpion")[0]
     const maxCritEquipment: { [T in SlotType]?: ItemName } = { amulet: "dexamulet", belt: "dexbelt", cape: "bcape", chest: "wattire", earring1: "dexearring", earring2: "dexearring", gloves: "wgloves", helmet: "fury", mainhand: "crossbow", offhand: "t2quiver", orb: "orbofdex", pants: "wbreeches", ring1: "cring", ring2: "cring", shoes: "wingedboots" }
     const maxRangeEquipment: { [T in SlotType]?: ItemName } = { ...maxCritEquipment, helmet: "cyber", offhand: "quiver" }
     const maxDamageEquipment: { [T in SlotType]?: ItemName } = { ...maxCritEquipment, helmet: "cyber", mainhand: "firebow" }
@@ -1123,7 +1123,7 @@ function prepareWarrior(bot: Warrior) {
     const aoeEquipment: { [T in SlotType]?: ItemName } = { amulet: "snring", belt: "strbelt", cape: "bcape", chest: "coat1", earring1: "cearring", earring2: "cearring", gloves: "gloves1", helmet: "helmet1", mainhand: "vhammer", offhand: "glolipop", orb: "orbofstr", pants: "pants1", ring1: "strring", ring2: "strring", shoes: "wingedboots" }
     const burnEquipment: { [T in SlotType]?: ItemName } = { ...aoeEquipment, mainhand: "fireblade", offhand: "fireblade" }
     const bowEquipment: { [T in SlotType]?: ItemName } = { ...aoeEquipment, mainhand: "hbow" }
-    const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
+    const bscorpionSpawn = Pathfinder.locateMonster("bscorpion")[0]
     const strategy: Strategy = {
         defaultTarget: "spider",
         // eslint-disable-next-line sort-keys

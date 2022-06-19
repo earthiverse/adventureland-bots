@@ -796,7 +796,7 @@ export async function goToSpecialMonster(bot: Character, type: MonsterName, opti
     }
 
     // Look for if there's a spawn for it
-    for (const spawn of bot.locateMonster(type)) {
+    for (const spawn of Pathfinder.locateMonster(type)) {
         // Move to the next spawn
         await bot.smartMove(spawn, { getWithin: bot.range - 10, stopIfTrue: () => bot.getEntity({ type: type }) !== undefined })
 
@@ -950,7 +950,7 @@ export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName
             // Move towards center of closest spawn
             const locations: IPosition[] = []
             for (const type of types) {
-                locations.push(...bot.locateMonster(type))
+                locations.push(...Pathfinder.locateMonster(type))
             }
             locations.sort(sortClosestDistance(bot))
             bot.smartMove(offsetPositionParty(locations[0], bot), { avoidTownWarps: true, costs: costs, getWithin: Tools.distance(bot, locations[0]) - (bot.range - lastD), resolveOnFinalMoveStart: true, useBlink: false }).catch(() => { /** Suppress Error */ })
@@ -962,7 +962,7 @@ export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName
         } else {
             const locations: IPosition[] = []
             for (const type of types) {
-                locations.push(...bot.locateMonster(type))
+                locations.push(...Pathfinder.locateMonster(type))
             }
             locations.sort(sortClosestDistance(bot))
             bot.smartMove(offsetPositionParty(locations[0], bot), { avoidTownWarps: true, costs: costs, resolveOnFinalMoveStart: true, useBlink: false }).catch(() => { /** Suppress Error */ })
@@ -1062,7 +1062,7 @@ export function startAvoidStacking(bot: Character): void {
 }
 
 export function startBuyLoop(bot: Character, itemsToBuy = ITEMS_TO_BUY, replenishablesToBuy = REPLENISHABLES_TO_BUY): void {
-    const pontyLocations = bot.locateNPC("secondhands")
+    const pontyLocations = Pathfinder.locateNPC("secondhands")
     let lastPonty = 0
     async function buyLoop() {
         try {

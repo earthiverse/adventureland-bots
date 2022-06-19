@@ -1,4 +1,4 @@
-import AL, { CMData, DeathData, GameResponseData, IPosition, Rogue, MapName, Merchant, MonsterName, ServerIdentifier, ServerInfoData, ServerInfoDataLive, ServerRegion } from "alclient"
+import AL, { CMData, DeathData, GameResponseData, IPosition, Rogue, MapName, Merchant, MonsterName, ServerIdentifier, ServerInfoData, ServerInfoDataLive, ServerRegion, Pathfinder } from "alclient"
 import { goToPotionSellerIfLow, startBuyLoop, startHealLoop, startLootLoop, startSellLoop, goToBankIfFull, ITEMS_TO_SELL, startPartyLoop, startScareLoop, startAvoidStacking, sleep, ITEMS_TO_HOLD, startSendStuffDenylistLoop, startCompoundLoop, startCraftLoop, startUpgradeLoop, LOOP_MS, startTrackerLoop } from "../base/general.js"
 import { attackTheseTypesRogue } from "../base/rogue.js"
 import { partyLeader, partyMembers } from "../base/party.js"
@@ -51,7 +51,7 @@ async function startRogue(bot: Rogue, trilaterationIndex: number) {
         locations.push(location)
     }
     for (const monster of toLookFor) {
-        for (const location of bot.locateMonster(monster)) {
+        for (const location of Pathfinder.locateMonster(monster)) {
             if (location.map !== toLookForMap) continue
             locations.push(location)
         }

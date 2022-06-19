@@ -1,4 +1,4 @@
-import AL, { Character, GameResponseData, IPosition, ItemDataTrade, Merchant, MonsterName, PingCompensatedCharacter, Player, Priest, ServerIdentifier, ServerRegion, TradeSlotType, Warrior } from "alclient"
+import AL, { Character, GameResponseData, IPosition, ItemDataTrade, Merchant, MonsterName, Pathfinder, PingCompensatedCharacter, Player, Priest, ServerIdentifier, ServerRegion, TradeSlotType, Warrior } from "alclient"
 import { startBuyLoop, startCompoundLoop, startElixirLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop, startUpgradeLoop, startAvoidStacking, goToPotionSellerIfLow, goToBankIfFull, startScareLoop, startSendStuffDenylistLoop, ITEMS_TO_SELL, goToNearestWalkableToMonster, startTrackerLoop, getFirstEmptyInventorySlot, startBuyFriendsReplenishablesLoop, startCraftLoop } from "../base/general.js"
 import { doBanking, goFishing, goMining, startMluckLoop } from "../base/merchant.js"
 import { startChargeLoop, startWarcryLoop } from "../base/warrior.js"
@@ -397,7 +397,7 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
         setTimeout(async () => { stompLoop() }, getMSToNextStun(bot))
     }, 5000)
 
-    const spawn = bot.locateMonster(targets[0])[0]
+    const spawn = Pathfinder.locateMonster(targets[0])[0]
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -564,7 +564,7 @@ export async function startPriest(bot: Priest, merchantName: string): Promise<vo
 
     scareLoop()
 
-    const spawn = bot.locateMonster(targets[0])[0]
+    const spawn = Pathfinder.locateMonster(targets[0])[0]
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return

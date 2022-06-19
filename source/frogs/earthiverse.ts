@@ -1,4 +1,4 @@
-import AL, { Entity, Mage, ServerIdentifier, ServerRegion } from "alclient"
+import AL, { Entity, Mage, Pathfinder, ServerIdentifier, ServerRegion } from "alclient"
 import { goToBankIfFull, goToPotionSellerIfLow, ITEMS_TO_HOLD, LOOP_MS, MY_CHARACTERS, startBuyLoop, startHealLoop, startLootLoop, startPartyLoop, startSellLoop } from "../base/general.js"
 import { bankingPosition } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
@@ -31,7 +31,7 @@ async function startMage(bot: Mage) {
     }
     attackLoop()
 
-    const frogSpawn = bot.locateMonster("frog")[0]
+    const frogSpawn = Pathfinder.locateMonster("frog")[0]
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return

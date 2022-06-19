@@ -1,4 +1,4 @@
-import AL, { Character, IPosition, Mage, Merchant, MonsterName, Priest, Rogue, ServerInfoDataLive } from "alclient"
+import AL, { Character, IPosition, Mage, Merchant, MonsterName, Pathfinder, Priest, Rogue, ServerInfoDataLive } from "alclient"
 import { startAvoidStacking, startBuyLoop, startBuyFriendsReplenishablesLoop, startCompoundLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startUpgradeLoop, goToBankIfFull, goToPotionSellerIfLow, LOOP_MS, startSendStuffDenylistLoop, kiteInCircle, goToNearestWalkableToMonster } from "../base/general.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { startMluckLoop, doBanking, goFishing, goMining } from "../base/merchant.js"
@@ -24,7 +24,7 @@ export async function startBscorpionMageFarmer(bot: Mage, friends: Character[], 
     startPartyLoop(bot, bscorpionPartyLeader, bscorpionPartyMembers)
     startUpgradeLoop(bot)
 
-    const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
+    const bscorpionSpawn = Pathfinder.locateMonster("bscorpion")[0]
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -101,7 +101,7 @@ export async function startBscorpionRogueFarmer(bot: Rogue, friends: Character[]
     }
     invisLoop()
 
-    const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
+    const bscorpionSpawn = Pathfinder.locateMonster("bscorpion")[0]
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -166,7 +166,7 @@ export async function startBscorpionPriestFarmer(bot: Priest, friends: Character
     startPartyLoop(bot, bscorpionPartyLeader, bscorpionPartyMembers)
     startUpgradeLoop(bot)
 
-    const bscorpionSpawn = bot.locateMonster("bscorpion")[0]
+    const bscorpionSpawn = Pathfinder.locateMonster("bscorpion")[0]
     async function moveLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return

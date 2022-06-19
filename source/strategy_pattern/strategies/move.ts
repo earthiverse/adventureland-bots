@@ -1,4 +1,4 @@
-import AL, { IPosition, MonsterName, PingCompensatedCharacter, Tools } from "alclient"
+import AL, { IPosition, MonsterName, Pathfinder, PingCompensatedCharacter, Tools } from "alclient"
 import { offsetPositionParty } from "../../base/locations.js"
 import { sortClosestDistance } from "../../base/sort.js"
 import { Loop, LoopName, Strategy } from "../context.js"
@@ -50,6 +50,9 @@ export class ImprovedMoveStrategy<Type extends PingCompensatedCharacter> impleme
             fn: async (bot: Type) => { await this.move(bot) },
             interval: 250
         })
+
+        this.spawns = []
+        for (const type of this.types) this.spawns.push(...Pathfinder.locateMonster(type))
     }
 
     private async move(bot: Type) {
@@ -71,13 +74,6 @@ export class ImprovedMoveStrategy<Type extends PingCompensatedCharacter> impleme
                 bot.smartMove(target, { resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
             }
             return
-        }
-
-        // Get the spawns if we haven't yet
-        // TODO: Move locateMonster to Pathfinder and move this to the constructor
-        if (!this.spawns) {
-            this.spawns = []
-            for (const type of this.types) this.spawns.push(...bot.locateMonster(type))
         }
 
         if (lastD) {
