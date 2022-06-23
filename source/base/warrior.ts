@@ -146,7 +146,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
             withinRange: bot.G.skills.agitate.range,
         })) {
             if (!target.isTauntable(bot)) continue // Not tauntable
-            if (!types.includes(target.type) || avoidAgitate) {
+            if (!types.includes(target.type)) {
                 // A monster we don't want to attack is here, don't agitate
                 avoidAgitate = true
                 continue // Don't break, we could still taunt what we want to kill
