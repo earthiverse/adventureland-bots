@@ -16,7 +16,7 @@ export class AcceptPartyRequestStrategy<Type extends PingCompensatedCharacter> i
         })
     }
 
-    async checkRequests(bot: Type) {
+    private async checkRequests(bot: Type) {
         if (!bot.socket.hasListeners("invite")) {
             bot.socket.on("invite", async (data: InviteData) => {
                 if (!this.membersList.includes(data.name)) {
@@ -45,7 +45,7 @@ export class RequestPartyStrategy<Type extends PingCompensatedCharacter> impleme
         })
     }
 
-    async requestPartyInvite(bot: Type) {
+    private async requestPartyInvite(bot: Type) {
         if (!bot.partyData?.list?.includes(partyLeader)) {
             // They're not in our party, send a request
             await bot.sendPartyRequest(partyLeader)

@@ -17,7 +17,7 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
         })
     }
 
-    async heal(bot: Type) {
+    private async heal(bot: Type) {
         if (bot.rip)
             return
 
@@ -62,7 +62,7 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
         }
     }
 
-    async loot(bot: Type) {
+    private async loot(bot: Type) {
         // Delete the chest from other characters so we can save code call cost
         for (const [id] of bot.chests) {
             for (const character of this.characters) {

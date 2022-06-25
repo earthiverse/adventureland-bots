@@ -11,7 +11,7 @@ export class GetMonsterHuntStrategy<Type extends PingCompensatedCharacter> imple
         })
     }
 
-    async getMonsterHunt(bot: Type) {
+    private async getMonsterHunt(bot: Type) {
         if (bot.s.monsterhunt) return // We already have a monster hunt
         await bot.smartMove("monsterhunter", { getWithin: 350 })
         await bot.getMonsterHuntQuest()
@@ -28,7 +28,7 @@ export class FinishMonsterHuntStrategy<Type extends PingCompensatedCharacter> im
         })
     }
 
-    async turnInMonsterHunt(bot: Type) {
+    private async turnInMonsterHunt(bot: Type) {
         if (!bot.s.monsterhunt) return // We already have a monster hunt
         await bot.smartMove("monsterhunter", { getWithin: Constants.NPC_INTERACTION_DISTANCE / 2 })
         await bot.finishMonsterHuntQuest()

@@ -63,7 +63,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                 case "magical":
                     if (bot.mcourage > targetingMe.magical) targetingMe.magical += 1 // We can tank one more magical monster
                     else {
-                    // We can't tank any more, don't cleave
+                        // We can't tank any more, don't cleave
                         avoidCleave = true
                         continue
                     }
@@ -71,7 +71,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                 case "physical":
                     if (bot.courage > targetingMe.physical) targetingMe.physical += 1 // We can tank one more physical monster
                     else {
-                    // We can't tank any more, don't cleave
+                        // We can't tank any more, don't cleave
                         avoidCleave = true
                         continue
                     }
@@ -79,7 +79,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                 case "pure":
                     if (bot.pcourage > targetingMe.pure) targetingMe.pure += 1 // We can tank one more pure monster
                     else {
-                    // We can't tank any more, don't cleave
+                        // We can't tank any more, don't cleave
                         avoidCleave = true
                         continue
                     }

@@ -9,7 +9,7 @@ import { ItemLevelInfo } from "../definitions/bot.js"
 const LOOP_MS = 10
 
 export async function startLulzBeeMage(bot: Mage, friends: Character[], replenishables: [ItemName, number][], itemsToSell: ItemLevelInfo) {
-    startAvoidStacking(bot)
+    startAvoidStacking(bot) // ok
     startBuyLoop(bot, new Set(), replenishables)
     startHealLoop(bot)
     startLootLoop(bot, friends)

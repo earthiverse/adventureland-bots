@@ -1,7 +1,7 @@
 import { Merchant } from "alclient"
 import { Loop, LoopName, Strategy } from "../context.js"
 
-export class ToggleStandByMovement<Type extends Merchant> implements Strategy<Type> {
+export class ToggleStandByMovementStrategy<Type extends Merchant> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
 
     public constructor() {
@@ -11,7 +11,7 @@ export class ToggleStandByMovement<Type extends Merchant> implements Strategy<Ty
         })
     }
 
-    async checkStand(bot: Type) {
+    private async checkStand(bot: Type) {
         if (bot.moving || bot.smartMoving) {
             if (bot.stand) {
                 bot.closeMerchantStand()

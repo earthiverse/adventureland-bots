@@ -8,16 +8,22 @@ export type Loop<Type> = {
 
 export type LoopName =
     | "attack"
+    | "avoid_stacking"
+    | "buy"
     | "heal"
     | "loot"
     | "merchant_stand"
     | "move"
     | "party"
+    | "sell"
+    | "tracker"
 
 export type Loops<Type> = Map<LoopName, Loop<Type>>
 
 export interface Strategy<Type> {
     loops: Loops<Type>
+    /** If the strategy is removed, this function will be called */
+    onRemove?: (bot: Type) => void
 }
 
 export class Strategist<Type extends PingCompensatedCharacter> {
@@ -65,7 +71,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                         if (loop) {
                             if (typeof loop.interval == "number") this.timeouts.set(name, setTimeout(async () => { newLoop() }, loop.interval)) // Continue the loop
                             else if (Array.isArray(loop.interval)) {
-                                const cooldown = Math.min(...loop.interval.map((skill) => this.bot.getCooldown(skill)))
+                                const cooldown = Math.max(50, Math.min(...loop.interval.map((skill) => this.bot.getCooldown(skill))))
                                 this.timeouts.set(name, setTimeout(async () => { newLoop() }, cooldown)) // Continue the loop
                             }
                         }
@@ -78,6 +84,11 @@ export class Strategist<Type extends PingCompensatedCharacter> {
 
     public applyStrategies(strategies: Strategy<Type>[]) {
         for (const strategy of strategies) this.applyStrategy(strategy)
+    }
+
+    public removeStrategy(strategy: Strategy<Type>) {
+        for (const [loopName] of strategy.loops) this.stopLoop(loopName)
+        if (strategy.onRemove) strategy.onRemove(this.bot)
     }
 
     public async reconnect(): Promise<void> {

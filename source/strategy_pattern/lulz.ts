@@ -1,7 +1,8 @@
-import AL, { CharacterType, ItemName, MonsterName, PingCompensatedCharacter, ServerIdentifier, ServerRegion } from "alclient"
+import AL, { CharacterType, MonsterName, PingCompensatedCharacter, ServerIdentifier, ServerRegion } from "alclient"
 import { ItemLevelInfo } from "../definitions/bot.js"
 import { Strategist } from "./context.js"
-import { BasicAttackStrategy } from "./strategies/attack.js"
+import { BaseAttackStrategy } from "./strategies/attack.js"
+import { AvoidStackingStrategy } from "./strategies/avoid_stacking.js"
 import { BaseStrategy } from "./strategies/base.js"
 import { ImprovedMoveStrategy } from "./strategies/move.js"
 import { TrackerStrategy } from "./strategies/tracker.js"
@@ -60,6 +61,7 @@ export async function startLulzCharacter(type: CharacterType, userID: string, us
             break
         }
     }
+    await bot.connect()
     CHARACTERS.push(bot)
 
     bot.socket.on("code_eval", (data) => {
@@ -72,9 +74,10 @@ export async function startLulzCharacter(type: CharacterType, userID: string, us
     const context = new Strategist(bot, baseStrategy)
     CONTEXTS.push(context)
 
-    context.applyStrategy(new BasicAttackStrategy(monsters))
+    context.applyStrategy(new BaseAttackStrategy({ characters: CHARACTERS, typeList: monsters }))
     context.applyStrategy(new ImprovedMoveStrategy(monsters))
     context.applyStrategy(new TrackerStrategy())
+    context.applyStrategy(new AvoidStackingStrategy(bot))
 
     setInterval(async () => {
         // TODO: Move this to a move strategy

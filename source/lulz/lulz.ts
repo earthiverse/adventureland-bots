@@ -1,6 +1,7 @@
 import express from "express"
 import path from "path"
 import bodyParser from "body-parser"
+import cors from "cors"
 import { body, validationResult } from "express-validator"
 
 import AL from "alclient"
@@ -8,6 +9,7 @@ import { startLulzCharacter } from "../strategy_pattern/lulz.js"
 
 const app = express()
 app.use(express.json())
+app.use(cors())
 app.use(bodyParser.urlencoded({ extended: true }))
 const port = 80
 

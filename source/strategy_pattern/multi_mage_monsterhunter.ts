@@ -1,11 +1,11 @@
-import AL, { IPosition, Mage, Merchant, MonsterName, ServerIdentifier, ServerRegion } from "alclient"
+import AL, { IPosition, Mage, Merchant, MonsterName, PingCompensatedCharacter, ServerIdentifier, ServerRegion } from "alclient"
 import { Strategist, Strategy } from "./context.js"
-import { BasicAttackStrategy } from "./strategies/attack.js"
+import { BaseAttackStrategy } from "./strategies/attack.js"
 import { BaseStrategy } from "./strategies/base.js"
 import { FinishMonsterHuntStrategy, GetMonsterHuntStrategy } from "./strategies/monsterhunt.js"
 import { BasicMoveStrategy, HoldPositionMoveStrategy } from "./strategies/move.js"
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategies/party.js"
-import { ToggleStandByMovement } from "./strategies/stand.js"
+import { ToggleStandByMovementStrategy } from "./strategies/stand.js"
 
 /**
  * This script will farm monsterhunt tokens using 3 mages. Mages are nice because they can
@@ -15,7 +15,7 @@ import { ToggleStandByMovement } from "./strategies/stand.js"
  *   Partying:
  *     - mage1 is the party leader
  *   Strategy:
- *     - defaultMonster will use BasicMoveStrategy and BasicAttackStrategy
+ *     - defaultMonster will use BasicMoveStrategy and BaseAttackStrategy
  */
 
 /***** Config Start *****/
@@ -31,6 +31,8 @@ const mage1ID = "earthMag"
 const mage2ID = "earthMag2"
 const mage3ID = "earthMag3"
 /***** Config End *****/
+
+const CHARACTERS: PingCompensatedCharacter[] = [undefined, undefined, undefined, undefined]
 
 // Monster Hunt Strategies
 const getMonsterHuntStrategy = new GetMonsterHuntStrategy()
@@ -51,13 +53,19 @@ async function run() {
     const mage3 = await AL.Game.startMage(mage3ID, server, serverID)
     const mage3Context = new Strategist<Mage>(mage3, baseStrategy)
 
+    // Make characters array
+    CHARACTERS[0] = merchant
+    CHARACTERS[1] = mage1
+    CHARACTERS[2] = mage2
+    CHARACTERS[3] = mage3
+
     // Set-up Strategies
     const strategies: {[T in MonsterName]?: Strategy<Mage>[]} = {}
 
     // Default Monster
     strategies[defaultMonster] = [
         new BasicMoveStrategy<Mage>(defaultMonster),
-        new BasicAttackStrategy<Mage>(defaultMonster)
+        new BaseAttackStrategy<Mage>({ characters: CHARACTERS, type: defaultMonster })
     ]
 
     // Default Strategy Monsters
@@ -66,26 +74,25 @@ async function run() {
             console.warn(`We already set up a strategy for ${monster}.`)
             continue
         }
-        strategies[defaultMonster] = [
-            new BasicMoveStrategy(defaultMonster),
-            new BasicAttackStrategy(defaultMonster)
+        strategies[monster] = [
+            new BasicMoveStrategy(monster),
+            new BaseAttackStrategy({ characters: CHARACTERS, type: defaultMonster })
         ]
     }
 
     // Party Strategy
     const requestPartyStrategy = new RequestPartyStrategy(mage1.id)
     const acceptPartyRequestStrategy = new AcceptPartyRequestStrategy([mage2.id, mage3.id, ...additionalPartyMembers])
+    mage1Context.applyStrategy(acceptPartyRequestStrategy)
+    mage2Context.applyStrategy(requestPartyStrategy)
+    mage3Context.applyStrategy(requestPartyStrategy)
 
     // Merchant
     const merchantMoveStrategy = new HoldPositionMoveStrategy(merchantHoldPosition)
-    const merchantStandStrategy = new ToggleStandByMovement()
+    const merchantStandStrategy = new ToggleStandByMovementStrategy()
 
     // Mages
     setInterval(async () => {
-        mage1Context.applyStrategy(acceptPartyRequestStrategy)
-        mage2Context.applyStrategy(requestPartyStrategy)
-        mage3Context.applyStrategy(requestPartyStrategy)
-
         for (const context of [mage1Context, mage2Context, mage3Context]) {
             const mage = context.bot
             try {
