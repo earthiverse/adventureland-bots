@@ -60,7 +60,7 @@ export class BaseAttackStrategy<Type extends PingCompensatedCharacter> implement
 
     public async zapperAttack(bot: Type) {
         if (!bot.hasItem("zapper") && !bot.isEquipped("zapper")) return // We don't have a zapper
-        if (!bot.canUse("zapperzap", { ignoreEquipped: true })) return // It's on cooldown
+        if (!bot.canUse("zapperzap", { ignoreEquipped: true })) return // We can't use it
 
         // Find all targets we want to attack
         this.options.withinRange = "zapperzap"

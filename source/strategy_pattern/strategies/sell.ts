@@ -26,16 +26,21 @@ export class SellStrategy<Type extends Merchant> implements SellStrategyOptions,
         if (options.sellMap) this.sellMap = options.sellMap
 
         for (const [itemName, criteria] of options.sellMap) {
+            const npcPrice = AL.Game.G.items[itemName].g * 0.6
+            if (criteria == undefined) {
+                // Sell it for the NPC price
+                options.sellMap.set(itemName, [[undefined, npcPrice]])
+                continue
+            }
             for (const criterion of criteria) {
                 const level = criterion[0]
                 const sellFor = criterion[1]
 
                 // If price is defined, make sure it's higher than what we could sell it to an NPC for
                 if (sellFor !== undefined) {
-                    const gPrice = AL.Game.G.items[itemName].g * 0.6
-                    if (sellFor > gPrice) {
-                        console.warn(`Raising sell price for ${itemName}${level ?? " (level " + level + ")"} from ${sellFor} to ${gPrice} to match G.items price.`)
-                        criterion[1] = gPrice
+                    if (sellFor < npcPrice) {
+                        console.warn(`Raising sell price for ${itemName}${level ?? " (level " + level + ")"} from ${sellFor} to ${npcPrice} to match the price NPCs will pay.`)
+                        criterion[1] = npcPrice
                     }
                 }
 

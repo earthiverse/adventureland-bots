@@ -35,9 +35,13 @@ app.post("/",
             const monster = req.body.monster
             if (["mage", "ranger", "warrior"].includes(charType)) {
                 if (["bee", "crab", "goo"].includes(monster)) {
-                    startLulzCharacter(charType, req.body.user, req.body.auth, req.body.char, [monster])
+                    await startLulzCharacter(charType, req.body.user, req.body.auth, req.body.char, [monster])
                     return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
+                } else {
+                    return res.status(400).send(`This service doesn't currently support ${monster}, sorry!`)
                 }
+            } else {
+                return res.status(400).send(`This service doesn't currently support ${charType}, sorry!`)
             }
         } catch (e) {
             return res.status(500).send(e)

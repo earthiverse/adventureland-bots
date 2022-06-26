@@ -1,10 +1,15 @@
 import AL, { CharacterType, MonsterName, PingCompensatedCharacter, ServerIdentifier, ServerRegion } from "alclient"
+import { ItemName } from "alclient"
 import { ItemLevelInfo } from "../definitions/bot.js"
 import { Strategist } from "./context.js"
 import { BaseAttackStrategy } from "./strategies/attack.js"
+import { MageAttackStrategy } from "./strategies/attack_mage.js"
 import { AvoidStackingStrategy } from "./strategies/avoid_stacking.js"
 import { BaseStrategy } from "./strategies/base.js"
+import { BuyStrategy } from "./strategies/buy.js"
 import { ImprovedMoveStrategy } from "./strategies/move.js"
+import { RequestPartyStrategy } from "./strategies/party.js"
+import { SellStrategy } from "./strategies/sell.js"
 import { TrackerStrategy } from "./strategies/tracker.js"
 
 const SERVER_REGION: ServerRegion = "US"
@@ -74,23 +79,56 @@ export async function startLulzCharacter(type: CharacterType, userID: string, us
     const context = new Strategist(bot, baseStrategy)
     CONTEXTS.push(context)
 
-    context.applyStrategy(new BaseAttackStrategy({ characters: CHARACTERS, typeList: monsters }))
+    switch (type) {
+        case "mage": {
+            context.applyStrategy(new MageAttackStrategy({ characters: CHARACTERS, typeList: monsters }))
+            break
+        }
+        default: {
+            context.applyStrategy(new BaseAttackStrategy({ characters: CHARACTERS, typeList: monsters }))
+            break
+        }
+    }
+
     context.applyStrategy(new ImprovedMoveStrategy(monsters))
     context.applyStrategy(new TrackerStrategy())
     context.applyStrategy(new AvoidStackingStrategy(bot))
+    context.applyStrategy(new BuyStrategy({
+        buyMap: undefined,
+        replenishables: new Map<ItemName, number>([
+            ["hpot1", 2500],
+            ["mpot1", 2500]
+        ])
+    }))
+    context.applyStrategy(new SellStrategy({
+        sellMap: new Map<ItemName, [number, number][]>([
+            ["beewings", undefined],
+            ["cclaw", undefined],
+            ["crabclaw", undefined],
+            ["gslime", undefined],
+            ["gstaff", undefined],
+            ["hpamulet", undefined],
+            ["hpbelt", undefined],
+            ["ringsj", undefined],
+            ["stinger", undefined],
+            ["wcap", undefined],
+            ["wshoes", undefined],
+        ])
+    }))
+    context.applyStrategy(new RequestPartyStrategy("earthMer"))
 
     setInterval(async () => {
         // TODO: Move this to a move strategy
-        if ((!bot.hasItem("hpot1") || !bot.hasItem("mpot1")) && bot.canBuy("mpot1", { ignoreLocation: true })) {
+        if ((!bot.hasItem("hpot1") || !bot.hasItem("mpot1")) && bot.gold > (AL.Game.G.items.mpot1.g * 100)) {
             // Go get potions
             context.stopLoop("move")
 
             await bot.smartMove("mpot1", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
 
-            let potsToBuy = Math.min(9999 - bot.countItem("mpot1"), bot.gold / AL.Game.G.items.mpot1.g)
+            let potsToBuy = Math.min(100 - bot.countItem("mpot1"), bot.gold / AL.Game.G.items.mpot1.g)
             if (potsToBuy > 0) await bot.buy("mpot1", potsToBuy)
 
-            potsToBuy = Math.min(9999 - bot.countItem("hpot1"), bot.gold / AL.Game.G.items.hpot1.g)
+            potsToBuy = Math.min(100 - bot.countItem("hpot1"), bot.gold / AL.Game.G.items.hpot1.g)
             if (potsToBuy > 0) await bot.buy("hpot1", potsToBuy)
         }
 

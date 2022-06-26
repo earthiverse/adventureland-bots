@@ -120,6 +120,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
     }
 
     public stop(): void {
+        this.bot.socket.removeAllListeners("disconnect")
         this.stopped = true
         for (const [, timeout] of this.timeouts) clearTimeout(timeout)
         this.bot.disconnect()

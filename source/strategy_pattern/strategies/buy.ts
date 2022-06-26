@@ -34,7 +34,7 @@ export class BuyStrategy<Type extends Merchant> implements BuyStrategyOptions, S
         if (options.buyMap) this.buyMap = options.buyMap
         if (options.replenishables) this.replenishables = options.replenishables
 
-        for (const [itemName, buyFor] of this.buyMap) {
+        for (const [itemName, buyFor] of this.buyMap ?? []) {
             const gItem = AL.Game.G.items[itemName]
             const gPrice = gItem.g * (gItem.markup ?? 1)
 

@@ -1,5 +1,4 @@
 import { InviteData, PingCompensatedCharacter } from "alclient"
-import { partyLeader } from "../../base/party.js"
 import { Loop, LoopName, Strategy } from "../context.js"
 
 export class AcceptPartyRequestStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
@@ -46,9 +45,9 @@ export class RequestPartyStrategy<Type extends PingCompensatedCharacter> impleme
     }
 
     private async requestPartyInvite(bot: Type) {
-        if (!bot.partyData?.list?.includes(partyLeader)) {
+        if (!bot.partyData?.list?.includes(this.partyLeader)) {
             // They're not in our party, send a request
-            await bot.sendPartyRequest(partyLeader)
+            return bot.sendPartyRequest(this.partyLeader).catch((e) => console.error(e))
         }
     }
 }
