@@ -1,4 +1,4 @@
-import AL, { GMap, ItemName, MapName, Merchant, TradeSlotType } from "alclient"
+import AL, { GMap, ItemName, MapName, Merchant, PingCompensatedCharacter, TradeSlotType } from "alclient"
 import { Loop, LoopName, Strategy } from "../context.js"
 
 export type BuyStrategyOptions = {
@@ -24,7 +24,7 @@ export const RecommendedBuyStrategyOptions: BuyStrategyOptions = {
     ])
 }
 
-export class BuyStrategy<Type extends Merchant> implements BuyStrategyOptions, Strategy<Type> {
+export class BuyStrategy<Type extends PingCompensatedCharacter> implements BuyStrategyOptions, Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
 
     public buyMap: Map<ItemName, number>

@@ -64,7 +64,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
         if (!bot.canUse("cburst")) return
 
         const targets = new Map<string, number>()
-        
+
         this.options.canDamage = "cburst"
         this.options.withinRange = "cburst"
     }

@@ -1,7 +1,7 @@
-import AL, { Merchant } from "alclient"
+import AL, { PingCompensatedCharacter } from "alclient"
 import { Loop, LoopName, Strategy } from "../context.js"
 
-export class TrackerStrategy<Type extends Merchant> implements Strategy<Type> {
+export class TrackerStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
 
     public constructor(options = { interval: 900_000 }) {

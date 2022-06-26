@@ -90,7 +90,8 @@ export async function startLulzCharacter(type: CharacterType, userID: string, us
         }
     }
 
-    context.applyStrategy(new ImprovedMoveStrategy(monsters))
+    const moveStrategy = new ImprovedMoveStrategy(monsters)
+    context.applyStrategy(moveStrategy)
     context.applyStrategy(new TrackerStrategy())
     context.applyStrategy(new AvoidStackingStrategy(bot))
     context.applyStrategy(new BuyStrategy({
@@ -119,6 +120,7 @@ export async function startLulzCharacter(type: CharacterType, userID: string, us
 
     setInterval(async () => {
         // TODO: Move this to a move strategy
+        if (bot.smartMoving) return
         if ((!bot.hasItem("hpot1") || !bot.hasItem("mpot1")) && bot.gold > (AL.Game.G.items.mpot1.g * 100)) {
             // Go get potions
             context.stopLoop("move")
@@ -132,7 +134,7 @@ export async function startLulzCharacter(type: CharacterType, userID: string, us
             if (potsToBuy > 0) await bot.buy("hpot1", potsToBuy)
         }
 
-        context.applyStrategy(new ImprovedMoveStrategy(monsters))
+        context.applyStrategy(moveStrategy)
     }, 1000)
 }
 
