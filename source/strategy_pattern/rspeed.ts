@@ -1,12 +1,48 @@
-import AL, { ItemName, Rogue } from "alclient"
-import { Strategist } from "./context.js"
+import AL, { ItemName, LimitDCReportData, PingCompensatedCharacter, Rogue } from "alclient"
+import { Loop, LoopName, Strategist, Strategy } from "./context.js"
 import { BaseAttackStrategy } from "./strategies/attack.js"
 import { BaseStrategy } from "./strategies/base.js"
 import { BuyStrategy } from "./strategies/buy.js"
-import { ImprovedMoveStrategy } from "./strategies/move.js"
+import { BasicMoveStrategy } from "./strategies/move.js"
 import { GiveRogueSpeedStrategy } from "./strategies/rspeed.js"
 import { SellStrategy } from "./strategies/sell.js"
 import { TrackerStrategy } from "./strategies/tracker.js"
+
+async function getPlayerWithoutRSpeed(bot: PingCompensatedCharacter) {
+    try {
+        const noSpeedChars = await AL.PlayerModel.find({
+            lastSeen: { $gt: Date.now() - 60_000 },
+            "s.rspeed": undefined,
+            serverIdentifier: bot.server.name, serverRegion: bot.server.region,
+        }).lean().exec()
+        return noSpeedChars[0]
+    } catch (e) {
+        console.error(e)
+    }
+}
+
+export class GoGiveRogueSpeedStrategy<Type extends Rogue> implements Strategy<Type> {
+    public loops = new Map<LoopName, Loop<Type>>()
+
+    public constructor() {
+        this.loops.set("move", {
+            fn: async (bot: Type) => {
+                await this.goGiveRogueSpeed(bot)
+            },
+            interval: 5000
+        })
+    }
+
+    private async goGiveRogueSpeed(bot: Type) {
+        if (!bot.canUse("rspeed")) return
+
+        const player = await getPlayerWithoutRSpeed(bot)
+        if (!player) return
+        console.log(`Moving to rspeed '${player.name}'.`)
+        await bot.smartMove(player, { avoidTownWarps: true })
+        await bot.requestEntitiesData()
+    }
+}
 
 async function run() {
     // Login and prepare pathfinding
@@ -31,7 +67,13 @@ run()
 
 
 async function startRspeedRogue(context: Strategist<Rogue>) {
-    const moveStrategy = new ImprovedMoveStrategy(["bee"])
+    context.bot.socket.on("limitdcreport", async (data: LimitDCReportData) => {
+        console.log("~~ disconnected for doing too many things ~~")
+        console.log(data)
+    })
+
+    const moveStrategy = new BasicMoveStrategy(["bee"])
+    const goGiveRogueSpeedStrategy = new GoGiveRogueSpeedStrategy()
     const attackStrategy = new BaseAttackStrategy({ characters: [], typeList: ["bee"] })
     const trackerStrategy = new TrackerStrategy()
     const rspeedStrategy = new GiveRogueSpeedStrategy()
@@ -66,27 +108,15 @@ async function startRspeedRogue(context: Strategist<Rogue>) {
     context.applyStrategy(sellStrategy)
 
     setInterval(async () => {
-        if (context.bot.smartMoving) return
-
         if (context.bot.canUse("rspeed")) {
-            try { const noSpeedChars = await AL.PlayerModel.find({
-                lastSeen: { $gt: Date.now() - 60_000 },
-                "s.rspeed": undefined,
-                serverIdentifier: context.bot.server.name, serverRegion: context.bot.server.region,
-            }).lean().exec()
-
-            if (noSpeedChars.length) {
-                const player = noSpeedChars[0]
-                console.log(`We would like to rspeed ${player.name}`)
-                context.stopLoop("move")
-                await context.bot.smartMove(player, { avoidTownWarps: true })
-            }
-            } catch (e) {
-                console.error(e)
+            const shouldGo = await getPlayerWithoutRSpeed(context.bot)
+            if (shouldGo) {
+                context.applyStrategy(goGiveRogueSpeedStrategy)
+                return
             }
         }
 
         // Do Base Strategy
         context.applyStrategy(moveStrategy)
-    }, 1000)
+    }, 5000)
 }

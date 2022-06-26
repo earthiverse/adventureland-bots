@@ -48,15 +48,12 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         for (const [name, fn] of strategy.loops) {
             if (fn == undefined) {
                 // Stop the loop
-                // if (this.loops.has(name)) console.log(`Strategy '${strategy.name}' is stopping the '${name}' loop`)
                 this.stopLoop(name)
             } else if (this.loops.has(name)) {
                 // Change the loop
-                // if (this.loops.has(name)) console.log(`Strategy '${strategy.name}' is changing the '${name}' loop`)
                 this.loops.set(name, fn)
             } else {
                 // Start the loop
-                // console.log(`Strategy '${strategy.name}' is adding the '${name}' loop`)
                 this.loops.set(name, fn)
 
                 const newLoop = async () => {
