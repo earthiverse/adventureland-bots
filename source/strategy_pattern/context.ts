@@ -15,6 +15,7 @@ export type LoopName =
     | "merchant_stand"
     | "move"
     | "party"
+    | "respawn"
     | "rspeed"
     | "sell"
     | "tracker"

@@ -4,6 +4,7 @@ import { BaseAttackStrategy } from "./strategies/attack.js"
 import { BaseStrategy } from "./strategies/base.js"
 import { BuyStrategy } from "./strategies/buy.js"
 import { BasicMoveStrategy } from "./strategies/move.js"
+import { RespawnStrategy } from "./strategies/respawn.js"
 import { GiveRogueSpeedStrategy } from "./strategies/rspeed.js"
 import { SellStrategy } from "./strategies/sell.js"
 import { TrackerStrategy } from "./strategies/tracker.js"
@@ -65,6 +66,19 @@ async function run() {
 }
 run()
 
+const moveStrategy = new BasicMoveStrategy(["bee"])
+const goGiveRogueSpeedStrategy = new GoGiveRogueSpeedStrategy()
+const attackStrategy = new BaseAttackStrategy({ characters: [], typeList: ["bee"] })
+const trackerStrategy = new TrackerStrategy()
+const rspeedStrategy = new GiveRogueSpeedStrategy()
+const buyStrategy = new BuyStrategy({
+    buyMap: undefined,
+    replenishables: new Map<ItemName, number>([
+        ["hpot1", 2500],
+        ["mpot1", 2500]
+    ])
+})
+const respawnStrategy = new RespawnStrategy()
 
 async function startRspeedRogue(context: Strategist<Rogue>) {
     context.bot.socket.on("limitdcreport", async (data: LimitDCReportData) => {
@@ -72,18 +86,6 @@ async function startRspeedRogue(context: Strategist<Rogue>) {
         console.log(data)
     })
 
-    const moveStrategy = new BasicMoveStrategy(["bee"])
-    const goGiveRogueSpeedStrategy = new GoGiveRogueSpeedStrategy()
-    const attackStrategy = new BaseAttackStrategy({ characters: [], typeList: ["bee"] })
-    const trackerStrategy = new TrackerStrategy()
-    const rspeedStrategy = new GiveRogueSpeedStrategy()
-    const buyStrategy = new BuyStrategy({
-        buyMap: undefined,
-        replenishables: new Map<ItemName, number>([
-            ["hpot1", 2500],
-            ["mpot1", 2500]
-        ])
-    })
     const sellStrategy = new SellStrategy({
         sellMap: new Map<ItemName, [number, number][]>([
             ["beewings", undefined],
@@ -106,6 +108,7 @@ async function startRspeedRogue(context: Strategist<Rogue>) {
     context.applyStrategy(rspeedStrategy)
     context.applyStrategy(buyStrategy)
     context.applyStrategy(sellStrategy)
+    context.applyStrategy(respawnStrategy)
 
     setInterval(async () => {
         if (context.bot.canUse("rspeed")) {
