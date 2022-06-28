@@ -29,7 +29,7 @@ export class SellStrategy<Type extends PingCompensatedCharacter> implements Sell
             const npcPrice = AL.Game.G.items[itemName].g * 0.6
             if (criteria == undefined) {
                 // Sell it for the NPC price
-                options.sellMap.set(itemName, [[undefined, npcPrice]])
+                options.sellMap.set(itemName, [[undefined, npcPrice], [0, npcPrice]])
                 continue
             }
             for (const criterion of criteria) {
