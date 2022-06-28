@@ -45,6 +45,19 @@ export class GoGiveRogueSpeedStrategy<Type extends Rogue> implements Strategy<Ty
     }
 }
 
+export class GoSellThingsStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
+    public loops = new Map<LoopName, Loop<Type>>()
+
+    public constructor() {
+        this.loops.set("move", {
+            fn: async (bot: Type) => {
+                await bot.smartMove("hpot1", { avoidTownWarps: true, getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+            },
+            interval: 5000
+        })
+    }
+}
+
 async function run() {
     // Login and prepare pathfinding
     await Promise.all([AL.Game.loginJSONFile("../../credentials_attack.json"), AL.Game.getGData(true)])
@@ -68,6 +81,7 @@ run()
 
 const moveStrategy = new BasicMoveStrategy(["bee"])
 const goGiveRogueSpeedStrategy = new GoGiveRogueSpeedStrategy()
+const goSellThingsStrategy = new GoSellThingsStrategy()
 const attackStrategy = new BaseAttackStrategy({ characters: [], typeList: ["bee"] })
 const trackerStrategy = new TrackerStrategy()
 const rspeedStrategy = new GiveRogueSpeedStrategy()
@@ -111,6 +125,13 @@ async function startRspeedRogue(context: Strategist<Rogue>) {
     context.applyStrategy(respawnStrategy)
 
     setInterval(async () => {
+        // Move to sell items
+        if (context.bot.isFull()) {
+            context.applyStrategy(goSellThingsStrategy)
+            return
+        }
+
+        // Move to give rspeed to someone
         if (context.bot.canUse("rspeed")) {
             const shouldGo = await getPlayerWithoutRSpeed(context.bot)
             if (shouldGo) {
@@ -119,7 +140,7 @@ async function startRspeedRogue(context: Strategist<Rogue>) {
             }
         }
 
-        // Do Base Strategy
+        // Move to attack bees
         context.applyStrategy(moveStrategy)
     }, 5000)
 }
