@@ -4,7 +4,7 @@ import bodyParser from "body-parser"
 import cors from "cors"
 import { body, validationResult } from "express-validator"
 
-import AL from "alclient"
+import AL, { MonsterName } from "alclient"
 import { startLulzCharacter } from "../strategy_pattern/lulz.js"
 
 const app = express()
@@ -33,21 +33,42 @@ app.post("/",
         try {
             const charType = req.body.char_type
             const monster = req.body.monster
-            if (["mage", "ranger", "warrior"].includes(charType)) {
-                if (["bee", "crab", "goo"].includes(monster)) {
-                    await startLulzCharacter(charType, req.body.user, req.body.auth, req.body.char, [monster])
-                    return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
-                } else {
-                    return res.status(400).send(`This service doesn't currently support ${monster}, sorry!`)
+
+            // Filter out unwanted match-ups
+            switch (charType) {
+                case "mage": {
+                    const mageMonsters: MonsterName[] = ["armadillo", "bee", "crab", "goo"]
+                    if (!mageMonsters.includes(monster)) {
+                        return res.status(400).send(`This service doesn't currently support ${monster} for ${charType}, sorry!`)
+                    }
+                    break
                 }
-            } else {
-                return res.status(400).send(`This service doesn't currently support ${charType}, sorry!`)
+                case "ranger": {
+                    const rangerMonsters: MonsterName[] = ["armadillo", "bee", "crab", "goo"]
+                    if (!rangerMonsters.includes(monster)) {
+                        return res.status(400).send(`This service doesn't currently support ${monster} for ${charType}, sorry!`)
+                    }
+                    break
+                }
+                case "warrior": {
+                    const warriorMonsters: MonsterName[] = ["bee", "crab", "goo"]
+                    if (!warriorMonsters.includes(monster)) {
+                        return res.status(400).send(`This service doesn't currently support ${monster} for ${charType}, sorry!`)
+                    }
+                    break
+                }
+                default: {
+                    return res.status(400).send(`This service doesn't currently support ${monster} for ${charType}, sorry!`)
+                }
             }
+
+            // It passed the filter, start it up
+            await startLulzCharacter(charType, req.body.user, req.body.auth, req.body.char, [monster])
+            return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
         } catch (e) {
             return res.status(500).send(e)
         }
-
-        return res.status(500).send("Something went wrong, your character probably didn't start. Check https://adventure.land/comm to confirm.")
+        // return res.status(500).send("Something went wrong, your character probably didn't start. Check https://adventure.land/comm to confirm.")
     })
 
 app.listen(port, async () => {
