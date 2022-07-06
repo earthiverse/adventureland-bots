@@ -95,6 +95,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         if (this.bot.socket.disconnected) {
             try {
                 await this.bot.connect()
+                this.bot.socket.on("disconnect", () => { this.reconnect() })
             } catch (e) {
                 console.error(e)
                 const wait = /wait_(\d+)_second/.exec(e)
