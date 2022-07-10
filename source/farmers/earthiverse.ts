@@ -38,6 +38,7 @@ async function run() {
                 friends[0] = merchant
                 startMerchant(merchant, friends, { map: "main", x: 0, y: -100 })
                 addSocket(merchant.id, merchant.socket, merchant)
+                startTrackerLoop(merchant)
                 merchant.socket.on("disconnect", async () => { loopBot() })
             } catch (e) {
                 console.error(e)
