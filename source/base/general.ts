@@ -185,6 +185,9 @@ export const ITEMS_TO_LIST: {
     // },
     "tracker": {
         0: 1_600_000
+    },
+    "vitring": {
+        2: 2_000_000
     }
 }
 
