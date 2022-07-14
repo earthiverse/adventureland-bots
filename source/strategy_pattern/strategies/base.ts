@@ -71,7 +71,7 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
             }
 
             // Open the chest
-            await bot.openChest(id)
+            await bot.openChest(id).catch(e => console.error(e))
         }
     }
 }

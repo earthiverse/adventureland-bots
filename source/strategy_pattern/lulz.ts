@@ -1,6 +1,5 @@
 import AL, { CharacterType, MonsterName, PingCompensatedCharacter, ServerIdentifier, ServerRegion } from "alclient"
 import { ItemName } from "alclient"
-import { ItemLevelInfo } from "../definitions/bot.js"
 import { Strategist } from "./context.js"
 import { BaseAttackStrategy } from "./strategies/attack.js"
 import { MageAttackStrategy } from "./strategies/attack_mage.js"
@@ -16,20 +15,6 @@ const SERVER_REGION: ServerRegion = "US"
 const SERVER_ID: ServerIdentifier = "I"
 
 export const MAX_CHARACTERS = 8
-const ITEMS_TO_SELL: ItemLevelInfo = {
-    beewings: 1,
-    cclaw: 1,
-    crabclaw: 1,
-    gslime: 1,
-    gstaff: 1,
-    hpamulet: 1,
-    hpbelt: 1,
-    ringsj: 1,
-    stinger: 1,
-    wcap: 1,
-    wshoes: 1
-}
-
 const CHARACTERS: PingCompensatedCharacter[] = []
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 
@@ -120,20 +105,23 @@ export async function startLulzCharacter(type: CharacterType, userID: string, us
 
     setInterval(async () => {
         // TODO: Move this to a move strategy
-        if (bot.smartMoving) return
-        if ((!bot.hasItem("hpot1") || !bot.hasItem("mpot1")) && bot.gold > (AL.Game.G.items.mpot1.g * 100)) {
+        try {
+            if (bot.smartMoving) return
+            if ((!bot.hasItem("hpot1") || !bot.hasItem("mpot1")) && bot.gold > (AL.Game.G.items.mpot1.g * 100) || bot.isFull()) {
             // Go get potions
-            context.stopLoop("move")
+                context.stopLoop("move")
 
-            await bot.smartMove("mpot1", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+                await bot.smartMove("mpot1", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
 
-            let potsToBuy = Math.min(100 - bot.countItem("mpot1"), bot.gold / AL.Game.G.items.mpot1.g)
-            if (potsToBuy > 0) await bot.buy("mpot1", potsToBuy)
+                let potsToBuy = Math.min(100 - bot.countItem("mpot1"), bot.gold / AL.Game.G.items.mpot1.g)
+                if (potsToBuy > 0) await bot.buy("mpot1", potsToBuy)
 
-            potsToBuy = Math.min(100 - bot.countItem("hpot1"), bot.gold / AL.Game.G.items.hpot1.g)
-            if (potsToBuy > 0) await bot.buy("hpot1", potsToBuy)
+                potsToBuy = Math.min(100 - bot.countItem("hpot1"), bot.gold / AL.Game.G.items.hpot1.g)
+                if (potsToBuy > 0) await bot.buy("hpot1", potsToBuy)
+            }
+        } catch (e) {
+            console.error(e)
         }
-
         context.applyStrategy(moveStrategy)
     }, 1000)
 }
