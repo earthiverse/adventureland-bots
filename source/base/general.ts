@@ -1145,7 +1145,7 @@ export function startBuyLoop(bot: Character, itemsToBuy = ITEMS_TO_BUY, replenis
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("buyLoop", setTimeout(async () => { buyLoop() }, LOOP_MS))
+        bot.timeouts.set("buyLoop", setTimeout(buyLoop, LOOP_MS))
     }
     buyLoop()
 }
@@ -1186,7 +1186,7 @@ export function startBuyFriendsReplenishablesLoop(bot: Character, friends: Chara
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("buyFriendsReplenishablesLoop", setTimeout(async () => { buyFriendsReplenishablesLoop() }, LOOP_MS))
+        bot.timeouts.set("buyFriendsReplenishablesLoop", setTimeout(buyFriendsReplenishablesLoop, LOOP_MS))
     }
     buyFriendsReplenishablesLoop()
 }
@@ -1202,7 +1202,7 @@ export function startBuyToUpgradeLoop(bot: Character, item: ItemName, quantity: 
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("upgradeLoop", setTimeout(async () => { buyToUpgradeLoop() }, LOOP_MS))
+        bot.timeouts.set("upgradeLoop", setTimeout(buyToUpgradeLoop, LOOP_MS))
     }
     buyToUpgradeLoop()
 }
@@ -1214,12 +1214,12 @@ export function startCompoundLoop(bot: Character, itemsToSell: ItemLevelInfo = I
 
             if (bot.q.compound) {
                 // We are compounding, we have to wait
-                bot.timeouts.set("compoundLoop", setTimeout(async () => { compoundLoop() }, bot.q.compound.ms))
+                bot.timeouts.set("compoundLoop", setTimeout(compoundLoop, bot.q.compound.ms))
                 return
             }
             if (bot.map.startsWith("bank")) {
                 // We are in the bank, we have to wait
-                bot.timeouts.set("compoundLoop", setTimeout(async () => { compoundLoop() }, LOOP_MS))
+                bot.timeouts.set("compoundLoop", setTimeout(compoundLoop, LOOP_MS))
                 return
             }
 
@@ -1281,7 +1281,7 @@ export function startCompoundLoop(bot: Character, itemsToSell: ItemLevelInfo = I
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("compoundLoop", setTimeout(async () => { compoundLoop() }, LOOP_MS))
+        bot.timeouts.set("compoundLoop", setTimeout(compoundLoop, LOOP_MS))
     }
     compoundLoop()
 }
@@ -1303,7 +1303,7 @@ export function startCraftLoop(bot: Character, itemsToCraft = ITEMS_TO_CRAFT): v
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("craftLoop", setTimeout(async () => { craftLoop() }, 1000))
+        bot.timeouts.set("craftLoop", setTimeout(craftLoop, 1000))
     }
     craftLoop()
 }
@@ -1355,7 +1355,7 @@ export function startDebugLoop(bot: Character): void {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("debugLoop", setTimeout(async () => { debugLoop() }, 600000))
+        bot.timeouts.set("debugLoop", setTimeout(debugLoop, 600000))
     }
 
     // NOTE: Order these in the same order as above
@@ -1409,7 +1409,7 @@ export function startElixirLoop(bot: Character, elixir: ItemName): void {
             console.error(e)
         }
 
-        bot.timeouts.set("elixirLoop", setTimeout(async () => { elixirLoop() }, 1000))
+        bot.timeouts.set("elixirLoop", setTimeout(elixirLoop, 1000))
     }
     elixirLoop()
 }
@@ -1421,7 +1421,7 @@ export function startExchangeLoop(bot: Character, itemsToExchange = ITEMS_TO_EXC
 
             if (bot.q.exchange) {
                 // We are exchanging, we have to wait
-                bot.timeouts.set("exchangeLoop", setTimeout(async () => { exchangeLoop() }, bot.q.exchange.ms))
+                bot.timeouts.set("exchangeLoop", setTimeout(exchangeLoop, bot.q.exchange.ms))
                 return
             }
 
@@ -1452,7 +1452,7 @@ export function startExchangeLoop(bot: Character, itemsToExchange = ITEMS_TO_EXC
             console.error(e)
         }
 
-        bot.timeouts.set("exchangeLoop", setTimeout(async () => { exchangeLoop() }, LOOP_MS))
+        bot.timeouts.set("exchangeLoop", setTimeout(exchangeLoop, LOOP_MS))
     }
     exchangeLoop()
 }
@@ -1507,7 +1507,7 @@ export function startHealLoop(bot: Character): void {
             console.error(e)
         }
 
-        bot.timeouts.set("healLoop", setTimeout(async () => { healLoop() }, Math.max(LOOP_MS, bot.getCooldown("use_hp"))))
+        bot.timeouts.set("healLoop", setTimeout(healLoop, Math.max(LOOP_MS, bot.getCooldown("use_hp"))))
     }
     healLoop()
 }
@@ -1574,7 +1574,7 @@ export function startLootLoop(bot: Character, friends: Character[] = []): void {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("lootLoop", setTimeout(async () => { lootLoop() }, 100))
+        bot.timeouts.set("lootLoop", setTimeout(lootLoop, 100))
     }
     lootLoop()
 }
@@ -1649,7 +1649,7 @@ export function startPartyLoop(bot: Character, leader: string, partyMembers?: st
             console.error(e)
         }
 
-        bot.timeouts.set("partyLoop", setTimeout(async () => { partyLoop() }, 1000))
+        bot.timeouts.set("partyLoop", setTimeout(partyLoop, 1000))
     }
     partyLoop()
 }
@@ -1667,7 +1667,7 @@ export function startPartyInviteLoop(bot: Character, player: string): void {
             console.error(e)
         }
 
-        bot.timeouts.set("partyInviteLoop", setTimeout(async () => { partyInviteLoop() }, 10000))
+        bot.timeouts.set("partyInviteLoop", setTimeout(partyInviteLoop, 10000))
     }
     partyInviteLoop()
 }
@@ -1688,7 +1688,7 @@ export function startScareLoop(bot: Character): void {
             for (const [, projectile] of bot.projectiles) {
                 if (projectile.attacker == bot.id) {
                     // Wait until the projectile hits to scare
-                    setTimeout(async () => { scareLoop() }, projectile.eta + 1)
+                    setTimeout(scareLoop, projectile.eta + 1)
                     return
                 }
             }
@@ -1723,7 +1723,7 @@ export function startScareLoop(bot: Character): void {
             console.error(e)
         }
 
-        bot.timeouts.set("scareLoop", setTimeout(async () => { scareLoop() }, Math.max(LOOP_MS, bot.getCooldown("scare"))))
+        bot.timeouts.set("scareLoop", setTimeout(scareLoop, Math.max(LOOP_MS, bot.getCooldown("scare"))))
     }
 
     // If we have too many targets, we can't go through doors.
@@ -1794,7 +1794,7 @@ export function startSellLoop(bot: Character, itemsToSell = ITEMS_TO_SELL, items
             console.error(e)
         }
 
-        bot.timeouts.set("sellLoop", setTimeout(async () => { sellLoop() }, LOOP_MS))
+        bot.timeouts.set("sellLoop", setTimeout(sellLoop, LOOP_MS))
     }
     sellLoop()
 }
@@ -1813,7 +1813,7 @@ export function startSendStuffAllowlistLoop(bot: Character, sendTo: string, item
             const sendToPlayer = bot.players.get(sendTo)
 
             if (!sendToPlayer) {
-                bot.timeouts.set("sendStuffAllowListLoop", setTimeout(async () => { sendStuffLoop() }, LOOP_MS))
+                bot.timeouts.set("sendStuffAllowListLoop", setTimeout(sendStuffLoop, LOOP_MS))
                 return
             }
 
@@ -1830,7 +1830,7 @@ export function startSendStuffAllowlistLoop(bot: Character, sendTo: string, item
                         await bot.sendItem(sendTo, i, item.q)
                     } catch (e) {
                         // They're probably full
-                        bot.timeouts.set("sendStuffAllowListLoop", setTimeout(async () => { sendStuffLoop() }, 5000))
+                        bot.timeouts.set("sendStuffAllowListLoop", setTimeout(sendStuffLoop, 5000))
                         return
                     }
                 }
@@ -1839,7 +1839,7 @@ export function startSendStuffAllowlistLoop(bot: Character, sendTo: string, item
             console.error(e)
         }
 
-        bot.timeouts.set("sendStuffAllowListLoop", setTimeout(async () => { sendStuffLoop() }, LOOP_MS))
+        bot.timeouts.set("sendStuffAllowListLoop", setTimeout(sendStuffLoop, LOOP_MS))
     }
     sendStuffLoop()
 }
@@ -1862,7 +1862,7 @@ export function startSendStuffDenylistLoop(bot: Character, sendTo: string[], ite
             }
 
             if (!sendToPlayer) {
-                bot.timeouts.set("sendStuffDenyListLoop", setTimeout(async () => { sendStuffLoop() }, 10000))
+                bot.timeouts.set("sendStuffDenyListLoop", setTimeout(sendStuffLoop, 10000))
                 return
             }
 
@@ -1879,7 +1879,7 @@ export function startSendStuffDenylistLoop(bot: Character, sendTo: string[], ite
                         await bot.sendItem(sendToPlayer.id, i, item.q)
                     } catch (e) {
                         // They're probably full
-                        bot.timeouts.set("sendStuffDenyListLoop", setTimeout(async () => { sendStuffLoop() }, 5000))
+                        bot.timeouts.set("sendStuffDenyListLoop", setTimeout(sendStuffLoop, 5000))
                         return
                     }
                 }
@@ -1888,7 +1888,7 @@ export function startSendStuffDenylistLoop(bot: Character, sendTo: string[], ite
             console.error(e)
         }
 
-        bot.timeouts.set("sendStuffDenyListLoop", setTimeout(async () => { sendStuffLoop() }, LOOP_MS))
+        bot.timeouts.set("sendStuffDenyListLoop", setTimeout(sendStuffLoop, LOOP_MS))
     }
     sendStuffLoop()
 }
@@ -1926,7 +1926,7 @@ export function startServerPartyInviteLoop(bot: Character, ignore = [bot.id], se
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("serverPartyInviteLoop", setTimeout(async () => { serverPartyInviteLoop() }, 1000))
+        bot.timeouts.set("serverPartyInviteLoop", setTimeout(serverPartyInviteLoop, 1000))
     }
     serverPartyInviteLoop()
 }
@@ -1943,7 +1943,7 @@ export function startTrackerLoop(bot: Character): void {
             console.error(e)
         }
 
-        bot.timeouts.set("trackerLoop", setTimeout(async () => { trackerLoop() }, CHECK_TRACKER_EVERY_MS))
+        bot.timeouts.set("trackerLoop", setTimeout(trackerLoop, CHECK_TRACKER_EVERY_MS))
     }
     trackerLoop()
 }
@@ -1955,12 +1955,12 @@ export function startUpgradeLoop(bot: Character, itemsToSell: ItemLevelInfo = IT
 
             if (bot.q.upgrade) {
                 // We are upgrading, we have to wait
-                bot.timeouts.set("upgradeLoop", setTimeout(async () => { upgradeLoop() }, bot.q.upgrade.ms))
+                bot.timeouts.set("upgradeLoop", setTimeout(upgradeLoop, bot.q.upgrade.ms))
                 return
             }
             if (bot.map.startsWith("bank")) {
                 // We are in the bank, we have to wait
-                bot.timeouts.set("upgradeLoop", setTimeout(async () => { upgradeLoop() }, LOOP_MS))
+                bot.timeouts.set("upgradeLoop", setTimeout(upgradeLoop, LOOP_MS))
                 return
             }
 
@@ -2020,7 +2020,7 @@ export function startUpgradeLoop(bot: Character, itemsToSell: ItemLevelInfo = IT
             console.error(e)
         }
 
-        bot.timeouts.set("upgradeLoop", setTimeout(async () => { upgradeLoop() }, LOOP_MS))
+        bot.timeouts.set("upgradeLoop", setTimeout(upgradeLoop, LOOP_MS))
     }
     upgradeLoop()
 }

@@ -39,6 +39,6 @@ async function attackLoop() {
     }
     // NOTE: We are now using setTimeout instead of setInterval, so our next attack will dynamically adjust when it runs
     // NOTE: ms_to_next_skill is from base.js
-    setTimeout(async () => { attackLoop() }, Math.max(1, ms_to_next_skill("attack")))
+    setTimeout(attackLoop, Math.max(1, ms_to_next_skill("attack")))
 }
 attackLoop()

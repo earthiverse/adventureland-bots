@@ -71,7 +71,7 @@ async function startMerchant(bot: Merchant) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -88,7 +88,7 @@ async function startMerchant(bot: Merchant) {
                 lastBankVisit = Date.now()
                 await doBanking(bot)
                 await doEmergencyBanking(bot)
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -97,7 +97,7 @@ async function startMerchant(bot: Merchant) {
                 await merchantSmartMove(bot, "newyear_tree", { attackWhileMoving: true, getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                 // TODO: Improve ALClient by making this a function
                 bot.socket.emit("interaction", { type: "newyear_tree" })
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, Math.min(...bot.pings) * 2))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, Math.min(...bot.pings) * 2))
                 return
             }
 
@@ -116,7 +116,7 @@ async function startMerchant(bot: Merchant) {
                             await merchantSmartMove(bot, friend, { attackWhileMoving: true, getWithin: bot.G.skills.mluck.range / 2, stopIfTrue: () => (friend.s.mluck?.strong && friend.s.mluck?.ms >= 120000) || Tools.distance(bot.smartMoving, friend) > bot.G.skills.mluck.range })
                         }
 
-                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                         return
                     }
                 }
@@ -129,7 +129,7 @@ async function startMerchant(bot: Merchant) {
                 // Get stuff from our friends
                 if (friend.isFull()) {
                     await merchantSmartMove(bot, friend, { attackWhileMoving: true, getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, stopIfTrue: () => bot.isFull() || !friend.isFull() || Tools.distance(bot.smartMoving, friend) > 400 })
-                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                    bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                     return
                 }
             }
@@ -137,14 +137,14 @@ async function startMerchant(bot: Merchant) {
             // Go fishing if we can
             await goFishing(bot)
             if (bot.canUse("fishing", { ignoreEquipped: true })) {
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
             // Go mining if we can
             await goMining(bot)
             if (bot.canUse("mining", { ignoreEquipped: true })) {
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -160,7 +160,7 @@ async function startMerchant(bot: Merchant) {
                         await merchantSmartMove(bot, (bot.S[type] as IPosition), { attackWhileMoving: true, getWithin: 100 })
                     }
 
-                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                    bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                     return
                 }
 
@@ -185,7 +185,7 @@ async function startMerchant(bot: Merchant) {
                         await merchantSmartMove(bot, stranger, { attackWhileMoving: true, getWithin: bot.G.skills.mluck.range / 2 })
                     }
 
-                    setTimeout(async () => { moveLoop() }, 250)
+                    setTimeout(moveLoop, 250)
                     return
                 }
             }
@@ -200,7 +200,7 @@ async function startMerchant(bot: Merchant) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
     moveLoop()
 }
@@ -235,7 +235,7 @@ async function startPriest(bot: Priest) {
                 bot.rip // We are dead
                 || bot.c.town // We are teleporting to town
             ) {
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
                 return
             }
 
@@ -244,7 +244,7 @@ async function startPriest(bot: Priest) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, calculateAttackLoopCooldown(bot)))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, calculateAttackLoopCooldown(bot)))
     }
     attackLoop()
 
@@ -256,7 +256,7 @@ async function startPriest(bot: Priest) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -265,7 +265,7 @@ async function startPriest(bot: Priest) {
                 let index = 0
                 if (bot.party) index = bot.partyData.list.indexOf(bot.id)
                 await goToNearestWalkableToMonster(bot, ["goldenbat", "mvampire", "fvampire", "phoenix", "bat"], batLocations[index % batLocations.length])
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -274,7 +274,7 @@ async function startPriest(bot: Priest) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
     moveLoop()
 }
@@ -306,7 +306,7 @@ async function startRanger(bot: Ranger) {
                 bot.rip // We are dead
                 || bot.c.town // We are teleporting to town
             ) {
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
                 return
             }
 
@@ -315,7 +315,7 @@ async function startRanger(bot: Ranger) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, calculateAttackLoopCooldown(bot)))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, calculateAttackLoopCooldown(bot)))
     }
     attackLoop()
 
@@ -327,7 +327,7 @@ async function startRanger(bot: Ranger) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -336,7 +336,7 @@ async function startRanger(bot: Ranger) {
                 let index = 0
                 if (bot.party) index = bot.partyData.list.indexOf(bot.id)
                 await goToNearestWalkableToMonster(bot, ["goldenbat", "mvampire", "fvampire", "phoenix", "bat"], batLocations[index % batLocations.length])
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -345,7 +345,7 @@ async function startRanger(bot: Ranger) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
     moveLoop()
 }
@@ -377,7 +377,7 @@ async function startMage(bot: Mage) {
                 bot.rip // We are dead
                 || bot.c.town // We are teleporting to town
             ) {
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
                 return
             }
 
@@ -403,7 +403,7 @@ async function startMage(bot: Mage) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, calculateAttackLoopCooldown(bot)))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, calculateAttackLoopCooldown(bot)))
     }
     attackLoop()
 
@@ -415,7 +415,7 @@ async function startMage(bot: Mage) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -424,7 +424,7 @@ async function startMage(bot: Mage) {
                 let index = 0
                 if (bot.party) index = bot.partyData.list.indexOf(bot.id)
                 await goToNearestWalkableToMonster(bot, ["goldenbat", "mvampire", "fvampire", "phoenix", "bat"], batLocations[index % batLocations.length])
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -492,7 +492,7 @@ async function startMage(bot: Mage) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
     moveLoop()
 }
@@ -528,7 +528,7 @@ async function startWarrior(bot: Warrior) {
                 bot.rip // We are dead
                 || bot.c.town // We are teleporting to town
             ) {
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
                 return
             }
 
@@ -554,7 +554,7 @@ async function startWarrior(bot: Warrior) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, calculateAttackLoopCooldown(bot)))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, calculateAttackLoopCooldown(bot)))
     }
     attackLoop()
 
@@ -566,7 +566,7 @@ async function startWarrior(bot: Warrior) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -575,7 +575,7 @@ async function startWarrior(bot: Warrior) {
                 let index = 0
                 if (bot.party) index = bot.partyData.list.indexOf(bot.id)
                 await goToNearestWalkableToMonster(bot, ["goldenbat", "mvampire", "fvampire", "phoenix", "bat"], batLocations[index % batLocations.length])
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -643,7 +643,7 @@ async function startWarrior(bot: Warrior) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
     moveLoop()
 }
@@ -668,17 +668,17 @@ async function run() {
                 friends[0] = merchant
                 startMerchant(merchant)
                 addSocket(merchant.id, merchant.socket, merchant)
-                merchant.socket.on("disconnect", async () => { loopBot() })
+                merchant.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (merchant) merchant.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -695,17 +695,17 @@ async function run() {
                 friends[1] = priest
                 startPriest(priest)
                 addSocket(priest.id, priest.socket, priest)
-                priest.socket.on("disconnect", async () => { loopBot() })
+                priest.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (priest) priest.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -723,17 +723,17 @@ async function run() {
                 startRanger(ranger)
                 startTrackerLoop(ranger)
                 addSocket(ranger.id, ranger.socket, ranger)
-                ranger.socket.on("disconnect", async () => { loopBot() })
+                ranger.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (ranger) ranger.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -750,17 +750,17 @@ async function run() {
                 friends[3] = warrior
                 startWarrior(warrior)
                 addSocket(warrior.id, warrior.socket, warrior)
-                warrior.socket.on("disconnect", async () => { loopBot() })
+                warrior.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (warrior) warrior.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -777,17 +777,17 @@ async function run() {
     //             friends[3] = mage
     //             startMage(mage)
     //             addSocket(mage.id, mage.socket, mage)
-    //             mage.socket.on("disconnect", async () => { loopBot() })
+    //             mage.socket.on("disconnect", loopBot)
     //         } catch (e) {
     //             console.error(e)
     //             if (mage) mage.disconnect()
     //             const wait = /wait_(\d+)_second/.exec(e)
     //             if (wait && wait[1]) {
-    //                 setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+    //                 setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
     //             } else if (/limits/.test(e)) {
-    //                 setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+    //                 setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
     //             } else {
-    //                 setTimeout(async () => { loopBot() }, 10000)
+    //                 setTimeout(loopBot, 10000)
     //             }
     //         }
     //     }

@@ -26,17 +26,17 @@ async function run() {
                 follower1 = await AL.Game.startMage(name, region, identifier)
                 friends[0] = follower1
                 startShared(follower1, targets, friends)
-                follower1.socket.on("disconnect", async () => { loopBot() })
+                follower1.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (follower1) follower1.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -52,17 +52,17 @@ async function run() {
                 follower2 = await AL.Game.startMage(name, region, identifier)
                 friends[1] = follower2
                 startShared(follower2, targets, friends)
-                follower2.socket.on("disconnect", async () => { loopBot() })
+                follower2.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (follower2) follower2.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -78,17 +78,17 @@ async function run() {
                 follower3 = await AL.Game.startMage(name, region, identifier)
                 friends[2] = follower3
                 startShared(follower3, targets, friends)
-                follower3.socket.on("disconnect", async () => { loopBot() })
+                follower3.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (follower3) follower3.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }

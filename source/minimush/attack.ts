@@ -51,7 +51,7 @@ async function startMage(bot: Mage, positionOffset: { x: number, y: number } = {
             console.error(e)
         }
 
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, Math.max(10, bot.getCooldown("attack"))))
     }
     attackLoop()
 
@@ -62,7 +62,7 @@ async function startMage(bot: Mage, positionOffset: { x: number, y: number } = {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -75,7 +75,7 @@ async function startMage(bot: Mage, positionOffset: { x: number, y: number } = {
             console.error(e)
         }
 
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
     moveLoop()
 }
@@ -92,7 +92,7 @@ async function startMerchant(bot: Merchant, holdPosition: IPosition) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -101,7 +101,7 @@ async function startMerchant(bot: Merchant, holdPosition: IPosition) {
                 lastBankVisit = Date.now()
                 await doBanking(bot)
                 await doEmergencyBanking(bot)
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -118,7 +118,7 @@ async function startMerchant(bot: Merchant, holdPosition: IPosition) {
                             await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2 })
                         }
 
-                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                         return
                     }
                 }
@@ -131,7 +131,7 @@ async function startMerchant(bot: Merchant, holdPosition: IPosition) {
                     await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                     lastBankVisit = Date.now()
                     await doBanking(bot)
-                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                    bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                     return
                 }
             }
@@ -139,14 +139,14 @@ async function startMerchant(bot: Merchant, holdPosition: IPosition) {
             // Go fishing if we can
             await goFishing(bot)
             if (!bot.isOnCooldown("fishing") && (bot.hasItem("rod") || bot.isEquipped("rod"))) {
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
             // Go mining if we can
             await goMining(bot)
             if (!bot.isOnCooldown("mining") && (bot.hasItem("pickaxe") || bot.isEquipped("pickaxe"))) {
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -163,7 +163,7 @@ async function startMerchant(bot: Merchant, holdPosition: IPosition) {
                         await bot.smartMove((bot.S[type] as IPosition), { getWithin: 100 })
                     }
 
-                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                    bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                     return
                 }
 
@@ -189,7 +189,7 @@ async function startMerchant(bot: Merchant, holdPosition: IPosition) {
                         await bot.smartMove(stranger, { getWithin: bot.G.skills.mluck.range / 2 })
                     }
 
-                    setTimeout(async () => { moveLoop() }, 250)
+                    setTimeout(moveLoop, 250)
                     return
                 }
             }
@@ -201,7 +201,7 @@ async function startMerchant(bot: Merchant, holdPosition: IPosition) {
             console.error(e)
         }
 
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, LOOP_MS))
     }
     moveLoop()
 }
@@ -224,17 +224,17 @@ async function run() {
                 startShared(mage1)
                 startMage(mage1)
                 startTrackerLoop(mage1)
-                mage1.socket.on("disconnect", async () => { loopBot() })
+                mage1.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (mage1) mage1.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -251,17 +251,17 @@ async function run() {
                 friends[1] = mage2
                 startShared(mage2)
                 startMage(mage2, { x: 25, y: 0 })
-                mage2.socket.on("disconnect", async () => { loopBot() })
+                mage2.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (mage2) mage2.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -278,17 +278,17 @@ async function run() {
                 friends[2] = mage3
                 startShared(mage3)
                 startMage(mage3, { x: -25, y: 0 })
-                mage3.socket.on("disconnect", async () => { loopBot() })
+                mage3.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (mage3) mage3.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -304,17 +304,17 @@ async function run() {
                 merchant = await AL.Game.startMerchant(name, region, identifier)
                 startShared(merchant)
                 startMerchant(merchant, { map: "main", x: 365, y: 1275 })
-                merchant.socket.on("disconnect", async () => { loopBot() })
+                merchant.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (merchant) merchant.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }

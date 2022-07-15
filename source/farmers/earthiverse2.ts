@@ -40,7 +40,7 @@ async function run() {
             if (jrat) jrat.disconnect()
         }
         const msToNextMinuteJrat = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { jratConnectLoop() }, msToNextMinuteJrat + 5000)
+        setTimeout(jratConnectLoop, msToNextMinuteJrat + 5000)
     }
 
     const jratDisconnectLoop = async () => {
@@ -51,12 +51,12 @@ async function run() {
             console.error(e)
         }
         const msToNextMinuteJrat = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { jratDisconnectLoop() }, msToNextMinuteJrat - 5000 < 0 ? msToNextMinuteJrat + 55_000 : msToNextMinuteJrat - 5000)
+        setTimeout(jratDisconnectLoop, msToNextMinuteJrat - 5000 < 0 ? msToNextMinuteJrat + 55_000 : msToNextMinuteJrat - 5000)
     }
 
     const msToNextMinuteJrat = 60_000 - (Date.now() % 60_000)
-    setTimeout(async () => { jratConnectLoop() }, msToNextMinuteJrat + 5000)
-    setTimeout(async () => { jratDisconnectLoop() }, msToNextMinuteJrat - 5000 < 0 ? msToNextMinuteJrat + 55_000 : msToNextMinuteJrat - 5000)
+    setTimeout(jratConnectLoop, msToNextMinuteJrat + 5000)
+    setTimeout(jratDisconnectLoop, msToNextMinuteJrat - 5000 < 0 ? msToNextMinuteJrat + 55_000 : msToNextMinuteJrat - 5000)
 
     const croc1ConnectLoop = async () => {
         try {
@@ -68,7 +68,7 @@ async function run() {
             if (croc1) croc1.disconnect()
         }
         const msToNextMinuteCroc1 = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { croc1ConnectLoop() }, msToNextMinuteCroc1 + 5000)
+        setTimeout(croc1ConnectLoop, msToNextMinuteCroc1 + 5000)
     }
 
     const croc1DisconnectLoop = async () => {
@@ -79,12 +79,12 @@ async function run() {
             console.error(e)
         }
         const msToNextMinuteCroc1 = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { croc1DisconnectLoop() }, msToNextMinuteCroc1 - 5000 < 0 ? msToNextMinuteCroc1 + 55_000 : msToNextMinuteCroc1 - 5000)
+        setTimeout(croc1DisconnectLoop, msToNextMinuteCroc1 - 5000 < 0 ? msToNextMinuteCroc1 + 55_000 : msToNextMinuteCroc1 - 5000)
     }
 
     const msToNextMinuteCroc1 = 60_000 - (Date.now() % 60_000)
-    setTimeout(async () => { croc1ConnectLoop() }, msToNextMinuteCroc1 + 5000)
-    setTimeout(async () => { croc1DisconnectLoop() }, msToNextMinuteCroc1 - 5000 < 0 ? msToNextMinuteCroc1 + 55_000 : msToNextMinuteCroc1 - 5000)
+    setTimeout(croc1ConnectLoop, msToNextMinuteCroc1 + 5000)
+    setTimeout(croc1DisconnectLoop, msToNextMinuteCroc1 - 5000 < 0 ? msToNextMinuteCroc1 + 55_000 : msToNextMinuteCroc1 - 5000)
 
     const croc2ConnectLoop = async () => {
         try {
@@ -96,7 +96,7 @@ async function run() {
             if (croc2) croc2.disconnect()
         }
         const msToNextMinuteCroc2 = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { croc2ConnectLoop() }, msToNextMinuteCroc2 + 5000)
+        setTimeout(croc2ConnectLoop, msToNextMinuteCroc2 + 5000)
     }
 
     const croc2DisconnectLoop = async () => {
@@ -107,12 +107,12 @@ async function run() {
             console.error(e)
         }
         const msToNextMinuteCroc2 = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { croc2DisconnectLoop() }, msToNextMinuteCroc2 - 5000 < 0 ? msToNextMinuteCroc2 + 55_000 : msToNextMinuteCroc2 - 5000)
+        setTimeout(croc2DisconnectLoop, msToNextMinuteCroc2 - 5000 < 0 ? msToNextMinuteCroc2 + 55_000 : msToNextMinuteCroc2 - 5000)
     }
 
     const msToNextMinuteCroc2 = 60_000 - (Date.now() % 60_000)
-    setTimeout(async () => { croc2ConnectLoop() }, msToNextMinuteCroc2 + 5000)
-    setTimeout(async () => { croc2DisconnectLoop() }, msToNextMinuteCroc2 - 5000 < 0 ? msToNextMinuteCroc2 + 55_000 : msToNextMinuteCroc2 - 5000)
+    setTimeout(croc2ConnectLoop, msToNextMinuteCroc2 + 5000)
+    setTimeout(croc2DisconnectLoop, msToNextMinuteCroc2 - 5000 < 0 ? msToNextMinuteCroc2 + 55_000 : msToNextMinuteCroc2 - 5000)
 
     const croc3ConnectLoop = async () => {
         try {
@@ -124,7 +124,7 @@ async function run() {
             if (croc3) croc3.disconnect()
         }
         const msToNextMinuteCroc3 = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { croc3ConnectLoop() }, msToNextMinuteCroc3 + 5000)
+        setTimeout(croc3ConnectLoop, msToNextMinuteCroc3 + 5000)
     }
 
     const croc3DisconnectLoop = async () => {
@@ -135,12 +135,12 @@ async function run() {
             console.error(e)
         }
         const msToNextMinuteCroc3 = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { croc3DisconnectLoop() }, msToNextMinuteCroc3 - 5000 < 0 ? msToNextMinuteCroc3 + 55_000 : msToNextMinuteCroc3 - 5000)
+        setTimeout(croc3DisconnectLoop, msToNextMinuteCroc3 - 5000 < 0 ? msToNextMinuteCroc3 + 55_000 : msToNextMinuteCroc3 - 5000)
     }
 
     const msToNextMinuteCroc3 = 60_000 - (Date.now() % 60_000)
-    setTimeout(async () => { croc3ConnectLoop() }, msToNextMinuteCroc3 + 5000)
-    setTimeout(async () => { croc3DisconnectLoop() }, msToNextMinuteCroc3 - 5000 < 0 ? msToNextMinuteCroc3 + 55_000 : msToNextMinuteCroc3 - 5000)
+    setTimeout(croc3ConnectLoop, msToNextMinuteCroc3 + 5000)
+    setTimeout(croc3DisconnectLoop, msToNextMinuteCroc3 - 5000 < 0 ? msToNextMinuteCroc3 + 55_000 : msToNextMinuteCroc3 - 5000)
 
 }
 run()

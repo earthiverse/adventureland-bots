@@ -118,7 +118,7 @@ export async function startMage(bot: Mage, information: Information, strategy: S
                 || bot.c.town // We are teleporting to town
             ) {
                 // We are dead
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
                 return
             }
 
@@ -191,7 +191,7 @@ export async function startMage(bot: Mage, information: Information, strategy: S
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, calculateAttackLoopCooldown(bot)))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, calculateAttackLoopCooldown(bot)))
     }
     attackLoop()
 }
@@ -233,7 +233,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
                 || bot.c.mining // We are mining
             ) {
                 // We are dead
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
                 return
             }
 
@@ -287,7 +287,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, calculateAttackLoopCooldown(bot)))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, calculateAttackLoopCooldown(bot)))
     }
     attackLoop()
 
@@ -298,7 +298,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -306,7 +306,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
             if (checkOnlyEveryMS(`${bot.id}_bank`, 120000) || bot.isFull() || bot.hasPvPMarkedItem()) {
                 await doBanking(bot)
                 await doEmergencyBanking(bot)
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -315,7 +315,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
                 await merchantSmartMove(bot, "newyear_tree", { attackWhileMoving: true, getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                 // TODO: Improve ALClient by making this a function
                 bot.socket.emit("interaction", { type: "newyear_tree" })
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, Math.min(...bot.pings) * 2))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, Math.min(...bot.pings) * 2))
                 return
             }
 
@@ -334,7 +334,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
                             await merchantSmartMove(bot, friend, { attackWhileMoving: true, getWithin: bot.G.skills.mluck.range / 2, stopIfTrue: () => (friend.s.mluck?.strong && friend.s.mluck?.ms >= 120000) || Tools.distance(bot.smartMoving, friend) > bot.G.skills.mluck.range })
                         }
 
-                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                         return
                     }
                 }
@@ -347,7 +347,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
                 // Get stuff from our friends
                 if (friend.isFull()) {
                     await merchantSmartMove(bot, friend, { attackWhileMoving: true, getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, stopIfTrue: () => bot.isFull() || !friend.isFull() || Tools.distance(bot.smartMoving, friend) > 400 })
-                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                    bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                     return
                 }
 
@@ -360,7 +360,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
                         if (!bot.canBuy(item)) continue // We can't buy them this for them
                         await merchantSmartMove(bot, friend, { attackWhileMoving: true, getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, stopIfTrue: () => !bot.canBuy(item) || friend.countItem(item) > amount * 0.25 || Tools.distance(bot.smartMoving, friend) > 400 })
 
-                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                         return
                     }
                 }
@@ -369,14 +369,14 @@ export async function startMerchant(bot: Merchant, information: Information, str
             // Go fishing if we can
             await goFishing(bot)
             if (bot.canUse("fishing", { ignoreEquipped: true })) {
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
             // Go mining if we can
             await goMining(bot)
             if (bot.canUse("mining", { ignoreEquipped: true })) {
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -392,7 +392,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
                         await merchantSmartMove(bot, (bot.S[type] as IPosition), { attackWhileMoving: true, getWithin: 100 })
                     }
 
-                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                    bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                     return
                 }
 
@@ -417,7 +417,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
                         await merchantSmartMove(bot, stranger, { attackWhileMoving: true, getWithin: bot.G.skills.mluck.range / 2 })
                     }
 
-                    setTimeout(async () => { moveLoop() }, 250)
+                    setTimeout(moveLoop, 250)
                     return
                 }
             }
@@ -433,7 +433,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
             console.error(e)
         }
 
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
     moveLoop()
 
@@ -443,7 +443,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
 
             if (!bot.stand || bot.rip) {
                 // Dead, or stand isn't open
-                bot.timeouts.set("merchantLoop", setTimeout(async () => { merchantLoop() }, LOOP_MS))
+                bot.timeouts.set("merchantLoop", setTimeout(merchantLoop, LOOP_MS))
                 return
             }
 
@@ -474,7 +474,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("merchantLoop", setTimeout(async () => { merchantLoop() }, LOOP_MS))
+        bot.timeouts.set("merchantLoop", setTimeout(merchantLoop, LOOP_MS))
     }
     merchantLoop()
 }
@@ -498,7 +498,7 @@ export async function startPaladin(bot: Paladin, information: Information, strat
                 || bot.c.town // We are teleporting to town
             ) {
                 // We are dead
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
                 return
             }
 
@@ -572,7 +572,7 @@ export async function startPaladin(bot: Paladin, information: Information, strat
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, calculateAttackLoopCooldown(bot)))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, calculateAttackLoopCooldown(bot)))
     }
     attackLoop()
 }
@@ -597,7 +597,7 @@ export async function startPriest(bot: Priest, information: Information, strateg
                 || bot.c.town // We are teleporting to town
             ) {
                 // We are dead
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
                 return
             }
 
@@ -671,7 +671,7 @@ export async function startPriest(bot: Priest, information: Information, strateg
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, calculateAttackLoopCooldown(bot)))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, calculateAttackLoopCooldown(bot)))
     }
     attackLoop()
 }
@@ -694,7 +694,7 @@ export async function startRanger(bot: Ranger, information: Information, strateg
                 || bot.c.town // We are teleporting to town
             ) {
                 // We are dead
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
                 return
             }
 
@@ -768,7 +768,7 @@ export async function startRanger(bot: Ranger, information: Information, strateg
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, calculateAttackLoopCooldown(bot)))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, calculateAttackLoopCooldown(bot)))
     }
     attackLoop()
 }
@@ -793,7 +793,7 @@ export async function startRogue(bot: Rogue, information: Information, strategy:
                 || bot.c.town // We are teleporting to town
             ) {
                 // We are dead
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
                 return
             }
 
@@ -867,7 +867,7 @@ export async function startRogue(bot: Rogue, information: Information, strategy:
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, calculateAttackLoopCooldown(bot)))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, calculateAttackLoopCooldown(bot)))
     }
     attackLoop()
 }
@@ -894,7 +894,7 @@ export async function startWarrior(bot: Warrior, information: Information, strat
                 || bot.c.town // We are teleporting to town
             ) {
                 // We are dead
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
                 return
             }
 
@@ -968,7 +968,7 @@ export async function startWarrior(bot: Warrior, information: Information, strat
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, calculateAttackLoopCooldown(bot)))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, calculateAttackLoopCooldown(bot)))
     }
     attackLoop()
 }
@@ -1031,7 +1031,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
                 // If we are dead, respawn
                 if (bot.rip) {
                     await bot.respawn()
-                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                    bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                     return
                 }
 
@@ -1039,7 +1039,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
                 if (!bot.s.monsterhunt && bot.server.name == defaultIdentifier && bot.server.region == defaultRegion) {
                     await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, useBlink: true })
                     await bot.getMonsterHuntQuest()
-                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
+                    bot.timeouts.set("moveLoop", setTimeout(moveLoop, LOOP_MS * 2))
                     return
                 }
 
@@ -1050,7 +1050,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
                         await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, useBlink: true })
                         await bot.finishMonsterHuntQuest()
                         await bot.getMonsterHuntQuest()
-                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
+                        bot.timeouts.set("moveLoop", setTimeout(moveLoop, LOOP_MS * 2))
                         return
                     }
                 }
@@ -1060,7 +1060,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
                     await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                     // TODO: Improve ALClient by making this a function
                     bot.socket.emit("interaction", { type: "newyear_tree" })
-                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, Math.min(...bot.pings) * 2))
+                    bot.timeouts.set("moveLoop", setTimeout(moveLoop, Math.min(...bot.pings) * 2))
                     return
                 }
 
@@ -1074,7 +1074,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
                 //     const newPlayer = await AL.PlayerModel.findOne({ $expr: { $eq: ["$name", "$s.newcomersblessing.f"] }, lastSeen: { $gt: Date.now() - 120_000 }, serverIdentifier: bot.server.name, serverRegion: bot.server.region }).lean().exec()
                 //     if (newPlayer) {
                 //         await bot.smartMove(newPlayer, { getWithin: 20 })
-                //         bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
+                //         bot.timeouts.set("moveLoop", setTimeout(moveLoop, LOOP_MS * 2))
                 //         return
                 //     }
                 // }
@@ -1098,7 +1098,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
             } catch (e) {
                 console.error(e)
             }
-            bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS * 2))
+            bot.timeouts.set("moveLoop", setTimeout(moveLoop, LOOP_MS * 2))
         }
         moveLoop()
     }
@@ -1128,10 +1128,10 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
         } catch (e) {
             console.error(e)
         }
-        setTimeout(async () => { await targetLoop() }, 1000)
+        setTimeout(await targetLoop, 1000)
     }
     if (bot.server.region == DEFAULT_REGION && bot.server.name == DEFAULT_IDENTIFIER) {
-        setTimeout(async () => { await targetLoop() }, 2500) // Offset by a few seconds so characters can load
+        setTimeout(await targetLoop, 2500) // Offset by a few seconds so characters can load
     } else {
         await targetLoop() // We're on a different server, which means there's special monsters, get to them ASAP.
     }

@@ -56,7 +56,7 @@ async function startRanger(bot: Ranger) {
             writeLast1000Events(bot, `${Date.now()}_${bot.id}.log`, e)
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, calculateAttackLoopCooldown(bot)))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, calculateAttackLoopCooldown(bot)))
     }
     attackLoop()
 
@@ -67,7 +67,7 @@ async function startRanger(bot: Ranger) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -85,7 +85,7 @@ async function startRanger(bot: Ranger) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, LOOP_MS))
     }
     moveLoop()
 }
@@ -110,7 +110,7 @@ async function run() {
                 information.bot1.bot = undefined
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
+            setTimeout(connectLoop, msToNextMinute + 5000)
         }
 
         const disconnectLoop = async () => {
@@ -121,12 +121,12 @@ async function run() {
                 console.error(e)
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+            setTimeout(disconnectLoop, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
         }
 
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
-        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+        setTimeout(connectLoop, msToNextMinute + 5000)
+        setTimeout(disconnectLoop, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
     }
     startRanger1Loop(information.bot1.name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
 
@@ -142,7 +142,7 @@ async function run() {
                 information.bot2.bot = undefined
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
+            setTimeout(connectLoop, msToNextMinute + 5000)
         }
 
         const disconnectLoop = async () => {
@@ -153,12 +153,12 @@ async function run() {
                 console.error(e)
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+            setTimeout(disconnectLoop, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
         }
 
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
-        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+        setTimeout(connectLoop, msToNextMinute + 5000)
+        setTimeout(disconnectLoop, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
     }
     startRanger2Loop(information.bot2.name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
 }

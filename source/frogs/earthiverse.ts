@@ -27,7 +27,7 @@ async function startMage(bot: Mage) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, Math.max(LOOP_MS, bot.getCooldown("attack"))))
     }
     attackLoop()
 
@@ -39,7 +39,7 @@ async function startMage(bot: Mage) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, LOOP_MS))
                 return
             }
 
@@ -48,7 +48,7 @@ async function startMage(bot: Mage) {
                 await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                 // TODO: Improve ALClient by making this a function
                 bot.socket.emit("interaction", { type: "newyear_tree" })
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, Math.min(...bot.pings) * 2))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, Math.min(...bot.pings) * 2))
                 return
             }
 
@@ -115,7 +115,7 @@ async function startMage(bot: Mage) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, LOOP_MS))
     }
     moveLoop()
 }
@@ -138,7 +138,7 @@ async function run() {
             if (mage) mage.disconnect()
         }
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
+        setTimeout(connectLoop, msToNextMinute + 5000)
     }
 
     const disconnectLoop = async () => {
@@ -149,11 +149,11 @@ async function run() {
             console.error(e)
         }
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+        setTimeout(disconnectLoop, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
     }
 
     const msToNextMinute = 60_000 - (Date.now() % 60_000)
-    setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
-    setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+    setTimeout(connectLoop, msToNextMinute + 5000)
+    setTimeout(disconnectLoop, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
 }
 run()

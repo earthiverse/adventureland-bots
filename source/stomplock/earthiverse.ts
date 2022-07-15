@@ -44,7 +44,7 @@ async function startMerchant(bot: Merchant, friends: Character[], holdPosition: 
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -52,7 +52,7 @@ async function startMerchant(bot: Merchant, friends: Character[], holdPosition: 
             if (bot.isFull() || lastBankVisit < Date.now() - 120000 || bot.hasPvPMarkedItem()) {
                 lastBankVisit = Date.now()
                 await doBanking(bot)
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -68,7 +68,7 @@ async function startMerchant(bot: Merchant, friends: Character[], holdPosition: 
                             await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2 })
                         }
 
-                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                         return
                     }
                 }
@@ -81,7 +81,7 @@ async function startMerchant(bot: Merchant, friends: Character[], holdPosition: 
                     await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                     lastBankVisit = Date.now()
                     await doBanking(bot)
-                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                    bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                     return
                 }
             }
@@ -89,14 +89,14 @@ async function startMerchant(bot: Merchant, friends: Character[], holdPosition: 
             // Go fishing if we can
             await goFishing(bot)
             if (!bot.isOnCooldown("fishing") && (bot.hasItem("rod") || bot.isEquipped("rod"))) {
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
             // Go mining if we can
             await goMining(bot)
             if (!bot.isOnCooldown("mining") && (bot.hasItem("pickaxe") || bot.isEquipped("pickaxe"))) {
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -112,7 +112,7 @@ async function startMerchant(bot: Merchant, friends: Character[], holdPosition: 
                     await bot.smartMove((bot.S[type] as IPosition), { getWithin: 100 })
                 }
 
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -140,7 +140,7 @@ async function startMerchant(bot: Merchant, friends: Character[], holdPosition: 
                         await bot.smartMove(stranger, { getWithin: bot.G.skills.mluck.range / 2 })
                     }
 
-                    setTimeout(async () => { moveLoop() }, 250)
+                    setTimeout(moveLoop, 250)
                     return
                 }
             }
@@ -152,7 +152,7 @@ async function startMerchant(bot: Merchant, friends: Character[], holdPosition: 
             console.error(e)
         }
 
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, LOOP_MS))
     }
     async function pvpMoveLoop() {
         try {
@@ -163,7 +163,7 @@ async function startMerchant(bot: Merchant, friends: Character[], holdPosition: 
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("pvpMoveLoop", setTimeout(async () => { pvpMoveLoop() }, LOOP_MS))
+        bot.timeouts.set("pvpMoveLoop", setTimeout(pvpMoveLoop, LOOP_MS))
     }
     if (identifier !== "PVP") moveLoop()
     else pvpMoveLoop()
@@ -182,17 +182,17 @@ async function run() {
                 leader = await AL.Game.startWarrior(name, region, identifier)
                 startLeader(leader)
                 startShared(leader, merchantName)
-                leader.socket.on("disconnect", async () => { loopBot() })
+                leader.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (leader) leader.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -207,17 +207,17 @@ async function run() {
                 if (follower1) follower1.disconnect()
                 follower1 = await AL.Game.startWarrior(name, region, identifier)
                 startShared(follower1, merchantName)
-                follower1.socket.on("disconnect", async () => { loopBot() })
+                follower1.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (follower1) follower1.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -232,17 +232,17 @@ async function run() {
                 if (follower2) follower2.disconnect()
                 follower2 = await AL.Game.startWarrior(name, region, identifier)
                 startShared(follower2, merchantName)
-                follower2.socket.on("disconnect", async () => { loopBot() })
+                follower2.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (follower2) follower2.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -257,17 +257,17 @@ async function run() {
     //             if (follower2) follower2.disconnect()
     //             follower2 = await AL.Game.startPriest(name, region, identifier)
     //             startPriest(follower2, merchantName)
-    //             follower2.socket.on("disconnect", async () => { loopBot() })
+    //             follower2.socket.on("disconnect", loopBot)
     //         } catch (e) {
     //             console.error(e)
     //             if (follower2) follower2.disconnect()
     //             const wait = /wait_(\d+)_second/.exec(e)
     //             if (wait && wait[1]) {
-    //                 setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+    //                 setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
     //             } else if (/limits/.test(e)) {
-    //                 setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+    //                 setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
     //             } else {
-    //                 setTimeout(async () => { loopBot() }, 10000)
+    //                 setTimeout(loopBot, 10000)
     //             }
     //         }
     //     }
@@ -282,17 +282,17 @@ async function run() {
                 if (merchant) merchant.disconnect()
                 merchant = await AL.Game.startMerchant(name, region, identifier)
                 startMerchant(merchant, [leader, follower1, follower2], merchantLocation)
-                merchant.socket.on("disconnect", async () => { loopBot() })
+                merchant.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (merchant) merchant.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }

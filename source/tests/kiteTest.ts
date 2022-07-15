@@ -22,7 +22,7 @@ async function startKite(bot: Mage) {
             if (!bot.socket || bot.socket.disconnected) return
 
             if (!bot.canUse("scare", { ignoreEquipped: true })) {
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, bot.getCooldown("scare")))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, bot.getCooldown("scare")))
                 return
             }
 
@@ -30,7 +30,7 @@ async function startKite(bot: Mage) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, Math.max(LOOP_MS, bot.getCooldown("attack"))))
     }
     attackLoop()
 
@@ -41,7 +41,7 @@ async function startKite(bot: Mage) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -53,7 +53,7 @@ async function startKite(bot: Mage) {
             console.error(e)
         }
 
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
     moveLoop()
 }
@@ -75,7 +75,7 @@ async function run() {
                 if (bot) bot.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
+            setTimeout(connectLoop, msToNextMinute + 5000)
         }
 
         const disconnectLoop = async () => {
@@ -86,12 +86,12 @@ async function run() {
                 console.error(e)
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+            setTimeout(disconnectLoop, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
         }
 
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { connectLoop() }, msToNextMinute + 5000)
-        setTimeout(async () => { disconnectLoop() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+        setTimeout(connectLoop, msToNextMinute + 5000)
+        setTimeout(disconnectLoop, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
     }
     startWarriorLoop(mageName, region, identifier)
 }

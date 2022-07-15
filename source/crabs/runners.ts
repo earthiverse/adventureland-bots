@@ -126,7 +126,7 @@ export async function startShared(bot: Mage, targets: MonsterName[], friends: Ma
             console.error(e)
         }
 
-        setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack")))
+        setTimeout(attackLoop, Math.max(LOOP_MS, bot.getCooldown("attack")))
     }
     attackLoop()
 
@@ -137,7 +137,7 @@ export async function startShared(bot: Mage, targets: MonsterName[], friends: Ma
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -163,7 +163,7 @@ export async function startShared(bot: Mage, targets: MonsterName[], friends: Ma
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
     moveLoop()
 }
@@ -182,7 +182,7 @@ export async function startSharedMage(bot: Mage, friends: Character[]) {
                 || bot.c.town // We are teleporting to town
             ) {
                 // We are dead
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
                 return
             }
 
@@ -190,7 +190,7 @@ export async function startSharedMage(bot: Mage, friends: Character[]) {
         } catch (e) {
             console.error(e)
         }
-        setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack")))
+        setTimeout(attackLoop, Math.max(LOOP_MS, bot.getCooldown("attack")))
     }
     attackLoop()
 
@@ -201,7 +201,7 @@ export async function startSharedMage(bot: Mage, friends: Character[]) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -213,7 +213,7 @@ export async function startSharedMage(bot: Mage, friends: Character[]) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
     moveLoop()
 }
@@ -232,7 +232,7 @@ export async function startSharedRanger(bot: Ranger, friends: Character[]) {
                 || bot.c.town // We are teleporting to town
             ) {
                 // We are dead
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
                 return
             }
 
@@ -240,7 +240,7 @@ export async function startSharedRanger(bot: Ranger, friends: Character[]) {
         } catch (e) {
             console.error(e)
         }
-        setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack")))
+        setTimeout(attackLoop, Math.max(LOOP_MS, bot.getCooldown("attack")))
     }
     attackLoop()
 
@@ -251,7 +251,7 @@ export async function startSharedRanger(bot: Ranger, friends: Character[]) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -263,7 +263,7 @@ export async function startSharedRanger(bot: Ranger, friends: Character[]) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
     moveLoop()
 }

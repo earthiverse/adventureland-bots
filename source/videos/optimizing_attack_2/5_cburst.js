@@ -62,7 +62,7 @@ async function attackLoop() {
         const best = getBestTargets({ max_range: character.range, type: MONSTER })[0]
         if (!best) {
             set_message("No Monsters")
-            setTimeout(async () => { attackLoop() }, Math.max(1, ms_to_next_skill("attack")))
+            setTimeout(attackLoop, Math.max(1, ms_to_next_skill("attack")))
             return
         }
 
@@ -110,7 +110,7 @@ async function attackLoop() {
     } catch (e) {
         console.error(e)
     }
-    setTimeout(async () => { attackLoop() }, Math.max(1, Math.min(ms_to_next_skill("attack"), ms_to_next_skill("cburst"))))
+    setTimeout(attackLoop, Math.max(1, Math.min(ms_to_next_skill("attack"), ms_to_next_skill("cburst"))))
 }
 
 if (character.ctype == "merchant") {

@@ -21,7 +21,7 @@ async function moveLoop() {
     } catch (e) {
         console.error(e)
     }
-    setTimeout(async () => { moveLoop() }, 250)
+    setTimeout(moveLoop, 250)
 }
 moveLoop()
 
@@ -32,7 +32,7 @@ async function lootLoop() {
     } catch (e) {
         console.error(e)
     }
-    setTimeout(async () => { lootLoop() }, 250)
+    setTimeout(lootLoop, 250)
 }
 lootLoop()
 
@@ -56,6 +56,6 @@ async function regenLoop() {
     } catch (e) {
         console.error(e)
     }
-    setTimeout(async () => { regenLoop() }, Math.max(100, ms_to_next_skill("use_hp")))
+    setTimeout(regenLoop, Math.max(100, ms_to_next_skill("use_hp")))
 }
 regenLoop()

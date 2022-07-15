@@ -48,17 +48,17 @@ async function run() {
                 information.merchant.bot = await AL.Game.startMerchant(name, region, identifier)
                 information.friends[0] = information.merchant.bot
                 startMerchant(information.merchant.bot, information.friends, merchantLocation)
-                information.merchant.bot.socket.on("disconnect", async () => { loopBot() })
+                information.merchant.bot.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (information.merchant.bot) information.merchant.bot.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -75,17 +75,17 @@ async function run() {
                 information.friends[1] = information.bot1.bot
                 startBscorpionRogueFarmer(information.bot1.bot as Rogue, information.friends, information.merchant.name)
                 startTrackerLoop(information.bot1.bot)
-                information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
+                information.bot1.bot.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (information.bot1.bot) information.bot1.bot.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -101,17 +101,17 @@ async function run() {
                 information.bot2.bot = await AL.Game.startRogue(name, region, identifier)
                 information.friends[2] = information.bot2.bot
                 startBscorpionRogueFarmer(information.bot2.bot as Rogue, information.friends, information.merchant.name)
-                information.bot2.bot.socket.on("disconnect", async () => { loopBot() })
+                information.bot2.bot.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (information.bot2.bot) information.bot2.bot.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -127,17 +127,17 @@ async function run() {
                 information.bot3.bot = await AL.Game.startPriest(name, region, identifier)
                 information.friends[3] = information.bot3.bot
                 startBscorpionPriestFarmer(information.bot3.bot as Priest, information.friends, information.merchant.name)
-                information.bot3.bot.socket.on("disconnect", async () => { loopBot() })
+                information.bot3.bot.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (information.bot3.bot) information.bot3.bot.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }

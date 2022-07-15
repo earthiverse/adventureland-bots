@@ -37,7 +37,7 @@ export async function startSellSticksToMerchantsLoop(bot: Character): Promise<vo
             console.error(e)
         }
 
-        setTimeout(async () => { sellToMerchants() }, 1000)
+        setTimeout(sellToMerchants, 1000)
     }
     sellToMerchants()
 }
@@ -55,7 +55,7 @@ export async function startMailBankKeysToEarthiverseLoop(bot: Character): Promis
         } catch (e) {
             console.error
         }
-        setTimeout(async () => { mailBankKeys() }, 5000)
+        setTimeout(mailBankKeys, 5000)
     }
     mailBankKeys()
 }
@@ -107,7 +107,7 @@ export async function startLeader(bot: Warrior): Promise<void> {
         } catch (e) {
             console.error(e)
         }
-        setTimeout(async () => { tauntLoop() }, Math.max(LOOP_MS, bot.getCooldown("taunt")))
+        setTimeout(tauntLoop, Math.max(LOOP_MS, bot.getCooldown("taunt")))
     }
     tauntLoop()
 
@@ -200,7 +200,7 @@ export async function startLeader(bot: Warrior): Promise<void> {
         } catch (e) {
             console.error(e)
         }
-        setTimeout(async () => { swapLuckStuffLoop() }, 250)
+        setTimeout(swapLuckStuffLoop, 250)
     }
     swapLuckStuffLoop()
 }
@@ -227,7 +227,7 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
             if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.isOnCooldown("scare") || bot.isEquipped("basher")) {
-                setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("scare")))
+                setTimeout(attackLoop, Math.max(LOOP_MS, bot.getCooldown("scare")))
                 return
             }
 
@@ -280,7 +280,7 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
             console.error(e)
         }
 
-        setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack")))
+        setTimeout(attackLoop, Math.max(LOOP_MS, bot.getCooldown("attack")))
     }
     attackLoop()
 
@@ -325,7 +325,7 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
             console.error(e)
         }
 
-        bot.timeouts.set("scareLoop", setTimeout(async () => { scareLoop() }, Math.max(250, bot.getCooldown("scare"))))
+        bot.timeouts.set("scareLoop", setTimeout(scareLoop, Math.max(250, bot.getCooldown("scare"))))
     }
 
     // If we have too many targets, we can't go through doors.
@@ -386,15 +386,15 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
         } catch (e) {
             console.error(e)
             if (bot.canUse("stomp", { ignoreEquipped: true })) {
-                setTimeout(async () => { stompLoop() }, 10)
+                setTimeout(stompLoop, 10)
                 return
             }
         }
-        setTimeout(async () => { stompLoop() }, getMSToNextStun(bot))
+        setTimeout(stompLoop, getMSToNextStun(bot))
     }
     setTimeout(async () => {
         // Start our stomp loop in 5s, after we have a party setup
-        setTimeout(async () => { stompLoop() }, getMSToNextStun(bot))
+        setTimeout(stompLoop, getMSToNextStun(bot))
     }, 5000)
 
     const spawn = Pathfinder.locateMonster(targets[0])[0]
@@ -405,7 +405,7 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -419,7 +419,7 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
             console.error(e)
         }
 
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
     moveLoop()
 }
@@ -446,7 +446,7 @@ export async function startPriest(bot: Priest, merchantName: string): Promise<vo
             if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.isOnCooldown("scare")) {
-                setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("scare")))
+                setTimeout(attackLoop, Math.max(LOOP_MS, bot.getCooldown("scare")))
                 return
             }
 
@@ -496,7 +496,7 @@ export async function startPriest(bot: Priest, merchantName: string): Promise<vo
             console.error(e)
         }
 
-        setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack")))
+        setTimeout(attackLoop, Math.max(LOOP_MS, bot.getCooldown("attack")))
     }
     attackLoop()
 
@@ -537,7 +537,7 @@ export async function startPriest(bot: Priest, merchantName: string): Promise<vo
             console.error(e)
         }
 
-        bot.timeouts.set("scareLoop", setTimeout(async () => { scareLoop() }, Math.max(250, bot.getCooldown("scare"))))
+        bot.timeouts.set("scareLoop", setTimeout(scareLoop, Math.max(250, bot.getCooldown("scare"))))
     }
 
     // If we have too many targets, we can't go through doors.
@@ -572,7 +572,7 @@ export async function startPriest(bot: Priest, merchantName: string): Promise<vo
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -586,7 +586,7 @@ export async function startPriest(bot: Priest, merchantName: string): Promise<vo
             console.error(e)
         }
 
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
     moveLoop()
 }
@@ -614,7 +614,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], holdPos
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -622,7 +622,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], holdPos
             if (bot.isFull() || lastBankVisit < Date.now() - 120000 || bot.hasPvPMarkedItem()) {
                 lastBankVisit = Date.now()
                 await doBanking(bot)
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -638,7 +638,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], holdPos
                             await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2 })
                         }
 
-                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                         return
                     }
                 }
@@ -651,7 +651,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], holdPos
                     await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                     lastBankVisit = Date.now()
                     await doBanking(bot)
-                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                    bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                     return
                 }
             }
@@ -659,14 +659,14 @@ export async function startMerchant(bot: Merchant, friends: Character[], holdPos
             // Go fishing if we can
             await goFishing(bot)
             if (!bot.isOnCooldown("fishing") && (bot.hasItem("rod") || bot.isEquipped("rod"))) {
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
             // Go mining if we can
             await goMining(bot)
             if (!bot.isOnCooldown("mining") && (bot.hasItem("pickaxe") || bot.isEquipped("pickaxe"))) {
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -677,7 +677,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], holdPos
             console.error(e)
         }
 
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, LOOP_MS))
     }
     async function pvpMoveLoop() {
         try {
@@ -688,7 +688,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], holdPos
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("pvpMoveLoop", setTimeout(async () => { pvpMoveLoop() }, LOOP_MS))
+        bot.timeouts.set("pvpMoveLoop", setTimeout(pvpMoveLoop, LOOP_MS))
     }
     if (identifier !== "PVP") moveLoop()
     else pvpMoveLoop()

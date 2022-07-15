@@ -422,7 +422,7 @@ export function startChargeLoop(bot: Warrior): void {
             console.error(e)
         }
 
-        bot.timeouts.set("chargeLoop", setTimeout(async () => { chargeLoop() }, Math.max(LOOP_MS, bot.getCooldown("charge"))))
+        bot.timeouts.set("chargeLoop", setTimeout(chargeLoop, Math.max(LOOP_MS, bot.getCooldown("charge"))))
     }
     chargeLoop()
 }
@@ -440,7 +440,7 @@ export function startHardshellLoop(bot: Warrior): void {
             console.error(e)
         }
 
-        bot.timeouts.set("hardshellLoop", setTimeout(async () => { hardshellLoop() }, Math.max(LOOP_MS, bot.getCooldown("hardshell"))))
+        bot.timeouts.set("hardshellLoop", setTimeout(hardshellLoop, Math.max(LOOP_MS, bot.getCooldown("hardshell"))))
     }
     hardshellLoop()
 }
@@ -455,7 +455,7 @@ export function startWarcryLoop(bot: Warrior): void {
             console.error(e)
         }
 
-        bot.timeouts.set("warcryLoop", setTimeout(async () => { warcryLoop() }, Math.max(LOOP_MS, bot.getCooldown("warcry"))))
+        bot.timeouts.set("warcryLoop", setTimeout(warcryLoop, Math.max(LOOP_MS, bot.getCooldown("warcry"))))
     }
     warcryLoop()
 }

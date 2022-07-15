@@ -700,7 +700,7 @@ export function startMluckLoop(bot: Merchant): void {
             console.error(e)
         }
 
-        bot.timeouts.set("mluckLoop", setTimeout(async () => { mluckLoop() }, LOOP_MS))
+        bot.timeouts.set("mluckLoop", setTimeout(mluckLoop, LOOP_MS))
     }
     mluckLoop()
 }

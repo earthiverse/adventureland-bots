@@ -30,17 +30,17 @@ async function run() {
                 if (follower1) follower1.disconnect()
                 follower1 = await AL.Game.startWarrior(name, region, identifier)
                 startShared(follower1, merchantName)
-                follower1.socket.on("disconnect", async () => { loopBot() })
+                follower1.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (follower1) follower1.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -55,17 +55,17 @@ async function run() {
                 if (follower2) follower2.disconnect()
                 follower2 = await AL.Game.startWarrior(name, region, identifier)
                 startShared(follower2, merchantName)
-                follower2.socket.on("disconnect", async () => { loopBot() })
+                follower2.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (follower2) follower2.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -80,17 +80,17 @@ async function run() {
                 if (follower3) follower3.disconnect()
                 follower3 = await AL.Game.startWarrior(name, region, identifier)
                 startShared(follower3, merchantName)
-                follower3.socket.on("disconnect", async () => { loopBot() })
+                follower3.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (follower3) follower3.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -105,17 +105,17 @@ async function run() {
                 if (merchant) merchant.disconnect()
                 merchant = await AL.Game.startMerchant(name, region, identifier)
                 startMerchant(merchant, [follower1, follower2, follower3], merchantLocation)
-                merchant.socket.on("disconnect", async () => { loopBot() })
+                merchant.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (merchant) merchant.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }

@@ -357,7 +357,7 @@ export function startRSpeedLoop(bot: Rogue, options: {
             console.error(e)
         }
 
-        bot.timeouts.set("rspeedLoop", setTimeout(async () => { rspeedLoop() }, Math.max(LOOP_MS, bot.getCooldown("rspeed"))))
+        bot.timeouts.set("rspeedLoop", setTimeout(rspeedLoop, Math.max(LOOP_MS, bot.getCooldown("rspeed"))))
     }
     rspeedLoop()
 }

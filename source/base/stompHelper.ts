@@ -54,7 +54,7 @@ export function startStompHelper(bot: Warrior, controller: string): void {
             console.error(e)
         }
 
-        bot.timeouts.set("stomphelperloop", setTimeout(async () => { stompLoop() }, Math.max(LOOP_MS, bot.getCooldown("stomp"))))
+        bot.timeouts.set("stomphelperloop", setTimeout(stompLoop, Math.max(LOOP_MS, bot.getCooldown("stomp"))))
     }
     stompLoop()
 }

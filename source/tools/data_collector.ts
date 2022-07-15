@@ -80,7 +80,7 @@ async function run() {
                 if (skeletorChecker) skeletorChecker.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { start_skeletorCheck() }, msToNextMinute + 5000)
+            setTimeout(start_skeletorCheck, msToNextMinute + 5000)
         }
         const stop_skeletorCheck = async () => {
             try {
@@ -90,11 +90,11 @@ async function run() {
                 console.error(e)
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { stop_skeletorCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+            setTimeout(stop_skeletorCheck, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
         }
         let msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { start_skeletorCheck() }, msToNextMinute + 5000)
-        setTimeout(async () => { stop_skeletorCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+        setTimeout(start_skeletorCheck, msToNextMinute + 5000)
+        setTimeout(stop_skeletorCheck, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
 
         // Look for `mvampire` in place #1
         let mvampireChecker: Character
@@ -116,7 +116,7 @@ async function run() {
                 if (mvampireChecker) mvampireChecker.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { start_mvampireCheck() }, msToNextMinute + 5000)
+            setTimeout(start_mvampireCheck, msToNextMinute + 5000)
         }
         const stop_mvampireCheck = async () => {
             try {
@@ -126,11 +126,11 @@ async function run() {
                 console.error(e)
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { stop_mvampireCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+            setTimeout(stop_mvampireCheck, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
         }
         msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { start_mvampireCheck() }, msToNextMinute + 5000)
-        setTimeout(async () => { stop_mvampireCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+        setTimeout(start_mvampireCheck, msToNextMinute + 5000)
+        setTimeout(stop_mvampireCheck, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
 
         // Look for `mvampire` in place #2
         let mvampireChecker2: Character
@@ -152,7 +152,7 @@ async function run() {
                 if (mvampireChecker2) mvampireChecker2.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { start_mvampireCheck2() }, msToNextMinute + 5000)
+            setTimeout(start_mvampireCheck2, msToNextMinute + 5000)
         }
         const stop_mvampireCheck2 = async () => {
             try {
@@ -162,11 +162,11 @@ async function run() {
                 console.error(e)
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { stop_mvampireCheck2() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+            setTimeout(stop_mvampireCheck2, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
         }
         msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { start_mvampireCheck2() }, msToNextMinute + 5000)
-        setTimeout(async () => { stop_mvampireCheck2() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+        setTimeout(start_mvampireCheck2, msToNextMinute + 5000)
+        setTimeout(stop_mvampireCheck2, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
 
         // Look for `fvampire` in place #1
         let fvampireChecker: Character
@@ -188,7 +188,7 @@ async function run() {
                 if (fvampireChecker) fvampireChecker.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { start_fvampireCheck() }, msToNextMinute + 5000)
+            setTimeout(start_fvampireCheck, msToNextMinute + 5000)
         }
         const stop_fvampireCheck = async () => {
             try {
@@ -198,11 +198,11 @@ async function run() {
                 console.error(e)
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { stop_fvampireCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+            setTimeout(stop_fvampireCheck, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
         }
         msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { start_fvampireCheck() }, msToNextMinute + 5000)
-        setTimeout(async () => { stop_fvampireCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+        setTimeout(start_fvampireCheck, msToNextMinute + 5000)
+        setTimeout(stop_fvampireCheck, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
 
         // Look for `greenjr` in place #1
         let greenjrChecker: Character
@@ -224,7 +224,7 @@ async function run() {
                 if (greenjrChecker) greenjrChecker.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { start_greenjrCheck() }, msToNextMinute + 5000)
+            setTimeout(start_greenjrCheck, msToNextMinute + 5000)
         }
         const stop_greenjrCheck = async () => {
             try {
@@ -234,11 +234,11 @@ async function run() {
                 console.error(e)
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { stop_greenjrCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+            setTimeout(stop_greenjrCheck, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
         }
         msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { start_greenjrCheck() }, msToNextMinute + 5000)
-        setTimeout(async () => { stop_greenjrCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+        setTimeout(start_greenjrCheck, msToNextMinute + 5000)
+        setTimeout(stop_greenjrCheck, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
 
         // Look for `jr` in place #1
         let jrChecker: Character
@@ -260,7 +260,7 @@ async function run() {
                 if (jrChecker) jrChecker.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { start_jrCheck() }, msToNextMinute + 5000)
+            setTimeout(start_jrCheck, msToNextMinute + 5000)
         }
         const stop_jrCheck = async () => {
             try {
@@ -270,11 +270,11 @@ async function run() {
                 console.error(e)
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { stop_jrCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+            setTimeout(stop_jrCheck, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
         }
         msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { start_jrCheck() }, msToNextMinute + 5000)
-        setTimeout(async () => { stop_jrCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+        setTimeout(start_jrCheck, msToNextMinute + 5000)
+        setTimeout(stop_jrCheck, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
 
         // Look for `stompy` in place #1
         let stompyChecker: Character
@@ -296,7 +296,7 @@ async function run() {
                 if (stompyChecker) stompyChecker.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { start_stompyCheck() }, msToNextMinute + 5000)
+            setTimeout(start_stompyCheck, msToNextMinute + 5000)
         }
         const stop_stompyCheck = async () => {
             try {
@@ -306,11 +306,11 @@ async function run() {
                 console.error(e)
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { stop_stompyCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+            setTimeout(stop_stompyCheck, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
         }
         msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { start_stompyCheck() }, msToNextMinute + 5000)
-        setTimeout(async () => { stop_stompyCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+        setTimeout(start_stompyCheck, msToNextMinute + 5000)
+        setTimeout(stop_stompyCheck, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
 
         // Look for `newPlayers` in place #1
         let newPlayersChecker: Character
@@ -332,7 +332,7 @@ async function run() {
                 if (newPlayersChecker) newPlayersChecker.disconnect()
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { start_newPlayersCheck() }, msToNextMinute + 5000)
+            setTimeout(start_newPlayersCheck, msToNextMinute + 5000)
         }
         const stop_newPlayersCheck = async () => {
             try {
@@ -342,11 +342,11 @@ async function run() {
                 console.error(e)
             }
             const msToNextMinute = 60_000 - (Date.now() % 60_000)
-            setTimeout(async () => { stop_newPlayersCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+            setTimeout(stop_newPlayersCheck, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
         }
         msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { start_newPlayersCheck() }, msToNextMinute + 5000)
-        setTimeout(async () => { stop_newPlayersCheck() }, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+        setTimeout(start_newPlayersCheck, msToNextMinute + 5000)
+        setTimeout(stop_newPlayersCheck, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
     }
 }
 run()

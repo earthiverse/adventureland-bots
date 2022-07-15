@@ -23,7 +23,7 @@ async function run() {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
     moveLoop()
     startHealLoop(bot)
@@ -55,7 +55,7 @@ async function run() {
                 }
             }
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, 100 - Math.min(...bot.pings)))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, 100 - Math.min(...bot.pings)))
     }
     attackLoop()
 }

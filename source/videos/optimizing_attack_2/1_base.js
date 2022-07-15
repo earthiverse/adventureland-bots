@@ -79,7 +79,7 @@ async function partyLoop() {
     } catch (e) {
         console.error(e)
     }
-    setTimeout(async () => { partyLoop() }, 10000)
+    setTimeout(partyLoop, 10000)
 }
 if (character.controller) partyLoop()
 
@@ -103,7 +103,7 @@ async function lootLoop() {
     } catch (e) {
         console.error(e)
     }
-    setTimeout(async () => { lootLoop() }, 100)
+    setTimeout(lootLoop, 100)
 }
 if (character.controller) lootLoop()
 
@@ -226,7 +226,7 @@ async function regenLoop() {
 
         if (character.rip) {
             // Don't heal if we're dead
-            setTimeout(async () => { regenLoop() }, Math.max(100, ms_to_next_skill("use_hp")))
+            setTimeout(regenLoop, Math.max(100, ms_to_next_skill("use_hp")))
             return
         }
 
@@ -270,7 +270,7 @@ async function regenLoop() {
     } catch (e) {
         console.error(e)
     }
-    setTimeout(async () => { regenLoop() }, Math.max(100, ms_to_next_skill("use_hp")))
+    setTimeout(regenLoop, Math.max(100, ms_to_next_skill("use_hp")))
 }
 regenLoop()
 

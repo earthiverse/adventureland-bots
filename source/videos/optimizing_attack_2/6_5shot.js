@@ -68,7 +68,7 @@ if (character.ctype == "mage") {
             const best = getBestTargets({ max_range: character.range, type: MONSTER })[0]
             if (!best) {
                 set_message("No Monsters")
-                setTimeout(async () => { attackLoop() }, Math.max(1, ms_to_next_skill("attack")))
+                setTimeout(attackLoop, Math.max(1, ms_to_next_skill("attack")))
                 return
             }
 
@@ -113,7 +113,7 @@ if (character.ctype == "mage") {
         } catch (e) {
             console.error(e)
         }
-        setTimeout(async () => { attackLoop() }, Math.max(1, Math.min(ms_to_next_skill("attack"), ms_to_next_skill("cburst"))))
+        setTimeout(attackLoop, Math.max(1, Math.min(ms_to_next_skill("attack"), ms_to_next_skill("cburst"))))
     }
 } if (character.ctype == "ranger") {
     attackLoop = async () => {
@@ -122,7 +122,7 @@ if (character.ctype == "mage") {
             const targets = getBestTargets({ max_range: character.range, type: MONSTER })
             if (targets.length == 0) {
                 set_message("No Monsters")
-                setTimeout(async () => { attackLoop() }, Math.max(1, ms_to_next_skill("attack")))
+                setTimeout(attackLoop, Math.max(1, ms_to_next_skill("attack")))
                 return
             }
             const threeShotTargets = []
@@ -192,7 +192,7 @@ if (character.ctype == "mage") {
         } catch (e) {
             console.error(e)
         }
-        setTimeout(async () => { attackLoop() }, Math.max(1, Math.min(ms_to_next_skill("attack"))))
+        setTimeout(attackLoop, Math.max(1, Math.min(ms_to_next_skill("attack"))))
     }
 }
 

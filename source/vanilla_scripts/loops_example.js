@@ -18,7 +18,7 @@ async function attackLoop() {
     } catch (e) {
         console.error(e)
     }
-    setTimeout(async () => { attackLoop() }, Math.max(100, parent.next_skill["attack"].getTime() - Date.now()))
+    setTimeout(attackLoop, Math.max(100, parent.next_skill["attack"].getTime() - Date.now()))
 }
 attackLoop()
 
@@ -38,7 +38,7 @@ async function moveLoop() {
     } catch (e) {
         console.error(e)
     }
-    setTimeout(async () => { moveLoop() }, 250)
+    setTimeout(moveLoop, 250)
 }
 moveLoop()
 
@@ -62,7 +62,7 @@ async function regenLoop() {
     } catch (e) {
         console.error(e)
     }
-    setTimeout(async () => { regenLoop() }, Math.max(100, parent.next_skill["use_hp"].getTime() - Date.now()))
+    setTimeout(regenLoop, Math.max(100, parent.next_skill["use_hp"].getTime() - Date.now()))
 }
 regenLoop()
 
@@ -73,6 +73,6 @@ async function lootLoop() {
     } catch (e) {
         console.error(e)
     }
-    setTimeout(async () => { lootLoop() }, 250)
+    setTimeout(lootLoop, 250)
 }
 lootLoop()

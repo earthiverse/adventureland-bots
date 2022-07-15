@@ -32,7 +32,7 @@ export async function startBscorpionMageFarmer(bot: Mage, friends: Character[], 
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -44,7 +44,7 @@ export async function startBscorpionMageFarmer(bot: Mage, friends: Character[], 
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
     moveLoop()
 
@@ -55,12 +55,12 @@ export async function startBscorpionMageFarmer(bot: Mage, friends: Character[], 
             // If we are dead, respawn
             if (bot.rip || bot.c.town) {
                 await bot.respawn()
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
                 return
             }
 
             if (!bot.canUse("scare", { ignoreEquipped: true })) {
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
                 return
             }
 
@@ -69,7 +69,7 @@ export async function startBscorpionMageFarmer(bot: Mage, friends: Character[], 
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("cburst"), bot.getCooldown("attack")))))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, Math.max(LOOP_MS, Math.min(bot.getCooldown("cburst"), bot.getCooldown("attack")))))
     }
     attackLoop()
 }
@@ -97,7 +97,7 @@ export async function startBscorpionRogueFarmer(bot: Rogue, friends: Character[]
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { invisLoop() }, Math.max(100, bot.getCooldown("invis"))))
+        bot.timeouts.set("attackLoop", setTimeout(invisLoop, Math.max(100, bot.getCooldown("invis"))))
     }
     invisLoop()
 
@@ -109,7 +109,7 @@ export async function startBscorpionRogueFarmer(bot: Rogue, friends: Character[]
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -121,7 +121,7 @@ export async function startBscorpionRogueFarmer(bot: Rogue, friends: Character[]
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
     moveLoop()
 
@@ -132,12 +132,12 @@ export async function startBscorpionRogueFarmer(bot: Rogue, friends: Character[]
             // If we are dead, respawn
             if (bot.rip || bot.c.town) {
                 await bot.respawn()
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
                 return
             }
 
             if (!bot.canUse("scare", { ignoreEquipped: true })) {
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
                 return
             }
 
@@ -146,7 +146,7 @@ export async function startBscorpionRogueFarmer(bot: Rogue, friends: Character[]
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, Math.min(bot.getCooldown("quickstab"), bot.getCooldown("quickpunch"), bot.getCooldown("attack"), bot.getCooldown("mentalburst")))))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, Math.max(LOOP_MS, Math.min(bot.getCooldown("quickstab"), bot.getCooldown("quickpunch"), bot.getCooldown("attack"), bot.getCooldown("mentalburst")))))
     }
     attackLoop()
 }
@@ -174,7 +174,7 @@ export async function startBscorpionPriestFarmer(bot: Priest, friends: Character
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -186,7 +186,7 @@ export async function startBscorpionPriestFarmer(bot: Priest, friends: Character
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
     moveLoop()
 
@@ -197,14 +197,14 @@ export async function startBscorpionPriestFarmer(bot: Priest, friends: Character
             // If we are dead, respawn
             if (bot.rip || bot.c.town) {
                 await bot.respawn()
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
                 return
             }
 
             if (!bot.canUse("scare", { ignoreEquipped: true })) {
                 // Only heal
                 await attackTheseTypesPriest(bot, [], friends)
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
                 return
             }
 
@@ -212,7 +212,7 @@ export async function startBscorpionPriestFarmer(bot: Priest, friends: Character
             if (closest && closest.target == undefined && AL.Tools.distance(bot, closest) <= bot.G.monsters.bscorpion.range) {
                 // Only heal
                 await attackTheseTypesPriest(bot, [], friends)
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
                 return
             }
 
@@ -228,7 +228,7 @@ export async function startBscorpionPriestFarmer(bot: Priest, friends: Character
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(LOOP_MS, bot.getCooldown("attack"))))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, Math.max(LOOP_MS, bot.getCooldown("attack"))))
     }
     attackLoop()
 }
@@ -255,7 +255,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], hold: I
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -263,7 +263,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], hold: I
             if (bot.isFull() || lastBankVisit < Date.now() - 120000 || bot.hasPvPMarkedItem()) {
                 lastBankVisit = Date.now()
                 await doBanking(bot)
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -279,7 +279,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], hold: I
                     await bot.smartMove((bot.S[type] as IPosition), { getWithin: 100 })
                 }
 
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -295,7 +295,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], hold: I
                             await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2 })
                         }
 
-                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                         return
                     }
                 }
@@ -304,14 +304,14 @@ export async function startMerchant(bot: Merchant, friends: Character[], hold: I
             // Go fishing if we can
             await goFishing(bot)
             if (!bot.isOnCooldown("fishing") && (bot.hasItem("rod") || bot.isEquipped("rod"))) {
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
             // Go mining if we can
             await goMining(bot)
             if (!bot.isOnCooldown("mining") && (bot.hasItem("pickaxe") || bot.isEquipped("pickaxe"))) {
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -322,7 +322,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], hold: I
             console.error(e)
         }
 
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
     moveLoop()
 }

@@ -39,7 +39,7 @@ async function sendSlenderIDLoop(bot: Rogue) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("sendSlenderIDLoop", setTimeout(async () => { sendSlenderIDLoop() }, 5000))
+        bot.timeouts.set("sendSlenderIDLoop", setTimeout(sendSlenderIDLoop, 5000))
     }
     sendSlenderIDLoop()
 }
@@ -127,7 +127,7 @@ async function startRogue(bot: Rogue, trilaterationIndex: number) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("trilaterationLoop", setTimeout(async () => { trilaterationLoop() }, 1000))
+        bot.timeouts.set("trilaterationLoop", setTimeout(trilaterationLoop, 1000))
     }
     trilaterationLoop()
 
@@ -147,7 +147,7 @@ async function startRogue(bot: Rogue, trilaterationIndex: number) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(10, Math.min(bot.getCooldown("attack"), bot.getCooldown("burst"), bot.getCooldown("cburst")))))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, Math.max(10, Math.min(bot.getCooldown("attack"), bot.getCooldown("burst"), bot.getCooldown("cburst")))))
     }
     attackLoop()
 
@@ -159,7 +159,7 @@ async function startRogue(bot: Rogue, trilaterationIndex: number) {
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { invisLoop() }, Math.max(100, bot.getCooldown("invis"))))
+        bot.timeouts.set("attackLoop", setTimeout(invisLoop, Math.max(100, bot.getCooldown("invis"))))
     }
     invisLoop()
 
@@ -170,7 +170,7 @@ async function startRogue(bot: Rogue, trilaterationIndex: number) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -198,7 +198,7 @@ async function startRogue(bot: Rogue, trilaterationIndex: number) {
             console.error(e)
         }
 
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, LOOP_MS))
     }
     moveLoop()
 }
@@ -225,7 +225,7 @@ async function startMerchant(bot: Merchant) {
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -234,7 +234,7 @@ async function startMerchant(bot: Merchant) {
                 lastBankVisit = Date.now()
                 await doBanking(bot)
                 await doEmergencyBanking(bot)
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -251,7 +251,7 @@ async function startMerchant(bot: Merchant) {
                             await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2 })
                         }
 
-                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                         return
                     }
                 }
@@ -264,7 +264,7 @@ async function startMerchant(bot: Merchant) {
                     await bot.smartMove(friend, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                     lastBankVisit = Date.now()
                     await doBanking(bot)
-                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                    bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                     return
                 }
             }
@@ -272,14 +272,14 @@ async function startMerchant(bot: Merchant) {
             // Go fishing if we can
             await goFishing(bot)
             if (!bot.isOnCooldown("fishing") && (bot.hasItem("rod") || bot.isEquipped("rod"))) {
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
             // Go mining if we can
             await goMining(bot)
             if (!bot.isOnCooldown("mining") && (bot.hasItem("pickaxe") || bot.isEquipped("pickaxe"))) {
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -296,7 +296,7 @@ async function startMerchant(bot: Merchant) {
                         await bot.smartMove((bot.S[type] as IPosition), { getWithin: 100 })
                     }
 
-                    bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                    bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                     return
                 }
 
@@ -322,7 +322,7 @@ async function startMerchant(bot: Merchant) {
                         await bot.smartMove(stranger, { getWithin: bot.G.skills.mluck.range / 2 })
                     }
 
-                    setTimeout(async () => { moveLoop() }, 250)
+                    setTimeout(moveLoop, 250)
                     return
                 }
             }
@@ -334,7 +334,7 @@ async function startMerchant(bot: Merchant) {
             console.error(e)
         }
 
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, LOOP_MS))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, LOOP_MS))
     }
     moveLoop()
 }
@@ -355,19 +355,19 @@ async function run() {
                 startRogue(rogue1, 0)
                 startTrackerLoop(rogue1)
                 sendSlenderIDLoop(rogue1)
-                rogue1.socket.on("disconnect", async () => { loopBot() })
+                rogue1.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (rogue1) rogue1.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 1000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else if (/ingame/.test(e)) {
-                    setTimeout(async () => { loopBot() }, 500)
+                    setTimeout(loopBot, 500)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -382,19 +382,19 @@ async function run() {
                 if (rogue2) rogue2.disconnect()
                 rogue2 = await AL.Game.startRogue(name, region, identifier)
                 startRogue(rogue2, 1)
-                rogue2.socket.on("disconnect", async () => { loopBot() })
+                rogue2.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (rogue2) rogue2.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 1000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else if (/ingame/.test(e)) {
-                    setTimeout(async () => { loopBot() }, 500)
+                    setTimeout(loopBot, 500)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -409,19 +409,19 @@ async function run() {
                 if (rogue3) rogue3.disconnect()
                 rogue3 = await AL.Game.startRogue(name, region, identifier)
                 startRogue(rogue3, 2)
-                rogue3.socket.on("disconnect", async () => { loopBot() })
+                rogue3.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (rogue3) rogue3.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 1000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else if (/ingame/.test(e)) {
-                    setTimeout(async () => { loopBot() }, 500)
+                    setTimeout(loopBot, 500)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -436,19 +436,19 @@ async function run() {
                 if (merchant) merchant.disconnect()
                 merchant = await AL.Game.startMerchant(name, region, identifier)
                 startMerchant(merchant)
-                merchant.socket.on("disconnect", async () => { loopBot() })
+                merchant.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (merchant) merchant.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 1000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else if (/ingame/.test(e)) {
-                    setTimeout(async () => { loopBot() }, 500)
+                    setTimeout(loopBot, 500)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -461,19 +461,19 @@ async function run() {
         try {
             // We haven't logged in yet
             if (!rogue1) {
-                setTimeout(async () => { serverLoop() }, 1000)
+                setTimeout(serverLoop, 1000)
                 return
             }
 
             // Don't change servers too fast
             if (lastServerChangeTime > Date.now() - AL.Constants.RECONNECT_TIMEOUT_MS) {
-                setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime + AL.Constants.RECONNECT_TIMEOUT_MS - Date.now()))
+                setTimeout(serverLoop, Math.max(1000, lastServerChangeTime + AL.Constants.RECONNECT_TIMEOUT_MS - Date.now()))
                 return
             }
 
             // Don't change servers if slender is live, and we haven't spent a lot of time on the server looking for him
             if (rogue1.S?.slenderman && rogue1.S.slenderman.live && lastServerChangeTime > (Date.now() - 900_000)) {
-                setTimeout(async () => { serverLoop() }, 1000)
+                setTimeout(serverLoop, 1000)
                 return
             }
 
@@ -483,7 +483,7 @@ async function run() {
             const targetServer = getTargetServerFromCurrentServer(currentRegion, currentIdentifier, true)
             if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
                 // We're already on the correct server
-                setTimeout(async () => { serverLoop() }, 1000)
+                setTimeout(serverLoop, 1000)
                 return
             }
 
@@ -509,7 +509,7 @@ async function run() {
         } catch (e) {
             console.error(e)
         }
-        setTimeout(async () => { serverLoop() }, 1000)
+        setTimeout(serverLoop, 1000)
     }
     serverLoop()
 }

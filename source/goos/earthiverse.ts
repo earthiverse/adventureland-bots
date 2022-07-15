@@ -33,7 +33,7 @@ async function startRanger(bot: Ranger, positionOffset: { x: number, y: number }
             console.error(e)
         }
 
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack"))))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, Math.max(10, bot.getCooldown("attack"))))
     }
     attackLoop()
 
@@ -46,7 +46,7 @@ async function startRanger(bot: Ranger, positionOffset: { x: number, y: number }
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -58,7 +58,7 @@ async function startRanger(bot: Ranger, positionOffset: { x: number, y: number }
             console.error(e)
         }
 
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
     moveLoop()
 }
@@ -78,7 +78,7 @@ async function run() {
             if (ranger1) ranger1.disconnect()
         }
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { connectLoop1() }, msToNextMinute + 10000)
+        setTimeout(connectLoop1, msToNextMinute + 10000)
     }
 
     const disconnectLoop1 = async () => {
@@ -89,11 +89,11 @@ async function run() {
             console.error(e)
         }
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { disconnectLoop1() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        setTimeout(disconnectLoop1, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
     }
     let msToNextMinute = 60_000 - (Date.now() % 60_000)
-    setTimeout(async () => { connectLoop1() }, msToNextMinute + 10000)
-    setTimeout(async () => { disconnectLoop1() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+    setTimeout(connectLoop1, msToNextMinute + 10000)
+    setTimeout(disconnectLoop1, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
 
     const connectLoop2 = async () => {
         try {
@@ -105,7 +105,7 @@ async function run() {
             if (ranger2) ranger2.disconnect()
         }
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { connectLoop2() }, msToNextMinute + 10000)
+        setTimeout(connectLoop2, msToNextMinute + 10000)
     }
 
     const disconnectLoop2 = async () => {
@@ -116,11 +116,11 @@ async function run() {
             console.error(e)
         }
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { disconnectLoop2() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        setTimeout(disconnectLoop2, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
     }
     msToNextMinute = 60_000 - (Date.now() % 60_000)
-    setTimeout(async () => { connectLoop2() }, msToNextMinute + 10000)
-    setTimeout(async () => { disconnectLoop2() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+    setTimeout(connectLoop2, msToNextMinute + 10000)
+    setTimeout(disconnectLoop2, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
 
     const connectLoop3 = async () => {
         try {
@@ -132,7 +132,7 @@ async function run() {
             if (ranger3) ranger3.disconnect()
         }
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { connectLoop3() }, msToNextMinute + 10000)
+        setTimeout(connectLoop3, msToNextMinute + 10000)
     }
 
     const disconnectLoop3 = async () => {
@@ -143,10 +143,10 @@ async function run() {
             console.error(e)
         }
         const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(async () => { disconnectLoop3() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+        setTimeout(disconnectLoop3, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
     }
     msToNextMinute = 60_000 - (Date.now() % 60_000)
-    setTimeout(async () => { connectLoop3() }, msToNextMinute + 10000)
-    setTimeout(async () => { disconnectLoop3() }, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
+    setTimeout(connectLoop3, msToNextMinute + 10000)
+    setTimeout(disconnectLoop3, msToNextMinute - 10000 < 0 ? msToNextMinute + 50_000 : msToNextMinute - 10000)
 }
 run()

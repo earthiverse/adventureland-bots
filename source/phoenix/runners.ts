@@ -32,7 +32,7 @@ export async function startPhoenixFarmer(bot: Mage, friends: Character[], mercha
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -43,7 +43,7 @@ export async function startPhoenixFarmer(bot: Mage, friends: Character[], mercha
             const nearbyPhoenix = bot.getEntity({ returnNearest: true, type: "phoenix" })
             if (nearbyPhoenix) {
                 await bot.smartMove(nearbyPhoenix, { getWithin: bot.range - 50, useBlink: true })
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -58,7 +58,7 @@ export async function startPhoenixFarmer(bot: Mage, friends: Character[], mercha
                     if (!nearbyPhoenix) await AL.EntityModel.deleteOne({ serverIdentifier: bot.server.name, serverRegion: bot.server.region, type: "phoenix" }).lean().exec()
                 }
 
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -72,7 +72,7 @@ export async function startPhoenixFarmer(bot: Mage, friends: Character[], mercha
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
     moveLoop()
 
@@ -83,7 +83,7 @@ export async function startPhoenixFarmer(bot: Mage, friends: Character[], mercha
             // If we are dead, respawn
             if (bot.rip || bot.c.town) {
                 await bot.respawn()
-                bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+                bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
                 return
             }
 
@@ -92,7 +92,7 @@ export async function startPhoenixFarmer(bot: Mage, friends: Character[], mercha
         } catch (e) {
             console.error(e)
         }
-        bot.timeouts.set("attackLoop", setTimeout(async () => { attackLoop() }, LOOP_MS))
+        bot.timeouts.set("attackLoop", setTimeout(attackLoop, LOOP_MS))
     }
     attackLoop()
 }
@@ -119,7 +119,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], hold: I
             // If we are dead, respawn
             if (bot.rip) {
                 await bot.respawn()
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -127,7 +127,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], hold: I
             if (bot.isFull() || lastBankVisit < Date.now() - 120000 || bot.hasPvPMarkedItem()) {
                 lastBankVisit = Date.now()
                 await doBanking(bot)
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -143,7 +143,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], hold: I
                     await bot.smartMove((bot.S[type] as IPosition), { getWithin: 100 })
                 }
 
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -159,7 +159,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], hold: I
                             await bot.smartMove(friend, { getWithin: bot.G.skills.mluck.range / 2 })
                         }
 
-                        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                         return
                     }
                 }
@@ -168,14 +168,14 @@ export async function startMerchant(bot: Merchant, friends: Character[], hold: I
             // Go fishing if we can
             await goFishing(bot)
             if (!bot.isOnCooldown("fishing") && (bot.hasItem("rod") || bot.isEquipped("rod"))) {
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
             // Go mining if we can
             await goMining(bot)
             if (!bot.isOnCooldown("mining") && (bot.hasItem("pickaxe") || bot.isEquipped("pickaxe"))) {
-                bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                 return
             }
 
@@ -186,7 +186,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], hold: I
             console.error(e)
         }
 
-        bot.timeouts.set("moveLoop", setTimeout(async () => { moveLoop() }, 250))
+        bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
     moveLoop()
 }

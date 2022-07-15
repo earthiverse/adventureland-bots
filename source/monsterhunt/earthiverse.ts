@@ -1776,19 +1776,19 @@ async function run() {
                 information.friends[0] = information.merchant.bot
                 prepareMerchant(information.merchant.bot)
                 addSocket(information.merchant.bot.id, information.merchant.bot.socket, information.merchant.bot)
-                information.merchant.bot.socket.on("disconnect", async () => { loopBot() })
+                information.merchant.bot.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (information.merchant.bot) information.merchant.bot.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 1000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else if (/ingame/.test(e)) {
-                    setTimeout(async () => { loopBot() }, 500)
+                    setTimeout(loopBot, 500)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -1805,19 +1805,19 @@ async function run() {
                 information.friends[1] = information.bot1.bot
                 preparePriest(information.bot1.bot as Priest)
                 addSocket(information.bot1.bot.id, information.bot1.bot.socket, information.bot1.bot)
-                information.bot1.bot.socket.on("disconnect", async () => { loopBot() })
+                information.bot1.bot.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (information.bot1.bot) information.bot1.bot.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 1000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else if (/ingame/.test(e)) {
-                    setTimeout(async () => { loopBot() }, 500)
+                    setTimeout(loopBot, 500)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -1835,19 +1835,19 @@ async function run() {
                 prepareRanger(information.bot2.bot as Ranger)
                 startTrackerLoop(information.bot2.bot)
                 addSocket(information.bot2.bot.id, information.bot2.bot.socket, information.bot2.bot)
-                information.bot2.bot.socket.on("disconnect", async () => { loopBot() })
+                information.bot2.bot.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (information.bot2.bot) information.bot2.bot.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 1000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else if (/ingame/.test(e)) {
-                    setTimeout(async () => { loopBot() }, 500)
+                    setTimeout(loopBot, 500)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -1864,19 +1864,19 @@ async function run() {
                 information.friends[3] = information.bot3.bot
                 prepareWarrior(information.bot3.bot as Warrior)
                 addSocket(information.bot3.bot.id, information.bot3.bot.socket, information.bot3.bot)
-                information.bot3.bot.socket.on("disconnect", async () => { loopBot() })
+                information.bot3.bot.socket.on("disconnect", loopBot)
             } catch (e) {
                 console.error(e)
                 if (information.bot3.bot) information.bot3.bot.disconnect()
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { loopBot() }, 1000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(loopBot, 1000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { loopBot() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(loopBot, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else if (/ingame/.test(e)) {
-                    setTimeout(async () => { loopBot() }, 500)
+                    setTimeout(loopBot, 500)
                 } else {
-                    setTimeout(async () => { loopBot() }, 10000)
+                    setTimeout(loopBot, 10000)
                 }
             }
         }
@@ -1889,20 +1889,20 @@ async function run() {
         try {
             // We haven't logged in yet
             if (!information.bot1.bot) {
-                setTimeout(async () => { serverLoop() }, 1000)
+                setTimeout(serverLoop, 1000)
                 return
             }
 
             // Don't change servers too fast
             if (lastServerChangeTime > Date.now() - AL.Constants.RECONNECT_TIMEOUT_MS) {
-                setTimeout(async () => { serverLoop() }, Math.max(1000, lastServerChangeTime + AL.Constants.RECONNECT_TIMEOUT_MS - Date.now()))
+                setTimeout(serverLoop, Math.max(1000, lastServerChangeTime + AL.Constants.RECONNECT_TIMEOUT_MS - Date.now()))
                 return
             }
 
             // Don't change servers if we're running a crypt
             const merchantMap: GMap = AL.Game.G.maps[information.merchant?.bot?.map]
             if (merchantMap?.instance) {
-                setTimeout(async () => { serverLoop() }, 1000)
+                setTimeout(serverLoop, 1000)
                 return
             }
 
@@ -1920,13 +1920,13 @@ async function run() {
                 && !(information.bot1.bot.S?.lunarnewyear && ["dragold", "tiger"].includes(targetServer[2])) // Switch servers right away for special Lunar New Year monsters
                 && !(information.bot1.bot.S?.valentines && ["pinkgoo"].includes(targetServer[2])) // Switch servers right away for special Valentines monsters
             ) {
-                setTimeout(async () => { serverLoop() }, 1000)
+                setTimeout(serverLoop, 1000)
                 return
             }
 
             if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
                 // We're already on the correct server
-                setTimeout(async () => { serverLoop() }, 1000)
+                setTimeout(serverLoop, 1000)
                 return
             }
 
@@ -1949,7 +1949,7 @@ async function run() {
         } catch (e) {
             console.error(e)
         }
-        setTimeout(async () => { serverLoop() }, 1000)
+        setTimeout(serverLoop, 1000)
     }
     serverLoop()
 }

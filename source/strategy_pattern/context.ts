@@ -68,10 +68,10 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                     if (!this.stopped) {
                         const loop = this.loops.get(name)
                         if (loop) {
-                            if (typeof loop.interval == "number") this.timeouts.set(name, setTimeout(async () => { newLoop() }, loop.interval)) // Continue the loop
+                            if (typeof loop.interval == "number") this.timeouts.set(name, setTimeout(newLoop, loop.interval)) // Continue the loop
                             else if (Array.isArray(loop.interval)) {
                                 const cooldown = Math.max(50, Math.min(...loop.interval.map((skill) => this.bot.getCooldown(skill))))
-                                this.timeouts.set(name, setTimeout(async () => { newLoop() }, cooldown)) // Continue the loop
+                                this.timeouts.set(name, setTimeout(newLoop, cooldown)) // Continue the loop
                             }
                         }
                     }
@@ -100,11 +100,11 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                 console.error(e)
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(async () => { this.reconnect() }, 2000 + Number.parseInt(wait[1]) * 1000)
+                    setTimeout(this.reconnect, 2000 + Number.parseInt(wait[1]) * 1000)
                 } else if (/limits/.test(e)) {
-                    setTimeout(async () => { this.reconnect() }, AL.Constants.RECONNECT_TIMEOUT_MS)
+                    setTimeout(this.reconnect, AL.Constants.RECONNECT_TIMEOUT_MS)
                 } else {
-                    setTimeout(async () => { this.reconnect() }, 10000)
+                    setTimeout(this.reconnect, 10000)
                 }
             }
         }

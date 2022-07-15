@@ -204,7 +204,7 @@ export function startDarkBlessingLoop(bot: Priest): void {
             console.error(e)
         }
 
-        bot.timeouts.set("darkblessingLoop", setTimeout(async () => { darkBlessingLoop() }, Math.max(LOOP_MS, bot.getCooldown("darkblessing"))))
+        bot.timeouts.set("darkblessingLoop", setTimeout(darkBlessingLoop, Math.max(LOOP_MS, bot.getCooldown("darkblessing"))))
     }
     darkBlessingLoop()
 }
@@ -215,7 +215,7 @@ export function startPartyHealLoop(bot: Priest, friends: Character[] = []): void
             if (!bot.socket || bot.socket.disconnected) return
 
             if (bot.c.town) {
-                bot.timeouts.set("partyhealLoop", setTimeout(async () => { partyHealLoop() }, bot.c.town.ms))
+                bot.timeouts.set("partyhealLoop", setTimeout(partyHealLoop, bot.c.town.ms))
                 return
             }
 
@@ -250,7 +250,7 @@ export function startPartyHealLoop(bot: Priest, friends: Character[] = []): void
             console.error(e)
         }
 
-        bot.timeouts.set("partyhealLoop", setTimeout(async () => { partyHealLoop() }, Math.max(bot.getCooldown("partyheal"), LOOP_MS)))
+        bot.timeouts.set("partyhealLoop", setTimeout(partyHealLoop, Math.max(bot.getCooldown("partyheal"), LOOP_MS)))
     }
     partyHealLoop()
 }
