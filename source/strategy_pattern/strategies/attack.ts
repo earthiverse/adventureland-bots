@@ -1,15 +1,15 @@
-import AL, { Entity, GetEntitiesFilters, Mage, PingCompensatedCharacter } from "alclient"
+import AL, { Character, Entity, GetEntitiesFilters, Mage } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { sortPriority } from "../../base/sort.js"
 import { Loop, LoopName, Strategy } from "../context.js"
 
 export type BaseAttackStrategyOptions = GetEntitiesFilters & {
-    characters: PingCompensatedCharacter[]
+    characters: Character[]
     disableEnergize?: boolean
     disableZapper?: boolean
 }
 
-export class BaseAttackStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
+export class BaseAttackStrategy<Type extends Character> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
     public options: BaseAttackStrategyOptions
 

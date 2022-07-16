@@ -78,7 +78,7 @@ export async function startLulzCharacter(type: CharacterType, userID: string, us
     const moveStrategy = new ImprovedMoveStrategy(monsters)
     context.applyStrategy(moveStrategy)
     context.applyStrategy(new TrackerStrategy())
-    context.applyStrategy(new AvoidStackingStrategy(bot))
+    context.applyStrategy(new AvoidStackingStrategy())
     context.applyStrategy(new BuyStrategy({
         buyMap: undefined,
         replenishables: new Map<ItemName, number>([
@@ -109,7 +109,7 @@ export async function startLulzCharacter(type: CharacterType, userID: string, us
             if (bot.smartMoving) return
             if ((!bot.hasItem("hpot1") || !bot.hasItem("mpot1")) && bot.gold > (AL.Game.G.items.mpot1.g * 100) || bot.isFull()) {
             // Go get potions
-                context.stopLoop("move")
+                context.removeStrategy(moveStrategy)
 
                 await bot.smartMove("mpot1", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
 

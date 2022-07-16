@@ -3,12 +3,12 @@ import { Loop, LoopName, Strategy } from "../context.js"
 
 // TODO: Add options to toggle whether or not we should give to everyone, just friends, etc.
 
-export class GiveRogueSpeedStrategy<Type extends Rogue> implements Strategy<Type> {
-    public loops = new Map<LoopName, Loop<Type>>()
+export class GiveRogueSpeedStrategy implements Strategy<Rogue> {
+    public loops = new Map<LoopName, Loop<Rogue>>()
 
     public constructor() {
         this.loops.set("rspeed", {
-            fn: async (bot: Type) => {
+            fn: async (bot: Rogue) => {
                 await this.giveRogueSpeedToSelf(bot)
                 await this.giveRogueSpeedToOthers(bot)
             },
@@ -16,7 +16,7 @@ export class GiveRogueSpeedStrategy<Type extends Rogue> implements Strategy<Type
         })
     }
 
-    private async giveRogueSpeedToSelf(bot: Type) {
+    private async giveRogueSpeedToSelf(bot: Rogue) {
         if (!bot.canUse("rspeed")) return
         if (bot.s.rspeed?.ms > 30_000) return // We have rogue speed already
 
@@ -24,7 +24,7 @@ export class GiveRogueSpeedStrategy<Type extends Rogue> implements Strategy<Type
         await bot.rspeed(bot.id).catch((e) => console.error(e))
     }
 
-    private async giveRogueSpeedToOthers(bot: Type) {
+    private async giveRogueSpeedToOthers(bot: Rogue) {
         if (!bot.canUse("rspeed")) return
 
         for (const player of bot.getPlayers({

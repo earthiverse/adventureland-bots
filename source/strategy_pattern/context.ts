@@ -23,7 +23,9 @@ export type LoopName =
 export type Loops<Type> = Map<LoopName, Loop<Type>>
 
 export interface Strategy<Type> {
-    loops: Loops<Type>
+    loops?: Loops<Type>
+    /** This function will be called when the strategy gets applied to the bot */
+    onApply?: (bot: Type) => void
     /** If the strategy is removed, this function will be called */
     onRemove?: (bot: Type) => void
 }
@@ -31,19 +33,23 @@ export interface Strategy<Type> {
 export class Strategist<Type extends PingCompensatedCharacter> {
     public bot: Type
 
+    private strategies: Strategy<Type>[] = []
     private loops: Loops<Type> = new Map<LoopName, Loop<Type>>()
     private stopped = false
     private timeouts = new Map<LoopName, NodeJS.Timeout>()
 
     public constructor(bot: Type, initialStrategy?: Strategy<Type>) {
-        this.bot = bot
-        this.bot.socket.on("disconnect", this.reconnect)
+        this.changeBot(bot)
         this.applyStrategy(initialStrategy)
     }
 
     public applyStrategy(strategy: Strategy<Type>) {
         if (!strategy) return // No strategy
+        this.strategies.push(strategy)
 
+        if (strategy.onApply) strategy.onApply(this.bot)
+
+        if (!strategy.loops) return
         for (const [name, fn] of strategy.loops) {
             if (fn == undefined) {
                 // Stop the loop
@@ -83,9 +89,20 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         for (const strategy of strategies) this.applyStrategy(strategy)
     }
 
+    public async changeBot(newBot: Type) {
+        this.bot = newBot
+        this.bot.socket.on("disconnect", this.reconnect)
+
+        for (const strategy of this.strategies) {
+            if (strategy.onApply) {
+                strategy.onApply(newBot)
+            }
+        }
+    }
+
     public async changeServer(region: ServerRegion, id: ServerIdentifier) {
         return new Promise<void>((resolve, reject) => {
-            // Disconnect the bot
+            // Disconnect the bot, and stop reconnecting
             this.bot.socket.off("disconnect", this.reconnect)
             this.bot.disconnect()
 
@@ -95,8 +112,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                     if (numAttempts == 5) reject(`We couldn't connect after ${numAttempts} attempts...`)
                     numAttempts += 1
                     const newBot = (await Game.startCharacter(this.bot.id, region, id)) as Type
-                    this.bot = newBot
-                    this.bot.socket.on("disconnect", this.reconnect)
+                    this.changeBot(newBot)
                 } catch (e) {
                     setTimeout(switchBots, 1000)
                 }
@@ -107,8 +123,15 @@ export class Strategist<Type extends PingCompensatedCharacter> {
     }
 
     public removeStrategy(strategy: Strategy<Type>) {
-        for (const [loopName] of strategy.loops) this.stopLoop(loopName)
+        if (strategy.loops) {
+            for (const [loopName] of strategy.loops) {
+                this.stopLoop(loopName)
+            }
+        }
         if (strategy.onRemove) strategy.onRemove(this.bot)
+
+        const index = this.strategies.indexOf(strategy)
+        if (index >= 0) this.strategies.splice(this.strategies.indexOf(strategy), 1)
     }
 
     public async reconnect(): Promise<void> {
@@ -131,7 +154,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         }
     }
 
-    public stopLoop(loopName: LoopName): void {
+    private stopLoop(loopName: LoopName): void {
         // Delete the loop
         this.loops.delete(loopName)
 

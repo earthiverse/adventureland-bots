@@ -1,8 +1,8 @@
-import AL, { PingCompensatedCharacter } from "alclient"
+import AL, { Character } from "alclient"
 import { Loop, LoopName, Strategy } from "../context.js"
 
-export class TrackerStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
-    public loops = new Map<LoopName, Loop<Type>>()
+export class TrackerStrategy implements Strategy<Character> {
+    public loops = new Map<LoopName, Loop<Character>>()
 
     public constructor(options = { interval: 900_000 }) {
         // This strategy is only useful if we have a database connection, because the only reason we're calling
@@ -10,12 +10,12 @@ export class TrackerStrategy<Type extends PingCompensatedCharacter> implements S
         if (!AL.Database.connection) return
 
         this.loops.set("tracker", {
-            fn: async (bot: Type) => { await this.checkTracker(bot) },
+            fn: async (bot: Character) => { await this.checkTracker(bot) },
             interval: options?.interval ?? 900_000
         })
     }
 
-    private async checkTracker(bot: Type) {
+    private async checkTracker(bot: Character) {
         if ((bot.hasItem("tracker") || bot.hasItem("supercomputer")) && bot.cc < 100) {
             await bot.getTrackerData()
         }

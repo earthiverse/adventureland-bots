@@ -1,10 +1,10 @@
-import AL, { IPosition, MonsterName, Pathfinder, PingCompensatedCharacter, Tools } from "alclient"
+import AL, { IPosition, MonsterName, Pathfinder, Character, Tools } from "alclient"
 import { offsetPositionParty } from "../../base/locations.js"
 import { sortClosestDistance } from "../../base/sort.js"
 import { Loop, LoopName, Strategy } from "../context.js"
 
-export class BasicMoveStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
-    public loops = new Map<LoopName, Loop<Type>>()
+export class BasicMoveStrategy implements Strategy<Character> {
+    public loops = new Map<LoopName, Loop<Character>>()
 
     public types: MonsterName[]
 
@@ -16,12 +16,12 @@ export class BasicMoveStrategy<Type extends PingCompensatedCharacter> implements
         }
 
         this.loops.set("move", {
-            fn: async (bot: Type) => { await this.move(bot) },
+            fn: async (bot: Character) => { await this.move(bot) },
             interval: 250
         })
     }
 
-    private async move(bot: Type) {
+    private async move(bot: Character) {
         const nearest = bot.getEntity({ couldGiveCredit: true, returnNearest: true, typeList: this.types, willDieToProjectiles: false })
         if (!nearest) {
             if (!bot.smartMoving) {
@@ -33,8 +33,8 @@ export class BasicMoveStrategy<Type extends PingCompensatedCharacter> implements
     }
 }
 
-export class ImprovedMoveStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
-    public loops = new Map<LoopName, Loop<Type>>()
+export class ImprovedMoveStrategy implements Strategy<Character> {
+    public loops = new Map<LoopName, Loop<Character>>()
 
     public types: MonsterName[]
     protected spawns: IPosition[]
@@ -47,7 +47,7 @@ export class ImprovedMoveStrategy<Type extends PingCompensatedCharacter> impleme
         }
 
         this.loops.set("move", {
-            fn: async (bot: Type) => { await this.move(bot) },
+            fn: async (bot: Character) => { await this.move(bot) },
             interval: 250
         })
 
@@ -55,7 +55,7 @@ export class ImprovedMoveStrategy<Type extends PingCompensatedCharacter> impleme
         for (const type of this.types) this.spawns.push(...Pathfinder.locateMonster(type))
     }
 
-    private async move(bot: Type) {
+    private async move(bot: Character) {
         const targets = bot.getEntities({ canDamage: true, couldGiveCredit: true, typeList: this.types, willBurnToDeath: false, willDieToProjectiles: false })
         targets.sort(sortClosestDistance(bot))
 
@@ -88,8 +88,8 @@ export class ImprovedMoveStrategy<Type extends PingCompensatedCharacter> impleme
     }
 }
 
-export class HoldPositionMoveStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
-    public loops = new Map<LoopName, Loop<Type>>()
+export class HoldPositionMoveStrategy implements Strategy<Character> {
+    public loops = new Map<LoopName, Loop<Character>>()
 
     public location: IPosition
 
@@ -97,12 +97,12 @@ export class HoldPositionMoveStrategy<Type extends PingCompensatedCharacter> imp
         this.location = location
 
         this.loops.set("move", {
-            fn: async (bot: Type) => { await this.move(bot) },
+            fn: async (bot: Character) => { await this.move(bot) },
             interval: 1000
         })
     }
 
-    private async move(bot: Type) {
+    private async move(bot: Character) {
         await bot.smartMove(this.location)
     }
 }

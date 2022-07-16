@@ -1,11 +1,11 @@
-import { PingCompensatedCharacter } from "alclient"
+import { Character } from "alclient"
 import { Loop, LoopName, Strategy } from "../context.js"
 
-export class BaseStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
+export class BaseStrategy<Type extends Character> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
-    private characters: PingCompensatedCharacter[]
+    private characters: Character[]
 
-    public constructor(characters?: PingCompensatedCharacter[]) {
+    public constructor(characters?: Character[]) {
         this.characters = characters ?? []
         this.loops.set("heal", {
             fn: async (bot: Type) => { await this.heal(bot) },

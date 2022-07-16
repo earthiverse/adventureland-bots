@@ -64,7 +64,7 @@ async function run() {
 
     // Default Monster
     strategies[defaultMonster] = [
-        new BasicMoveStrategy<Mage>(defaultMonster),
+        new BasicMoveStrategy(defaultMonster),
         new BaseAttackStrategy<Mage>({ characters: CHARACTERS, type: defaultMonster })
     ]
 
