@@ -143,4 +143,9 @@ async function startRspeedRogue(context: Strategist<Rogue>) {
         // Move to attack bees
         context.applyStrategy(moveStrategy)
     }, 5000)
+
+    // TESTING. Bots should change to ASIA after 2 minutes
+    setTimeout(() => {
+        context.changeServer("ASIA", "I").catch(e => console.error(e))
+    }, 120_000)
 }

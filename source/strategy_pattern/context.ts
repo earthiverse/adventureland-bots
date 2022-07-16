@@ -1,4 +1,4 @@
-import AL, { PingCompensatedCharacter, SkillName } from "alclient"
+import AL, { Game, PingCompensatedCharacter, ServerIdentifier, ServerRegion, SkillName } from "alclient"
 
 export type Loop<Type> = {
     fn: (bot: Type) => Promise<void>,
@@ -37,9 +37,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
 
     public constructor(bot: Type, initialStrategy?: Strategy<Type>) {
         this.bot = bot
-
-        this.bot.socket.on("disconnect", () => { this.reconnect() })
-
+        this.bot.socket.on("disconnect", this.reconnect)
         this.applyStrategy(initialStrategy)
     }
 
@@ -85,6 +83,29 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         for (const strategy of strategies) this.applyStrategy(strategy)
     }
 
+    public async changeServer(region: ServerRegion, id: ServerIdentifier) {
+        return new Promise<void>((resolve, reject) => {
+            // Disconnect the bot
+            this.bot.socket.off("disconnect", this.reconnect)
+            this.bot.disconnect()
+
+            let numAttempts = 0
+            const switchBots = async () => {
+                try {
+                    if (numAttempts == 5) reject(`We couldn't connect after ${numAttempts} attempts...`)
+                    numAttempts += 1
+                    const newBot = (await Game.startCharacter(this.bot.id, region, id)) as Type
+                    this.bot = newBot
+                    this.bot.socket.on("disconnect", this.reconnect)
+                } catch (e) {
+                    setTimeout(switchBots, 1000)
+                }
+                resolve()
+            }
+            switchBots()
+        })
+    }
+
     public removeStrategy(strategy: Strategy<Type>) {
         for (const [loopName] of strategy.loops) this.stopLoop(loopName)
         if (strategy.onRemove) strategy.onRemove(this.bot)
@@ -95,7 +116,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         if (this.bot.socket.disconnected) {
             try {
                 await this.bot.connect()
-                this.bot.socket.on("disconnect", () => { this.reconnect() })
+                this.bot.socket.on("disconnect", this.reconnect)
             } catch (e) {
                 console.error(e)
                 const wait = /wait_(\d+)_second/.exec(e)
