@@ -82,7 +82,7 @@ export async function startWarrior(bot: Warrior, merchant: string, friends: Char
             if (bot.S && bot.S.holidayseason && !bot.s.holidayspirit) {
                 await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                 // TODO: Improve ALClient by making this a function
-                bot.socket.emit("interaction", { type: "newyear_tree" })
+                bot.socket.volatile.emit("interaction", { type: "newyear_tree" })
                 bot.timeouts.set("moveLoop", setTimeout(moveLoop, Math.min(...bot.pings) * 2))
                 return
             }
@@ -150,7 +150,7 @@ export async function startPriest(bot: Priest, merchant: string, friends: Charac
             if (bot.S && bot.S.holidayseason && !bot.s.holidayspirit) {
                 await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                 // TODO: Improve ALClient by making this a function
-                bot.socket.emit("interaction", { type: "newyear_tree" })
+                bot.socket.volatile.emit("interaction", { type: "newyear_tree" })
                 bot.timeouts.set("moveLoop", setTimeout(moveLoop, Math.min(...bot.pings) * 2))
                 return
             }
@@ -208,7 +208,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], standPl
                 await bot.closeMerchantStand()
                 await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                 // TODO: Improve ALClient by making this a function
-                bot.socket.emit("interaction", { type: "newyear_tree" })
+                bot.socket.volatile.emit("interaction", { type: "newyear_tree" })
                 bot.timeouts.set("moveLoop", setTimeout(moveLoop, Math.min(...bot.pings) * 2))
                 return
             }

@@ -96,7 +96,7 @@ async function startMerchant(bot: Merchant) {
             if (bot.S && bot.S.holidayseason && !bot.s.holidayspirit) {
                 await merchantSmartMove(bot, "newyear_tree", { attackWhileMoving: true, getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                 // TODO: Improve ALClient by making this a function
-                bot.socket.emit("interaction", { type: "newyear_tree" })
+                bot.socket.volatile.emit("interaction", { type: "newyear_tree" })
                 bot.timeouts.set("moveLoop", setTimeout(moveLoop, Math.min(...bot.pings) * 2))
                 return
             }

@@ -3,7 +3,9 @@ import AL, { IPosition, Pathfinder } from "alclient"
 async function run() {
     // Login and prepare pathfinding
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
-    await AL.Pathfinder.prepare(AL.Game.G)
+    await AL.Pathfinder.prepare(AL.Game.G, {
+        cheat: true
+    })
 
     const x = 126
     const y = -413
@@ -19,8 +21,8 @@ async function run() {
         console.log(Pathfinder.findClosestNode(position.map, position.x, position.y).id)
     }
 
-    closestTo({ map: "cave", x: 120, y: -1050 })
-    closestTo({ map: "cave", x: 24, y: -1074 })
+    closestTo({ map: "level1", x: -296, y: 183 })
+    closestTo({ map: "level1", x: -296, y: 558 })
 
     const now1 = performance.now()
     await Pathfinder.getPath({ map: "main", x: 0, y: 0 }, { map: "spookytown", x: 0, y: 0 })
