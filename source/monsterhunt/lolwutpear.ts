@@ -41,7 +41,7 @@ function prepareMage(bot: Mage) {
     const maxDamageEquipment: { [T in SlotType]?: ItemName } = { ...maxAttackSpeedEquipment, "mainhand": "firestaff", offhand: "wbook0" }
 
     const strategy: Strategy = {
-        defaultTarget: "croc",
+        defaultTarget: "armadillo",
         // eslint-disable-next-line sort-keys
         arcticbee: {
             attack: async () => { await attackTheseTypesMage(bot, ["arcticbee"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.goo.hp + 1 }) },
