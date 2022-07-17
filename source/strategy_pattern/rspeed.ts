@@ -129,6 +129,8 @@ async function startRspeedRogue(context: Strategist<Rogue>) {
         if (context.bot.isFull()) {
             context.applyStrategy(goSellThingsStrategy)
             return
+        } else {
+            context.removeStrategy(goSellThingsStrategy)
         }
 
         // Move to give rspeed to someone
@@ -137,6 +139,8 @@ async function startRspeedRogue(context: Strategist<Rogue>) {
             if (shouldGo) {
                 context.applyStrategy(goGiveRogueSpeedStrategy)
                 return
+            } else {
+                context.removeStrategy(goGiveRogueSpeedStrategy)
             }
         }
 

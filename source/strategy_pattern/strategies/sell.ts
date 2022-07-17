@@ -90,7 +90,7 @@ export class SellStrategy<Type extends Character> implements SellStrategyOptions
                     const level = a[0]
                     const sellFor = a[1] ?? AL.Game.G.items[item.name].g * 0.6
 
-                    return level == item.level && sellFor <= item.price
+                    return level == item.level && item.price >= sellFor
                 })) continue // They're not paying enough, or they're buying at a level we're not selling
 
                 const index = bot.locateItem(item.name, bot.items, { level: item.level, locked: false })
