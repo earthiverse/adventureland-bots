@@ -17,6 +17,12 @@ import { RequestPartyStrategy } from "../strategy_pattern/strategies/party.js"
 import { SellStrategy } from "../strategy_pattern/strategies/sell.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 
+// Login and get GData
+await AL.Game.loginJSONFile("../../credentials.json")
+await AL.Game.getGData(true, false)
+await AL.Pathfinder.prepare(AL.Game.G)
+await startServer(8080, AL.Game.G)
+
 const SERVER_REGION: ServerRegion = "US"
 const SERVER_ID: ServerIdentifier = "I"
 
@@ -47,6 +53,7 @@ const baseStrategy = new BaseStrategy(CHARACTERS)
 const trackerStrategy = new TrackerStrategy()
 const disconnectStrategy = new DisconnectOnCommandStrategy()
 const avoidStackingStrategy = new AvoidStackingStrategy()
+const partyStrategy = new RequestPartyStrategy("earthMer")
 const buyStrategy = new BuyStrategy({
     buyMap: undefined,
     replenishables: new Map<ItemName, number>([
@@ -69,7 +76,6 @@ const sellStrategy = new SellStrategy({
         ["wshoes", undefined],
     ])
 })
-const partyStrategy = new RequestPartyStrategy("earthMer")
 
 export async function startLulzCharacter(type: CharacterType, userID: string, userAuth: string, characterID: string, monsters: MonsterName[]) {
     if (CHARACTERS.length >= MAX_CHARACTERS) throw `Too many characters are already running (We only support ${MAX_CHARACTERS} characters simultaneously)`
@@ -247,11 +253,5 @@ app.post("/",
     })
 
 app.listen(port, async () => {
-    console.log("Preparing...")
-    await AL.Game.loginJSONFile("../../credentials.json")
-    await AL.Game.getGData(true, false)
-    await AL.Pathfinder.prepare(AL.Game.G)
-    await startServer(8080, AL.Game.G)
-
     console.log(`Ready on port ${port}!`)
 })
