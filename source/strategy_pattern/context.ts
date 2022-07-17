@@ -91,7 +91,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
 
     public async changeBot(newBot: Type) {
         this.bot = newBot
-        this.bot.socket.on("disconnect", this.reconnect.bind(this))
+        this.bot.socket.on("disconnect", () => this.reconnect())
 
         for (const strategy of this.strategies) {
             if (strategy.onApply) {
@@ -102,8 +102,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
 
     public async changeServer(region: ServerRegion, id: ServerIdentifier) {
         return new Promise<void>((resolve, reject) => {
-            // Disconnect the bot, and stop reconnecting
-            this.bot.socket.off("disconnect", this.reconnect.bind(this))
+            // Disconnect the bot (this will remove the disconnect listener, too)
             this.bot.disconnect()
 
             let numAttempts = 0
@@ -135,21 +134,19 @@ export class Strategist<Type extends PingCompensatedCharacter> {
     }
 
     public async reconnect(): Promise<void> {
-        if (this.bot.socket.connected) this.bot.disconnect()
-        if (this.bot.socket.disconnected) {
-            try {
-                await this.bot.connect()
-                this.bot.socket.on("disconnect", this.reconnect.bind(this))
-            } catch (e) {
-                console.error(e)
-                const wait = /wait_(\d+)_second/.exec(e)
-                if (wait && wait[1]) {
-                    setTimeout(this.reconnect.bind(this), 2000 + Number.parseInt(wait[1]) * 1000)
-                } else if (/limits/.test(e)) {
-                    setTimeout(this.reconnect.bind(this), AL.Constants.RECONNECT_TIMEOUT_MS)
-                } else {
-                    setTimeout(this.reconnect.bind(this), 10000)
-                }
+        this.bot.disconnect()
+        try {
+            await this.bot.connect()
+            this.changeBot(this.bot)
+        } catch (e) {
+            console.error(e)
+            const wait = /wait_(\d+)_second/.exec(e)
+            if (wait && wait[1]) {
+                setTimeout(this.reconnect.bind(this), 2000 + Number.parseInt(wait[1]) * 1000)
+            } else if (/limits/.test(e)) {
+                setTimeout(this.reconnect.bind(this), AL.Constants.RECONNECT_TIMEOUT_MS)
+            } else {
+                setTimeout(this.reconnect.bind(this), 10000)
             }
         }
     }
