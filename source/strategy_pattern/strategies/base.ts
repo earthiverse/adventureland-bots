@@ -18,8 +18,7 @@ export class BaseStrategy<Type extends Character> implements Strategy<Type> {
     }
 
     private async heal(bot: Type) {
-        if (bot.rip)
-            return
+        if (bot.rip) return
 
         const missingHP = bot.max_hp - bot.hp
         const missingMP = bot.max_mp - bot.mp
