@@ -1634,7 +1634,10 @@ function prepareWarrior(bot: Warrior) {
         stompy: {
             attack: async () => {
                 const priest = information.bot1.bot
-                if (priest && priest.canUse("heal", { ignoreCooldown: true }) && AL.Tools.distance(bot, priest) < priest.range) {
+                const stompy = bot.getEntity({ type: "stompy" })
+                if (stompy?.level > 3) {
+                    await attackTheseTypesWarrior(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends, { maximumTargets: 2 })
+                } else if (priest && priest.canUse("heal", { ignoreCooldown: true }) && AL.Tools.distance(bot, priest) < priest.range) {
                     await attackTheseTypesWarrior(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends, { disableStomp: true })
                 } else {
                     await attackTheseTypesWarrior(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends, { disableAgitate: true, disableStomp: true })
