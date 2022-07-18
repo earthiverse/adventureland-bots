@@ -240,11 +240,11 @@ function prepareMage(bot: Mage) {
             equipment: maxAttackSpeedEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await goToNearestWalkableToMonster2(bot, ["osnake", "snake"], offsetPosition(halloweenSafeSnakes, -75, 25))
+                    await goToNearestWalkableToMonster2(bot, ["osnake"], offsetPosition(halloweenSafeSnakes, -75, 25))
                 } else if (bot.id == information.bot2.name) {
-                    await goToNearestWalkableToMonster2(bot, ["osnake", "snake"], offsetPosition(halloweenSafeSnakes, 0, 25))
+                    await goToNearestWalkableToMonster2(bot, ["osnake"], offsetPosition(halloweenSafeSnakes, 0, 25))
                 } else if (bot.id == information.bot3.name) {
-                    await goToNearestWalkableToMonster2(bot, ["osnake", "snake"], offsetPosition(halloweenSafeSnakes, 75, 25))
+                    await goToNearestWalkableToMonster2(bot, ["osnake"], offsetPosition(halloweenSafeSnakes, 75, 25))
                 }
             },
         },
