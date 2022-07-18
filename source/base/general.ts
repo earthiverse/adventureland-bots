@@ -921,7 +921,6 @@ export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName
     targets.sort(sortClosestDistance(bot))
 
     const costs = {
-        blink: 9999,
         enter: 9999,
         town: 9999,
         transport: 9999
@@ -937,10 +936,10 @@ export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName
 
         if (lastD) {
             // We're in range of one or more monsters, move as much as we can to the next monster without going outside of the attack range of all existing monsters
-            bot.smartMove(target, { avoidTownWarps: true, costs: costs, getWithin: d - (bot.range - lastD), resolveOnFinalMoveStart: true, useBlink: false }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(target, { avoidTownWarps: true, costs: costs, getWithin: d - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         } else {
             // We're out of range of all monsters
-            bot.smartMove(target, { avoidTownWarps: true, costs: costs, resolveOnFinalMoveStart: true, useBlink: false }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(target, { avoidTownWarps: true, costs: costs, resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         }
         return
     }
@@ -948,7 +947,7 @@ export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName
     if (lastD) {
         if (defaultPosition) {
             // Move towards center of default position
-            bot.smartMove(offsetPositionParty(defaultPosition, bot), { avoidTownWarps: true, costs: costs, getWithin: Tools.distance(bot, defaultPosition) - (bot.range - lastD), resolveOnFinalMoveStart: true, useBlink: false }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(defaultPosition, bot), { avoidTownWarps: true, costs: costs, getWithin: Tools.distance(bot, defaultPosition) - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         } else {
             // Move towards center of closest spawn
             const locations: IPosition[] = []
@@ -956,19 +955,19 @@ export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName
                 locations.push(...Pathfinder.locateMonster(type))
             }
             locations.sort(sortClosestDistance(bot))
-            bot.smartMove(offsetPositionParty(locations[0], bot), { avoidTownWarps: true, costs: costs, getWithin: Tools.distance(bot, locations[0]) - (bot.range - lastD), resolveOnFinalMoveStart: true, useBlink: false }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(locations[0], bot), { avoidTownWarps: true, costs: costs, getWithin: Tools.distance(bot, locations[0]) - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         }
     } else if (!bot.smartMoving) {
         // No targets nearby, move to spawn
         if (defaultPosition) {
-            bot.smartMove(offsetPositionParty(defaultPosition, bot), { avoidTownWarps: true, costs: costs, resolveOnFinalMoveStart: true, useBlink: false }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(defaultPosition, bot), { avoidTownWarps: true, costs: costs, resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         } else {
             const locations: IPosition[] = []
             for (const type of types) {
                 locations.push(...Pathfinder.locateMonster(type))
             }
             locations.sort(sortClosestDistance(bot))
-            bot.smartMove(offsetPositionParty(locations[0], bot), { avoidTownWarps: true, costs: costs, resolveOnFinalMoveStart: true, useBlink: false }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(locations[0], bot), { avoidTownWarps: true, costs: costs, resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         }
     }
 }
