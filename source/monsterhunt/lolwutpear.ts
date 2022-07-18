@@ -1,6 +1,6 @@
 import AL, { IPosition, ItemName, Mage, Merchant, SlotType } from "alclient"
-import { goToNearestWalkableToMonster, goToNPC, goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
-import { desertlandPorcupines, halloweenMiniMushes, mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrabXs, mainCrocs, mainGoos, mainPoisios, mainScorpions, mainSquigs, offsetPosition, offsetPositionParty, winterlandArcticBees } from "../base/locations.js"
+import { goToNearestWalkableToMonster2, goToNPC, goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
+import { desertlandPorcupines, halloweenMiniMushes, halloweenSafeSnakes, mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrabXs, mainCrocs, mainGoos, mainPoisios, mainScorpions, mainSquigs, offsetPosition, offsetPositionParty, winterlandArcticBees } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { getTargetServerFromPlayer } from "../base/serverhop.js"
@@ -38,36 +38,36 @@ const information: Information = {
 
 function prepareMage(bot: Mage) {
     const maxAttackSpeedEquipment: { [T in SlotType]?: ItemName } = { amulet: "intamulet", belt: "intbelt", cape: "cape", chest: "wattire", earring1: "cearring", earring2: "cearring", gloves: "wgloves", helmet: "wcap", mainhand: "wand", offhand: "wbookhs", orb: "jacko", pants: "wbreeches", ring1: "cring", ring2: "cring", shoes: "wshoes" }
-    const maxDamageEquipment: { [T in SlotType]?: ItemName } = { ...maxAttackSpeedEquipment, "mainhand": "firestaff", offhand: "wbook0" }
+    const maxDamageEquipment: { [T in SlotType]?: ItemName } = { ...maxAttackSpeedEquipment, mainhand: "firestaff", offhand: "wbook0" }
 
     const strategy: Strategy = {
         defaultTarget: "armadillo",
         // eslint-disable-next-line sort-keys
         arcticbee: {
-            attack: async () => { await attackTheseTypesMage(bot, ["arcticbee"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.goo.hp + 1 }) },
+            attack: async () => { await attackTheseTypesMage(bot, ["arcticbee", "snowman"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.goo.hp + 1 }) },
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await bot.smartMove(offsetPosition(winterlandArcticBees, -50, 0), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["arcticbee", "snowman"], offsetPosition(winterlandArcticBees, -50, 0))
                 } else if (bot.id == information.bot2.name) {
-                    await bot.smartMove(offsetPosition(winterlandArcticBees, -150, 0), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["arcticbee", "snowman"], offsetPosition(winterlandArcticBees, -150, 0))
                 } else if (bot.id == information.bot3.name) {
-                    await bot.smartMove(offsetPosition(winterlandArcticBees, -250, 0), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["arcticbee", "snowman"], offsetPosition(winterlandArcticBees, -250, 0))
                 }
             }
         },
         armadillo: {
-            attack: async () => { await attackTheseTypesMage(bot, ["armadillo", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesMage(bot, ["armadillo", "phoenix", "croc"], information.friends) },
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await bot.smartMove(offsetPosition(mainArmadillos, -75, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["armadillo", "phoenix", "croc"], offsetPosition(mainArmadillos, -75, -75))
                 } else if (bot.id == information.bot2.name) {
-                    await bot.smartMove(offsetPosition(mainArmadillos, 0, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["armadillo", "phoenix", "croc"], offsetPosition(mainArmadillos, 0, -75))
                 } else if (bot.id == information.bot3.name) {
-                    await bot.smartMove(offsetPosition(mainArmadillos, 75, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["armadillo", "phoenix", "croc"], offsetPosition(mainArmadillos, 75, -75))
                 }
             },
         },
@@ -77,11 +77,11 @@ function prepareMage(bot: Mage) {
             equipment: maxAttackSpeedEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await bot.smartMove(offsetPosition(mainBeesNearTunnel, -25, 0), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["bee"], offsetPosition(mainBeesNearTunnel, -25, 0))
                 } else if (bot.id == information.bot2.name) {
-                    await bot.smartMove(offsetPosition(mainBeesNearTunnel, -75, 0), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["bee"], offsetPosition(mainBeesNearTunnel, -75, 0))
                 } else if (bot.id == information.bot3.name) {
-                    await bot.smartMove(offsetPosition(mainBeesNearTunnel, -125, 0), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["bee"], offsetPosition(mainBeesNearTunnel, -125, 0))
                 }
             }
         },
@@ -91,11 +91,11 @@ function prepareMage(bot: Mage) {
             equipment: maxAttackSpeedEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await bot.smartMove(offsetPosition(mainCrabs, -75, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["crab", "phoenix"], offsetPosition(mainCrabs, -75, -75))
                 } else if (bot.id == information.bot2.name) {
-                    await bot.smartMove(offsetPosition(mainCrabs, 0, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["crab", "phoenix"], offsetPosition(mainCrabs, 0, -75))
                 } else if (bot.id == information.bot3.name) {
-                    await bot.smartMove(offsetPosition(mainCrabs, 75, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["crab", "phoenix"], offsetPosition(mainCrabs, 75, -75))
                 }
             },
         },
@@ -105,25 +105,25 @@ function prepareMage(bot: Mage) {
             equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await goToNearestWalkableToMonster(bot, ["crabx", "phoenix"], offsetPosition(mainCrabXs, -75, -75), bot.range - 25)
+                    await goToNearestWalkableToMonster2(bot, ["crabx", "phoenix"], offsetPosition(mainCrabXs, -75, -75))
                 } else if (bot.id == information.bot2.name) {
-                    await goToNearestWalkableToMonster(bot, ["crabx", "phoenix"], offsetPosition(mainCrabXs, 0, -75), bot.range - 25)
+                    await goToNearestWalkableToMonster2(bot, ["crabx", "phoenix"], offsetPosition(mainCrabXs, 0, -75))
                 } else if (bot.id == information.bot3.name) {
-                    await goToNearestWalkableToMonster(bot, ["crabx", "phoenix"], offsetPosition(mainCrabXs, 75, -75), bot.range - 25)
+                    await goToNearestWalkableToMonster2(bot, ["crabx", "phoenix"], offsetPosition(mainCrabXs, 75, -75))
                 }
             },
         },
         croc: {
-            attack: async () => { await attackTheseTypesMage(bot, ["croc", "phoenix"], information.friends) },
+            attack: async () => { await attackTheseTypesMage(bot, ["croc", "phoenix", "armadillo"], information.friends) },
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await bot.smartMove(offsetPosition(mainCrocs, 0, -25), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["croc", "phoenix", "armadillo"], offsetPosition(mainCrocs, 0, -25))
                 } else if (bot.id == information.bot2.name) {
-                    await bot.smartMove(offsetPosition(mainCrocs, 0, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["croc", "phoenix", "armadillo"], offsetPosition(mainCrocs, 0, -75))
                 } else if (bot.id == information.bot3.name) {
-                    await bot.smartMove(offsetPosition(mainCrocs, 0, -125), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["croc", "phoenix", "armadillo"], offsetPosition(mainCrocs, 0, -125))
                 }
             },
         },
@@ -144,7 +144,7 @@ function prepareMage(bot: Mage) {
             attack: async () => { await attackTheseTypesMage(bot, ["frog", "tortoise"], information.friends) },
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
-            move: async () => { await goToNearestWalkableToMonster(bot, ["frog", "tortoise"]) },
+            move: async () => { await goToNearestWalkableToMonster2(bot, ["frog", "tortoise"]) },
         },
         goldenbat: {
             attack: async () => { await attackTheseTypesMage(bot, ["goldenbat"], information.friends) },
@@ -158,11 +158,11 @@ function prepareMage(bot: Mage) {
             equipment: maxAttackSpeedEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await bot.smartMove(offsetPosition(mainGoos, -50, 0), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["goo"], offsetPosition(mainGoos, -50, 0))
                 } else if (bot.id == information.bot2.name) {
-                    await bot.smartMove(offsetPosition(mainGoos, -150, 0), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["goo"], offsetPosition(mainGoos, -150, 0))
                 } else if (bot.id == information.bot3.name) {
-                    await bot.smartMove(offsetPosition(mainGoos, -250, 0), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["goo"], offsetPosition(mainGoos, -250, 0))
                 }
             }
         },
@@ -210,11 +210,11 @@ function prepareMage(bot: Mage) {
             equipment: maxAttackSpeedEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await bot.smartMove(offsetPosition(halloweenMiniMushes, -75, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["minimush", "phoenix"], offsetPosition(halloweenMiniMushes, -75, -75))
                 } else if (bot.id == information.bot2.name) {
-                    await bot.smartMove(offsetPosition(halloweenMiniMushes, 0, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["minimush", "phoenix"], offsetPosition(halloweenMiniMushes, 0, -75))
                 } else if (bot.id == information.bot3.name) {
-                    await bot.smartMove(offsetPosition(halloweenMiniMushes, 75, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["minimush", "phoenix"], offsetPosition(halloweenMiniMushes, 75, -75))
                 }
             }
         },
@@ -250,16 +250,16 @@ function prepareMage(bot: Mage) {
             },
         },
         poisio: {
-            attack: async () => { await attackTheseTypesMage(bot, ["poisio"], information.friends) },
+            attack: async () => { await attackTheseTypesMage(bot, ["poisio", "bee"], information.friends) },
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await bot.smartMove(offsetPosition(mainPoisios, -75, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["poisio", "bee"], offsetPosition(mainPoisios, -75, -75))
                 } else if (bot.id == information.bot2.name) {
-                    await bot.smartMove(offsetPosition(mainPoisios, 0, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["poisio", "bee"], offsetPosition(mainPoisios, 0, -75))
                 } else if (bot.id == information.bot3.name) {
-                    await bot.smartMove(offsetPosition(mainPoisios, 75, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["poisio", "bee"], offsetPosition(mainPoisios, 75, -75))
                 }
             }
         },
@@ -269,25 +269,25 @@ function prepareMage(bot: Mage) {
             equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await bot.smartMove(offsetPosition(desertlandPorcupines, -75, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["porcupine"], offsetPosition(desertlandPorcupines, -75, -75))
                 } else if (bot.id == information.bot2.name) {
-                    await bot.smartMove(offsetPosition(desertlandPorcupines, 0, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["porcupine"], offsetPosition(desertlandPorcupines, 0, -75))
                 } else if (bot.id == information.bot3.name) {
-                    await bot.smartMove(offsetPosition(desertlandPorcupines, 75, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["porcupine"], offsetPosition(desertlandPorcupines, 75, -75))
                 }
             },
         },
         rat: {
-            attack: async () => { await attackTheseTypesMage(bot, ["goo"], information.friends) },
+            attack: async () => { await attackTheseTypesMage(bot, ["rat"], information.friends) },
             attackWhileIdle: true,
             equipment: maxAttackSpeedEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await bot.smartMove({ map: "mansion", x: -240, y: -488 }, { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["rat"], { map: "mansion", x: -240, y: -488 })
                 } else if (bot.id == information.bot2.name) {
-                    await bot.smartMove({ map: "mansion", x: -223, y: -312 }, { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["rat"], { map: "mansion", x: -223, y: -312 })
                 } else if (bot.id == information.bot3.name) {
-                    await bot.smartMove({ map: "mansion", x: -223, y: -100 }, { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["rat"], { map: "mansion", x: -223, y: -100 })
                 }
             }
         },
@@ -297,11 +297,25 @@ function prepareMage(bot: Mage) {
             equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await goToNearestWalkableToMonster(bot, ["scorpion", "phoenix"], offsetPosition(mainScorpions, -75, -75), bot.range - 25)
+                    await goToNearestWalkableToMonster2(bot, ["scorpion", "phoenix"], offsetPosition(mainScorpions, -75, -75))
                 } else if (bot.id == information.bot2.name) {
-                    await goToNearestWalkableToMonster(bot, ["scorpion", "phoenix"], offsetPosition(mainScorpions, 0, -75), bot.range - 25)
+                    await goToNearestWalkableToMonster2(bot, ["scorpion", "phoenix"], offsetPosition(mainScorpions, 0, -75))
                 } else if (bot.id == information.bot3.name) {
-                    await goToNearestWalkableToMonster(bot, ["scorpion", "phoenix"], offsetPosition(mainScorpions, 75, -75), bot.range - 25)
+                    await goToNearestWalkableToMonster2(bot, ["scorpion", "phoenix"], offsetPosition(mainScorpions, 75, -75))
+                }
+            },
+        },
+        snake: {
+            attack: async () => { await attackTheseTypesMage(bot, ["snake", "osnake"], information.friends) },
+            attackWhileIdle: true,
+            equipment: maxAttackSpeedEquipment,
+            move: async () => {
+                if (bot.id == information.bot1.name) {
+                    await goToNearestWalkableToMonster2(bot, ["snake", "osnake"], offsetPosition(halloweenSafeSnakes, -75, -25))
+                } else if (bot.id == information.bot2.name) {
+                    await goToNearestWalkableToMonster2(bot, ["snake", "osnake"], offsetPosition(halloweenSafeSnakes, 0, -25))
+                } else if (bot.id == information.bot3.name) {
+                    await goToNearestWalkableToMonster2(bot, ["snake", "osnake"], offsetPosition(halloweenSafeSnakes, 75, -25))
                 }
             },
         },
@@ -317,11 +331,11 @@ function prepareMage(bot: Mage) {
             equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await bot.smartMove(offsetPosition(mainSquigs, -75, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["squig", "squigtoad", "phoenix"], offsetPosition(mainSquigs, -75, -75))
                 } else if (bot.id == information.bot2.name) {
-                    await bot.smartMove(offsetPosition(mainSquigs, 0, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["squig", "squigtoad", "phoenix"], offsetPosition(mainSquigs, 0, -75))
                 } else if (bot.id == information.bot3.name) {
-                    await bot.smartMove(offsetPosition(mainSquigs, 75, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["squig", "squigtoad", "phoenix"], offsetPosition(mainSquigs, 75, -75))
                 }
             }
         },
@@ -331,11 +345,11 @@ function prepareMage(bot: Mage) {
             equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await bot.smartMove(offsetPosition(mainSquigs, -75, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["squigtoad", "squig", "phoenix"], offsetPosition(mainSquigs, -75, -75))
                 } else if (bot.id == information.bot2.name) {
-                    await bot.smartMove(offsetPosition(mainSquigs, 0, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["squigtoad", "squig", "phoenix"], offsetPosition(mainSquigs, 0, -75))
                 } else if (bot.id == information.bot3.name) {
-                    await bot.smartMove(offsetPosition(mainSquigs, 75, -75), { useBlink: true })
+                    await goToNearestWalkableToMonster2(bot, ["squigtoad", "squig", "phoenix"], offsetPosition(mainSquigs, 75, -75))
                 }
             }
         },
@@ -377,7 +391,7 @@ function prepareMage(bot: Mage) {
             attack: async () => { await attackTheseTypesMage(bot, ["tortoise", "frog"], information.friends) },
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
-            move: async () => { await goToNearestWalkableToMonster(bot, ["tortoise", "frog"]) },
+            move: async () => { await goToNearestWalkableToMonster2(bot, ["tortoise", "frog"]) },
         },
         wabbit: {
             attack: async () => { return attackTheseTypesMage(bot, ["wabbit", "arcticbee", "bat", "bee", "boar", "cgoo", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "greenjr", "hen", "jr", "minimush", "osnake", "phoenix", "poisio", "rooster", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise"], information.friends) },
