@@ -1,6 +1,6 @@
 import AL, { IPosition, ItemName, Mage, Merchant, SlotType } from "alclient"
 import { goToNearestWalkableToMonster2, goToNPC, goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
-import { desertlandPorcupines, halloweenMiniMushes, halloweenSafeSnakes, mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrabXs, mainCrocs, mainGoos, mainPoisios, mainScorpions, mainSquigs, offsetPosition, offsetPositionParty, winterlandArcticBees } from "../base/locations.js"
+import { desertlandPorcupines, halloweenMiniMushes, halloweenSafeSnakes, mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrabXs, mainCrocs, mainGoos, mainPoisios, mainScorpions, mainSpiders, mainSquigs, offsetPosition, offsetPositionParty, winterlandArcticBees } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { getTargetServerFromPlayer } from "../base/serverhop.js"
@@ -338,6 +338,20 @@ function prepareMage(bot: Mage) {
             attackWhileIdle: true,
             equipment: maxAttackSpeedEquipment,
             move: async () => { await goToSpecialMonster(bot, "snowman") }
+        },
+        spider: {
+            attack: async () => { await attackTheseTypesMage(bot, ["spider", "phoenix"], information.friends) },
+            attackWhileIdle: true,
+            equipment: maxDamageEquipment,
+            move: async () => {
+                if (bot.id == information.bot1.name) {
+                    await goToNearestWalkableToMonster2(bot, ["spider", "phoenix"], offsetPosition(mainSpiders, -75, 75))
+                } else if (bot.id == information.bot2.name) {
+                    await goToNearestWalkableToMonster2(bot, ["spider", "phoenix"], offsetPosition(mainSpiders, 0, 75))
+                } else if (bot.id == information.bot3.name) {
+                    await goToNearestWalkableToMonster2(bot, ["spider", "phoenix"], offsetPosition(mainSpiders, 75, 75))
+                }
+            }
         },
         squig: {
             attack: async () => { await attackTheseTypesMage(bot, ["squig", "squigtoad", "phoenix"], information.friends) },
