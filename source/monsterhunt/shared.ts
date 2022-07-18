@@ -137,6 +137,7 @@ export async function startMage(bot: Mage, information: Information, strategy: S
                     for (const s in strategy[target].equipment) {
                         const slot = s as SlotType
                         const itemName = strategy[target].equipment[slot]
+                        if (!itemName) continue // No equipment for this strategy
                         const wType = bot.G.items[itemName].wtype
 
                         if (bot.slots[slot]?.name == itemName) {
