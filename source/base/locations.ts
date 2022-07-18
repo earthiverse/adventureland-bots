@@ -35,6 +35,7 @@ export const desertlandPorcupines: IPosition = { map: "desertland", x: -829, y: 
 export const desertlandScorpions: IPosition = { map: "desertland", x: 390.675, y: -1422.46 }
 
 // Halloween
+export const halloweenGreenJr: IPosition = { map: "halloween", x: -569, y: -511.5 }
 export const halloweenSafeSnakes: IPosition = { map: "halloween", x: 346.5, y: -747 }
 export const halloweenMiniMushes: IPosition = { map: "halloween", x: 16, y: 630.5 }
 export const halloweenXScorpions: IPosition = { map: "halloween", x: -485.5, y: 685.5 }

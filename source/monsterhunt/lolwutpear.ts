@@ -1,6 +1,6 @@
 import AL, { IPosition, ItemName, Mage, Merchant, SlotType } from "alclient"
 import { goToNearestWalkableToMonster2, goToNPC, goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
-import { desertlandPorcupines, halloweenMiniMushes, halloweenSafeSnakes, mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrabXs, mainCrocs, mainGoos, mainPoisios, mainScorpions, mainSpiders, mainSquigs, offsetPosition, offsetPositionParty, winterlandArcticBees } from "../base/locations.js"
+import { desertlandPorcupines, halloweenGreenJr, halloweenMiniMushes, halloweenSafeSnakes, mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrabXs, mainCrocs, mainGoos, mainPoisios, mainScorpions, mainSpiders, mainSquigs, offsetPosition, offsetPositionParty, winterlandArcticBees } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { getTargetServerFromPlayer } from "../base/serverhop.js"
@@ -233,6 +233,20 @@ function prepareMage(bot: Mage) {
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
             move: async () => { await goToSpecialMonster(bot, "mvampire") },
+        },
+        osnake: {
+            attack: async () => { await attackTheseTypesMage(bot, ["osnake", "snake"], information.friends) },
+            attackWhileIdle: true,
+            equipment: maxAttackSpeedEquipment,
+            move: async () => {
+                if (bot.id == information.bot1.name) {
+                    await goToNearestWalkableToMonster2(bot, ["osnake", "snake"], offsetPosition(halloweenGreenJr, 0, -100))
+                } else if (bot.id == information.bot2.name) {
+                    await goToNearestWalkableToMonster2(bot, ["osnake", "snake"], offsetPosition(halloweenSafeSnakes, 0, 0))
+                } else if (bot.id == information.bot3.name) {
+                    await goToNearestWalkableToMonster2(bot, ["osnake", "snake"], offsetPosition(halloweenSafeSnakes, 0, 100))
+                }
+            },
         },
         pinkgoo: {
             attack: async () => { await attackTheseTypesMage(bot, ["pinkgoo"], information.friends) },
