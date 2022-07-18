@@ -1400,7 +1400,7 @@ function prepareWarrior(bot: Warrior) {
             },
         },
         iceroamer: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["iceroamer"], information.friends) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["iceroamer"], information.friends, { disableAgitate: true, disableCleave: true }) },
             equipment: burnEquipment,
             move: async () => {
                 await goToPriestIfHurt(bot, information.bot1.bot)
