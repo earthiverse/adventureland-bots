@@ -110,8 +110,37 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                 try {
                     if (numAttempts == 5) reject(`We couldn't connect after ${numAttempts} attempts...`)
                     numAttempts += 1
-                    const newBot = (await Game.startCharacter(this.bot.id, region, id)) as Type
-                    this.changeBot(newBot)
+
+                    let newBot: PingCompensatedCharacter
+                    switch (this.bot.ctype) {
+                        case "mage": {
+                            newBot = new AL.Mage(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[region][id])
+                            break
+                        }
+                        case "paladin": {
+                            newBot = new AL.Paladin(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[region][id])
+                            break
+                        }
+                        case "priest": {
+                            newBot = new AL.Priest(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[region][id])
+                            break
+                        }
+                        case "ranger": {
+                            newBot = new AL.Ranger(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[region][id])
+                            break
+                        }
+                        case "rogue": {
+                            newBot = new AL.Rogue(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[region][id])
+                            break
+                        }
+                        case "warrior": {
+                            newBot = new AL.Warrior(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[region][id])
+                            break
+                        }
+                    }
+
+                    this.changeBot(newBot as Type)
+                    await this.bot.connect()
                 } catch (e) {
                     setTimeout(switchBots, 1000)
                 }
@@ -136,9 +165,38 @@ export class Strategist<Type extends PingCompensatedCharacter> {
     public async reconnect(): Promise<void> {
         this.bot.disconnect()
         try {
+            let newBot: PingCompensatedCharacter
+            switch (this.bot.ctype) {
+                case "mage": {
+                    newBot = new AL.Mage(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name])
+                    break
+                }
+                case "paladin": {
+                    newBot = new AL.Paladin(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name])
+                    break
+                }
+                case "priest": {
+                    newBot = new AL.Priest(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name])
+                    break
+                }
+                case "ranger": {
+                    newBot = new AL.Ranger(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name])
+                    break
+                }
+                case "rogue": {
+                    newBot = new AL.Rogue(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name])
+                    break
+                }
+                case "warrior": {
+                    newBot = new AL.Warrior(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name])
+                    break
+                }
+            }
+
+            this.changeBot(newBot as Type)
             await this.bot.connect()
-            this.changeBot(this.bot)
         } catch (e) {
+            this.bot.disconnect()
             console.error(e)
             const wait = /wait_(\d+)_second/.exec(e)
             if (wait && wait[1]) {

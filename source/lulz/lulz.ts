@@ -71,6 +71,8 @@ const sellStrategy = new SellStrategy({
         ["hpamulet", undefined],
         ["hpbelt", undefined],
         ["ringsj", undefined],
+        ["shield", undefined],
+        ["sshield", undefined],
         ["stinger", undefined],
         ["wcap", undefined],
         ["wshoes", undefined],
