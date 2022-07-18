@@ -660,7 +660,7 @@ export async function goMining(bot: Merchant): Promise<void> {
 
 export async function merchantSmartMove(bot: Merchant, location: IPosition | MapName | NPCName, options: SmartMoveOptions & { attackWhileMoving?: boolean} = {}) {
     bot.closeMerchantStand().catch((e) => { console.error(e) })
-    if (options.attackWhileMoving) {
+    if ((bot.isEquipped("dartgun") || bot.hasItem("dartgun")) && options.attackWhileMoving) {
         const promises: Promise<void>[] = []
         if (!bot.isEquipped("dartgun") && bot.hasItem("dartgun")) promises.push(bot.equip(bot.locateItem("dartgun", bot.items, { returnHighestLevel: true }), "mainhand"))
         if (!bot.isEquipped("wbook1") && bot.hasItem("wbook1")) promises.push(bot.equip(bot.locateItem("wbook1", bot.items, { returnHighestLevel: true }), "offhand"))
