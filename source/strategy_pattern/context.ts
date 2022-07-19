@@ -33,7 +33,7 @@ export interface Strategy<Type> {
 export class Strategist<Type extends PingCompensatedCharacter> {
     public bot: Type
 
-    private strategies: Strategy<Type>[] = []
+    private strategies = new Set<Strategy<Type>>()
     private loops: Loops<Type> = new Map<LoopName, Loop<Type>>()
     private stopped = false
     private timeouts = new Map<LoopName, NodeJS.Timeout>()
@@ -45,7 +45,8 @@ export class Strategist<Type extends PingCompensatedCharacter> {
 
     public applyStrategy(strategy: Strategy<Type>) {
         if (!strategy) return // No strategy
-        this.strategies.push(strategy)
+        if (this.strategies.has(strategy)) return // We already have this strategy applied
+        this.strategies.add(strategy)
 
         if (strategy.onApply) strategy.onApply(this.bot)
 
@@ -151,6 +152,8 @@ export class Strategist<Type extends PingCompensatedCharacter> {
     }
 
     public removeStrategy(strategy: Strategy<Type>) {
+        if (!this.strategies.has(strategy)) return // We don't have this strategy enabled
+
         if (strategy.loops) {
             for (const [loopName] of strategy.loops) {
                 this.stopLoop(loopName)
@@ -158,8 +161,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         }
         if (strategy.onRemove) strategy.onRemove(this.bot)
 
-        const index = this.strategies.indexOf(strategy)
-        if (index >= 0) this.strategies.splice(this.strategies.indexOf(strategy), 1)
+        this.strategies.delete(strategy)
     }
 
     public async reconnect(): Promise<void> {
