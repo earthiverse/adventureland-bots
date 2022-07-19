@@ -40,7 +40,7 @@ export class GoGiveRogueSpeedStrategy<Type extends Rogue> implements Strategy<Ty
         const player = await getPlayerWithoutRSpeed(bot)
         if (!player) return
         console.log(`Moving to rspeed '${player.name}'.`)
-        await bot.smartMove(player, { avoidTownWarps: true })
+        await bot.smartMove(player, { avoidTownWarps: true }).catch(/** Suppress errors */)
         await bot.requestEntitiesData()
     }
 }
