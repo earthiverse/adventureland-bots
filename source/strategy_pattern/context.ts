@@ -1,4 +1,4 @@
-import AL, { Game, PingCompensatedCharacter, ServerIdentifier, ServerRegion, SkillName } from "alclient"
+import AL, { PingCompensatedCharacter, ServerIdentifier, ServerRegion, SkillName } from "alclient"
 
 export type Loop<Type> = {
     fn: (bot: Type) => Promise<void>,

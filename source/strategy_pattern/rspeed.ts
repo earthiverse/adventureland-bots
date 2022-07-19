@@ -1,5 +1,6 @@
 import AL, { ItemName, LimitDCReportData, PingCompensatedCharacter, Rogue } from "alclient"
 import { Loop, LoopName, Strategist, Strategy } from "./context.js"
+import { suppress_errors } from "./logging.js"
 import { BaseAttackStrategy } from "./strategies/attack.js"
 import { BaseStrategy } from "./strategies/base.js"
 import { BuyStrategy } from "./strategies/buy.js"
@@ -40,7 +41,7 @@ export class GoGiveRogueSpeedStrategy<Type extends Rogue> implements Strategy<Ty
         const player = await getPlayerWithoutRSpeed(bot)
         if (!player) return
         console.log(`Moving to rspeed '${player.name}'.`)
-        await bot.smartMove(player, { avoidTownWarps: true }).catch(/** Suppress errors */)
+        await bot.smartMove(player, { avoidTownWarps: true }).catch(suppress_errors)
         await bot.requestEntitiesData()
     }
 }
