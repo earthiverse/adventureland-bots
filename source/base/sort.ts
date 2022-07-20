@@ -32,13 +32,15 @@ export function sortFurthestDistance(from: Character) {
     }
 }
 
-export function sortPriority(bot: Character, types: MonsterName[]) {
+export function sortPriority(bot: Character, types?: MonsterName[]) {
     return (a: Entity, b: Entity): boolean => {
         // Order in array
-        const a_index = types.indexOf(a.type)
-        const b_index = types.indexOf(b.type)
-        if (a_index < b_index) return true
-        else if (a_index > b_index) return false
+        if (types?.length) {
+            const a_index = types.indexOf(a.type)
+            const b_index = types.indexOf(b.type)
+            if (a_index < b_index) return true
+            else if (a_index > b_index) return false
+        }
 
         // Has a target -> higher priority
         if (a.target && !b.target) return true
