@@ -915,6 +915,7 @@ export async function startWarrior(bot: Warrior, information: Information, strat
                     for (const s in strategy[target].equipment) {
                         const slot = s as SlotType
                         const itemName = strategy[target].equipment[slot]
+                        if (itemName == undefined) continue // We aren't equipping anything in this slot
                         const wType = bot.G.items[itemName].wtype
 
                         if (bot.slots[slot]?.name == itemName) {
