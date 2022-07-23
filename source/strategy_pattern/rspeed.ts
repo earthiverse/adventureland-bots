@@ -127,12 +127,11 @@ async function startRspeedRogue(context: Strategist<Rogue>) {
 
     let lastStrategy: Strategy<Character> = undefined
     const setMoveStrategy = (strategy: Strategy<Character>) => {
+        if (strategy !== lastStrategy) context.removeStrategy(lastStrategy)
         lastStrategy = strategy
         context.applyStrategy(strategy)
     }
     setInterval(async () => {
-        context.removeStrategy(lastStrategy)
-
         // Move to sell items
         if (context.bot.isFull()) {
             setMoveStrategy(goSellThingsStrategy)
