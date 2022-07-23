@@ -926,15 +926,15 @@ export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName
         transport: 9999
     }
 
-    let lastD = 0
+    let lastD: number
     for (const target of targets) {
         const d = AL.Tools.distance(bot, target)
-        if (d < bot.range) {
+        if (d <= bot.range) {
             lastD = d
             continue
         }
 
-        if (lastD) {
+        if (lastD !== undefined) {
             // We're in range of one or more monsters, move as much as we can to the next monster without going outside of the attack range of all existing monsters
             bot.smartMove(target, { avoidTownWarps: true, costs: costs, getWithin: d - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         } else {

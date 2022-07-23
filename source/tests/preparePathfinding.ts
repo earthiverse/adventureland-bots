@@ -26,6 +26,17 @@ async function run() {
 
     console.log(Pathfinder.locateMonster("goo"))
 
+    console.log(Pathfinder.canWalkPath({
+        map: "winterland",
+        x: 633.5863705515645,
+        y: 43.07499775832615
+    },
+    {
+        map: "winterland",
+        x: 867.5648224081189,
+        y: -89.23400075771264
+    }))
+
     const now1 = performance.now()
     await Pathfinder.getPath({ map: "main", x: 0, y: 0 }, { map: "spookytown", x: 0, y: 0 })
     console.log(`Took ${performance.now() - now1}ms to perform the search from main to spookytown.`)
