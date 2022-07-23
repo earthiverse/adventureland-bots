@@ -14,6 +14,7 @@ async function getPlayerWithoutRSpeed(bot: PingCompensatedCharacter) {
     try {
         const noSpeedChars = await AL.PlayerModel.find({
             lastSeen: { $gt: Date.now() - 60_000 },
+            name: { $ne: bot.id },
             "s.rspeed": undefined,
             serverIdentifier: bot.server.name, serverRegion: bot.server.region,
         }).lean().exec()
