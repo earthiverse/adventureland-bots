@@ -1,4 +1,4 @@
-import AL, { ItemName, LimitDCReportData, PingCompensatedCharacter, Rogue } from "alclient"
+import AL, { Character, ItemName, LimitDCReportData, PingCompensatedCharacter, Rogue } from "alclient"
 import { Loop, LoopName, Strategist, Strategy } from "./context.js"
 import { suppress_errors } from "./logging.js"
 import { BaseAttackStrategy } from "./strategies/attack.js"
@@ -125,27 +125,30 @@ async function startRspeedRogue(context: Strategist<Rogue>) {
     context.applyStrategy(sellStrategy)
     context.applyStrategy(respawnStrategy)
 
+    let lastStrategy: Strategy<Character> = undefined
+    const setMoveStrategy = (strategy: Strategy<Character>) => {
+        lastStrategy = strategy
+        context.applyStrategy(strategy)
+    }
     setInterval(async () => {
+        context.removeStrategy(lastStrategy)
+
         // Move to sell items
         if (context.bot.isFull()) {
-            context.applyStrategy(goSellThingsStrategy)
+            setMoveStrategy(goSellThingsStrategy)
             return
-        } else {
-            context.removeStrategy(goSellThingsStrategy)
         }
 
         // Move to give rspeed to someone
         if (context.bot.canUse("rspeed")) {
             const shouldGo = await getPlayerWithoutRSpeed(context.bot)
             if (shouldGo) {
-                context.applyStrategy(goGiveRogueSpeedStrategy)
+                setMoveStrategy(goGiveRogueSpeedStrategy)
                 return
-            } else {
-                context.removeStrategy(goGiveRogueSpeedStrategy)
             }
         }
 
         // Move to attack bees
-        context.applyStrategy(moveStrategy)
+        setMoveStrategy(moveStrategy)
     }, 5000)
 }
