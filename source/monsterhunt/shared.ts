@@ -81,7 +81,7 @@ export async function getTarget(bot: Character, strategy: Strategy, information:
 }
 
 export async function startMage(bot: Mage, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[], defaultRegion = DEFAULT_REGION, defaultIdentifier = DEFAULT_IDENTIFIER): Promise<void> {
-    startShared(bot, strategy, information, partyLeader, partyMembers, defaultRegion, defaultIdentifier)
+    await startShared(bot, strategy, information, partyLeader, partyMembers, defaultRegion, defaultIdentifier)
 
     bot.socket.on("cm", async (data: CMData) => {
         if (partyMembers.includes(data.name)) {
@@ -194,11 +194,11 @@ export async function startMage(bot: Mage, information: Information, strategy: S
         }
         bot.timeouts.set("attackLoop", setTimeout(attackLoop, calculateAttackLoopCooldown(bot)))
     }
-    attackLoop()
+    attackLoop().catch(console.error)
 }
 
 export async function startMerchant(bot: Merchant, information: Information, strategy: Strategy, standPlace: IPosition, partyLeader: string, partyMembers: string[], defaultRegion = DEFAULT_REGION, defaultIdentifier = DEFAULT_IDENTIFIER): Promise<void> {
-    startShared(bot, strategy, information, partyLeader, partyMembers, defaultRegion, defaultIdentifier)
+    await startShared(bot, strategy, information, partyLeader, partyMembers, defaultRegion, defaultIdentifier)
     startBuyFriendsReplenishablesLoop(bot, information.friends)
     startMluckLoop(bot)
     startPartyLoop(bot, bot.id)
@@ -290,7 +290,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
         }
         bot.timeouts.set("attackLoop", setTimeout(attackLoop, calculateAttackLoopCooldown(bot)))
     }
-    attackLoop()
+    attackLoop().catch(console.error)
 
     async function moveLoop() {
         try {
@@ -436,7 +436,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
 
         bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
     }
-    moveLoop()
+    moveLoop().catch(console.error)
 
     async function merchantLoop() {
         try {
@@ -477,12 +477,12 @@ export async function startMerchant(bot: Merchant, information: Information, str
         }
         bot.timeouts.set("merchantLoop", setTimeout(merchantLoop, LOOP_MS))
     }
-    merchantLoop()
+    merchantLoop().catch(console.error)
 }
 
 
 export async function startPaladin(bot: Paladin, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[], defaultRegion = DEFAULT_REGION, defaultIdentifier = DEFAULT_IDENTIFIER): Promise<void> {
-    startShared(bot, strategy, information, partyLeader, partyMembers, defaultRegion, defaultIdentifier)
+    await startShared(bot, strategy, information, partyLeader, partyMembers, defaultRegion, defaultIdentifier)
 
     const idleTargets: MonsterName[] = []
     for (const t in strategy) {
@@ -575,11 +575,11 @@ export async function startPaladin(bot: Paladin, information: Information, strat
         }
         bot.timeouts.set("attackLoop", setTimeout(attackLoop, calculateAttackLoopCooldown(bot)))
     }
-    attackLoop()
+    attackLoop().catch(console.error)
 }
 
 export async function startPriest(bot: Priest, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[], defaultRegion = DEFAULT_REGION, defaultIdentifier = DEFAULT_IDENTIFIER): Promise<void> {
-    startShared(bot, strategy, information, partyLeader, partyMembers, defaultRegion, defaultIdentifier)
+    await startShared(bot, strategy, information, partyLeader, partyMembers, defaultRegion, defaultIdentifier)
     startDarkBlessingLoop(bot)
     startPartyHealLoop(bot, information.friends)
 
@@ -674,11 +674,11 @@ export async function startPriest(bot: Priest, information: Information, strateg
         }
         bot.timeouts.set("attackLoop", setTimeout(attackLoop, calculateAttackLoopCooldown(bot)))
     }
-    attackLoop()
+    attackLoop().catch(console.error)
 }
 
 export async function startRanger(bot: Ranger, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[], defaultRegion = DEFAULT_REGION, defaultIdentifier = DEFAULT_IDENTIFIER): Promise<void> {
-    startShared(bot, strategy, information, partyLeader, partyMembers, defaultRegion, defaultIdentifier)
+    await startShared(bot, strategy, information, partyLeader, partyMembers, defaultRegion, defaultIdentifier)
 
     const idleTargets: MonsterName[] = []
     for (const t in strategy) {
@@ -771,11 +771,11 @@ export async function startRanger(bot: Ranger, information: Information, strateg
         }
         bot.timeouts.set("attackLoop", setTimeout(attackLoop, calculateAttackLoopCooldown(bot)))
     }
-    attackLoop()
+    attackLoop().catch(console.error)
 }
 
 export async function startRogue(bot: Rogue, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[], defaultRegion = DEFAULT_REGION, defaultIdentifier = DEFAULT_IDENTIFIER): Promise<void> {
-    startShared(bot, strategy, information, partyLeader, partyMembers, defaultRegion, defaultIdentifier)
+    await startShared(bot, strategy, information, partyLeader, partyMembers, defaultRegion, defaultIdentifier)
 
     startRSpeedLoop(bot, { enableGiveToStrangers: true })
 
@@ -870,11 +870,11 @@ export async function startRogue(bot: Rogue, information: Information, strategy:
         }
         bot.timeouts.set("attackLoop", setTimeout(attackLoop, calculateAttackLoopCooldown(bot)))
     }
-    attackLoop()
+    attackLoop().catch(console.error)
 }
 
-export async function startWarrior(bot: Warrior, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[], defaultRegion = DEFAULT_REGION, defaultIdentifier = DEFAULT_IDENTIFIER): Promise<void> {
-    startShared(bot, strategy, information, partyLeader, partyMembers, defaultRegion, defaultIdentifier)
+export async function startWarrior(bot: Warrior, information: Information, strategy: Strategy, partyLeader: string, partyMembers: string[], defaultRegion = DEFAULT_REGION, defaultIdentifier = DEFAULT_IDENTIFIER) {
+    await startShared(bot, strategy, information, partyLeader, partyMembers, defaultRegion, defaultIdentifier)
 
     startChargeLoop(bot)
     startHardshellLoop(bot)
@@ -972,10 +972,10 @@ export async function startWarrior(bot: Warrior, information: Information, strat
         }
         bot.timeouts.set("attackLoop", setTimeout(attackLoop, calculateAttackLoopCooldown(bot)))
     }
-    attackLoop()
+    attackLoop().catch(console.error)
 }
 
-export async function startShared(bot: Character, strategy: Strategy, information: Information, partyLeader: string, partyMembers: string[], defaultRegion = DEFAULT_REGION, defaultIdentifier = DEFAULT_IDENTIFIER): Promise<void> {
+export async function startShared(bot: Character, strategy: Strategy, information: Information, partyLeader: string, partyMembers: string[], defaultRegion = DEFAULT_REGION, defaultIdentifier = DEFAULT_IDENTIFIER) {
     const magiporters = new Set(["Bjarny", "Clarity", ...partyMembers])
     bot.socket.on("magiport", async (data: { name: string }) => {
         if (magiporters.has(data.name)) {
@@ -1102,7 +1102,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
             }
             bot.timeouts.set("moveLoop", setTimeout(moveLoop, LOOP_MS * 2))
         }
-        moveLoop()
+        moveLoop().catch(console.error)
     }
 
     async function targetLoop(): Promise<void> {
@@ -1111,19 +1111,19 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
 
             const newTarget = await getTarget(bot, strategy, information)
             if (bot.id == information.bot1.name) {
-                if (newTarget !== information.bot1.target) bot.stopSmartMove()
+                if (newTarget !== information.bot1.target) bot.stopSmartMove().catch(() => { /** Suppress */ })
                 if (newTarget !== information.bot1.target) console.log(`changing ${information.bot1.name}'s target from ${information.bot1.target} to ${newTarget}`)
                 information.bot1.target = newTarget
             } else if (bot.id == information.bot2.name) {
-                if (newTarget !== information.bot2.target) bot.stopSmartMove()
+                if (newTarget !== information.bot2.target) bot.stopSmartMove().catch(() => { /** Suppress */ })
                 if (newTarget !== information.bot2.target) console.log(`changing ${information.bot2.name}'s target from ${information.bot2.target} to ${newTarget}`)
                 information.bot2.target = newTarget
             } else if (bot.id == information.bot3.name) {
-                if (newTarget !== information.bot3.target) bot.stopSmartMove()
+                if (newTarget !== information.bot3.target) bot.stopSmartMove().catch(() => { /** Suppress */ })
                 if (newTarget !== information.bot3.target) console.log(`changing ${information.bot3.name}'s target from ${information.bot3.target} to ${newTarget}`)
                 information.bot3.target = newTarget
             } else if (bot.id == information.merchant.target) {
-                if (newTarget !== information.merchant.target) bot.stopSmartMove()
+                if (newTarget !== information.merchant.target) bot.stopSmartMove().catch(() => { /** Suppress */ })
                 if (newTarget !== information.merchant.target) console.log(`changing ${information.merchant.name}'s target from ${information.merchant.target} to ${newTarget}`)
                 information.merchant.target = newTarget
             }

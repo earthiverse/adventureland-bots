@@ -36,7 +36,7 @@ export class DisconnectOnCommandStrategy implements Strategy<Character> {
     public onApply(bot: Character) {
         this.onCodeEval = async (data: string) => {
             if (data == "stop" || data == "disconnect") {
-                stopLulzCharacter(bot.characterID)
+                stopLulzCharacter(bot.characterID).catch(console.error)
             }
         }
 
@@ -116,12 +116,6 @@ export async function startLulzCharacter(type: CharacterType, userID: string, us
     CHARACTERS.push(bot)
 
     addSocket(bot.id, bot.socket)
-
-    bot.socket.on("code_eval", (data) => {
-        if (data == "stop" || data == "disconnect") {
-            stopLulzCharacter(characterID)
-        }
-    })
 
     const context = new Strategist(bot, baseStrategy)
     CONTEXTS.push(context)

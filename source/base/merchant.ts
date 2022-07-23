@@ -81,7 +81,7 @@ export async function attackTheseTypesMerchant(bot: Merchant, types: MonsterName
             const zapper: number = bot.locateItem("zapper", bot.items, { returnHighestLevel: true })
             if (bot.isEquipped("zapper") || (zapper !== undefined)) {
                 // Equip zapper
-                if (zapper !== undefined) bot.equip(zapper, "ring1")
+                if (zapper !== undefined) bot.equip(zapper, "ring1").catch(console.error)
 
                 // Zap
                 const promises: Promise<unknown>[] = []
@@ -120,7 +120,7 @@ export async function attackTheseTypesMerchant(bot: Merchant, types: MonsterName
                 const zapper: number = bot.locateItem("zapper", bot.items, { returnHighestLevel: true })
                 if (bot.isEquipped("zapper") || (zapper !== undefined)) {
                     // Equip zapper
-                    if (zapper !== undefined) bot.equip(zapper, "ring1")
+                    if (zapper !== undefined) bot.equip(zapper, "ring1").catch(console.error)
 
                     // Zap
                     const promises: Promise<unknown>[] = []
@@ -341,13 +341,13 @@ export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOL
 
             const pack = `items${Math.floor(i / 42)}` as Exclude<BankPackName, "gold">
             const slot = i % 42
-            bot.withdrawItem(pack, slot)
+            bot.withdrawItem(pack, slot).catch(console.error)
             continue
         }
 
         const pack = `items${Math.floor(i / 42)}` as Exclude<BankPackName, "gold">
         const slot = i % 42
-        bot.withdrawItem(pack, slot)
+        bot.withdrawItem(pack, slot).catch(console.error)
         freeSpaces--
     }
 
@@ -560,7 +560,7 @@ export async function goFishing(bot: Merchant): Promise<void> {
     if (!bot.canUse("fishing", { ignoreEquipped: true })) return
     if (!bot.hasItem("rod") && !bot.isEquipped("rod")) {
         if (bot.esize <= 3) return // We don't have space to craft a rod
-        bot.closeMerchantStand()
+        bot.closeMerchantStand().catch(console.error)
 
         // Do banking, but get spider silk, too
         if (!bot.hasItem("spidersilk")) {
@@ -610,7 +610,7 @@ export async function goMining(bot: Merchant): Promise<void> {
     if (!bot.canUse("mining", { ignoreEquipped: true })) return
     if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe")) {
         if (bot.esize <= 4) return // We don't have space to craft a pickaxe
-        bot.closeMerchantStand()
+        bot.closeMerchantStand().catch(console.error)
 
         // Do banking, but get spider silk, too
         if (!bot.hasItem("spidersilk")) {
@@ -702,5 +702,5 @@ export function startMluckLoop(bot: Merchant): void {
 
         bot.timeouts.set("mluckLoop", setTimeout(mluckLoop, LOOP_MS))
     }
-    mluckLoop()
+    mluckLoop().catch(console.error)
 }

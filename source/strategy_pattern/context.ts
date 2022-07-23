@@ -81,7 +81,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                         }
                     }
                 }
-                newLoop()
+                newLoop().catch(console.error)
             }
         }
     }
@@ -90,7 +90,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         for (const strategy of strategies) this.applyStrategy(strategy)
     }
 
-    public async changeBot(newBot: Type) {
+    public changeBot(newBot: Type) {
         this.bot = newBot
         this.bot.socket.on("disconnect", () => this.reconnect())
 
@@ -102,16 +102,12 @@ export class Strategist<Type extends PingCompensatedCharacter> {
     }
 
     public async changeServer(region: ServerRegion, id: ServerIdentifier) {
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<void>((resolve) => {
             // Disconnect the bot (this will remove the disconnect listener, too)
             this.bot.disconnect()
 
-            let numAttempts = 0
             const switchBots = async () => {
                 try {
-                    if (numAttempts == 5) reject(`We couldn't connect after ${numAttempts} attempts...`)
-                    numAttempts += 1
-
                     let newBot: PingCompensatedCharacter
                     switch (this.bot.ctype) {
                         case "mage": {
@@ -147,7 +143,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                 }
                 resolve()
             }
-            switchBots()
+            switchBots().catch(console.error)
         })
     }
 
@@ -166,6 +162,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
 
     public async reconnect(): Promise<void> {
         this.bot.disconnect()
+
         try {
             let newBot: PingCompensatedCharacter
             switch (this.bot.ctype) {
