@@ -13,22 +13,29 @@ async function run() {
     const ranger = await AL.Game.startRanger("earthiverse", "US", "III")
     const rangerContext = new Strategist(ranger, baseStrategy)
 
-    const strategy = new BaseAttackStrategy({ characters: [], typeList: ["goo"] })
-    rangerContext.applyStrategy(strategy)
+    const baseAttackStrategy = new BaseAttackStrategy({ characters: [], typeList: ["goo"] })
+    rangerContext.applyStrategy(baseAttackStrategy)
 
+    const getMonsterHuntStrategy = new GetMonsterHuntStrategy()
+    const finishMonsterHuntStrategy = new FinishMonsterHuntStrategy()
+
+    // Movement
     setInterval(async () => {
         // Get Monster Hunt
         if (!ranger.s.monsterhunt) {
-            rangerContext.applyStrategy(new GetMonsterHuntStrategy())
+            rangerContext.applyStrategy(getMonsterHuntStrategy)
             return
         }
 
         // Finish Monster Hunt
         if (ranger.s.monsterhunt && ranger.s.monsterhunt.c == 0) {
-            rangerContext.applyStrategy(new FinishMonsterHuntStrategy())
+            rangerContext.applyStrategy(finishMonsterHuntStrategy)
             return
         }
+    }, 1000)
 
+    // Attack
+    setInterval(async () => {
         // Do Monster Hunt
         if (["bat", "bee", "crab", "goo", "poisio", "tortoise"].includes(ranger.s.monsterhunt.id)) {
             rangerContext.applyStrategy(new BaseAttackStrategy({ characters: [], typeList: [ranger.s.monsterhunt.id] }))
@@ -39,4 +46,4 @@ async function run() {
         rangerContext.applyStrategy(new BaseAttackStrategy({ characters: [], typeList: ["goo"] }))
     }, 1000)
 }
-run()
+run().catch(console.error)

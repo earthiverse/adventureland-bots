@@ -63,22 +63,24 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                 this.loops.set(name, fn)
 
                 const newLoop = async () => {
+                    // Run the loop
                     try {
                         const loop = this.loops.get(name)
                         if (!loop || this.stopped) return // Stop the loop
-                        await loop.fn(this.bot) // Run the loop
+                        if (this.bot.ready) {
+                            await loop.fn(this.bot) // Run the loop function
+                        }
                     } catch (e) {
                         console.error(e)
                     }
-                    if (!this.stopped) {
-                        const loop = this.loops.get(name)
-                        if (loop) {
-                            if (typeof loop.interval == "number") this.timeouts.set(name, setTimeout(newLoop, loop.interval)) // Continue the loop
-                            else if (Array.isArray(loop.interval)) {
-                                const cooldown = Math.max(50, Math.min(...loop.interval.map((skill) => this.bot.getCooldown(skill))))
-                                this.timeouts.set(name, setTimeout(newLoop, cooldown)) // Continue the loop
-                            }
-                        }
+
+                    // Setup the next run
+                    const loop = this.loops.get(name)
+                    if (!loop || this.stopped) return // Stop the loop
+                    if (typeof loop.interval == "number") this.timeouts.set(name, setTimeout(newLoop, loop.interval)) // Continue the loop
+                    else if (Array.isArray(loop.interval)) {
+                        const cooldown = Math.max(50, Math.min(...loop.interval.map((skill) => this.bot.getCooldown(skill))))
+                        this.timeouts.set(name, setTimeout(newLoop, cooldown)) // Continue the loop
                     }
                 }
                 newLoop().catch(console.error)

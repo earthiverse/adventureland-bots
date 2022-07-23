@@ -136,4 +136,4 @@ async function run() {
         }
     }, 1000)
 }
-run()
+run().catch(console.error)

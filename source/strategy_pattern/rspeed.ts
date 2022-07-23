@@ -41,7 +41,7 @@ export class GoGiveRogueSpeedStrategy<Type extends Rogue> implements Strategy<Ty
         const player = await getPlayerWithoutRSpeed(bot)
         if (!player) return
         console.log(`Moving to rspeed '${player.name}'.`)
-        await bot.smartMove(player, { avoidTownWarps: true }).catch(suppress_errors)
+        await bot.smartMove(player, { avoidTownWarps: true, getWithin: 25 }).catch(suppress_errors)
         await bot.requestEntitiesData()
     }
 }
@@ -68,17 +68,17 @@ async function run() {
 
     const rogue1 = await AL.Game.startRogue("attackRog", "US", "I")
     const context1 = new Strategist<Rogue>(rogue1, baseStrategy)
-    startRspeedRogue(context1)
+    startRspeedRogue(context1).catch(console.error)
 
     const rogue2 = await AL.Game.startRogue("attackRog2", "US", "II")
     const context2 = new Strategist<Rogue>(rogue2, baseStrategy)
-    startRspeedRogue(context2)
+    startRspeedRogue(context2).catch(console.error)
 
     const rogue3 = await AL.Game.startRogue("attackRog3", "US", "III")
     const context3 = new Strategist<Rogue>(rogue3, baseStrategy)
-    startRspeedRogue(context3)
+    startRspeedRogue(context3).catch(console.error)
 }
-run()
+run().catch(console.error)
 
 const moveStrategy = new BasicMoveStrategy(["bee"])
 const goGiveRogueSpeedStrategy = new GoGiveRogueSpeedStrategy()
