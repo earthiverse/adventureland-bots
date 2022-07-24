@@ -536,7 +536,7 @@ export async function goGetRspeedBuff(bot: Character, msToWait = 10000): Promise
     const friendlyRogue = friendlyRogues[closest]
 
     if (friendlyRogue) {
-        if (bot.ctype == "merchant") (bot as Merchant).closeMerchantStand().catch()
+        if (bot.ctype == "merchant") (bot as Merchant).closeMerchantStand().catch(console.error)
         await bot.smartMove(friendlyRogue, { getWithin: 20, stopIfTrue: () => bot.s.rspeed !== undefined, useBlink: true })
         if (["earthRog"].includes(friendlyRogue.id)) return // Don't remove earthRog from the list, they're probably just low MP
 
@@ -928,7 +928,7 @@ export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName
 
     let lastD: number
     for (const target of targets) {
-        const d = AL.Tools.distance(bot, target)
+        const d = AL.Tools.distance({ x: bot.x, y: bot.y }, { x: target.x, y: target.x })
         if (d <= bot.range) {
             lastD = d
             continue
@@ -1026,13 +1026,13 @@ export function requestMagiportService(bot: Character, targetLocation: IPosition
         for (const player of players) {
             if (AL.Tools.distance(targetLocation, player) > within) continue // They're too far away from the target
 
-            if (["Bjarny", "lolwutpear", "shoopdawhoop", "ytmnd", "facilitating", "gratuitously", "hypothesized"].includes(player.name)) bot.sendCM([player.name], "magiport")
-            else if (player.name == "Clarity") bot.sendCM([player.name], "magiport_please_dad")
+            if (["Bjarny", "lolwutpear", "shoopdawhoop", "ytmnd", "facilitating", "gratuitously", "hypothesized"].includes(player.name)) bot.sendCM([player.name], "magiport").catch(console.error)
+            else if (player.name == "Clarity") bot.sendCM([player.name], "magiport_please_dad").catch(console.error)
 
             // Don't request too many because of call code cost
             if (numRequested++ > 3) break
         }
-    })
+    }).catch(console.error)
 }
 
 const lastCheck = new Map<string, number>()
