@@ -917,7 +917,7 @@ export async function goToNearestWalkableToMonster(bot: Character, types: Monste
 }
 
 export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName[], defaultPosition?: IPosition): void {
-    const targets = bot.getEntities({ canDamage: true, couldGiveCredit: true, typeList: types, willBurnToDeath: false, willDieToProjectiles: false })
+    const targets = bot.getEntities({ canDamage: true, canWalkTo: true, couldGiveCredit: true, typeList: types, willBurnToDeath: false, willDieToProjectiles: false })
     targets.sort(sortClosestDistance(bot))
 
     const costs = {
@@ -960,14 +960,14 @@ export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName
     } else if (!bot.smartMoving) {
         // No targets nearby, move to spawn
         if (defaultPosition) {
-            bot.smartMove(offsetPositionParty(defaultPosition, bot), { resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(defaultPosition, bot), { resolveOnFinalMoveStart: true, useBlink: true }).catch(() => { /** Suppress Error */ })
         } else {
             const locations: IPosition[] = []
             for (const type of types) {
                 locations.push(...Pathfinder.locateMonster(type))
             }
             locations.sort(sortClosestDistance(bot))
-            bot.smartMove(offsetPositionParty(locations[0], bot), { resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(locations[0], bot), { resolveOnFinalMoveStart: true, useBlink: true }).catch(() => { /** Suppress Error */ })
         }
     }
 }
