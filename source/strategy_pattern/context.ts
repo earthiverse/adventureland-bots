@@ -205,11 +205,11 @@ export class Strategist<Type extends PingCompensatedCharacter> {
             console.error(e)
             const wait = /wait_(\d+)_second/.exec(e)
             if (wait && wait[1]) {
-                setTimeout(this.reconnect.bind(this), 2000 + Number.parseInt(wait[1]) * 1000)
+                setTimeout(() => this.reconnect(), 2000 + Number.parseInt(wait[1]) * 1000)
             } else if (/limits/.test(e)) {
-                setTimeout(this.reconnect.bind(this), AL.Constants.RECONNECT_TIMEOUT_MS)
+                setTimeout(() => this.reconnect(), AL.Constants.RECONNECT_TIMEOUT_MS)
             } else {
-                setTimeout(this.reconnect.bind(this), 10000)
+                setTimeout(() => this.reconnect(), 10000)
             }
         }
     }
