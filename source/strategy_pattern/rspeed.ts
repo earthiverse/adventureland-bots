@@ -11,17 +11,13 @@ import { SellStrategy } from "./strategies/sell.js"
 import { TrackerStrategy } from "./strategies/tracker.js"
 
 async function getPlayerWithoutRSpeed(bot: PingCompensatedCharacter) {
-    try {
-        const noSpeedChars = await AL.PlayerModel.find({
-            lastSeen: { $gt: Date.now() - 60_000 },
-            name: { $ne: bot.id },
-            "s.rspeed": undefined,
-            serverIdentifier: bot.server.name, serverRegion: bot.server.region,
-        }).lean().exec()
-        return noSpeedChars[0]
-    } catch (e) {
-        console.error(e)
-    }
+    const noSpeedChars = await AL.PlayerModel.find({
+        lastSeen: { $gt: Date.now() - 60_000 },
+        name: { $ne: bot.id },
+        "s.rspeed": undefined,
+        serverIdentifier: bot.server.name, serverRegion: bot.server.region,
+    }).lean().exec().catch(console.error)
+    return noSpeedChars[0]
 }
 
 export class GoGiveRogueSpeedStrategy<Type extends Rogue> implements Strategy<Type> {
@@ -126,16 +122,10 @@ async function startRspeedRogue(context: Strategist<Rogue>) {
     context.applyStrategy(sellStrategy)
     context.applyStrategy(respawnStrategy)
 
-    let lastStrategy: Strategy<Character> = moveStrategy
-    const setMoveStrategy = (strategy: Strategy<Character>) => {
-        if (strategy !== lastStrategy) context.removeStrategy(lastStrategy)
-        lastStrategy = strategy
-        context.applyStrategy(strategy)
-    }
     setInterval(async () => {
         // Move to sell items
         if (context.bot.isFull()) {
-            setMoveStrategy(goSellThingsStrategy)
+            context.applyStrategy(goSellThingsStrategy)
             return
         }
 
@@ -143,12 +133,12 @@ async function startRspeedRogue(context: Strategist<Rogue>) {
         if (context.bot.canUse("rspeed")) {
             const shouldGo = await getPlayerWithoutRSpeed(context.bot)
             if (shouldGo) {
-                setMoveStrategy(goGiveRogueSpeedStrategy)
+                context.applyStrategy(goGiveRogueSpeedStrategy)
                 return
             }
         }
 
         // Move to attack bees
-        setMoveStrategy(moveStrategy)
+        context.applyStrategy(moveStrategy)
     }, 5000)
 }
