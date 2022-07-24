@@ -928,7 +928,7 @@ export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName
 
     let lastD: number
     for (const target of targets) {
-        const d = AL.Tools.distance({ x: bot.x, y: bot.y }, { x: target.x, y: target.x })
+        const d = AL.Tools.distance({ x: bot.x, y: bot.y }, { x: target.x, y: target.y })
         if (d <= bot.range) {
             lastD = d
             continue
