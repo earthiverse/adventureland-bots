@@ -138,8 +138,8 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                         }
                     }
 
+                    await newBot.connect()
                     this.changeBot(newBot as Type)
-                    await this.bot.connect()
                 } catch (e) {
                     setTimeout(switchBots, 1000)
                 }
@@ -198,8 +198,8 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                 }
             }
 
+            await newBot.connect()
             this.changeBot(newBot as Type)
-            await this.bot.connect()
         } catch (e) {
             this.bot.disconnect()
             console.error(e)
