@@ -192,10 +192,6 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                     newBot = new AL.Warrior(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name])
                     break
                 }
-                default: {
-                    console.error("what went wrong why do we have no `this.bot`!?")
-                    throw new Error("failure")
-                }
             }
 
             await newBot.connect()
@@ -215,12 +211,12 @@ export class Strategist<Type extends PingCompensatedCharacter> {
     }
 
     private stopLoop(loopName: LoopName): void {
-        // Delete the loop
-        this.loops.delete(loopName)
-
         // Clear the timeout
         const timeout = this.timeouts.get(loopName)
         if (timeout) clearTimeout(timeout)
+
+        // Delete the loop
+        this.loops.delete(loopName)
     }
 
     public stop(): void {

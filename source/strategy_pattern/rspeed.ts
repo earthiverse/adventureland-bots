@@ -41,7 +41,7 @@ export class GoGiveRogueSpeedStrategy<Type extends Rogue> implements Strategy<Ty
 
         const player = await getPlayerWithoutRSpeed(bot)
         if (!player) return
-        console.log(`Moving to rspeed '${player.name}'.`)
+        console.log(`[${bot.id}] Moving to rspeed '${player.name}'.`)
         await bot.smartMove(player, { avoidTownWarps: true, getWithin: 25 }).catch(suppress_errors)
         await bot.requestEntitiesData()
     }
@@ -126,7 +126,7 @@ async function startRspeedRogue(context: Strategist<Rogue>) {
     context.applyStrategy(sellStrategy)
     context.applyStrategy(respawnStrategy)
 
-    let lastStrategy: Strategy<Character> = undefined
+    let lastStrategy: Strategy<Character> = moveStrategy
     const setMoveStrategy = (strategy: Strategy<Character>) => {
         if (strategy !== lastStrategy) context.removeStrategy(lastStrategy)
         lastStrategy = strategy
