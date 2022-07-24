@@ -45,7 +45,6 @@ export class Strategist<Type extends PingCompensatedCharacter> {
 
     public applyStrategy(strategy: Strategy<Type>) {
         if (!strategy) return // No strategy
-        if (this.strategies.has(strategy)) return // We already have this strategy applied
         this.strategies.add(strategy)
 
         if (strategy.onApply) strategy.onApply(this.bot)

@@ -1267,7 +1267,14 @@ function prepareWarrior(bot: Warrior) {
             },
         },
         fireroamer: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["fireroamer"], information.friends, { disableAgitate: true, targetingPartyMember: true }) },
+            attack: async () => {
+                // Use bow if they're far away, use fire equipment if they're close
+                const near = bot.getEntity({ type: "fireroamer", withinRange: 40 })
+                if (near) strategy.pppompom.equipment = burnEquipment
+                else strategy.pppompom.equipment = bowEquipment
+
+                await attackTheseTypesWarrior(bot, ["fireroamer"], information.friends, { disableAgitate: true, targetingPartyMember: true })
+            },
             equipment: bowEquipment,
             move: async () => { await bot.smartMove({ map: "desertland", x: 200, y: -675 }) },
             requireCtype: "priest"
@@ -1546,7 +1553,14 @@ function prepareWarrior(bot: Warrior) {
             move: async () => { await goToNearestWalkableToMonster2(bot, ["poisio"], { map: "main", x: -141, y: 1360 }) },
         },
         pppompom: {
-            attack: async () => { return attackTheseTypesWarrior(bot, ["pppompom"], information.friends, { disableAgitate: true, disableCleave: true, maximumTargets: 1 }) },
+            attack: async () => {
+                // Use bow if they're far away, use fire equipment if they're close
+                const near = bot.getEntity({ type: "pppompom", withinRange: 40 })
+                if (near) strategy.pppompom.equipment = burnEquipment
+                else strategy.pppompom.equipment = bowEquipment
+
+                return attackTheseTypesWarrior(bot, ["pppompom"], information.friends, { disableAgitate: true, disableCleave: true, maximumTargets: 1 })
+            },
             equipment: bowEquipment,
             move: async () => { await bot.smartMove({ map: "level2n", x: 120, y: -150 }) },
             requireCtype: "priest"
