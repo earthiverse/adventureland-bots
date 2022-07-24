@@ -1,7 +1,7 @@
 import AL, { Merchant, Priest, Ranger, Warrior, GMap, ServerInfoDataLive, IPosition, SlotType, ItemName, Tools, Pathfinder } from "alclient"
 import { addSocket, startServer } from "algui"
 import { goToAggroMonster, goToNearestWalkableToMonster, goToNearestWalkableToMonster2, goToNPC, goToPriestIfHurt, goToSpecialMonster, kiteInCircle, moveInCircle, requestMagiportService, sleep, startTrackerLoop } from "../base/general.js"
-import { mainCrabs, mainGoos, offsetPositionParty } from "../base/locations.js"
+import { caveBatsNearCrypt, caveBatsNearDoor, caveBatsSouthEast, mainCrabs, mainGoos, offsetPositionParty } from "../base/locations.js"
 import { attackTheseTypesMerchant } from "../base/merchant.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { attackTheseTypesPriest } from "../base/priest.js"
@@ -79,7 +79,7 @@ function prepareMerchant(bot: Merchant) {
             move: async () => { await goToSpecialMonster(bot, "snowman", { requestMagiport: true }) }
         }
     }
-    startMerchant(bot, information, strategy, { map: "main", x: 0, y: 0 }, partyLeader, partyMembers)
+    startMerchant(bot, information, strategy, { map: "main", x: 0, y: 0 }, partyLeader, partyMembers).catch(console.error)
 }
 
 function preparePriest(bot: Priest) {
@@ -112,7 +112,7 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["bat"], information.friends) },
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
-            move: async () => { await bot.smartMove({ map: "cave", x: 324, y: -1107 }) },
+            move: async () => { await bot.smartMove(caveBatsNearCrypt) },
         },
         bbpompom: {
             attack: async () => { await attackTheseTypesPriest(bot, ["bbpompom"], information.friends) },
@@ -219,7 +219,7 @@ function preparePriest(bot: Priest) {
                 if (dragold && dragold.target
                     && bot.party && !bot.partyData.list.includes[dragold.target] // It's not targeting someone in our party
                     && bot.canUse("scare", { ignoreEquipped: true })) {
-                    if (bot.canUse("absorb") && AL.Tools.distance(bot, bot.players.get(dragold.target)) < bot.G.skills.absorb.range) bot.absorbSins(dragold.target)
+                    if (bot.canUse("absorb") && AL.Tools.distance(bot, bot.players.get(dragold.target)) < bot.G.skills.absorb.range) bot.absorbSins(dragold.target).catch(console.error)
                 }
                 await attackTheseTypesPriest(bot, ["dragold", "bat"], information.friends, { healStrangers: true })
             },
@@ -299,7 +299,7 @@ function preparePriest(bot: Priest) {
                 if (grinch && grinch.target
                     && bot.party && !bot.partyData.list.includes[grinch.target] // It's not targeting someone in our party
                     && bot.canUse("scare", { ignoreEquipped: true })) {
-                    if (bot.canUse("absorb") && AL.Tools.distance(bot, bot.players.get(grinch.target)) < bot.G.skills.absorb.range) bot.absorbSins(grinch.target)
+                    if (bot.canUse("absorb") && AL.Tools.distance(bot, bot.players.get(grinch.target)) < bot.G.skills.absorb.range) bot.absorbSins(grinch.target).catch(console.error)
                 }
                 await attackTheseTypesPriest(bot, ["grinch"], information.friends)
             },
@@ -432,7 +432,7 @@ function preparePriest(bot: Priest) {
                     if (AL.Pathfinder.canWalkPath(bot, position)) bot.move(position.x, position.y).catch(() => { /* Suppress Warnings */ })
                     else if (!bot.smartMoving || AL.Tools.distance(position, bot.smartMoving) > 100) bot.smartMove(position).catch(() => { /* Suppress Warnings */ })
                 } else {
-                    if (!bot.smartMoving) goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true })
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true }).catch(console.error)
                 }
             },
         },
@@ -600,7 +600,7 @@ function preparePriest(bot: Priest) {
             move: async () => { await bot.smartMove({ map: "halloween", x: -325, y: 725 }) },
         }
     }
-    startPriest(bot, information, strategy, partyLeader, partyMembers)
+    startPriest(bot, information, strategy, partyLeader, partyMembers).catch(console.error)
 }
 
 function prepareRanger(bot: Ranger) {
@@ -634,7 +634,7 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { await attackTheseTypesRanger(bot, ["bat"], information.friends) },
             attackWhileIdle: true,
             equipment: maxRangeEquipment,
-            move: async () => { await bot.smartMove({ map: "cave", x: -194, y: -461 }) },
+            move: async () => { await bot.smartMove(caveBatsNearDoor) },
         },
         bbpompom: {
             attack: async () => { await attackTheseTypesRanger(bot, ["bbpompom"], information.friends) },
@@ -921,7 +921,7 @@ function prepareRanger(bot: Ranger) {
                     if (AL.Pathfinder.canWalkPath(bot, position)) bot.move(position.x, position.y).catch(() => { /* Suppress Warnings */ })
                     else if (!bot.smartMoving || AL.Tools.distance(position, bot.smartMoving) > 100) bot.smartMove(position).catch(() => { /* Suppress Warnings */ })
                 } else {
-                    if (!bot.smartMoving) goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true })
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true }).catch(console.error)
                 }
             },
         },
@@ -1075,7 +1075,7 @@ function prepareRanger(bot: Ranger) {
                     if (AL.Pathfinder.canWalkPath(bot, position)) bot.move(position.x, position.y).catch(() => { /* Suppress Warnings */ })
                     else if (!bot.smartMoving || AL.Tools.distance(position, bot.smartMoving) > 100) bot.smartMove(position).catch(() => { /* Suppress Warnings */ })
                 } else {
-                    if (!bot.smartMoving) goToSpecialMonster(bot, "tiger", { requestMagiport: true })
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "tiger", { requestMagiport: true }).catch(console.error)
                 }
             }
         },
@@ -1116,7 +1116,7 @@ function prepareRanger(bot: Ranger) {
         }
     }
 
-    startRanger(bot, information, strategy, partyLeader, partyMembers)
+    startRanger(bot, information, strategy, partyLeader, partyMembers).catch(console.error)
 }
 
 function prepareWarrior(bot: Warrior) {
@@ -1143,7 +1143,7 @@ function prepareWarrior(bot: Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["bat"], information.friends) },
             attackWhileIdle: true,
             equipment: aoeEquipment,
-            move: async () => { await goToNearestWalkableToMonster2(bot, ["bat"], { map: "cave", x: 1243, y: -27 }) },
+            move: async () => { await goToNearestWalkableToMonster2(bot, ["bat"], caveBatsSouthEast) },
         },
         bbpompom: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["bbpompom"], information.friends, { disableAgitate: true }) },
@@ -1243,8 +1243,8 @@ function prepareWarrior(bot: Warrior) {
                     && bot.party && !bot.partyData.list.includes[dragold.target] // It's not targeting someone in our party
                     && priest && AL.Tools.distance(bot, priest) < priest.range
                     && bot.canUse("scare", { ignoreEquipped: true })) {
-                    if (bot.canUse("taunt") && AL.Tools.distance(dragold, bot) < bot.G.skills.taunt.range) bot.taunt(dragold.id)
-                    else if (bot.canUse("agitate") && AL.Tools.distance(bot, dragold) < bot.G.skills.agitate.range) bot.agitate()
+                    if (bot.canUse("taunt") && AL.Tools.distance(dragold, bot) < bot.G.skills.taunt.range) bot.taunt(dragold.id).catch(console.error)
+                    else if (bot.canUse("agitate") && AL.Tools.distance(bot, dragold) < bot.G.skills.agitate.range) bot.agitate().catch(console.error)
                 }
                 await attackTheseTypesWarrior(bot, ["dragold", "bat"], information.friends)
             },
@@ -1332,8 +1332,8 @@ function prepareWarrior(bot: Warrior) {
                 if (grinch
                     && bot.party && !bot.partyData.list.includes[grinch.target] // It's not targeting someone in our party
                     && bot.canUse("scare", { ignoreEquipped: true })) {
-                    if (bot.canUse("taunt") && AL.Tools.distance(grinch, bot) < bot.G.skills.taunt.range) bot.taunt(grinch.id)
-                    else if (bot.canUse("agitate") && AL.Tools.distance(bot, grinch) < bot.G.skills.agitate.range) bot.agitate()
+                    if (bot.canUse("taunt") && AL.Tools.distance(grinch, bot) < bot.G.skills.taunt.range) bot.taunt(grinch.id).catch(console.error)
+                    else if (bot.canUse("agitate") && AL.Tools.distance(bot, grinch) < bot.G.skills.agitate.range) bot.agitate().catch(console.error)
                 }
                 const kane = bot.players.get("Kane")
                 if (kane && AL.Tools.distance(bot, kane) < 400) {
@@ -1379,8 +1379,8 @@ function prepareWarrior(bot: Warrior) {
                 if (icegolem
                     && bot.party && !bot.partyData.list.includes[icegolem.target] // It's not targeting someone in our party
                     && bot.canUse("scare", { ignoreEquipped: true })) {
-                    if (bot.canUse("taunt") && AL.Tools.distance(icegolem, bot) < bot.G.skills.taunt.range) bot.taunt(icegolem.id)
-                    else if (bot.canUse("agitate") && AL.Tools.distance(bot, icegolem) < bot.G.skills.agitate.range) bot.agitate()
+                    if (bot.canUse("taunt") && AL.Tools.distance(icegolem, bot) < bot.G.skills.taunt.range) bot.taunt(icegolem.id).catch(console.error)
+                    else if (bot.canUse("agitate") && AL.Tools.distance(bot, icegolem) < bot.G.skills.agitate.range) bot.agitate().catch(console.error)
                 }
                 await attackTheseTypesWarrior(bot, ["icegolem"], information.friends)
             },
@@ -1526,7 +1526,7 @@ function prepareWarrior(bot: Warrior) {
                     if (AL.Pathfinder.canWalkPath(bot, position)) bot.move(position.x, position.y).catch(() => { /* Suppress Warnings */ })
                     else if (!bot.smartMoving || AL.Tools.distance(position, bot.smartMoving) > 100) bot.smartMove(position).catch(() => { /* Suppress Warnings */ })
                 } else {
-                    if (!bot.smartMoving) goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true })
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true }).catch(console.error)
                 }
             },
         },
@@ -1604,7 +1604,7 @@ function prepareWarrior(bot: Warrior) {
                         }
                         shouldAgitate = true
                     }
-                    if (shouldAgitate) bot.agitate()
+                    if (shouldAgitate) bot.agitate().catch(console.error)
                 }
                 await attackTheseTypesWarrior(bot, ["snowman"], information.friends, { disableStomp: true })
             },
@@ -1652,7 +1652,7 @@ function prepareWarrior(bot: Warrior) {
                 if (!stompy) {
                     await goToSpecialMonster(bot, "stompy", { requestMagiport: true })
                 } else {
-                    moveInCircle(bot, stompy, 20, Math.PI / 2)
+                    moveInCircle(bot, stompy, 20, Math.PI / 2).catch(console.error)
                 }
             },
             requireCtype: "priest"
@@ -1696,7 +1696,7 @@ function prepareWarrior(bot: Warrior) {
                     if (AL.Pathfinder.canWalkPath(bot, position)) bot.move(position.x, position.y).catch(() => { /* Suppress Warnings */ })
                     else if (!bot.smartMoving || AL.Tools.distance(position, bot.smartMoving) > 100) bot.smartMove(position).catch(() => { /* Suppress Warnings */ })
                 } else {
-                    if (!bot.smartMoving) goToSpecialMonster(bot, "tiger", { requestMagiport: true })
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "tiger", { requestMagiport: true }).catch(console.error)
                 }
             }
         },
@@ -1753,7 +1753,7 @@ function prepareWarrior(bot: Warrior) {
             requireCtype: "priest"
         }
     }
-    startWarrior(bot, information, strategy, partyLeader, partyMembers)
+    startWarrior(bot, information, strategy, partyLeader, partyMembers).catch(console.error)
 }
 
 async function run() {
@@ -1796,7 +1796,7 @@ async function run() {
                 }
             }
         }
-        loopBot()
+        loopBot().catch(console.error)
     }
     startMerchantLoop().catch(() => { /* ignore errors */ })
 
@@ -1825,7 +1825,7 @@ async function run() {
                 }
             }
         }
-        loopBot()
+        loopBot().catch(console.error)
     }
     startPriestLoop().catch(() => { /* ignore errors */ })
 
@@ -1855,7 +1855,7 @@ async function run() {
                 }
             }
         }
-        loopBot()
+        loopBot().catch(console.error)
     }
     startRangerLoop().catch(() => { /* ignore errors */ })
 
@@ -1884,7 +1884,7 @@ async function run() {
                 }
             }
         }
-        loopBot()
+        loopBot().catch(console.error)
     }
     startWarriorLoop().catch(() => { /* ignore errors */ })
 
@@ -1957,4 +1957,4 @@ async function run() {
     // }
     // serverLoop()
 }
-run()
+run().catch(console.error)

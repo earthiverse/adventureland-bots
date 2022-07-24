@@ -1,14 +1,14 @@
 import AL, { IPosition, ItemName, Mage, Merchant, SlotType } from "alclient"
 import { goToNearestWalkableToMonster2, goToNPC, goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
-import { desertlandPorcupines, halloweenMiniMushes, halloweenSafeSnakes, mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrabXs, mainCrocs, mainGoos, mainPoisios, mainScorpions, mainSpiders, mainSquigs, offsetPosition, offsetPositionParty, winterlandArcticBees } from "../base/locations.js"
+import { caveBatsNorthEast, desertlandPorcupines, halloweenMiniMushes, halloweenSafeSnakes, mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrabXs, mainCrocs, mainGoos, mainPoisios, mainScorpions, mainSpiders, mainSquigs, offsetPosition, offsetPositionParty, winterlandArcticBees } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { partyLeader, partyMembers } from "../base/party.js"
 import { getTargetServerFromPlayer } from "../base/serverhop.js"
 import { Information, Strategy } from "../definitions/bot.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMage, startMerchant } from "./shared.js"
 
-let TARGET_REGION = DEFAULT_REGION
-let TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
+const TARGET_REGION = DEFAULT_REGION
+const TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
 
 const information: Information = {
     friends: [undefined, undefined, undefined, undefined],
@@ -49,11 +49,11 @@ function prepareMage(bot: Mage) {
             equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await goToNearestWalkableToMonster2(bot, ["arcticbee", "snowman"], offsetPosition(winterlandArcticBees, 50, 0))
+                    goToNearestWalkableToMonster2(bot, ["arcticbee", "snowman"], offsetPosition(winterlandArcticBees, 50, 0))
                 } else if (bot.id == information.bot2.name) {
-                    await goToNearestWalkableToMonster2(bot, ["arcticbee", "snowman"], offsetPosition(winterlandArcticBees, 150, 0))
+                    goToNearestWalkableToMonster2(bot, ["arcticbee", "snowman"], offsetPosition(winterlandArcticBees, 150, 0))
                 } else if (bot.id == information.bot3.name) {
-                    await goToNearestWalkableToMonster2(bot, ["arcticbee", "snowman"], offsetPosition(winterlandArcticBees, 250, 0))
+                    goToNearestWalkableToMonster2(bot, ["arcticbee", "snowman"], offsetPosition(winterlandArcticBees, 250, 0))
                 }
             }
         },
@@ -63,13 +63,27 @@ function prepareMage(bot: Mage) {
             equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await goToNearestWalkableToMonster2(bot, ["armadillo", "phoenix"], offsetPosition(mainArmadillos, -75, 75))
+                    goToNearestWalkableToMonster2(bot, ["armadillo", "phoenix"], offsetPosition(mainArmadillos, -75, 75))
                 } else if (bot.id == information.bot2.name) {
-                    await goToNearestWalkableToMonster2(bot, ["armadillo", "phoenix"], offsetPosition(mainArmadillos, 0, 75))
+                    goToNearestWalkableToMonster2(bot, ["armadillo", "phoenix"], offsetPosition(mainArmadillos, 0, 75))
                 } else if (bot.id == information.bot3.name) {
-                    await goToNearestWalkableToMonster2(bot, ["armadillo", "phoenix"], offsetPosition(mainArmadillos, 75, 75))
+                    goToNearestWalkableToMonster2(bot, ["armadillo", "phoenix"], offsetPosition(mainArmadillos, 75, 75))
                 }
             },
+        },
+        bat: {
+            attack: async () => { await attackTheseTypesMage(bot, ["bat"], information.friends) },
+            attackWhileIdle: true,
+            equipment: maxDamageEquipment,
+            move: async () => {
+                if (bot.id == information.bot1.name) {
+                    goToNearestWalkableToMonster2(bot, ["bat"], offsetPosition(caveBatsNorthEast, -75, 75))
+                } else if (bot.id == information.bot2.name) {
+                    goToNearestWalkableToMonster2(bot, ["bat"], offsetPosition(caveBatsNorthEast, 0, 75))
+                } else if (bot.id == information.bot3.name) {
+                    goToNearestWalkableToMonster2(bot, ["bat"], offsetPosition(caveBatsNorthEast, 75, 75))
+                }
+            }
         },
         bee: {
             attack: async () => { await attackTheseTypesMage(bot, ["bee"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.bee.hp + 1 }) },
@@ -77,11 +91,11 @@ function prepareMage(bot: Mage) {
             equipment: maxAttackSpeedEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await goToNearestWalkableToMonster2(bot, ["bee"], offsetPosition(mainBeesNearTunnel, 25, 0))
+                    goToNearestWalkableToMonster2(bot, ["bee"], offsetPosition(mainBeesNearTunnel, 25, 0))
                 } else if (bot.id == information.bot2.name) {
-                    await goToNearestWalkableToMonster2(bot, ["bee"], offsetPosition(mainBeesNearTunnel, 75, 0))
+                    goToNearestWalkableToMonster2(bot, ["bee"], offsetPosition(mainBeesNearTunnel, 75, 0))
                 } else if (bot.id == information.bot3.name) {
-                    await goToNearestWalkableToMonster2(bot, ["bee"], offsetPosition(mainBeesNearTunnel, 125, 0))
+                    goToNearestWalkableToMonster2(bot, ["bee"], offsetPosition(mainBeesNearTunnel, 125, 0))
                 }
             }
         },
@@ -91,11 +105,11 @@ function prepareMage(bot: Mage) {
             equipment: maxAttackSpeedEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await goToNearestWalkableToMonster2(bot, ["crab", "phoenix"], offsetPosition(mainCrabs, -75, 75))
+                    goToNearestWalkableToMonster2(bot, ["crab", "phoenix"], offsetPosition(mainCrabs, -75, 75))
                 } else if (bot.id == information.bot2.name) {
-                    await goToNearestWalkableToMonster2(bot, ["crab", "phoenix"], offsetPosition(mainCrabs, 0, 75))
+                    goToNearestWalkableToMonster2(bot, ["crab", "phoenix"], offsetPosition(mainCrabs, 0, 75))
                 } else if (bot.id == information.bot3.name) {
-                    await goToNearestWalkableToMonster2(bot, ["crab", "phoenix"], offsetPosition(mainCrabs, 75, 75))
+                    goToNearestWalkableToMonster2(bot, ["crab", "phoenix"], offsetPosition(mainCrabs, 75, 75))
                 }
             },
         },
@@ -105,11 +119,11 @@ function prepareMage(bot: Mage) {
             equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await goToNearestWalkableToMonster2(bot, ["crabx", "phoenix"], offsetPosition(mainCrabXs, -75, 75))
+                    goToNearestWalkableToMonster2(bot, ["crabx", "phoenix"], offsetPosition(mainCrabXs, -75, 75))
                 } else if (bot.id == information.bot2.name) {
-                    await goToNearestWalkableToMonster2(bot, ["crabx", "phoenix"], offsetPosition(mainCrabXs, 0, 75))
+                    goToNearestWalkableToMonster2(bot, ["crabx", "phoenix"], offsetPosition(mainCrabXs, 0, 75))
                 } else if (bot.id == information.bot3.name) {
-                    await goToNearestWalkableToMonster2(bot, ["crabx", "phoenix"], offsetPosition(mainCrabXs, 75, 75))
+                    goToNearestWalkableToMonster2(bot, ["crabx", "phoenix"], offsetPosition(mainCrabXs, 75, 75))
                 }
             },
         },
@@ -119,11 +133,11 @@ function prepareMage(bot: Mage) {
             equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await goToNearestWalkableToMonster2(bot, ["croc", "phoenix", "armadillo"], offsetPosition(mainCrocs, 0, 25))
+                    goToNearestWalkableToMonster2(bot, ["croc", "phoenix", "armadillo"], offsetPosition(mainCrocs, 0, 25))
                 } else if (bot.id == information.bot2.name) {
-                    await goToNearestWalkableToMonster2(bot, ["croc", "phoenix", "armadillo"], offsetPosition(mainCrocs, 0, 75))
+                    goToNearestWalkableToMonster2(bot, ["croc", "phoenix", "armadillo"], offsetPosition(mainCrocs, 0, 75))
                 } else if (bot.id == information.bot3.name) {
-                    await goToNearestWalkableToMonster2(bot, ["croc", "phoenix", "armadillo"], offsetPosition(mainCrocs, 0, 125))
+                    goToNearestWalkableToMonster2(bot, ["croc", "phoenix", "armadillo"], offsetPosition(mainCrocs, 0, 125))
                 }
             },
         },
@@ -144,7 +158,7 @@ function prepareMage(bot: Mage) {
             attack: async () => { await attackTheseTypesMage(bot, ["frog", "tortoise"], information.friends) },
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
-            move: async () => { await goToNearestWalkableToMonster2(bot, ["frog", "tortoise"]) },
+            move: async () => { goToNearestWalkableToMonster2(bot, ["frog", "tortoise"]) },
         },
         goldenbat: {
             attack: async () => { await attackTheseTypesMage(bot, ["goldenbat"], information.friends) },
@@ -158,11 +172,11 @@ function prepareMage(bot: Mage) {
             equipment: maxAttackSpeedEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await goToNearestWalkableToMonster2(bot, ["goo"], offsetPosition(mainGoos, 50, 0))
+                    goToNearestWalkableToMonster2(bot, ["goo"], offsetPosition(mainGoos, 50, 0))
                 } else if (bot.id == information.bot2.name) {
-                    await goToNearestWalkableToMonster2(bot, ["goo"], offsetPosition(mainGoos, 150, 0))
+                    goToNearestWalkableToMonster2(bot, ["goo"], offsetPosition(mainGoos, 150, 0))
                 } else if (bot.id == information.bot3.name) {
-                    await goToNearestWalkableToMonster2(bot, ["goo"], offsetPosition(mainGoos, 250, 0))
+                    goToNearestWalkableToMonster2(bot, ["goo"], offsetPosition(mainGoos, 250, 0))
                 }
             }
         },
@@ -210,11 +224,11 @@ function prepareMage(bot: Mage) {
             equipment: maxAttackSpeedEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await goToNearestWalkableToMonster2(bot, ["minimush", "phoenix"], offsetPosition(halloweenMiniMushes, -75, 75))
+                    goToNearestWalkableToMonster2(bot, ["minimush", "phoenix"], offsetPosition(halloweenMiniMushes, -75, 75))
                 } else if (bot.id == information.bot2.name) {
-                    await goToNearestWalkableToMonster2(bot, ["minimush", "phoenix"], offsetPosition(halloweenMiniMushes, 0, 75))
+                    goToNearestWalkableToMonster2(bot, ["minimush", "phoenix"], offsetPosition(halloweenMiniMushes, 0, 75))
                 } else if (bot.id == information.bot3.name) {
-                    await goToNearestWalkableToMonster2(bot, ["minimush", "phoenix"], offsetPosition(halloweenMiniMushes, 75, 75))
+                    goToNearestWalkableToMonster2(bot, ["minimush", "phoenix"], offsetPosition(halloweenMiniMushes, 75, 75))
                 }
             }
         },
@@ -240,11 +254,11 @@ function prepareMage(bot: Mage) {
             equipment: maxAttackSpeedEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await goToNearestWalkableToMonster2(bot, ["osnake"], offsetPosition(halloweenSafeSnakes, -75, 25))
+                    goToNearestWalkableToMonster2(bot, ["osnake"], offsetPosition(halloweenSafeSnakes, -75, 25))
                 } else if (bot.id == information.bot2.name) {
-                    await goToNearestWalkableToMonster2(bot, ["osnake"], offsetPosition(halloweenSafeSnakes, 0, 25))
+                    goToNearestWalkableToMonster2(bot, ["osnake"], offsetPosition(halloweenSafeSnakes, 0, 25))
                 } else if (bot.id == information.bot3.name) {
-                    await goToNearestWalkableToMonster2(bot, ["osnake"], offsetPosition(halloweenSafeSnakes, 75, 25))
+                    goToNearestWalkableToMonster2(bot, ["osnake"], offsetPosition(halloweenSafeSnakes, 75, 25))
                 }
             },
         },
@@ -259,7 +273,7 @@ function prepareMage(bot: Mage) {
                     if (AL.Pathfinder.canWalkPath(bot, position)) bot.move(position.x, position.y).catch(() => { /* Suppress Warnings */ })
                     else if (!bot.smartMoving || AL.Tools.distance(position, bot.smartMoving) > 100) bot.smartMove(position).catch(() => { /* Suppress Warnings */ })
                 } else {
-                    if (!bot.smartMoving) goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true })
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "pinkgoo", { requestMagiport: true }).catch(console.error)
                 }
             },
         },
@@ -269,11 +283,11 @@ function prepareMage(bot: Mage) {
             equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await goToNearestWalkableToMonster2(bot, ["poisio"], offsetPosition(mainPoisios, -75, 75))
+                    goToNearestWalkableToMonster2(bot, ["poisio"], offsetPosition(mainPoisios, -75, 75))
                 } else if (bot.id == information.bot2.name) {
-                    await goToNearestWalkableToMonster2(bot, ["poisio"], offsetPosition(mainPoisios, 0, 75))
+                    goToNearestWalkableToMonster2(bot, ["poisio"], offsetPosition(mainPoisios, 0, 75))
                 } else if (bot.id == information.bot3.name) {
-                    await goToNearestWalkableToMonster2(bot, ["poisio"], offsetPosition(mainPoisios, 75, 75))
+                    goToNearestWalkableToMonster2(bot, ["poisio"], offsetPosition(mainPoisios, 75, 75))
                 }
             }
         },
@@ -283,11 +297,11 @@ function prepareMage(bot: Mage) {
             equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await goToNearestWalkableToMonster2(bot, ["porcupine"], offsetPosition(desertlandPorcupines, -75, 75))
+                    goToNearestWalkableToMonster2(bot, ["porcupine"], offsetPosition(desertlandPorcupines, -75, 75))
                 } else if (bot.id == information.bot2.name) {
-                    await goToNearestWalkableToMonster2(bot, ["porcupine"], offsetPosition(desertlandPorcupines, 0, 75))
+                    goToNearestWalkableToMonster2(bot, ["porcupine"], offsetPosition(desertlandPorcupines, 0, 75))
                 } else if (bot.id == information.bot3.name) {
-                    await goToNearestWalkableToMonster2(bot, ["porcupine"], offsetPosition(desertlandPorcupines, 75, 75))
+                    goToNearestWalkableToMonster2(bot, ["porcupine"], offsetPosition(desertlandPorcupines, 75, 75))
                 }
             },
         },
@@ -297,11 +311,11 @@ function prepareMage(bot: Mage) {
             equipment: maxAttackSpeedEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await goToNearestWalkableToMonster2(bot, ["rat"], { map: "mansion", x: 240, y: -488 })
+                    goToNearestWalkableToMonster2(bot, ["rat"], { map: "mansion", x: 240, y: -488 })
                 } else if (bot.id == information.bot2.name) {
-                    await goToNearestWalkableToMonster2(bot, ["rat"], { map: "mansion", x: 223, y: -312 })
+                    goToNearestWalkableToMonster2(bot, ["rat"], { map: "mansion", x: 223, y: -312 })
                 } else if (bot.id == information.bot3.name) {
-                    await goToNearestWalkableToMonster2(bot, ["rat"], { map: "mansion", x: 223, y: -100 })
+                    goToNearestWalkableToMonster2(bot, ["rat"], { map: "mansion", x: 223, y: -100 })
                 }
             }
         },
@@ -311,11 +325,11 @@ function prepareMage(bot: Mage) {
             equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await goToNearestWalkableToMonster2(bot, ["scorpion", "phoenix"], offsetPosition(mainScorpions, -75, 75))
+                    goToNearestWalkableToMonster2(bot, ["scorpion", "phoenix"], offsetPosition(mainScorpions, -75, 75))
                 } else if (bot.id == information.bot2.name) {
-                    await goToNearestWalkableToMonster2(bot, ["scorpion", "phoenix"], offsetPosition(mainScorpions, 0, 75))
+                    goToNearestWalkableToMonster2(bot, ["scorpion", "phoenix"], offsetPosition(mainScorpions, 0, 75))
                 } else if (bot.id == information.bot3.name) {
-                    await goToNearestWalkableToMonster2(bot, ["scorpion", "phoenix"], offsetPosition(mainScorpions, 75, 75))
+                    goToNearestWalkableToMonster2(bot, ["scorpion", "phoenix"], offsetPosition(mainScorpions, 75, 75))
                 }
             },
         },
@@ -325,11 +339,11 @@ function prepareMage(bot: Mage) {
             equipment: maxAttackSpeedEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await goToNearestWalkableToMonster2(bot, ["snake", "osnake"], offsetPosition(halloweenSafeSnakes, -75, 25))
+                    goToNearestWalkableToMonster2(bot, ["snake", "osnake"], offsetPosition(halloweenSafeSnakes, -75, 25))
                 } else if (bot.id == information.bot2.name) {
-                    await goToNearestWalkableToMonster2(bot, ["snake", "osnake"], offsetPosition(halloweenSafeSnakes, 0, 25))
+                    goToNearestWalkableToMonster2(bot, ["snake", "osnake"], offsetPosition(halloweenSafeSnakes, 0, 25))
                 } else if (bot.id == information.bot3.name) {
-                    await goToNearestWalkableToMonster2(bot, ["snake", "osnake"], offsetPosition(halloweenSafeSnakes, 75, 25))
+                    goToNearestWalkableToMonster2(bot, ["snake", "osnake"], offsetPosition(halloweenSafeSnakes, 75, 25))
                 }
             },
         },
@@ -345,11 +359,11 @@ function prepareMage(bot: Mage) {
             equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await goToNearestWalkableToMonster2(bot, ["spider", "phoenix"], offsetPosition(mainSpiders, -75, 75))
+                    goToNearestWalkableToMonster2(bot, ["spider", "phoenix"], offsetPosition(mainSpiders, -75, 75))
                 } else if (bot.id == information.bot2.name) {
-                    await goToNearestWalkableToMonster2(bot, ["spider", "phoenix"], offsetPosition(mainSpiders, 0, 75))
+                    goToNearestWalkableToMonster2(bot, ["spider", "phoenix"], offsetPosition(mainSpiders, 0, 75))
                 } else if (bot.id == information.bot3.name) {
-                    await goToNearestWalkableToMonster2(bot, ["spider", "phoenix"], offsetPosition(mainSpiders, 75, 75))
+                    goToNearestWalkableToMonster2(bot, ["spider", "phoenix"], offsetPosition(mainSpiders, 75, 75))
                 }
             }
         },
@@ -359,11 +373,11 @@ function prepareMage(bot: Mage) {
             equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await goToNearestWalkableToMonster2(bot, ["squig", "squigtoad", "phoenix"], offsetPosition(mainSquigs, -75, 75))
+                    goToNearestWalkableToMonster2(bot, ["squig", "squigtoad", "phoenix"], offsetPosition(mainSquigs, -75, 75))
                 } else if (bot.id == information.bot2.name) {
-                    await goToNearestWalkableToMonster2(bot, ["squig", "squigtoad", "phoenix"], offsetPosition(mainSquigs, 0, 75))
+                    goToNearestWalkableToMonster2(bot, ["squig", "squigtoad", "phoenix"], offsetPosition(mainSquigs, 0, 75))
                 } else if (bot.id == information.bot3.name) {
-                    await goToNearestWalkableToMonster2(bot, ["squig", "squigtoad", "phoenix"], offsetPosition(mainSquigs, 75, 75))
+                    goToNearestWalkableToMonster2(bot, ["squig", "squigtoad", "phoenix"], offsetPosition(mainSquigs, 75, 75))
                 }
             }
         },
@@ -373,11 +387,11 @@ function prepareMage(bot: Mage) {
             equipment: maxDamageEquipment,
             move: async () => {
                 if (bot.id == information.bot1.name) {
-                    await goToNearestWalkableToMonster2(bot, ["squigtoad", "squig", "phoenix"], offsetPosition(mainSquigs, -75, 75))
+                    goToNearestWalkableToMonster2(bot, ["squigtoad", "squig", "phoenix"], offsetPosition(mainSquigs, -75, 75))
                 } else if (bot.id == information.bot2.name) {
-                    await goToNearestWalkableToMonster2(bot, ["squigtoad", "squig", "phoenix"], offsetPosition(mainSquigs, 0, 75))
+                    goToNearestWalkableToMonster2(bot, ["squigtoad", "squig", "phoenix"], offsetPosition(mainSquigs, 0, 75))
                 } else if (bot.id == information.bot3.name) {
-                    await goToNearestWalkableToMonster2(bot, ["squigtoad", "squig", "phoenix"], offsetPosition(mainSquigs, 75, 75))
+                    goToNearestWalkableToMonster2(bot, ["squigtoad", "squig", "phoenix"], offsetPosition(mainSquigs, 75, 75))
                 }
             }
         },
@@ -419,7 +433,7 @@ function prepareMage(bot: Mage) {
             attack: async () => { await attackTheseTypesMage(bot, ["tortoise", "frog"], information.friends) },
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
-            move: async () => { await goToNearestWalkableToMonster2(bot, ["tortoise", "frog"]) },
+            move: async () => { goToNearestWalkableToMonster2(bot, ["tortoise", "frog"]) },
         },
         wabbit: {
             attack: async () => { return attackTheseTypesMage(bot, ["wabbit", "arcticbee", "bat", "bee", "boar", "cgoo", "crab", "cutebee", "crabx", "croc", "goldenbat", "goo", "greenjr", "hen", "jr", "minimush", "osnake", "phoenix", "poisio", "rooster", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise"], information.friends) },
@@ -429,14 +443,14 @@ function prepareMage(bot: Mage) {
         }
     }
 
-    startMage(bot, information, strategy, partyLeader, partyMembers)
+    startMage(bot, information, strategy, partyLeader, partyMembers).catch(console.error)
 }
 
 function prepareMerchant(bot: Merchant) {
     const strategy: Strategy = {
     }
 
-    startMerchant(bot, information, strategy, { map: "main", x: -300, y: -100 }, partyLeader, partyMembers)
+    startMerchant(bot, information, strategy, { map: "main", x: -300, y: -100 }, partyLeader, partyMembers).catch(console.error)
 }
 
 async function run() {
@@ -475,7 +489,7 @@ async function run() {
                 }
             }
         }
-        loopBot()
+        loopBot().catch(console.error)
     }
     startMerchantLoop().catch(() => { /* ignore errors */ })
 
@@ -504,7 +518,7 @@ async function run() {
                 }
             }
         }
-        loopBot()
+        loopBot().catch(console.error)
     }
     startMage1Loop().catch(() => { /* ignore errors */ })
 
@@ -532,7 +546,7 @@ async function run() {
                 }
             }
         }
-        loopBot()
+        loopBot().catch(console.error)
     }
     startMage2Loop().catch(() => { /* ignore errors */ })
 
@@ -560,60 +574,60 @@ async function run() {
                 }
             }
         }
-        loopBot()
+        loopBot().catch(console.error)
     }
     startMage3Loop().catch(() => { /* ignore errors */ })
 
-    let lastServerChangeTime = Date.now()
-    const serverLoop = async () => {
-        try {
-            console.log("DEBUG: Checking target server...")
-            // We haven't logged in yet
-            if (!information.bot1.bot) {
-                console.log("DEBUG: We haven't logged in yet")
-                setTimeout(serverLoop, 1000)
-                return
-            }
+    // let lastServerChangeTime = Date.now()
+    // const serverLoop = async () => {
+    //     try {
+    //         console.log("DEBUG: Checking target server...")
+    //         // We haven't logged in yet
+    //         if (!information.bot1.bot) {
+    //             console.log("DEBUG: We haven't logged in yet")
+    //             setTimeout(serverLoop, 1000)
+    //             return
+    //         }
 
-            // Don't change servers too fast
-            if (lastServerChangeTime > Date.now() - AL.Constants.RECONNECT_TIMEOUT_MS) {
-                console.log("DEBUG: Don't change servers too fast")
-                setTimeout(serverLoop, Math.max(1000, lastServerChangeTime + AL.Constants.RECONNECT_TIMEOUT_MS - Date.now()))
-                return
-            }
+    //         // Don't change servers too fast
+    //         if (lastServerChangeTime > Date.now() - AL.Constants.RECONNECT_TIMEOUT_MS) {
+    //             console.log("DEBUG: Don't change servers too fast")
+    //             setTimeout(serverLoop, Math.max(1000, lastServerChangeTime + AL.Constants.RECONNECT_TIMEOUT_MS - Date.now()))
+    //             return
+    //         }
 
-            const currentRegion = information.bot1.bot.server.region
-            const currentIdentifier = information.bot1.bot.server.name
+    //         const currentRegion = information.bot1.bot.server.region
+    //         const currentIdentifier = information.bot1.bot.server.name
 
-            const targetServer = await getTargetServerFromPlayer(currentRegion, currentIdentifier, partyLeader)
-            if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
-                // We're already on the correct server
-                console.log("DEBUG: We're already on the correct server")
-                setTimeout(serverLoop, 1000)
-                return
-            }
+    //         const targetServer = await getTargetServerFromPlayer(currentRegion, currentIdentifier, partyLeader)
+    //         if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
+    //             // We're already on the correct server
+    //             console.log("DEBUG: We're already on the correct server")
+    //             setTimeout(serverLoop, 1000)
+    //             return
+    //         }
 
-            // Change servers to attack this entity
-            TARGET_REGION = targetServer[0]
-            TARGET_IDENTIFIER = targetServer[1]
-            console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${TARGET_REGION} ${TARGET_IDENTIFIER}`)
+    //         // Change servers to attack this entity
+    //         TARGET_REGION = targetServer[0]
+    //         TARGET_IDENTIFIER = targetServer[1]
+    //         console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${TARGET_REGION} ${TARGET_IDENTIFIER}`)
 
-            // Sleep to give a chance to loot
-            await sleep(5000)
+    //         // Sleep to give a chance to loot
+    //         await sleep(5000)
 
-            // Disconnect everyone
-            console.log("Disconnecting characters")
-            information.bot1.bot.disconnect(),
-            information.bot2.bot?.disconnect(),
-            information.bot3.bot?.disconnect(),
-            information.merchant.bot?.disconnect()
-            await sleep(5000)
-            lastServerChangeTime = Date.now()
-        } catch (e) {
-            console.error(e)
-        }
-        setTimeout(serverLoop, 1000)
-    }
-    serverLoop()
+    //         // Disconnect everyone
+    //         console.log("Disconnecting characters")
+    //         information.bot1.bot.disconnect(),
+    //         information.bot2.bot?.disconnect(),
+    //         information.bot3.bot?.disconnect(),
+    //         information.merchant.bot?.disconnect()
+    //         await sleep(5000)
+    //         lastServerChangeTime = Date.now()
+    //     } catch (e) {
+    //         console.error(e)
+    //     }
+    //     setTimeout(serverLoop, 1000)
+    // }
+    // serverLoop().catch(console.error)
 }
-run()
+run().catch(console.error)

@@ -1,7 +1,7 @@
 import AL, { Character, IPosition, ItemName, Mage, Merchant, MonsterName, Pathfinder, Priest, Ranger, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Tools, Warrior } from "alclient"
 import { addSocket, startServer } from "algui"
 import { calculateAttackLoopCooldown, checkOnlyEveryMS, goGetRspeedBuff, goToKiteStuff, goToNearestWalkableToMonster, ITEMS_TO_HOLD, LOOP_MS, startAvoidStacking, startBuyLoop, startCompoundLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startTrackerLoop, startUpgradeLoop } from "../base/general.js"
-import { batCaveCryptEntrance, cryptEnd, cryptWaitingSpot, mainCrabs, offsetPositionParty } from "../base/locations.js"
+import { caveCryptEntrance, cryptEnd, cryptWaitingSpot, mainCrabs, offsetPositionParty } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
 import { doBanking, doEmergencyBanking, goFishing, goMining, merchantSmartMove, startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
@@ -80,7 +80,7 @@ async function startMerchant(bot: Merchant) {
                 await bot.smartMove(cryptWaitingSpot)
                 addCryptMonstersToDB(bot)
                 LOCATION = { in: bot.in, ...cryptEnd }
-                await bot.smartMove(batCaveCryptEntrance)
+                await bot.smartMove(caveCryptEntrance)
             }
 
             // If we are full, let's go to the bank

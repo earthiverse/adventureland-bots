@@ -23,8 +23,12 @@ export const mainTortoises = mainFrogs
 // Bank
 export const bankingPosition: IPosition = { map: "bank", x: 0, y: -200 }
 
-// Bat Cave
-export const batCaveCryptEntrance: IPosition = { map: "cave", x: -193.41, y: -1295.83 }
+// (Bat) Cave
+export const caveCryptEntrance: IPosition = { map: "cave", x: -193.41, y: -1295.83 }
+export const caveBatsNearDoor: IPosition = { map: "cave", x: -194, y: -461 }
+export const caveBatsNearCrypt: IPosition = { map: "cave", x: 323.5, y: -1107 }
+export const caveBatsSouthEast: IPosition = { map: "cave", x: 1243, y: -27 }
+export const caveBatsNorthEast: IPosition = { map: "cave", x: 1201.5, y: -782 }
 
 // Crypt
 export const cryptWaitingSpot: IPosition = { map: "crypt", x: 100, y: 50 }
