@@ -193,7 +193,15 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["crabx", "crabxx"], information.friends, { disableCreditCheck: true, healStrangers: true }) },
             attackWhileIdle: false,
             equipment: maxDamageEquipment,
-            move: async () => { await goToSpecialMonster(bot, "crabxx", { requestMagiport: true }) },
+            move: async () => {
+                const nearest = bot.getEntity({ returnNearest: true, type: "crabxx" })
+                if (nearest && AL.Tools.distance(bot, nearest) > 25) {
+                    // Move close to crabxx because other characters might help blast away crabx
+                    await bot.smartMove(nearest, { getWithin: 25 })
+                } else {
+                    await goToSpecialMonster(bot, "crabxx", { requestMagiport: true })
+                }
+            }
         },
         croc: {
             attack: async () => { await attackTheseTypesPriest(bot, ["croc", "phoenix"], information.friends) },
@@ -701,7 +709,15 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { return attackTheseTypesRanger(bot, ["crabx", "crabxx"], information.friends, { disableCreditCheck: true }) },
             attackWhileIdle: false,
             equipment: maxDamageEquipment,
-            move: async () => { await goToSpecialMonster(bot, "crabxx", { requestMagiport: true }) },
+            move: async () => {
+                const nearest = bot.getEntity({ returnNearest: true, type: "crabxx" })
+                if (nearest && AL.Tools.distance(bot, nearest) > 25) {
+                    // Move close to crabxx because other characters might help blast away crabx
+                    await bot.smartMove(nearest, { getWithin: 25 })
+                } else {
+                    await goToSpecialMonster(bot, "crabxx", { requestMagiport: true })
+                }
+            }
         },
         croc: {
             attack: async () => { return attackTheseTypesRanger(bot, ["croc", "phoenix"], information.friends) },
