@@ -21,7 +21,8 @@ export async function getTarget(bot: Character, strategy: Strategy, information:
         if (strategy[entity.type].requireCtype &&
             !((information.bot1.bot?.ctype == strategy[entity.type].requireCtype && information.bot1.target == entity.type)
             || (information.bot2.bot?.ctype == strategy[entity.type].requireCtype && information.bot2.target == entity.type)
-            || (information.bot3.bot?.ctype == strategy[entity.type].requireCtype && information.bot3.target == entity.type))) continue
+            || (information.bot3.bot?.ctype == strategy[entity.type].requireCtype && information.bot3.target == entity.type)
+            || (information.merchant.bot?.ctype == strategy[entity.type].requireCtype && information.merchant.target == entity.type))) continue
         const realEntity = bot.entities.get(entity.name) || bot.entities.get((entity as Entity).id)
         if (realEntity) {
             return realEntity.type
@@ -365,6 +366,13 @@ export async function startMerchant(bot: Merchant, information: Information, str
                         return
                     }
                 }
+            }
+
+            // Move to our target if we have one
+            if (strategy[information.merchant.target]) {
+                await strategy[information.merchant.target].move()
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
+                return
             }
 
             // Go fishing if we can

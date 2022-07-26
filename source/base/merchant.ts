@@ -29,7 +29,7 @@ export async function attackTheseTypesMerchant(bot: Merchant, types: MonsterName
     targetingPartyMember?: boolean
     targetingPlayer?: string
 } = {}): Promise<void> {
-    if (bot.c.town) return // Don't attack if teleporting
+    if (bot.c.town || bot.c.fishing || bot.c.mining) return // Don't attack if teleporting, fishing, or mining
     if (bot.isOnCooldown("scare")) return
 
     // Adjust options

@@ -54,6 +54,20 @@ function prepareMerchant(bot: Merchant) {
             equipment: { mainhand: "dartgun", offhand: "wbook1", ring1: "zapper" },
             move: async () => { await goToNearestWalkableToMonster2(bot, ["crab"], mainCrabs) }
         },
+        crabxx: {
+            attack: async () => { await attackTheseTypesMerchant(bot, ["crabxx"], information.friends) },
+            attackWhileIdle: false,
+            equipment: { mainhand: "dartgun", offhand: "wbook1", ring1: "zapper" },
+            move: async () => {
+                const nearest = bot.getEntity({ returnNearest: true, type: "crabxx" })
+                if (nearest && AL.Tools.distance(bot, nearest) > 25) {
+                    // Move close to crabxx because other characters might help blast away crabx
+                    await bot.smartMove(nearest, { getWithin: 25 })
+                } else {
+                    await goToSpecialMonster(bot, "crabxx", { requestMagiport: true })
+                }
+            }
+        },
         goo: {
             attack: async () => { await attackTheseTypesMerchant(bot, ["goo"], information.friends) },
             attackWhileIdle: true,
