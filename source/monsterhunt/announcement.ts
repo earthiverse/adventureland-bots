@@ -184,7 +184,7 @@ function prepareMage(bot: Mage) {
             move: async () => { await goToSpecialMonster(bot, "goldenbat") },
         },
         goo: {
-            attack: async () => { await attackTheseTypesMage(bot, ["goo"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.goo.hp + 1 }) },
+            attack: async () => { await attackTheseTypesMage(bot, ["goo", "rgoo"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.goo.hp + 1 }) },
             attackWhileIdle: true,
             equipment: maxAttackSpeedEquipment,
             move: async () => {
@@ -335,6 +335,12 @@ function prepareMage(bot: Mage) {
                     goToNearestWalkableToMonster2(bot, ["rat"], { map: "mansion", x: 223, y: -100 })
                 }
             }
+        },
+        rgoo: {
+            attack: async () => { await attackTheseTypesMage(bot, ["rgoo", "goo"], information.friends) },
+            attackWhileIdle: true,
+            equipment: maxDamageEquipment,
+            move: async () => { await goToSpecialMonster(bot, "rgoo") }
         },
         scorpion: {
             attack: async () => { await attackTheseTypesMage(bot, ["scorpion", "phoenix"], information.friends) },

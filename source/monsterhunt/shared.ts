@@ -1100,7 +1100,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
                 // Join daily event
                 if (bot.S.goobrawl) {
                     if (bot.map !== "goobrawl") await bot.join("goobrawl")
-                    goToNearestWalkableToMonster2(bot, ["goo"])
+                    goToNearestWalkableToMonster2(bot, ["rgoo", "goo"])
                     bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                     return
                 }
