@@ -1,23 +1,26 @@
-import AL, { Character, Entity, GetEntitiesFilters, Mage } from "alclient"
+import AL, { Character, Entity, GetEntitiesFilters, Mage, SkillName } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { sortPriority } from "../../base/sort.js"
 import { Loop, LoopName, Strategy } from "../context.js"
 
 export type BaseAttackStrategyOptions = GetEntitiesFilters & {
     characters: Character[]
+    disableCreditCheck?: boolean
     disableEnergize?: boolean
     disableZapper?: boolean
+    maximumTargets?: number
 }
 
 export class BaseAttackStrategy<Type extends Character> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
     public options: BaseAttackStrategyOptions
+    public sortPriority: (a: Entity, b: Entity) => boolean
 
     public constructor(options?: BaseAttackStrategyOptions) {
         this.options = options ?? {
             characters: []
         }
-        if (this.options.couldGiveCredit === undefined) this.options.couldGiveCredit = true
+        if (!this.options.disableCreditCheck && this.options.couldGiveCredit === undefined) this.options.couldGiveCredit = true
         if (this.options.willDieToProjectiles === undefined) this.options.willDieToProjectiles = false
 
         this.loops.set("attack", {
@@ -29,23 +32,23 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         })
     }
 
-    public async attack(bot: Type) {
-        await this.basicAttack(bot)
-        if (!this.options.disableZapper) await this.zapperAttack(bot)
+    protected async attack(bot: Type) {
+        const priority = sortPriority(bot, this.options.typeList)
+
+        await this.basicAttack(bot, priority)
+        if (!this.options.disableZapper) await this.zapperAttack(bot, priority)
     }
 
-    public async basicAttack(bot: Type): Promise<unknown> {
-        if (!bot.canUse("attack")) return false // We can't attack
+    protected async basicAttack(bot: Type, priority: (a: Entity, b: Entity) => boolean): Promise<void> {
+        if (!bot.canUse("attack")) return // We can't attack
 
         // Find all targets we want to attack
         this.options.withinRange = "attack"
         this.options.canDamage = "attack"
         const entities = bot.getEntities(this.options)
-
         if (entities.length == 0) return // No targets to attack
 
         // Prioritize the entities
-        const priority = sortPriority(bot, this.options.typeList)
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const entity of entities) targets.add(entity)
 
@@ -55,10 +58,10 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (canKill) this.preventOverkill(bot, target)
         if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot)
 
-        return bot.basicAttack(target.id).catch((e) => console.error(e))
+        await bot.basicAttack(target.id).catch(console.error)
     }
 
-    public async zapperAttack(bot: Type) {
+    protected async zapperAttack(bot: Type, priority: (a: Entity, b: Entity) => boolean) {
         if (!bot.hasItem("zapper") && !bot.isEquipped("zapper")) return // We don't have a zapper
         if (!bot.canUse("zapperzap", { ignoreEquipped: true })) return // We can't use it
 
@@ -81,7 +84,6 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (entities.length == 0) return // No targets to attack
 
         // Prioritize the entities
-        const priority = sortPriority(bot, this.options.typeList)
         const targets = new FastPriorityQueue<Entity>(priority)
 
     }
@@ -91,7 +93,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
      *
      * @param bot The bot to energize
      */
-    protected getEnergizeFromOther(bot) {
+    protected getEnergizeFromOther(bot: Character) {
         if (!bot.s.energized && !this.options.disableEnergize) {
             for (const char of this.options.characters) {
                 if (!char) continue // Friend is missing
@@ -101,7 +103,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 if (!char.canUse("energize")) continue // Friend can't use energize
 
                 // Energize!
-                (char as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp))).catch(e => console.error(e))
+                (char as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp))).catch(console.error)
                 return
             }
         }
@@ -116,7 +118,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
      * @param bot The bot that is performing the attack
      * @param target The target we will kill
      */
-    protected preventOverkill(bot, target) {
+    protected preventOverkill(bot: Character, target: Entity) {
         for (const char of this.options.characters) {
             if (!char) continue
             if (char == bot) continue // Don't remove it from ourself
@@ -130,7 +132,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
      *
      * @param bot The bot that is attacking
      */
-    protected shouldAttack(bot) {
+    protected shouldAttack(bot: Character) {
         if (bot.c.town) return false // Don't attack if teleporting
         if (bot.isOnCooldown("scare")) return false // Don't attack if scare is on cooldown
         return true

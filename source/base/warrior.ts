@@ -188,7 +188,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
 
         if (!avoidAgitate && agitateTargets.length > 2 && bot.canUse("agitate")) {
             // Agitate all nearby monsters
-            bot.agitate().catch(e => console.error(e))
+            bot.agitate().catch(console.error)
             bot.mp -= bot.G.skills.agitate.mp
         } else if (!(options.maximumTargets && bot.targets + 1 > options.maximumTargets)) {
             let numNewTargets = 0
@@ -204,7 +204,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                         if (zapper !== undefined) bot.equip(zapper, "ring1")
 
                         // Zap
-                        bot.zapperZap(target.id).catch(e => console.error(e))
+                        bot.zapperZap(target.id).catch(console.error)
                         bot.mp -= bot.G.skills.zapperzap.mp
                         target.target = bot.id
                         numNewTargets += 1
@@ -222,7 +222,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                     const target = agitateTargets[i]
                     if (AL.Tools.distance(bot, target) > bot.G.skills.taunt.range) continue // Too far to taunt
                     if (target.target == bot.id) continue // They're targeting us already
-                    bot.taunt(target.id).catch(e => console.error(e))
+                    bot.taunt(target.id).catch(console.error)
                     bot.mp -= bot.G.skills.taunt.mp
                     numNewTargets += 1
                     agitateTargets.splice(i, 1) // Remove the entity from the agitate list
@@ -289,7 +289,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                         await Promise.all(promises)
                     }
 
-                    bot.stomp().catch(e => console.error(e))
+                    bot.stomp().catch(console.error)
                     bot.mp -= bot.G.skills.stomp.mp
 
                     // Re-equip if we changed weapons
@@ -324,7 +324,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                     if (!friend.canUse("energize")) continue // Friend can't use energize
 
                     // Energize!
-                    (friend as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp))).catch(e => console.error(e))
+                    (friend as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp))).catch(console.error)
                     break
                 }
             }
@@ -359,7 +359,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
 
                 // Zap
                 const promises: Promise<unknown>[] = []
-                promises.push(bot.zapperZap(target.id).catch(e => console.error(e)))
+                promises.push(bot.zapperZap(target.id).catch(console.error))
 
                 // Re-equip ring
                 if (zapper !== undefined) promises.push(bot.equip(zapper, "ring1"))
@@ -398,7 +398,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
 
                     // Zap
                     const promises: Promise<unknown>[] = []
-                    promises.push(bot.zapperZap(target.id).catch(e => console.error(e)))
+                    promises.push(bot.zapperZap(target.id).catch(console.error))
 
                     // Re-equip ring
                     if (zapper !== undefined) promises.push(bot.equip(zapper, "ring1"))

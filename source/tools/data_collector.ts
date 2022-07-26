@@ -72,7 +72,7 @@ async function run() {
                 skeletorChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
                 if (skeletorChecker.rip) await skeletorChecker.respawn()
-                await Promise.all([skeletorChecker.smartMove({ map: "arena", x: 379.5, y: -671.5 }).catch(e => console.error(e)), skeletorChecker.regenHP()])
+                await Promise.all([skeletorChecker.smartMove({ map: "arena", x: 379.5, y: -671.5 }).catch(console.error), skeletorChecker.regenHP()])
                 skeletorChecker.disconnect()
                 skeletorChecker = undefined
             } catch (e) {
@@ -107,7 +107,7 @@ async function run() {
                 mvampireChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
                 if (mvampireChecker.rip) await mvampireChecker.respawn()
-                await Promise.all([mvampireChecker.smartMove({ map: "cave", x: -190.5, y: -1176.5 }).catch(e => console.error(e)), mvampireChecker.regenHP()])
+                await Promise.all([mvampireChecker.smartMove({ map: "cave", x: -190.5, y: -1176.5 }).catch(console.error), mvampireChecker.regenHP()])
                 mvampireChecker.disconnect()
                 mvampireChecker = undefined
                 AL.PlayerModel.updateOne({ name: botName }, { lastSeen: Date.now() - 60_000 }).exec().catch((e) => { console.error(e) })
@@ -143,7 +143,7 @@ async function run() {
                 mvampireChecker2 = await AL.Game.startCharacter(botName, server[0], server[1])
 
                 if (mvampireChecker2.rip) await mvampireChecker2.respawn()
-                await Promise.all([mvampireChecker2.smartMove({ map: "cave", x: 1244, y: -22.5 }).catch(e => console.error(e)), mvampireChecker2.regenHP()])
+                await Promise.all([mvampireChecker2.smartMove({ map: "cave", x: 1244, y: -22.5 }).catch(console.error), mvampireChecker2.regenHP()])
                 mvampireChecker2.disconnect()
                 mvampireChecker2 = undefined
                 AL.PlayerModel.updateOne({ name: botName }, { lastSeen: Date.now() - 60_000 }).exec().catch((e) => { console.error(e) })
@@ -179,7 +179,7 @@ async function run() {
                 fvampireChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
                 if (fvampireChecker.rip) await fvampireChecker.respawn()
-                await Promise.all([fvampireChecker.smartMove({ map: "halloween", x: -405.5, y: -1642.5 }).catch(e => console.error(e)), fvampireChecker.regenHP()])
+                await Promise.all([fvampireChecker.smartMove({ map: "halloween", x: -405.5, y: -1642.5 }).catch(console.error), fvampireChecker.regenHP()])
                 fvampireChecker.disconnect()
                 fvampireChecker = undefined
                 AL.PlayerModel.updateOne({ name: botName }, { lastSeen: Date.now() - 60_000 }).exec().catch((e) => { console.error(e) })
@@ -215,7 +215,7 @@ async function run() {
                 greenjrChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
                 if (greenjrChecker.rip) await greenjrChecker.respawn()
-                await Promise.all([greenjrChecker.smartMove({ map: "halloween", x: -569, y: -511.5 }).catch(e => console.error(e)), greenjrChecker.regenHP()])
+                await Promise.all([greenjrChecker.smartMove({ map: "halloween", x: -569, y: -511.5 }).catch(console.error), greenjrChecker.regenHP()])
                 greenjrChecker.disconnect()
                 greenjrChecker = undefined
                 AL.PlayerModel.updateOne({ name: botName }, { lastSeen: Date.now() - 60_000 }).exec().catch((e) => { console.error(e) })
@@ -251,7 +251,7 @@ async function run() {
                 jrChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
                 if (jrChecker.rip) await jrChecker.respawn()
-                await Promise.all([jrChecker.smartMove({ map: "spookytown", x: -783.5, y: -301 }).catch(e => console.error(e)), jrChecker.regenHP()])
+                await Promise.all([jrChecker.smartMove({ map: "spookytown", x: -783.5, y: -301 }).catch(console.error), jrChecker.regenHP()])
                 jrChecker.disconnect()
                 jrChecker = undefined
                 AL.PlayerModel.updateOne({ name: botName }, { lastSeen: Date.now() - 60_000 }).exec().catch((e) => { console.error(e) })
@@ -287,7 +287,7 @@ async function run() {
                 stompyChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
                 if (stompyChecker.rip) await stompyChecker.respawn()
-                await Promise.all([stompyChecker.smartMove({ map: "winterland", x: 433, y: -2745 }).catch(e => console.error(e)), stompyChecker.regenHP()])
+                await Promise.all([stompyChecker.smartMove({ map: "winterland", x: 433, y: -2745 }).catch(console.error), stompyChecker.regenHP()])
                 stompyChecker.disconnect()
                 stompyChecker = undefined
                 AL.PlayerModel.updateOne({ name: botName }, { lastSeen: Date.now() - 60_000 }).exec().catch((e) => { console.error(e) })
@@ -323,7 +323,7 @@ async function run() {
                 newPlayersChecker = await AL.Game.startCharacter(botName, server[0], server[1])
 
                 if (newPlayersChecker.rip) await newPlayersChecker.respawn()
-                await Promise.all([newPlayersChecker.smartMove({ map: "main", x: -32, y: 787 }).catch(e => console.error(e)), newPlayersChecker.regenHP()])
+                await Promise.all([newPlayersChecker.smartMove({ map: "main", x: -32, y: 787 }).catch(console.error), newPlayersChecker.regenHP()])
                 newPlayersChecker.disconnect()
                 newPlayersChecker = undefined
                 AL.PlayerModel.updateOne({ name: botName }, { lastSeen: Date.now() - 60_000 }).exec().catch((e) => { console.error(e) })

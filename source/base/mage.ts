@@ -158,7 +158,7 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
                 if (!friend.canUse("energize")) continue // Friend can't use energize
 
                 // Energize!
-                (friend as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp))).catch(e => console.error(e))
+                (friend as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp))).catch(console.error)
                 break
             }
         }
@@ -209,7 +209,7 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
 
                 // Zap
                 const promises: Promise<unknown>[] = []
-                promises.push(bot.zapperZap(target.id).catch(e => console.error(e)))
+                promises.push(bot.zapperZap(target.id).catch(console.error))
 
                 // Re-equip ring
                 if (zapper !== undefined) promises.push(bot.equip(zapper, "ring1"))
@@ -248,7 +248,7 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
 
                     // Zap
                     const promises: Promise<unknown>[] = []
-                    promises.push(bot.zapperZap(target.id).catch(e => console.error(e)))
+                    promises.push(bot.zapperZap(target.id).catch(console.error))
 
                     // Re-equip ring
                     if (zapper !== undefined) promises.push(bot.equip(zapper, "ring1"))
@@ -270,7 +270,7 @@ export async function magiportFriendsIfNotNearby(bot: Mage, information: Informa
         if (AL.Tools.distance(bot, friend) <= distance) return // Already nearby
 
         if (bot.canUse("magiport")) {
-            bot.magiport(friend.id).catch(e => console.error(e))
+            bot.magiport(friend.id).catch(console.error)
             lastMagiport.set(friend.id, Date.now())
         }
     }
@@ -294,7 +294,7 @@ export function magiportStrangerIfNotNearby(bot: Mage, id: string): void {
     if (player && Pathfinder.canWalkPath(bot, player)) return // Nearby
 
     // Magiport
-    bot.magiport(id).catch(e => console.error(e))
+    bot.magiport(id).catch(console.error)
     lastMagiport.set(id, Date.now())
 }
 

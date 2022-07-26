@@ -96,7 +96,7 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
         && !target.immune
         && bot.mp > (bot.mp_cost + bot.G.skills.huntersmark.mp)
         && !bot.canKillInOneShot(target)) {
-            bot.huntersMark(target.id).catch(e => console.error(e))
+            bot.huntersMark(target.id).catch(console.error)
         }
 
         // Use our friends to energize for the attack speed boost
@@ -109,7 +109,7 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
                 if (!friend.canUse("energize")) continue // Friend can't use energize
 
                 // Energize!
-                (friend as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp))).catch(e => console.error(e))
+                (friend as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp))).catch(console.error)
                 break
             }
         }
@@ -189,6 +189,7 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
     if (!options.disableSupershot && bot.canUse("supershot")) {
         const supershotTargets = new FastPriorityQueue<Entity>(priority)
         for (const target of bot.getEntities({
+            canDamage: "supershot",
             couldGiveCredit: options.disableCreditCheck ? undefined : true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
@@ -196,7 +197,6 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
             willDieToProjectiles: false,
             withinRange: bot.range * bot.G.skills.supershot.range_multiplier
         })) {
-            if (!bot.G.skills.supershot.pierces_immunity && target.immune) continue
             if (target.target == undefined && options.maximumTargets <= bot.targets) continue // Don't aggro more than our maximum
 
             // If we can kill something guaranteed, break early
@@ -208,7 +208,6 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
                     friend.deleteEntity(target.id)
                 }
                 await bot.superShot(target.id)
-                supershotTargets
                 break
             }
 
@@ -241,11 +240,11 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
             const zapper: number = bot.locateItem("zapper", bot.items, { returnHighestLevel: true })
             if (bot.isEquipped("zapper") || (zapper !== undefined)) {
                 // Equip zapper
-                if (zapper !== undefined) bot.equip(zapper, "ring1")
+                if (zapper !== undefined) bot.equip(zapper, "ring1").catch(console.error)
 
                 // Zap
                 const promises: Promise<unknown>[] = []
-                promises.push(bot.zapperZap(target.id).catch(e => console.error(e)))
+                promises.push(bot.zapperZap(target.id).catch(console.error))
 
                 // Re-equip ring
                 if (zapper !== undefined) promises.push(bot.equip(zapper, "ring1"))
@@ -280,11 +279,11 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
                 const zapper: number = bot.locateItem("zapper", bot.items, { returnHighestLevel: true })
                 if (bot.isEquipped("zapper") || (zapper !== undefined)) {
                 // Equip zapper
-                    if (zapper !== undefined) bot.equip(zapper, "ring1")
+                    if (zapper !== undefined) bot.equip(zapper, "ring1").catch(console.error)
 
                     // Zap
                     const promises: Promise<unknown>[] = []
-                    promises.push(bot.zapperZap(target.id).catch(e => console.error(e)))
+                    promises.push(bot.zapperZap(target.id).catch(console.error))
 
                     // Re-equip ring
                     if (zapper !== undefined) promises.push(bot.equip(zapper, "ring1"))

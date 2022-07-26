@@ -1341,7 +1341,7 @@ function prepareWarrior(bot: Warrior) {
                     const wolvesTargetingMe = bot.getEntities({ targetingMe: true, type: "wolf" })
                     const wolvesToTarget = bot.getEntities({ couldGiveCredit: true, targetingMe: false, type: "wolf", withinRange: bot.G.skills.taunt.range })
                     if (wolvesTargetingMe.length < 2 && wolvesToTarget.length > 0) {
-                        bot.taunt(wolvesToTarget[0].id).catch(e => console.error(e))
+                        bot.taunt(wolvesToTarget[0].id).catch(console.error)
                     }
                 }
                 await attackTheseTypesWarrior(bot, ["stompy"], information.friends, { disableAgitate: true })

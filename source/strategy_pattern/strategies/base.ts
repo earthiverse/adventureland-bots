@@ -70,7 +70,7 @@ export class BaseStrategy<Type extends Character> implements Strategy<Type> {
             }
 
             // Open the chest
-            await bot.openChest(id).catch(e => console.error(e))
+            await bot.openChest(id).catch(console.error)
         }
     }
 }

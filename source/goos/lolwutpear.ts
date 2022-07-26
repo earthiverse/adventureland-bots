@@ -48,7 +48,7 @@ async function startRogue(bot: Rogue, positionOffset: { x: number, y: number } =
             await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot)
 
-            goToNearestWalkableToMonster(bot, targets, offsetPosition(defaultLocation, positionOffset.x, positionOffset.y)).catch(e => console.error(e))
+            goToNearestWalkableToMonster(bot, targets, offsetPosition(defaultLocation, positionOffset.x, positionOffset.y)).catch(console.error)
         } catch (e) {
             console.error(e)
         }

@@ -21,7 +21,7 @@ export class GiveRogueSpeedStrategy implements Strategy<Rogue> {
         if (bot.s.rspeed?.ms > 30_000) return // We have rogue speed already
 
         // Give rogue speed to ourself
-        await bot.rspeed(bot.id).catch((e) => console.error(e))
+        await bot.rspeed(bot.id).catch(console.error)
     }
 
     private async giveRogueSpeedToOthers(bot: Rogue) {
@@ -34,7 +34,7 @@ export class GiveRogueSpeedStrategy implements Strategy<Rogue> {
             if (player.s.rspeed?.ms > 300_000) continue // Already has rogue speed
 
             // Give rogue speed to the player
-            await bot.rspeed(player.id).catch((e) => console.error(e))
+            await bot.rspeed(player.id).catch(console.error)
             break
         }
     }

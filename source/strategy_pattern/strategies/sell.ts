@@ -95,7 +95,7 @@ export class SellStrategy<Type extends Character> implements SellStrategyOptions
 
                 const index = bot.locateItem(item.name, bot.items, { level: item.level, locked: false })
                 if (index === undefined) continue // We don't have this item to sell
-                await bot.sellToMerchant(player.id, slot, item.rid, Math.min(bot.items[index].q ?? 1, item.q ?? 1)).catch((e) => console.error(e))
+                await bot.sellToMerchant(player.id, slot, item.rid, Math.min(bot.items[index].q ?? 1, item.q ?? 1)).catch(console.error)
             }
         }
     }
@@ -120,7 +120,7 @@ export class SellStrategy<Type extends Character> implements SellStrategyOptions
                 return true
             })) continue // We don't want to sell this item
 
-            await bot.sell(i, item.q ?? 1).catch((e) => console.error(e))
+            await bot.sell(i, item.q ?? 1).catch(console.error)
         }
     }
 }

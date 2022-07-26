@@ -258,13 +258,13 @@ function preparePriest(bot: Priest) {
             move: async () => {
                 const dragold = bot.getEntity({ returnNearest: true, type: "dragold" })
                 if (dragold) {
-                    if (!bot.smartMoving) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
-                    else if (AL.Tools.distance(dragold, bot.smartMoving) > 100) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
+                    if (!bot.smartMoving) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
+                    else if (AL.Tools.distance(dragold, bot.smartMoving) > 100) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
                 } else if (bot.S.dragold?.live) {
                     requestMagiportService(bot, bot.S.dragold as IPosition)
-                    if (!bot.smartMoving) goToSpecialMonster(bot, "dragold").catch(e => console.error(e))
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "dragold").catch(console.error)
                     else if (AL.Tools.distance(bot.S.dragold as IPosition, bot.smartMoving) > 100) {
-                        bot.smartMove(bot.S.dragold as IPosition, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
+                        bot.smartMove(bot.S.dragold as IPosition, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
                     }
 
                 }
@@ -346,15 +346,15 @@ function preparePriest(bot: Priest) {
                 const grinch = bot.getEntity({ returnNearest: true, type: "grinch" })
                 if (grinch) {
                     // TODO: If we see Kane, and the grinch is targeting us, kite him to Kane
-                    if (!bot.smartMoving) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
-                    else if (AL.Tools.distance(grinch, bot.smartMoving) > 100) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
+                    if (!bot.smartMoving) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
+                    else if (AL.Tools.distance(grinch, bot.smartMoving) > 100) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
                 } else if (bot.S.grinch?.live) {
                     if (["woffice", "bank", "bank_b", "bank_u"].includes(bot.S.grinch.map)) return // Wait for the grinch to move to a place we can attack him
 
                     requestMagiportService(bot, bot.S.grinch as IPosition)
-                    if (!bot.smartMoving) goToSpecialMonster(bot, "grinch").catch(e => console.error(e))
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "grinch").catch(console.error)
                     else if (AL.Tools.distance(bot.S.grinch as IPosition, bot.smartMoving) > 100) {
-                        bot.smartMove(bot.S.grinch as IPosition, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
+                        bot.smartMove(bot.S.grinch as IPosition, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
                     }
                 }
             }
@@ -771,13 +771,13 @@ function prepareRanger(bot: Ranger) {
 
                 const dragold = bot.getEntity({ returnNearest: true, type: "dragold" })
                 if (dragold) {
-                    if (!bot.smartMoving) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
-                    else if (AL.Tools.distance(dragold, bot.smartMoving) > 100) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
+                    if (!bot.smartMoving) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
+                    else if (AL.Tools.distance(dragold, bot.smartMoving) > 100) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
                 } else if (bot.S.dragold?.live) {
                     requestMagiportService(bot, bot.S.dragold as IPosition)
-                    if (!bot.smartMoving) goToSpecialMonster(bot, "dragold").catch(e => console.error(e))
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "dragold").catch(console.error)
                     else if (AL.Tools.distance(bot.S.dragold as IPosition, bot.smartMoving) > 100) {
-                        bot.smartMove(bot.S.dragold as IPosition, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
+                        bot.smartMove(bot.S.dragold as IPosition, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
                     }
 
                 }
@@ -848,15 +848,15 @@ function prepareRanger(bot: Ranger) {
                 const grinch = bot.getEntity({ returnNearest: true, type: "grinch" })
                 if (grinch) {
                     // TODO: If we see Kane, and the grinch is targeting us, kite him to Kane
-                    if (!bot.smartMoving) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
-                    else if (AL.Tools.distance(grinch, bot.smartMoving) > 100) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
+                    if (!bot.smartMoving) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
+                    else if (AL.Tools.distance(grinch, bot.smartMoving) > 100) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
                 } else if (bot.S.grinch?.live) {
                     if (["woffice", "bank", "bank_b", "bank_u"].includes(bot.S.grinch.map)) return // Wait for the grinch to move to a place we can attack him
 
                     requestMagiportService(bot, bot.S.grinch as IPosition)
-                    if (!bot.smartMoving) goToSpecialMonster(bot, "grinch").catch(e => console.error(e))
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "grinch").catch(console.error)
                     else if (AL.Tools.distance(bot.S.grinch as IPosition, bot.smartMoving) > 100) {
-                        bot.smartMove(bot.S.grinch as IPosition, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
+                        bot.smartMove(bot.S.grinch as IPosition, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
                     }
                 }
             }
@@ -1316,13 +1316,13 @@ function prepareWarrior(bot: Warrior) {
 
                 const dragold = bot.getEntity({ returnNearest: true, type: "dragold" })
                 if (dragold) {
-                    if (!bot.smartMoving) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
-                    else if (AL.Tools.distance(dragold, bot.smartMoving) > 100) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
+                    if (!bot.smartMoving) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
+                    else if (AL.Tools.distance(dragold, bot.smartMoving) > 100) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
                 } else if (bot.S.dragold?.live) {
                     requestMagiportService(bot, bot.S.dragold as IPosition)
-                    if (!bot.smartMoving) goToSpecialMonster(bot, "dragold").catch(e => console.error(e))
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "dragold").catch(console.error)
                     else if (AL.Tools.distance(bot.S.dragold as IPosition, bot.smartMoving) > 100) {
-                        bot.smartMove(bot.S.dragold as IPosition, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
+                        bot.smartMove(bot.S.dragold as IPosition, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
                     }
 
                 }
@@ -1423,15 +1423,15 @@ function prepareWarrior(bot: Warrior) {
                 const grinch = bot.getEntity({ returnNearest: true, type: "grinch" })
                 if (grinch) {
                     // TODO: If we see Kane, and the grinch is targeting us, kite him to Kane
-                    if (!bot.smartMoving) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
-                    else if (AL.Tools.distance(grinch, bot.smartMoving) > 100) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
+                    if (!bot.smartMoving) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
+                    else if (AL.Tools.distance(grinch, bot.smartMoving) > 100) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
                 } else if (bot.S.grinch?.live) {
                     if (["woffice", "bank", "bank_b", "bank_u"].includes(bot.S.grinch.map)) return // Wait for the grinch to move to a place we can attack him
 
                     requestMagiportService(bot, bot.S.grinch as IPosition)
-                    if (!bot.smartMoving) goToSpecialMonster(bot, "grinch").catch(e => console.error(e))
+                    if (!bot.smartMoving) goToSpecialMonster(bot, "grinch").catch(console.error)
                     else if (AL.Tools.distance(bot.S.grinch as IPosition, bot.smartMoving) > 100) {
-                        bot.smartMove(bot.S.grinch as IPosition, { getWithin: Math.min(bot.range - 10, 50) }).catch(e => console.error(e))
+                        bot.smartMove(bot.S.grinch as IPosition, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
                     }
                 }
             }

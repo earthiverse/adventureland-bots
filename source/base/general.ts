@@ -748,7 +748,7 @@ export function goToKiteStuff(bot: Character, options?: KiteOptions): void {
         }
     }
 
-    bot.move(bot.x + vector.x, bot.y + vector.y, { resolveOnStart: true }).catch(e => console.error(e))
+    bot.move(bot.x + vector.x, bot.y + vector.y, { resolveOnStart: true }).catch(console.error)
 }
 
 export async function goToNPC(bot: Character, name: NPCName) {
@@ -980,7 +980,7 @@ export function kiteInCircle(bot: Character, type: MonsterName, center: IPositio
             const angleFromCenterToMonsterGoing = Math.atan2(nearest.going_y - center.y, nearest.going_x - center.x)
             const endGoalAngle = angleFromCenterToMonsterGoing + angle
             const endGoal = offsetPositionParty({ x: center.x + radius * Math.cos(endGoalAngle), y: center.y + radius * Math.sin(endGoalAngle) }, bot)
-            bot.move(endGoal.x, endGoal.y, { resolveOnStart: true }).catch(e => console.error(e))
+            bot.move(endGoal.x, endGoal.y, { resolveOnStart: true }).catch(console.error)
         } else {
             // There isn't a monster nearby
             const angleFromSpawnToBot = Math.atan2(bot.y - center.y, bot.x - center.x)

@@ -30,7 +30,7 @@ export async function startSellSticksToMerchantsLoop(bot: Character): Promise<vo
                     if (slot.name !== "stick") continue // They aren't buying sticks
                     if (slot.price < 2_500_000) continue // They aren't paying enough
 
-                    await bot.sellToMerchant(player.id, slotName as TradeSlotType, slot.rid, 1).catch(e => console.error(e))
+                    await bot.sellToMerchant(player.id, slotName as TradeSlotType, slot.rid, 1).catch(console.error)
                 }
             }
         } catch (e) {
@@ -39,7 +39,7 @@ export async function startSellSticksToMerchantsLoop(bot: Character): Promise<vo
 
         setTimeout(sellToMerchants, 1000)
     }
-    sellToMerchants()
+    sellToMerchants().catch(console.error)
 }
 
 export async function startMailBankKeysToEarthiverseLoop(bot: Character): Promise<void> {
@@ -49,15 +49,15 @@ export async function startMailBankKeysToEarthiverseLoop(bot: Character): Promis
 
             const bankKey = bot.locateItem("bkey")
             if (bankKey !== undefined) {
-                bot.swapItems(0, bankKey)
-                bot.sendMail("earthiverse", "bank key!", "sell it", true)
+                bot.swapItems(0, bankKey).catch(console.error)
+                bot.sendMail("earthiverse", "bank key!", "sell it", true).catch(console.error)
             }
         } catch (e) {
-            console.error
+            console.error(e)
         }
         setTimeout(mailBankKeys, 5000)
     }
-    mailBankKeys()
+    mailBankKeys().catch(console.error)
 }
 
 function getMSToNextStun(bot: PingCompensatedCharacter) {
@@ -202,7 +202,7 @@ export async function startLeader(bot: Warrior): Promise<void> {
         }
         setTimeout(swapLuckStuffLoop, 250)
     }
-    swapLuckStuffLoop()
+    swapLuckStuffLoop().catch(console.error)
 }
 
 export async function startShared(bot: Warrior, merchantName: string): Promise<void> {
@@ -220,7 +220,7 @@ export async function startShared(bot: Warrior, merchantName: string): Promise<v
     startWarcryLoop(bot)
     startSendStuffDenylistLoop(bot, [merchantName])
 
-    startSellSticksToMerchantsLoop(bot)
+    startSellSticksToMerchantsLoop(bot).catch(console.error)
 
     async function attackLoop() {
         try {

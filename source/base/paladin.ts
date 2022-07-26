@@ -53,7 +53,7 @@ export async function attackTheseTypesPaladin(bot: Paladin, types: MonsterName[]
                 if (!friend.canUse("energize")) continue // Friend can't use energize
 
                 // Energize!
-                (friend as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp))).catch(e => console.error(e))
+                (friend as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp))).catch(console.error)
                 break
             }
         }
@@ -87,7 +87,7 @@ export async function attackTheseTypesPaladin(bot: Paladin, types: MonsterName[]
 
                 // Zap
                 const promises: Promise<unknown>[] = []
-                promises.push(bot.zapperZap(target.id).catch(e => console.error(e)))
+                promises.push(bot.zapperZap(target.id).catch(console.error))
 
                 // Re-equip ring
                 if (zapper !== undefined) promises.push(bot.equip(zapper, "ring1"))
@@ -126,7 +126,7 @@ export async function attackTheseTypesPaladin(bot: Paladin, types: MonsterName[]
 
                     // Zap
                     const promises: Promise<unknown>[] = []
-                    promises.push(bot.zapperZap(target.id).catch(e => console.error(e)))
+                    promises.push(bot.zapperZap(target.id).catch(console.error))
 
                     // Re-equip ring
                     if (zapper !== undefined) promises.push(bot.equip(zapper, "ring1"))

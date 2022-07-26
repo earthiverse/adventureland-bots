@@ -42,7 +42,7 @@ export class RequestPartyStrategy<Type extends Character> implements Strategy<Ty
     private async requestPartyInvite(bot: Type) {
         if (!bot.partyData?.list?.includes(this.partyLeader)) {
             // They're not in our party, send a request
-            return bot.sendPartyRequest(this.partyLeader).catch((e) => console.error(e))
+            return bot.sendPartyRequest(this.partyLeader).catch(console.error)
         }
     }
 }

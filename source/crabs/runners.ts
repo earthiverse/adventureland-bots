@@ -83,7 +83,7 @@ export async function startShared(bot: Mage, targets: MonsterName[], friends: Ma
                         if (friend.id == bot.id) continue // Can't energize ourself
                         if (AL.Tools.distance(bot, friend) > bot.G.skills.energize.range) continue // Too far away
                         if (!friend.canUse("energize")) continue // Can't energize us
-                        friend.energize(bot.id).catch(e => console.error(e))
+                        friend.energize(bot.id).catch(console.error)
                     }
 
                     await bot.basicAttack(entity.id)
@@ -115,7 +115,7 @@ export async function startShared(bot: Mage, targets: MonsterName[], friends: Ma
                         if (friend.id == bot.id) continue // Can't energize ourself
                         if (AL.Tools.distance(bot, friend) > bot.G.skills.energize.range) continue // Too far away
                         if (!friend.canUse("energize")) continue // Can't energize us
-                        friend.energize(bot.id).catch(e => console.error(e))
+                        friend.energize(bot.id).catch(console.error)
                     }
 
                     await bot.basicAttack(entity.id)

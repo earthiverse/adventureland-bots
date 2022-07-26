@@ -14,6 +14,6 @@ export class RespawnStrategy<Type extends Character> implements Strategy<Type> {
     private async respawnIfDead(bot: Type) {
         if (!bot.rip) return
 
-        await bot.respawn().catch((e) => console.error(e))
+        await bot.respawn().catch(console.error)
     }
 }
