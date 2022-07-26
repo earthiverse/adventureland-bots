@@ -24,11 +24,17 @@ export const MERCHANT_ITEMS_TO_HOLD: Set<ItemName> = new Set([
 ])
 
 export async function attackTheseTypesMerchant(bot: Merchant, types: MonsterName[], friends: Character[] = [], options: {
+    disableCreditCheck?: boolean
     disableZapper?: boolean
     targetingPartyMember?: boolean
     targetingPlayer?: string
 } = {}): Promise<void> {
     if (bot.c.town) return // Don't attack if teleporting
+    if (bot.isOnCooldown("scare")) return
+
+    // Adjust options
+    if (options.targetingPlayer && options.targetingPlayer == bot.id) options.targetingPlayer = undefined
+    if (bot.map == "goobrawl") options.disableCreditCheck = true // Goo brawl is cooperative
 
     const priority = sortPriority(bot, types)
 
@@ -36,7 +42,7 @@ export async function attackTheseTypesMerchant(bot: Merchant, types: MonsterName
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const target of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: true,
+            couldGiveCredit: options.disableCreditCheck ?? true,
             typeList: types,
             willDieToProjectiles: false,
             withinRange: bot.range
@@ -63,7 +69,7 @@ export async function attackTheseTypesMerchant(bot: Merchant, types: MonsterName
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const target of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: true,
+            couldGiveCredit: options.disableCreditCheck ?? true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,

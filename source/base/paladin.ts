@@ -9,6 +9,11 @@ export async function attackTheseTypesPaladin(bot: Paladin, types: MonsterName[]
     targetingPlayer?: string
 } = {}): Promise<void> {
     if (bot.c.town) return // Don't attack if teleporting
+    if (bot.isOnCooldown("scare")) return
+
+    // Adjust options
+    if (options.targetingPlayer && options.targetingPlayer == bot.id) options.targetingPlayer = undefined
+    if (bot.map == "goobrawl") options.disableCreditCheck = true // Goo brawl is cooperative
 
     const priority = sortPriority(bot, types)
 

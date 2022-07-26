@@ -11,10 +11,11 @@ export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], 
     targetingPartyMember?: boolean
     targetingPlayer?: string
 } = {}): Promise<void> {
+    if (bot.c.town) return // Don't attack if teleporting
+
     // Adjust options
     if (options.targetingPlayer && options.targetingPlayer == bot.id) options.targetingPlayer = undefined
-
-    if (bot.c.town) return // Don't attack if teleporting
+    if (bot.map == "goobrawl") options.disableCreditCheck = true // Goo brawl is cooperative
 
     if (bot.canUse("heal")) {
         const healPriority = (a: Player, b: Player) => {
