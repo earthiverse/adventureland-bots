@@ -128,7 +128,10 @@ function prepareMage(bot: Mage) {
             },
         },
         crabxx: {
-            attack: async () => { await attackTheseTypesMage(bot, ["crabx", "crabxx"], information.friends, { disableCreditCheck: true }) },
+            attack: async () => {
+                await attackTheseTypesMage(bot, ["crabx"], information.friends, { disableCburst: true, disableCreditCheck: true, disableZapper: true })
+                await attackTheseTypesMage(bot, ["crabxx"], information.friends, { disableCreditCheck: true })
+            },
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
             move: async () => {

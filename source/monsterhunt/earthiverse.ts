@@ -204,7 +204,10 @@ function preparePriest(bot: Priest) {
             move: async () => { await goToNearestWalkableToMonster2(bot, ["crabx"], { map: "main", x: -964, y: 1762 }) },
         },
         crabxx: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["crabx", "crabxx"], information.friends, { disableCreditCheck: true, healStrangers: true }) },
+            attack: async () => {
+                await attackTheseTypesPriest(bot, ["crabx"], information.friends, { disableCreditCheck: true, disableZapper: true, healStrangers: true })
+                await attackTheseTypesPriest(bot, ["crabxx", "crabx"], information.friends, { disableCreditCheck: true, healStrangers: true })
+            },
             attackWhileIdle: false,
             equipment: maxDamageEquipment,
             move: async () => {
@@ -720,7 +723,10 @@ function prepareRanger(bot: Ranger) {
             move: async () => { await goToNearestWalkableToMonster2(bot, ["crabx"], { map: "main", x: -1202, y: -66 }) },
         },
         crabxx: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["crabx", "crabxx"], information.friends, { disableCreditCheck: true }) },
+            attack: async () => {
+                await attackTheseTypesRanger(bot, ["crabx"], information.friends, { disableCreditCheck: true, disableZapper: true })
+                await attackTheseTypesRanger(bot, ["crabxx", "crabx"], information.friends, { disableCreditCheck: true })
+            },
             attackWhileIdle: false,
             equipment: maxDamageEquipment,
             move: async () => {
@@ -1258,7 +1264,10 @@ function prepareWarrior(bot: Warrior) {
             move: async () => { await goToNearestWalkableToMonster2(bot, ["crabx"], { map: "main", x: -1004, y: 1762 }) },
         },
         crabxx: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["crabx", "crabxx"], information.friends, { disableCreditCheck: true }) },
+            attack: async () => {
+                await attackTheseTypesWarrior(bot, ["crabx"], information.friends, { disableCreditCheck: true, disableZapper: true })
+                await attackTheseTypesWarrior(bot, ["crabxx", "crabx"], information.friends, { disableCreditCheck: true })
+            },
             attackWhileIdle: true,
             equipment: aoeEquipment,
             requireCtype: "priest",
