@@ -30,7 +30,7 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
         let mpNeeded = bot.G.skills.cburst.mp + bot.mp_cost
         for (const entity of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: options.disableCreditCheck ?? true,
+            couldGiveCredit: options.disableCreditCheck ? undefined : true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,
@@ -59,7 +59,7 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
         }
         if (humanoidRestorability > 100 / 3) {
             for (const entity of bot.getEntities({
-                couldGiveCredit: options.disableCreditCheck ?? true,
+                couldGiveCredit: options.disableCreditCheck ? undefined : true,
                 typeList: types,
                 willDieToProjectiles: false,
                 withinRange: bot.range
@@ -89,7 +89,7 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
             // Cburst monsters to kill steal
             for (const entity of bot.getEntities({
                 canDamage: true,
-                couldGiveCredit: options.disableCreditCheck ?? true,
+                couldGiveCredit: options.disableCreditCheck ? undefined : true,
                 willDieToProjectiles: true,
                 withinRange: bot.range
             })) {
@@ -126,7 +126,7 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const entity of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: options.disableCreditCheck ?? true,
+            couldGiveCredit: options.disableCreditCheck ? undefined : true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,
@@ -169,7 +169,7 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
     if (bot.canUse("cburst") && !options.disableCburst && bot.mp > bot.max_mp - 500) {
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const entity of bot.getEntities({
-            couldGiveCredit: options.disableCreditCheck ?? true,
+            couldGiveCredit: options.disableCreditCheck ? undefined : true,
             typeList: types,
             willBurnToDeath: false,
             willDieToProjectiles: false,
@@ -187,7 +187,7 @@ export async function attackTheseTypesMage(bot: Mage, types: MonsterName[], frie
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const target of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: options.disableCreditCheck ?? true,
+            couldGiveCredit: options.disableCreditCheck ? undefined : true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,

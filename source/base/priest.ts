@@ -73,7 +73,7 @@ export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], 
         const targets = new FastPriorityQueue<Entity>(attackPriority)
         for (const target of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: options.disableCreditCheck ?? true,
+            couldGiveCredit: options.disableCreditCheck ? undefined : true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,
@@ -123,7 +123,7 @@ export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], 
     if (!options.disableZapper && bot.canUse("zapperzap", { ignoreEquipped: true }) && bot.cc < 100) {
         const targets = new FastPriorityQueue<Entity>(attackPriority)
         for (const target of bot.getEntities({
-            couldGiveCredit: options.disableCreditCheck ?? true,
+            couldGiveCredit: options.disableCreditCheck ? undefined : true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,

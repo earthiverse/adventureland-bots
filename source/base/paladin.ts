@@ -21,7 +21,7 @@ export async function attackTheseTypesPaladin(bot: Paladin, types: MonsterName[]
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const entity of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: options.disableCreditCheck ?? true,
+            couldGiveCredit: options.disableCreditCheck ? undefined : true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,
@@ -65,7 +65,7 @@ export async function attackTheseTypesPaladin(bot: Paladin, types: MonsterName[]
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const target of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: options.disableCreditCheck ?? true,
+            couldGiveCredit: options.disableCreditCheck ? undefined : true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,

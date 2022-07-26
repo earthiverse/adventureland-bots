@@ -42,7 +42,7 @@ export async function attackTheseTypesMerchant(bot: Merchant, types: MonsterName
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const target of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: options.disableCreditCheck ?? true,
+            couldGiveCredit: options.disableCreditCheck ? undefined : true,
             typeList: types,
             willDieToProjectiles: false,
             withinRange: bot.range
@@ -69,7 +69,7 @@ export async function attackTheseTypesMerchant(bot: Merchant, types: MonsterName
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const target of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: options.disableCreditCheck ?? true,
+            couldGiveCredit: options.disableCreditCheck ? undefined : true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,

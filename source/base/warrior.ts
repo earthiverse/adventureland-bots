@@ -142,7 +142,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
         let avoidAgitate = false
         for (const target of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: options.disableCreditCheck ?? true,
+            couldGiveCredit: options.disableCreditCheck ? undefined : true,
             targetingMe: false,
             withinRange: bot.G.skills.agitate.range,
         })) {
@@ -239,7 +239,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
         const numTargets = bot.calculateTargets()
         for (const target of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: options.disableCreditCheck ?? true,
+            couldGiveCredit: options.disableCreditCheck ? undefined : true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,
@@ -337,7 +337,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const target of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: options.disableCreditCheck ?? true,
+            couldGiveCredit: options.disableCreditCheck ? undefined : true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,
