@@ -13,7 +13,7 @@ import { mainCrabs } from "../base/locations.js"
 const DEFAULT_TARGET: MonsterName = "spider"
 
 export const DEFAULT_REGION: ServerRegion = "US"
-export const DEFAULT_IDENTIFIER: ServerIdentifier = "I"
+export const DEFAULT_IDENTIFIER: ServerIdentifier = "III"
 
 export async function getTarget(bot: Character, strategy: Strategy, information: Information): Promise<MonsterName> {
     for (const entity of await getPriority1Entities(bot)) {
@@ -1092,7 +1092,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
                 // Join daily event
                 if (bot.S.goobrawl) {
                     if (bot.map !== "goobrawl") await bot.join("goobrawl")
-                    goToNearestWalkableToMonster2(bot, undefined)
+                    goToNearestWalkableToMonster2(bot, ["goo"])
                     bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                     return
                 }

@@ -948,10 +948,10 @@ export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName
         if (defaultPosition) {
             // Move towards center of default position
             bot.smartMove(offsetPositionParty(defaultPosition, bot), { avoidTownWarps: true, costs: costs, getWithin: Tools.distance(bot, defaultPosition) - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
-        } else {
+        } else if (types) {
             // Move towards center of closest spawn
             const locations: IPosition[] = []
-            for (const type of types) {
+            for (const type of types ?? []) {
                 locations.push(...Pathfinder.locateMonster(type))
             }
             locations.sort(sortClosestDistance(bot))
@@ -961,7 +961,7 @@ export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName
         // No targets nearby, move to spawn
         if (defaultPosition) {
             bot.smartMove(offsetPositionParty(defaultPosition, bot), { resolveOnFinalMoveStart: true, useBlink: true }).catch(() => { /** Suppress Error */ })
-        } else {
+        } else if (types) {
             const locations: IPosition[] = []
             for (const type of types) {
                 locations.push(...Pathfinder.locateMonster(type))
