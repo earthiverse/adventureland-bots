@@ -13,7 +13,7 @@ import { mainCrabs } from "../base/locations.js"
 const DEFAULT_TARGET: MonsterName = "spider"
 
 export const DEFAULT_REGION: ServerRegion = "US"
-export const DEFAULT_IDENTIFIER: ServerIdentifier = "III"
+export const DEFAULT_IDENTIFIER: ServerIdentifier = "I"
 
 export async function getTarget(bot: Character, strategy: Strategy, information: Information): Promise<MonsterName> {
     for (const entity of await getPriority1Entities(bot)) {
