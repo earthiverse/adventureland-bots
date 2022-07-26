@@ -6,6 +6,7 @@ import { sortPriority } from "./sort.js"
 export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[], friends: Character[] = [], options: {
     disableAgitate?: boolean
     disableCleave?: boolean
+    disableCreditCheck?: boolean
     disableStomp?: boolean
     disableZapper?: boolean
     maximumTargets?: number
@@ -141,7 +142,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
         let avoidAgitate = false
         for (const target of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: true,
+            couldGiveCredit: options.disableCreditCheck ?? true,
             targetingMe: false,
             withinRange: bot.G.skills.agitate.range,
         })) {
@@ -238,7 +239,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
         const numTargets = bot.calculateTargets()
         for (const target of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: true,
+            couldGiveCredit: options.disableCreditCheck ?? true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,
@@ -336,7 +337,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const target of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: true,
+            couldGiveCredit: options.disableCreditCheck ?? true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,

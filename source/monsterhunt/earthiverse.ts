@@ -189,6 +189,12 @@ function preparePriest(bot: Priest) {
             equipment: maxDamageEquipment,
             move: async () => { await goToNearestWalkableToMonster2(bot, ["crabx"], { map: "main", x: -964, y: 1762 }) },
         },
+        crabxx: {
+            attack: async () => { await attackTheseTypesPriest(bot, ["crabx", "crabxx"], information.friends, { disableCreditCheck: true, healStrangers: true }) },
+            attackWhileIdle: false,
+            equipment: maxDamageEquipment,
+            move: async () => { await goToSpecialMonster(bot, "crabxx", { requestMagiport: true }) },
+        },
         croc: {
             attack: async () => { await attackTheseTypesPriest(bot, ["croc", "phoenix"], information.friends) },
             attackWhileIdle: true,
@@ -245,7 +251,7 @@ function preparePriest(bot: Priest) {
             move: async () => { await bot.smartMove({ map: "desertland", x: 180, y: -675 }) },
         },
         franky: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["nerfedmummy", "franky"], information.friends, { healStrangers: true }) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["nerfedmummy", "franky"], information.friends, { disableCreditCheck: true, healStrangers: true }) },
             equipment: maxDamageEquipment,
             move: async () => {
                 const nearest = bot.getEntity({ returnNearest: true, type: "franky" })
@@ -688,8 +694,14 @@ function prepareRanger(bot: Ranger) {
         crabx: {
             attack: async () => { return attackTheseTypesRanger(bot, ["crabx", "phoenix"], information.friends) },
             attackWhileIdle: true,
-            equipment: { mainhand: "crossbow", orb: "jacko" },
+            equipment: maxRangeEquipment,
             move: async () => { await goToNearestWalkableToMonster2(bot, ["crabx"], { map: "main", x: -1202, y: -66 }) },
+        },
+        crabxx: {
+            attack: async () => { return attackTheseTypesRanger(bot, ["crabx", "crabxx"], information.friends, { disableCreditCheck: true }) },
+            attackWhileIdle: false,
+            equipment: maxDamageEquipment,
+            move: async () => { await goToSpecialMonster(bot, "crabxx", { requestMagiport: true }) },
         },
         croc: {
             attack: async () => { return attackTheseTypesRanger(bot, ["croc", "phoenix"], information.friends) },
@@ -743,7 +755,7 @@ function prepareRanger(bot: Ranger) {
             requireCtype: "priest"
         },
         franky: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["nerfedmummy", "franky"], information.friends) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["nerfedmummy", "franky"], information.friends, { disableCreditCheck: true }) },
             equipment: maxDamageEquipment,
             move: async () => {
                 const nearest = bot.getEntity({ returnNearest: true, type: "franky" })
@@ -1215,6 +1227,13 @@ function prepareWarrior(bot: Warrior) {
             equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster2(bot, ["crabx"], { map: "main", x: -1004, y: 1762 }) },
         },
+        crabxx: {
+            attack: async () => { await attackTheseTypesWarrior(bot, ["crabx", "crabxx"], information.friends, { disableCreditCheck: true }) },
+            attackWhileIdle: true,
+            equipment: aoeEquipment,
+            requireCtype: "priest",
+            move: async () => { await goToSpecialMonster(bot, "crabxx", { requestMagiport: true }) },
+        },
         croc: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["croc", "phoenix"], information.friends) },
             attackWhileIdle: true,
@@ -1294,7 +1313,7 @@ function prepareWarrior(bot: Warrior) {
                 //     && bot.canUse("scare", { ignoreEquipped: true })) {
                 //     if (bot.canUse("taunt") && AL.Tools.distance(franky, bot) < bot.G.skills.taunt.range) bot.taunt(franky.id)
                 // }
-                await attackTheseTypesWarrior(bot, ["nerfedmummy", "franky"], information.friends, { disableAgitate: true, disableCleave: true }) },
+                await attackTheseTypesWarrior(bot, ["nerfedmummy", "franky"], information.friends, { disableAgitate: true, disableCleave: true, disableCreditCheck: true }) },
             equipment: aoeEquipment,
             move: async () => {
                 await goToSpecialMonster(bot, "franky", { requestMagiport: true })

@@ -4,6 +4,7 @@ import { LOOP_MS } from "./general.js"
 import { sortPriority } from "./sort.js"
 
 export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], friends: Character[] = [], options: {
+    disableCreditCheck?: boolean
     disableGhostLifeEssenceFarm?: boolean
     disableZapper?: boolean
     healStrangers?: boolean
@@ -71,7 +72,7 @@ export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], 
         const targets = new FastPriorityQueue<Entity>(attackPriority)
         for (const target of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: true,
+            couldGiveCredit: options.disableCreditCheck ?? true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,
@@ -121,7 +122,7 @@ export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], 
     if (!options.disableZapper && bot.canUse("zapperzap", { ignoreEquipped: true }) && bot.cc < 100) {
         const targets = new FastPriorityQueue<Entity>(attackPriority)
         for (const target of bot.getEntities({
-            couldGiveCredit: true,
+            couldGiveCredit: options.disableCreditCheck ?? true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,

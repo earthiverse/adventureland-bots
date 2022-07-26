@@ -3,6 +3,7 @@ import FastPriorityQueue from "fastpriorityqueue"
 import { sortPriority } from "./sort.js"
 
 export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], friends: Character[] = [], options: {
+    disableCreditCheck?: boolean
     disableHuntersMark?: boolean
     disableMultiShot?: boolean
     disableSupershot?: boolean
@@ -28,7 +29,7 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
     const fiveShotTargets = new FastPriorityQueue<Entity>(priority)
     for (const target of bot.getEntities({
         canDamage: true,
-        couldGiveCredit: true,
+        couldGiveCredit: options.disableCreditCheck ?? true,
         targetingPartyMember: options.targetingPartyMember,
         targetingPlayer: options.targetingPlayer,
         typeList: types,
@@ -188,7 +189,7 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
     if (!options.disableSupershot && bot.canUse("supershot")) {
         const supershotTargets = new FastPriorityQueue<Entity>(priority)
         for (const target of bot.getEntities({
-            couldGiveCredit: true,
+            couldGiveCredit: options.disableCreditCheck ?? true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,
@@ -220,7 +221,7 @@ export async function attackTheseTypesRanger(bot: Ranger, types: MonsterName[], 
     if (!options.disableZapper && bot.canUse("zapperzap", { ignoreEquipped: true }) && bot.cc < 100) {
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const target of bot.getEntities({
-            couldGiveCredit: true,
+            couldGiveCredit: options.disableCreditCheck ?? true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,

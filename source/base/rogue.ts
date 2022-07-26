@@ -4,6 +4,7 @@ import { LOOP_MS } from "./general.js"
 import { sortPriority } from "./sort.js"
 
 export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], friends: Character[] = [], options: {
+    disableCreditCheck?: boolean
     disableMentalBurst?: boolean
     disableQuickPunch?: boolean
     disableQuickStab?: boolean
@@ -23,7 +24,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const target of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: true,
+            couldGiveCredit: options.disableCreditCheck ?? true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,
@@ -56,7 +57,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const target of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: true,
+            couldGiveCredit: options.disableCreditCheck ?? true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,
@@ -103,7 +104,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const target of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: true,
+            couldGiveCredit: options.disableCreditCheck ?? true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,
@@ -147,7 +148,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const target of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: true,
+            couldGiveCredit: options.disableCreditCheck ?? true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,
@@ -175,7 +176,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const entity of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: true,
+            couldGiveCredit: options.disableCreditCheck ?? true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,
@@ -204,7 +205,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const entity of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: true,
+            couldGiveCredit: options.disableCreditCheck ?? true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,
@@ -232,7 +233,7 @@ export async function attackTheseTypesRogue(bot: Rogue, types: MonsterName[], fr
     if (!options.disableZapper && bot.canUse("zapperzap", { ignoreEquipped: true }) && bot.cc < 100) {
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const target of bot.getEntities({
-            couldGiveCredit: true,
+            couldGiveCredit: options.disableCreditCheck ?? true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,

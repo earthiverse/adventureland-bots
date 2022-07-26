@@ -3,6 +3,7 @@ import FastPriorityQueue from "fastpriorityqueue"
 import { sortPriority } from "./sort.js"
 
 export async function attackTheseTypesPaladin(bot: Paladin, types: MonsterName[], friends: Character[] = [], options: {
+    disableCreditCheck?: boolean
     disableZapper?: boolean
     targetingPartyMember?: boolean
     targetingPlayer?: string
@@ -15,7 +16,7 @@ export async function attackTheseTypesPaladin(bot: Paladin, types: MonsterName[]
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const entity of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: true,
+            couldGiveCredit: options.disableCreditCheck ?? true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,
@@ -59,7 +60,7 @@ export async function attackTheseTypesPaladin(bot: Paladin, types: MonsterName[]
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const target of bot.getEntities({
             canDamage: true,
-            couldGiveCredit: true,
+            couldGiveCredit: options.disableCreditCheck ?? true,
             targetingPartyMember: options.targetingPartyMember,
             targetingPlayer: options.targetingPlayer,
             typeList: types,

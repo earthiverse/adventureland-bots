@@ -1,5 +1,5 @@
 import AL, { Character, CMData, Constants, Entity, IPosition, ItemName, LimitDCReportData, Mage, Merchant, MonsterName, NPCName, Paladin, Priest, Ranger, Rogue, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, SmartMoveOptions, Tools, Warrior } from "alclient"
-import { calculateAttackLoopCooldown, checkOnlyEveryMS, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, goGetRspeedBuff, ITEMS_TO_BUY, ITEMS_TO_HOLD, ITEMS_TO_LIST, LOOP_MS, REPLENISHABLES_TO_BUY, startAvoidStacking, startBuyFriendsReplenishablesLoop, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
+import { calculateAttackLoopCooldown, checkOnlyEveryMS, getMonsterHuntTargets, getPriority1Entities, getPriority2Entities, goGetRspeedBuff, goToNearestWalkableToMonster2, ITEMS_TO_BUY, ITEMS_TO_HOLD, ITEMS_TO_LIST, LOOP_MS, REPLENISHABLES_TO_BUY, startAvoidStacking, startBuyFriendsReplenishablesLoop, startBuyLoop, startCompoundLoop, startCraftLoop, startElixirLoop, startExchangeLoop, startHealLoop, startLootLoop, startPartyLoop, startScareLoop, startSellLoop, startSendStuffDenylistLoop, startUpgradeLoop } from "../base/general.js"
 import { attackTheseTypesMage, magiportStrangerIfNotNearby } from "../base/mage.js"
 import { attackTheseTypesMerchant, doBanking, doEmergencyBanking, goFishing, goMining, merchantSmartMove, startMluckLoop } from "../base/merchant.js"
 import { attackTheseTypesPriest, startDarkBlessingLoop, startPartyHealLoop } from "../base/priest.js"
@@ -1089,6 +1089,14 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
                     await bot.smartMove("elixirluck")
                 }
 
+                // Join daily event
+                if (bot.S.goobrawl) {
+                    if (bot.map !== "goobrawl") await bot.join("goobrawl")
+                    goToNearestWalkableToMonster2(bot, undefined)
+                    bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
+                    return
+                }
+
                 // Move to our target
                 if (bot.id == information.bot1.name) {
                     if (information.bot1.target) await strategy[information.bot1.target].move()
@@ -1100,7 +1108,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
             } catch (e) {
                 console.error(e)
             }
-            bot.timeouts.set("moveLoop", setTimeout(moveLoop, LOOP_MS * 2))
+            bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
         }
         moveLoop().catch(console.error)
     }
