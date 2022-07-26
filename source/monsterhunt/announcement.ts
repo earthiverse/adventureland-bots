@@ -127,6 +127,20 @@ function prepareMage(bot: Mage) {
                 }
             },
         },
+        crabxx: {
+            attack: async () => { await attackTheseTypesMage(bot, ["crabx", "crabxx"], information.friends, { disableCreditCheck: true }) },
+            attackWhileIdle: true,
+            equipment: maxDamageEquipment,
+            move: async () => {
+                const nearest = bot.getEntity({ returnNearest: true, type: "crabxx" })
+                if (nearest && AL.Tools.distance(bot, nearest) > 25) {
+                    // Move close to crabxx because other characters might help blast away crabx
+                    await bot.smartMove(nearest, { getWithin: 25 })
+                } else {
+                    await goToSpecialMonster(bot, "crabxx", { requestMagiport: true })
+                }
+            }
+        },
         croc: {
             attack: async () => { await attackTheseTypesMage(bot, ["croc", "phoenix", "armadillo"], information.friends) },
             attackWhileIdle: true,
@@ -142,7 +156,7 @@ function prepareMage(bot: Mage) {
             },
         },
         franky: {
-            attack: async () => { await attackTheseTypesMage(bot, ["nerfedmummy", "franky"], information.friends) },
+            attack: async () => { await attackTheseTypesMage(bot, ["nerfedmummy", "franky"], information.friends, { disableCreditCheck: true }) },
             equipment: maxDamageEquipment,
             move: async () => {
                 const nearest = bot.getEntity({ returnNearest: true, type: "franky" })
