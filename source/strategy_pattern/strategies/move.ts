@@ -62,7 +62,7 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
         // Move to next monster
         let lastD = 0
         for (const target of targets) {
-            const d = AL.Tools.distance(bot, target)
+            const d = AL.Tools.distance({ x: bot.x, y: bot.y }, { x: target.x, y: target.y })
             if (d < bot.range) {
                 lastD = d
                 continue

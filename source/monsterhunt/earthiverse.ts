@@ -409,12 +409,13 @@ function preparePriest(bot: Priest) {
             equipment: maxDamageEquipment,
             move: async () => { await bot.smartMove({ map: "level2w", x: -155, y: 0 }) },
         },
-        osnake: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["osnake", "snake"], information.friends) },
-            attackWhileIdle: true,
-            equipment: maxAttackSpeedEquipment,
-            move: async () => { await goToNearestWalkableToMonster2(bot, ["osnake", "snake"], { map: "halloween", x: -488, y: -708 }) },
-        },
+        // TODO: NOTE: Since we're partying with friends right now, let them do these while we do other things to avoid stacking the spawn.
+        // osnake: {
+        //     attack: async () => { await attackTheseTypesPriest(bot, ["osnake", "snake"], information.friends) },
+        //     attackWhileIdle: true,
+        //     equipment: maxAttackSpeedEquipment,
+        //     move: async () => { await goToNearestWalkableToMonster2(bot, ["osnake", "snake"], { map: "halloween", x: -488, y: -708 }) },
+        // },
         phoenix: {
             attack: async () => { await attackTheseTypesPriest(bot, ["phoenix"], information.friends) },
             attackWhileIdle: true,
@@ -512,12 +513,13 @@ function preparePriest(bot: Priest) {
             equipment: maxDamageEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: -1155, y: 422 }) },
         },
-        squigtoad: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["squigtoad", "squig", "phoenix"], information.friends) },
-            attackWhileIdle: true,
-            equipment: maxDamageEquipment,
-            move: async () => { await bot.smartMove({ map: "main", x: -1155, y: 422 }) },
-        },
+        // TODO: NOTE: Since we're partying with friends right now, let them do these while we do other things to avoid stacking the spawn.
+        // squigtoad: {
+        //     attack: async () => { await attackTheseTypesPriest(bot, ["squigtoad", "squig", "phoenix"], information.friends) },
+        //     attackWhileIdle: true,
+        //     equipment: maxDamageEquipment,
+        //     move: async () => { await bot.smartMove({ map: "main", x: -1155, y: 422 }) },
+        // },
         stompy: {
             attack: async () => { await attackTheseTypesPriest(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends) },
             equipment: maxDamageEquipment,
@@ -898,12 +900,13 @@ function prepareRanger(bot: Ranger) {
             move: async () => { await bot.smartMove({ map: "level2w", x: -175, y: 0 }) },
             requireCtype: "priest",
         },
-        osnake: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["osnake", "snake"], information.friends) },
-            attackWhileIdle: true,
-            equipment: maxAttackSpeedEquipment,
-            move: async () => { await goToNearestWalkableToMonster2(bot, ["osnake", "snake"], { map: "halloween", x: -589, y: -335 }) },
-        },
+        // TODO: NOTE: Since we're partying with friends right now, let them do these while we do other things to avoid stacking the spawn.
+        // osnake: {
+        //     attack: async () => { return attackTheseTypesRanger(bot, ["osnake", "snake"], information.friends) },
+        //     attackWhileIdle: true,
+        //     equipment: maxAttackSpeedEquipment,
+        //     move: async () => { await goToNearestWalkableToMonster2(bot, ["osnake", "snake"], { map: "halloween", x: -589, y: -335 }) },
+        // },
         phoenix: {
             attack: async () => { return attackTheseTypesRanger(bot, ["phoenix"], information.friends) },
             attackWhileIdle: true,
@@ -1013,12 +1016,13 @@ function prepareRanger(bot: Ranger) {
             equipment: maxRangeEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: -1175, y: 422 }) },
         },
-        squigtoad: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["squigtoad", "squig", "phoenix"], information.friends) },
-            attackWhileIdle: true,
-            equipment: maxRangeEquipment,
-            move: async () => { await bot.smartMove({ map: "main", x: -1175, y: 422 }) },
-        },
+        // TODO: NOTE: Since we're partying with friends right now, let them do these while we do other things to avoid stacking the spawn.
+        // squigtoad: {
+        //     attack: async () => { return attackTheseTypesRanger(bot, ["squigtoad", "squig", "phoenix"], information.friends) },
+        //     attackWhileIdle: true,
+        //     equipment: maxRangeEquipment,
+        //     move: async () => { await bot.smartMove({ map: "main", x: -1175, y: 422 }) },
+        // },
         stompy: {
             attack: async () => { return attackTheseTypesRanger(bot, ["stompy", "wolf", "wolfie", "boar"], information.friends, { targetingPartyMember: true }) },
             equipment: maxDamageEquipment,
@@ -1428,6 +1432,11 @@ function prepareWarrior(bot: Warrior) {
         },
         mole: {
             attack: async () => {
+                // Use bow if they're far away, use fire equipment if they're close
+                const near = bot.getEntity({ type: "mole", withinRange: 40 })
+                if (near) strategy.pppompom.equipment = burnEquipment
+                else strategy.pppompom.equipment = bowEquipment
+
                 // Agitate low level monsters that we can tank so the ranger can kill them quickly with 3shot and 5shot.
                 if (bot.canUse("agitate") && Tools.distance(bot, information.bot1?.bot) < information.bot1?.bot?.range) {
                     let shouldAgitate = true
@@ -1510,12 +1519,13 @@ function prepareWarrior(bot: Warrior) {
             move: async () => { await bot.smartMove({ map: "level2w", x: -195, y: 0 }) },
             requireCtype: "priest"
         },
-        osnake: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["osnake", "snake"], information.friends, { disableAgitate: true }) },
-            attackWhileIdle: true,
-            equipment: aoeEquipment,
-            move: async () => { await goToNearestWalkableToMonster2(bot, ["osnake", "snake"], { map: "halloween", x: 347, y: -747 }) },
-        },
+        // TODO: NOTE: Since we're partying with friends right now, let them do these while we do other things to avoid stacking the spawn.
+        // osnake: {
+        //     attack: async () => { await attackTheseTypesWarrior(bot, ["osnake", "snake"], information.friends, { disableAgitate: true }) },
+        //     attackWhileIdle: true,
+        //     equipment: aoeEquipment,
+        //     move: async () => { await goToNearestWalkableToMonster2(bot, ["osnake", "snake"], { map: "halloween", x: 347, y: -747 }) },
+        // },
         phoenix: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["phoenix"], information.friends) },
             attackWhileIdle: true,
@@ -1640,12 +1650,13 @@ function prepareWarrior(bot: Warrior) {
             equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster2(bot, ["squig"], { map: "main", x: -1195, y: 422 }) },
         },
-        squigtoad: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["squigtoad", "squig", "phoenix"], information.friends) },
-            attackWhileIdle: true,
-            equipment: aoeEquipment,
-            move: async () => { await goToNearestWalkableToMonster2(bot, ["squigtoad", "squig"], { map: "main", x: -1195, y: 422 }) },
-        },
+        // TODO: NOTE: Since we're partying with friends right now, let them do these while we do other things to avoid stacking the spawn.
+        // squigtoad: {
+        //     attack: async () => { await attackTheseTypesWarrior(bot, ["squigtoad", "squig", "phoenix"], information.friends) },
+        //     attackWhileIdle: true,
+        //     equipment: aoeEquipment,
+        //     move: async () => { await goToNearestWalkableToMonster2(bot, ["squigtoad", "squig"], { map: "main", x: -1195, y: 422 }) },
+        // },
         stompy: {
             attack: async () => {
                 const priest = information.bot1.bot
