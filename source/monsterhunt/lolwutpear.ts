@@ -129,16 +129,16 @@ function prepareMage(bot: Mage) {
         },
         crabxx: {
             attack: async () => {
-                await attackTheseTypesMage(bot, ["crabx"], information.friends, { disableCburst: true, disableCreditCheck: true, disableZapper: true })
-                await attackTheseTypesMage(bot, ["crabxx"], information.friends, { disableCreditCheck: true })
+                await attackTheseTypesMage(bot, ["crabx"], information.friends, { disableCreditCheck: true, disableZapper: true })
+                await attackTheseTypesMage(bot, ["crabxx"], information.friends, { disableCburst: true, disableCreditCheck: true, disableZapper: true })
             },
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
             move: async () => {
                 const nearest = bot.getEntity({ returnNearest: true, type: "crabxx" })
                 if (nearest && AL.Tools.distance(bot, nearest) > 25) {
-                    // Move close to crabxx because other characters might help blast away crabx
-                    await bot.smartMove(nearest, { getWithin: 25 })
+                    // Move close to other crabx to damage them and get crabxx taking damage
+                    await goToNearestWalkableToMonster2(bot, ["crabxx", "crabx"], nearest)
                 } else {
                     await goToSpecialMonster(bot, "crabxx", { requestMagiport: true })
                 }
@@ -340,7 +340,14 @@ function prepareMage(bot: Mage) {
             attack: async () => { await attackTheseTypesMage(bot, ["rgoo", "goo"], information.friends) },
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
-            move: async () => { await goToSpecialMonster(bot, "rgoo") }
+            move: async () => {
+                const rgoo = bot.getEntity({ type: "rgoo" })
+                if (rgoo) {
+                    await goToNearestWalkableToMonster2(bot, ["rgoo", "goo"])
+                } else {
+                    await goToSpecialMonster(bot, "rgoo", { requestMagiport: true })
+                }
+            }
         },
         scorpion: {
             attack: async () => { await attackTheseTypesMage(bot, ["scorpion", "phoenix"], information.friends) },

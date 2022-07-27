@@ -213,8 +213,8 @@ function preparePriest(bot: Priest) {
             move: async () => {
                 const nearest = bot.getEntity({ returnNearest: true, type: "crabxx" })
                 if (nearest && AL.Tools.distance(bot, nearest) > 25) {
-                    // Move close to crabxx because other characters might help blast away crabx
-                    await bot.smartMove(nearest, { getWithin: 25 })
+                    // Move close to other crabx to damage them and get crabxx taking damage
+                    await goToNearestWalkableToMonster2(bot, ["crabxx", "crabx"], nearest)
                 } else {
                     await goToSpecialMonster(bot, "crabxx", { requestMagiport: true })
                 }
@@ -505,7 +505,14 @@ function preparePriest(bot: Priest) {
             attack: async () => { await attackTheseTypesPriest(bot, ["rgoo", "goo"], information.friends) },
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
-            move: async () => { await goToSpecialMonster(bot, "rgoo", { requestMagiport: true }) },
+            move: async () => {
+                const rgoo = bot.getEntity({ type: "rgoo" })
+                if (rgoo) {
+                    await goToNearestWalkableToMonster2(bot, ["rgoo", "goo"])
+                } else {
+                    await goToSpecialMonster(bot, "rgoo", { requestMagiport: true })
+                }
+            },
         },
         rooster: {
             attack: async () => { await attackTheseTypesPriest(bot, ["rooster"], information.friends) },
@@ -738,8 +745,8 @@ function prepareRanger(bot: Ranger) {
             move: async () => {
                 const nearest = bot.getEntity({ returnNearest: true, type: "crabxx" })
                 if (nearest && AL.Tools.distance(bot, nearest) > 25) {
-                    // Move close to crabxx because other characters might help blast away crabx
-                    await bot.smartMove(nearest, { getWithin: 25 })
+                    // Move close to other crabx to damage them and get crabxx taking damage
+                    await goToNearestWalkableToMonster2(bot, ["crabxx", "crabx"], nearest)
                 } else {
                     await goToSpecialMonster(bot, "crabxx", { requestMagiport: true })
                 }
@@ -1024,7 +1031,14 @@ function prepareRanger(bot: Ranger) {
             attack: async () => { await attackTheseTypesRanger(bot, ["rgoo", "goo"], information.friends) },
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
-            move: async () => { await goToSpecialMonster(bot, "rgoo", { requestMagiport: true }) },
+            move: async () => {
+                const rgoo = bot.getEntity({ type: "rgoo" })
+                if (rgoo) {
+                    await goToNearestWalkableToMonster2(bot, ["rgoo", "goo"])
+                } else {
+                    await goToSpecialMonster(bot, "rgoo", { requestMagiport: true })
+                }
+            },
         },
         rooster: {
             attack: async () => { return attackTheseTypesRanger(bot, ["rooster"], information.friends) },
@@ -1655,7 +1669,14 @@ function prepareWarrior(bot: Warrior) {
             attack: async () => { await attackTheseTypesWarrior(bot, ["rgoo", "goo"], information.friends) },
             attackWhileIdle: true,
             equipment: burnEquipment,
-            move: async () => { await goToSpecialMonster(bot, "rgoo", { requestMagiport: true }) },
+            move: async () => {
+                const rgoo = bot.getEntity({ type: "rgoo" })
+                if (rgoo) {
+                    await goToNearestWalkableToMonster2(bot, ["rgoo", "goo"])
+                } else {
+                    await goToSpecialMonster(bot, "rgoo", { requestMagiport: true })
+                }
+            },
         },
         rooster: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["rooster"], information.friends) },
