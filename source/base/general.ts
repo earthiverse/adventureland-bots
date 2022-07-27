@@ -358,6 +358,8 @@ export async function getPriority2Entities(bot: Character): Promise<Entity[] | I
     // NOTE: This list is ordered higher -> lower priority
     const solo: MonsterName[] = [
         "goldenbat",
+        // Goo Brawl
+        "rgoo",
         // Very Rare Monsters
         "tinyp", "cutebee",
         // Event Monsters
