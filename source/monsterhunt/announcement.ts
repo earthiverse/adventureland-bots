@@ -7,8 +7,8 @@ import { getTargetServerFromPlayer } from "../base/serverhop.js"
 import { Information, Strategy } from "../definitions/bot.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION, startMage, startMerchant } from "./shared.js"
 
-const TARGET_REGION = DEFAULT_REGION
-const TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
+let TARGET_REGION = DEFAULT_REGION
+let TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
 
 const information: Information = {
     friends: [undefined, undefined, undefined, undefined],
@@ -601,56 +601,52 @@ async function run() {
     }
     startMage3Loop().catch(() => { /* ignore errors */ })
 
-    // let lastServerChangeTime = Date.now()
-    // const serverLoop = async () => {
-    //     try {
-    //         console.log("DEBUG: Checking target server...")
-    //         // We haven't logged in yet
-    //         if (!information.bot1.bot) {
-    //             console.log("DEBUG: We haven't logged in yet")
-    //             setTimeout(serverLoop, 1000)
-    //             return
-    //         }
+    let lastServerChangeTime = Date.now()
+    const serverLoop = async () => {
+        try {
+            // We haven't logged in yet
+            if (!information.bot1.bot) {
+                setTimeout(serverLoop, 1000)
+                return
+            }
 
-    //         // Don't change servers too fast
-    //         if (lastServerChangeTime > Date.now() - AL.Constants.RECONNECT_TIMEOUT_MS) {
-    //             console.log("DEBUG: Don't change servers too fast")
-    //             setTimeout(serverLoop, Math.max(1000, lastServerChangeTime + AL.Constants.RECONNECT_TIMEOUT_MS - Date.now()))
-    //             return
-    //         }
+            // Don't change servers too fast
+            if (lastServerChangeTime > Date.now() - AL.Constants.RECONNECT_TIMEOUT_MS) {
+                setTimeout(serverLoop, Math.max(1000, lastServerChangeTime + AL.Constants.RECONNECT_TIMEOUT_MS - Date.now()))
+                return
+            }
 
-    //         const currentRegion = information.bot1.bot.server.region
-    //         const currentIdentifier = information.bot1.bot.server.name
+            const currentRegion = information.bot1.bot.server.region
+            const currentIdentifier = information.bot1.bot.server.name
 
-    //         const targetServer = await getTargetServerFromPlayer(currentRegion, currentIdentifier, partyLeader)
-    //         if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
-    //             // We're already on the correct server
-    //             console.log("DEBUG: We're already on the correct server")
-    //             setTimeout(serverLoop, 1000)
-    //             return
-    //         }
+            const targetServer = await getTargetServerFromPlayer(currentRegion, currentIdentifier, partyLeader)
+            if (currentRegion == targetServer[0] && currentIdentifier == targetServer[1]) {
+                // We're already on the correct server
+                setTimeout(serverLoop, 1000)
+                return
+            }
 
-    //         // Change servers to attack this entity
-    //         TARGET_REGION = targetServer[0]
-    //         TARGET_IDENTIFIER = targetServer[1]
-    //         console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${TARGET_REGION} ${TARGET_IDENTIFIER}`)
+            // Change servers to attack this entity
+            TARGET_REGION = targetServer[0]
+            TARGET_IDENTIFIER = targetServer[1]
+            console.log(`Changing from ${currentRegion} ${currentIdentifier} to ${TARGET_REGION} ${TARGET_IDENTIFIER}`)
 
-    //         // Sleep to give a chance to loot
-    //         await sleep(5000)
+            // Sleep to give a chance to loot
+            await sleep(5000)
 
-    //         // Disconnect everyone
-    //         console.log("Disconnecting characters")
-    //         information.bot1.bot.disconnect(),
-    //         information.bot2.bot?.disconnect(),
-    //         information.bot3.bot?.disconnect(),
-    //         information.merchant.bot?.disconnect()
-    //         await sleep(5000)
-    //         lastServerChangeTime = Date.now()
-    //     } catch (e) {
-    //         console.error(e)
-    //     }
-    //     setTimeout(serverLoop, 1000)
-    // }
-    // serverLoop().catch(console.error)
+            // Disconnect everyone
+            console.log("Disconnecting characters")
+            information.bot1.bot.disconnect(),
+            information.bot2.bot?.disconnect(),
+            information.bot3.bot?.disconnect(),
+            information.merchant.bot?.disconnect()
+            await sleep(5000)
+            lastServerChangeTime = Date.now()
+        } catch (e) {
+            console.error(e)
+        }
+        setTimeout(serverLoop, 1000)
+    }
+    serverLoop().catch(console.error)
 }
 run().catch(console.error)
