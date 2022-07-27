@@ -7,6 +7,7 @@ export type RangerAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableCburst?: boolean
     disableHuntersMark?: boolean
     disableMultiShot?: boolean
+    disableSuperShot?: boolean
 }
 
 export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
@@ -16,15 +17,15 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
         super(options)
     }
 
-    public async attack(bot: Ranger) {
+    protected async attack(bot: Ranger) {
         const priority = sortPriority(bot, this.options.typeList)
 
-        // Basic attack
         await this.multiAttack(bot, priority)
+        if (!this.options.disableSuperShot) await this.supershot(bot, priority)
         if (!this.options.disableZapper) await this.zapperAttack(bot, priority)
     }
 
-    public async multiAttack(bot: Ranger, priority: (a: Entity, b: Entity) => boolean) {
+    protected async multiAttack(bot: Ranger, priority: (a: Entity, b: Entity) => boolean) {
         if (!bot.canUse("attack")) return
 
         // Find all targets we want to attack
@@ -161,7 +162,7 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
         }
     }
 
-    public async supershot(bot: Ranger, priority: (a: Entity, b: Entity) => boolean) {
+    protected async supershot(bot: Ranger, priority: (a: Entity, b: Entity) => boolean) {
         if (!bot.canUse("supershot")) return
 
         // Find all targets we want to attack
@@ -173,21 +174,41 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
         // Prioritize the entities
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const entity of entities) {
+            // If we can kill something guaranteed, break early
             if (bot.canKillInOneShot(entity, "supershot")) {
                 this.preventOverkill(bot, entity)
-                await bot.superShot(entity.id).catch(console.error)
-                return
+                return bot.superShot(entity.id)
             }
 
             targets.add(entity)
         }
 
+        const targetingMe = bot.calculateTargets()
+
         while (targets.size) {
             const entity = targets.poll()
+
+            if (!entity.target) {
+                // We're going to be tanking this monster, don't attack if it pushes us over our limit
+                if (this.options.maximumTargets >= bot.targets) continue // We don't want another target
+                switch (entity.damage_type) {
+                    case "magical":
+                        if (bot.mcourage <= targetingMe.magical) continue // We can't tank any more magical monsters
+                        break
+                    case "physical":
+                        if (bot.courage <= targetingMe.physical) continue // We can't tank any more physical monsters
+                        break
+                    case "pure":
+                        if (bot.courage <= targetingMe.pure) continue // We can't tank any more pure monsters
+                        break
+                }
+            }
+
+            return bot.superShot(entity.id)
         }
     }
 
-    public applyHuntersMark(bot: Ranger, entity: Entity) {
+    protected applyHuntersMark(bot: Ranger, entity: Entity) {
         if (!entity) return // No entity
         if (entity.immune && !AL.Game.G.skills.huntersmark.pierces_immunity) return // Can't mark
         if (!bot.canUse("huntersmark")) return

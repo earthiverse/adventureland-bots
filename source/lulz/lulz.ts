@@ -16,6 +16,7 @@ import { ImprovedMoveStrategy } from "../strategy_pattern/strategies/move.js"
 import { RequestPartyStrategy } from "../strategy_pattern/strategies/party.js"
 import { SellStrategy } from "../strategy_pattern/strategies/sell.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
+import { RangerAttackStrategy } from "../strategy_pattern/strategies/attack_ranger.js"
 
 // Login and get GData
 await AL.Game.loginJSONFile("../../credentials.json")
@@ -125,6 +126,10 @@ export async function startLulzCharacter(type: CharacterType, userID: string, us
     switch (type) {
         case "mage": {
             context.applyStrategy(new MageAttackStrategy({ characters: CHARACTERS, typeList: monsters }))
+            break
+        }
+        case "ranger": {
+            context.applyStrategy(new RangerAttackStrategy({ characters: CHARACTERS, typeList: monsters }))
             break
         }
         default: {
