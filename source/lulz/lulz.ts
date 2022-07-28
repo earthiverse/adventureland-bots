@@ -17,6 +17,7 @@ import { RequestPartyStrategy } from "../strategy_pattern/strategies/party.js"
 import { SellStrategy } from "../strategy_pattern/strategies/sell.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 import { RangerAttackStrategy } from "../strategy_pattern/strategies/attack_ranger.js"
+import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 
 // Login and get GData
 await AL.Game.loginJSONFile("../../credentials.json")
@@ -55,6 +56,7 @@ const trackerStrategy = new TrackerStrategy()
 const disconnectStrategy = new DisconnectOnCommandStrategy()
 const avoidStackingStrategy = new AvoidStackingStrategy()
 const partyStrategy = new RequestPartyStrategy("earthMer")
+const respawnStrategy = new RespawnStrategy()
 const buyStrategy = new BuyStrategy({
     buyMap: undefined,
     replenishables: new Map<ItemName, number>([
@@ -140,6 +142,7 @@ export async function startLulzCharacter(type: CharacterType, userID: string, us
 
     const moveStrategy = new ImprovedMoveStrategy(monsters)
     context.applyStrategy(moveStrategy)
+    context.applyStrategy(respawnStrategy)
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(avoidStackingStrategy)
     context.applyStrategy(buyStrategy)
