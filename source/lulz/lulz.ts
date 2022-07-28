@@ -248,7 +248,7 @@ app.post("/",
             }
 
             // It passed the filter, start it up
-            await startLulzCharacter(charType, req.body.user, req.body.auth, req.body.char, [monster])
+            await startLulzCharacter(charType, req.body.user, req.body.auth, req.body.char, [monster, "phoenix"])
             return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
         } catch (e) {
             return res.status(500).send(e)
