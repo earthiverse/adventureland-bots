@@ -1,4 +1,4 @@
-import AL, { Entity, Ranger, SlotType, TradeItemInfo, TradeSlotType } from "alclient"
+import AL, { Entity, Ranger } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { sortPriority } from "../../base/sort.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
@@ -15,6 +15,14 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
 
     public constructor(options?: RangerAttackStrategyOptions) {
         super(options)
+
+        this.loops.set("attack", {
+            fn: async (bot: Ranger) => {
+                if (!this.shouldAttack(bot)) return
+                await this.attack(bot)
+            },
+            interval: ["attack", "supershot"]
+        })
     }
 
     protected async attack(bot: Ranger) {
@@ -98,7 +106,7 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
             const entities: Entity[] = []
             while (entities.length < 5) {
                 const entity = fiveShotTargets.poll()
-                entities.push()
+                entities.push(entity)
                 if (bot.canKillInOneShot(entity, "5shot")) this.preventOverkill(bot, entity)
             }
 
@@ -108,7 +116,7 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
             const entities: Entity[] = []
             while (entities.length < 3) {
                 const entity = threeShotTargets.poll()
-                entities.push()
+                entities.push(entity)
                 if (bot.canKillInOneShot(entity, "3shot")) this.preventOverkill(bot, entity)
             }
 
