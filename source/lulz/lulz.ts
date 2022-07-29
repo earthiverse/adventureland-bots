@@ -127,15 +127,15 @@ export async function startLulzCharacter(type: CharacterType, userID: string, us
 
     switch (type) {
         case "mage": {
-            context.applyStrategy(new MageAttackStrategy({ characters: CHARACTERS, typeList: monsters }))
+            context.applyStrategy(new MageAttackStrategy({ characters: CHARACTERS, typeList: [...monsters, "phoenix"] }))
             break
         }
         case "ranger": {
-            context.applyStrategy(new RangerAttackStrategy({ characters: CHARACTERS, typeList: monsters }))
+            context.applyStrategy(new RangerAttackStrategy({ characters: CHARACTERS, typeList: [...monsters, "phoenix"] }))
             break
         }
         default: {
-            context.applyStrategy(new BaseAttackStrategy({ characters: CHARACTERS, typeList: monsters }))
+            context.applyStrategy(new BaseAttackStrategy({ characters: CHARACTERS, typeList: [...monsters, "phoenix"] }))
             break
         }
     }
@@ -248,7 +248,7 @@ app.post("/",
             }
 
             // It passed the filter, start it up
-            await startLulzCharacter(charType, req.body.user, req.body.auth, req.body.char, [monster, "phoenix"])
+            await startLulzCharacter(charType, req.body.user, req.body.auth, req.body.char, [monster])
             return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
         } catch (e) {
             return res.status(500).send(e)
