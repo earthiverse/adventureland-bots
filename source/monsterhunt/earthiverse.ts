@@ -1901,6 +1901,7 @@ async function run() {
                 // }
                 information.friends[0] = information.merchant.bot
                 prepareMerchant(information.merchant.bot)
+                startTrackerLoop(information.merchant.bot)
                 addSocket(information.merchant.bot.id, information.merchant.bot.socket, information.merchant.bot)
                 information.merchant.bot.socket.on("disconnect", loopBot)
             } catch (e) {
