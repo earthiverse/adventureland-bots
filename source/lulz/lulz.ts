@@ -152,18 +152,18 @@ export async function startLulzCharacter(type: CharacterType, userID: string, us
     setInterval(async () => {
         // TODO: Move this to a move strategy
         try {
-            if (bot.smartMoving) return
-            if ((!bot.hasItem("hpot1") || !bot.hasItem("mpot1")) && bot.gold > (AL.Game.G.items.mpot1.g * 100) || bot.isFull()) {
+            if (context.bot.smartMoving) return
+            if ((!context.bot.hasItem("hpot1") || !context.bot.hasItem("mpot1")) && context.bot.gold > (AL.Game.G.items.mpot1.g * 100) || context.bot.isFull()) {
                 // Go get potions
                 context.removeStrategy(moveStrategy)
 
-                await bot.smartMove("mpot1", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+                await context.bot.smartMove("mpot1", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
 
-                let potsToBuy = Math.min(100 - bot.countItem("mpot1"), bot.gold / AL.Game.G.items.mpot1.g)
-                if (potsToBuy > 0) await bot.buy("mpot1", potsToBuy)
+                let potsToBuy = Math.min(100 - context.bot.countItem("mpot1"), context.bot.gold / AL.Game.G.items.mpot1.g)
+                if (potsToBuy > 0) await context.bot.buy("mpot1", potsToBuy)
 
-                potsToBuy = Math.min(100 - bot.countItem("hpot1"), bot.gold / AL.Game.G.items.hpot1.g)
-                if (potsToBuy > 0) await bot.buy("hpot1", potsToBuy)
+                potsToBuy = Math.min(100 - context.bot.countItem("hpot1"), context.bot.gold / AL.Game.G.items.hpot1.g)
+                if (potsToBuy > 0) await context.bot.buy("hpot1", potsToBuy)
             }
         } catch (e) {
             console.error(e)
