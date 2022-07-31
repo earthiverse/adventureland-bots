@@ -212,7 +212,7 @@ function preparePriest(bot: Priest) {
             equipment: maxDamageEquipment,
             move: async () => {
                 const nearest = bot.getEntity({ returnNearest: true, type: "crabxx" })
-                if (nearest && AL.Tools.distance(bot, nearest) > 25) {
+                if (nearest && Pathfinder.canWalkPath(bot, nearest)) {
                     // Move close to other crabx to damage them and get crabxx taking damage
                     await goToNearestWalkableToMonster2(bot, ["crabxx", "crabx"], nearest)
                 } else {
@@ -744,7 +744,7 @@ function prepareRanger(bot: Ranger) {
             equipment: maxDamageEquipment,
             move: async () => {
                 const nearest = bot.getEntity({ returnNearest: true, type: "crabxx" })
-                if (nearest && AL.Tools.distance(bot, nearest) > 25) {
+                if (nearest && Pathfinder.canWalkPath(bot, nearest)) {
                     // Move close to other crabx to damage them and get crabxx taking damage
                     await goToNearestWalkableToMonster2(bot, ["crabxx", "crabx"], nearest)
                 } else {

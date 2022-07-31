@@ -1,4 +1,4 @@
-import AL, { IPosition, ItemName, Mage, Merchant, SlotType } from "alclient"
+import AL, { IPosition, ItemName, Mage, Merchant, Pathfinder, SlotType } from "alclient"
 import { goToNearestWalkableToMonster2, goToNPC, goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
 import { caveBatsNorthEast, desertlandPorcupines, halloweenMiniMushes, halloweenSafeSnakes, mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrabXs, mainCrocs, mainGoos, mainPoisios, mainScorpions, mainSpiders, mainSquigs, offsetPosition, offsetPositionParty, winterlandArcticBees } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
@@ -136,7 +136,7 @@ function prepareMage(bot: Mage) {
             equipment: maxDamageEquipment,
             move: async () => {
                 const nearest = bot.getEntity({ returnNearest: true, type: "crabxx" })
-                if (nearest && AL.Tools.distance(bot, nearest) > 25) {
+                if (nearest && Pathfinder.canWalkPath(bot, nearest)) {
                     // Move close to other crabx to damage them and get crabxx taking damage
                     await goToNearestWalkableToMonster2(bot, ["crabxx", "crabx"], nearest)
                 } else {
