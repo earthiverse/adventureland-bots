@@ -99,6 +99,19 @@ function prepareMage(bot: Mage) {
                 }
             }
         },
+        bgoo: {
+            attack: async () => { await attackTheseTypesMage(bot, ["bgoo", "rgoo", "goo"], information.friends) },
+            attackWhileIdle: true,
+            equipment: maxDamageEquipment,
+            move: async () => {
+                const bgoo = bot.getEntity({ type: "bgoo" })
+                if (bgoo) {
+                    await goToNearestWalkableToMonster2(bot, ["bgoo", "rgoo", "goo"])
+                } else {
+                    await goToSpecialMonster(bot, "bgoo", { requestMagiport: true })
+                }
+            }
+        },
         crab: {
             attack: async () => { await attackTheseTypesMage(bot, ["crab", "phoenix"], information.friends) },
             attackWhileIdle: true,
@@ -184,7 +197,7 @@ function prepareMage(bot: Mage) {
             move: async () => { await goToSpecialMonster(bot, "goldenbat") },
         },
         goo: {
-            attack: async () => { await attackTheseTypesMage(bot, ["goo", "rgoo"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.goo.hp + 1 }) },
+            attack: async () => { await attackTheseTypesMage(bot, ["goo", "rgoo", "bgoo"], information.friends, { cburstWhenHPLessThan: bot.G.monsters.goo.hp + 1 }) },
             attackWhileIdle: true,
             equipment: maxAttackSpeedEquipment,
             move: async () => {
@@ -337,13 +350,13 @@ function prepareMage(bot: Mage) {
             }
         },
         rgoo: {
-            attack: async () => { await attackTheseTypesMage(bot, ["rgoo", "goo"], information.friends) },
+            attack: async () => { await attackTheseTypesMage(bot, ["rgoo", "bgoo", "goo"], information.friends) },
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
             move: async () => {
                 const rgoo = bot.getEntity({ type: "rgoo" })
                 if (rgoo) {
-                    await goToNearestWalkableToMonster2(bot, ["rgoo", "goo"])
+                    await goToNearestWalkableToMonster2(bot, ["rgoo", "bgoo", "goo"])
                 } else {
                     await goToSpecialMonster(bot, "rgoo", { requestMagiport: true })
                 }

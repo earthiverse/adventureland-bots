@@ -69,7 +69,7 @@ function prepareMerchant(bot: Merchant) {
             }
         },
         goo: {
-            attack: async () => { await attackTheseTypesMerchant(bot, ["goo", "rgoo"], information.friends) },
+            attack: async () => { await attackTheseTypesMerchant(bot, ["goo", "rgoo", "bgoo"], information.friends) },
             attackWhileIdle: true,
             equipment: { mainhand: "dartgun", offhand: "wbook1", ring1: "zapper" },
             move: async () => { await goToNearestWalkableToMonster2(bot, ["goo"], mainGoos) }
@@ -138,6 +138,15 @@ function preparePriest(bot: Priest) {
             attackWhileIdle: true,
             equipment: maxAttackSpeedEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: 152, y: 1487 }) },
+        },
+        bgoo: {
+            attack: async () => { await attackTheseTypesPriest(bot, ["bgoo", "rgoo", "goo"], information.friends) },
+            attackWhileIdle: true,
+            equipment: maxAttackSpeedEquipment,
+            move: async () => {
+                if (bot.map !== "goobrawl") await bot.smartMove("goobrawl")
+                await goToNearestWalkableToMonster2(bot, ["bgoo", "rgoo", "goo"])
+            },
         },
         bigbird: {
             attack: async () => { await attackTheseTypesPriest(bot, ["bigbird"], information.friends) },
@@ -313,7 +322,7 @@ function preparePriest(bot: Priest) {
             move: async () => { await goToSpecialMonster(bot, "goldenbat", { requestMagiport: true }) },
         },
         goo: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["goo", "rgoo"], information.friends) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["goo", "rgoo", "bgoo"], information.friends) },
             attackWhileIdle: true,
             equipment: maxAttackSpeedEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: -12, y: 787 }) },
@@ -502,13 +511,13 @@ function preparePriest(bot: Priest) {
             move: async () => { await bot.smartMove({ map: "mansion", x: -224, y: -313 }) },
         },
         rgoo: {
-            attack: async () => { await attackTheseTypesPriest(bot, ["rgoo", "goo"], information.friends) },
+            attack: async () => { await attackTheseTypesPriest(bot, ["rgoo", "bgoo", "goo"], information.friends) },
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
             move: async () => {
                 const rgoo = bot.getEntity({ type: "rgoo" })
                 if (rgoo) {
-                    await goToNearestWalkableToMonster2(bot, ["rgoo", "goo"])
+                    await goToNearestWalkableToMonster2(bot, ["rgoo", "bgoo", "goo"])
                 } else {
                     await goToSpecialMonster(bot, "rgoo", { requestMagiport: true })
                 }
@@ -694,6 +703,15 @@ function prepareRanger(bot: Ranger) {
             equipment: maxAttackSpeedEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: 494, y: 1101 }) },
         },
+        bgoo: {
+            attack: async () => { await attackTheseTypesRanger(bot, ["bgoo", "rgoo", "goo"], information.friends) },
+            attackWhileIdle: true,
+            equipment: maxAttackSpeedEquipment,
+            move: async () => {
+                if (bot.map !== "goobrawl") await bot.smartMove("goobrawl")
+                await goToNearestWalkableToMonster2(bot, ["bgoo", "rgoo", "goo"])
+            },
+        },
         bigbird: {
             attack: async () => { await attackTheseTypesRanger(bot, ["bigbird"], information.friends) },
             attackWhileIdle: true,
@@ -836,7 +854,7 @@ function prepareRanger(bot: Ranger) {
             move: async () => { await goToSpecialMonster(bot, "goldenbat", { requestMagiport: true }) },
         },
         goo: {
-            attack: async () => { return attackTheseTypesRanger(bot, ["goo", "rgoo"], information.friends) },
+            attack: async () => { return attackTheseTypesRanger(bot, ["goo", "rgoo", "bgoo"], information.friends) },
             attackWhileIdle: true,
             equipment: maxAttackSpeedEquipment,
             move: async () => { await bot.smartMove({ map: "main", x: -32, y: 787 }) },
@@ -1028,13 +1046,13 @@ function prepareRanger(bot: Ranger) {
             move: async () => { await bot.smartMove({ map: "mansion", x: 100, y: -225 }) },
         },
         rgoo: {
-            attack: async () => { await attackTheseTypesRanger(bot, ["rgoo", "goo"], information.friends) },
+            attack: async () => { await attackTheseTypesRanger(bot, ["rgoo", "bgoo", "goo"], information.friends) },
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
             move: async () => {
                 const rgoo = bot.getEntity({ type: "rgoo" })
                 if (rgoo) {
-                    await goToNearestWalkableToMonster2(bot, ["rgoo", "goo"])
+                    await goToNearestWalkableToMonster2(bot, ["rgoo", "bgoo", "goo"])
                 } else {
                     await goToSpecialMonster(bot, "rgoo", { requestMagiport: true })
                 }
@@ -1237,6 +1255,15 @@ function prepareWarrior(bot: Warrior) {
             equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster2(bot, ["bee"], { map: "main", x: 737, y: 720 }) },
         },
+        bgoo: {
+            attack: async () => { await attackTheseTypesWarrior(bot, ["bgoo", "rgoo", "goo"], information.friends) },
+            attackWhileIdle: true,
+            equipment: burnEquipment,
+            move: async () => {
+                if (bot.map !== "goobrawl") await bot.smartMove("goobrawl")
+                await goToNearestWalkableToMonster2(bot, ["bgoo", "rgoo", "goo"])
+            },
+        },
         bigbird: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["bigbird"], information.friends) },
             equipment: burnEquipment,
@@ -1410,7 +1437,7 @@ function prepareWarrior(bot: Warrior) {
             move: async () => { await goToSpecialMonster(bot, "goldenbat", { requestMagiport: true }) },
         },
         goo: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["goo", "rgoo"], information.friends) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["goo", "rgoo", "bgoo"], information.friends) },
             attackWhileIdle: true,
             equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster2(bot, ["goo"], { map: "main", x: -52, y: 787 }) },
@@ -1666,13 +1693,13 @@ function prepareWarrior(bot: Warrior) {
             move: async () => { await goToNearestWalkableToMonster2(bot, ["rat"], { map: "mansion", x: 0, y: -21 }) },
         },
         rgoo: {
-            attack: async () => { await attackTheseTypesWarrior(bot, ["rgoo", "goo"], information.friends) },
+            attack: async () => { await attackTheseTypesWarrior(bot, ["rgoo", "bgoo", "goo"], information.friends) },
             attackWhileIdle: true,
             equipment: burnEquipment,
             move: async () => {
                 const rgoo = bot.getEntity({ type: "rgoo" })
                 if (rgoo) {
-                    await goToNearestWalkableToMonster2(bot, ["rgoo", "goo"])
+                    await goToNearestWalkableToMonster2(bot, ["rgoo", "bgoo", "goo"])
                 } else {
                     await goToSpecialMonster(bot, "rgoo", { requestMagiport: true })
                 }
