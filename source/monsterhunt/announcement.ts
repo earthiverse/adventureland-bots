@@ -1,4 +1,4 @@
-import AL, { IPosition, ItemName, Mage, Merchant, Pathfinder, SlotType } from "alclient"
+import AL, { IPosition, ItemName, Mage, Merchant, Pathfinder, ServerInfoDataLive, SlotType } from "alclient"
 import { goToNearestWalkableToMonster2, goToNPC, goToSpecialMonster, sleep, startTrackerLoop } from "../base/general.js"
 import { caveBatsNorthEast, desertlandPorcupines, halloweenMiniMushes, halloweenSafeSnakes, mainArmadillos, mainBeesNearTunnel, mainCrabs, mainCrabXs, mainCrocs, mainGoos, mainPoisios, mainScorpions, mainSpiders, mainSquigs, offsetPosition, offsetPositionParty, winterlandArcticBees } from "../base/locations.js"
 import { attackTheseTypesMage } from "../base/mage.js"
@@ -208,7 +208,7 @@ function prepareMage(bot: Mage) {
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
             move: async () => {
-                if (bot.S.grinch?.live && bot.S.grinch.hp <= 1_000_000) {
+                if ((bot.S.grinch as ServerInfoDataLive)?.live && (bot.S.grinch as ServerInfoDataLive).hp <= 1_000_000) {
                     // Go to Kane when Grinch is nearing death for extra luck
                     await goToNPC(bot, "citizen0")
                     return
@@ -219,8 +219,8 @@ function prepareMage(bot: Mage) {
                     // TODO: If we see Kane, and the grinch is targeting us, kite him to Kane
                     if (!bot.smartMoving) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
                     else if (AL.Tools.distance(grinch, bot.smartMoving) > 100) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
-                } else if (bot.S.grinch?.live) {
-                    if (["woffice", "bank", "bank_b", "bank_u"].includes(bot.S.grinch.map)) return // Wait for the grinch to move to a place we can attack him
+                } else if ((bot.S.grinch as ServerInfoDataLive)?.live) {
+                    if (["woffice", "bank", "bank_b", "bank_u"].includes((bot.S.grinch as ServerInfoDataLive).map)) return // Wait for the grinch to move to a place we can attack him
 
                     if (!bot.smartMoving) goToSpecialMonster(bot, "grinch").catch(console.error)
                     else if (AL.Tools.distance(bot.S.grinch as IPosition, bot.smartMoving) > 100) {

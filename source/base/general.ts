@@ -1,4 +1,4 @@
-import AL, { Character, Entity, GameResponseData, GMap, HitData, IEntity, InviteData, IPosition, ItemData, ItemName, MapName, Merchant, MonsterName, NPCName, Pathfinder, Player, ServerIdentifier, ServerRegion, SlotType, Tools, TradeSlotType } from "alclient"
+import AL, { Character, Entity, GameResponseData, GMap, HitData, IEntity, InviteData, IPosition, ItemData, ItemName, MapName, Merchant, MonsterName, NPCName, Pathfinder, Player, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Tools, TradeSlotType } from "alclient"
 import { PathfinderOptions } from "alclient/build/definitions/pathfinder"
 import fs from "fs"
 import { ItemLevelInfo } from "../definitions/bot.js"
@@ -331,7 +331,7 @@ export async function getPriority1Entities(bot: Character): Promise<Entity[] | I
 
     const alive: IEntity[] = []
     for (const key in bot.S) {
-        const data = bot.S[key as MonsterName]
+        const data = bot.S[key as MonsterName] as ServerInfoDataLive
         if (typeof data == "object" && data.live) {
             if (!data.target
                 && !["grinch"].includes(key) /** Grinch changes target a lot, keep on him */) continue // No target
@@ -787,7 +787,7 @@ export async function goToSpecialMonster(bot: Character, type: MonsterName, opti
     }
 
     // Look for it in the server data
-    if (bot.S && bot.S[type] && bot.S[type].live && bot.S[type]["x"] !== undefined && bot.S[type]["y"] !== undefined) {
+    if ((bot.S?.[type] as ServerInfoDataLive)?.live && bot.S[type]["x"] !== undefined && bot.S[type]["y"] !== undefined) {
         const destination = bot.S[type] as IPosition
         if (options.requestMagiport) requestMagiportService(bot, destination)
         if (AL.Tools.distance(bot, destination) > bot.range) return bot.smartMove(destination, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
@@ -811,7 +811,7 @@ export async function goToSpecialMonster(bot: Character, type: MonsterName, opti
 
     // Go through all the spawns on the map to look for it
     if ((dbTarget && dbTarget.x == undefined && dbTarget.y == undefined && dbTarget.map)
-        || (bot.S && bot.S[type] && bot.S[type].live && bot.S[type]["x"] !== undefined && bot.S[type]["y"] !== undefined)) {
+        || ((bot.S?.[type] as ServerInfoDataLive)?.live && bot.S[type]["x"] !== undefined && bot.S[type]["y"] !== undefined)) {
         const spawns: IPosition[] = []
 
         const gMap = bot.G.maps[(dbTarget.map ?? bot.S[type]["map"]) as MapName] as GMap

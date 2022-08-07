@@ -71,7 +71,7 @@ async function startRogue(bot: Rogue, trilaterationIndex: number) {
         }
     })
     bot.socket.on("server_info", (data: ServerInfoData) => {
-        if (data.slenderman && !data.slenderman.live) {
+        if ((data.slenderman as ServerInfoDataLive)?.live) {
             // Clear Slender Data
             slenderID = undefined
             slenderTrilateration = [undefined, undefined, undefined]
@@ -287,7 +287,7 @@ async function startMerchant(bot: Merchant) {
                 // MLuck people if there is a server info target
                 for (const mN in bot.S) {
                     const type = mN as MonsterName
-                    if (!bot.S[type].live) continue
+                    if (!(bot.S[type] as ServerInfoDataLive).live) continue
                     if (!(bot.S[type] as ServerInfoDataLive).target) continue
                     if (bot.S[type]["x"] == undefined || bot.S[type]["y"] == undefined) continue // No location data
 
@@ -472,7 +472,7 @@ async function run() {
             }
 
             // Don't change servers if slender is live, and we haven't spent a lot of time on the server looking for him
-            if (rogue1.S?.slenderman && rogue1.S.slenderman.live && lastServerChangeTime > (Date.now() - 900_000)) {
+            if ((rogue1.S?.slenderman as ServerInfoDataLive)?.live && lastServerChangeTime > (Date.now() - 900_000)) {
                 setTimeout(serverLoop, 1000)
                 return
             }

@@ -3,28 +3,30 @@ import AL, { IPosition, Pathfinder } from "alclient"
 async function run() {
     // Login and prepare pathfinding
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
+    const now1 = performance.now()
     await AL.Pathfinder.prepare(AL.Game.G, {
-        cheat: true
+        maps: ["main", "winterland"]
     })
+    console.log(`Took ${performance.now() - now1}ms to prepare pathfinding.`)
 
-    const x = 126
-    const y = -413
-    console.log(`${x},${y}: ${Pathfinder.canStand({ map: "main", x: x, y: y })}`)
-    for (const [dX, dY] of [[0, 0], [-10, 0], [10, 0], [0, -10], [0, 10], [-10, -10], [-10, 10], [10, -10], [10, 10]]) {
-        const roundedX = Math.round((x + dX) / 10) * 10
-        const roundedY = Math.round((y + dY) / 10) * 10
-        console.log(`${roundedX},${roundedY}: ${Pathfinder.canStand({ map: "main", x: roundedX, y: roundedY })}`)
-    }
+    // const x = 126
+    // const y = -413
+    // console.log(`${x},${y}: ${Pathfinder.canStand({ map: "main", x: x, y: y })}`)
+    // for (const [dX, dY] of [[0, 0], [-10, 0], [10, 0], [0, -10], [0, 10], [-10, -10], [-10, 10], [10, -10], [10, 10]]) {
+    //     const roundedX = Math.round((x + dX) / 10) * 10
+    //     const roundedY = Math.round((y + dY) / 10) * 10
+    //     console.log(`${roundedX},${roundedY}: ${Pathfinder.canStand({ map: "main", x: roundedX, y: roundedY })}`)
+    // }
 
-    const closestTo = (position: IPosition) => {
-        console.log(`Closest node to ${position.map}:${position.x},${position.y}`)
-        console.log(Pathfinder.findClosestNode(position.map, position.x, position.y).id)
-    }
+    // const closestTo = (position: IPosition) => {
+    //     console.log(`Closest node to ${position.map}:${position.x},${position.y}`)
+    //     console.log(Pathfinder.findClosestNode(position.map, position.x, position.y).id)
+    // }
 
-    closestTo({ map: "level1", x: -296, y: 183 })
-    closestTo({ map: "level1", x: -296, y: 558 })
+    // closestTo({ map: "level1", x: -296, y: 183 })
+    // closestTo({ map: "level1", x: -296, y: 558 })
 
-    console.log(Pathfinder.locateMonster("goo"))
+    // console.log(Pathfinder.locateMonster("goo"))
 
     console.log(Pathfinder.canWalkPath({
         map: "winterland",
@@ -37,9 +39,9 @@ async function run() {
         y: -89.23400075771264
     }))
 
-    const now1 = performance.now()
-    await Pathfinder.getPath({ map: "main", x: 0, y: 0 }, { map: "spookytown", x: 0, y: 0 })
-    console.log(`Took ${performance.now() - now1}ms to perform the search from main to spookytown.`)
+    // const now1 = performance.now()
+    // await Pathfinder.getPath({ map: "main", x: 0, y: 0 }, { map: "spookytown", x: 0, y: 0 })
+    // console.log(`Took ${performance.now() - now1}ms to perform the search from main to spookytown.`)
 
     const now2 = performance.now()
     await Pathfinder.getPath({ map: "main", x: 0, y: 0 }, { map: "main", x: -967, y: -169 })
@@ -47,4 +49,4 @@ async function run() {
 
     AL.Database.disconnect()
 }
-run()
+run().catch(console.error)

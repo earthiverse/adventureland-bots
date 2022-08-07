@@ -260,7 +260,7 @@ function preparePriest(bot: Priest) {
                 if (dragold) {
                     if (!bot.smartMoving) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
                     else if (AL.Tools.distance(dragold, bot.smartMoving) > 100) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
-                } else if (bot.S.dragold?.live) {
+                } else if ((bot.S.dragold as ServerInfoDataLive)?.live) {
                     requestMagiportService(bot, bot.S.dragold as IPosition)
                     if (!bot.smartMoving) goToSpecialMonster(bot, "dragold").catch(console.error)
                     else if (AL.Tools.distance(bot.S.dragold as IPosition, bot.smartMoving) > 100) {
@@ -337,7 +337,7 @@ function preparePriest(bot: Priest) {
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
             move: async () => {
-                if (bot.S.grinch?.live && bot.S.grinch.hp <= 1_000_000) {
+                if ((bot.S.grinch as ServerInfoDataLive)?.live && (bot.S.grinch as ServerInfoDataLive).hp <= 1_000_000) {
                     // Go to Kane when Grinch is nearing death for extra luck
                     await goToNPC(bot, "citizen0")
                     return
@@ -348,8 +348,8 @@ function preparePriest(bot: Priest) {
                     // TODO: If we see Kane, and the grinch is targeting us, kite him to Kane
                     if (!bot.smartMoving) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
                     else if (AL.Tools.distance(grinch, bot.smartMoving) > 100) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
-                } else if (bot.S.grinch?.live) {
-                    if (["woffice", "bank", "bank_b", "bank_u"].includes(bot.S.grinch.map)) return // Wait for the grinch to move to a place we can attack him
+                } else if ((bot.S.grinch as ServerInfoDataLive)?.live) {
+                    if (["woffice", "bank", "bank_b", "bank_u"].includes((bot.S.grinch as ServerInfoDataLive).map)) return // Wait for the grinch to move to a place we can attack him
 
                     requestMagiportService(bot, bot.S.grinch as IPosition)
                     if (!bot.smartMoving) goToSpecialMonster(bot, "grinch").catch(console.error)
@@ -786,7 +786,7 @@ function prepareRanger(bot: Ranger) {
                 if (dragold) {
                     if (!bot.smartMoving) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
                     else if (AL.Tools.distance(dragold, bot.smartMoving) > 100) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
-                } else if (bot.S.dragold?.live) {
+                } else if ((bot.S.dragold as ServerInfoDataLive)?.live) {
                     requestMagiportService(bot, bot.S.dragold as IPosition)
                     if (!bot.smartMoving) goToSpecialMonster(bot, "dragold").catch(console.error)
                     else if (AL.Tools.distance(bot.S.dragold as IPosition, bot.smartMoving) > 100) {
@@ -852,7 +852,7 @@ function prepareRanger(bot: Ranger) {
             attackWhileIdle: true,
             equipment: maxDamageEquipment,
             move: async () => {
-                if (bot.S.grinch?.live && bot.S.grinch.hp <= 1_000_000) {
+                if ((bot.S.grinch as ServerInfoDataLive)?.live && (bot.S.grinch as ServerInfoDataLive).hp <= 1_000_000) {
                     // Go to Kane when Grinch is nearing death for extra luck
                     await goToNPC(bot, "citizen0")
                     return
@@ -863,8 +863,8 @@ function prepareRanger(bot: Ranger) {
                     // TODO: If we see Kane, and the grinch is targeting us, kite him to Kane
                     if (!bot.smartMoving) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
                     else if (AL.Tools.distance(grinch, bot.smartMoving) > 100) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
-                } else if (bot.S.grinch?.live) {
-                    if (["woffice", "bank", "bank_b", "bank_u"].includes(bot.S.grinch.map)) return // Wait for the grinch to move to a place we can attack him
+                } else if ((bot.S.grinch as ServerInfoDataLive)?.live) {
+                    if (["woffice", "bank", "bank_b", "bank_u"].includes((bot.S.grinch as ServerInfoDataLive).map)) return // Wait for the grinch to move to a place we can attack him
 
                     requestMagiportService(bot, bot.S.grinch as IPosition)
                     if (!bot.smartMoving) goToSpecialMonster(bot, "grinch").catch(console.error)
@@ -1344,7 +1344,7 @@ function prepareWarrior(bot: Warrior) {
                 if (dragold) {
                     if (!bot.smartMoving) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
                     else if (AL.Tools.distance(dragold, bot.smartMoving) > 100) bot.smartMove(dragold, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
-                } else if (bot.S.dragold?.live) {
+                } else if ((bot.S.dragold as ServerInfoDataLive)?.live) {
                     requestMagiportService(bot, bot.S.dragold as IPosition)
                     if (!bot.smartMoving) goToSpecialMonster(bot, "dragold").catch(console.error)
                     else if (AL.Tools.distance(bot.S.dragold as IPosition, bot.smartMoving) > 100) {
@@ -1440,7 +1440,7 @@ function prepareWarrior(bot: Warrior) {
             attackWhileIdle: true,
             equipment: burnEquipment,
             move: async () => {
-                if (bot.S.grinch?.live && bot.S.grinch.hp <= 1_000_000) {
+                if ((bot.S.grinch as ServerInfoDataLive)?.live && (bot.S.grinch as ServerInfoDataLive).hp <= 1_000_000) {
                     // Go to Kane when Grinch is nearing death for extra luck
                     await goToNPC(bot, "citizen0")
                     return
@@ -1451,8 +1451,8 @@ function prepareWarrior(bot: Warrior) {
                     // TODO: If we see Kane, and the grinch is targeting us, kite him to Kane
                     if (!bot.smartMoving) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
                     else if (AL.Tools.distance(grinch, bot.smartMoving) > 100) bot.smartMove(grinch, { getWithin: Math.min(bot.range - 10, 50) }).catch(console.error)
-                } else if (bot.S.grinch?.live) {
-                    if (["woffice", "bank", "bank_b", "bank_u"].includes(bot.S.grinch.map)) return // Wait for the grinch to move to a place we can attack him
+                } else if ((bot.S.grinch as ServerInfoDataLive)?.live) {
+                    if (["woffice", "bank", "bank_b", "bank_u"].includes((bot.S.grinch as ServerInfoDataLive).map)) return // Wait for the grinch to move to a place we can attack him
 
                     requestMagiportService(bot, bot.S.grinch as IPosition)
                     if (!bot.smartMoving) goToSpecialMonster(bot, "grinch").catch(console.error)

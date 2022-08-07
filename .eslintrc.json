@@ -78,8 +78,6 @@
             "error",
             "never"
         ],
-        "sort-keys": "warn",
-        "sort-vars": "error",
         "space-infix-ops": "error",
         "space-in-parens": [
             "error",

@@ -393,7 +393,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
                 // MLuck people if there is a server info target
                 for (const mN in bot.S) {
                     const type = mN as MonsterName
-                    if (!bot.S[type].live) continue
+                    if (!(bot.S[type] as ServerInfoDataLive).live) continue
                     if (!(bot.S[type] as ServerInfoDataLive).target) continue
                     if (bot.S[type]["x"] == undefined || bot.S[type]["y"] == undefined) continue // No location data
 
