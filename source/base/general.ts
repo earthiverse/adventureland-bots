@@ -1178,7 +1178,7 @@ export function startBuyFriendsReplenishablesLoop(bot: Character, friends: Chara
 
                     if (sendThisMany > 0) {
                         let itemPos: number
-                        if (buyThisMany > 0) itemPos = await bot.buy(item, buyThisMany)
+                        if (buyThisMany > 0) itemPos = ((await bot.buy(item, buyThisMany)) as any).num
                         else itemPos = bot.locateItem(item, bot.items, { quantityGreaterThan: sendThisMany - 1 })
                         await bot.sendItem(friend.id, itemPos, sendThisMany)
                     }
@@ -1258,7 +1258,7 @@ export function startCompoundLoop(bot: Character, itemsToSell: ItemLevelInfo = I
                             const primlingPos = bot.locateItem("offeringp")
                             try {
                                 if (cscrollPos == undefined && !bot.canBuy(cscrollName)) continue // We can't buy a scroll for whatever reason :(
-                                else if (cscrollPos == undefined) cscrollPos = await bot.buy(cscrollName)
+                                else if (cscrollPos == undefined) cscrollPos = ((await bot.buy(cscrollName)) as any).num
 
                                 if ((ITEMS_TO_PRIMLING[itemName] && dLevel >= ITEMS_TO_PRIMLING[itemName])
                                     || (!ITEMS_TO_PRIMLING[itemName] && ((level0Grade == 0 && dLevel >= 3) || (level0Grade == 1 && dLevel >= 2) || (level0Grade == 2 && dLevel >= 1)))) {
@@ -1403,7 +1403,7 @@ export function startElixirLoop(bot: Character, elixir: ItemName): void {
 
             if (!bot.slots.elixir) {
                 let drinkThis = bot.locateItem(elixir)
-                if (drinkThis == undefined && bot.canBuy(elixir)) drinkThis = await bot.buy(elixir)
+                if (drinkThis == undefined && bot.canBuy(elixir)) drinkThis = ((await bot.buy(elixir)) as any).num
                 if (drinkThis !== undefined) await bot.equip(drinkThis)
             }
         } catch (e) {
@@ -1997,7 +1997,7 @@ export function startUpgradeLoop(bot: Character, itemsToSell: ItemLevelInfo = IT
                             const primlingPos = bot.locateItem("offeringp")
                             try {
                                 if (scrollPos == undefined && !bot.canBuy(scrollName)) continue // We can't buy a scroll for whatever reason :(
-                                else if (scrollPos == undefined) scrollPos = await bot.buy(scrollName)
+                                else if (scrollPos == undefined) scrollPos = ((await bot.buy(scrollName)) as any).num
 
                                 if ((ITEMS_TO_PRIMLING[itemName] && dLevel >= ITEMS_TO_PRIMLING[itemName])
                                     || (!ITEMS_TO_PRIMLING[itemName] && ((level0Grade == 0 && dLevel >= 8) || (level0Grade == 1 && dLevel >= 6) || (level0Grade == 2 && dLevel >= 4)))) {
