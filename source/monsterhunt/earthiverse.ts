@@ -97,7 +97,7 @@ function prepareMerchant(bot: Merchant) {
 }
 
 function preparePriest(bot: Priest) {
-    const maxAttackSpeedEquipment: { [T in SlotType]?: ItemName } = { amulet: "intamulet", belt: "intbelt", cape: "angelwings", chest: "wattire", earring1: "cearring", earring2: "cearring", gloves: "wgloves", helmet: "wcap", mainhand: "wand", orb: "jacko", pants: "wbreeches", ring1: "cring", ring2: "cring", shoes: "wingedboots" }
+    const maxAttackSpeedEquipment: { [T in SlotType]?: ItemName } = { amulet: "intamulet", belt: "intbelt", cape: "angelwings", chest: "wattire", earring1: "cearring", earring2: "cearring", gloves: "wgloves", helmet: "wcap", mainhand: "wand", orb: "jacko", pants: "wbreeches", ring1: "zapper", ring2: "cring", shoes: "wingedboots" }
     const maxDamageEquipment: { [T in SlotType]?: ItemName } = { ...maxAttackSpeedEquipment, mainhand: "firestaff", offhand: "wbook1" }
 
     const bscorpionSpawn = Pathfinder.locateMonster("bscorpion")[0]
@@ -660,7 +660,7 @@ function preparePriest(bot: Priest) {
 
 function prepareRanger(bot: Ranger) {
     const bscorpionSpawn = Pathfinder.locateMonster("bscorpion")[0]
-    const maxCritEquipment: { [T in SlotType]?: ItemName } = { amulet: "dexamulet", belt: "dexbelt", cape: "bcape", chest: "wattire", earring1: "dexearring", earring2: "dexearring", gloves: "wgloves", helmet: "fury", mainhand: "crossbow", offhand: "t2quiver", orb: "orbofdex", pants: "wbreeches", ring1: "cring", ring2: "cring", shoes: "wingedboots" }
+    const maxCritEquipment: { [T in SlotType]?: ItemName } = { amulet: "dexamulet", belt: "dexbelt", cape: "bcape", chest: "wattire", earring1: "dexearring", earring2: "dexearring", gloves: "wgloves", helmet: "fury", mainhand: "crossbow", offhand: "t2quiver", orb: "orbofdex", pants: "wbreeches", ring1: "zapper", ring2: "cring", shoes: "wingedboots" }
     const maxRangeEquipment: { [T in SlotType]?: ItemName } = { ...maxCritEquipment, helmet: "cyber", offhand: "quiver" }
     const maxDamageEquipment: { [T in SlotType]?: ItemName } = { ...maxCritEquipment, helmet: "cyber", mainhand: "firebow" }
     const maxAttackSpeedEquipment: { [T in SlotType]?: ItemName } = { ...maxCritEquipment, helmet: "cyber", mainhand: "hbow" }
@@ -1216,7 +1216,7 @@ function prepareRanger(bot: Ranger) {
 }
 
 function prepareWarrior(bot: Warrior) {
-    const armor: { [T in SlotType]?: ItemName } = { amulet: "snring", belt: "strbelt", cape: "bcape", chest: "coat1", earring1: "cearring", earring2: "cearring", gloves: "gloves1", helmet: "helmet1", orb: "orbofstr", pants: "pants1", ring1: "strring", ring2: "strring", shoes: "wingedboots" }
+    const armor: { [T in SlotType]?: ItemName } = { amulet: "snring", belt: "strbelt", cape: "bcape", chest: "coat1", earring1: "cearring", earring2: "cearring", gloves: "gloves1", helmet: "helmet1", orb: "orbofstr", pants: "pants1", ring1: "zapper", ring2: "strring", shoes: "wingedboots" }
     const aoeEquipment: { [T in SlotType]?: ItemName } = { ...armor, mainhand: "vhammer", offhand: "glolipop" }
     const burnEquipment: { [T in SlotType]?: ItemName } = { ...armor, mainhand: "fireblade", offhand: "fireblade" }
     const bowEquipment: { [T in SlotType]?: ItemName } = { ...armor, mainhand: "hbow", offhand: undefined }
