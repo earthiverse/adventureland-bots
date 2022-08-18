@@ -153,7 +153,7 @@ export async function startLulzCharacter(type: CharacterType, userID: string, us
         // TODO: Move this to a move strategy
         try {
             if (context.bot.smartMoving) return
-            if ((!context.bot.hasItem("hpot1") || !context.bot.hasItem("mpot1")) && context.bot.gold > (AL.Game.G.items.mpot1.g * 100) || context.bot.isFull()) {
+            if (((!context.bot.hasItem("hpot1") || !context.bot.hasItem("mpot1")) && context.bot.gold > (AL.Game.G.items.mpot1.g * 100)) || context.bot.isFull()) {
                 // Go get potions
                 context.removeStrategy(moveStrategy)
 
