@@ -588,13 +588,14 @@ export async function goFishing(bot: Merchant): Promise<void> {
     await merchantSmartMove(bot, mainFishingSpot, { attackWhileMoving: true }) // Move to fishing spot
 
     // Equip fishing rod if we don't have it already equipped
-    const mainhand = bot.slots.mainhand?.name
+    // const mainhand = bot.slots.mainhand?.name
     let mainhandSlot: number
     const offhand = bot.slots.offhand?.name
-    let offhandSlot: number
+    // let offhandSlot: number
     if (!bot.isEquipped("rod")) {
         const promises: Promise<unknown>[] = []
-        if (offhand) promises.push(bot.unequip("offhand").then((i) => { offhandSlot = i }))
+        if (offhand) promises.push(bot.unequip("offhand"))
+        // .then((i) => { offhandSlot = i }))
         mainhandSlot = bot.locateItem("rod")
         promises.push(bot.equip(mainhandSlot))
         await Promise.all(promises)
@@ -602,18 +603,19 @@ export async function goFishing(bot: Merchant): Promise<void> {
 
     await bot.fish()
 
-    // Re-equip if we changed weapons
-    const promises: Promise<unknown>[] = []
-    if (bot.slots.mainhand?.name !== mainhand) {
-        if (mainhandSlot !== undefined) promises.push(bot.equip(mainhandSlot, "mainhand"))
-    }
-    if (bot.slots.offhand?.name !== offhand) {
-        if (offhandSlot !== undefined) promises.push(bot.equip(offhandSlot, "offhand"))
-    }
-    await Promise.all(promises)
+    // // Re-equip if we changed weapons
+    // const promises: Promise<unknown>[] = []
+    // if (bot.slots.mainhand?.name !== mainhand) {
+    //     if (mainhandSlot !== undefined) promises.push(bot.equip(mainhandSlot, "mainhand"))
+    // }
+    // if (bot.slots.offhand?.name !== offhand) {
+    //     if (offhandSlot !== undefined) promises.push(bot.equip(offhandSlot, "offhand"))
+    // }
+    // await Promise.all(promises)
 }
 
 export async function goMining(bot: Merchant): Promise<void> {
+    if (bot.c.mining) return // We're already mining
     if (!bot.canUse("mining", { ignoreEquipped: true })) return
     if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe")) {
         if (bot.esize <= 4) return // We don't have space to craft a pickaxe
@@ -640,13 +642,14 @@ export async function goMining(bot: Merchant): Promise<void> {
     await merchantSmartMove(bot, miningSpot, { attackWhileMoving: true }) // Move to mining spot
 
     // Equip pickaxe if we don't have it already equipped
-    const mainhand = bot.slots.mainhand?.name
+    // const mainhand = bot.slots.mainhand?.name
     let mainhandSlot: number
     const offhand = bot.slots.offhand?.name
-    let offhandSlot: number
+    // let offhandSlot: number
     if (!bot.isEquipped("pickaxe")) {
         const promises: Promise<unknown>[] = []
-        if (offhand) promises.push(bot.unequip("offhand").then((i) => { offhandSlot = i }))
+        if (offhand) promises.push(bot.unequip("offhand"))
+        // .then((i) => { offhandSlot = i }))
         mainhandSlot = bot.locateItem("pickaxe")
         promises.push(bot.equip(mainhandSlot))
         await Promise.all(promises)
@@ -654,15 +657,15 @@ export async function goMining(bot: Merchant): Promise<void> {
 
     await bot.mine()
 
-    // Re-equip if we changed weapons
-    const promises: Promise<unknown>[] = []
-    if (bot.slots.mainhand?.name !== mainhand) {
-        if (mainhandSlot !== undefined) promises.push(bot.equip(mainhandSlot, "mainhand"))
-    }
-    if (bot.slots.offhand?.name !== offhand) {
-        if (offhandSlot !== undefined) promises.push(bot.equip(offhandSlot, "offhand"))
-    }
-    await Promise.all(promises)
+    // // Re-equip if we changed weapons
+    // const promises: Promise<unknown>[] = []
+    // if (bot.slots.mainhand?.name !== mainhand) {
+    //     if (mainhandSlot !== undefined) promises.push(bot.equip(mainhandSlot, "mainhand"))
+    // }
+    // if (bot.slots.offhand?.name !== offhand) {
+    //     if (offhandSlot !== undefined) promises.push(bot.equip(offhandSlot, "offhand"))
+    // }
+    // await Promise.all(promises)
 }
 
 export async function merchantSmartMove(bot: Merchant, location: IPosition | MapName | NPCName, options: SmartMoveOptions & { attackWhileMoving?: boolean} = {}) {
