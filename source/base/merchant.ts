@@ -563,6 +563,7 @@ export async function doBanking(bot: Merchant, goldToHold = MERCHANT_GOLD_TO_HOL
 }
 
 export async function goFishing(bot: Merchant): Promise<void> {
+    if (bot.c.fishing) return // We're already fishing
     if (!bot.canUse("fishing", { ignoreEquipped: true })) return
     if (!bot.hasItem("rod") && !bot.isEquipped("rod")) {
         if (bot.esize <= 3) return // We don't have space to craft a rod
