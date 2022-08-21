@@ -304,6 +304,12 @@ export async function startMerchant(bot: Merchant, information: Information, str
                 return
             }
 
+            // Wait for mining and fishing to complete
+            if (bot.c.mining || bot.c.fishing) {
+                bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
+                return
+            }
+
             // If we are full, let's go to the bank
             if (checkOnlyEveryMS(`${bot.id}_bank`, 120000) || bot.isFull() || bot.hasPvPMarkedItem()) {
                 await doBanking(bot)
