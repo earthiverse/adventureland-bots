@@ -1,4 +1,5 @@
 import { Mage, SlotType, TradeItemInfo, TradeSlotType } from "alclient"
+import { sortPriority } from "../../base/sort.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
 
 export type MageAttackStrategyOptions = BaseAttackStrategyOptions & {
@@ -6,15 +7,17 @@ export type MageAttackStrategyOptions = BaseAttackStrategyOptions & {
 }
 
 export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
+    public options: MageAttackStrategyOptions
+
     public constructor(options?: MageAttackStrategyOptions) {
         super(options)
     }
 
     public async attack(bot: Mage): Promise<void> {
-        await this.cburstHumanoids(bot)
+        const priority = sortPriority(bot, this.options.typeList)
 
-        // Basic attack
-        return super.attack(bot)
+        if (!this.options.disableCburst) await this.cburstHumanoids(bot)
+        await this.basicAttack(bot, priority)
     }
 
     /**

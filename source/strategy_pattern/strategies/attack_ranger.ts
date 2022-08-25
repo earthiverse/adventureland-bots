@@ -4,7 +4,6 @@ import { sortPriority } from "../../base/sort.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
 
 export type RangerAttackStrategyOptions = BaseAttackStrategyOptions & {
-    disableCburst?: boolean
     disableHuntersMark?: boolean
     disableMultiShot?: boolean
     disableSuperShot?: boolean
@@ -111,7 +110,7 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
             }
 
             this.getEnergizeFromOther(bot)
-            return bot.fiveShot(entities[0].id, entities[1].id, entities[2].id, entities[3].id, entities[4].id)
+            return bot.fiveShot(entities[0].id, entities[1].id, entities[2].id, entities[3].id, entities[4].id).catch(console.error)
         } else if (!this.options.disableMultiShot && threeShotTargets.size >= 3 && bot.canUse("3shot")) {
             const entities: Entity[] = []
             while (entities.length < 3) {
@@ -121,7 +120,7 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
             }
 
             this.getEnergizeFromOther(bot)
-            return bot.threeShot(entities[0].id, entities[1].id, entities[2].id)
+            return bot.threeShot(entities[0].id, entities[1].id, entities[2].id).catch(console.error)
         }
 
         const canUsePiercingShot = bot.canUse("piercingshot")
@@ -131,13 +130,13 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
             if (bot.canKillInOneShot(entity)) {
                 this.preventOverkill(bot, entity)
                 this.getEnergizeFromOther(bot)
-                return bot.basicAttack(entity.id)
+                return bot.basicAttack(entity.id).catch(console.error)
             }
 
             if (canUsePiercingShot && bot.canKillInOneShot(entity, "piercingshot")) {
                 this.preventOverkill(bot, entity)
                 this.getEnergizeFromOther(bot)
-                return bot.piercingShot(entity.id)
+                return bot.piercingShot(entity.id).catch(console.error)
             }
 
             if (!entity.target) {
@@ -158,25 +157,27 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
 
             if (!canUsePiercingShot) {
                 this.getEnergizeFromOther(bot)
-                return bot.basicAttack(entity.id)
+                return bot.basicAttack(entity.id).catch(console.error)
             }
 
             // Use the attack that will do more damage
             const damage = bot.calculateDamageRange(entity)
             const piercingDamage = bot.canUse("piercingshot") ? bot.calculateDamageRange(entity, "piercingshot") : [0, 0]
             this.getEnergizeFromOther(bot)
-            if (damage[0] >= piercingDamage[0]) return bot.basicAttack(entity.id)
-            else return bot.piercingShot(entity.id)
+            if (damage[0] >= piercingDamage[0]) return bot.basicAttack(entity.id).catch(console.error)
+            else return bot.piercingShot(entity.id).catch(console.error)
         }
     }
 
     protected async supershot(bot: Ranger, priority: (a: Entity, b: Entity) => boolean) {
-        if (!bot.canUse("supershot")) return
+        if (!bot.canUse("supershot")) return // We can't supershot
 
         // Find all targets we want to attack
-        this.options.withinRange = "supershot"
-        this.options.canDamage = "supershot"
-        const entities = bot.getEntities(this.options)
+        const entities = bot.getEntities({
+            ...this.options,
+            canDamage: "supershot",
+            withinRange: "supershot"
+        })
         if (entities.length == 0) return // No targets to attack
 
         // Prioritize the entities
@@ -185,7 +186,7 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
             // If we can kill something guaranteed, break early
             if (bot.canKillInOneShot(entity, "supershot")) {
                 this.preventOverkill(bot, entity)
-                return bot.superShot(entity.id)
+                return bot.superShot(entity.id).catch(console.error)
             }
 
             targets.add(entity)
@@ -212,7 +213,7 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
                 }
             }
 
-            return bot.superShot(entity.id)
+            return bot.superShot(entity.id).catch(console.error)
         }
     }
 

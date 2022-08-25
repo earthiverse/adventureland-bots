@@ -1,4 +1,4 @@
-import AL, { Character, Entity, GetEntitiesFilters, Mage, SkillName } from "alclient"
+import AL, { Character, Entity, GetEntitiesFilters, Mage } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { sortPriority } from "../../base/sort.js"
 import { Loop, LoopName, Strategy } from "../context.js"
@@ -39,36 +39,60 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (!this.options.disableZapper) await this.zapperAttack(bot, priority)
     }
 
-    protected async basicAttack(bot: Type, priority: (a: Entity, b: Entity) => boolean): Promise<void> {
+    protected async basicAttack(bot: Type, priority: (a: Entity, b: Entity) => boolean): Promise<unknown> {
         if (!bot.canUse("attack")) return // We can't attack
 
         // Find all targets we want to attack
-        this.options.withinRange = "attack"
-        this.options.canDamage = "attack"
-        const entities = bot.getEntities(this.options)
+        const entities = bot.getEntities({
+            ...this.options,
+            canDamage: "attack",
+            withinRange: "attack"
+        })
         if (entities.length == 0) return // No targets to attack
 
         // Prioritize the entities
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const entity of entities) targets.add(entity)
 
-        // Attack the highest priority entity
-        const target = targets.poll()
-        const canKill = bot.canKillInOneShot(target)
-        if (canKill) this.preventOverkill(bot, target)
-        if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot)
+        const targetingMe = bot.calculateTargets()
 
-        await bot.basicAttack(target.id).catch(console.error)
+        while (targets.size) {
+            const target = targets.poll()
+
+            if (!target.target) {
+                // We're going to be tanking this monster, don't attack if it pushes us over our limit
+                if (this.options.maximumTargets >= bot.targets) continue // We don't want another target
+                switch (target.damage_type) {
+                    case "magical":
+                        if (bot.mcourage <= targetingMe.magical) continue // We can't tank any more magical monsters
+                        break
+                    case "physical":
+                        if (bot.courage <= targetingMe.physical) continue // We can't tank any more physical monsters
+                        break
+                    case "pure":
+                        if (bot.courage <= targetingMe.pure) continue // We can't tank any more pure monsters
+                        break
+                }
+            }
+
+            const canKill = bot.canKillInOneShot(target)
+            if (canKill) this.preventOverkill(bot, target)
+            if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot)
+            return bot.basicAttack(target.id).catch(console.error)
+        }
     }
 
     protected async zapperAttack(bot: Type, priority: (a: Entity, b: Entity) => boolean) {
-        if (!bot.hasItem("zapper") && !bot.isEquipped("zapper")) return // We don't have a zapper
-        if (!bot.canUse("zapperzap", { ignoreEquipped: true })) return // We can't use it
+        if (!bot.canUse("zapperzap")) return // We can't zap
 
         // Find all targets we want to attack
         this.options.withinRange = "zapperzap"
         this.options.canDamage = "zapperzap"
-        const entities = bot.getEntities(this.options)
+        const entities = bot.getEntities({
+            ...this.options,
+            canDamage: "zapperzap",
+            withinRange: "zapperzap"
+        })
         if (bot.mp < bot.max_mp - 500) {
             // When we're not near full mp, only zap if we can kill the entity in one shot
             for (let i = 0; i < entities.length; i++) {
@@ -80,12 +104,43 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 }
             }
         }
-
         if (entities.length == 0) return // No targets to attack
 
         // Prioritize the entities
         const targets = new FastPriorityQueue<Entity>(priority)
+        for (const entity of entities) {
+            // If we can kill something guaranteed, break early
+            if (bot.canKillInOneShot(entity, "zapperzap")) {
+                this.preventOverkill(bot, entity)
+                return bot.zapperZap(entity.id)
+            }
 
+            targets.add(entity)
+        }
+
+        const targetingMe = bot.calculateTargets()
+
+        while (targets.size) {
+            const entity = targets.poll()
+
+            if (!entity.target) {
+                // We're going to be tanking this monster, don't attack if it pushes us over our limit
+                if (this.options.maximumTargets >= bot.targets) continue // We don't want another target
+                switch (entity.damage_type) {
+                    case "magical":
+                        if (bot.mcourage <= targetingMe.magical) continue // We can't tank any more magical monsters
+                        break
+                    case "physical":
+                        if (bot.courage <= targetingMe.physical) continue // We can't tank any more physical monsters
+                        break
+                    case "pure":
+                        if (bot.courage <= targetingMe.pure) continue // We can't tank any more pure monsters
+                        break
+                }
+            }
+
+            return bot.zapperZap(entity.id)
+        }
     }
 
     /**
@@ -134,6 +189,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
      */
     protected shouldAttack(bot: Character) {
         if (bot.c.town) return false // Don't attack if teleporting
+        if (bot.c.fishing || bot.c.mining) return false // Don't attack if mining or fishing
         if (bot.isOnCooldown("scare")) return false // Don't attack if scare is on cooldown
         return true
     }

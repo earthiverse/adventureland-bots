@@ -35,14 +35,14 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
         if (bot.isPVP()) {
             for (const [, player] of bot.players) {
                 if (bot.party && player.party == bot.party) continue // Same party, won't do damage
-                if (AL.Tools.distance(bot, player) > bot.G.skills.agitate.range + bot.xrange) continue // Out of range, won't do damage
+                if (AL.Tools.distance(bot, player) > bot.G.skills.cleave.range) continue // Out of range, won't do damage
 
                 avoidCleave = true
                 break
             }
         }
         for (const target of bot.getEntities({
-            withinRange: bot.G.skills.cleave.range + bot.xrange,
+            withinRange: bot.G.skills.cleave.range,
         })) {
             if (options.targetingPlayer && !target.target) {
                 // We don't want to aggro things
@@ -267,7 +267,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
                 if (bot.isPVP()) {
                     for (const [, player] of bot.players) {
                         if (bot.party && player.party == bot.party) continue // Same party, won't stun
-                        if (AL.Tools.distance(bot, player) > bot.G.skills.stomp.range + bot.xrange) continue // Out of range, won't stun
+                        if (AL.Tools.distance(bot, player) > bot.G.skills.stomp.range) continue // Out of range, won't stun
 
                         avoidStomp = true
                         break

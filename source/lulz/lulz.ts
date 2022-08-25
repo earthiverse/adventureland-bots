@@ -4,9 +4,9 @@ import bodyParser from "body-parser"
 import cors from "cors"
 import { body, validationResult } from "express-validator"
 
-import AL, { Character, CharacterType, ItemName, MonsterName, PingCompensatedCharacter, ServerIdentifier, ServerRegion } from "alclient"
+import AL, { Character, CharacterType, ItemName, Merchant, MonsterName, PingCompensatedCharacter, ServerIdentifier, ServerRegion } from "alclient"
 import { addSocket, startServer } from "algui"
-import { Strategist, Strategy } from "../strategy_pattern/context.js"
+import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
 import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
 import { MageAttackStrategy } from "../strategy_pattern/strategies/attack_mage.js"
 import { AvoidStackingStrategy } from "../strategy_pattern/strategies/avoid_stacking.js"
@@ -18,6 +18,7 @@ import { SellStrategy } from "../strategy_pattern/strategies/sell.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 import { RangerAttackStrategy } from "../strategy_pattern/strategies/attack_ranger.js"
 import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
+import { WarriorAttackStrategy } from "../strategy_pattern/strategies/attack_warrior.js"
 
 // Login and get GData
 await AL.Game.loginJSONFile("../../credentials.json")
@@ -28,11 +29,30 @@ await startServer(8080, AL.Game.G)
 const SERVER_REGION: ServerRegion = "US"
 const SERVER_ID: ServerIdentifier = "I"
 
-export const MAX_CHARACTERS = 8
+const MAX_CHARACTERS = 12
 const CHARACTERS: PingCompensatedCharacter[] = []
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
+const REPLENISHABLES = new Map<ItemName, number>([
+    ["hpot1", 2500],
+    ["mpot1", 2500]
+])
+const SELL = new Map<ItemName, [number, number][]>([
+    ["beewings", undefined],
+    ["cclaw", undefined],
+    ["crabclaw", undefined],
+    ["gslime", undefined],
+    ["gstaff", undefined],
+    ["hpamulet", undefined],
+    ["hpbelt", undefined],
+    ["ringsj", undefined],
+    ["shield", undefined],
+    ["sshield", undefined],
+    ["stinger", undefined],
+    ["wcap", undefined],
+    ["wshoes", undefined],
+])
 
-export class DisconnectOnCommandStrategy implements Strategy<Character> {
+class DisconnectOnCommandStrategy implements Strategy<Character> {
     private onCodeEval: (data: string) => Promise<void>
 
     public onApply(bot: Character) {
@@ -50,6 +70,56 @@ export class DisconnectOnCommandStrategy implements Strategy<Character> {
     }
 }
 
+function getSameOwnerContexts(bot: Character, contexts: Strategist<PingCompensatedCharacter>[]) {
+    const sameOwner: Strategist<PingCompensatedCharacter>[] = []
+    for (const context of contexts) {
+        const other = context.bot
+        if (bot.owner !== other.owner) continue
+        if (bot == other) continue
+        sameOwner.push(context)
+    }
+    return sameOwner
+}
+
+class LulzMerchantStrategy implements Strategy<Character> {
+    public loops = new Map<LoopName, Loop<Character>>()
+
+    private contexts: Strategist<PingCompensatedCharacter>[]
+
+    private options: {
+        replenishRatio: number
+    }
+
+    public constructor(contexts: Strategist<PingCompensatedCharacter>[], options = {
+        replenishRatio: 0.5
+    }) {
+        this.contexts = contexts
+        this.options = options
+
+        this.loops.set("move", {
+            fn: async (bot: Character) => { await this.move(bot) },
+            interval: 250
+        })
+    }
+
+    private async move(bot: Character) {
+        const friendContexts = getSameOwnerContexts(bot, this.contexts)
+
+        // TODO: Find own characters with low HP or MP pots and go deliver some
+        for (const friendContext of friendContexts) {
+            const friend = friendContext.bot
+            for (const replenishable of REPLENISHABLES) {
+                const num = friend.countItem(replenishable[0])
+                if (num > replenishable[1] * this.options.replenishRatio) continue // They still have enough
+            }
+        }
+
+        // TODO: Go fishing if we have a fishing rod
+
+        // TODO: Go mining if we have a pick axe
+    }
+}
+
 // Strategies
 const baseStrategy = new BaseStrategy(CHARACTERS)
 const trackerStrategy = new TrackerStrategy()
@@ -59,59 +129,68 @@ const partyStrategy = new RequestPartyStrategy("earthMer")
 const respawnStrategy = new RespawnStrategy()
 const buyStrategy = new BuyStrategy({
     buyMap: undefined,
-    replenishables: new Map<ItemName, number>([
-        ["hpot1", 2500],
-        ["mpot1", 2500]
-    ])
+    replenishables: REPLENISHABLES
 })
 const sellStrategy = new SellStrategy({
-    sellMap: new Map<ItemName, [number, number][]>([
-        ["beewings", undefined],
-        ["cclaw", undefined],
-        ["crabclaw", undefined],
-        ["gslime", undefined],
-        ["gstaff", undefined],
-        ["hpamulet", undefined],
-        ["hpbelt", undefined],
-        ["ringsj", undefined],
-        ["shield", undefined],
-        ["sshield", undefined],
-        ["stinger", undefined],
-        ["wcap", undefined],
-        ["wshoes", undefined],
-    ])
+    sellMap: SELL
 })
 
-export async function startLulzCharacter(type: CharacterType, userID: string, userAuth: string, characterID: string, monsters: MonsterName[]) {
+function runChecks(characterID: string) {
     if (CHARACTERS.length >= MAX_CHARACTERS) throw `Too many characters are already running (We only support ${MAX_CHARACTERS} characters simultaneously)`
     for (const character of CHARACTERS) {
         if (character.characterID == characterID) throw `There is a character with the ID '${characterID}' (${character.id}) already running. Stop the character first to change its settings.`
     }
+}
+
+async function startLulzMerchant(userID: string, userAuth: string, characterID: string) {
+    runChecks(characterID)
+
+    const bot = new AL.Merchant(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVER_ID])
+    await bot.connect()
+    CHARACTERS.push(bot)
+
+    addSocket(bot.id, bot.socket)
+
+    const context = new Strategist(bot, baseStrategy)
+    CONTEXTS.push(context)
+
+    context.applyStrategy(disconnectStrategy)
+
+    // TODO: Find own characters with low HP or MP pots and go deliver some
+    // TODO: Find own characters with lots of items and go and take some to sell
+    // TODO: Find own characters with equipment less than level 8 and try to upgrade it, then go and swap it
+}
+
+async function startLulzCharacter(type: CharacterType, userID: string, userAuth: string, characterID: string, monsters: MonsterName[], options = {
+    serverId: SERVER_ID,
+    serverRegion: SERVER_REGION
+}) {
+    runChecks(characterID)
 
     let bot: PingCompensatedCharacter
     switch (type) {
         case "mage": {
-            bot = new AL.Mage(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVER_ID])
+            bot = new AL.Mage(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[options.serverRegion][options.serverId])
             break
         }
         case "paladin": {
-            bot = new AL.Paladin(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVER_ID])
+            bot = new AL.Paladin(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[options.serverRegion][options.serverId])
             break
         }
         case "priest": {
-            bot = new AL.Priest(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVER_ID])
+            bot = new AL.Priest(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[options.serverRegion][options.serverId])
             break
         }
         case "ranger": {
-            bot = new AL.Ranger(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVER_ID])
+            bot = new AL.Ranger(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[options.serverRegion][options.serverId])
             break
         }
         case "rogue": {
-            bot = new AL.Rogue(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVER_ID])
+            bot = new AL.Rogue(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[options.serverRegion][options.serverId])
             break
         }
         case "warrior": {
-            bot = new AL.Warrior(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVER_ID])
+            bot = new AL.Warrior(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[options.serverRegion][options.serverId])
             break
         }
     }
@@ -132,6 +211,10 @@ export async function startLulzCharacter(type: CharacterType, userID: string, us
         }
         case "ranger": {
             context.applyStrategy(new RangerAttackStrategy({ characters: CHARACTERS, typeList: [...monsters, "phoenix"] }))
+            break
+        }
+        case "warrior": {
+            context.applyStrategy(new WarriorAttackStrategy({ characters: CHARACTERS, typeList: [...monsters, "phoenix"] }))
             break
         }
         default: {
@@ -172,7 +255,7 @@ export async function startLulzCharacter(type: CharacterType, userID: string, us
     }, 1000)
 }
 
-export async function stopLulzCharacter(characterID: string) {
+async function stopLulzCharacter(characterID: string) {
     for (let i = 0; i < CONTEXTS.length; i++) {
         const context = CONTEXTS[i]
         if (context.bot.characterID !== characterID) continue
@@ -247,8 +330,13 @@ app.post("/",
                 }
             }
 
-            // It passed the filter, start it up
-            await startLulzCharacter(charType, req.body.user, req.body.auth, req.body.char, [monster])
+            if (monster == "bee") {
+                // Extra lulz, go farm bees on PvP
+                await startLulzCharacter(charType, req.body.user, req.body.auth, req.body.char, ["bee"], { serverId: "PVP", serverRegion: "US" })
+            } else {
+                // It passed the filter, start it up
+                await startLulzCharacter(charType, req.body.user, req.body.auth, req.body.char, [monster])
+            }
             return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
         } catch (e) {
             return res.status(500).send(e)
