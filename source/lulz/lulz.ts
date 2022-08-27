@@ -291,9 +291,10 @@ class LulzMerchantMoveStrategy implements Strategy<Merchant> {
 
                 // TODO: If we have a higher level item, make sure it has the correct scroll and go deliver and equip it
                 const potential = bot.locateItem(item, bot.items, { levelGreaterThan: lowestItemLevel, returnHighestLevel: true })
+                const potentialData = bot.items[potential]
                 if (potential !== undefined) {
                     // We have something to give them
-                    console.log(`[${bot.id}] We have a ${item} for ${getFor.id}!`)
+                    console.log(`[${bot.id}] We have a ${item} for ${getFor.id} (${lowestItemLevel} => ${potentialData.level})!`)
 
                     // Apply the correct stat scroll if we need
                     const itemData = bot.items[potential]
@@ -364,7 +365,7 @@ class LulzMerchantMoveStrategy implements Strategy<Merchant> {
                     /** Buy a scroll if we don't have one */
                     let scrollPosition = bot.locateItem(scroll)
                     if (scrollPosition == undefined && bot.canBuy(scroll)) {
-                        console.log(`[${bot.id}] Delivering ${item} to ${getFor.id}!`)
+                        console.log(`[${bot.id}] Buying scroll for ${item} for ${getFor.id}!`)
 
                         await bot.buy(scroll)
                         scrollPosition = bot.locateItem(scroll)
