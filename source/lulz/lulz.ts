@@ -4,7 +4,7 @@ import bodyParser from "body-parser"
 import cors from "cors"
 import { body, validationResult } from "express-validator"
 
-import AL, { Character, CharacterType, ItemName, Merchant, MonsterName, PingCompensatedCharacter, ServerIdentifier, ServerRegion } from "alclient"
+import AL, { Character, CharacterType, ItemName, Merchant, MonsterName, PingCompensatedCharacter, ServerIdentifier, ServerRegion, SlotType, Tools } from "alclient"
 import { addSocket, startServer } from "algui"
 import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
 import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
@@ -19,6 +19,8 @@ import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 import { RangerAttackStrategy } from "../strategy_pattern/strategies/attack_ranger.js"
 import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 import { WarriorAttackStrategy } from "../strategy_pattern/strategies/attack_warrior.js"
+import { bankingPosition } from "../base/locations.js"
+import { checkOnlyEveryMS } from "../base/general.js"
 
 // Login and get GData
 await AL.Game.loginJSONFile("../../credentials.json")
@@ -51,6 +53,14 @@ const SELL = new Map<ItemName, [number, number][]>([
     ["wcap", undefined],
     ["wshoes", undefined],
 ])
+const ITEMS_TO_HOLD = new Set<ItemName>([
+    "computer",
+    "hpot1",
+    "mpot1",
+    "supercomputer",
+    "tracker"
+])
+const GOLD_TO_HOLD = 2_500_000
 
 class DisconnectOnCommandStrategy implements Strategy<Character> {
     private onCodeEval: (data: string) => Promise<void>
@@ -81,8 +91,8 @@ function getSameOwnerContexts(bot: Character, contexts: Strategist<PingCompensat
     return sameOwner
 }
 
-class LulzMerchantStrategy implements Strategy<Character> {
-    public loops = new Map<LoopName, Loop<Character>>()
+class LulzMerchantMoveStrategy implements Strategy<Merchant> {
+    public loops = new Map<LoopName, Loop<Merchant>>()
 
     private contexts: Strategist<PingCompensatedCharacter>[]
 
@@ -97,34 +107,276 @@ class LulzMerchantStrategy implements Strategy<Character> {
         this.options = options
 
         this.loops.set("move", {
-            fn: async (bot: Character) => { await this.move(bot) },
+            fn: async (bot: Merchant) => { await this.move(bot) },
             interval: 250
         })
     }
 
-    private async move(bot: Character) {
+    private async move(bot: Merchant) {
         const friendContexts = getSameOwnerContexts(bot, this.contexts)
 
-        // TODO: Find own characters with low HP or MP pots and go deliver some
-        for (const friendContext of friendContexts) {
-            const friend = friendContext.bot
-            for (const replenishable of REPLENISHABLES) {
-                const num = friend.countItem(replenishable[0])
-                if (num > replenishable[1] * this.options.replenishRatio) continue // They still have enough
+        try {
+            // TODO: Emergency banking if full
+
+            // Do banking if we are full, we have a lot of gold, or it's been a while (15 minutes)
+            if (bot.esize < 5 || bot.gold > (GOLD_TO_HOLD * 2) || checkOnlyEveryMS(`${bot.id}_banking`, 900_000)) {
+                // Move to town first, to have a chance to sell unwanted items
+                await bot.smartMove("main")
+
+                // Then go to the bank to bank things
+                await bot.smartMove(bankingPosition)
+                for (let i = 0; i < bot.isize; i++) {
+                    const item = bot.items[i]
+                    if (!item) continue // No item
+                    if (item.l) continue // Don't want to bank locked items
+                    if (ITEMS_TO_HOLD.has(item.name)) continue // We want to hold this item
+                    await bot.depositItem(i)
+                }
             }
+
+            // Find own characters with low replenishables and go deliver some
+            for (const friendContext of friendContexts) {
+                const friend = friendContext.bot
+                for (const [item, numTotal] of REPLENISHABLES) {
+                    const numHave = friend.countItem(item)
+                    if (numHave > numTotal * this.options.replenishRatio) continue // They still have enough
+                    if ((AL.Game.G.items[item].g * (numTotal - numHave)) > bot.gold) continue // We don't have enough gold to buy them all
+
+                    // Go buy the item
+                    if (!bot.canBuy(item)
+                        && bot.countItem(item) < numTotal * 2 /** Keep enough replenishables for ourself, too */) {
+                        await bot.smartMove(item, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED / 2 })
+                        await bot.buy(item, numTotal - numHave)
+                    }
+
+                    // Go deliver the item
+                    await bot.smartMove(friend, { getWithin: 25 })
+                    if (AL.Tools.squaredDistance(bot, friend) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) {
+                        // We're not near them, so they must have moved, return so we can try again next loop
+                        return
+                    }
+                    await bot.sendItem(friend.id, bot.locateItem(item, bot.items), numTotal - numHave)
+                }
+            }
+
+            // Find own characters with low inventory space and go grab some items off of them
+            for (const friendContext of friendContexts) {
+                const friend = friendContext.bot
+                if (friend.esize > 3) continue // They still have enough free space
+                if (friend.canSell()) continue // They can sell things themselves where they are
+
+                // Check if they have items that we can grab
+                let hasItemWeWant = false
+                for (let i = 0; i < friend.isize; i++) {
+                    const item = friend.items[i]
+                    if (!item) continue // No item here
+                    if (item.l) continue // Can't send locked items
+                    if (ITEMS_TO_HOLD.has(item.name)) continue // We want to hold this item
+                    hasItemWeWant = true
+                    break
+                }
+                if (!hasItemWeWant) continue // They are full, but they're full of useful items
+
+                // Go find them
+                await bot.smartMove(friend, { getWithin: 25 })
+                if (AL.Tools.squaredDistance(bot, friend) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) {
+                    // We're not near them, so they must have moved, return so we can try again next loop
+                    return
+                }
+
+                // Grab extra gold
+                if (friend.gold > GOLD_TO_HOLD) {
+                    await friend.sendGold(bot.id, GOLD_TO_HOLD - friend.gold)
+                }
+
+                // Grab items
+                while (bot.esize > 2) {
+                    for (let i = 0; i < friend.isize; i++) {
+                        const item = friend.items[i]
+                        if (!item) continue // No item here
+                        if (item.l) continue // Can't send locked items
+                        if (ITEMS_TO_HOLD.has(item.name)) continue // We want to hold this item
+                        await friend.sendItem(bot.id, i, item.q)
+                    }
+                }
+
+                // Return so we can deal with a full inventory if we need to
+                return
+            }
+
+            // TODO: Go fishing if we have a fishing rod
+
+            // TODO: Go mining if we have a pick axe
+
+            // TODO: Upgrade items for our characters if they don't have anything equipped, or it's a low level
+            const LEVEL_TO_UPGRADE_TO = 8
+            const NUM_TO_BUY = 1
+
+            // Find the lowest level item across all characters
+            let lowestItemSlot: SlotType
+            let lowestItemLevel: number = Number.MAX_SAFE_INTEGER
+            let getFor: Character
+            itemSearch:
+            for (const friendContext of friendContexts) {
+                const friend = friendContext.bot
+                for (const sN in friend.slots) {
+                    const slotName = sN as SlotType
+                    if (slotName.startsWith("trade")) continue // Don't look at trade slots
+                    if (!(["chest", "gloves", "helmet", "mainhand", "pants", "shoes"]).includes(slotName)) continue
+                    const slot = friend.slots[slotName]
+                    if (!slot) {
+                        // We have nothing in this slot, let's get something for it
+                        lowestItemSlot = slotName
+                        lowestItemLevel = 0
+                        getFor = friend
+                        break itemSearch
+                    }
+                    if (slot.level > LEVEL_TO_UPGRADE_TO) continue // We already have something pretty good
+                    if (slot.level >= lowestItemLevel) continue // We have already found something at a lower level
+
+                    // We found a new low
+                    lowestItemLevel = slot.level
+                    lowestItemSlot = slotName
+                    getFor = friend
+                }
+            }
+
+            // Buy and upgrade the store-level item to a higher level to replace it
+            if (lowestItemSlot) {
+                let item: ItemName
+                switch (lowestItemSlot) {
+                    case "chest":
+                        item = "coat"
+                        break
+                    case "gloves":
+                        item = "gloves"
+                        break
+                    case "helmet":
+                        item = "helmet"
+                        break
+                    case "mainhand":
+                        // Get the item that will attack the fastest
+                        switch (getFor.ctype) {
+                            case "mage":
+                                item = "wand"
+                                break
+                            case "paladin":
+                                item = "mace"
+                                break
+                            case "priest":
+                                item = "wand"
+                                break
+                            case "ranger":
+                                item = "bow"
+                                break
+                            case "rogue":
+                                item = "blade"
+                                break
+                            case "warrior":
+                                item = "claw"
+                                break
+                        }
+                        break
+                    case "pants":
+                        item = "pants"
+                        break
+                    case "shoes":
+                        item = "shoes"
+                        break
+                }
+
+                // TODO: If we have a higher level item, make sure it has the correct scroll and go deliver and equip it
+                const potential = bot.locateItem(item, bot.items, { levelGreaterThan: lowestItemLevel, returnHighestLevel: true })
+                if (potential !== undefined) {
+                    // We have something to give them
+
+                    // Apply the correct stat scroll if we need
+                    const itemData = bot.items[potential]
+                    const stat = AL.Game.G.items[item].stat ? AL.Game.G.classes[getFor.ctype].main_stat : undefined
+                    if (itemData.stat_type !== stat) {
+                        // Go to the upgrade NPC
+                        await bot.smartMove("newupgrade", { getWithin: 25 })
+
+                        // Buy the correct stat scroll(s) and apply them
+                        const grade = bot.calculateItemGrade(itemData)
+                        const statScroll = `${stat}scroll` as ItemName
+                        const numNeeded = Math.pow((grade + 1), 10)
+                        const numHave = bot.countItem(statScroll, bot.items)
+
+                        try {
+                            await bot.buy(statScroll, numNeeded - numHave)
+                            const statScrollPosition = bot.locateItem(statScroll)
+                            await bot.upgrade(potential, statScrollPosition)
+                        } catch (e) {
+                            console.error(e)
+                        }
+                    }
+
+                    const potentialWithScroll = bot.locateItem(item, bot.items, { levelGreaterThan: lowestItemLevel, returnHighestLevel: true, statType: stat })
+                    if (potentialWithScroll !== undefined) {
+                        await bot.smartMove(getFor, { getWithin: 25 })
+                        if (AL.Tools.squaredDistance(bot, getFor) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) {
+                            // We're not near them, so they must have moved, return so we can try again next loop
+                            return
+                        }
+                        await bot.sendItem(getFor.id, potentialWithScroll)
+                    }
+                }
+
+                // Go to the upgrade NPC
+                await bot.smartMove("newupgrade", { getWithin: 25 })
+
+                /** Buy items if we need */
+                const numItems = bot.countItem(item)
+                if (numItems < NUM_TO_BUY) {
+                    while (bot.canBuy(item) && bot.countItem(item) < NUM_TO_BUY) {
+                        await bot.buy(item)
+                    }
+                }
+
+                /** Find the lowest level item, we'll upgrade that one */
+                const lowestLevelPosition = bot.locateItem(item, bot.items, { returnLowestLevel: true })
+                const lowestLevel = bot.items[lowestLevelPosition].level
+
+                /** Don't upgrade if it's already the level we want */
+                if (lowestLevel < lowestItemLevel + 1) {
+                    /** Find the scroll that corresponds with the grade of the item */
+                    const grade = bot.calculateItemGrade(bot.items[lowestLevelPosition])
+                    const scroll = `scroll${grade}` as ItemName
+
+                    /** Buy a scroll if we don't have one */
+                    let scrollPosition = bot.locateItem(scroll)
+                    if (scrollPosition == undefined && bot.canBuy(scroll)) {
+                        await bot.buy(scroll)
+                        scrollPosition = bot.locateItem(scroll)
+                    }
+
+                    if (scrollPosition !== undefined) {
+                        /** Speed up the upgrade if we can */
+                        if (bot.canUse("massproduction")) await bot.massProduction()
+
+                        /** Upgrade! */
+                        await bot.upgrade(lowestLevelPosition, scrollPosition)
+                        return
+                    }
+                }
+            }
+
+            // Go to town and wait for things to do
+            await bot.smartMove("main")
+        } catch (e) {
+            console.error(e)
         }
-
-        // TODO: Go fishing if we have a fishing rod
-
-        // TODO: Go mining if we have a pick axe
     }
 }
 
 // Strategies
 const baseStrategy = new BaseStrategy(CHARACTERS)
+const merchantMoveStrategy = new LulzMerchantMoveStrategy(CONTEXTS, { replenishRatio: 0.5 })
 const trackerStrategy = new TrackerStrategy()
 const disconnectStrategy = new DisconnectOnCommandStrategy()
 const avoidStackingStrategy = new AvoidStackingStrategy()
+// TODO: New party strategy where you party with your own merchant if you have one, first, if not "earthMer"
 const partyStrategy = new RequestPartyStrategy("earthMer")
 const respawnStrategy = new RespawnStrategy()
 const buyStrategy = new BuyStrategy({
@@ -155,10 +407,13 @@ async function startLulzMerchant(userID: string, userAuth: string, characterID: 
     CONTEXTS.push(context)
 
     context.applyStrategy(disconnectStrategy)
-
-    // TODO: Find own characters with low HP or MP pots and go deliver some
-    // TODO: Find own characters with lots of items and go and take some to sell
-    // TODO: Find own characters with equipment less than level 8 and try to upgrade it, then go and swap it
+    context.applyStrategy(merchantMoveStrategy)
+    context.applyStrategy(respawnStrategy)
+    context.applyStrategy(trackerStrategy)
+    context.applyStrategy(avoidStackingStrategy)
+    context.applyStrategy(buyStrategy)
+    context.applyStrategy(sellStrategy)
+    context.applyStrategy(partyStrategy)
 }
 
 async function startLulzCharacter(type: CharacterType, userID: string, userAuth: string, characterID: string, monsters: MonsterName[], options = {
@@ -311,6 +566,10 @@ app.post("/",
                     }
                     break
                 }
+                case "merchant": {
+                    // TODO: Should we only allow merchants if there's other characters?
+                    break
+                }
                 case "ranger": {
                     const rangerMonsters: MonsterName[] = ["armadillo", "bee", "crab", "goo"]
                     if (!rangerMonsters.includes(monster)) {
@@ -330,8 +589,10 @@ app.post("/",
                 }
             }
 
-            if (monster == "bee") {
-                // Extra lulz, go farm bees on PvP
+            if (charType == "merchant") {
+                await startLulzMerchant(req.body.user, req.body.auth, req.body.char)
+            } else if (monster == "bee") {
+                // For extra lulz, farm bees on PvP
                 await startLulzCharacter(charType, req.body.user, req.body.auth, req.body.char, ["bee"], { serverId: "PVP", serverRegion: "US" })
             } else {
                 // It passed the filter, start it up
