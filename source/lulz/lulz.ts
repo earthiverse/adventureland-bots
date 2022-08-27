@@ -20,7 +20,7 @@ import { RangerAttackStrategy } from "../strategy_pattern/strategies/attack_rang
 import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 import { WarriorAttackStrategy } from "../strategy_pattern/strategies/attack_warrior.js"
 import { bankingPosition } from "../base/locations.js"
-import { checkOnlyEveryMS } from "../base/general.js"
+import { checkOnlyEveryMS, sleep } from "../base/general.js"
 
 // Login and get GData
 await AL.Game.loginJSONFile("../../credentials.json")
@@ -177,6 +177,8 @@ class LulzMerchantMoveStrategy implements Strategy<Merchant> {
                 }
                 if (!hasItemWeWant) continue // They are full, but they're full of useful items
 
+                console.log(`[${bot.id}] Going to get items from ${friend.id}!`)
+
                 // Go find them
                 await bot.smartMove(friend, { getWithin: 25 })
                 if (AL.Tools.squaredDistance(bot, friend) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) {
@@ -289,11 +291,14 @@ class LulzMerchantMoveStrategy implements Strategy<Merchant> {
                 const potential = bot.locateItem(item, bot.items, { levelGreaterThan: lowestItemLevel, returnHighestLevel: true })
                 if (potential !== undefined) {
                     // We have something to give them
+                    console.log(`[${bot.id}] We have a ${item} for ${getFor.id}!`)
 
                     // Apply the correct stat scroll if we need
                     const itemData = bot.items[potential]
                     const stat = AL.Game.G.items[item].stat ? AL.Game.G.classes[getFor.ctype].main_stat : undefined
                     if (itemData.stat_type !== stat) {
+                        console.log(`[${bot.id}] Going to apply ${stat} scroll to ${item}.`)
+
                         // Go to the upgrade NPC
                         await bot.smartMove("newupgrade", { getWithin: 25 })
 
@@ -314,19 +319,25 @@ class LulzMerchantMoveStrategy implements Strategy<Merchant> {
 
                     const potentialWithScroll = bot.locateItem(item, bot.items, { levelGreaterThan: lowestItemLevel, returnHighestLevel: true, statType: stat })
                     if (potentialWithScroll !== undefined) {
+                        console.log(`[${bot.id}] Delivering ${item} to ${getFor.id}!`)
                         await bot.smartMove(getFor, { getWithin: 25 })
                         if (AL.Tools.squaredDistance(bot, getFor) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) {
                             // We're not near them, so they must have moved, return so we can try again next loop
                             return
                         }
                         await bot.sendItem(getFor.id, potentialWithScroll)
+                        await sleep(1000)
                         const equipItem = getFor.locateItem(item, getFor.items, { levelGreaterThan: lowestItemLevel, returnHighestLevel: true, statType: stat })
                         await getFor.equip(equipItem)
                     }
                 }
 
+                console.log(`[${bot.id}] Going to upgrade ${item} for ${getFor.id}!`)
+
                 // Go to the upgrade NPC
-                await bot.smartMove("newupgrade", { getWithin: 25 })
+                if (!bot.hasItem("computer") && !bot.hasItem("supercomputer")) {
+                    await bot.smartMove("newupgrade", { getWithin: 25 })
+                }
 
                 /** Buy items if we need */
                 const numItems = bot.countItem(item)
@@ -349,11 +360,15 @@ class LulzMerchantMoveStrategy implements Strategy<Merchant> {
                     /** Buy a scroll if we don't have one */
                     let scrollPosition = bot.locateItem(scroll)
                     if (scrollPosition == undefined && bot.canBuy(scroll)) {
+                        console.log(`[${bot.id}] Delivering ${item} to ${getFor.id}!`)
+
                         await bot.buy(scroll)
                         scrollPosition = bot.locateItem(scroll)
                     }
 
                     if (scrollPosition !== undefined) {
+                        console.log(`[${bot.id}] Upgrading ${item} for ${getFor.id}!`)
+
                         /** Speed up the upgrade if we can */
                         if (bot.canUse("massproduction")) await bot.massProduction()
 
