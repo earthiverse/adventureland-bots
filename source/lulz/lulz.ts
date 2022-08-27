@@ -330,10 +330,15 @@ class LulzMerchantMoveStrategy implements Strategy<Merchant> {
                             // We're not near them, so they must have moved, return so we can try again next loop
                             return
                         }
+
+                        // Send it and equip it
                         await bot.sendItem(getFor.id, potentialWithScroll)
                         await sleep(1000)
                         const equipItem = getFor.locateItem(item, getFor.items, { levelGreaterThan: lowestItemLevel, returnHighestLevel: true, statType: stat })
                         await getFor.equip(equipItem)
+
+                        // Send the old item back to the merchant
+                        await getFor.sendItem(bot.id, equipItem)
                     }
                 }
 
