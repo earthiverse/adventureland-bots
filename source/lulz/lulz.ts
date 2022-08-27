@@ -132,6 +132,8 @@ class LulzMerchantMoveStrategy implements Strategy<Merchant> {
                     if (ITEMS_TO_HOLD.has(item.name)) continue // We want to hold this item
                     await bot.depositItem(i)
                 }
+
+                await bot.smartMove("main")
             }
 
             // Find own characters with low replenishables and go deliver some
