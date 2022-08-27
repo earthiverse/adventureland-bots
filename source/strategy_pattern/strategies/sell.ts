@@ -44,7 +44,7 @@ export class SellStrategy<Type extends Character> implements SellStrategyOptions
                 // If price is defined, make sure it's higher than what we could sell it to an NPC for
                 if (sellFor !== undefined) {
                     if (sellFor < npcPrice) {
-                        console.warn(`Raising sell price for ${itemName}${level ?? " (level " + level + ")"} from ${sellFor} to ${npcPrice} to match the price NPCs will pay.`)
+                        console.warn(`Raising sell price for ${itemName}${level ?? ` (level ${level})`} from ${sellFor} to ${npcPrice} to match the price NPCs will pay.`)
                         criterion[1] = npcPrice
                     }
                 }

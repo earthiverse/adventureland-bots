@@ -1,4 +1,4 @@
-import AL, { Entity, Warrior } from "alclient"
+import { Warrior } from "alclient"
 import { sortPriority } from "../../base/sort.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
 
@@ -25,11 +25,17 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
         const priority = sortPriority(bot, this.options.typeList)
 
         await this.basicAttack(bot, priority)
-        if (!this.options.disableCleave) await this.cleave(bot)
+        if (!this.options.disableCleave) {
+            console.log(`[${bot.id}] We want to cleave`)
+            await this.cleave(bot)
+        }
     }
 
     protected async cleave(bot: Warrior) {
-        if (!bot.canUse("cleave")) return
+        if (!bot.canUse("cleave")) {
+            console.log(`[${bot.id}] Can't use cleave`)
+            return
+        }
 
         if (bot.isPVP()) {
             const nearby = bot.getPlayers({
@@ -37,7 +43,10 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
                 isFriendly: true,
                 withinRange: "cleave"
             })
-            if (nearby.length > 0) return
+            if (nearby.length > 0) {
+                console.log(`[${bot.id}] PVP and players are nearby. Not cleaving.`)
+                return
+            }
         }
 
         // Find all targets we want to attack
@@ -46,7 +55,10 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
             withinRange: "cleave",
             canDamage: "cleave"
         })
-        if (entities.length == 0) return // No targets to attack
+        if (entities.length == 0) {
+            console.log(`[${bot.id}] No entities nearby to cleave`)
+            return
+        } // No targets to attack
 
         // Calculate how much courage we have left to spare
         const targetingMe = bot.calculateTargets()
@@ -57,11 +69,13 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
             if ((this.options.targetingPartyMember && !entity.target)
                 || (this.options.targetingPlayer && !entity.target)) {
                 // We want to avoid aggro
+                console.log(`[${bot.id}] Can't use cleave`)
                 return
             }
             if ((this.options.type && entity.type !== this.options.type)
                 || (this.options.typeList && this.options.typeList.includes(entity.type))) {
                 // We don't want to attack something that's within cleave range
+                console.log(`[${bot.id}] Not cleaving, because ${entity.type} is within range`)
                 return
             }
 
@@ -86,11 +100,13 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
             if (this.options.maximumTargets && newTargets + bot.targets > this.options.maximumTargets) {
                 // We'll go over our limit if we cleave
+                console.log(`[${bot.id}] Not cleaving, because we'll have ${newTargets + bot.targets} targets, but we only want a maximum of ${this.options.maximumTargets}.`)
                 return
             }
         }
 
         for (const entity of entities) if (bot.canKillInOneShot(entity, "cleave")) this.preventOverkill(bot, entity)
+        console.log(`[${bot.id}] Cleaving!`)
         return bot.cleave().catch(console.error)
     }
 }
