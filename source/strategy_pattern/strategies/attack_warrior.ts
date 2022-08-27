@@ -73,7 +73,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
                 return
             }
             if ((this.options.type && entity.type !== this.options.type)
-                || (this.options.typeList && this.options.typeList.includes(entity.type))) {
+                || (this.options.typeList && !this.options.typeList.includes(entity.type))) {
                 // We don't want to attack something that's within cleave range
                 console.log(`[${bot.id}] Not cleaving, because ${entity.type} is within range`)
                 return
