@@ -302,7 +302,9 @@ class LulzMerchantMoveStrategy implements Strategy<Merchant> {
                         console.log(`[${bot.id}] Going to apply ${stat} scroll to ${item}.`)
 
                         // Go to the upgrade NPC
-                        await bot.smartMove("newupgrade", { getWithin: 25 })
+                        if (!bot.hasItem("computer") && !bot.hasItem("supercomputer")) {
+                            await bot.smartMove("newupgrade", { getWithin: 25 })
+                        }
 
                         // Buy the correct stat scroll(s) and apply them
                         const grade = bot.calculateItemGrade(itemData)
