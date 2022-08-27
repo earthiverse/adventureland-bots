@@ -320,6 +320,8 @@ class LulzMerchantMoveStrategy implements Strategy<Merchant> {
                             return
                         }
                         await bot.sendItem(getFor.id, potentialWithScroll)
+                        const equipItem = getFor.locateItem(item, getFor.items, { levelGreaterThan: lowestItemLevel, returnHighestLevel: true, statType: stat })
+                        await getFor.equip(equipItem)
                     }
                 }
 
