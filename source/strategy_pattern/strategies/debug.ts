@@ -26,16 +26,16 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
         if (this.options.logAchievementProgress) {
             this.onAchievementProgress = (data: AchievementProgressData) => {
                 if ((data as any).count && (data as any).needed) {
-                    console.debug(`[${data.name}] ${(data as any).count}/${(data as any).needed}`)
+                    console.debug(`[${bot.id}] [${data.name}] ${(data as any).count}/${(data as any).needed}`)
                 }
             }
             bot.socket.on("achievement_progress", this.onAchievementProgress)
         }
         if (this.options.logLimitDCReport) {
             this.onLimitDCReport = (data: LimitDCReportData) => {
-                console.debug("=== START LIMITDCREPORT ===")
+                console.debug(`=== START LIMITDCREPORT (${bot.id}) ===`)
                 console.debug(data)
-                console.debug("=== END LIMITDCREPORT ===")
+                console.debug(`=== END LIMITDCREPORT ${bot.id} ===`)
             }
             bot.socket.on("limitdcreport", this.onLimitDCReport)
         }

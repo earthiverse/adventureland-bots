@@ -86,8 +86,6 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (!bot.canUse("zapperzap")) return // We can't zap
 
         // Find all targets we want to attack
-        this.options.withinRange = "zapperzap"
-        this.options.canDamage = "zapperzap"
         const entities = bot.getEntities({
             ...this.options,
             canDamage: "zapperzap",
