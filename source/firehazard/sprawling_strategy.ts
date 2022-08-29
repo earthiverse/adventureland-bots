@@ -72,7 +72,7 @@ async function startFirehazardFarmer(context: Strategist<PingCompensatedCharacte
         contexts: [],
         couldGiveCredit: true,
         disableZapper: true,
-        hpGreaterThan: 20_000,
+        hpGreaterThan: 10_000,
         maximumTargets: 1,
         type: "plantoid",
         willBurnToDeath: false,
