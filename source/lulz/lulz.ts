@@ -132,6 +132,12 @@ class LulzMerchantMoveStrategy implements Strategy<Merchant> {
                     await bot.depositItem(i)
                 }
 
+                if (bot.gold > GOLD_TO_HOLD) {
+                    await bot.depositGold(bot.gold - GOLD_TO_HOLD)
+                } else if (bot.gold < GOLD_TO_HOLD) {
+                    await bot.withdrawGold(GOLD_TO_HOLD - bot.gold)
+                }
+
                 await bot.smartMove("main")
             }
 
@@ -189,7 +195,11 @@ class LulzMerchantMoveStrategy implements Strategy<Merchant> {
 
                 // Grab extra gold
                 if (friend.gold > GOLD_TO_HOLD) {
-                    await friend.sendGold(bot.id, GOLD_TO_HOLD - friend.gold)
+                    // Take their gold for safe keeping
+                    await friend.sendGold(bot.id, friend.gold - GOLD_TO_HOLD)
+                } else if (bot.gold > GOLD_TO_HOLD) {
+                    // Send them some of our gold
+                    await bot.sendGold(friend.id, Math.min(bot.gold - GOLD_TO_HOLD, GOLD_TO_HOLD - friend.gold))
                 }
 
                 // Grab items
@@ -358,6 +368,7 @@ class LulzMerchantMoveStrategy implements Strategy<Merchant> {
 
                 /** Find the lowest level item, we'll upgrade that one */
                 const lowestLevelPosition = bot.locateItem(item, bot.items, { returnLowestLevel: true })
+                if (lowestLevelPosition == undefined) return // We probably couldn't afford to buy one
                 const lowestLevel = bot.items[lowestLevelPosition].level
 
                 /** Don't upgrade if it's already the level we want */
