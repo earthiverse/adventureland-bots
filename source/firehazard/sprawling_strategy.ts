@@ -1,6 +1,7 @@
 import AL, { ItemName, PingCompensatedCharacter } from "alclient"
-import { Strategist } from "../strategy_pattern/context.js"
+import { Strategist, Strategy } from "../strategy_pattern/context.js"
 import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
+import { PriestAttackStrategy } from "../strategy_pattern/strategies/attack_priest.js"
 import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
 import { DebugStrategy } from "../strategy_pattern/strategies/debug.js"
@@ -18,6 +19,7 @@ const FARMER = "earthWar"
 const SUPPORTER_1 = "earthWar2"
 const SUPPORTER_2 = "earthPri"
 
+const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 let FIREHAZARD_FARMER_CONTEXT: Strategist<PingCompensatedCharacter>
 const FIREHAZARD_SUPPORT_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 
@@ -32,19 +34,23 @@ async function run() {
     const context1 = new Strategist<PingCompensatedCharacter>(warrior1, baseStrategy)
     startFirehazardFarmer(context1).catch(console.error)
     FIREHAZARD_FARMER_CONTEXT = context1
+    CONTEXTS.push(context1)
 
     const warrior2 = await AL.Game.startWarrior(SUPPORTER_1, "US", "I")
     const context2 = new Strategist<PingCompensatedCharacter>(warrior2, baseStrategy)
     startFirehazardSupporter(context2).catch(console.error)
     FIREHAZARD_SUPPORT_CONTEXTS.push(context2)
+    CONTEXTS.push(context2)
 
     const priest = await AL.Game.startPriest(SUPPORTER_2, "US", "I")
     const context3 = new Strategist<PingCompensatedCharacter>(priest, baseStrategy)
     startFirehazardSupporter(context3).catch(console.error)
     FIREHAZARD_SUPPORT_CONTEXTS.push(context3)
+    CONTEXTS.push(context3)
 }
 run().catch(console.error)
 
+const baseStrategy = new BaseStrategy(CONTEXTS)
 const buyStrategy = new BuyStrategy({
     buyMap: undefined,
     replenishables: new Map<ItemName, number>([
@@ -65,13 +71,14 @@ async function startFirehazardFarmer(context: Strategist<PingCompensatedCharacte
     const farmerAttackStrategy = new BaseAttackStrategy({
         contexts: [],
         couldGiveCredit: true,
-        // hpGreaterThan: 20_000,
+        hpGreaterThan: 20_000,
         maximumTargets: 1,
         type: "plantoid",
         willBurnToDeath: false,
         willDieToProjectiles: false,
     })
 
+    context.applyStrategy(baseStrategy)
     context.applyStrategy(farmerAttackStrategy)
     context.applyStrategy(buyStrategy)
     context.applyStrategy(debugStrategy)
@@ -83,14 +90,24 @@ async function startFirehazardFarmer(context: Strategist<PingCompensatedCharacte
 async function startFirehazardSupporter(context: Strategist<PingCompensatedCharacter>) {
     const moveToBotStrategy = new FollowFriendMoveStrategy(FIREHAZARD_FARMER_CONTEXT)
 
-    const supporterAttackStrategy = new BaseAttackStrategy({
+    const attackStrategyOptions = {
         contexts: [],
         targetingPlayer: FARMER,
         willBurnToDeath: false,
         willDieToProjectiles: false
-    })
+    }
+    let attackStrategy: Strategy<PingCompensatedCharacter>
+    switch (context.bot.ctype) {
+        case "priest":
+            attackStrategy = new PriestAttackStrategy(attackStrategyOptions)
+            break
+        default:
+            attackStrategy = new BaseAttackStrategy(attackStrategyOptions)
+            break
+    }
 
-    context.applyStrategy(supporterAttackStrategy)
+    context.applyStrategy(baseStrategy)
+    context.applyStrategy(attackStrategy)
     context.applyStrategy(buyStrategy)
     context.applyStrategy(debugStrategy)
     context.applyStrategy(moveToBotStrategy)

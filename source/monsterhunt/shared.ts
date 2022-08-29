@@ -1144,7 +1144,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
                 if (newTarget !== information.bot3.target) bot.stopSmartMove().catch(() => { /** Suppress */ })
                 if (newTarget !== information.bot3.target) console.log(`changing ${information.bot3.name}'s target from ${information.bot3.target} to ${newTarget}`)
                 information.bot3.target = newTarget
-            } else if (bot.id == information.merchant.target) {
+            } else if (bot.id == information.merchant.name) {
                 if (newTarget !== information.merchant.target) bot.stopSmartMove().catch(() => { /** Suppress */ })
                 if (newTarget !== information.merchant.target) console.log(`changing ${information.merchant.name}'s target from ${information.merchant.target} to ${newTarget}`)
                 information.merchant.target = newTarget
