@@ -71,6 +71,7 @@ async function startFirehazardFarmer(context: Strategist<PingCompensatedCharacte
     const farmerAttackStrategy = new BaseAttackStrategy({
         contexts: [],
         couldGiveCredit: true,
+        disableZapper: true,
         hpGreaterThan: 20_000,
         maximumTargets: 1,
         type: "plantoid",
@@ -92,6 +93,7 @@ async function startFirehazardSupporter(context: Strategist<PingCompensatedChara
 
     const attackStrategyOptions = {
         contexts: [],
+        disableZapper: true,
         targetingPlayer: FARMER,
         willBurnToDeath: false,
         willDieToProjectiles: false
