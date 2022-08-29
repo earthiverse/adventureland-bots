@@ -141,7 +141,7 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
 
             if (!entity.target) {
                 // We're going to be tanking this monster, don't attack if it pushes us over our limit
-                if (this.options.maximumTargets >= bot.targets) continue // We don't want another target
+                if (bot.targets >= this.options.maximumTargets) continue // We don't want another target
                 switch (entity.damage_type) {
                     case "magical":
                         if (bot.mcourage <= targetingMe.magical) continue // We can't tank any more magical monsters
@@ -199,7 +199,7 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
 
             if (!entity.target) {
                 // We're going to be tanking this monster, don't attack if it pushes us over our limit
-                if (this.options.maximumTargets >= bot.targets) continue // We don't want another target
+                if (bot.targets >= this.options.maximumTargets) continue // We don't want another target
                 switch (entity.damage_type) {
                     case "magical":
                         if (bot.mcourage <= targetingMe.magical) continue // We can't tank any more magical monsters

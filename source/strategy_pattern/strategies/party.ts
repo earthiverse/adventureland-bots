@@ -2,7 +2,7 @@ import { InviteData, Character } from "alclient"
 import { Loop, LoopName, Strategy } from "../context.js"
 
 export class AcceptPartyRequestStrategy<Type extends Character> implements Strategy<Type> {
-    private onInvite: (data: InviteData) => Promise<void>
+    private onRequest: (data: {name: string}) => Promise<void>
 
     public membersList: string[]
 
@@ -11,17 +11,18 @@ export class AcceptPartyRequestStrategy<Type extends Character> implements Strat
     }
 
     public onApply(bot: Type) {
-        this.onInvite = async (data: InviteData) => {
+        this.onRequest = async (data: InviteData) => {
             if (!this.membersList.includes(data.name)) {
                 return
             }
 
             await bot.acceptPartyRequest(data.name)
         }
+        bot.socket.on("request", this.onRequest)
     }
 
     public onRemove(bot: Type) {
-        bot.socket.off("invite", this.onInvite)
+        bot.socket.off("request", this.onRequest)
     }
 }
 

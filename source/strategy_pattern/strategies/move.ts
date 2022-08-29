@@ -1,7 +1,7 @@
-import AL, { IPosition, MonsterName, Pathfinder, Character, Tools } from "alclient"
+import AL, { IPosition, MonsterName, Pathfinder, Character, Tools, PingCompensatedCharacter } from "alclient"
 import { offsetPositionParty } from "../../base/locations.js"
 import { sortClosestDistance } from "../../base/sort.js"
-import { Loop, LoopName, Strategy } from "../context.js"
+import { Loop, LoopName, Strategist, Strategy } from "../context.js"
 
 export class BasicMoveStrategy implements Strategy<Character> {
     public loops = new Map<LoopName, Loop<Character>>()
@@ -104,5 +104,35 @@ export class HoldPositionMoveStrategy implements Strategy<Character> {
 
     private async move(bot: Character) {
         await bot.smartMove(this.location)
+    }
+}
+
+export class FollowFriendMoveStrategy implements Strategy<Character> {
+    public loops = new Map<LoopName, Loop<Character>>()
+
+    public friendContext: Strategist<PingCompensatedCharacter>
+
+    /**
+     * Follows another bot
+     * @param friendContext The friend to follow
+     * @param position A number that specifies the position of the character
+     */
+    public constructor(friendContext: Strategist<PingCompensatedCharacter>, position = 1) {
+        this.friendContext = friendContext
+        if (!friendContext) throw new Error("No friend specified")
+
+        this.loops.set("move", {
+            fn: async (bot: Character) => { await this.move(bot) },
+            interval: 1000
+        })
+    }
+
+    private async move(bot: Character) {
+        const friend = this.friendContext.bot
+        if (!friend || !friend.ready) return // No friend!?
+
+        // TODO: Use position
+
+        await bot.smartMove(friend, { getWithin: 10 })
     }
 }

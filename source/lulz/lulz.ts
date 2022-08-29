@@ -32,7 +32,6 @@ const SERVER_REGION: ServerRegion = "US"
 const SERVER_ID: ServerIdentifier = "I"
 
 const MAX_CHARACTERS = 12
-const CHARACTERS: PingCompensatedCharacter[] = []
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 const REPLENISHABLES = new Map<ItemName, number>([
     ["hpot1", 2500],
@@ -398,7 +397,7 @@ class LulzMerchantMoveStrategy implements Strategy<Merchant> {
 }
 
 // Strategies
-const baseStrategy = new BaseStrategy(CHARACTERS)
+const baseStrategy = new BaseStrategy(CONTEXTS)
 const merchantMoveStrategy = new LulzMerchantMoveStrategy(CONTEXTS, { replenishRatio: 0.5 })
 const trackerStrategy = new TrackerStrategy()
 const disconnectStrategy = new DisconnectOnCommandStrategy()
@@ -415,8 +414,9 @@ const sellStrategy = new SellStrategy({
 })
 
 function runChecks(characterID: string) {
-    if (CHARACTERS.length >= MAX_CHARACTERS) throw `Too many characters are already running (We only support ${MAX_CHARACTERS} characters simultaneously)`
-    for (const character of CHARACTERS) {
+    if (CONTEXTS.length >= MAX_CHARACTERS) throw `Too many characters are already running (We only support ${MAX_CHARACTERS} characters simultaneously)`
+    for (const context of CONTEXTS) {
+        const character = context.bot
         if (character.characterID == characterID) throw `There is a character with the ID '${characterID}' (${character.id}) already running. Stop the character first to change its settings.`
     }
 }
@@ -426,7 +426,6 @@ async function startLulzMerchant(userID: string, userAuth: string, characterID: 
 
     const bot = new AL.Merchant(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVER_ID])
     await bot.connect()
-    CHARACTERS.push(bot)
 
     addSocket(bot.id, bot.socket)
 
@@ -477,7 +476,6 @@ async function startLulzCharacter(type: CharacterType, userID: string, userAuth:
         }
     }
     await bot.connect()
-    CHARACTERS.push(bot)
 
     addSocket(bot.id, bot.socket)
 
@@ -488,19 +486,19 @@ async function startLulzCharacter(type: CharacterType, userID: string, userAuth:
 
     switch (type) {
         case "mage": {
-            context.applyStrategy(new MageAttackStrategy({ characters: CHARACTERS, typeList: [...monsters, "phoenix"] }))
+            context.applyStrategy(new MageAttackStrategy({ contexts: CONTEXTS, typeList: [...monsters, "phoenix"] }))
             break
         }
         case "ranger": {
-            context.applyStrategy(new RangerAttackStrategy({ characters: CHARACTERS, typeList: [...monsters, "phoenix"] }))
+            context.applyStrategy(new RangerAttackStrategy({ contexts: CONTEXTS, typeList: [...monsters, "phoenix"] }))
             break
         }
         case "warrior": {
-            context.applyStrategy(new WarriorAttackStrategy({ characters: CHARACTERS, typeList: [...monsters, "phoenix"] }))
+            context.applyStrategy(new WarriorAttackStrategy({ contexts: CONTEXTS, typeList: [...monsters, "phoenix"] }))
             break
         }
         default: {
-            context.applyStrategy(new BaseAttackStrategy({ characters: CHARACTERS, typeList: [...monsters, "phoenix"] }))
+            context.applyStrategy(new BaseAttackStrategy({ contexts: CONTEXTS, typeList: [...monsters, "phoenix"] }))
             break
         }
     }
@@ -545,14 +543,6 @@ async function stopLulzCharacter(characterID: string) {
         // Stop the context, and remove it from our contexts list
         context.stop()
         CONTEXTS.splice(i, 1)[0]
-        break
-    }
-    for (let i = 0; i < CHARACTERS.length; i++) {
-        const character = CHARACTERS[i]
-        if (character.characterID !== characterID) continue
-
-        // Remove the character from our characters list
-        CHARACTERS.splice(i, 1)[0]
         break
     }
 }

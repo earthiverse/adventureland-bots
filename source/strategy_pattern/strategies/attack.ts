@@ -1,10 +1,10 @@
-import AL, { Character, Entity, GetEntitiesFilters, Mage } from "alclient"
+import AL, { Character, Entity, GetEntitiesFilters, Mage, PingCompensatedCharacter } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { sortPriority } from "../../base/sort.js"
-import { Loop, LoopName, Strategy } from "../context.js"
+import { Loop, LoopName, Strategist, Strategy } from "../context.js"
 
 export type BaseAttackStrategyOptions = GetEntitiesFilters & {
-    characters: Character[]
+    contexts: Strategist<PingCompensatedCharacter>[]
     disableCreditCheck?: boolean
     disableEnergize?: boolean
     disableZapper?: boolean
@@ -18,7 +18,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
     public constructor(options?: BaseAttackStrategyOptions) {
         this.options = options ?? {
-            characters: []
+            contexts: []
         }
         if (!this.options.disableCreditCheck && this.options.couldGiveCredit === undefined) this.options.couldGiveCredit = true
         if (this.options.willDieToProjectiles === undefined) this.options.willDieToProjectiles = false
@@ -61,7 +61,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
             if (!target.target) {
                 // We're going to be tanking this monster, don't attack if it pushes us over our limit
-                if (this.options.maximumTargets >= bot.targets) continue // We don't want another target
+                if (bot.targets >= this.options.maximumTargets) continue // We don't want another target
                 switch (target.damage_type) {
                     case "magical":
                         if (bot.mcourage <= targetingMe.magical) continue // We can't tank any more magical monsters
@@ -125,7 +125,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
             if (!entity.target) {
                 // We're going to be tanking this monster, don't attack if it pushes us over our limit
-                if (this.options.maximumTargets >= bot.targets) continue // We don't want another target
+                if (bot.targets >= this.options.maximumTargets) continue // We don't want another target
                 switch (entity.damage_type) {
                     case "magical":
                         if (bot.mcourage <= targetingMe.magical) continue // We can't tank any more magical monsters
@@ -150,7 +150,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
      */
     protected getEnergizeFromOther(bot: Character) {
         if (!bot.s.energized && !this.options.disableEnergize) {
-            for (const char of this.options.characters) {
+            for (const context of this.options.contexts) {
+                const char = context.bot
                 if (!char) continue // Friend is missing
                 if (char.socket.disconnected) continue // Friend is disconnected
                 if (char == bot) continue // Can't energize ourselves
@@ -174,7 +175,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
      * @param target The target we will kill
      */
     protected preventOverkill(bot: Character, target: Entity) {
-        for (const char of this.options.characters) {
+        for (const context of this.options.contexts) {
+            const char = context.bot
             if (!char) continue
             if (char == bot) continue // Don't remove it from ourself
             if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters

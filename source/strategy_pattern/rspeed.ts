@@ -80,7 +80,7 @@ run().catch(console.error)
 const moveStrategy = new BasicMoveStrategy(["bee"])
 const goGiveRogueSpeedStrategy = new GoGiveRogueSpeedStrategy()
 const goSellThingsStrategy = new GoSellThingsStrategy()
-const attackStrategy = new BaseAttackStrategy({ characters: [], typeList: ["bee"] })
+const attackStrategy = new BaseAttackStrategy({ contexts: [], typeList: ["bee"] })
 const trackerStrategy = new TrackerStrategy()
 const rspeedStrategy = new GiveRogueSpeedStrategy()
 const buyStrategy = new BuyStrategy({

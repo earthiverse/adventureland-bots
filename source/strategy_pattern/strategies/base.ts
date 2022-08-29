@@ -1,12 +1,12 @@
-import { Character } from "alclient"
-import { Loop, LoopName, Strategy } from "../context.js"
+import { PingCompensatedCharacter } from "alclient"
+import { Loop, LoopName, Strategist, Strategy } from "../context.js"
 
-export class BaseStrategy<Type extends Character> implements Strategy<Type> {
+export class BaseStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
-    private characters: Character[]
+    private contexts: Strategist<Type>[]
 
-    public constructor(characters?: Character[]) {
-        this.characters = characters ?? []
+    public constructor(contexts?: Strategist<Type>[]) {
+        this.contexts = contexts ?? []
         this.loops.set("heal", {
             fn: async (bot: Type) => { await this.heal(bot) },
             interval: ["use_hp"]
@@ -64,7 +64,8 @@ export class BaseStrategy<Type extends Character> implements Strategy<Type> {
     private async loot(bot: Type) {
         // Delete the chest from other characters so we can save code call cost
         for (const [id] of bot.chests) {
-            for (const character of this.characters) {
+            for (const context of this.contexts) {
+                const character = context.bot
                 if (bot == character) continue // Don't delete the chest from ourself
                 character.chests.delete(id)
             }

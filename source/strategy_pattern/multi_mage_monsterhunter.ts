@@ -32,7 +32,7 @@ const mage2ID = "earthMag2"
 const mage3ID = "earthMag3"
 /***** Config End *****/
 
-const CHARACTERS: PingCompensatedCharacter[] = [undefined, undefined, undefined, undefined]
+const CONTEXTS: Strategist<PingCompensatedCharacter>[] = [undefined, undefined, undefined, undefined]
 
 // Monster Hunt Strategies
 const getMonsterHuntStrategy = new GetMonsterHuntStrategy()
@@ -54,10 +54,10 @@ async function run() {
     const mage3Context = new Strategist<Mage>(mage3, baseStrategy)
 
     // Make characters array
-    CHARACTERS[0] = merchant
-    CHARACTERS[1] = mage1
-    CHARACTERS[2] = mage2
-    CHARACTERS[3] = mage3
+    CONTEXTS[0] = merchantContext
+    CONTEXTS[1] = mage1Context
+    CONTEXTS[2] = mage2Context
+    CONTEXTS[3] = mage3Context
 
     // Set-up Strategies
     const strategies: {[T in MonsterName]?: Strategy<Mage>[]} = {}
@@ -65,7 +65,7 @@ async function run() {
     // Default Monster
     strategies[defaultMonster] = [
         new BasicMoveStrategy(defaultMonster),
-        new BaseAttackStrategy<Mage>({ characters: CHARACTERS, type: defaultMonster })
+        new BaseAttackStrategy<Mage>({ contexts: CONTEXTS, type: defaultMonster })
     ]
 
     // Default Strategy Monsters
@@ -76,7 +76,7 @@ async function run() {
         }
         strategies[monster] = [
             new BasicMoveStrategy(monster),
-            new BaseAttackStrategy({ characters: CHARACTERS, type: defaultMonster })
+            new BaseAttackStrategy({ contexts: CONTEXTS, type: defaultMonster })
         ]
     }
 
