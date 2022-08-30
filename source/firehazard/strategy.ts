@@ -1,11 +1,11 @@
-import AL, { ItemName, LocateItemFilters, PingCompensatedCharacter } from "alclient"
+import AL, { ItemName, LocateItemFilters, MonsterName, PingCompensatedCharacter } from "alclient"
 import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
 import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
 import { PriestAttackStrategy } from "../strategy_pattern/strategies/attack_priest.js"
 import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
 import { DebugStrategy } from "../strategy_pattern/strategies/debug.js"
-import { BasicMoveStrategy, FollowFriendMoveStrategy } from "../strategy_pattern/strategies/move.js"
+import { BasicMoveStrategy, FollowFriendMoveStrategy, ImprovedMoveStrategy } from "../strategy_pattern/strategies/move.js"
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "../strategy_pattern/strategies/party.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 
@@ -18,6 +18,7 @@ import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 const FARMER = "earthWar"
 const SUPPORTER_1 = "earthWar2"
 const SUPPORTER_2 = "earthPri"
+const MONSTER: MonsterName = "bigbird"
 
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 let FIREHAZARD_FARMER_CONTEXT: Strategist<PingCompensatedCharacter>
@@ -62,7 +63,7 @@ const debugStrategy = new DebugStrategy({
     logAchievementProgress: true,
     logLimitDCReport: true
 })
-const moveToMonsterStrategy = new BasicMoveStrategy(["plantoid"])
+const moveToMonsterStrategy = new ImprovedMoveStrategy([MONSTER])
 const partyAcceptStrategy = new AcceptPartyRequestStrategy([SUPPORTER_1, SUPPORTER_2])
 const partyRequestStrategy = new RequestPartyStrategy(FARMER)
 const trackerStrategy = new TrackerStrategy()
@@ -126,7 +127,7 @@ async function startFirehazardFarmer(context: Strategist<PingCompensatedCharacte
         disableZapper: true,
         hpGreaterThan: 10_000,
         maximumTargets: 2,
-        type: "plantoid",
+        type: MONSTER,
         willBurnToDeath: false,
         willDieToProjectiles: false,
     })
