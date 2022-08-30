@@ -111,7 +111,9 @@ class FirehazardEquipStrategy implements Strategy<PingCompensatedCharacter> {
                     break
             }
             const locate = bot.locateItem(item, bot.items, { returnHighestLevel: true })
-            if (locate === undefined) return // Assume we have it equipped
+            if (locate === undefined) return // Assume we have it
+            const itemInfo = bot.items[locate]
+            if (bot.slots.mainhand && bot.slots.mainhand.name == item && bot.slots.mainhand.level > itemInfo.level) return // We already have a higher level one equipped
             return bot.equip(locate, "mainhand")
         }
     }
