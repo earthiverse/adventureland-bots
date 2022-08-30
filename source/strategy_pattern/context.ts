@@ -10,6 +10,7 @@ export type LoopName =
     | "attack"
     | "avoid_stacking"
     | "buy"
+    | "equip"
     | "heal"
     | "loot"
     | "merchant_stand"
