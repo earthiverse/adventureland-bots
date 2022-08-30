@@ -5,7 +5,7 @@ import { PriestAttackStrategy } from "../strategy_pattern/strategies/attack_prie
 import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
 import { DebugStrategy } from "../strategy_pattern/strategies/debug.js"
-import { BasicMoveStrategy, FollowFriendMoveStrategy, ImprovedMoveStrategy } from "../strategy_pattern/strategies/move.js"
+import { FollowFriendMoveStrategy, ImprovedMoveStrategy } from "../strategy_pattern/strategies/move.js"
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "../strategy_pattern/strategies/party.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 
@@ -18,7 +18,7 @@ import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 const FARMER = "earthWar"
 const SUPPORTER_1 = "earthWar2"
 const SUPPORTER_2 = "earthPri"
-const MONSTER: MonsterName = "bigbird"
+const MONSTERS: MonsterName[] = ["bigbird"]
 
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 let FIREHAZARD_FARMER_CONTEXT: Strategist<PingCompensatedCharacter>
@@ -63,7 +63,6 @@ const debugStrategy = new DebugStrategy({
     logAchievementProgress: true,
     logLimitDCReport: true
 })
-const moveToMonsterStrategy = new ImprovedMoveStrategy([MONSTER])
 const partyAcceptStrategy = new AcceptPartyRequestStrategy([SUPPORTER_1, SUPPORTER_2])
 const partyRequestStrategy = new RequestPartyStrategy(FARMER)
 const trackerStrategy = new TrackerStrategy()
@@ -127,11 +126,12 @@ async function startFirehazardFarmer(context: Strategist<PingCompensatedCharacte
         disableZapper: true,
         hpGreaterThan: 10_000,
         maximumTargets: 2,
-        type: MONSTER,
+        typeList: MONSTERS,
         willBurnToDeath: false,
         willDieToProjectiles: false,
     })
     const equipStrategy = new FirehazardEquipStrategy(item, itemFilters)
+    const moveToMonsterStrategy = new ImprovedMoveStrategy(MONSTERS)
 
     context.applyStrategy(equipStrategy)
     context.applyStrategy(baseStrategy)
