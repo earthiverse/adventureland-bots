@@ -4,8 +4,7 @@ import bodyParser from "body-parser"
 import cors from "cors"
 import { body, validationResult } from "express-validator"
 
-import AL, { Character, CharacterType, ItemName, Merchant, MonsterName, PingCompensatedCharacter, ServerIdentifier, ServerRegion, SlotType, Tools } from "alclient"
-import { addSocket, startServer } from "algui"
+import AL, { Character, CharacterType, ItemName, Merchant, MonsterName, PingCompensatedCharacter, ServerIdentifier, ServerRegion, SlotType } from "alclient"
 import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
 import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
 import { MageAttackStrategy } from "../strategy_pattern/strategies/attack_mage.js"
@@ -26,7 +25,6 @@ import { checkOnlyEveryMS, sleep } from "../base/general.js"
 await AL.Game.loginJSONFile("../../credentials.json")
 await AL.Game.getGData(true, false)
 await AL.Pathfinder.prepare(AL.Game.G)
-await startServer(8080, AL.Game.G)
 
 const SERVER_REGION: ServerRegion = "US"
 const SERVER_ID: ServerIdentifier = "I"
@@ -438,8 +436,6 @@ async function startLulzMerchant(userID: string, userAuth: string, characterID: 
     const bot = new AL.Merchant(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVER_ID])
     await bot.connect()
 
-    addSocket(bot.id, bot.socket)
-
     const context = new Strategist(bot, baseStrategy)
     CONTEXTS.push(context)
 
@@ -487,8 +483,6 @@ async function startLulzCharacter(type: CharacterType, userID: string, userAuth:
         }
     }
     await bot.connect()
-
-    addSocket(bot.id, bot.socket)
 
     const context = new Strategist(bot, baseStrategy)
     CONTEXTS.push(context)
