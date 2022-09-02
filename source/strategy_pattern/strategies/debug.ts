@@ -1,4 +1,4 @@
-import { AchievementProgressData, Character, LimitDCReportData } from "alclient"
+import { AchievementProgressData, Character, LimitDCReportData, SkillTimeoutData } from "alclient"
 import { Strategy } from "../context.js"
 
 type DebugOptions = {
@@ -8,6 +8,8 @@ type DebugOptions = {
     logLimitDCReport?: boolean
     /** Will log when we receive a penalty */
     logPenalties?: boolean
+    /** Will log when we receive a skill timeout */
+    logSkillTimeouts?: boolean
 }
 
 /**
@@ -17,6 +19,7 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
     private logAchievementProgress: (data: AchievementProgressData) => void
     private logLimitDCReport: (data: LimitDCReportData) => void
     private logPenalty: (data: any) => void
+    private logSkillTimeouts: (data: SkillTimeoutData) => void
 
     public options: DebugOptions
 
@@ -34,6 +37,7 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
             }
             bot.socket.on("achievement_progress", this.logAchievementProgress)
         }
+
         if (this.options.logLimitDCReport) {
             this.logLimitDCReport = (data: LimitDCReportData) => {
                 console.debug(`=== START LIMITDCREPORT (${bot.id}) ===`)
@@ -42,6 +46,7 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
             }
             bot.socket.on("limitdcreport", this.logLimitDCReport)
         }
+
         if (this.options.logPenalties) {
             this.logPenalty = (data: any) => {
                 if (typeof data !== "object") return
@@ -51,11 +56,18 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
             }
             bot.socket.onAny(this.logPenalty)
         }
+        if (this.options.logSkillTimeouts) {
+            this.logSkillTimeouts = (data: SkillTimeoutData) => {
+                console.log(JSON.stringify(data, null, 2))
+            }
+            bot.socket.on("skill_timeout", this.logSkillTimeouts)
+        }
     }
 
     public onRemove(bot: Type) {
         if (this.logAchievementProgress) bot.socket.off("achievement_progress", this.logAchievementProgress)
         if (this.logLimitDCReport) bot.socket.off("limitdcreport", this.logLimitDCReport)
         if (this.logPenalty) bot.socket.offAny(this.logPenalty)
+        if (this.logSkillTimeouts) bot.socket.off("skill_timeout", this.logSkillTimeouts)
     }
 }
