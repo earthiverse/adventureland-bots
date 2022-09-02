@@ -10,7 +10,7 @@ import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "../strategy_pa
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 
 /**
- * Attack plantoids (Sprawlings) on desertland to farm firehazard on a weapon
+ * Farm firehazard on a weapon
  * Equip the weapon you want to add firehazard to on the bot that will run `startFirehazardFarmer`
  * Equip weapons that will cause burn on the bots that will run `startFirehazardSupporter`
  */
@@ -18,7 +18,7 @@ import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 const FARMER = "earthWar"
 const SUPPORTER_1 = "earthWar2"
 const SUPPORTER_2 = "earthPri"
-const MONSTERS: MonsterName[] = ["bigbird"]
+const MONSTERS: MonsterName[] = ["plantoid"]
 
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 let FIREHAZARD_FARMER_CONTEXT: Strategist<PingCompensatedCharacter>
