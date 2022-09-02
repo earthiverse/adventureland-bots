@@ -49,10 +49,9 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
 
         if (this.options.logPenalties) {
             this.logPenalty = (name: string, data: any) => {
-                console.log(data)
                 if (typeof data !== "object") return
                 if (data.penalty) {
-                    console.debug(name, JSON.stringify(data))
+                    console.debug(`${name} ${JSON.stringify(data)}`)
                 }
             }
             bot.socket.onAny(this.logPenalty)
