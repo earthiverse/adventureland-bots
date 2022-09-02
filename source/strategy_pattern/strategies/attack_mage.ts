@@ -43,10 +43,13 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
         // TODO: What is this 100 / 3? I forget...
         if (humanoidRestorability <= 100 / 3) return
 
-        this.options.canDamage = "cburst"
-        this.options.withinRange = "cburst"
+        const entities = bot.getEntities({
+            ...this.options,
+            canDamage: "cburst",
+            withinRange: "cburst"
+        })
         let mpNeeded = bot.G.skills.cburst.mp + bot.mp_cost
-        for (const entity of bot.getEntities(this.options)) {
+        for (const entity of entities) {
             if (!entity.humanoid) continue // Entity isn't a humanoid
             if (targets.has(entity.id)) continue // It's low HP (from previous for loop), we're already going to kill it
 

@@ -24,8 +24,9 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
     protected async attack(bot: Warrior) {
         const priority = sortPriority(bot, this.options.typeList)
 
-        await this.basicAttack(bot, priority)
         if (!this.options.disableCleave) await this.cleave(bot)
+        this.applyWarCry(bot)
+        await this.basicAttack(bot, priority)
     }
 
     protected async cleave(bot: Warrior) {
@@ -92,5 +93,13 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
         for (const entity of entities) if (bot.canKillInOneShot(entity, "cleave")) this.preventOverkill(bot, entity)
         return bot.cleave().catch(console.error)
+    }
+
+    protected async applyWarCry(bot: Warrior) {
+        if (!bot.canUse("warcry")) return
+        if (bot.s.warcry) return // We already have it applied
+        if (!bot.getEntity(this.options)) return // We aren't about to attack
+
+        bot.warcry().catch(console.error)
     }
 }

@@ -36,9 +36,11 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
         if (!bot.canUse("attack")) return
 
         // Find all targets we want to attack
-        this.options.withinRange = "attack"
-        this.options.canDamage = "attack"
-        const entities = bot.getEntities(this.options)
+        const entities = bot.getEntities({
+            ...this.options,
+            canDamage: "attack",
+            withinRange: "attack"
+        })
         if (entities.length == 0) return // No targets to attack
 
         const targetingMe = bot.calculateTargets()
@@ -222,7 +224,7 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
         if (entity.immune && !AL.Game.G.skills.huntersmark.pierces_immunity) return // Can't mark
         if (!bot.canUse("huntersmark")) return
         if (bot.mp < bot.mp_cost + AL.Game.G.skills.huntersmark.mp) return // Not enough MP
-        if (bot.canKillInOneShot(entity)) return // Would be a waste to use if we can kill it right away
+        if (bot.canKillInOneShot(entity) || entity.willBurnToDeath() || entity.willDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)) return // Would be a waste to use if we can kill it right away
 
         bot.huntersMark(entity.id).catch(console.error)
     }
