@@ -1,7 +1,9 @@
 import AL, { ItemName, LocateItemFilters, MonsterName, PingCompensatedCharacter } from "alclient"
 import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
-import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
+import { BaseAttackStrategy, BaseAttackStrategyOptions } from "../strategy_pattern/strategies/attack.js"
 import { PriestAttackStrategy } from "../strategy_pattern/strategies/attack_priest.js"
+import { RangerAttackStrategy } from "../strategy_pattern/strategies/attack_ranger.js"
+import { WarriorAttackStrategy } from "../strategy_pattern/strategies/attack_warrior.js"
 import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
 import { DebugStrategy } from "../strategy_pattern/strategies/debug.js"
@@ -120,7 +122,7 @@ class FirehazardEquipStrategy implements Strategy<PingCompensatedCharacter> {
 }
 
 async function startFirehazardFarmer(context: Strategist<PingCompensatedCharacter>, item: ItemName, itemFilters: LocateItemFilters) {
-    const farmerAttackStrategy = new BaseAttackStrategy({
+    const attackStrategyOptions: BaseAttackStrategyOptions = {
         contexts: [],
         couldGiveCredit: true,
         disableZapper: true,
@@ -129,13 +131,29 @@ async function startFirehazardFarmer(context: Strategist<PingCompensatedCharacte
         typeList: MONSTERS,
         willBurnToDeath: false,
         willDieToProjectiles: false,
-    })
+    }
+    let attackStrategy: BaseAttackStrategy<PingCompensatedCharacter>
+    switch (context.bot.ctype) {
+        case "priest":
+            attackStrategy = new PriestAttackStrategy(attackStrategyOptions)
+            break
+        case "ranger":
+            attackStrategy = new RangerAttackStrategy(attackStrategyOptions)
+            break
+        case "warrior":
+            attackStrategy = new WarriorAttackStrategy(attackStrategyOptions)
+            break
+        default:
+            attackStrategy = new BaseAttackStrategy(attackStrategyOptions)
+            break
+
+    }
     const equipStrategy = new FirehazardEquipStrategy(item, itemFilters)
     const moveToMonsterStrategy = new ImprovedMoveStrategy(MONSTERS)
 
     context.applyStrategy(equipStrategy)
     context.applyStrategy(baseStrategy)
-    context.applyStrategy(farmerAttackStrategy)
+    context.applyStrategy(attackStrategy)
     context.applyStrategy(buyStrategy)
     context.applyStrategy(debugStrategy)
     context.applyStrategy(moveToMonsterStrategy)
@@ -146,17 +164,23 @@ async function startFirehazardFarmer(context: Strategist<PingCompensatedCharacte
 async function startFirehazardSupporter(context: Strategist<PingCompensatedCharacter>) {
     const moveToBotStrategy = new FollowFriendMoveStrategy(FIREHAZARD_FARMER_CONTEXT)
 
-    const attackStrategyOptions = {
+    const attackStrategyOptions: BaseAttackStrategyOptions = {
         contexts: [],
         disableZapper: true,
         targetingPlayer: FARMER,
         willBurnToDeath: false,
         willDieToProjectiles: false
     }
-    let attackStrategy: Strategy<PingCompensatedCharacter>
+    let attackStrategy: BaseAttackStrategy<PingCompensatedCharacter>
     switch (context.bot.ctype) {
         case "priest":
             attackStrategy = new PriestAttackStrategy(attackStrategyOptions)
+            break
+        case "ranger":
+            attackStrategy = new RangerAttackStrategy(attackStrategyOptions)
+            break
+        case "warrior":
+            attackStrategy = new WarriorAttackStrategy(attackStrategyOptions)
             break
         default:
             attackStrategy = new BaseAttackStrategy(attackStrategyOptions)
