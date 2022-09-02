@@ -1040,7 +1040,8 @@ export function requestMagiportService(bot: Character, targetLocation: IPosition
 const lastCheck = new Map<string, number>()
 export function checkOnlyEveryMS(key: string, msSince = 5000) {
     const last = lastCheck.get(key)
-    if (last && last < Date.now() - msSince) {
+    if (!last || (last < (Date.now() - msSince))) {
+        // We haven't checked before, or it's been more than `msSince` since we last checked
         lastCheck.set(key, Date.now())
         return true
     }
