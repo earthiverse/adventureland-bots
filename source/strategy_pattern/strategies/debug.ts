@@ -18,7 +18,7 @@ type DebugOptions = {
 export class DebugStrategy<Type extends Character> implements Strategy<Type> {
     private logAchievementProgress: (data: AchievementProgressData) => void
     private logLimitDCReport: (data: LimitDCReportData) => void
-    private logPenalty: (data: any) => void
+    private logPenalty: (name: string, data: any) => void
     private logSkillTimeouts: (data: SkillTimeoutData) => void
 
     public options: DebugOptions
@@ -48,10 +48,11 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
         }
 
         if (this.options.logPenalties) {
-            this.logPenalty = (data: any) => {
+            this.logPenalty = (name: string, data: any) => {
+                console.log(data)
                 if (typeof data !== "object") return
                 if (data.penalty) {
-                    console.debug(JSON.stringify(data))
+                    console.debug(name, JSON.stringify(data))
                 }
             }
             bot.socket.onAny(this.logPenalty)
