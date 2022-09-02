@@ -51,14 +51,14 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
             this.logPenalty = (data: any) => {
                 if (typeof data !== "object") return
                 if (data.penalty) {
-                    console.debug(JSON.stringify(data, null, 2))
+                    console.debug(JSON.stringify(data))
                 }
             }
             bot.socket.onAny(this.logPenalty)
         }
         if (this.options.logSkillTimeouts) {
             this.logSkillTimeouts = (data: SkillTimeoutData) => {
-                console.log(JSON.stringify(data, null, 2))
+                console.log(JSON.stringify(data))
             }
             bot.socket.on("skill_timeout", this.logSkillTimeouts)
         }
