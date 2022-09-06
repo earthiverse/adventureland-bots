@@ -82,7 +82,7 @@ async function run() {
 
     // Party Strategy
     const requestPartyStrategy = new RequestPartyStrategy(mage1.id)
-    const acceptPartyRequestStrategy = new AcceptPartyRequestStrategy([mage2.id, mage3.id, ...additionalPartyMembers])
+    const acceptPartyRequestStrategy = new AcceptPartyRequestStrategy({ allowList: [mage2.id, mage3.id, ...additionalPartyMembers] })
     mage1Context.applyStrategy(acceptPartyRequestStrategy)
     mage2Context.applyStrategy(requestPartyStrategy)
     mage3Context.applyStrategy(requestPartyStrategy)

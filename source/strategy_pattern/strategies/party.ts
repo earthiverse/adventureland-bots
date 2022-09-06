@@ -1,20 +1,27 @@
 import { InviteData, Character } from "alclient"
 import { Loop, LoopName, Strategy } from "../context.js"
 
+export type PartyOptions = {
+    /** A list of IDs that are allowed to join your party */
+    allowList?: string[]
+    /** A list of IDs that are not allowed to join your party */
+    denyList?: string[]
+}
+
 export class AcceptPartyRequestStrategy<Type extends Character> implements Strategy<Type> {
     private onRequest: (data: {name: string}) => Promise<void>
 
-    public membersList: string[]
+    public options: PartyOptions
 
-    public constructor(membersList: string[]) {
-        this.membersList = membersList
+    public constructor(options?: PartyOptions) {
+        if (!options) options = {}
+        this.options = options
     }
 
     public onApply(bot: Type) {
         this.onRequest = async (data: InviteData) => {
-            if (!this.membersList.includes(data.name)) {
-                return
-            }
+            if (this.options.allowList && !this.options.allowList.includes(data.name)) return // Not in allow list
+            if (this.options.denyList && this.options.denyList.includes(data.name)) return // In deny list
 
             await bot.acceptPartyRequest(data.name)
         }

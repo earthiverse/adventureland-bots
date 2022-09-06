@@ -139,7 +139,7 @@ class LulzMerchantMoveStrategy implements Strategy<Merchant> {
                     const item = bot.items[i]
                     if (!item) continue // No item
                     if (item.l) continue // Don't want to bank locked items
-                    if (ITEMS_TO_HOLD.has(item.name)) continue // We want to hold this item
+                    if (ITEMS_TO_HOLD_MERCHANT.has(item.name)) continue // We want to hold this item
                     await bot.depositItem(i)
                 }
 
