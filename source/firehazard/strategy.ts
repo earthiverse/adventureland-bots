@@ -63,8 +63,11 @@ const buyStrategy = new BuyStrategy({
 })
 const debugStrategy = new DebugStrategy({
     logAchievementProgress: true,
+    logAttacks: true,
+    logEquips: true,
     logLimitDCReport: true,
-    logPenalties: true
+    logPenalties: true,
+    logSkills: true
 })
 const partyAcceptStrategy = new AcceptPartyRequestStrategy([SUPPORTER_1, SUPPORTER_2])
 const partyRequestStrategy = new RequestPartyStrategy(FARMER)

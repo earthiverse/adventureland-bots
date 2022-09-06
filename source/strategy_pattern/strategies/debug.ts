@@ -9,6 +9,8 @@ type DebugOptions = {
     logAchievementProgress?: boolean
     /** Will log when we attack */
     logAttacks?: boolean
+    /** Will log when we equip things */
+    logEquips?: boolean
     /** Will log the report that tells you how many commands you ran when you are disconnected for doing too many code calls */
     logLimitDCReport?: boolean
     /** Will log when we receive a penalty */
@@ -29,6 +31,7 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
 
     private logAchievementProgress: (data: AchievementProgressData) => void
     private logAttacks: (name: string, data: unknown) => void
+    private logEquips: (name: string, data: unknown) => void
     private logLimitDCReport: (data: LimitDCReportData) => void
     private logPenalty: (name: string, data: unknown) => void
     private logSkills: (name: string, data: ClientToServerSkillData) => void
@@ -87,6 +90,14 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
                 console.debug(`[${this.getTimestamp()}] [${bot.id}] [logAttacks] ${JSON.stringify(data)}`)
             }
             bot.socket.onAnyOutgoing(this.logAttacks)
+        }
+
+        if (this.options.logEquips) {
+            this.logEquips = (name: string, data: unknown) => {
+                if (name !== "equip") return
+                console.debug(`[${this.getTimestamp()}] [${bot.id}] [logEquips] ${JSON.stringify(data)}`)
+            }
+            bot.socket.onAnyOutgoing(this.logEquips)
         }
 
         if (this.options.logLimitDCReport) {

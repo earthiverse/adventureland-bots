@@ -18,6 +18,11 @@ export class TrackerStrategy implements Strategy<Character> {
     private async checkTracker(bot: Character) {
         if ((bot.hasItem("tracker") || bot.hasItem("supercomputer")) && bot.cc < 100) {
             await bot.getTrackerData()
+        } else {
+            console.debug(`[${bot.id}] Didn't check tracker!?`)
+            console.debug(`[${bot.id}] tracker: ${bot.hasItem("tracker")}`)
+            console.debug(`[${bot.id}] supercomputer: ${bot.hasItem("supercomputer")}`)
+            console.debug(`[${bot.id}] bot.cc: ${bot.cc}`)
         }
     }
 }
