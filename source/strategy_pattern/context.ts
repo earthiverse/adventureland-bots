@@ -1,7 +1,7 @@
 import AL, { PingCompensatedCharacter, ServerIdentifier, ServerRegion, SkillName } from "alclient"
 
 export type Loop<Type> = {
-    fn: (bot: Type) => Promise<void>,
+    fn: (bot: Type) => Promise<unknown>,
     /** If number, it will loop every this many ms. If SkillName, it will loop based on the cooldown of the skills in the array */
     interval: SkillName[] | number
 }
