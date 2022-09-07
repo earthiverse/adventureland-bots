@@ -1,9 +1,9 @@
 import AL, { BankPackName, Character, ItemName, Merchant, PingCompensatedCharacter, SlotType } from "alclient"
-import { getUnimportantInventorySlots } from "../base/banking"
-import { checkOnlyEveryMS, sleep } from "../base/general"
-import { bankingPosition } from "../base/locations"
-import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context"
-import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party"
+import { getUnimportantInventorySlots } from "../base/banking.js"
+import { checkOnlyEveryMS, sleep } from "../base/general.js"
+import { bankingPosition } from "../base/locations.js"
+import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
+import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
 
 export const DEFAULT_GOLD_TO_HOLD = 100_000_000
 export const DEFAULT_ITEMS_TO_HOLD = new Set<ItemName>([
