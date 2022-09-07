@@ -214,14 +214,12 @@ class LulzMerchantMoveStrategy implements Strategy<Merchant> {
                 }
 
                 // Grab items
-                while (bot.esize > 2) {
-                    for (let i = 0; i < friend.isize; i++) {
-                        const item = friend.items[i]
-                        if (!item) continue // No item here
-                        if (item.l) continue // Can't send locked items
-                        if (ITEMS_TO_HOLD.has(item.name)) continue // We want to hold this item
-                        await friend.sendItem(bot.id, i, item.q)
-                    }
+                for (let i = 0; i < friend.isize && bot.esize > 2; i++) {
+                    const item = friend.items[i]
+                    if (!item) continue // No item here
+                    if (item.l) continue // Can't send locked items
+                    if (ITEMS_TO_HOLD.has(item.name)) continue // We want to hold this item
+                    await friend.sendItem(bot.id, i, item.q)
                 }
 
                 // Return so we can deal with a full inventory if we need to
