@@ -37,7 +37,7 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
     private logSkills: (name: string, data: ClientToServerSkillData) => void
     private logSkillTimeouts: (data: SkillTimeoutData) => void
 
-    public events = new Map<string, string[]>()
+    public static events = new Map<string, string[]>()
 
     public options: DebugOptions
 
@@ -47,18 +47,28 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
         this.options = options
     }
 
-    public getEvents(id: string) {
-        return this.events.get(id)
+    /**
+     * Gets the last events for the given character ID
+     *
+     * `=>` are outgoing events
+     *
+     * `<=` are incoming events
+     *
+     * @param id Character ID
+     * @returns
+     */
+    public static getEvents(id: string) {
+        return DebugStrategy.events.get(id)
     }
 
     public onApply(bot: Type) {
         // Reset events
-        this.events.set(bot.id, [])
+        DebugStrategy.events.set(bot.id, [])
 
         this.logAllIncoming = (name: string, data: unknown) => {
             // Add the new event
-            const events = this.events.get(bot.id)
-            events.push(`[${this.getTimestamp()}] [${bot.id}] <= [${name}] ${JSON.stringify(data)}`)
+            const events = DebugStrategy.events.get(bot.id)
+            events.push(`[${this.getTimestamp()}] <= [${name}] ${JSON.stringify(data)}`)
 
             // Trim events
             if (events.length > this.options.logEventsSize) events.splice(events.length - this.options.logEventsSize, this.options.logEventsSize)
@@ -67,8 +77,8 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
         bot.socket.onAny(this.logAllIncoming)
         this.logAllOutgoing = (name: string, data: unknown) => {
             // Add the new event
-            const events = this.events.get(bot.id)
-            events.push(`[${this.getTimestamp()}] [${bot.id}] => [${name}] ${JSON.stringify(data)}`)
+            const events = DebugStrategy.events.get(bot.id)
+            events.push(`[${this.getTimestamp()}] => [${name}] ${JSON.stringify(data)}`)
 
             // Trim events
             if (events.length > this.options.logEventsSize) events.splice(events.length - this.options.logEventsSize, this.options.logEventsSize)

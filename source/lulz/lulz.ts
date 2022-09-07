@@ -330,7 +330,7 @@ class LulzMerchantMoveStrategy implements Strategy<Merchant> {
                         // Buy the correct stat scroll(s) and apply them
                         const grade = bot.calculateItemGrade(itemData)
                         const statScroll = `${stat}scroll` as ItemName
-                        const numNeeded = Math.pow((grade + 1), 10)
+                        const numNeeded = Math.pow(10, grade)
                         const numHave = bot.countItem(statScroll, bot.items)
 
                         try {
