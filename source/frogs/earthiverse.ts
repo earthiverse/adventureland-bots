@@ -55,7 +55,7 @@ async function startMage(bot: Mage) {
             await goToPotionSellerIfLow(bot)
             await goToBankIfFull(bot)
 
-            if (bot.countItem("seashell") > 1000 || bot.hasItem("gem0") || bot.hasItem("ink") || bot.hasItem("5bucks") || bot.gold > 5_000_000) {
+            if (bot.countItem("seashell") > 1000 || bot.hasItem(["gem0", "ink", "5bucks"]) || bot.gold > 5_000_000) {
                 await bot.smartMove(bankingPosition) // Move to bank teller to give bank time to get ready
 
                 for (let i = 0; i < bot.isize; i++) {

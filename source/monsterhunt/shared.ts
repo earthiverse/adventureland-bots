@@ -361,7 +361,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
 
                 // Buy stuff for our friends
                 if (!(friend.hasItem("computer") || friend.hasItem("supercomputer"))
-                && (bot.hasItem("computer") || bot.hasItem("supercomputer"))) {
+                && (bot.hasItem(["computer", "supercomputer"]))) {
                     // Go buy replenishables for them, since they don't have a computer
                     for (const [item, amount] of REPLENISHABLES_TO_BUY) {
                         if (friend.countItem(item) > amount * 0.25) continue // They have enough
@@ -1097,7 +1097,7 @@ export async function startShared(bot: Character, strategy: Strategy, informatio
 
                 // Get a luck elixir
                 if (!bot.slots.elixir
-                     && !(bot.hasItem("computer") || bot.hasItem("supercomputer"))
+                     && !(bot.hasItem(["computer", "supercomputer"]))
                      && bot.canBuy("elixirluck", { ignoreLocation: true })
                      && !bot.isFull()) {
                     await bot.smartMove("elixirluck")

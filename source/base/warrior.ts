@@ -24,7 +24,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
     if (!options.disableCleave
     && bot.mp > bot.G.skills.cleave.mp + bot.mp_cost
     && bot.canUse("cleave", { ignoreEquipped: true })
-    && (bot.hasItem("bataxe") || bot.hasItem("scythe") || bot.isEquipped("bataxe") || bot.isEquipped("scythe")) // We have something to cleave with
+    && (bot.hasItem(["bataxe", "scythe"]) || bot.isEquipped("bataxe") || bot.isEquipped("scythe")) // We have something to cleave with
     ) {
         // Calculate how much courage we have left to spare
         const targetingMe = bot.calculateTargets()
@@ -262,7 +262,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
             && bot.mp > bot.G.skills.stomp.mp + bot.mp_cost
             && bot.canUse("stomp", { ignoreEquipped: true })
             && (!target.s.stunned || target.s.stunned.ms < (Math.min(...bot.pings) * 3))
-            && (bot.isEquipped("basher") || bot.isEquipped("wbasher") || bot.hasItem("basher") || bot.hasItem("wbasher"))) {
+            && (bot.isEquipped("basher") || bot.isEquipped("wbasher") || bot.hasItem(["basher", "wbasher"]))) {
                 let avoidStomp = false
                 if (bot.isPVP()) {
                     for (const [, player] of bot.players) {

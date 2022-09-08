@@ -93,7 +93,7 @@ export async function startWarrior(bot: Warrior, merchant: string, friends: Char
 
             // Get a luck elixir
             if (!bot.slots.elixir
-                     && !(bot.hasItem("computer") || bot.hasItem("supercomputer"))
+                     && !(bot.hasItem(["computer", "supercomputer"]))
                      && bot.canBuy("elixirluck", { ignoreLocation: true })
                      && !bot.isFull()) {
                 await bot.smartMove("elixirluck")
@@ -161,7 +161,7 @@ export async function startPriest(bot: Priest, merchant: string, friends: Charac
 
             // Get a luck elixir
             if (!bot.slots.elixir
-                     && !(bot.hasItem("computer") || bot.hasItem("supercomputer"))
+                     && !(bot.hasItem(["computer", "supercomputer"]))
                      && bot.canBuy("elixirluck", { ignoreLocation: true })
                      && !bot.isFull()) {
                 await bot.smartMove("elixirluck")
@@ -252,7 +252,7 @@ export async function startMerchant(bot: Merchant, friends: Character[], standPl
 
                 // Buy stuff for our friends
                 if (!(friend.hasItem("computer") || friend.hasItem("supercomputer"))
-                && (bot.hasItem("computer") || bot.hasItem("supercomputer"))) {
+                && (bot.hasItem(["computer", "supercomputer"]))) {
                     // Go buy replenishables for them, since they don't have a computer
                     for (const [item, amount] of REPLENISHABLES_TO_BUY) {
                         if (friend.countItem(item) > amount * 0.25) continue // They have enough

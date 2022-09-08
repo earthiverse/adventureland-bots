@@ -99,7 +99,7 @@ export async function startMage(bot: Mage, merchant: string, friends: Character[
 
             // Get a luck elixir
             if (!bot.slots.elixir
-                     && !(bot.hasItem("computer") || bot.hasItem("supercomputer"))
+                     && !(bot.hasItem(["computer", "supercomputer"]))
                      && bot.canBuy("elixirluck", { ignoreLocation: true })
                      && !bot.isFull()) {
                 await bot.smartMove("elixirluck")
@@ -186,7 +186,7 @@ export async function startPriest(bot: Priest, merchant: string, friends: Charac
 
             // Get a luck elixir
             if (!bot.slots.elixir
-                     && !(bot.hasItem("computer") || bot.hasItem("supercomputer"))
+                     && !(bot.hasItem(["computer", "supercomputer"]))
                      && bot.canBuy("elixirluck", { ignoreLocation: true })
                      && !bot.isFull()) {
                 await bot.smartMove("elixirluck")
@@ -273,7 +273,7 @@ export async function startRanger(bot: Ranger, merchant: string, friends: Charac
 
             // Get a luck elixir
             if (!bot.slots.elixir
-                     && !(bot.hasItem("computer") || bot.hasItem("supercomputer"))
+                     && !(bot.hasItem(["computer", "supercomputer"]))
                      && bot.canBuy("elixirluck", { ignoreLocation: true })
                      && !bot.isFull()) {
                 await bot.smartMove("elixirluck")

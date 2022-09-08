@@ -8,7 +8,7 @@ async function run() {
     const bot = await AL.Game.startMerchant("attackMer", "ASIA", "I")
 
     console.log(`Elixir: ${bot.slots.elixir}`)
-    console.log(`Computer: ${bot.hasItem("computer") || bot.hasItem("supercomputer")}`)
+    console.log(`Computer: ${bot.hasItem(["computer", "supercomputer"])}`)
     console.log(`CanBuy: ${bot.canBuy("elixirluck", { ignoreLocation: true })}`)
     console.log(`IsFull: ${bot.isFull()}`)
 

@@ -277,9 +277,9 @@ export function calculateAttackLoopCooldown(bot: Character): number {
         if (bot.canUse("mentalburst", { ignoreCooldown: true })) cooldown = Math.min(cooldown, bot.getCooldown("mentalburst"))
     } else if (bot.ctype == "warrior") {
         if (bot.canUse("agitate", { ignoreCooldown: true })) cooldown = Math.min(cooldown, bot.getCooldown("agitate"))
-        if ((bot.hasItem("bataxe") || bot.hasItem("scythe")) && bot.canUse("cleave", { ignoreCooldown: true, ignoreEquipped: true })) cooldown = Math.min(cooldown, bot.getCooldown("cleave"))
+        if ((bot.hasItem(["bataxe", "scythe"])) && bot.canUse("cleave", { ignoreCooldown: true, ignoreEquipped: true })) cooldown = Math.min(cooldown, bot.getCooldown("cleave"))
         if (bot.canUse("taunt", { ignoreCooldown: true })) cooldown = Math.min(cooldown, bot.getCooldown("taunt"))
-        if ((bot.hasItem("basher") || bot.hasItem("wbasher")) && bot.canUse("stomp", { ignoreCooldown: true, ignoreEquipped: true })) cooldown = Math.min(cooldown, bot.getCooldown("stomp"))
+        if ((bot.hasItem(["basher", "wbasher"])) && bot.canUse("stomp", { ignoreCooldown: true, ignoreEquipped: true })) cooldown = Math.min(cooldown, bot.getCooldown("stomp"))
     }
 
     // NOTE: We want the attack loop to be a lot tighter than the normal LOOP_MS, because it's more important
@@ -854,7 +854,7 @@ export async function goToSpecialMonster(bot: Character, type: MonsterName, opti
  * @returns
  */
 export async function goToPotionSellerIfLow(bot: Character, minHpPots = 100, minMpPots = 100): Promise<void> {
-    if (bot.hasItem("computer")) return // Don't need to move if we have a computer
+    if (bot.hasItem(["computer", "supercomputer"])) return // Don't need to move if we have a computer
 
     const currentHpPots = bot.countItem("hpot1")
     const currentMpPots = bot.countItem("mpot1")
@@ -876,7 +876,7 @@ export async function goToPotionSellerIfLow(bot: Character, minHpPots = 100, min
  */
 export async function goToNPCShopIfFull(bot: Character, itemsToSell = ITEMS_TO_SELL): Promise<void> {
     if (!bot.isFull()) return // Not full
-    if (bot.hasItem("computer") || bot.hasItem("supercomputer")) return // We don't need to move if we have a computer
+    if (bot.hasItem(["computer", "supercomputer"])) return // We don't need to move if we have a computer
 
     let hasSellableItem = false
     for (const item of bot.items) {
@@ -1157,7 +1157,7 @@ export function startBuyFriendsReplenishablesLoop(bot: Character, friends: Chara
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            if (!bot.hasItem("computer")) return // We can't buy potions anywhere, don't run this loop
+            if (!bot.hasItem(["computer", "supercomputer"])) return // We can't buy potions anywhere, don't run this loop
 
             for (let i = 0; i < friends.length; i++) {
                 const friend = friends[i]

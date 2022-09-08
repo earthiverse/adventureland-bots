@@ -1,5 +1,5 @@
 /* eslint-disable sort-keys */
-import AL, { BankPackName, Character, CharacterType, ItemData, ItemName, MapName } from "alclient"
+import AL, { BankPackName, Character, CharacterType, ItemData, ItemName, LocateItemsFilters, MapName } from "alclient"
 import { bankingPosition } from "./locations.js"
 import { MERCHANT_ITEMS_TO_HOLD } from "./merchant.js"
 
@@ -322,6 +322,50 @@ export function getOfferingToUse(item: ItemData): ItemName {
     }
 
     return undefined
+}
+
+/**
+ * Withdraws items from bank
+ * @param bot
+ * @param items The item(s) you wish to withdraw
+ * @param options
+ */
+export async function withdrawItemFromBank(bot: Character, items: ItemName | ItemName[], itemFilters: LocateItemsFilters = {
+    locked: false
+}, options: {
+    freeSpaces: number
+    itemsToHold: Set<ItemName>
+}) {
+    // TODO: Add options to check more levels?
+    if (bot.map !== "bank") throw new Error("Not in bank")
+
+    // Put the single item in an array
+    if (typeof items == "string") items = [items]
+
+    // Get a list of inventory positions that we can swap items to
+    const toKeep = bot.locateItems(items, bot.items, itemFilters)
+    const freeSlots = getUnimportantInventorySlots(bot, options.itemsToHold).filter((i) => !toKeep.includes(i))
+
+    if (freeSlots.length == 0) throw new Error("No free slots in inventory!")
+
+    // Look in all the bank packs
+    for (const bP in bot.bank) {
+        if (bP == "gold") continue
+
+        // TODO: Add options to check more levels?
+        // Only check the first level
+        const bankPackNum = Number.parseInt(bP.substring(5, 7))
+        if (bankPackNum > 7) continue
+
+        const bankPack = bP as BankPackName
+        const bankItems = bot.bank[bankPack]
+
+        // Locate the items in the bank pack, and withdraw them
+        for (const pos of bot.locateItems(items, bankItems, itemFilters)) {
+            await bot.withdrawItem(bankPack, pos, freeSlots.pop())
+            if (bot.esize < options.freeSpaces) break // Limited space in inventory
+        }
+    }
 }
 
 /**

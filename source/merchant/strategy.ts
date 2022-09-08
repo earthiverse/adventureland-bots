@@ -1,10 +1,13 @@
-import AL, { BankPackName, Character, ItemName, Merchant, PingCompensatedCharacter, SlotType } from "alclient"
-import { getUnimportantInventorySlots } from "../base/banking.js"
+import AL, { Character, ItemName, LocateItemsFilters, Merchant, PingCompensatedCharacter, SlotType } from "alclient"
+import { withdrawItemFromBank } from "../base/banking.js"
 import { checkOnlyEveryMS, sleep } from "../base/general.js"
 import { bankingPosition } from "../base/locations.js"
 import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
 import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
 
+export const DEFAULT_EXCHANGEABLES = new Set<ItemName>([
+    "seashell"
+])
 export const DEFAULT_GOLD_TO_HOLD = 100_000_000
 export const DEFAULT_ITEMS_TO_HOLD = new Set<ItemName>([
     "computer",
@@ -49,6 +52,14 @@ export type MerchantMoveStrategyOptions = {
         ratio: number,
     }
     /** If enabled, the merchant will
+     * - if they have the required amount of each exchangeable
+     *   - move to where they can exchange the item(s)
+     *   - exchange the item(s)
+     */
+    enableExchange?: {
+        items: Set<ItemName>
+    }
+    /** If enabled, the merchant will
      * - grab items off the bots running in the given contexts if they drop below `esize` free inventory slots.
      * - give or take gold so the bots in the given contexts will have `goldToHold` gold
      * - take items not in the `itemsToHold` set
@@ -77,6 +88,9 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
             items: DEFAULT_REPLENISHABLES,
             ratio: DEFAULT_REPLENISH_RATIO,
         },
+        // enableExchange: {
+        //     items: DEFAULT_EXCHANGEABLES,
+        // },
         enableOffload: {
             esize: 3,
             goldToHold: DEFAULT_GOLD_TO_HOLD,
@@ -111,6 +125,18 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                     if (item.l) continue // Don't want to bank locked items
                     if (this.options.itemsToHold.has(item.name)) continue // We want to hold this item
                     await bot.depositItem(i)
+                }
+
+                // Withdraw an item we want to exchange
+                if (this.options.enableExchange) {
+                    for (const item of this.options.enableExchange.items) {
+                        const options: LocateItemsFilters = {
+                            locked: false,
+                            quantityGreaterThan: (AL.Game.G.items[item].e ?? 1) - 1
+                        }
+                        await withdrawItemFromBank(bot, item, options, { freeSpaces: 3, itemsToHold: this.options.itemsToHold })
+                        if (bot.hasItem(item, bot.items, options)) break // We found something to exchange
+                    }
                 }
 
                 if (bot.gold > this.options.goldToHold) {
@@ -206,6 +232,23 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
 
             // TODO: Go mluck others
 
+            if (this.options.enableExchange) {
+                for (let i = 0; i < bot.isize && bot.esize > 1; i++) {
+                    const item = bot.items[i]
+                    if (!item) continue // No item
+                    if (item.l) continue // Item is locked
+                    if (!this.options.enableExchange.items.has(item.name)) continue // Not an exchangeable, or we don't want to exchange it
+                    if ((item.q ?? 1) < (AL.Game.G.items[item.name].e ?? 1)) continue // We don't have enough to exchange
+                    if (!bot.hasItem(["computer", "supercomputer"])) {
+                        // Walk to the NPC
+                        const npc = AL.Pathfinder.locateExchangeNPC(item.name)
+                        await bot.smartMove(npc, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+                    }
+                    await bot.exchange(i)
+                    return
+                }
+            }
+
             if (this.options.enableBuyAndUpgrade) {
                 // Find the lowest level item across all characters
                 let lowestItemSlot: SlotType
@@ -284,7 +327,7 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                     const potential = bot.locateItem(item, bot.items, { levelGreaterThan: lowestItemLevel, returnHighestLevel: true })
                     const potentialData = bot.items[potential]
                     if (potential !== undefined) {
-                    // We have something to give them
+                        // We have something to give them
                         console.log(`[${bot.id}] We have a ${item} for ${getFor.id} (${lowestItemLevel} => ${potentialData.level})!`)
 
                         // Apply the correct stat scroll if we need
@@ -294,7 +337,7 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                             console.log(`[${bot.id}] Going to apply ${stat} scroll to ${item}.`)
 
                             // Go to the upgrade NPC
-                            if (!bot.hasItem("computer") && !bot.hasItem("supercomputer")) {
+                            if (!bot.hasItem(["computer", "supercomputer"])) {
                                 await bot.smartMove("newupgrade", { getWithin: 25 })
                             }
 
@@ -340,27 +383,12 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                     if (!bot.hasItem(item)) {
                         // Go to bank and see if we have one
                         await bot.smartMove(bankingPosition)
-                        const freeSlots = getUnimportantInventorySlots(bot, this.options.itemsToHold)
-                        for (const bP in bot.bank) {
-                            if (bP == "gold") continue
-                            const bankPackNum = Number.parseInt(bP.substring(5, 7))
-                            if (bankPackNum > 7) continue // Only check the first level
-                            const bankPack = bP as BankPackName
-                            const bankItems = bot.bank[bankPack]
-                            for (let i = 0; i < bankItems.length; i++) {
-                                const bankItem = bankItems[i]
-                                if (!bankItem) continue
-                                if (bankItem.l) continue // Can't upgrade locked items
-                                if (bankItem.name !== item) continue
-                                await bot.withdrawItem(bankPack, i, freeSlots.pop())
-                                if (bot.esize < 2) break // Limited space in inventory
-                            }
-                        }
+                        withdrawItemFromBank(bot, item, { locked: false }, { freeSpaces: 2, itemsToHold: this.options.itemsToHold })
                         await bot.smartMove("main")
                     }
 
                     // Go to the upgrade NPC
-                    if (!bot.hasItem("computer") && !bot.hasItem("supercomputer")) {
+                    if (!bot.hasItem(["computer", "supercomputer"])) {
                         await bot.smartMove("newupgrade", { getWithin: 25 })
                     }
 

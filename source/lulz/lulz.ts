@@ -35,10 +35,25 @@ const REPLENISHABLES = new Map<ItemName, number>([
     ["hpot1", 2500],
     ["mpot1", 2500]
 ])
+const ITEMS_TO_EXCHANGE = new Set<ItemName>([
+    "seashell"
+])
 const ITEMS_TO_SELL = new Map<ItemName, [number, number][]>([
     ["beewings", undefined],
     ["cclaw", undefined],
     ["crabclaw", undefined],
+    ["elixirdex0", undefined],
+    ["elixirdex1", undefined],
+    ["elixirdex2", undefined],
+    ["elixirint0", undefined],
+    ["elixirint1", undefined],
+    ["elixirint2", undefined],
+    ["elixirstr0", undefined],
+    ["elixirstr1", undefined],
+    ["elixirstr2", undefined],
+    ["elixirvit0", undefined],
+    ["elixirvit1", undefined],
+    ["elixirvit2", undefined],
     ["gslime", undefined],
     ["gstaff", undefined],
     ["hpamulet", undefined],
@@ -140,6 +155,9 @@ async function startLulzMerchant(userID: string, userAuth: string, characterID: 
             items: REPLENISHABLES,
             ratio: 0.5,
         },
+        enableExchange: {
+            items: ITEMS_TO_EXCHANGE
+        },
         enableOffload: {
             esize: 3,
             goldToHold: GOLD_TO_HOLD,
@@ -235,7 +253,7 @@ async function startLulzCharacter(type: CharacterType, userID: string, userAuth:
         // TODO: Move this to a move strategy
         try {
             if (context.bot.smartMoving) return
-            if (((!context.bot.hasItem("hpot1") || !context.bot.hasItem("mpot1")) && context.bot.gold > (AL.Game.G.items.mpot1.g * 100)) || context.bot.isFull()) {
+            if (((!context.bot.hasItem(["hpot1", "mpot1"])) && context.bot.gold > (AL.Game.G.items.mpot1.g * 100)) || context.bot.isFull()) {
                 // Go get potions
                 context.removeStrategy(moveStrategy)
 

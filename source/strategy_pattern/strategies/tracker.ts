@@ -21,7 +21,7 @@ export class TrackerStrategy implements Strategy<Character> {
         // `tracker` is to update the database with achievement progress.
         if (!AL.Database.connection) return
 
-        if ((bot.hasItem("tracker") || bot.hasItem("supercomputer")) && bot.cc < 100) {
+        if (bot.hasItem(["tracker", "supercomputer"]) && bot.cc < 100) {
             await bot.getTrackerData()
         } else {
             console.debug(`[${bot.id}] Didn't check tracker!?`)
