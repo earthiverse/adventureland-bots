@@ -160,8 +160,8 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
 
             // Find own characters with low replenishables and go deliver some
             if (this.options.enableBuyReplenishables) {
+                console.log("buying replenishables")
                 for (const friendContext of this.contexts) {
-                    if (bot == friendContext.bot) return // Skip ourself
                     const friend = friendContext.bot
                     for (const [item, numTotal] of this.options.enableBuyReplenishables.items) {
                         const numHave = friend.countItem(item)
@@ -178,7 +178,7 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                         // Go deliver the item(s)
                         await bot.smartMove(friend, { getWithin: 25 })
                         if (AL.Tools.squaredDistance(bot, friend) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) {
-                        // We're not near them, so they must have moved, return so we can try again next loop
+                            // We're not near them, so they must have moved, return so we can try again next loop
                             return
                         }
                         await bot.sendItem(friend.id, bot.locateItem(item, bot.items), numTotal - numHave)
@@ -239,7 +239,7 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
             }
 
             // Go fishing
-            if (this.options.enableFishing) {
+            if (this.options.enableFishing && bot.canUse("fishing", { ignoreEquipped: true, ignoreLocation: true })) {
                 const rodItems = new Set<ItemName>([...this.options.itemsToHold, "rod", "spidersilk", "staff"])
 
                 if (!bot.hasItem("rod") && !bot.isEquipped("rod")) {
