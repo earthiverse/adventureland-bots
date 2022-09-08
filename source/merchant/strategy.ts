@@ -160,19 +160,22 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
 
             // Find own characters with low replenishables and go deliver some
             if (this.options.enableBuyReplenishables) {
-                console.log("buying replenishables")
                 for (const friendContext of this.contexts) {
                     const friend = friendContext.bot
                     for (const [item, numTotal] of this.options.enableBuyReplenishables.items) {
-                        const numHave = friend.countItem(item)
-                        if (numHave > numTotal * this.options.enableBuyReplenishables.ratio) continue // They still have enough
-                        if (!bot.canBuy(item, { ignoreLocation: true, quantity: numTotal - numHave })) continue // We don't have enough gold to buy them all
+                        const numFriendHas = friend.countItem(item)
+                        if (numFriendHas > numTotal * this.options.enableBuyReplenishables.ratio) continue // They still have enough
+
+                        const numWeHave = bot.countItem(item)
+                        const numToBuy = (numTotal * 2) - numFriendHas - numWeHave
+                        if (!bot.canBuy(item, { ignoreLocation: true, quantity: numToBuy })) continue // We don't have enough gold to buy them all
 
                         // Go buy the item(s)
-                        if (!bot.canBuy(item)
-                        && bot.countItem(item) < numTotal * 2 /** Keep enough replenishables for ourself, too */) {
-                            await bot.smartMove(item, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED / 2 })
-                            await bot.buy(item, numTotal - numHave)
+                        if (numToBuy > 0) {
+                            if (!bot.hasItem(["computer", "supercomputer"])) {
+                                await bot.smartMove(item, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED / 2 })
+                            }
+                            await bot.buy(item, numToBuy)
                         }
 
                         // Go deliver the item(s)
@@ -182,7 +185,7 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                             return
                         }
                         if (bot.id == friend.id) continue // We bought them for ourself
-                        await bot.sendItem(friend.id, bot.locateItem(item, bot.items), numTotal - numHave)
+                        await bot.sendItem(friend.id, bot.locateItem(item, bot.items), numTotal - numFriendHas)
                     }
                 }
             }
@@ -206,8 +209,6 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                         break
                     }
                     if (!hasItemWeWant) continue // They are full, but they're full of useful items
-
-                    console.log(`[${bot.id}] Going to get items from ${friend.id}!`)
 
                     // Go find them
                     await bot.smartMove(friend, { getWithin: 25 })
@@ -401,17 +402,11 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
 
                     // If we have a higher level item, make sure it has the correct scroll, then go deliver and equip it
                     const potential = bot.locateItem(item, bot.items, { levelGreaterThan: lowestItemLevel, returnHighestLevel: true })
-                    const potentialData = bot.items[potential]
                     if (potential !== undefined) {
-                        // We have something to give them
-                        console.log(`[${bot.id}] We have a ${item} for ${getFor.id} (${lowestItemLevel} => ${potentialData.level})!`)
-
                         // Apply the correct stat scroll if we need
                         const itemData = bot.items[potential]
                         const stat = AL.Game.G.items[item].stat ? AL.Game.G.classes[getFor.ctype].main_stat : undefined
                         if (itemData.stat_type !== stat) {
-                            console.log(`[${bot.id}] Going to apply ${stat} scroll to ${item}.`)
-
                             // Go to the upgrade NPC
                             if (!bot.hasItem(["computer", "supercomputer"])) {
                                 await bot.smartMove("newupgrade", { getWithin: 25 })
@@ -436,7 +431,6 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
 
                         const potentialWithScroll = bot.locateItem(item, bot.items, { levelGreaterThan: lowestItemLevel, returnHighestLevel: true, statType: stat })
                         if (potentialWithScroll !== undefined) {
-                            console.log(`[${bot.id}] Delivering ${item} to ${getFor.id}!`)
                             await bot.smartMove(getFor, { getWithin: 25 })
                             if (AL.Tools.squaredDistance(bot, getFor) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) {
                             // We're not near them, so they must have moved, return so we can try again next loop
@@ -453,8 +447,6 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                             await getFor.sendItem(bot.id, equipItem)
                         }
                     }
-
-                    console.log(`[${bot.id}] Going to upgrade ${item} for ${getFor.id}!`)
 
                     if (!bot.hasItem(item)) {
                         // Go to bank and see if we have one
@@ -487,15 +479,11 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                         /** Buy a scroll if we don't have one */
                         let scrollPosition = bot.locateItem(scroll)
                         if (scrollPosition == undefined && bot.canBuy(scroll)) {
-                            console.log(`[${bot.id}] Buying scroll for ${item} for ${getFor.id}!`)
-
                             await bot.buy(scroll)
                             scrollPosition = bot.locateItem(scroll)
                         }
 
                         if (scrollPosition !== undefined) {
-                            console.log(`[${bot.id}] Upgrading ${item} for ${getFor.id}!`)
-
                             /** Speed up the upgrade if we can */
                             if (bot.canUse("massproduction")) await bot.massProduction()
 
