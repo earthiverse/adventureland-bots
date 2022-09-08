@@ -181,6 +181,7 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                             // We're not near them, so they must have moved, return so we can try again next loop
                             return
                         }
+                        if (bot.id == friend.id) continue // We bought them for ourself
                         await bot.sendItem(friend.id, bot.locateItem(item, bot.items), numTotal - numHave)
                     }
                 }
