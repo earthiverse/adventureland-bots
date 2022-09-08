@@ -149,6 +149,10 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         })
     }
 
+    public isStopped() {
+        return this.stopped
+    }
+
     public removeStrategy(strategy: Strategy<Type>) {
         if (!this.strategies.has(strategy)) return // We don't have this strategy enabled
 

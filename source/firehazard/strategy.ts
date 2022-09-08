@@ -1,4 +1,5 @@
-import AL, { ItemName, LocateItemFilters, MonsterName, PingCompensatedCharacter } from "alclient"
+import AL, { ItemName, LocateItemFilters, Merchant, MonsterName, PingCompensatedCharacter, Priest, Warrior } from "alclient"
+import { startMerchant } from "../merchant/strategy.js"
 import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions } from "../strategy_pattern/strategies/attack.js"
 import { PriestAttackStrategy } from "../strategy_pattern/strategies/attack_priest.js"
@@ -17,6 +18,7 @@ import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
  * Equip weapons that will cause burn on the bots that will run `startFirehazardSupporter`
  */
 
+const MERCHANT = "earthMer"
 const FARMER = "earthWar"
 const SUPPORTER_1 = "earthWar2"
 const SUPPORTER_2 = "earthPri"
@@ -33,20 +35,25 @@ async function run() {
 
     const baseStrategy = new BaseStrategy()
 
+    const merchant = await AL.Game.startMerchant(MERCHANT, "US", "I")
+    const merchantContext = new Strategist<Merchant>(merchant, baseStrategy)
+    startMerchant(merchantContext, CONTEXTS)
+    CONTEXTS.push(merchantContext)
+
     const warrior1 = await AL.Game.startWarrior(FARMER, "US", "I")
-    const context1 = new Strategist<PingCompensatedCharacter>(warrior1, baseStrategy)
+    const context1 = new Strategist<Warrior>(warrior1, baseStrategy)
     startFirehazardFarmer(context1, "fireblade", { level: 0 }).catch(console.error)
     FIREHAZARD_FARMER_CONTEXT = context1
     CONTEXTS.push(context1)
 
     const warrior2 = await AL.Game.startWarrior(SUPPORTER_1, "US", "I")
-    const context2 = new Strategist<PingCompensatedCharacter>(warrior2, baseStrategy)
+    const context2 = new Strategist<Warrior>(warrior2, baseStrategy)
     startFirehazardSupporter(context2).catch(console.error)
     FIREHAZARD_SUPPORT_CONTEXTS.push(context2)
     CONTEXTS.push(context2)
 
     const priest = await AL.Game.startPriest(SUPPORTER_2, "US", "I")
-    const context3 = new Strategist<PingCompensatedCharacter>(priest, baseStrategy)
+    const context3 = new Strategist<Priest>(priest, baseStrategy)
     startFirehazardSupporter(context3).catch(console.error)
     FIREHAZARD_SUPPORT_CONTEXTS.push(context3)
     CONTEXTS.push(context3)
@@ -164,7 +171,7 @@ async function startFirehazardSupporter(context: Strategist<PingCompensatedChara
     const moveToBotStrategy = new FollowFriendMoveStrategy(FIREHAZARD_FARMER_CONTEXT)
 
     const attackStrategyOptions: BaseAttackStrategyOptions = {
-        contexts: [],
+        contexts: CONTEXTS,
         disableZapper: true,
         targetingPlayer: FARMER,
         willBurnToDeath: false,

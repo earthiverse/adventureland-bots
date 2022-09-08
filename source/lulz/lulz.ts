@@ -147,7 +147,21 @@ async function startLulzMerchant(userID: string, userAuth: string, characterID: 
     const context = new Strategist(bot, baseStrategy)
     CONTEXTS.push(context)
 
-    const merchantMoveStrategy = new MerchantMoveStrategy(getSameOwnerContexts(bot, CONTEXTS), {
+    // Create a list of contexts of only those belonging to us
+    const friends: Strategist<PingCompensatedCharacter>[] = []
+    const updateFriendLoop = () => {
+        try {
+            if (context.isStopped()) return // Stop updating friends if we've stopped
+            friends.splice(0, friends.length)
+            friends.push(...getSameOwnerContexts(bot, CONTEXTS))
+        } catch (e) {
+            console.error(e)
+        }
+        setTimeout(updateFriendLoop, 30000)
+    }
+    updateFriendLoop()
+
+    const merchantMoveStrategy = new MerchantMoveStrategy(friends, {
         enableBuyAndUpgrade: {
             upgradeToLevel: 9
         },

@@ -1,9 +1,10 @@
-import AL, { Character, ItemName, LocateItemsFilters, Merchant, PingCompensatedCharacter, SlotType } from "alclient"
+import AL, { Character, IPosition, ItemName, LocateItemsFilters, Merchant, PingCompensatedCharacter, SlotType } from "alclient"
 import { withdrawItemFromBank } from "../base/banking.js"
 import { checkOnlyEveryMS, sleep } from "../base/general.js"
 import { bankingPosition } from "../base/locations.js"
 import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
 import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
+import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 
 export const DEFAULT_EXCHANGEABLES = new Set<ItemName>([
     "seashell"
@@ -28,6 +29,7 @@ export const DEFAULT_ITEMS_TO_HOLD = new Set<ItemName>([
     "xpbooster",
     "xptome"
 ])
+export const DEFAULT_POSITION: IPosition = { x: 0, y: 0, map: "main" }
 export const DEFAULT_REPLENISHABLES = new Map<ItemName, number>([
     ["hpot1", 2500],
     ["mpot1", 2500]
@@ -151,6 +153,7 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
             // Find own characters with low replenishables and go deliver some
             if (this.options.enableBuyReplenishables) {
                 for (const friendContext of this.contexts) {
+                    if (bot == friendContext.bot) return // Skip ourself
                     const friend = friendContext.bot
                     for (const [item, numTotal] of this.options.enableBuyReplenishables.items) {
                         const numHave = friend.countItem(item)
@@ -179,6 +182,7 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
             if (this.options.enableOffload) {
                 for (const friendContext of this.contexts) {
                     const friend = friendContext.bot
+                    if (friend == bot) continue // Skip ourself
                     if (friend.esize > 3) continue // They still have enough free space
                     if (friend.canSell()) continue // They can sell things themselves where they are
 
@@ -257,6 +261,7 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                 itemSearch:
                 for (const friendContext of this.contexts) {
                     const friend = friendContext.bot
+                    if (friend == bot) continue // Skip ourself
                     for (const sN in friend.slots) {
                         const slotName = sN as SlotType
                         if (slotName.startsWith("trade")) continue // Don't look at trade slots
@@ -431,8 +436,9 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                 }
             }
 
-            // Go to town and wait for things to do
-            await bot.smartMove("main")
+            // Go to our default position and wait for things to do
+            // TODO: Move this position to options
+            await bot.smartMove(DEFAULT_POSITION)
         } catch (e) {
             console.error(e)
         }
@@ -442,4 +448,10 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
 export async function startMerchant(context: Strategist<Merchant>, friends: Strategist<PingCompensatedCharacter>[]) {
     context.applyStrategy(new MerchantMoveStrategy(friends))
     context.applyStrategy(new AcceptPartyRequestStrategy())
+    context.applyStrategy(new ToggleStandStrategy({
+        offWhenMoving: true,
+        onWhenNear: [
+            { distance: 10, position: DEFAULT_POSITION }
+        ]
+    }))
 }
