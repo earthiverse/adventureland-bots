@@ -116,6 +116,10 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                             newBot = new AL.Mage(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[region][id])
                             break
                         }
+                        case "merchant": {
+                            newBot = new AL.Merchant(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[region][id])
+                            break
+                        }
                         case "paladin": {
                             newBot = new AL.Paladin(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[region][id])
                             break
@@ -135,6 +139,9 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                         case "warrior": {
                             newBot = new AL.Warrior(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[region][id])
                             break
+                        }
+                        default: {
+                            throw new Error(`No handler for ${this.bot.ctype}`)
                         }
                     }
 
