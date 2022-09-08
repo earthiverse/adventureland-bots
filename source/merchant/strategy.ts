@@ -1,7 +1,7 @@
 import AL, { Character, IPosition, ItemName, LocateItemsFilters, Merchant, PingCompensatedCharacter, SlotType } from "alclient"
 import { withdrawItemFromBank } from "../base/banking.js"
 import { checkOnlyEveryMS, sleep } from "../base/general.js"
-import { bankingPosition } from "../base/locations.js"
+import { bankingPosition, mainFishingSpot } from "../base/locations.js"
 import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
 import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
@@ -21,6 +21,8 @@ export const DEFAULT_ITEMS_TO_HOLD = new Set<ItemName>([
     "mpot1",
     "offering",
     "offeringp",
+    "pickaxe",
+    "rod",
     "scroll0",
     "scroll1",
     "scroll2",
@@ -61,6 +63,11 @@ export type MerchantMoveStrategyOptions = {
     enableExchange?: {
         items: Set<ItemName>
     }
+    /** If enabled, the merchant will
+     * - make a rod if it doesn't have one
+     * - go fishing
+     */
+    enableFishing?: true
     /** If enabled, the merchant will
      * - grab items off the bots running in the given contexts if they drop below `esize` free inventory slots.
      * - give or take gold so the bots in the given contexts will have `goldToHold` gold
@@ -230,7 +237,69 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                 }
             }
 
-            // TODO: Go fishing if we have a fishing rod
+            // Go fishing
+            if (this.options.enableFishing) {
+                const rodItems = new Set<ItemName>([...this.options.itemsToHold, "rod", "spidersilk", "staff"])
+
+                if (!bot.hasItem("rod") && !bot.isEquipped("rod")) {
+                    // We don't have a rod, see if there's one in our bank
+                    await bot.smartMove(bankingPosition)
+                    await withdrawItemFromBank(bot, "rod", {}, {
+                        freeSpaces: bot.esize,
+                        itemsToHold: rodItems
+                    })
+                }
+
+                if (!bot.hasItem("rod") && !bot.isEquipped("rod") && !bot.hasItem("spidersilk")) {
+                    // We didn't find one in our bank, see if we spider silk to make one
+                    await withdrawItemFromBank(bot, "spidersilk", {}, {
+                        freeSpaces: bot.esize,
+                        itemsToHold: rodItems
+                    })
+                }
+
+                if (!bot.hasItem("rod") && !bot.isEquipped("rod") && bot.hasItem("spidersilk") && !bot.hasItem("staff", bot.items, { level: 0, locked: false })) {
+                    // We found spider silk, see if we have a staff, too
+                    await withdrawItemFromBank(bot, "staff", { level: 0, locked: false }, {
+                        freeSpaces: bot.esize,
+                        itemsToHold: rodItems
+                    })
+
+                    if (!bot.hasItem("staff")) {
+                        // We didn't find a staff, but we can go buy one
+                        await bot.smartMove("staff", { getWithin: 50 })
+                        await sleep(2000) // The game can still think you're in the bank for a while
+                        await bot.buy("staff")
+                    }
+                }
+
+                if (!bot.hasItem("rod") && !bot.isEquipped("rod") && bot.canCraft("rod", { ignoreLocation: true })) {
+                    // We can make a rod, let's go do that
+                    if (bot.hasItem(["computer", "supercomputer"])) {
+                        await bot.smartMove(mainFishingSpot)
+                    } else {
+                        await bot.smartMove("craftsman", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+                    }
+                    await bot.craft("rod")
+                }
+
+                if (bot.isEquipped("rod") || bot.hasItem("rod")) {
+                    // Move to fishing spot
+                    await bot.smartMove(mainFishingSpot)
+                }
+
+                if (!bot.isEquipped("rod") && bot.hasItem("rod")) {
+                    // Equip the rod if we don't have it equipped already
+                    const rod = bot.locateItem("rod", bot.items, { returnHighestLevel: true })
+                    if (bot.slots.offhand) await bot.unequip("offhand")
+                    await bot.equip(rod)
+                }
+
+                if (bot.canUse("fishing")) {
+                    await bot.fish()
+                    return
+                }
+            }
 
             // TODO: Go mining if we have a pick axe
 
@@ -388,7 +457,7 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                     if (!bot.hasItem(item)) {
                         // Go to bank and see if we have one
                         await bot.smartMove(bankingPosition)
-                        withdrawItemFromBank(bot, item, { locked: false }, { freeSpaces: 2, itemsToHold: this.options.itemsToHold })
+                        await withdrawItemFromBank(bot, item, { locked: false }, { freeSpaces: 2, itemsToHold: this.options.itemsToHold })
                         await bot.smartMove("main")
                     }
 
