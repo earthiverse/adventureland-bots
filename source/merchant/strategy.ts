@@ -97,9 +97,10 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
             items: DEFAULT_REPLENISHABLES,
             ratio: DEFAULT_REPLENISH_RATIO,
         },
-        // enableExchange: {
-        //     items: DEFAULT_EXCHANGEABLES,
-        // },
+        enableExchange: {
+            items: DEFAULT_EXCHANGEABLES,
+        },
+        enableFishing: true,
         enableOffload: {
             esize: 3,
             goldToHold: DEFAULT_GOLD_TO_HOLD,
