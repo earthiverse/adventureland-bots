@@ -662,7 +662,7 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
 
         // mluck others
         if (this.options.enableMluck.others) {
-            for (const player of bot.getPlayers({ withinRange: "mluck" })) {
+            for (const player of bot.getPlayers({ isNPC: false, withinRange: "mluck" })) {
 
                 if (!player.s.mluck) return bot.mluck(player.id) // They don't have mluck
                 if (player.s.mluck.f == "earthMer" && bot.id !== "earthMer") continue // Don't compete with earthMer
