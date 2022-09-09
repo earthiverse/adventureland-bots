@@ -288,7 +288,7 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
 
                 if (bot.isEquipped("rod") || bot.hasItem("rod")) {
                     // Move to fishing spot
-                    await bot.smartMove(mainFishingSpot)
+                    await bot.smartMove(mainFishingSpot, { costs: { transport: 9999 } })
                 }
 
                 if (!bot.isEquipped("rod") && bot.hasItem("rod")) {
@@ -297,6 +297,9 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                     if (bot.slots.offhand) await bot.unequip("offhand")
                     await bot.equip(rod)
                 }
+
+                // Wait a bit if we're on cooldown
+                if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
 
                 if (bot.canUse("fishing")) {
                     await bot.fish()

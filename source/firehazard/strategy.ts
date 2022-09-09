@@ -42,7 +42,7 @@ async function run() {
 
     const warrior1 = await AL.Game.startWarrior(FARMER, "US", "I")
     const context1 = new Strategist<Warrior>(warrior1, baseStrategy)
-    startFirehazardFarmer(context1, "fireblade", { level: 0 }).catch(console.error)
+    startFirehazardFarmer(context1, "fireblade", { level: 9 }).catch(console.error)
     FIREHAZARD_FARMER_CONTEXT = context1
     CONTEXTS.push(context1)
 
