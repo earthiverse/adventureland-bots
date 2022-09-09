@@ -1,4 +1,4 @@
-import AL, { Character, IPosition, ItemName, LocateItemsFilters, Merchant, PingCompensatedCharacter, SlotType } from "alclient"
+import AL, { Character, IPosition, ItemName, LocateItemsFilters, Merchant, PingCompensatedCharacter, SlotType, Tools } from "alclient"
 import { withdrawItemFromBank } from "../base/banking.js"
 import { checkOnlyEveryMS, sleep } from "../base/general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
@@ -74,6 +74,19 @@ export type MerchantMoveStrategyOptions = {
      */
     enableMining?: true
     /** If enabled, the merchant will
+     * - mluck based on the options
+     */
+    enableMluck?: {
+        /** Should we mluck those that we pass through `contexts`? */
+        contexts?: true
+        /** Should we mluck others? */
+        others?: true
+        /** Should we mluck ourself? */
+        self?: true
+        /** Should we travel to mluck our own characters and others? */
+        travel?: true
+    }
+    /** If enabled, the merchant will
      * - grab items off the bots running in the given contexts if they drop below `esize` free inventory slots.
      * - give or take gold so the bots in the given contexts will have `goldToHold` gold
      * - take items not in the `itemsToHold` set
@@ -107,6 +120,12 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
         },
         enableFishing: true,
         enableMining: true,
+        enableMluck: {
+            contexts: true,
+            others: true,
+            self: true,
+            travel: true,
+        },
         enableOffload: {
             esize: 3,
             goldToHold: DEFAULT_GOLD_TO_HOLD,
@@ -122,6 +141,13 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
             fn: async (bot: Merchant) => { await this.move(bot) },
             interval: 250
         })
+
+        if (this.options.enableMluck) {
+            this.loops.set("mluck", {
+                fn: async (bot: Merchant) => { await this.mluck(bot) },
+                interval: ["mluck"]
+            })
+        }
     }
 
     private async move(bot: Merchant) {
@@ -393,7 +419,25 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
             const broom = bot.locateItem("broom", bot.items, { returnHighestLevel: true })
             if (broom !== undefined) await bot.equip(broom)
 
-            // TODO: Go mluck others
+            // Go mluck others
+            if (this.options.enableMluck.travel) {
+                const player = await AL.PlayerModel.findOne({
+                    $or: [
+                        { "s.mluck": undefined }, // They don't have mluck
+                        { "s.mluck.f": { "$ne": bot.id }, "s.mluck.strong": undefined } // We can steal mluck
+                    ],
+                    lastSeen: { $gt: Date.now() - 120000 },
+                    serverIdentifier: bot.server.name,
+                    serverRegion: bot.server.region },
+                {
+                    _id: 0,
+                    map: 1,
+                    name: 1,
+                    x: 1,
+                    y: 1
+                }).lean().exec()
+                if (player) return bot.smartMove(player, { getWithin: AL.Game.G.skills.mluck.range / 2 })
+            }
 
             if (this.options.enableExchange) {
                 for (let i = 0; i < bot.isize && bot.esize > 1; i++) {
@@ -587,6 +631,47 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
             await bot.smartMove(DEFAULT_POSITION)
         } catch (e) {
             console.error(e)
+        }
+    }
+
+    private async mluck(bot: Merchant) {
+        if (!bot.canUse("mluck")) return
+
+        // mluck ourself
+        if (this.options.enableMluck.self &&
+            (!bot.s.mluck || bot.s.mluck.f !== bot.id)) {
+            return bot.mluck(bot.id)
+        }
+
+        // mluck contexts
+        if (this.options.enableMluck.contexts) {
+            for (const context of this.contexts) {
+                const friend = context.bot
+                if (!friend || !friend.ready) continue
+                if (Tools.distance(bot, friend) > AL.Game.G.skills.mluck.range) continue
+                if (friend.s.mluck.f == "earthMer" && bot.id !== "earthMer") continue // Don't compete with earthMer
+
+                if (!friend.s.mluck) return bot.mluck(friend.id) // They don't have mluck
+                if (!friend.s.mluck.strong && friend.s.mluck.f !== bot.id) return bot.mluck(friend.id) // We can steal the mluck
+
+                if (friend.s.mluck.ms > (AL.Game.G.skills.mluck.duration / 2)) continue // They still have a lot of time left
+
+                return bot.mluck(friend.id)
+            }
+        }
+
+        // mluck others
+        if (this.options.enableMluck.others) {
+            for (const player of bot.getPlayers({ withinRange: "mluck" })) {
+                if (player.s.mluck.f == "earthMer" && bot.id !== "earthMer") continue // Don't compete with earthMer
+
+                if (!player.s.mluck) return bot.mluck(player.id) // They don't have mluck
+                if (!player.s.mluck.strong && player.s.mluck.f !== bot.id) return bot.mluck(player.id) // We can steal the mluck
+
+                if (player.s.mluck.ms > (AL.Game.G.skills.mluck.duration / 2)) continue // They still have a lot of time left
+
+                return bot.mluck(player.id)
+            }
         }
     }
 }

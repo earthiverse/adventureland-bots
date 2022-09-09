@@ -14,6 +14,7 @@ export type LoopName =
     | "heal"
     | "loot"
     | "merchant_stand"
+    | "mluck"
     | "move"
     | "party"
     | "respawn"
