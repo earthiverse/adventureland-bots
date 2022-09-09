@@ -172,6 +172,8 @@ async function startLulzMerchant(userID: string, userAuth: string, characterID: 
         enableExchange: {
             items: ITEMS_TO_EXCHANGE
         },
+        enableFishing: true,
+        enableMining: true,
         enableOffload: {
             esize: 3,
             goldToHold: GOLD_TO_HOLD,
