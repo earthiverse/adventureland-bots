@@ -649,9 +649,9 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                 const friend = context.bot
                 if (!friend || !friend.ready) continue
                 if (Tools.distance(bot, friend) > AL.Game.G.skills.mluck.range) continue
-                if (friend.s.mluck.f == "earthMer" && bot.id !== "earthMer") continue // Don't compete with earthMer
 
                 if (!friend.s.mluck) return bot.mluck(friend.id) // They don't have mluck
+                if (friend.s.mluck.f == "earthMer" && bot.id !== "earthMer") continue // Don't compete with earthMer
                 if (!friend.s.mluck.strong && friend.s.mluck.f !== bot.id) return bot.mluck(friend.id) // We can steal the mluck
 
                 if (friend.s.mluck.ms > (AL.Game.G.skills.mluck.duration / 2)) continue // They still have a lot of time left
@@ -663,9 +663,9 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
         // mluck others
         if (this.options.enableMluck.others) {
             for (const player of bot.getPlayers({ withinRange: "mluck" })) {
-                if (player.s.mluck.f == "earthMer" && bot.id !== "earthMer") continue // Don't compete with earthMer
 
                 if (!player.s.mluck) return bot.mluck(player.id) // They don't have mluck
+                if (player.s.mluck.f == "earthMer" && bot.id !== "earthMer") continue // Don't compete with earthMer
                 if (!player.s.mluck.strong && player.s.mluck.f !== bot.id) return bot.mluck(player.id) // We can steal the mluck
 
                 if (player.s.mluck.ms > (AL.Game.G.skills.mluck.duration / 2)) continue // They still have a lot of time left
