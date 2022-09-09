@@ -355,37 +355,37 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                         if (!bot.hasItem("staff")) await bot.buy("staff")
                         if (!bot.hasItem("blade")) await bot.buy("blade")
                     }
+                }
 
-                    if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe") && bot.canCraft("pickaxe", { ignoreLocation: true })) {
-                        // We can make a pickaxe, let's go do that
-                        if (bot.hasItem(["computer", "supercomputer"])) {
-                            await bot.smartMove(miningSpot)
-                        } else {
-                            await bot.smartMove("craftsman", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
-                        }
-                        await bot.craft("pickaxe")
-                    }
-
-                    if (bot.isEquipped("pickaxe") || bot.hasItem("pickaxe")) {
-                        // Move to mining spot
-                        // TODO: find closest mining spot
+                if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe") && bot.canCraft("pickaxe", { ignoreLocation: true })) {
+                    // We can make a pickaxe, let's go do that
+                    if (bot.hasItem(["computer", "supercomputer"])) {
                         await bot.smartMove(miningSpot)
+                    } else {
+                        await bot.smartMove("craftsman", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
                     }
+                    await bot.craft("pickaxe")
+                }
 
-                    if (!bot.isEquipped("pickaxe") && bot.hasItem("pickaxe")) {
-                        // Equip the pickaxe if we don't have it equipped already
-                        const pickaxe = bot.locateItem("pickaxe", bot.items, { returnHighestLevel: true })
-                        if (bot.slots.offhand) await bot.unequip("offhand")
-                        await bot.equip(pickaxe)
-                    }
+                if (bot.isEquipped("pickaxe") || bot.hasItem("pickaxe")) {
+                    // Move to mining spot
+                    // TODO: find closest mining spot
+                    await bot.smartMove(miningSpot)
+                }
 
-                    // Wait a bit if we're on cooldown
-                    if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
+                if (!bot.isEquipped("pickaxe") && bot.hasItem("pickaxe")) {
+                    // Equip the pickaxe if we don't have it equipped already
+                    const pickaxe = bot.locateItem("pickaxe", bot.items, { returnHighestLevel: true })
+                    if (bot.slots.offhand) await bot.unequip("offhand")
+                    await bot.equip(pickaxe)
+                }
 
-                    if (bot.canUse("mining")) {
-                        await bot.mine()
-                        return
-                    }
+                // Wait a bit if we're on cooldown
+                if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
+
+                if (bot.canUse("mining")) {
+                    await bot.mine()
+                    return
                 }
             }
 
