@@ -654,7 +654,7 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                 if (friend.s.mluck.strong && friend.s.mluck.f !== bot.id) continue // We can't steal the mluck
                 if (friend.s.mluck.f == "earthMer" && bot.id !== "earthMer") continue // Don't compete with earthMer
 
-                if (friend.s.mluck.ms > (AL.Game.G.skills.mluck.duration / 2)) continue // They still have a lot of time left
+                if (friend.s.mluck.f == bot.id && friend.s.mluck.ms > (AL.Game.G.skills.mluck.duration / 2)) continue // They still have a lot of time left
 
                 return bot.mluck(friend.id)
             }
@@ -667,7 +667,7 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                 if (player.s.mluck.strong && player.s.mluck.f !== bot.id) continue // We can't steal the mluck
                 if (player.s.mluck.f == "earthMer" && bot.id !== "earthMer") continue // Don't compete with earthMer
 
-                if (player.s.mluck.ms > (AL.Game.G.skills.mluck.duration / 2)) continue // They still have a lot of time left
+                if (player.s.mluck.f == bot.id && player.s.mluck.ms > (AL.Game.G.skills.mluck.duration / 2)) continue // They still have a lot of time left
 
                 return bot.mluck(player.id)
             }
