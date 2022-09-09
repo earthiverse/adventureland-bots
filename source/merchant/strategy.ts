@@ -1,7 +1,7 @@
 import AL, { Character, IPosition, ItemName, LocateItemsFilters, Merchant, PingCompensatedCharacter, SlotType } from "alclient"
 import { withdrawItemFromBank } from "../base/banking.js"
 import { checkOnlyEveryMS, sleep } from "../base/general.js"
-import { bankingPosition, mainFishingSpot } from "../base/locations.js"
+import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
 import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
 import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
@@ -69,6 +69,11 @@ export type MerchantMoveStrategyOptions = {
      */
     enableFishing?: true
     /** If enabled, the merchant will
+     * - make a pickaxe if it doesn't have one
+     * - go mining
+     */
+    enableMining?: true
+    /** If enabled, the merchant will
      * - grab items off the bots running in the given contexts if they drop below `esize` free inventory slots.
      * - give or take gold so the bots in the given contexts will have `goldToHold` gold
      * - take items not in the `itemsToHold` set
@@ -101,6 +106,7 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
             items: DEFAULT_EXCHANGEABLES,
         },
         enableFishing: true,
+        enableMining: true,
         enableOffload: {
             esize: 3,
             goldToHold: DEFAULT_GOLD_TO_HOLD,
@@ -288,6 +294,7 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
 
                 if (bot.isEquipped("rod") || bot.hasItem("rod")) {
                     // Move to fishing spot
+                    // TODO: find closest fishing spot
                     await bot.smartMove(mainFishingSpot, { costs: { transport: 9999 } })
                 }
 
@@ -307,7 +314,84 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                 }
             }
 
-            // TODO: Go mining if we have a pick axe
+            // Go mining
+            if (this.options.enableMining && bot.canUse("mining", { ignoreEquipped: true, ignoreLocation: true })) {
+                const pickaxeItems = new Set<ItemName>([...this.options.itemsToHold, "pickaxe", "spidersilk", "staff", "blade"])
+
+                if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe")) {
+                    // We don't have a pickaxe, see if there's one in our bank
+                    await bot.smartMove(bankingPosition)
+                    await withdrawItemFromBank(bot, "pickaxe", {}, {
+                        freeSpaces: bot.esize,
+                        itemsToHold: pickaxeItems
+                    })
+                }
+
+                if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe") && !bot.hasItem("spidersilk")) {
+                    // We didn't find one in our bank, see if we spider silk to make one
+                    await withdrawItemFromBank(bot, "spidersilk", {}, {
+                        freeSpaces: bot.esize,
+                        itemsToHold: pickaxeItems
+                    })
+                }
+
+                if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe") && bot.hasItem("spidersilk")
+                    && !bot.hasItem("staff", bot.items, { level: 0, locked: false })
+                    && !bot.hasItem("blade", bot.items, { level: 0, locked: false })) {
+                    // We found spider silk, see if we have a staff and blade, too
+                    await withdrawItemFromBank(bot, "staff", { level: 0, locked: false }, {
+                        freeSpaces: bot.esize,
+                        itemsToHold: pickaxeItems
+                    })
+                    await withdrawItemFromBank(bot, "blade", { level: 0, locked: false }, {
+                        freeSpaces: bot.esize,
+                        itemsToHold: pickaxeItems
+                    })
+
+                    if (!bot.hasItem("staff") || !bot.hasItem("blade")) {
+                        // We didn't find a staff and/or a blade, but we can go buy one
+                        await bot.smartMove("staff", { getWithin: 50 })
+                        await sleep(2000) // The game can still think you're in the bank for a while
+                        if (!bot.hasItem("staff")) await bot.buy("staff")
+                        if (!bot.hasItem("blade")) await bot.buy("blade")
+                    }
+
+                    if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe") && bot.canCraft("pickaxe", { ignoreLocation: true })) {
+                        // We can make a pickaxe, let's go do that
+                        if (bot.hasItem(["computer", "supercomputer"])) {
+                            await bot.smartMove(miningSpot)
+                        } else {
+                            await bot.smartMove("craftsman", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+                        }
+                        await bot.craft("pickaxe")
+                    }
+
+                    if (bot.isEquipped("pickaxe") || bot.hasItem("pickaxe")) {
+                        // Move to mining spot
+                        // TODO: find closest mining spot
+                        await bot.smartMove(miningSpot)
+                    }
+
+                    if (!bot.isEquipped("pickaxe") && bot.hasItem("pickaxe")) {
+                        // Equip the pickaxe if we don't have it equipped already
+                        const pickaxe = bot.locateItem("pickaxe", bot.items, { returnHighestLevel: true })
+                        if (bot.slots.offhand) await bot.unequip("offhand")
+                        await bot.equip(pickaxe)
+                    }
+
+                    // Wait a bit if we're on cooldown
+                    if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
+
+                    if (bot.canUse("mining")) {
+                        await bot.mine()
+                        return
+                    }
+                }
+            }
+
+            // Equip items that make you go fast
+            const broom = bot.locateItem("broom", bot.items, { returnHighestLevel: true })
+            if (broom !== undefined) await bot.equip(broom)
 
             // TODO: Go mluck others
 
