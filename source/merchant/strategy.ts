@@ -214,12 +214,15 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     await bot.depositItem(i).catch(console.error)
                 }
 
-                // TODO: Optimize bank slots by creating maximum stacks
-
                 // Withdraw things that we can upgrade
                 if (this.options.enableUpgrade) {
                     this.toUpgrade = await getItemsToCompoundOrUpgrade(bot, this.itemCounts)
                 }
+
+                // Move back to the first level
+                await bot.smartMove(bankingPosition)
+
+                // TODO: Optimize bank slots by creating maximum stacks
 
                 // Withdraw an item we want to exchange
                 if (this.options.enableExchange && bot.esize >= 3) {
