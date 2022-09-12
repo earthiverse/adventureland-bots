@@ -748,6 +748,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
     protected async compound(bot: Merchant) {
         if (bot.map.startsWith("bank")) return // Can't compound in bank
         if (this.toUpgrade === undefined || this.toUpgrade.length == 0) return // Nothing to compound
+        if (bot.s.penalty_cd && bot.map == "main") return // We recently moved through a door to main, we potentially just came out of the bank, and that's pretty glitchy
 
         for (let i = 0; i < this.toUpgrade.length; i++) {
             const indexes = this.toUpgrade[i]
@@ -779,6 +780,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
     protected async upgrade(bot: Merchant) {
         if (bot.map.startsWith("bank")) return // Can't upgrade in bank
         if (this.toUpgrade === undefined || this.toUpgrade.length == 0) return // Nothing to upgrade
+        if (bot.s.penalty_cd && bot.map == "main") return // We recently moved through a door to main, we potentially just came out of the bank, and that's pretty glitchy
 
         for (let i = 0; i < this.toUpgrade.length; i++) {
             const indexes = this.toUpgrade[i]
