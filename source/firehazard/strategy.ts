@@ -37,7 +37,7 @@ async function run() {
 
     const merchant = await AL.Game.startMerchant(MERCHANT, "US", "I")
     const merchantContext = new Strategist<Merchant>(merchant, baseStrategy)
-    startMerchant(merchantContext, CONTEXTS, { ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, debug: true })
+    startMerchant(merchantContext, CONTEXTS, { ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, debug: true, enableUpgrade: true })
     CONTEXTS.push(merchantContext)
 
     const warrior1 = await AL.Game.startWarrior(FARMER, "US", "I")
