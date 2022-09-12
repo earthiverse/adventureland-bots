@@ -758,8 +758,13 @@ export class MerchantStrategy implements Strategy<Merchant> {
             const grade = bot.calculateItemGrade(item)
             const scroll = `cscroll${grade}` as ItemName
             if (!bot.hasItem(scroll)) {
-                this.debug(bot, `Compound - Scroll - We don't have a '${scroll}' to compound ${item.name}(${item.level}})`)
-                return
+                if (bot.canBuy(scroll)) {
+                    this.debug(bot, `Compound - Scroll - Buying '${scroll}' to compound ${item.name}(${item.level}})`)
+                    await bot.buy(scroll)
+                } else {
+                    this.debug(bot, `Compound - Scroll - We don't have a '${scroll}' to compound ${item.name}(${item.level}})`)
+                    return
+                }
             }
             this.debug(bot, `Compounding ${item.name}(${item.level})`)
             this.toUpgrade.splice(i, 1)
@@ -783,8 +788,13 @@ export class MerchantStrategy implements Strategy<Merchant> {
             const grade = bot.calculateItemGrade(item)
             const scroll = `scroll${grade}` as ItemName
             if (!bot.hasItem(scroll)) {
-                this.debug(bot, `Upgrade - Scroll - We don't have a '${scroll}' to upgrade ${item.name}(${item.level}})`)
-                return
+                if (bot.canBuy(scroll)) {
+                    this.debug(bot, `Upgrade - Scroll - Buying '${scroll}' to upgrade ${item.name}(${item.level}})`)
+                    await bot.buy(scroll)
+                } else {
+                    this.debug(bot, `Upgrade - Scroll - We don't have a '${scroll}' to upgrade ${item.name}(${item.level}})`)
+                    return
+                }
             }
             this.debug(bot, `Upgrading ${item.name}(${item.level})`)
             this.toUpgrade.splice(i, 1)
