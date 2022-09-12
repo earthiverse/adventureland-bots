@@ -752,17 +752,18 @@ export class MerchantStrategy implements Strategy<Merchant> {
             const item = bot.items[indexes[0]]
             const offering = getOfferingToUse(item)
             if (offering && !bot.hasItem(offering)) {
-                this.debug(bot, `Upgrade - Offering - We don't have a '${offering}' to compound ${item.name}(${item.level}})`)
+                this.debug(bot, `Compound - Offering - We don't have a '${offering}' to compound ${item.name}(${item.level}})`)
                 return
             }
             const grade = bot.calculateItemGrade(item)
             const scroll = `cscroll${grade}` as ItemName
             if (!bot.hasItem(scroll)) {
-                this.debug(bot, `Upgrade - Scroll - We don't have a '${scroll}' to compound ${item.name}(${item.level}})`)
+                this.debug(bot, `Compound - Scroll - We don't have a '${scroll}' to compound ${item.name}(${item.level}})`)
                 return
             }
+            this.debug(bot, `Compounding ${item.name}(${item.level})`)
             this.toUpgrade.splice(i, 1)
-            await bot.upgrade(indexes[0], bot.locateItem(scroll), offering ? bot.locateItem(offering) : undefined)
+            await bot.compound(indexes[0], indexes[1], indexes[2], bot.locateItem(scroll), offering ? bot.locateItem(offering) : undefined)
         }
     }
 
@@ -780,19 +781,21 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 return
             }
             const grade = bot.calculateItemGrade(item)
-            const cScroll = `scroll${grade}` as ItemName
-            if (!bot.hasItem(cScroll)) {
-                this.debug(bot, `Upgrade - Scroll - We don't have a '${cScroll}' to upgrade ${item.name}(${item.level}})`)
+            const scroll = `scroll${grade}` as ItemName
+            if (!bot.hasItem(scroll)) {
+                this.debug(bot, `Upgrade - Scroll - We don't have a '${scroll}' to upgrade ${item.name}(${item.level}})`)
                 return
             }
+            this.debug(bot, `Upgrading ${item.name}(${item.level})`)
             this.toUpgrade.splice(i, 1)
-            await bot.compound(indexes[0], indexes[1], indexes[2], bot.locateItem(cScroll), offering ? bot.locateItem(offering) : undefined)
+            await bot.upgrade(indexes[0], bot.locateItem(scroll), offering ? bot.locateItem(offering) : undefined)
+
         }
     }
 }
 
-export async function startMerchant(context: Strategist<Merchant>, friends: Strategist<PingCompensatedCharacter>[]) {
-    context.applyStrategy(new MerchantStrategy(friends))
+export async function startMerchant(context: Strategist<Merchant>, friends: Strategist<PingCompensatedCharacter>[], options?: MerchantMoveStrategyOptions) {
+    context.applyStrategy(new MerchantStrategy(friends, options))
     context.applyStrategy(new TrackerStrategy())
     context.applyStrategy(new AcceptPartyRequestStrategy())
     context.applyStrategy(new ToggleStandStrategy({

@@ -1,5 +1,5 @@
 import AL, { ItemName, LocateItemFilters, Merchant, MonsterName, PingCompensatedCharacter, Priest, Warrior } from "alclient"
-import { startMerchant } from "../merchant/strategy.js"
+import { DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, startMerchant } from "../merchant/strategy.js"
 import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions } from "../strategy_pattern/strategies/attack.js"
 import { PriestAttackStrategy } from "../strategy_pattern/strategies/attack_priest.js"
@@ -37,7 +37,7 @@ async function run() {
 
     const merchant = await AL.Game.startMerchant(MERCHANT, "US", "I")
     const merchantContext = new Strategist<Merchant>(merchant, baseStrategy)
-    startMerchant(merchantContext, CONTEXTS)
+    startMerchant(merchantContext, CONTEXTS, { ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, debug: true })
     CONTEXTS.push(merchantContext)
 
     const warrior1 = await AL.Game.startWarrior(FARMER, "US", "I")
