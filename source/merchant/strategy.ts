@@ -496,7 +496,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     y: 1
                 }).lean().exec()
                 if (player) {
-                    this.debug(bot, `Moving to ${player.id} to mluck them`)
+                    this.debug(bot, `Moving to ${player.name} to mluck them`)
                     return bot.smartMove(player, { getWithin: AL.Game.G.skills.mluck.range / 2 })
                 }
             }
@@ -744,7 +744,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
     protected async compound(bot: Merchant) {
         if (bot.map.startsWith("bank")) return // Can't compound in bank
-        if (this.itemCounts === undefined || this.itemCounts.length == 0) return // Nothing to compound
+        if (this.toUpgrade === undefined || this.toUpgrade.length == 0) return // Nothing to compound
 
         for (let i = 0; i < this.toUpgrade.length; i++) {
             const indexes = this.toUpgrade[i]
@@ -769,7 +769,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
     protected async upgrade(bot: Merchant) {
         if (bot.map.startsWith("bank")) return // Can't upgrade in bank
-        if (this.itemCounts === undefined || this.itemCounts.length == 0) return // Nothing to upgrade
+        if (this.toUpgrade === undefined || this.toUpgrade.length == 0) return // Nothing to upgrade
 
         for (let i = 0; i < this.toUpgrade.length; i++) {
             const indexes = this.toUpgrade[i]
