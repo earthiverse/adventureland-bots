@@ -525,14 +525,14 @@ export async function getItemsToCompoundOrUpgrade(bot: Character, counts?: ItemC
         const gData = AL.Game.G.items[okay.name]
         if (gData.compound) {
             const okay2 = okayToCompoundOrUpgrade[i + 1]
-            if (okay.name !== okay2.name || okay.level !== okay2.level) {
+            if (!okay2 || okay.name !== okay2.name || okay.level !== okay2.level) {
                 // Not enough to compound, remove
                 okayToCompoundOrUpgrade.splice(i, 1)
                 i -= 1
                 continue
             }
             const okay3 = okayToCompoundOrUpgrade[i + 2]
-            if (okay.name !== okay3.name || okay.level !== okay3.level) {
+            if (!okay3 || okay.name !== okay3.name || okay.level !== okay3.level) {
                 // Not enough to compound, remove
                 okayToCompoundOrUpgrade.splice(i, 2)
                 i -= 1
