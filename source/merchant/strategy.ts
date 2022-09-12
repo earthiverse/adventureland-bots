@@ -8,7 +8,11 @@ import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 
 export const DEFAULT_EXCHANGEABLES = new Set<ItemName>([
-    "seashell"
+    "armorbox",
+    "gem0",
+    "gem1",
+    "seashell",
+    "weaponbox"
 ])
 export const DEFAULT_GOLD_TO_HOLD = 100_000_000
 export const DEFAULT_ITEMS_TO_HOLD = new Set<ItemName>([
