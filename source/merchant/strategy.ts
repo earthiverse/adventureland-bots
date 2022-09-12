@@ -761,17 +761,22 @@ export class MerchantStrategy implements Strategy<Merchant> {
             const offering = getOfferingToUse(item)
             if (offering && !bot.hasItem(offering)) {
                 this.debug(bot, `Compound - Offering - We don't have a '${offering}' to compound ${item.name}(${item.level})`)
-                return
+                continue
             }
             const grade = bot.calculateItemGrade(item)
+            if (grade === undefined) {
+                this.debug(bot, `Compound - Couldn't compute grade for ${item.name}`)
+                this.toUpgrade.splice(i, 1)
+                continue
+            }
             const scroll = `cscroll${grade}` as ItemName
             if (!bot.hasItem(scroll)) {
                 if (bot.canBuy(scroll)) {
                     this.debug(bot, `Compound - Scroll - Buying '${scroll}' to compound ${item.name}(${item.level})`)
-                    await bot.buy(scroll)
+                    return bot.buy(scroll)
                 } else {
                     this.debug(bot, `Compound - Scroll - We don't have a '${scroll}' to compound ${item.name}(${item.level})`)
-                    return
+                    continue
                 }
             }
             this.debug(bot, `Compounding ${item.name}(${item.level})`)
@@ -793,17 +798,22 @@ export class MerchantStrategy implements Strategy<Merchant> {
             const offering = getOfferingToUse(item)
             if (offering && !bot.hasItem(offering)) {
                 this.debug(bot, `Upgrade - Offering - We don't have a '${offering}' to upgrade ${item.name}(${item.level})`)
-                return
+                continue
             }
             const grade = bot.calculateItemGrade(item)
+            if (grade === undefined) {
+                this.debug(bot, `Upgrade - Couldn't compute grade for ${item.name}`)
+                this.toUpgrade.splice(i, 1)
+                continue
+            }
             const scroll = `scroll${grade}` as ItemName
             if (!bot.hasItem(scroll)) {
                 if (bot.canBuy(scroll)) {
                     this.debug(bot, `Upgrade - Scroll - Buying '${scroll}' to upgrade ${item.name}(${item.level})`)
-                    await bot.buy(scroll)
+                    return bot.buy(scroll)
                 } else {
                     this.debug(bot, `Upgrade - Scroll - We don't have a '${scroll}' to upgrade ${item.name}(${item.level})`)
-                    return
+                    continue
                 }
             }
             this.debug(bot, `Upgrading ${item.name}(${item.level})`)
