@@ -1,10 +1,11 @@
 import AL, { Character, IPosition, ItemName, LocateItemsFilters, Merchant, PingCompensatedCharacter, SlotType, Tools } from "alclient"
-import { withdrawItemFromBank } from "../base/banking.js"
+import { getItemCountsForEverything, getItemsToCompoundOrUpgrade, IndexesToCompoundOrUpgrade, ItemCount, withdrawItemFromBank } from "../base/banking.js"
 import { checkOnlyEveryMS, sleep } from "../base/general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
 import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
 import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
+import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 
 export const DEFAULT_EXCHANGEABLES = new Set<ItemName>([
     "seashell"
@@ -96,16 +97,23 @@ export type MerchantMoveStrategyOptions = {
         goldToHold: number,
         itemsToHold: Set<ItemName>
     },
+    /** If enabled, the merchant will
+     * - upgrade spare items
+     */
+    enableUpgrade?: boolean
     goldToHold: number,
     itemsToHold: Set<ItemName>,
 }
 
-export class MerchantMoveStrategy implements Strategy<Merchant> {
+export class MerchantStrategy implements Strategy<Merchant> {
     public loops = new Map<LoopName, Loop<Merchant>>()
 
-    private contexts: Strategist<PingCompensatedCharacter>[]
+    protected contexts: Strategist<PingCompensatedCharacter>[]
 
-    private options: MerchantMoveStrategyOptions
+    protected options: MerchantMoveStrategyOptions
+
+    protected itemCounts: ItemCount[]
+    protected toUpgrade: IndexesToCompoundOrUpgrade
 
     public constructor(contexts: Strategist<PingCompensatedCharacter>[], options: MerchantMoveStrategyOptions = {
         // enableBuyAndUpgrade: {
@@ -131,6 +139,7 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
             goldToHold: DEFAULT_GOLD_TO_HOLD,
             itemsToHold: DEFAULT_ITEMS_TO_HOLD,
         },
+        // enableUpgrade: true,
         goldToHold: DEFAULT_GOLD_TO_HOLD,
         itemsToHold: DEFAULT_ITEMS_TO_HOLD,
     }) {
@@ -148,11 +157,37 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                 interval: ["mluck"]
             })
         }
+
+        if (this.options.enableUpgrade) {
+            this.loops.set("compound", {
+                fn: async (bot: Merchant) => { await this.compound(bot) },
+                interval: 250
+            })
+            this.loops.set("upgrade", {
+                fn: async (bot: Merchant) => { await this.upgrade(bot) },
+                interval: 250
+            })
+        }
     }
 
-    private async move(bot: Merchant) {
+    protected async move(bot: Merchant) {
         try {
-            // TODO: Emergency banking if full
+            // Emergency banking if full
+            if (bot.esize == 0) {
+                // Go to bank and get item counts
+                this.toUpgrade = undefined
+                await bot.smartMove(bankingPosition)
+                this.itemCounts = await getItemCountsForEverything(bot.owner)
+
+                // Withdraw things that we can upgrade
+                if (this.options.enableUpgrade) {
+                    this.toUpgrade = await getItemsToCompoundOrUpgrade(bot, this.itemCounts)
+                }
+
+                // Go to town and wait a while for things to upgrade
+                await bot.smartMove("main")
+                await sleep(60000)
+            }
 
             // Do banking if we are full, we have a lot of gold, or it's been a while (15 minutes)
             if (bot.esize < 5 || bot.gold > (this.options.goldToHold * 2) || checkOnlyEveryMS(`${bot.id}_banking`, 900_000)) {
@@ -160,17 +195,27 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                 await bot.smartMove("main")
 
                 // Then go to the bank to bank things
+                this.toUpgrade = undefined
                 await bot.smartMove(bankingPosition)
+                this.itemCounts = await getItemCountsForEverything(bot.owner)
+
                 for (let i = 0; i < bot.isize; i++) {
                     const item = bot.items[i]
                     if (!item) continue // No item
                     if (item.l) continue // Don't want to bank locked items
                     if (this.options.itemsToHold.has(item.name)) continue // We want to hold this item
-                    await bot.depositItem(i)
+                    await bot.depositItem(i).catch(console.error)
+                }
+
+                // TODO: Optimize bank slots by creating maximum stacks
+
+                // Withdraw things that we can upgrade
+                if (this.options.enableUpgrade) {
+                    this.toUpgrade = await getItemsToCompoundOrUpgrade(bot, this.itemCounts)
                 }
 
                 // Withdraw an item we want to exchange
-                if (this.options.enableExchange) {
+                if (this.options.enableExchange && bot.esize >= 3) {
                     for (const item of this.options.enableExchange.items) {
                         const options: LocateItemsFilters = {
                             locked: false,
@@ -451,8 +496,8 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
                         const npc = AL.Pathfinder.locateExchangeNPC(item.name)
                         await bot.smartMove(npc, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
                     }
-                    await bot.exchange(i)
-                    return
+                    if (!bot.q.exchange) bot.exchange(i).catch(console.error)
+                    break
                 }
             }
 
@@ -634,7 +679,7 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
         }
     }
 
-    private async mluck(bot: Merchant) {
+    protected async mluck(bot: Merchant) {
         if (!bot.canUse("mluck")) return
 
         // mluck ourself
@@ -673,10 +718,29 @@ export class MerchantMoveStrategy implements Strategy<Merchant> {
             }
         }
     }
+
+    protected async compound(bot: Merchant) {
+        if (bot.map.startsWith("bank")) return // Can't compound in bank
+        if (this.itemCounts === undefined || this.itemCounts.length == 0) return // Nothing to compound
+
+        for (const itemCount of this.toUpgrade) {
+            if (itemCount.length !== 3) continue
+        }
+    }
+
+    protected async upgrade(bot: Merchant) {
+        if (bot.map.startsWith("bank")) return // Can't upgrade in bank
+        if (this.itemCounts === undefined || this.itemCounts.length == 0) return // Nothing to upgrade
+
+        for (const itemCount of this.toUpgrade) {
+            if (itemCount.length !== 1) continue
+        }
+    }
 }
 
 export async function startMerchant(context: Strategist<Merchant>, friends: Strategist<PingCompensatedCharacter>[]) {
-    context.applyStrategy(new MerchantMoveStrategy(friends))
+    context.applyStrategy(new MerchantStrategy(friends))
+    context.applyStrategy(new TrackerStrategy())
     context.applyStrategy(new AcceptPartyRequestStrategy())
     context.applyStrategy(new ToggleStandStrategy({
         offWhenMoving: true,

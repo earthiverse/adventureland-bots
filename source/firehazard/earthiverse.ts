@@ -273,7 +273,7 @@ function startSupportPriest(bot: Priest) {
                     if (friend.hp / friend.max_hp > 0.8) continue // Friend still has a lot of hp
                     if (Tools.distance(bot, friend) > bot.range) continue // Out of range
 
-                    await bot.heal(friend.id)
+                    await bot.healSkill(friend.id)
                     break
                 }
             }

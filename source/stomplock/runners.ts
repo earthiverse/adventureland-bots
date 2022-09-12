@@ -475,7 +475,7 @@ export async function startPriest(bot: Priest, merchantName: string): Promise<vo
                     players.add(player)
                 }
                 const toHeal = players.peek()
-                if (toHeal) await bot.heal(toHeal.id)
+                if (toHeal) await bot.healSkill(toHeal.id)
             }
 
             if (bot.canUse("attack")) {

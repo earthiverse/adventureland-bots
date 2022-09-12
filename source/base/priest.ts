@@ -50,7 +50,7 @@ export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], 
         }
         const toHeal = players.peek()
         if (toHeal) {
-            await bot.heal(toHeal.id)
+            await bot.healSkill(toHeal.id)
             return
         }
     }
@@ -62,7 +62,7 @@ export async function attackTheseTypesPriest(bot: Priest, types: MonsterName[], 
         for (const entity of bot.getEntities({ type: "ghost", withinRange: bot.range })) {
             if (entity.s.healed) continue
 
-            await bot.heal(entity.id)
+            await bot.healSkill(entity.id)
             return
         }
     }

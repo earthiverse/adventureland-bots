@@ -19,7 +19,7 @@ import { RangerAttackStrategy } from "../strategy_pattern/strategies/attack_rang
 import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 import { WarriorAttackStrategy } from "../strategy_pattern/strategies/attack_warrior.js"
 import { PriestAttackStrategy } from "../strategy_pattern/strategies/attack_priest.js"
-import { MerchantMoveStrategy } from "../merchant/strategy.js"
+import { MerchantStrategy } from "../merchant/strategy.js"
 
 // Login and get GData
 await AL.Game.loginJSONFile("../../credentials.json")
@@ -161,7 +161,7 @@ async function startLulzMerchant(userID: string, userAuth: string, characterID: 
     }
     updateFriendLoop()
 
-    const merchantMoveStrategy = new MerchantMoveStrategy(friends, {
+    const merchantMoveStrategy = new MerchantStrategy(friends, {
         enableBuyAndUpgrade: {
             upgradeToLevel: 9
         },

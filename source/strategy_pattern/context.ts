@@ -10,6 +10,7 @@ export type LoopName =
     | "attack"
     | "avoid_stacking"
     | "buy"
+    | "compound"
     | "equip"
     | "heal"
     | "loot"
@@ -21,6 +22,7 @@ export type LoopName =
     | "rspeed"
     | "sell"
     | "tracker"
+    | "upgrade"
 
 export type Loops<Type> = Map<LoopName, Loop<Type>>
 

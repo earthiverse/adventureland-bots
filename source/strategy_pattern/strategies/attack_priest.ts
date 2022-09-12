@@ -105,7 +105,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
 
         const toHeal = players.peek()
         if (toHeal) {
-            return bot.heal(toHeal.id)
+            return bot.healSkill(toHeal.id)
 
         }
     }
