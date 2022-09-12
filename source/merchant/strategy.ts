@@ -195,8 +195,8 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 await sleep(60000)
             }
 
-            // Do banking if we are full, we have a lot of gold, or it's been a while (15 minutes)
-            if (bot.esize < 5 || bot.gold > (this.options.goldToHold * 2) || checkOnlyEveryMS(`${bot.id}_banking`, 900_000)) {
+            // Do banking if we have a lot of gold, or it's been a while (15 minutes)
+            if (bot.gold > (this.options.goldToHold * 2) || checkOnlyEveryMS(`${bot.id}_banking`, 900_000)) {
                 this.debug(bot, "Normal Banking")
                 // Move to town first, to have a chance to sell unwanted items
                 await bot.smartMove("main")
@@ -763,7 +763,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
             }
             this.debug(bot, `Compounding ${item.name}(${item.level})`)
             this.toUpgrade.splice(i, 1)
-            await bot.compound(indexes[0], indexes[1], indexes[2], bot.locateItem(scroll), offering ? bot.locateItem(offering) : undefined)
+            return bot.compound(indexes[0], indexes[1], indexes[2], bot.locateItem(scroll), offering ? bot.locateItem(offering) : undefined)
         }
     }
 
@@ -788,8 +788,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
             }
             this.debug(bot, `Upgrading ${item.name}(${item.level})`)
             this.toUpgrade.splice(i, 1)
-            await bot.upgrade(indexes[0], bot.locateItem(scroll), offering ? bot.locateItem(offering) : undefined)
-
+            return bot.upgrade(indexes[0], bot.locateItem(scroll), offering ? bot.locateItem(offering) : undefined)
         }
     }
 }
