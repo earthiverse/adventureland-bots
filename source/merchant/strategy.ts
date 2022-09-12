@@ -1,5 +1,5 @@
 import AL, { Character, IPosition, ItemName, LocateItemsFilters, Merchant, PingCompensatedCharacter, SlotType, Tools } from "alclient"
-import { getItemCountsForEverything, getItemsToCompoundOrUpgrade, IndexesToCompoundOrUpgrade, ItemCount, withdrawItemFromBank } from "../base/banking.js"
+import { getItemCountsForEverything, getItemsToCompoundOrUpgrade, getOfferingToUse, IndexesToCompoundOrUpgrade, ItemCount, withdrawItemFromBank } from "../base/banking.js"
 import { checkOnlyEveryMS, sleep } from "../base/general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
 import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
@@ -40,6 +40,8 @@ export const DEFAULT_REPLENISHABLES = new Map<ItemName, number>([
 export const DEFAULT_REPLENISH_RATIO = 0.5
 
 export type MerchantMoveStrategyOptions = {
+    /** If enabled, we will log debug messages */
+    debug?: true
     /** If enabled, the merchant will
      *  - find the lowest level piece of armor that's lower than the level set on the bots running in the given contexts
      *  - buy and upgrade store armor (helmet, coat, pants, boots, and gloves) until it's 1 level higher than what's currently equipped
@@ -105,6 +107,36 @@ export type MerchantMoveStrategyOptions = {
     itemsToHold: Set<ItemName>,
 }
 
+export const DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS: MerchantMoveStrategyOptions = {
+    // debug: true,
+    // enableBuyAndUpgrade: {
+    //     upgradeToLevel: 9
+    // },
+    enableBuyReplenishables: {
+        items: DEFAULT_REPLENISHABLES,
+        ratio: DEFAULT_REPLENISH_RATIO,
+    },
+    enableExchange: {
+        items: DEFAULT_EXCHANGEABLES,
+    },
+    enableFishing: true,
+    enableMining: true,
+    enableMluck: {
+        contexts: true,
+        others: true,
+        self: true,
+        travel: true,
+    },
+    enableOffload: {
+        esize: 3,
+        goldToHold: DEFAULT_GOLD_TO_HOLD,
+        itemsToHold: DEFAULT_ITEMS_TO_HOLD,
+    },
+    // enableUpgrade: true,
+    goldToHold: DEFAULT_GOLD_TO_HOLD,
+    itemsToHold: DEFAULT_ITEMS_TO_HOLD,
+}
+
 export class MerchantStrategy implements Strategy<Merchant> {
     public loops = new Map<LoopName, Loop<Merchant>>()
 
@@ -115,34 +147,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
     protected itemCounts: ItemCount[]
     protected toUpgrade: IndexesToCompoundOrUpgrade
 
-    public constructor(contexts: Strategist<PingCompensatedCharacter>[], options: MerchantMoveStrategyOptions = {
-        // enableBuyAndUpgrade: {
-        //     upgradeToLevel: 9
-        // },
-        enableBuyReplenishables: {
-            items: DEFAULT_REPLENISHABLES,
-            ratio: DEFAULT_REPLENISH_RATIO,
-        },
-        enableExchange: {
-            items: DEFAULT_EXCHANGEABLES,
-        },
-        enableFishing: true,
-        enableMining: true,
-        enableMluck: {
-            contexts: true,
-            others: true,
-            self: true,
-            travel: true,
-        },
-        enableOffload: {
-            esize: 3,
-            goldToHold: DEFAULT_GOLD_TO_HOLD,
-            itemsToHold: DEFAULT_ITEMS_TO_HOLD,
-        },
-        // enableUpgrade: true,
-        goldToHold: DEFAULT_GOLD_TO_HOLD,
-        itemsToHold: DEFAULT_ITEMS_TO_HOLD,
-    }) {
+    public constructor(contexts: Strategist<PingCompensatedCharacter>[], options: MerchantMoveStrategyOptions = DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS) {
         this.contexts = contexts
         this.options = options
 
@@ -174,6 +179,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
         try {
             // Emergency banking if full
             if (bot.esize == 0) {
+                this.debug(bot, "Emergency Banking")
                 // Go to bank and get item counts
                 this.toUpgrade = undefined
                 await bot.smartMove(bankingPosition)
@@ -191,6 +197,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
             // Do banking if we are full, we have a lot of gold, or it's been a while (15 minutes)
             if (bot.esize < 5 || bot.gold > (this.options.goldToHold * 2) || checkOnlyEveryMS(`${bot.id}_banking`, 900_000)) {
+                this.debug(bot, "Normal Banking")
                 // Move to town first, to have a chance to sell unwanted items
                 await bot.smartMove("main")
 
@@ -250,12 +257,15 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         // Go buy the item(s)
                         if (numToBuy > 0) {
                             if (!bot.hasItem(["computer", "supercomputer"])) {
+                                this.debug(bot, `Replenishables - Moving to buy ${numToBuy}x${item}`)
                                 await bot.smartMove(item, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED / 2 })
                             }
+                            this.debug(bot, `Replenishables - Buying ${numToBuy}x${item}`)
                             await bot.buy(item, numToBuy)
                         }
 
                         // Go deliver the item(s)
+                        this.debug(bot, `Replenishables - Delivering ${numToBuy}x${item} to ${friend.id}`)
                         await bot.smartMove(friend, { getWithin: 25 })
                         if (AL.Tools.squaredDistance(bot, friend) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) {
                             // We're not near them, so they must have moved, return so we can try again next loop
@@ -288,6 +298,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     if (!hasItemWeWant) continue // They are full, but they're full of useful items
 
                     // Go find them
+                    this.debug(bot, `Moving to ${friend.id} to offload things`)
                     await bot.smartMove(friend, { getWithin: 25 })
                     if (AL.Tools.squaredDistance(bot, friend) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) {
                     // We're not near them, so they must have moved, return so we can try again next loop
@@ -296,14 +307,15 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
                     // Grab extra gold
                     if (friend.gold > this.options.enableOffload.goldToHold) {
-                    // Take their gold for safe keeping
+                        // Take their gold for safe keeping
                         await friend.sendGold(bot.id, friend.gold - this.options.enableOffload.goldToHold)
                     } else if (bot.gold > this.options.enableOffload.goldToHold) {
-                    // Send them some of our gold
+                        // Send them some of our gold
                         await bot.sendGold(friend.id, Math.min(bot.gold - this.options.enableOffload.goldToHold, this.options.enableOffload.goldToHold - friend.gold))
                     }
 
                     // Grab items
+                    this.debug(bot, `Offloading items from ${friend.id}.`)
                     for (let i = 0; i < friend.isize && bot.esize > 2; i++) {
                         const item = friend.items[i]
                         if (!item) continue // No item here
@@ -319,6 +331,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
             // Go fishing
             if (this.options.enableFishing && bot.canUse("fishing", { ignoreEquipped: true, ignoreLocation: true })) {
+                this.debug(bot, "Fishing")
                 const rodItems = new Set<ItemName>([...this.options.itemsToHold, "rod", "spidersilk", "staff"])
 
                 if (!bot.hasItem("rod") && !bot.isEquipped("rod")) {
@@ -387,6 +400,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
             // Go mining
             if (this.options.enableMining && bot.canUse("mining", { ignoreEquipped: true, ignoreLocation: true })) {
+                this.debug(bot, "Mining")
                 const pickaxeItems = new Set<ItemName>([...this.options.itemsToHold, "pickaxe", "spidersilk", "staff", "blade"])
 
                 if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe")) {
@@ -481,7 +495,10 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     x: 1,
                     y: 1
                 }).lean().exec()
-                if (player) return bot.smartMove(player, { getWithin: AL.Game.G.skills.mluck.range / 2 })
+                if (player) {
+                    this.debug(bot, `Moving to ${player.id} to mluck them`)
+                    return bot.smartMove(player, { getWithin: AL.Game.G.skills.mluck.range / 2 })
+                }
             }
 
             if (this.options.enableExchange) {
@@ -494,6 +511,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     if (!bot.hasItem(["computer", "supercomputer"])) {
                         // Walk to the NPC
                         const npc = AL.Pathfinder.locateExchangeNPC(item.name)
+                        this.debug(bot, `Moving to NPC to exchange ${item.name}`)
                         await bot.smartMove(npc, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
                     }
                     if (!bot.q.exchange) bot.exchange(i).catch(console.error)
@@ -679,6 +697,11 @@ export class MerchantStrategy implements Strategy<Merchant> {
         }
     }
 
+    protected async debug(bot: Merchant, message: string) {
+        if (!this.options.debug) return
+        console.debug(`[${(new Date()).toISOString()}] [${bot.id}] DEBUG: ${message}`)
+    }
+
     protected async mluck(bot: Merchant) {
         if (!bot.canUse("mluck")) return
 
@@ -723,8 +746,23 @@ export class MerchantStrategy implements Strategy<Merchant> {
         if (bot.map.startsWith("bank")) return // Can't compound in bank
         if (this.itemCounts === undefined || this.itemCounts.length == 0) return // Nothing to compound
 
-        for (const itemCount of this.toUpgrade) {
-            if (itemCount.length !== 3) continue
+        for (let i = 0; i < this.toUpgrade.length; i++) {
+            const indexes = this.toUpgrade[i]
+            if (indexes.length !== 3) continue
+            const item = bot.items[indexes[0]]
+            const offering = getOfferingToUse(item)
+            if (offering && !bot.hasItem(offering)) {
+                this.debug(bot, `Upgrade - Offering - We don't have a '${offering}' to compound ${item.name}(${item.level}})`)
+                return
+            }
+            const grade = bot.calculateItemGrade(item)
+            const scroll = `cscroll${grade}` as ItemName
+            if (!bot.hasItem(scroll)) {
+                this.debug(bot, `Upgrade - Scroll - We don't have a '${scroll}' to compound ${item.name}(${item.level}})`)
+                return
+            }
+            this.toUpgrade.splice(i, 1)
+            await bot.upgrade(indexes[0], bot.locateItem(scroll), offering ? bot.locateItem(offering) : undefined)
         }
     }
 
@@ -732,8 +770,23 @@ export class MerchantStrategy implements Strategy<Merchant> {
         if (bot.map.startsWith("bank")) return // Can't upgrade in bank
         if (this.itemCounts === undefined || this.itemCounts.length == 0) return // Nothing to upgrade
 
-        for (const itemCount of this.toUpgrade) {
-            if (itemCount.length !== 1) continue
+        for (let i = 0; i < this.toUpgrade.length; i++) {
+            const indexes = this.toUpgrade[i]
+            if (indexes.length !== 1) continue
+            const item = bot.items[indexes[0]]
+            const offering = getOfferingToUse(item)
+            if (offering && !bot.hasItem(offering)) {
+                this.debug(bot, `Upgrade - Offering - We don't have a '${offering}' to upgrade ${item.name}(${item.level}})`)
+                return
+            }
+            const grade = bot.calculateItemGrade(item)
+            const cScroll = `scroll${grade}` as ItemName
+            if (!bot.hasItem(cScroll)) {
+                this.debug(bot, `Upgrade - Scroll - We don't have a '${cScroll}' to upgrade ${item.name}(${item.level}})`)
+                return
+            }
+            this.toUpgrade.splice(i, 1)
+            await bot.compound(indexes[0], indexes[1], indexes[2], bot.locateItem(cScroll), offering ? bot.locateItem(offering) : undefined)
         }
     }
 }
