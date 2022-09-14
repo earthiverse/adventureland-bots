@@ -290,7 +290,6 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     const friend = friendContext.bot
                     if (friend == bot) continue // Skip ourself
                     if (friend.esize > 3) continue // They still have enough free space
-                    if (friend.canSell()) continue // They can sell things themselves where they are
 
                     // Check if they have items that we can grab
                     let hasItemWeWant = false

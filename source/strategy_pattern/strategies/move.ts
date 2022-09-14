@@ -115,9 +115,8 @@ export class FollowFriendMoveStrategy implements Strategy<Character> {
     /**
      * Follows another bot
      * @param friendContext The friend to follow
-     * @param position A number that specifies the position of the character
      */
-    public constructor(friendContext: Strategist<PingCompensatedCharacter>, position = 1) {
+    public constructor(friendContext: Strategist<PingCompensatedCharacter>) {
         this.friendContext = friendContext
         if (!friendContext) throw new Error("No friend specified")
 
@@ -131,8 +130,52 @@ export class FollowFriendMoveStrategy implements Strategy<Character> {
         const friend = this.friendContext.bot
         if (!friend || !friend.ready) return // No friend!?
 
-        // TODO: Use position
+        return bot.smartMove(friend, { getWithin: 10 })
+    }
+}
 
-        await bot.smartMove(friend, { getWithin: 10 })
+export type MoveInCircleMoveStrategyOptions = {
+    /** The center of the circle to walk */
+    center: IPosition
+    /** The radius of the circle to walk */
+    radius: number
+    /** The number of sides to make the circle */
+    sides?: number
+}
+
+export class MoveInCircleMoveStrategy implements Strategy<Character> {
+    public loops = new Map<LoopName, Loop<Character>>()
+
+    protected options: MoveInCircleMoveStrategyOptions
+
+    public constructor(options: MoveInCircleMoveStrategyOptions) {
+        if (options.sides === undefined){
+            options.sides = 3
+        } else if (options.sides !== undefined && options.sides < 3) {
+            console.warn("[MoveInCircleMoveStrategy] # Sides must be a minimum of 3, setting to 3.")
+            options.sides = 3
+        }
+        this.options = options
+
+        this.loops.set("move", {
+            fn: async (bot: Character) => { await this.move(bot) },
+            interval: 250
+        })
+    }
+
+    private move(bot: Character) {
+        const angle = (2 * Math.PI) / this.options.sides
+        const center = this.options.center
+        const radius = this.options.radius
+        if (AL.Pathfinder.canWalkPath(bot, center)) {
+            const angleFromCenterToCurrent = Math.atan2(bot.y - center.y, bot.x - center.x)
+            const endGoalAngle = angleFromCenterToCurrent + angle
+            const endGoal = { x: center.x + radius * Math.cos(endGoalAngle), y: center.y + radius * Math.sin(endGoalAngle) }
+            bot.move(endGoal.x, endGoal.y, { resolveOnStart: true }).catch(() => { /** Suppress errors */ })
+        } else {
+            // Move to where we can walk
+            return bot.smartMove(center, { getWithin: radius })
+        }
+
     }
 }
