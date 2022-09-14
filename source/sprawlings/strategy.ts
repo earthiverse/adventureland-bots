@@ -8,6 +8,7 @@ import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
 import { HoldPositionMoveStrategy, MoveInCircleMoveStrategy } from "../strategy_pattern/strategies/move.js"
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "../strategy_pattern/strategies/party.js"
+import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 
 await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
@@ -37,10 +38,12 @@ const buyStrategy = new BuyStrategy({
 const partyAcceptStrategy = new AcceptPartyRequestStrategy({ allowList: [RANGER, PRIEST] })
 const partyRequestStrategy = new RequestPartyStrategy(WARRIOR)
 const trackerStrategy = new TrackerStrategy()
+const respawnStrategy = new RespawnStrategy()
 
 async function startRanger(context: Strategist<Ranger>) {
     context.applyStrategy(buyStrategy)
     context.applyStrategy(trackerStrategy)
+    context.applyStrategy(respawnStrategy)
 
     // Movement
     const plantoidSpawn = AL.Pathfinder.locateMonster("plantoid")[0]
@@ -57,6 +60,7 @@ async function startRanger(context: Strategist<Ranger>) {
 async function startPriest(context: Strategist<Priest>) {
     context.applyStrategy(buyStrategy)
     context.applyStrategy(trackerStrategy)
+    context.applyStrategy(respawnStrategy)
 
     // Movement
     const plantoidSpawn = AL.Pathfinder.locateMonster("plantoid")[0]
@@ -73,6 +77,7 @@ async function startPriest(context: Strategist<Priest>) {
 async function startWarrior(context: Strategist<Warrior>) {
     context.applyStrategy(buyStrategy)
     context.applyStrategy(trackerStrategy)
+    context.applyStrategy(respawnStrategy)
 
     // Movement
     const plantoidSpawn = AL.Pathfinder.locateMonster("plantoid")[0]

@@ -4,6 +4,7 @@ import { checkOnlyEveryMS, sleep } from "../base/general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
 import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
 import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
+import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 
@@ -181,6 +182,9 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
     protected async move(bot: Merchant) {
         try {
+            // Respawn if dead
+            if (bot.rip) return bot.respawn()
+
             // Emergency banking if full
             if (bot.esize == 0) {
                 this.debug(bot, "Emergency Banking")
@@ -307,7 +311,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     this.debug(bot, `Moving to ${friend.id} to offload things`)
                     await bot.smartMove(friend, { getWithin: 25 })
                     if (AL.Tools.squaredDistance(bot, friend) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) {
-                    // We're not near them, so they must have moved, return so we can try again next loop
+                        // We're not near them, so they must have moved, return so we can try again next loop
                         return
                     }
 
