@@ -342,6 +342,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 const rodItems = new Set<ItemName>([...this.options.itemsToHold, "rod", "spidersilk", "staff"])
 
                 if (!bot.hasItem("rod") && !bot.isEquipped("rod")) {
+                    this.debug(bot, "Fishing - Looking for a rod in the bank")
                     // We don't have a rod, see if there's one in our bank
                     await bot.smartMove(bankingPosition)
                     await withdrawItemFromBank(bot, "rod", {}, {
@@ -351,6 +352,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 }
 
                 if (!bot.hasItem("rod") && !bot.isEquipped("rod") && !bot.hasItem("spidersilk")) {
+                    this.debug(bot, "Fishing - Looking for spidersilk in the bank")
                     // We didn't find one in our bank, see if we spider silk to make one
                     await withdrawItemFromBank(bot, "spidersilk", {}, {
                         freeSpaces: bot.esize,
@@ -359,6 +361,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 }
 
                 if (!bot.hasItem("rod") && !bot.isEquipped("rod") && bot.hasItem("spidersilk") && !bot.hasItem("staff", bot.items, { level: 0, locked: false })) {
+                    this.debug(bot, "Fishing - Looking for a staff in the bank")
                     // We found spider silk, see if we have a staff, too
                     await withdrawItemFromBank(bot, "staff", { level: 0, locked: false }, {
                         freeSpaces: bot.esize,
@@ -366,9 +369,10 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     })
 
                     if (!bot.hasItem("staff")) {
+                        this.debug(bot, "Fishing - Buying a staff")
                         // We didn't find a staff, but we can go buy one
                         await bot.smartMove("staff", { getWithin: 50 })
-                        await sleep(2000) // The game can still think you're in the bank for a while
+                        await sleep(Math.max(2000, bot.s.penalty_cd?.ms ?? 0)) // The game can still think you're in the bank for a while
                         await bot.buy("staff")
                     }
                 }
@@ -376,20 +380,23 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 if (!bot.hasItem("rod") && !bot.isEquipped("rod") && bot.canCraft("rod", { ignoreLocation: true })) {
                     // We can make a rod, let's go do that
                     if (bot.hasItem(["computer", "supercomputer"])) {
+                        this.debug(bot, "Fishing - Moving to fishing spot before crafting a rod")
                         await bot.smartMove(mainFishingSpot)
                     } else {
+                        this.debug(bot, "Fishing - Moving to craftsman to craft a rod")
                         await bot.smartMove("craftsman", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
                     }
                     await bot.craft("rod")
                 }
 
-                if (bot.isEquipped("rod") || bot.hasItem("rod")) {
-                    // Move to fishing spot
+                if (bot.isEquipped("rod") || bot.hasItem("rod") && AL.Tools.distance(bot, mainFishingSpot) > 10) {
+                    this.debug(bot, "Fishing - Moving to fishing spot")
                     // TODO: find closest fishing spot
                     await bot.smartMove(mainFishingSpot, { costs: { transport: 9999 } })
                 }
 
                 if (!bot.isEquipped("rod") && bot.hasItem("rod")) {
+                    this.debug(bot, "Fishing - Equipping the fishing rod")
                     // Equip the rod if we don't have it equipped already
                     const rod = bot.locateItem("rod", bot.items, { returnHighestLevel: true })
                     if (bot.slots.offhand) await bot.unequip("offhand")
@@ -400,8 +407,8 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
 
                 if (bot.canUse("fishing")) {
-                    await bot.fish()
-                    return
+                    this.debug(bot, "Fishing - Casting our rod!")
+                    return bot.fish()
                 }
             }
 

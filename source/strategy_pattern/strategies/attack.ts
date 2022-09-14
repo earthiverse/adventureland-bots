@@ -13,8 +13,8 @@ export type BaseAttackStrategyOptions = GetEntitiesFilters & {
 
 export class BaseAttackStrategy<Type extends Character> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
-    public options: BaseAttackStrategyOptions
-    public sortPriority: (a: Entity, b: Entity) => boolean
+    protected options: BaseAttackStrategyOptions
+    protected sortPriority: (a: Entity, b: Entity) => boolean
 
     public constructor(options?: BaseAttackStrategyOptions) {
         this.options = options ?? {

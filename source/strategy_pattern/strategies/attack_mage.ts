@@ -7,13 +7,13 @@ export type MageAttackStrategyOptions = BaseAttackStrategyOptions & {
 }
 
 export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
-    public options: MageAttackStrategyOptions
+    protected options: MageAttackStrategyOptions
 
     public constructor(options?: MageAttackStrategyOptions) {
         super(options)
     }
 
-    public async attack(bot: Mage): Promise<void> {
+    protected async attack(bot: Mage): Promise<void> {
         const priority = sortPriority(bot, this.options.typeList)
 
         if (!this.options.disableCburst) await this.cburstHumanoids(bot)
@@ -25,7 +25,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
      * will statistically give us more MP than it costs, so we can
      * use `cburst` to regenerate some mp.
      */
-    public async cburstHumanoids(bot: Mage) {
+    protected async cburstHumanoids(bot: Mage) {
         if (!bot.canUse("cburst")) return
 
         const targets = new Map<string, number>()
@@ -65,8 +65,10 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
     /**
      * If there are projectiles going to monsters that don't have a target,
      * we can use `cburst` which immediately casts to steal the kill.
+     *
+     * TODO: Move this to a listener on projectiles
      */
-    public async cburstKillSteal(bot: Mage) {
+    protected async cburstKillSteal(bot: Mage): Promise<void> {
         if (!bot.canUse("cburst")) return
 
         const targets = new Map<string, number>()
