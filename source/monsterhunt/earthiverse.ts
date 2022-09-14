@@ -1630,13 +1630,12 @@ function prepareWarrior(bot: Warrior) {
             move: async () => { await bot.smartMove({ map: "level2w", x: -195, y: 0 }) },
             requireCtype: "priest"
         },
-        // TODO: NOTE: Since we're partying with friends right now, let them do these while we do other things to avoid stacking the spawn.
-        // osnake: {
-        //     attack: async () => { await attackTheseTypesWarrior(bot, ["osnake", "snake"], information.friends, { disableAgitate: true }) },
-        //     attackWhileIdle: true,
-        //     equipment: aoeEquipment,
-        //     move: async () => { await goToNearestWalkableToMonster2(bot, ["osnake", "snake"], { map: "halloween", x: 347, y: -747 }) },
-        // },
+        osnake: {
+            attack: async () => { await attackTheseTypesWarrior(bot, ["osnake", "snake"], information.friends, { disableAgitate: true }) },
+            attackWhileIdle: true,
+            equipment: aoeEquipment,
+            move: async () => { await goToNearestWalkableToMonster2(bot, ["osnake", "snake"], { map: "halloween", x: 347, y: -747 }) },
+        },
         phoenix: {
             attack: async () => { await attackTheseTypesWarrior(bot, ["phoenix"], information.friends) },
             attackWhileIdle: true,
@@ -1774,13 +1773,12 @@ function prepareWarrior(bot: Warrior) {
             equipment: aoeEquipment,
             move: async () => { await goToNearestWalkableToMonster2(bot, ["squig"], { map: "main", x: -1195, y: 422 }) },
         },
-        // TODO: NOTE: Since we're partying with friends right now, let them do these while we do other things to avoid stacking the spawn.
-        // squigtoad: {
-        //     attack: async () => { await attackTheseTypesWarrior(bot, ["squigtoad", "squig", "phoenix"], information.friends) },
-        //     attackWhileIdle: true,
-        //     equipment: aoeEquipment,
-        //     move: async () => { await goToNearestWalkableToMonster2(bot, ["squigtoad", "squig"], { map: "main", x: -1195, y: 422 }) },
-        // },
+        squigtoad: {
+            attack: async () => { await attackTheseTypesWarrior(bot, ["squigtoad", "squig", "phoenix"], information.friends) },
+            attackWhileIdle: true,
+            equipment: aoeEquipment,
+            move: async () => { await goToNearestWalkableToMonster2(bot, ["squigtoad", "squig"], { map: "main", x: -1195, y: 422 }) },
+        },
         stompy: {
             attack: async () => {
                 const priest = information.bot1.bot
