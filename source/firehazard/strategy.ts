@@ -65,7 +65,8 @@ const buyStrategy = new BuyStrategy({
     buyMap: undefined,
     replenishables: new Map<ItemName, number>([
         ["hpot1", 2500],
-        ["mpot1", 2500]
+        ["mpot1", 2500],
+        ["xptome", 1],
     ])
 })
 const debugStrategy = new DebugStrategy({
