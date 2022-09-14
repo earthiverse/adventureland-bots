@@ -42,50 +42,6 @@ const information: Information = {
 
 function prepareMerchant(bot: Merchant) {
     const strategy: Strategy = {
-        bee: {
-            attack: async () => { await attackTheseTypesMerchant(bot, ["bee"], information.friends) },
-            attackWhileIdle: true,
-            equipment: { mainhand: "dartgun", offhand: "wbook1", ring1: "zapper" },
-            move: async () => { await goToNearestWalkableToMonster2(bot, ["bee"], mainCrabs) }
-        },
-        crab: {
-            attack: async () => { await attackTheseTypesMerchant(bot, ["crab"], information.friends) },
-            attackWhileIdle: true,
-            equipment: { mainhand: "dartgun", offhand: "wbook1", ring1: "zapper" },
-            move: async () => { await goToNearestWalkableToMonster2(bot, ["crab"], mainCrabs) }
-        },
-        crabxx: {
-            attack: async () => { await attackTheseTypesMerchant(bot, ["crabxx"], information.friends) },
-            attackWhileIdle: false,
-            equipment: { mainhand: "dartgun", offhand: "wbook1", ring1: "zapper" },
-            move: async () => {
-                const nearest = bot.getEntity({ returnNearest: true, type: "crabxx" })
-                if (nearest && AL.Tools.distance(bot, nearest) > 25) {
-                    // Move close to crabxx because other characters might help blast away crabx
-                    await bot.smartMove(nearest, { getWithin: 25 })
-                } else {
-                    await goToSpecialMonster(bot, "crabxx", { requestMagiport: true })
-                }
-            }
-        },
-        goo: {
-            attack: async () => { await attackTheseTypesMerchant(bot, ["goo", "rgoo", "bgoo"], information.friends) },
-            attackWhileIdle: true,
-            equipment: { mainhand: "dartgun", offhand: "wbook1", ring1: "zapper" },
-            move: async () => { await goToNearestWalkableToMonster2(bot, ["goo"], mainGoos) }
-        },
-        hen: {
-            attack: async () => { await attackTheseTypesMerchant(bot, ["hen"], information.friends) },
-            attackWhileIdle: true,
-            equipment: { mainhand: "dartgun", offhand: "wbook1", ring1: "zapper" },
-            move: async () => { await goToNearestWalkableToMonster2(bot, ["hen", "rooster"]) }
-        },
-        rooster: {
-            attack: async () => { await attackTheseTypesMerchant(bot, ["rooster"], information.friends) },
-            attackWhileIdle: true,
-            equipment: { mainhand: "dartgun", offhand: "wbook1", ring1: "zapper" },
-            move: async () => { await goToNearestWalkableToMonster2(bot, ["hen", "rooster"]) }
-        },
         snowman: {
             attack: async () => { await attackTheseTypesMerchant(bot, ["snowman"], information.friends) },
             attackWhileIdle: true,

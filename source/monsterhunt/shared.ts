@@ -10,7 +10,7 @@ import { attackTheseTypesRogue, startRSpeedLoop } from "../base/rogue.js"
 import { attackTheseTypesPaladin } from "../base/paladin.js"
 import { mainCrabs } from "../base/locations.js"
 
-const DEFAULT_TARGET: MonsterName = "spider"
+const DEFAULT_TARGET: MonsterName = "goo"
 
 export const DEFAULT_REGION: ServerRegion = "US"
 export const DEFAULT_IDENTIFIER: ServerIdentifier = "I"
@@ -42,7 +42,8 @@ export async function getTarget(bot: Character, strategy: Strategy, information:
         if (strategy[entity.type].requireCtype &&
             !((information.bot1.bot?.ctype == strategy[entity.type].requireCtype && information.bot1.target == entity.type)
             || (information.bot2.bot?.ctype == strategy[entity.type].requireCtype && information.bot2.target == entity.type)
-            || (information.bot3.bot?.ctype == strategy[entity.type].requireCtype && information.bot3.target == entity.type))) continue
+            || (information.bot3.bot?.ctype == strategy[entity.type].requireCtype && information.bot3.target == entity.type)
+            || (information.merchant.bot?.ctype == strategy[entity.type].requireCtype && information.merchant.target == entity.type))) continue
         const realEntity = bot.entities.get(entity.name) || bot.entities.get((entity as Entity).id)
         if (realEntity) {
             if (realEntity.couldGiveCreditForKill(bot)) return realEntity.type
@@ -73,7 +74,8 @@ export async function getTarget(bot: Character, strategy: Strategy, information:
         if (strategy[type].requireCtype &&
             !((information.bot1.bot?.ctype == strategy[type].requireCtype && information.bot1.target == type)
             || (information.bot2.bot?.ctype == strategy[type].requireCtype && information.bot2.target == type)
-            || (information.bot3.bot?.ctype == strategy[type].requireCtype && information.bot3.target == type))) continue
+            || (information.bot3.bot?.ctype == strategy[type].requireCtype && information.bot3.target == type)
+            || (information.merchant.bot?.ctype == strategy[type].requireCtype && information.merchant.target == type))) continue
 
         return type
     }
@@ -132,7 +134,7 @@ export async function startMage(bot: Mage, information: Information, strategy: S
                 target = information.bot3.target
             }
 
-            if (target) {
+            if (target && strategy[target]) {
                 // Equipment
                 if (strategy[target].equipment) {
                     for (const s in strategy[target].equipment) {
@@ -240,6 +242,7 @@ export async function startMerchant(bot: Merchant, information: Information, str
             }
 
             if (information.merchant.target
+                && strategy[information.merchant.target]
                 && !bot.isOnCooldown("scare")) {
                 // Equipment
                 if (strategy[information.merchant.target].equipment) {
