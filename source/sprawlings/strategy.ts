@@ -20,7 +20,7 @@ await AL.Pathfinder.prepare(AL.Game.G)
 
 const MERCHANT = "earthMer"
 const WARRIOR = "earthWar"
-const MAGE = "earthM"
+const MAGE = "earthMag"
 const PRIEST = "earthPri"
 const MONSTERS: MonsterName[] = ["plantoid"]
 
