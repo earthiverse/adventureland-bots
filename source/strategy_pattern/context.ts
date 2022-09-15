@@ -11,6 +11,7 @@ export type LoopName =
     | "avoid_stacking"
     | "buy"
     | "compound"
+    | "elixir"
     | "equip"
     | "heal"
     | "loot"
