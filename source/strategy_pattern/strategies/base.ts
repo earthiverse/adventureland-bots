@@ -40,7 +40,7 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
             }
         } else if (mpRatio < hpRatio) {
             if (bot.c.town || bot.c.fishing || bot.c.mining) {
-                await bot.regenHP()
+                await bot.regenMP()
             } else if (missingMP >= 500 && mpot1 !== undefined) {
                 await bot.useMPPot(mpot1)
             } else if (missingMP >= 300 && mpot0 !== undefined) {
