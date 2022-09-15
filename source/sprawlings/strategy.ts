@@ -65,8 +65,7 @@ async function startPriest(context: Strategist<Priest>) {
 
     // Movement
     const plantoidSpawn = AL.Pathfinder.locateMonster("plantoid")[0]
-    plantoidSpawn.x -= 5
-    context.applyStrategy(new HoldPositionMoveStrategy(plantoidSpawn))
+    context.applyStrategy(new MoveInCircleMoveStrategy({ center: plantoidSpawn, radius: 20, sides: 8 }))
 
     // Party
     context.applyStrategy(partyRequestStrategy)
@@ -105,7 +104,8 @@ async function startWarrior(context: Strategist<Warrior>) {
 
     // Movement
     const plantoidSpawn = AL.Pathfinder.locateMonster("plantoid")[0]
-    context.applyStrategy(new MoveInCircleMoveStrategy({ center: plantoidSpawn, radius: 20, sides: 8 }))
+    plantoidSpawn.x -= 5
+    context.applyStrategy(new HoldPositionMoveStrategy(plantoidSpawn))
 
     // Party
     context.applyStrategy(partyAcceptStrategy)
