@@ -55,7 +55,7 @@ async function startMage(context: Strategist<Mage>) {
     context.applyStrategy(partyRequestStrategy)
 
     // Attack
-    context.applyStrategy(new MageAttackStrategy({ contexts: CONTEXTS, typeList: MONSTERS }))
+    context.applyStrategy(new MageAttackStrategy({ contexts: CONTEXTS, disableEnergize: true, typeList: MONSTERS }))
 }
 
 async function startPriest(context: Strategist<Priest>) {
@@ -71,7 +71,7 @@ async function startPriest(context: Strategist<Priest>) {
     context.applyStrategy(partyRequestStrategy)
 
     // Attack
-    context.applyStrategy(new PriestAttackStrategy({ contexts: CONTEXTS, typeList: MONSTERS }))
+    context.applyStrategy(new PriestAttackStrategy({ contexts: CONTEXTS, disableEnergize: true, typeList: MONSTERS }))
 
     // Luck
     context.applyStrategy(new ElixirStrategy("elixirluck"))
