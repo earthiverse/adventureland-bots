@@ -15,8 +15,8 @@ export class ElixirStrategy<Type extends Character> implements Strategy<Type> {
         })
     }
 
-    private async applyElixir(bot: Type) {
-        if (!bot.rip) return
+    protected async applyElixir(bot: Type) {
+        if (bot.rip) return
         if (bot.slots.elixir) return // We have an elixir already
 
         if (!bot.hasItem(this.elixir)) {
