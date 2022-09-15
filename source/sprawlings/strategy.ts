@@ -111,7 +111,7 @@ async function startWarrior(context: Strategist<Warrior>) {
     context.applyStrategy(partyAcceptStrategy)
 
     // Attack
-    context.applyStrategy(new WarriorAttackStrategy({ contexts: CONTEXTS, enableEquipForCleave: true, ensureEquipped: { mainhand: { name: "vhammer" }, offhand: { name: "ololipop" } }, typeList: MONSTERS }))
+    context.applyStrategy(new WarriorAttackStrategy({ contexts: CONTEXTS, enableEquipForCleave: true, ensureEquipped: { mainhand: { name: "vhammer" }, offhand: { name: "glolipop" } }, typeList: MONSTERS }))
 }
 
 // Login and prepare pathfinding
