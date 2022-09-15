@@ -1,4 +1,4 @@
-import { PingCompensatedCharacter } from "alclient"
+import AL, { Character, PingCompensatedCharacter, Tools } from "alclient"
 import { Loop, LoopName, Strategist, Strategy } from "../context.js"
 
 export class BaseStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
@@ -62,13 +62,21 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
     }
 
     private async loot(bot: Type) {
-        // Delete the chest from other characters so we can save code call cost
-        for (const [id] of bot.chests) {
+        for (const [id, chest] of bot.chests) {
+            if (Tools.distance(chest, bot) > 800) continue // It's far away from us
+
+            let goldM = 0
+            let best: Character
             for (const context of this.contexts) {
-                const character = context.bot
-                if (bot == character) continue // Don't delete the chest from ourself
-                character.chests.delete(id)
+                const friend = context.bot
+                if (Tools.distance(chest, friend) > 800) continue // It's far away from them
+                if (friend.goldm > goldM) {
+                    goldM = friend.goldm
+                    best = friend
+                }
             }
+
+            if (best !== bot) continue // We're not the best one to loot the chest
 
             // Open the chest
             await bot.openChest(id).catch(console.error)

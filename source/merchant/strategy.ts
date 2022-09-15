@@ -40,7 +40,8 @@ export const DEFAULT_ITEMS_TO_HOLD = new Set<ItemName>([
 export const DEFAULT_POSITION: IPosition = { x: 0, y: 0, map: "main" }
 export const DEFAULT_REPLENISHABLES = new Map<ItemName, number>([
     ["hpot1", 2500],
-    ["mpot1", 2500]
+    ["mpot1", 2500],
+    ["xptome", 1]
 ])
 export const DEFAULT_REPLENISH_RATIO = 0.5
 
