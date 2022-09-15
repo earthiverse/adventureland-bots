@@ -10,6 +10,7 @@ import { HoldPositionMoveStrategy, MoveInCircleMoveStrategy } from "../strategy_
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "../strategy_pattern/strategies/party.js"
 import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
+import { ElixirStrategy } from "../strategy_pattern/strategies/elixir.js"
 
 await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
@@ -88,6 +89,9 @@ async function startWarrior(context: Strategist<Warrior>) {
 
     // Attack
     context.applyStrategy(new WarriorAttackStrategy({ contexts: CONTEXTS, typeList: MONSTERS }))
+
+    // Luck
+    context.applyStrategy(new ElixirStrategy("elixirluck"))
 
     // TODO: Move this to a move strategy
     setInterval(async () => {
