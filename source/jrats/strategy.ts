@@ -32,14 +32,14 @@ const buyStrategy = new BuyStrategy({
 const trackerStrategy = new TrackerStrategy()
 const respawnStrategy = new RespawnStrategy()
 
-async function startRanger(context: Strategist<Ranger>, contexts: Strategist<PingCompensatedCharacter>[]) {
+async function startRanger(context: Strategist<Ranger>) {
 
     context.applyStrategy(buyStrategy)
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(respawnStrategy)
 
     // Attack
-    context.applyStrategy(new RangerAttackStrategy({ contexts: contexts, typeList: MONSTERS }))
+    context.applyStrategy(new RangerAttackStrategy({ contexts: [], disableHuntersMark: true, disableMultiShot: true, typeList: MONSTERS }))
 
     // TODO: Move this to a move strategy
     // Go to jail
@@ -58,7 +58,7 @@ async function startRanger(context: Strategist<Ranger>, contexts: Strategist<Pin
 setTimeout(async () => {
     const ranger = await AL.Game.startRanger(RANGER, "US", "II")
     const RANGER_CONTEXT = new Strategist<Ranger>(ranger, baseStrategy)
-    startRanger(RANGER_CONTEXT, CONTEXTS).catch(console.error)
+    startRanger(RANGER_CONTEXT).catch(console.error)
     CONTEXTS.push(RANGER_CONTEXT)
 
     const connectLoop = async () => {
