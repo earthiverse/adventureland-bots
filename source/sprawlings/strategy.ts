@@ -97,8 +97,12 @@ async function startWarrior(context: Strategist<Warrior>) {
 
             if (bot.canUse("zapperzap")) {
                 const entity = bot.getEntity({ couldGiveCredit: true, targetingPartyMember: false, typeList: MONSTERS, withinRange: "zapperzap" })
-                if (!entity) return
-                await bot.zapperZap(entity.id)
+                if (entity) await bot.zapperZap(entity.id)
+            }
+
+            if (bot.canUse("taunt")) {
+                const entity = bot.getEntity({ targetingMe: false, targetingPartyMember: true, typeList: MONSTERS, withinRange: "taunt" })
+                if (entity) await bot.taunt(entity.id)
             }
         } catch (e) {
             console.error(e)
