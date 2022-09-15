@@ -294,6 +294,10 @@ export function getFirstEmptyInventorySlot(items: ItemData[]): number {
     return undefined
 }
 
+export function getMsToNextMinute(): number {
+    return 60_000 - (Date.now() % 60_000)
+}
+
 export function ensureEquipped(bot: Character, item: ItemName, slot: SlotType): boolean {
     if (bot.slots[slot]?.name != item) {
         const index = bot.locateItem(item)

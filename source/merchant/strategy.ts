@@ -327,7 +327,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
                     // Grab items
                     this.debug(bot, `Offloading items from ${friend.id}.`)
-                    for (let i = 0; i < friend.isize && bot.esize > 2; i++) {
+                    for (let i = 0; i < friend.isize && bot.esize > 0; i++) {
                         const item = friend.items[i]
                         if (!item) continue // No item here
                         if (item.l) continue // Can't send locked items
