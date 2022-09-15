@@ -1,8 +1,8 @@
-import AL, { ItemName, Merchant, MonsterName, PingCompensatedCharacter, Priest, Ranger, Warrior } from "alclient"
+import AL, { ItemName, Merchant, MonsterName, PingCompensatedCharacter, Priest, Mage, Warrior } from "alclient"
 import { DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, startMerchant } from "../merchant/strategy.js"
 import { Strategist } from "../strategy_pattern/context.js"
 import { PriestAttackStrategy } from "../strategy_pattern/strategies/attack_priest.js"
-import { RangerAttackStrategy } from "../strategy_pattern/strategies/attack_ranger.js"
+import { MageAttackStrategy } from "../strategy_pattern/strategies/attack_mage.js"
 import { WarriorAttackStrategy } from "../strategy_pattern/strategies/attack_warrior.js"
 import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
@@ -20,7 +20,7 @@ await AL.Pathfinder.prepare(AL.Game.G)
 
 const MERCHANT = "earthMer"
 const WARRIOR = "earthWar"
-const RANGER = "earthiverse"
+const MAGE = "earthM"
 const PRIEST = "earthPri"
 const MONSTERS: MonsterName[] = ["plantoid"]
 
@@ -35,12 +35,12 @@ const buyStrategy = new BuyStrategy({
         ["xptome", 1],
     ])
 })
-const partyAcceptStrategy = new AcceptPartyRequestStrategy({ allowList: [RANGER, PRIEST] })
+const partyAcceptStrategy = new AcceptPartyRequestStrategy({ allowList: [MAGE, PRIEST] })
 const partyRequestStrategy = new RequestPartyStrategy(WARRIOR)
 const trackerStrategy = new TrackerStrategy()
 const respawnStrategy = new RespawnStrategy()
 
-async function startRanger(context: Strategist<Ranger>) {
+async function startMage(context: Strategist<Mage>) {
     context.applyStrategy(buyStrategy)
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(respawnStrategy)
@@ -54,7 +54,7 @@ async function startRanger(context: Strategist<Ranger>) {
     context.applyStrategy(partyRequestStrategy)
 
     // Attack
-    context.applyStrategy(new RangerAttackStrategy({ contexts: CONTEXTS }))
+    context.applyStrategy(new MageAttackStrategy({ contexts: CONTEXTS }))
 }
 
 async function startPriest(context: Strategist<Priest>) {
@@ -117,9 +117,9 @@ const WARRIOR_CONTEXT = new Strategist<Warrior>(warrior, baseStrategy)
 startWarrior(WARRIOR_CONTEXT).catch(console.error)
 CONTEXTS.push(WARRIOR_CONTEXT)
 
-const ranger = await AL.Game.startRanger(RANGER, "US", "I")
-const RANGER_CONTEXT = new Strategist<Ranger>(ranger, baseStrategy)
-startRanger(RANGER_CONTEXT).catch(console.error)
+const mage = await AL.Game.startMage(MAGE, "US", "I")
+const RANGER_CONTEXT = new Strategist<Mage>(mage, baseStrategy)
+startMage(RANGER_CONTEXT).catch(console.error)
 CONTEXTS.push(RANGER_CONTEXT)
 
 const priest = await AL.Game.startPriest(PRIEST, "US", "I")
