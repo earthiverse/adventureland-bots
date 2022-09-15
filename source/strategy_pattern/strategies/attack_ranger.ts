@@ -27,9 +27,13 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
     protected async attack(bot: Ranger) {
         const priority = sortPriority(bot, this.options.typeList)
 
+        await this.ensureEquipped(bot)
+
         await this.multiAttack(bot, priority)
         if (!this.options.disableSuperShot) await this.supershot(bot, priority)
         if (!this.options.disableZapper) await this.zapperAttack(bot, priority)
+
+        await this.ensureEquipped(bot)
     }
 
     protected async multiAttack(bot: Ranger, priority: (a: Entity, b: Entity) => boolean) {

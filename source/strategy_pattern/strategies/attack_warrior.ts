@@ -1,9 +1,16 @@
-import { Warrior } from "alclient"
+import { ItemData, Warrior } from "alclient"
+import { sleep } from "../../base/general.js"
 import { sortPriority } from "../../base/sort.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
 
 export type WarriorAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableCleave?: boolean
+    /**
+     * If true, we will swap weapons to one that can cleave, cleave, and then swap back.
+     *
+     * NOTE: It's possible that things can fail, and you will be left holding the item that can cleave
+     */
+    enableEquipForCleave?: boolean
 }
 
 export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
@@ -24,13 +31,24 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
     protected async attack(bot: Warrior) {
         const priority = sortPriority(bot, this.options.typeList)
 
-        if (!this.options.disableCleave) await this.cleave(bot)
+        await this.ensureEquipped(bot)
+
         this.applyWarCry(bot)
         await this.basicAttack(bot, priority)
+        if (!this.options.disableCleave) await this.cleave(bot)
+
+        await this.ensureEquipped(bot)
     }
 
     protected async cleave(bot: Warrior) {
-        if (!bot.canUse("cleave")) return
+        if (this.options.enableEquipForCleave) {
+            if (
+                !(
+                    bot.canUse("cleave", { ignoreEquipped: true }) // We can cleave
+                    && (bot.isEquipped("bataxe") || bot.isEquipped("scythe") || bot.hasItem(["bataxe", "scythe"])) // We have an item that can cleave
+                )
+            ) return
+        } else if (!bot.canUse("cleave")) return
 
         if (bot.isPVP()) {
             const nearby = bot.getPlayers({
@@ -92,7 +110,37 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
         }
 
         for (const entity of entities) if (bot.canKillInOneShot(entity, "cleave")) this.preventOverkill(bot, entity)
-        return bot.cleave().catch(console.error)
+
+        let mainhand: ItemData
+        let offhand: ItemData
+        if (this.options.enableEquipForCleave) {
+            if (!(bot.isEquipped(["bataxe", "scythe"]))) {
+                // Unequip offhand if we have it
+                if (bot.slots.offhand) {
+                    if (bot.esize == 0) return // We don't have an inventory slot to unequip the offhand
+                    offhand = { ...bot.slots.offhand }
+                    await bot.unequip("offhand")
+                }
+                if (bot.slots.mainhand) mainhand = { ...bot.slots.mainhand }
+                await bot.equip(bot.locateItem(["bataxe", "scythe"], bot.items, { returnHighestLevel: true }))
+                if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms) // Await the penalty cooldown so we can cleave right away
+            }
+        }
+
+        await bot.cleave().catch(console.error)
+
+        if (this.options.enableEquipForCleave) {
+            // Re-equip items
+            if (mainhand) {
+                await bot.equip(bot.locateItem(mainhand.name, bot.items, { level: mainhand.level, special: mainhand.p }))
+            } else {
+                await bot.unequip("mainhand")
+            }
+
+            if (offhand) {
+                await bot.equip(bot.locateItem(offhand.name, bot.items, { level: offhand.level, special: offhand.p, statType: offhand.stat_type }))
+            }
+        }
     }
 
     protected async applyWarCry(bot: Warrior) {

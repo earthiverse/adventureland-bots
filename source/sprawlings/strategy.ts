@@ -73,22 +73,6 @@ async function startPriest(context: Strategist<Priest>) {
 
     // Attack
     context.applyStrategy(new PriestAttackStrategy({ contexts: CONTEXTS, typeList: MONSTERS }))
-}
-
-async function startWarrior(context: Strategist<Warrior>) {
-    context.applyStrategy(buyStrategy)
-    context.applyStrategy(trackerStrategy)
-    context.applyStrategy(respawnStrategy)
-
-    // Movement
-    const plantoidSpawn = AL.Pathfinder.locateMonster("plantoid")[0]
-    context.applyStrategy(new MoveInCircleMoveStrategy({ center: plantoidSpawn, radius: 20, sides: 8 }))
-
-    // Party
-    context.applyStrategy(partyAcceptStrategy)
-
-    // Attack
-    context.applyStrategy(new WarriorAttackStrategy({ contexts: CONTEXTS, typeList: MONSTERS }))
 
     // Luck
     context.applyStrategy(new ElixirStrategy("elixirluck"))
@@ -104,14 +88,30 @@ async function startWarrior(context: Strategist<Warrior>) {
                 if (entity) await bot.zapperZap(entity.id)
             }
 
-            if (bot.canUse("taunt")) {
-                const entity = bot.getEntity({ targetingMe: false, targetingPartyMember: true, typeList: MONSTERS, withinRange: "taunt" })
-                if (entity) await bot.taunt(entity.id)
+            if (bot.canUse("absorb")) {
+                const entity = bot.getEntity({ targetingMe: false, targetingPartyMember: true, typeList: MONSTERS, withinRange: "absorb" })
+                if (entity) await bot.absorbSins(entity.target)
             }
         } catch (e) {
             console.error(e)
         }
     }, 250)
+}
+
+async function startWarrior(context: Strategist<Warrior>) {
+    context.applyStrategy(buyStrategy)
+    context.applyStrategy(trackerStrategy)
+    context.applyStrategy(respawnStrategy)
+
+    // Movement
+    const plantoidSpawn = AL.Pathfinder.locateMonster("plantoid")[0]
+    context.applyStrategy(new MoveInCircleMoveStrategy({ center: plantoidSpawn, radius: 20, sides: 8 }))
+
+    // Party
+    context.applyStrategy(partyAcceptStrategy)
+
+    // Attack
+    context.applyStrategy(new WarriorAttackStrategy({ contexts: CONTEXTS, enableEquipForCleave: true, ensureEquipped: { mainhand: { name: "vhammer" }, offhand: { name: "ololipop" } }, typeList: MONSTERS }))
 }
 
 // Login and prepare pathfinding

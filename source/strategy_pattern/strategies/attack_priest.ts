@@ -17,9 +17,13 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
     protected async attack(bot: Priest): Promise<void> {
         const priority = sortPriority(bot, this.options.typeList)
 
+        await this.ensureEquipped(bot)
+
         await this.healFriendsOrSelf(bot)
         this.applyDarkBlessing(bot)
         await this.basicAttack(bot, priority)
+
+        await this.ensureEquipped(bot)
     }
 
     protected async basicAttack(bot: Priest, priority: (a: Entity, b: Entity) => boolean): Promise<unknown> {

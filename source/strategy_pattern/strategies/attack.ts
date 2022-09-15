@@ -1,4 +1,4 @@
-import AL, { Character, Entity, GetEntitiesFilters, Mage, PingCompensatedCharacter } from "alclient"
+import AL, { Character, Entity, GetEntitiesFilters, ItemName, LocateItemFilters, Mage, PingCompensatedCharacter, SlotType } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { sortPriority } from "../../base/sort.js"
 import { Loop, LoopName, Strategist, Strategy } from "../context.js"
@@ -8,6 +8,13 @@ export type BaseAttackStrategyOptions = GetEntitiesFilters & {
     disableCreditCheck?: boolean
     disableEnergize?: boolean
     disableZapper?: boolean
+    /** If set, we will check if we have the correct items equipped before and after attacking */
+    ensureEquipped?: {
+        [T in SlotType]?: {
+            name: ItemName
+            filters?: LocateItemFilters
+        }
+    }
     maximumTargets?: number
 }
 
@@ -35,8 +42,12 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
     protected async attack(bot: Type) {
         const priority = sortPriority(bot, this.options.typeList)
 
+        await this.ensureEquipped(bot)
+
         await this.basicAttack(bot, priority)
         if (!this.options.disableZapper) await this.zapperAttack(bot, priority)
+
+        await this.ensureEquipped(bot)
     }
 
     protected async basicAttack(bot: Type, priority: (a: Entity, b: Entity) => boolean): Promise<unknown> {
@@ -79,6 +90,19 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             if (canKill) this.preventOverkill(bot, target)
             if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot)
             return bot.basicAttack(target.id).catch(console.error)
+        }
+    }
+
+    protected async ensureEquipped(bot: Type) {
+        if (!this.options.ensureEquipped) return
+        for (const sT in this.options.ensureEquipped) {
+            const slotType = sT as SlotType
+            const ensure = this.options.ensureEquipped[slotType]
+            if (!bot.slots[slotType] || bot.slots[slotType].name !== ensure.name) {
+                const toEquip = bot.locateItem(ensure.name, bot.items, ensure.filters)
+                if (toEquip == undefined) throw new Error(`Couldn't find ${ensure.name} to equip in ${sT}.`)
+                await bot.equip(toEquip, slotType)
+            }
         }
     }
 
