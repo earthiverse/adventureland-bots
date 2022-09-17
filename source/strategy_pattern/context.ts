@@ -110,6 +110,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
     public async changeServer(region: ServerRegion, id: ServerIdentifier) {
         return new Promise<void>((resolve) => {
             // Disconnect the bot (this will remove the disconnect listener, too)
+            this.bot.socket.removeAllListeners("disconnect")
             this.bot.disconnect()
 
             const switchBots = async () => {
@@ -178,6 +179,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
     }
 
     public async reconnect(): Promise<void> {
+        this.bot.socket.removeAllListeners("disconnect")
         this.bot.disconnect()
 
         try {

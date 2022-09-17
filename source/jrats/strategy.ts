@@ -78,7 +78,7 @@ setTimeout(async () => {
             console.log("Disconnecting...")
 
             // Remove the disconnect listener so it doesn't automatically reconnect
-            RANGER_CONTEXT.bot.socket.off("disconnect")
+            RANGER_CONTEXT.bot.socket.removeAllListeners("disconnect")
 
             await RANGER_CONTEXT.bot.disconnect()
         } catch (e) {
