@@ -221,6 +221,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
             await newBot.connect()
             this.changeBot(newBot as Type)
         } catch (e) {
+            this.bot.socket.removeAllListeners("disconnect")
             this.bot.disconnect()
             console.error(e)
             const wait = /wait_(\d+)_second/.exec(e)

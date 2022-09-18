@@ -84,7 +84,7 @@ setTimeout(async () => {
         } catch (e) {
             console.error(e)
         } finally {
-            setTimeout(disconnectLoop, getMsToNextMinute() + (60_000 - BUFFER))
+            setTimeout(async () => { await disconnectLoop() }, getMsToNextMinute() + (60_000 - BUFFER))
         }
     }
     setTimeout(async () => { await disconnectLoop() }, getMsToNextMinute() - BUFFER)
