@@ -1,4 +1,4 @@
-import AL, { Character, IPosition, ItemName, LocateItemsFilters, Merchant, PingCompensatedCharacter, SlotType, Tools } from "alclient"
+import AL, { BankPackName, Character, IPosition, ItemName, LocateItemsFilters, Merchant, PingCompensatedCharacter, SlotType, Tools } from "alclient"
 import { getItemCountsForEverything, getItemsToCompoundOrUpgrade, getOfferingToUse, IndexesToCompoundOrUpgrade, ItemCount, withdrawItemFromBank } from "../base/banking.js"
 import { checkOnlyEveryMS, sleep } from "../base/general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
@@ -240,7 +240,70 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 // Move back to the first level
                 await bot.smartMove(bankingPosition)
 
-                // TODO: Optimize bank slots by creating maximum stacks
+                //// Optimize bank slots by creating maximum stacks
+                // Create the list of duplicate items
+                const stackList: { [T in ItemName]?: [BankPackName, number, number][] } = {}
+                for (const bankSlot in bot.bank) {
+                    // Only get stuff from the packs in the first level
+                    const matches = /items(\d+)/.exec(bankSlot)
+                    if (!matches || Number.parseInt(matches[1]) > 7) continue
+
+                    for (let i = 0; i < bot.bank[bankSlot as BankPackName].length; i++) {
+                        const item = bot.bank[bankSlot as BankPackName][i]
+                        if (!item) continue // Empty slot
+                        if (!item.q) continue // Not stackable
+                        if (item.q >= AL.Game.G.items[item.name].s) continue // Maximum stack quantity already reached
+                        if (!stackList[item.name]) stackList[item.name] = []
+                        stackList[item.name].push([bankSlot as BankPackName, i, item.q])
+                    }
+                }
+
+                // Remove items with only one stack
+                for (const itemName in stackList) {
+                    const items = stackList[itemName]
+                    if (items.length == 1) delete stackList[itemName]
+                }
+
+                for (const itemName in stackList) {
+                    if (bot.esize < 3) break // Not enough space to stack things
+                    const stacks = stackList[itemName as ItemName]
+                    const stackLimit = AL.Game.G.items[itemName as ItemName].s as number
+                    for (let j = 0; j < stacks.length - 1; j++) {
+                        const stack1 = stacks[j]
+                        const stack2 = stacks[j + 1]
+
+                        // We can stack!
+                        if (j == 0) await bot.withdrawItem(stack1[0], stack1[1])
+                        await bot.withdrawItem(stack2[0], stack2[1])
+                        const items = bot.locateItems(itemName as ItemName, bot.items, { quantityLessThan: stackLimit })
+                        if (items.length > 1) {
+                            const item1 = bot.items[items[0]]
+                            if (!item1) break
+                            const q1 = item1.q
+                            const item2 = bot.items[items[1]]
+                            if (!item2) break
+                            const q2 = item2.q
+
+                            const split = stackLimit - q1
+                            if (q2 <= split) {
+                                // Just move them to stack them
+                                await bot.swapItems(items[0], items[1])
+                                continue
+                            } else {
+                                // Split the stack so we can make a full stack
+                                await bot.splitItem(items[1], split)
+                                const newStack = await bot.locateItem(itemName as ItemName, bot.items, { quantityGreaterThan: split - 1, quantityLessThan: split + 1 })
+                                if (newStack === undefined) continue
+                                await bot.swapItems(newStack, items[0])
+
+                                // Deposit the full stack
+                                if (!this.options.itemsToHold.has(itemName as ItemName)) await bot.depositItem(items[0])
+                                break
+                            }
+
+                        }
+                    }
+                }
 
                 // Withdraw an item we want to exchange
                 if (this.options.enableExchange && bot.esize >= 3) {

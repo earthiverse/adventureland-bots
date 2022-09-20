@@ -1,4 +1,4 @@
-import { Rogue } from "alclient"
+import AL, { Rogue } from "alclient"
 import { Loop, LoopName, Strategy } from "../context.js"
 
 // TODO: Add options to toggle whether or not we should give to everyone, just friends, etc.
@@ -35,6 +35,7 @@ export class GiveRogueSpeedStrategy implements Strategy<Rogue> {
 
             // Give rogue speed to the player
             await bot.rspeed(player.id).catch(console.error)
+            await AL.PlayerModel.updateOne({ name: player.id }, { s: player.s }).catch(console.error)
             break
         }
     }
