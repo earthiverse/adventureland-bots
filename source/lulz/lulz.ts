@@ -166,7 +166,7 @@ async function startLulzMerchant(userID: string, userAuth: string, characterID: 
             upgradeToLevel: 9
         },
         enableBuyReplenishables: {
-            items: REPLENISHABLES,
+            all: REPLENISHABLES,
             ratio: 0.5,
         },
         enableExchange: {

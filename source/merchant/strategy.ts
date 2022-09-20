@@ -4,7 +4,6 @@ import { checkOnlyEveryMS, sleep } from "../base/general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
 import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
 import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
-import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 
@@ -41,7 +40,15 @@ export const DEFAULT_POSITION: IPosition = { x: 0, y: 0, map: "main" }
 export const DEFAULT_REPLENISHABLES = new Map<ItemName, number>([
     ["hpot1", 2500],
     ["mpot1", 2500],
-    ["xptome", 1]
+    ["xptome", 1],
+])
+export const DEFAULT_MERCHANT_REPLENISHABLES = new Map<ItemName, number>([
+    ["cscroll0", 500],
+    ["cscroll1", 50],
+    ["cscroll2", 5],
+    ["scroll0", 500],
+    ["scroll1", 50],
+    ["scroll2", 5],
 ])
 export const DEFAULT_REPLENISH_RATIO = 0.5
 
@@ -61,7 +68,8 @@ export type MerchantMoveStrategyOptions = {
      * - buy replenishables in the list for the bots running in the given contexts if they get below the replenish ratio
      */
     enableBuyReplenishables?: {
-        items: Map<ItemName, number>
+        all: Map<ItemName, number>
+        merchant?: Map<ItemName, number>
         ratio: number,
     }
     /** If enabled, the merchant will
@@ -119,7 +127,8 @@ export const DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS: MerchantMoveStrategyOptions
     //     upgradeToLevel: 9
     // },
     enableBuyReplenishables: {
-        items: DEFAULT_REPLENISHABLES,
+        all: DEFAULT_REPLENISHABLES,
+        merchant: DEFAULT_MERCHANT_REPLENISHABLES,
         ratio: DEFAULT_REPLENISH_RATIO,
     },
     enableExchange: {
@@ -254,11 +263,11 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 await bot.smartMove("main")
             }
 
-            // Find own characters with low replenishables and go deliver some
             if (this.options.enableBuyReplenishables) {
+                // Find own characters with low replenishables and go deliver some
                 for (const friendContext of this.contexts) {
                     const friend = friendContext.bot
-                    for (const [item, numTotal] of this.options.enableBuyReplenishables.items) {
+                    for (const [item, numTotal] of this.options.enableBuyReplenishables.all) {
                         const numFriendHas = friend.countItem(item)
                         if (numFriendHas > numTotal * this.options.enableBuyReplenishables.ratio) continue // They still have enough
 
@@ -287,6 +296,17 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         await bot.sendItem(friend.id, bot.locateItem(item, bot.items), numTotal - numFriendHas)
                     }
                 }
+
+                // Buy replenishables for ourselves
+                if (this.options.enableBuyReplenishables.merchant) {
+                    for (const [item, numTotal] of this.options.enableBuyReplenishables.merchant) {
+                        const numHave = bot.countItem(item)
+                        if (numHave >= numTotal) continue // We have enough
+                        const numToBuy = numTotal - numHave
+                        if (!bot.canBuy(item, { quantity: numToBuy })) continue // We can't buy them
+                        await bot.buy(item, numToBuy)
+                    }
+                }
             }
 
             // Find own characters with low inventory space and go grab some items off of them
@@ -294,19 +314,21 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 for (const friendContext of this.contexts) {
                     const friend = friendContext.bot
                     if (friend == bot) continue // Skip ourself
-                    if (friend.esize > 3) continue // They still have enough free space
+                    if (friend.gold < (this.options.enableOffload.goldToHold * 2)) {
+                        if (friend.esize > 3) continue // They don't have a lot to offload
 
-                    // Check if they have items that we can grab
-                    let hasItemWeWant = false
-                    for (let i = 0; i < friend.isize; i++) {
-                        const item = friend.items[i]
-                        if (!item) continue // No item here
-                        if (item.l) continue // Can't send locked items
-                        if (this.options.enableOffload.itemsToHold.has(item.name)) continue // We want to hold this item
-                        hasItemWeWant = true
-                        break
+                        // Check if they have items that we can grab
+                        let skipItems = true
+                        for (let i = 0; i < friend.isize; i++) {
+                            const item = friend.items[i]
+                            if (!item) continue // No item here
+                            if (item.l) continue // Can't send locked items
+                            if (this.options.enableOffload.itemsToHold.has(item.name)) continue // We want to hold this item
+                            skipItems = false
+                            break
+                        }
+                        if (skipItems) continue // They are full, but they're full of useful items
                     }
-                    if (!hasItemWeWant) continue // They are full, but they're full of useful items
 
                     // Go find them
                     this.debug(bot, `Moving to ${friend.id} to offload things`)
@@ -319,9 +341,11 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     // Grab extra gold
                     if (friend.gold > this.options.enableOffload.goldToHold) {
                         // Take their gold for safe keeping
+                        this.debug(bot, `Offloading gold from ${friend.id}.`)
                         await friend.sendGold(bot.id, friend.gold - this.options.enableOffload.goldToHold)
                     } else if (bot.gold > this.options.enableOffload.goldToHold) {
                         // Send them some of our gold
+                        this.debug(bot, `Giving gold from ${friend.id}.`)
                         await bot.sendGold(friend.id, Math.min(bot.gold - this.options.enableOffload.goldToHold, this.options.enableOffload.goldToHold - friend.gold))
                     }
 
