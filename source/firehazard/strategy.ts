@@ -1,6 +1,7 @@
-import AL, { ItemName, LocateItemFilters, Merchant, MonsterName, PingCompensatedCharacter, Priest, Warrior } from "alclient"
+import AL, { ItemName, Merchant, MonsterName, PingCompensatedCharacter, Priest, Warrior } from "alclient"
 import { DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, startMerchant } from "../merchant/strategy.js"
-import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
+import { Strategist } from "../strategy_pattern/context.js"
+import { FirehazardEquipStrategy } from "../strategy_pattern/equip.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions } from "../strategy_pattern/strategies/attack.js"
 import { PriestAttackStrategy } from "../strategy_pattern/strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategy_pattern/strategies/attack_ranger.js"
@@ -18,22 +19,40 @@ import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
  * Equip weapons that will cause burn on the bots that will run `startFirehazardSupporter`
  */
 
+// Login and prepare pathfinding
+await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
+await AL.Pathfinder.prepare(AL.Game.G)
+
+// Config
 const MERCHANT = "earthMer"
 const FARMER = "earthWar"
 const SUPPORTER_1 = "earthWar2"
 const SUPPORTER_2 = "earthPri"
 const MONSTERS: MonsterName[] = ["plantoid"]
+const equipStrategy = new FirehazardEquipStrategy("fireblade", { level: 0 })
 
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 let FIREHAZARD_FARMER_CONTEXT: Strategist<PingCompensatedCharacter>
 const FIREHAZARD_SUPPORT_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 
-async function run() {
-    // Login and prepare pathfinding
-    await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
-    await AL.Pathfinder.prepare(AL.Game.G)
+const baseStrategy = new BaseStrategy(CONTEXTS)
+const buyStrategy = new BuyStrategy({
+    buyMap: undefined,
+    replenishables: new Map<ItemName, number>([
+        ["hpot1", 2500],
+        ["mpot1", 2500],
+        ["xptome", 1],
+    ])
+})
+const debugStrategy = new DebugStrategy({
+    logAchievementProgress: true
+})
+const partyAcceptStrategy = new AcceptPartyRequestStrategy({ allowList: [SUPPORTER_1, SUPPORTER_2] })
+const partyRequestStrategy = new RequestPartyStrategy(FARMER)
+const trackerStrategy = new TrackerStrategy()
+const moveToMonsterStrategy = new ImprovedMoveStrategy(MONSTERS)
 
-    const baseStrategy = new BaseStrategy()
+async function run() {
 
     const merchant = await AL.Game.startMerchant(MERCHANT, "US", "I")
     const merchantContext = new Strategist<Merchant>(merchant, baseStrategy)
@@ -42,7 +61,7 @@ async function run() {
 
     const warrior1 = await AL.Game.startWarrior(FARMER, "US", "I")
     const context1 = new Strategist<Warrior>(warrior1, baseStrategy)
-    startFirehazardFarmer(context1, "fireblade", { level: 0 }).catch(console.error)
+    startFirehazardFarmer(context1).catch(console.error)
     FIREHAZARD_FARMER_CONTEXT = context1
     CONTEXTS.push(context1)
 
@@ -60,75 +79,7 @@ async function run() {
 }
 run().catch(console.error)
 
-const baseStrategy = new BaseStrategy(CONTEXTS)
-const buyStrategy = new BuyStrategy({
-    buyMap: undefined,
-    replenishables: new Map<ItemName, number>([
-        ["hpot1", 2500],
-        ["mpot1", 2500],
-        ["xptome", 1],
-    ])
-})
-const debugStrategy = new DebugStrategy({
-    logAchievementProgress: true
-})
-const partyAcceptStrategy = new AcceptPartyRequestStrategy({ allowList: [SUPPORTER_1, SUPPORTER_2] })
-const partyRequestStrategy = new RequestPartyStrategy(FARMER)
-const trackerStrategy = new TrackerStrategy()
-
-class FirehazardEquipStrategy implements Strategy<PingCompensatedCharacter> {
-    public loops = new Map<LoopName, Loop<PingCompensatedCharacter>>()
-
-    public item: ItemName
-    public filters: LocateItemFilters
-
-    public constructor(item: ItemName, filters?: LocateItemFilters) {
-        this.item = item
-        this.filters = filters
-
-        this.loops.set("equip", {
-            fn: async (bot: PingCompensatedCharacter) => { await this.equipBest(bot) },
-            interval: 250
-        })
-    }
-
-    public equipBest(bot: PingCompensatedCharacter) {
-        const monsters = bot.getEntities({
-            hpLessThan: 10_000,
-            targetingMe: true,
-            willBurnToDeath: true
-        })
-
-        const shouldEquipItem = monsters.length > 0
-        if (shouldEquipItem) {
-            const locate = bot.locateItem(this.item, bot.items, this.filters)
-            if (locate === undefined) return // Assume we have it equipped
-            return bot.equip(locate, "mainhand")
-        } else {
-            // Equip the best fire weapon we have
-            let item: ItemName
-            switch (bot.ctype) {
-                case "mage":
-                case "priest":
-                    item = "firestaff"
-                    break
-                case "ranger":
-                    item = "firebow"
-                    break
-                case "warrior":
-                    item = "fireblade"
-                    break
-            }
-            const locate = bot.locateItem(item, bot.items, { returnHighestLevel: true })
-            if (locate === undefined) return // Assume we have it
-            const itemInfo = bot.items[locate]
-            if (bot.slots.mainhand && bot.slots.mainhand.name == item && bot.slots.mainhand.level > itemInfo.level) return // We already have a higher level one equipped
-            return bot.equip(locate, "mainhand")
-        }
-    }
-}
-
-async function startFirehazardFarmer(context: Strategist<PingCompensatedCharacter>, item: ItemName, itemFilters: LocateItemFilters) {
+async function startFirehazardFarmer(context: Strategist<PingCompensatedCharacter>) {
     const attackStrategyOptions: BaseAttackStrategyOptions = {
         contexts: [],
         couldGiveCredit: true,
@@ -155,11 +106,8 @@ async function startFirehazardFarmer(context: Strategist<PingCompensatedCharacte
             break
 
     }
-    const equipStrategy = new FirehazardEquipStrategy(item, itemFilters)
-    const moveToMonsterStrategy = new ImprovedMoveStrategy(MONSTERS)
 
     context.applyStrategy(equipStrategy)
-    context.applyStrategy(baseStrategy)
     context.applyStrategy(attackStrategy)
     context.applyStrategy(buyStrategy)
     context.applyStrategy(debugStrategy)
@@ -194,7 +142,6 @@ async function startFirehazardSupporter(context: Strategist<PingCompensatedChara
             break
     }
 
-    context.applyStrategy(baseStrategy)
     context.applyStrategy(attackStrategy)
     context.applyStrategy(buyStrategy)
     context.applyStrategy(debugStrategy)

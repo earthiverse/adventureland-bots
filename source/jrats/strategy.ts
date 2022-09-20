@@ -16,7 +16,7 @@ await AL.Pathfinder.prepare(AL.Game.G)
 
 const RANGER = "earthiverse"
 const MONSTERS: MonsterName[] = ["jrat"]
-const BUFFER = 10_000
+const BUFFER = 6_500
 
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 
