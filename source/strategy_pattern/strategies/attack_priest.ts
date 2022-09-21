@@ -77,6 +77,8 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
     }
 
     protected async healFriendsOrSelf(bot: Priest): Promise<unknown> {
+        if (!bot.canUse("heal")) return
+
         const healPriority = (a: PingCompensatedCharacter, b: PingCompensatedCharacter) => {
             // Heal our friends first
             const a_isFriend = this.options.contexts.some((friend) => { friend.bot?.id == a.id })
