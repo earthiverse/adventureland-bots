@@ -234,10 +234,12 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
                 // Withdraw things that we can upgrade
                 if (this.options.enableUpgrade) {
+                    this.debug(bot, "Looking for items to compound or upgrade...")
                     this.toUpgrade = await getItemsToCompoundOrUpgrade(bot, this.itemCounts)
                 }
 
                 // Move back to the first level
+                this.debug(bot, "Moving back to bankingPosition...")
                 await bot.smartMove(bankingPosition)
 
                 //// Optimize bank slots by creating maximum stacks
