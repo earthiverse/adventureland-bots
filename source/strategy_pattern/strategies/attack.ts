@@ -1,4 +1,4 @@
-import AL, { Character, Entity, GetEntitiesFilters, ItemName, LocateItemFilters, Mage, PingCompensatedCharacter, SlotType } from "alclient"
+import AL, { Character, Entity, GetEntitiesFilters, ItemName, LocateItemFilters, Mage, PingCompensatedCharacter, SkillName, SlotType } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { sortPriority } from "../../base/sort.js"
 import { Loop, LoopName, Strategist, Strategy } from "../context.js"
@@ -24,6 +24,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
     public loops = new Map<LoopName, Loop<Type>>()
     protected options: BaseAttackStrategyOptions
     protected sortPriority: (a: Entity, b: Entity) => boolean
+    protected interval: SkillName[] = ["attack"]
 
     public constructor(options?: BaseAttackStrategyOptions) {
         this.options = options ?? {
@@ -32,12 +33,14 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (!this.options.disableCreditCheck && this.options.couldGiveCredit === undefined) this.options.couldGiveCredit = true
         if (this.options.willDieToProjectiles === undefined) this.options.willDieToProjectiles = false
 
+        if (!options.disableZapper) this.interval.push("zapperzap")
+
         this.loops.set("attack", {
             fn: async (bot: Type) => {
                 if (!this.shouldAttack(bot)) return
                 await this.attack(bot)
             },
-            interval: ["attack"]
+            interval: this.interval
         })
     }
 

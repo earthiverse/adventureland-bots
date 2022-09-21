@@ -15,6 +15,8 @@ import { ElixirStrategy } from "../strategy_pattern/strategies/elixir.js"
 await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 
+const plantoidSpawn = AL.Pathfinder.locateMonster("plantoid")[0]
+
 /**
  * Farm sprawlings
  */
@@ -47,9 +49,7 @@ async function startMage(context: Strategist<Mage>) {
     context.applyStrategy(respawnStrategy)
 
     // Movement
-    const plantoidSpawn = AL.Pathfinder.locateMonster("plantoid")[0]
-    plantoidSpawn.x += 5
-    context.applyStrategy(new HoldPositionMoveStrategy(plantoidSpawn))
+    context.applyStrategy(new HoldPositionMoveStrategy(plantoidSpawn, { offset: { x: 5 } }))
 
     // Party
     context.applyStrategy(partyRequestStrategy)
@@ -64,7 +64,6 @@ async function startPriest(context: Strategist<Priest>) {
     context.applyStrategy(respawnStrategy)
 
     // Movement
-    const plantoidSpawn = AL.Pathfinder.locateMonster("plantoid")[0]
     context.applyStrategy(new MoveInCircleMoveStrategy({ center: plantoidSpawn, radius: 20, sides: 8 }))
 
     // Party
@@ -88,7 +87,7 @@ async function startPriest(context: Strategist<Priest>) {
             }
 
             if (bot.canUse("absorb")) {
-                const entity = bot.getEntity({ targetingMe: false, targetingPartyMember: true, typeList: MONSTERS, withinRange: "absorb" })
+                const entity = bot.getEntity({ targetingMe: false, targetingPartyMember: true, typeList: MONSTERS })
                 if (entity) await bot.absorbSins(entity.target)
             }
         } catch (e) {
@@ -103,9 +102,7 @@ async function startWarrior(context: Strategist<Warrior>) {
     context.applyStrategy(respawnStrategy)
 
     // Movement
-    const plantoidSpawn = AL.Pathfinder.locateMonster("plantoid")[0]
-    plantoidSpawn.x -= 5
-    context.applyStrategy(new HoldPositionMoveStrategy(plantoidSpawn))
+    context.applyStrategy(new HoldPositionMoveStrategy(plantoidSpawn, { offset: { x: -5 } }))
 
     // Party
     context.applyStrategy(partyAcceptStrategy)

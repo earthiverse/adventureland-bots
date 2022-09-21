@@ -4,13 +4,14 @@ import { sortPriority } from "../../base/sort.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
 
 export type WarriorAttackStrategyOptions = BaseAttackStrategyOptions & {
-    disableCleave?: boolean
+    disableCleave?: true
+    disableWarCry?: true
     /**
      * If true, we will swap weapons to one that can cleave, cleave, and then swap back.
      *
      * NOTE: It's possible that things can fail, and you will be left holding the item that can cleave
      */
-    enableEquipForCleave?: boolean
+    enableEquipForCleave?: true
 }
 
 export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
@@ -19,12 +20,15 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
     public constructor(options?: WarriorAttackStrategyOptions) {
         super(options)
 
+        if (!options.disableCleave) this.interval.push("cleave")
+        if (!options.disableWarCry) this.interval.push("warcry")
+
         this.loops.set("attack", {
             fn: async (bot: Warrior) => {
                 if (!this.shouldAttack(bot)) return
                 await this.attack(bot)
             },
-            interval: ["attack", "cleave"]
+            interval: this.interval
         })
     }
 
@@ -33,7 +37,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
         await this.ensureEquipped(bot)
 
-        this.applyWarCry(bot)
+        if (!this.options.disableWarCry) this.applyWarCry(bot)
         await this.basicAttack(bot, priority)
         if (!this.options.disableCleave) await this.cleave(bot)
 

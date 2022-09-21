@@ -4,6 +4,7 @@ import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
 
 export type MageAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableCburst?: boolean
+    disableCburstKillSteal?: boolean
 }
 
 export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
@@ -11,6 +12,8 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
 
     public constructor(options?: MageAttackStrategyOptions) {
         super(options)
+
+        if (!this.options.disableCburst) this.interval.push("cburst")
     }
 
     protected async attack(bot: Mage): Promise<void> {

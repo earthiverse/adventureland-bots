@@ -4,7 +4,9 @@ import { sortPriority } from "../../base/sort.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
 
 export type PriestAttackStrategyOptions = BaseAttackStrategyOptions & {
-    healStrangers?: boolean
+    disableCurse?: true
+    disableDarkBlessing?: true
+    healStrangers?: true
 }
 
 export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
@@ -12,6 +14,8 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
 
     public constructor(options?: PriestAttackStrategyOptions) {
         super(options)
+
+        if (!this.options.disableDarkBlessing) this.interval.push("darkblessing")
     }
 
     protected async attack(bot: Priest): Promise<void> {
@@ -20,7 +24,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
         await this.ensureEquipped(bot)
 
         await this.healFriendsOrSelf(bot)
-        this.applyDarkBlessing(bot)
+        if (!this.options.disableDarkBlessing) this.applyDarkBlessing(bot)
         await this.basicAttack(bot, priority)
         await this.absorbTargets(bot)
 
@@ -44,7 +48,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
 
         const targetingMe = bot.calculateTargets()
 
-        this.applyCurse(bot, targets.peek())
+        if (!this.options.disableCurse) this.applyCurse(bot, targets.peek())
 
         while (targets.size) {
             const target = targets.poll()
@@ -145,11 +149,11 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
         bot.curse(entity.id).catch(console.error)
     }
 
-    protected applyDarkBlessing(bot: Priest) {
+    protected async applyDarkBlessing(bot: Priest) {
         if (!bot.canUse("darkblessing")) return
         if (bot.s.darkblessing) return // We already have it applied
         if (!bot.getEntity(this.options)) return // We aren't about to attack
 
-        bot.darkBlessing().catch(console.error)
+        return bot.darkBlessing().catch(console.error)
     }
 }

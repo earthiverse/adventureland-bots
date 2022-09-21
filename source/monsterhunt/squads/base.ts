@@ -5,6 +5,7 @@ import { PriestAttackStrategy } from "../../strategy_pattern/strategies/attack_p
 import { RangerAttackStrategy } from "../../strategy_pattern/strategies/attack_ranger.js"
 import { WarriorAttackStrategy } from "../../strategy_pattern/strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../../strategy_pattern/strategies/move.js"
+import { constructPlantoidSetup } from "./plantoid.js"
 
 export type MHSetup = {
     setups: {
@@ -99,6 +100,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
 
 export function constructSquads(contexts: Strategist<PingCompensatedCharacter>[]): MHSetups {
     return {
-        goo: constructGenericSetup(contexts, "goo")
+        goo: constructGenericSetup(contexts, "goo"),
+        plantoid: constructPlantoidSetup(contexts)
     }
 }

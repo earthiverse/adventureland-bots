@@ -15,13 +15,7 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
     public constructor(options?: RangerAttackStrategyOptions) {
         super(options)
 
-        this.loops.set("attack", {
-            fn: async (bot: Ranger) => {
-                if (!this.shouldAttack(bot)) return
-                await this.attack(bot)
-            },
-            interval: ["attack", "supershot"]
-        })
+        if (!this.options.disableSuperShot) this.interval.push("supershot")
     }
 
     protected async attack(bot: Ranger) {
@@ -105,7 +99,7 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
             }
         }
 
-        this.applyHuntersMark(bot, targets.peek())
+        if (!this.options.disableHuntersMark) this.applyHuntersMark(bot, targets.peek())
 
         if (!this.options.disableMultiShot && fiveShotTargets.size >= 5 && bot.canUse("5shot")) {
             const entities: Entity[] = []

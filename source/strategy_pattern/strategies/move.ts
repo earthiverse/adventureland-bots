@@ -88,13 +88,26 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
     }
 }
 
+export type HoldPositionMoveStrategyOptions = {
+    /** If set, we will offset the given location by this amount */
+    offset?: {
+        x?: number
+        y?: number
+    }
+}
+
 export class HoldPositionMoveStrategy implements Strategy<Character> {
     public loops = new Map<LoopName, Loop<Character>>()
 
     public location: IPosition
 
-    public constructor(location: IPosition) {
+    public constructor(location: IPosition, options?: HoldPositionMoveStrategyOptions) {
         this.location = location
+
+        if (options?.offset) {
+            if (options.offset.x) location.x += options.offset.x
+            if (options.offset.y) location.y += options.offset.y
+        }
 
         this.loops.set("move", {
             fn: async (bot: Character) => { await this.move(bot) },
