@@ -241,6 +241,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 await bot.smartMove(bankingPosition)
 
                 //// Optimize bank slots by creating maximum stacks
+                this.debug(bot, "Optimizing bank")
                 // Create the list of duplicate items
                 const stackList: { [T in ItemName]?: [BankPackName, number, number][] } = {}
                 for (const bankSlot in bot.bank) {
@@ -269,12 +270,13 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     const stacks = stackList[itemName as ItemName]
                     const stackLimit = AL.Game.G.items[itemName as ItemName].s as number
                     for (let j = 0; j < stacks.length - 1; j++) {
+                        // We can stack!
+                        this.debug(bot, `Optimizing stacks of ${itemName}...`)
                         const stack1 = stacks[j]
                         const stack2 = stacks[j + 1]
 
-                        // We can stack!
-                        if (j == 0) await bot.withdrawItem(stack1[0], stack1[1])
-                        await bot.withdrawItem(stack2[0], stack2[1])
+                        if (j == 0) await bot.withdrawItem(stack1[0], stack1[1]).catch(console.error)
+                        await bot.withdrawItem(stack2[0], stack2[1]).catch(console.error)
                         const items = bot.locateItems(itemName as ItemName, bot.items, { quantityLessThan: stackLimit })
                         if (items.length > 1) {
                             const item1 = bot.items[items[0]]
@@ -307,6 +309,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
                 // Withdraw an item we want to exchange
                 if (this.options.enableExchange && bot.esize >= 3) {
+                    this.debug(bot, "Looking for exchangables in bank...")
                     for (const item of this.options.enableExchange.items) {
                         const options: LocateItemsFilters = {
                             locked: false,
@@ -345,7 +348,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                                 await bot.smartMove(item, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED / 2 })
                             }
                             this.debug(bot, `Replenishables - Buying ${numToBuy}x${item}`)
-                            await bot.buy(item, numToBuy)
+                            if (bot.canBuy(item, { quantity: numToBuy })) await bot.buy(item, numToBuy)
                         }
 
                         // Go deliver the item(s)
