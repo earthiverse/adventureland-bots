@@ -264,6 +264,8 @@ export async function getItemCountsForEverything(owner: string): Promise<ItemCou
  * @param item The item data
  */
 export function getOfferingToUse(item: ItemData): ItemName {
+    if (!item) return undefined
+
     const gItem = AL.Game.G.items[item.name]
     const conf = ITEM_UPGRADE_CONF[item.name]
     if (conf) {

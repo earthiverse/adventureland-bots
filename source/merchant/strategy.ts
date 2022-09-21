@@ -856,6 +856,11 @@ export class MerchantStrategy implements Strategy<Merchant> {
             const indexes = this.toUpgrade[i]
             if (indexes.length !== 3) continue
             const item = bot.items[indexes[0]]
+            if (!item) {
+                this.toUpgrade.splice(i, 1)
+                i--
+                continue
+            }
             const offering = getOfferingToUse(item)
             if (offering && !bot.hasItem(offering)) {
                 this.debug(bot, `Compound - Offering - We don't have a '${offering}' to compound ${item.name}(${item.level})`)
@@ -879,6 +884,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
             }
             this.debug(bot, `Compounding ${item.name}(${item.level})`)
             this.toUpgrade.splice(i, 1)
+            i--
             if (bot.canUse("massproduction")) await bot.massProduction()
             return bot.compound(indexes[0], indexes[1], indexes[2], bot.locateItem(scroll), offering ? bot.locateItem(offering) : undefined)
         }
