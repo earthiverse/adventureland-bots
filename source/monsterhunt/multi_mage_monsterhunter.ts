@@ -1,11 +1,11 @@
 import AL, { IPosition, Mage, Merchant, MonsterName, PingCompensatedCharacter, ServerIdentifier, ServerRegion } from "alclient"
-import { Strategist, Strategy } from "./context.js"
-import { BaseAttackStrategy } from "./strategies/attack.js"
-import { BaseStrategy } from "./strategies/base.js"
-import { FinishMonsterHuntStrategy, GetMonsterHuntStrategy } from "./strategies/monsterhunt.js"
-import { BasicMoveStrategy, HoldPositionMoveStrategy } from "./strategies/move.js"
-import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategies/party.js"
-import { ToggleStandByMovementStrategy } from "./strategies/stand.js"
+import { Strategist, Strategy } from "../strategy_pattern/context.js"
+import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
+import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
+import { FinishMonsterHuntStrategy, GetMonsterHuntStrategy } from "../strategy_pattern/strategies/monsterhunt.js"
+import { BasicMoveStrategy, HoldPositionMoveStrategy } from "../strategy_pattern/strategies/move.js"
+import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "../strategy_pattern/strategies/party.js"
+import { ToggleStandByMovementStrategy } from "../strategy_pattern/strategies/stand.js"
 
 /**
  * This script will farm monsterhunt tokens using 3 mages. Mages are nice because they can

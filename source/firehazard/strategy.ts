@@ -1,7 +1,7 @@
 import AL, { ItemName, Merchant, MonsterName, PingCompensatedCharacter, Priest, Warrior } from "alclient"
 import { DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, startMerchant } from "../merchant/strategy.js"
 import { Strategist } from "../strategy_pattern/context.js"
-import { FirehazardEquipStrategy } from "../strategy_pattern/equip.js"
+import { FirehazardEquipStrategy } from "../strategy_pattern/strategies/equip.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions } from "../strategy_pattern/strategies/attack.js"
 import { PriestAttackStrategy } from "../strategy_pattern/strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategy_pattern/strategies/attack_ranger.js"

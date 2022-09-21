@@ -1,5 +1,5 @@
 import { PingCompensatedCharacter, ItemName, LocateItemFilters } from "alclient"
-import { Strategy, LoopName, Loop } from "./context.js"
+import { Strategy, LoopName, Loop } from "../context.js"
 
 export class FirehazardEquipStrategy implements Strategy<PingCompensatedCharacter> {
     public loops = new Map<LoopName, Loop<PingCompensatedCharacter>>()

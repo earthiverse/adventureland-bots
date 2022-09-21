@@ -11,6 +11,7 @@ import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "../strategy_pa
 import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 import { ElixirStrategy } from "../strategy_pattern/strategies/elixir.js"
+import { PartyHealStrategy } from "../strategy_pattern/strategies/partyheal.js"
 
 await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
@@ -55,7 +56,7 @@ async function startMage(context: Strategist<Mage>) {
     context.applyStrategy(partyRequestStrategy)
 
     // Attack
-    context.applyStrategy(new MageAttackStrategy({ contexts: CONTEXTS, disableEnergize: true, typeList: MONSTERS }))
+    context.applyStrategy(new MageAttackStrategy({ contexts: CONTEXTS, disableEnergize: true, disableZapper: true, typeList: MONSTERS }))
 }
 
 async function startPriest(context: Strategist<Priest>) {
@@ -68,6 +69,7 @@ async function startPriest(context: Strategist<Priest>) {
 
     // Party
     context.applyStrategy(partyRequestStrategy)
+    context.applyStrategy(new PartyHealStrategy(CONTEXTS))
 
     // Attack
     context.applyStrategy(new PriestAttackStrategy({ contexts: CONTEXTS, disableEnergize: true, typeList: MONSTERS }))
@@ -108,7 +110,7 @@ async function startWarrior(context: Strategist<Warrior>) {
     context.applyStrategy(partyAcceptStrategy)
 
     // Attack
-    context.applyStrategy(new WarriorAttackStrategy({ contexts: CONTEXTS, enableEquipForCleave: true, ensureEquipped: { mainhand: { name: "vhammer" }, offhand: { name: "glolipop" } }, typeList: MONSTERS }))
+    context.applyStrategy(new WarriorAttackStrategy({ contexts: CONTEXTS, disableZapper: true, enableEquipForCleave: true, ensureEquipped: { mainhand: { name: "vhammer" }, offhand: { name: "glolipop" } }, typeList: MONSTERS }))
 }
 
 // Login and prepare pathfinding

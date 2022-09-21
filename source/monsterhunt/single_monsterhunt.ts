@@ -1,8 +1,8 @@
 import AL from "alclient"
-import { Strategist } from "./context.js"
-import { BaseAttackStrategy } from "./strategies/attack.js"
-import { BaseStrategy } from "./strategies/base.js"
-import { FinishMonsterHuntStrategy, GetMonsterHuntStrategy } from "./strategies/monsterhunt.js"
+import { Strategist } from "../strategy_pattern/context.js"
+import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
+import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
+import { FinishMonsterHuntStrategy, GetMonsterHuntStrategy } from "../strategy_pattern/strategies/monsterhunt.js"
 
 async function run() {
     // Login and prepare pathfinding

@@ -19,6 +19,7 @@ export type LoopName =
     | "mluck"
     | "move"
     | "party"
+    | "partyheal"
     | "respawn"
     | "rspeed"
     | "sell"
