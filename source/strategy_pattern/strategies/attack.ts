@@ -5,9 +5,11 @@ import { Loop, LoopName, Strategist, Strategy } from "../context.js"
 
 export type BaseAttackStrategyOptions = GetEntitiesFilters & {
     contexts: Strategist<PingCompensatedCharacter>[]
-    disableCreditCheck?: boolean
-    disableEnergize?: boolean
-    disableZapper?: boolean
+    disableCreditCheck?: true
+    disableEnergize?: true
+    disableZapper?: true
+    /** If set, we will aggro as many nearby monsters as we can */
+    enableGreedyAggro?: true
     /** If set, we will check if we have the correct items equipped before and after attacking */
     ensureEquipped?: {
         [T in SlotType]?: {
@@ -52,6 +54,25 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
     protected async basicAttack(bot: Type, priority: (a: Entity, b: Entity) => boolean): Promise<unknown> {
         if (!bot.canUse("attack")) return // We can't attack
+
+        if (this.options.enableGreedyAggro) {
+            const entities = bot.getEntities({
+                canDamage: "attack",
+                hasTarget: false,
+                type: this.options.type,
+                typeList: this.options.typeList,
+                withinRange: "attack"
+            })
+            if (
+                entities.length
+                && !(this.options.maximumTargets && bot.targets >= this.options.maximumTargets)) {
+                // Prioritize the entities
+                const targets = new FastPriorityQueue<Entity>(priority)
+                for (const entity of entities) targets.add(entity)
+
+                return bot.basicAttack(targets.peek().id).catch(console.error)
+            }
+        }
 
         // Find all targets we want to attack
         const entities = bot.getEntities({
@@ -109,6 +130,25 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
     protected async zapperAttack(bot: Type, priority: (a: Entity, b: Entity) => boolean) {
         if (!bot.canUse("zapperzap")) return // We can't zap
 
+        if (this.options.enableGreedyAggro) {
+            const entities = bot.getEntities({
+                canDamage: "zapperzap",
+                hasTarget: false,
+                type: this.options.type,
+                typeList: this.options.typeList,
+                withinRange: "zapperzap"
+            })
+            if (
+                entities.length
+                && !(this.options.maximumTargets && bot.targets >= this.options.maximumTargets)) {
+                // Prioritize the entities
+                const targets = new FastPriorityQueue<Entity>(priority)
+                for (const entity of entities) targets.add(entity)
+
+                return bot.zapperZap(targets.peek().id).catch(console.error)
+            }
+        }
+
         // Find all targets we want to attack
         const entities = bot.getEntities({
             ...this.options,
@@ -134,7 +174,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             // If we can kill something guaranteed, break early
             if (bot.canKillInOneShot(entity, "zapperzap")) {
                 this.preventOverkill(bot, entity)
-                return bot.zapperZap(entity.id)
+                return bot.zapperZap(entity.id).catch(console.error)
             }
 
             targets.add(entity)
@@ -161,7 +201,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 }
             }
 
-            return bot.zapperZap(entity.id)
+            return bot.zapperZap(entity.id).catch(console.error)
         }
     }
 

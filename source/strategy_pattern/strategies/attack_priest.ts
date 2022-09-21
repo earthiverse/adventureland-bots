@@ -22,6 +22,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
         await this.healFriendsOrSelf(bot)
         this.applyDarkBlessing(bot)
         await this.basicAttack(bot, priority)
+        await this.absorbTargets(bot)
 
         await this.ensureEquipped(bot)
     }
@@ -109,8 +110,29 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
 
         const toHeal = players.peek()
         if (toHeal) {
-            return bot.healSkill(toHeal.id)
+            return bot.healSkill(toHeal.id).catch(console.error)
+        }
+    }
 
+    protected async absorbTargets(bot: Priest) {
+        if (!bot.canUse("absorb")) return // Can't absorb
+
+        if (this.options.enableGreedyAggro) {
+            // TODO: If we can absorb the sins of a coop monster's target, do that instead
+            //       (couldGiveCredit: true)
+            // Absorb the sins of party members
+            const entity = bot.getEntity({
+                targetingMe: false,
+                targetingPartyMember: true,
+                type: this.options.type,
+                typeList: this.options.typeList,
+            })
+            if (entity) {
+                const player = bot.players.get(entity.target)
+                if (player && AL.Tools.distance(bot, player) < AL.Game.G.skills.absorb.range) {
+                    return bot.absorbSins(player.id).catch(console.error)
+                }
+            }
         }
     }
 
