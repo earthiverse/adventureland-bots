@@ -72,7 +72,7 @@ async function startPriest(context: Strategist<Priest>) {
     context.applyStrategy(new PartyHealStrategy(CONTEXTS))
 
     // Attack
-    context.applyStrategy(new PriestAttackStrategy({ contexts: CONTEXTS, disableEnergize: true, typeList: MONSTERS }))
+    context.applyStrategy(new PriestAttackStrategy({ contexts: CONTEXTS, disableEnergize: true, enableGreedyAggro: true, typeList: MONSTERS }))
 
     // Luck
     context.applyStrategy(new ElixirStrategy("elixirluck"))

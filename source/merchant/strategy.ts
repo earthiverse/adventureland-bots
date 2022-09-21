@@ -122,7 +122,7 @@ export type MerchantMoveStrategyOptions = {
 }
 
 export const DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS: MerchantMoveStrategyOptions = {
-    // debug: true,
+    debug: true,
     // enableBuyAndUpgrade: {
     //     upgradeToLevel: 9
     // },

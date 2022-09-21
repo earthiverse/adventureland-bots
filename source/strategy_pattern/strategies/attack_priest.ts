@@ -4,6 +4,7 @@ import { sortPriority } from "../../base/sort.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
 
 export type PriestAttackStrategyOptions = BaseAttackStrategyOptions & {
+    disableAbsorb?: true
     disableCurse?: true
     disableDarkBlessing?: true
     healStrangers?: true
@@ -26,7 +27,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
         await this.healFriendsOrSelf(bot)
         if (!this.options.disableDarkBlessing) this.applyDarkBlessing(bot)
         await this.basicAttack(bot, priority)
-        await this.absorbTargets(bot)
+        if (!this.options.disableAbsorb) await this.absorbTargets(bot)
 
         await this.ensureEquipped(bot)
     }

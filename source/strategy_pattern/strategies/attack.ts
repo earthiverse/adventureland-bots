@@ -1,4 +1,4 @@
-import AL, { Character, Entity, GetEntitiesFilters, ItemName, LocateItemFilters, Mage, PingCompensatedCharacter, SkillName, SlotType } from "alclient"
+import AL, { Character, EntitiesData, Entity, GetEntitiesFilters, ItemName, LocateItemFilters, Mage, PingCompensatedCharacter, SkillName, SlotType } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { sortPriority } from "../../base/sort.js"
 import { Loop, LoopName, Strategist, Strategy } from "../context.js"
@@ -22,8 +22,10 @@ export type BaseAttackStrategyOptions = GetEntitiesFilters & {
 
 export class BaseAttackStrategy<Type extends Character> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
+
+    protected greedyOnEntities: (data: EntitiesData) => Promise<void>
+
     protected options: BaseAttackStrategyOptions
-    protected sortPriority: (a: Entity, b: Entity) => boolean
     protected interval: SkillName[] = ["attack"]
 
     public constructor(options?: BaseAttackStrategyOptions) {
@@ -42,6 +44,23 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             },
             interval: this.interval
         })
+    }
+
+    public onApply(bot: Type) {
+        if (this.options.enableGreedyAggro && !this.options.disableZapper) {
+            this.greedyOnEntities = async (data: EntitiesData) => {
+                if (data.monsters.length == 0) return // No monsters
+                if (!bot.canUse("zapperzap")) return // Can't zap
+                for (const monster of data.monsters) {
+                    if (monster.target) continue // Already has a target
+                    if (this.options.type && monster.type !== this.options.type) continue
+                    if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
+                    if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.zapperzap.range) continue
+                    await bot.zapperZap(monster.id).catch(console.error)
+                }
+            }
+            bot.socket.on("entities", this.greedyOnEntities)
+        }
     }
 
     protected async attack(bot: Type) {
