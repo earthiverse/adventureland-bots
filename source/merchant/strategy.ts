@@ -329,6 +329,11 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 await bot.smartMove("main")
             }
 
+            if (bot.map.startsWith("bank")) {
+                this.debug(bot, "Moving out of bank...")
+                await bot.smartMove("main")
+            }
+
             if (this.options.enableBuyReplenishables) {
                 // Find own characters with low replenishables and go deliver some
                 for (const friendContext of this.contexts) {
