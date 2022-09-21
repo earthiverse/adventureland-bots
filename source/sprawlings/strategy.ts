@@ -13,7 +13,7 @@ import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 import { ElixirStrategy } from "../strategy_pattern/strategies/elixir.js"
 
 await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
-await AL.Pathfinder.prepare(AL.Game.G)
+await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 
 /**
  * Farm sprawlings
