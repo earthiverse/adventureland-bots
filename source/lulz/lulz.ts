@@ -29,7 +29,7 @@ await AL.Pathfinder.prepare(AL.Game.G)
 const SERVER_REGION: ServerRegion = "US"
 const SERVER_ID: ServerIdentifier = "I"
 
-const MAX_CHARACTERS = 12
+const MAX_CHARACTERS = 24
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 const REPLENISHABLES = new Map<ItemName, number>([
     ["hpot1", 2500],
