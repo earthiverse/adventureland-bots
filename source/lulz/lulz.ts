@@ -199,6 +199,8 @@ async function startLulzCharacter(type: CharacterType, userID: string, userAuth:
 }) {
     runChecks(characterID)
 
+    if (monsters.includes("snake")) monsters.push("osnake")
+
     let bot: PingCompensatedCharacter
     switch (type) {
         case "mage": {
@@ -235,23 +237,23 @@ async function startLulzCharacter(type: CharacterType, userID: string, userAuth:
 
     switch (type) {
         case "mage": {
-            context.applyStrategy(new MageAttackStrategy({ contexts: CONTEXTS, typeList: [...monsters, "phoenix"] }))
+            context.applyStrategy(new MageAttackStrategy({ contexts: CONTEXTS, typeList: [...monsters] }))
             break
         }
         case "priest": {
-            context.applyStrategy(new PriestAttackStrategy({ contexts: CONTEXTS, typeList: [...monsters, "phoenix"] }))
+            context.applyStrategy(new PriestAttackStrategy({ contexts: CONTEXTS, typeList: [...monsters] }))
             break
         }
         case "ranger": {
-            context.applyStrategy(new RangerAttackStrategy({ contexts: CONTEXTS, typeList: [...monsters, "phoenix"] }))
+            context.applyStrategy(new RangerAttackStrategy({ contexts: CONTEXTS, typeList: [...monsters] }))
             break
         }
         case "warrior": {
-            context.applyStrategy(new WarriorAttackStrategy({ contexts: CONTEXTS, typeList: [...monsters, "phoenix"] }))
+            context.applyStrategy(new WarriorAttackStrategy({ contexts: CONTEXTS, typeList: [...monsters] }))
             break
         }
         default: {
-            context.applyStrategy(new BaseAttackStrategy({ contexts: CONTEXTS, typeList: [...monsters, "phoenix"] }))
+            context.applyStrategy(new BaseAttackStrategy({ contexts: CONTEXTS, typeList: [...monsters] }))
             break
         }
     }
@@ -330,7 +332,7 @@ app.post("/",
             // Filter out unwanted match-ups
             switch (charType) {
                 case "mage": {
-                    const mageMonsters: MonsterName[] = ["armadillo", "bee", "crab", "goo"]
+                    const mageMonsters: MonsterName[] = ["armadillo", "bee", "crab", "croc", "goo", "scorpion", "snake", "spider"]
                     if (!mageMonsters.includes(monster)) {
                         return res.status(400).send(`This service doesn't currently support ${monster} for ${charType}, sorry!`)
                     }
@@ -341,14 +343,14 @@ app.post("/",
                     break
                 }
                 case "ranger": {
-                    const rangerMonsters: MonsterName[] = ["armadillo", "bee", "crab", "goo"]
+                    const rangerMonsters: MonsterName[] = ["armadillo", "bee", "crab", "croc", "goo", "scorpion", "snake", "spider"]
                     if (!rangerMonsters.includes(monster)) {
                         return res.status(400).send(`This service doesn't currently support ${monster} for ${charType}, sorry!`)
                     }
                     break
                 }
                 case "warrior": {
-                    const warriorMonsters: MonsterName[] = ["bee", "crab", "goo"]
+                    const warriorMonsters: MonsterName[] = ["bee", "crab", "croc", "goo", "scorpion", "snake", "spider"]
                     if (!warriorMonsters.includes(monster)) {
                         return res.status(400).send(`This service doesn't currently support ${monster} for ${charType}, sorry!`)
                     }
