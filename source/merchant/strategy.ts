@@ -601,7 +601,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
             if (broom !== undefined) await bot.equip(broom)
 
             // Go mluck others
-            if (this.options.enableMluck.travel) {
+            if (this.options.enableMluck?.travel) {
                 const player = await AL.PlayerModel.findOne({
                     $or: [
                         { "s.mluck": undefined }, // They don't have mluck
