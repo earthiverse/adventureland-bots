@@ -208,6 +208,9 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     this.toUpgrade = await getItemsToCompoundOrUpgrade(bot, this.itemCounts)
                 }
 
+                // Withdraw extra gold
+                if (bot.bank.gold > this.options.goldToHold) await bot.withdrawGold(this.options.goldToHold)
+
                 // Go to town and wait a while for things to upgrade
                 await bot.smartMove("main")
                 await sleep(60000)
