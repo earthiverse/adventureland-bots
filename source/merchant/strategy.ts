@@ -217,7 +217,11 @@ export class MerchantStrategy implements Strategy<Merchant> {
             }
 
             // Do banking if we have a lot of gold, or it's been a while (15 minutes)
-            if (bot.gold > (this.options.goldToHold * 2) || checkOnlyEveryMS(`${bot.id}_banking`, 900_000)) {
+            if (
+                (bot.gold > (this.options.goldToHold * 2))
+                || (bot.esize < 2 && this.toUpgrade.length == 0)
+                || checkOnlyEveryMS(`${bot.id}_banking`, 900_000)
+            ) {
                 this.debug(bot, "Normal Banking")
                 // Move to town first, to have a chance to sell unwanted items
                 await bot.smartMove("main")
