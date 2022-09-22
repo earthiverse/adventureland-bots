@@ -159,8 +159,8 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
     protected options: MerchantMoveStrategyOptions
 
-    protected itemCounts: ItemCount[]
-    protected toUpgrade: IndexesToCompoundOrUpgrade
+    protected itemCounts: ItemCount[] = []
+    protected toUpgrade: IndexesToCompoundOrUpgrade = []
 
     public constructor(contexts: Strategist<PingCompensatedCharacter>[], options: MerchantMoveStrategyOptions = DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS) {
         this.contexts = contexts
