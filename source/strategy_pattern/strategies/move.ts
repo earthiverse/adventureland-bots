@@ -125,12 +125,12 @@ export class HoldPositionMoveStrategy implements Strategy<Character> {
     public location: IPosition
 
     public constructor(location: IPosition, options?: HoldPositionMoveStrategyOptions) {
-        if (options?.offset) {
-            if (options.offset.x) location.x += options.offset.x
-            if (options.offset.y) location.y += options.offset.y
-        }
+        this.location = { ...location }
 
-        this.location = location
+        if (options?.offset) {
+            if (options.offset.x) this.location.x += options.offset.x
+            if (options.offset.y) this.location.y += options.offset.y
+        }
 
         this.loops.set("move", {
             fn: async (bot: Character) => { await this.move(bot) },
