@@ -6,7 +6,7 @@
   "type": "module",
   "dependencies": {
     "@types/cors": "^2.8.12",
-    "alclient": "^0.15.42",
+    "alclient": "^0.15.43",
     "algui": "^0.1.21",
     "axios": "^0.25.0",
     "body-parser": "^1.19.2",
