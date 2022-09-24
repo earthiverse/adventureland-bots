@@ -128,8 +128,10 @@ export class HoldPositionMoveStrategy implements Strategy<Character> {
         this.location = { ...location }
 
         if (options?.offset) {
+            console.log("before", this.location.map, this.location.x, this.location.y)
             if (options.offset.x) this.location.x += options.offset.x
             if (options.offset.y) this.location.y += options.offset.y
+            console.log("after", this.location.map, this.location.x, this.location.y)
         }
 
         this.loops.set("move", {
@@ -139,6 +141,7 @@ export class HoldPositionMoveStrategy implements Strategy<Character> {
     }
 
     private async move(bot: Character) {
+        console.log(bot.id, this.location.map, this.location.x, this.location.y)
         await bot.smartMove(this.location)
     }
 }
