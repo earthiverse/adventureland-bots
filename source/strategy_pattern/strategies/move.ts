@@ -33,6 +33,116 @@ export class BasicMoveStrategy implements Strategy<Character> {
     }
 }
 
+export class FinishMonsterHuntStrategy<Type extends Character> implements Strategy<Type> {
+    public loops = new Map<LoopName, Loop<Type>>()
+
+    public constructor() {
+        this.loops.set("move", {
+            fn: async (bot: Type) => { await this.turnInMonsterHunt(bot) },
+            interval: 100
+        })
+    }
+
+    private async turnInMonsterHunt(bot: Type) {
+        if (!bot.s.monsterhunt) return // We already have a monster hunt
+        await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+        await bot.finishMonsterHuntQuest()
+    }
+}
+
+export class FollowFriendMoveStrategy implements Strategy<Character> {
+    public loops = new Map<LoopName, Loop<Character>>()
+
+    public friendContext: Strategist<PingCompensatedCharacter>
+
+    /**
+     * Follows another bot
+     * @param friendContext The friend to follow
+     */
+    public constructor(friendContext: Strategist<PingCompensatedCharacter>) {
+        this.friendContext = friendContext
+        if (!friendContext) throw new Error("No friend specified")
+
+        this.loops.set("move", {
+            fn: async (bot: Character) => { await this.move(bot) },
+            interval: 1000
+        })
+    }
+
+    private async move(bot: Character) {
+        const friend = this.friendContext.bot
+        if (!friend || !friend.ready) return // No friend!?
+
+        return bot.smartMove(friend, { getWithin: 10 })
+    }
+}
+
+export class GetHolidaySpirit<Type extends Character> implements Strategy<Type> {
+    public loops = new Map<LoopName, Loop<Type>>()
+
+    public constructor() {
+        this.loops.set("move", {
+            fn: async (bot: Type) => { await this.getHolidaySpirit(bot) },
+            interval: 100
+        })
+    }
+
+    private async getHolidaySpirit(bot: Type) {
+        if (bot.s.holidayspirit) return // We already have holiday spirit
+        await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+        await bot.getHolidaySpirit()
+    }
+}
+
+export class GetMonsterHuntStrategy<Type extends Character> implements Strategy<Type> {
+    public loops = new Map<LoopName, Loop<Type>>()
+
+    public constructor() {
+        this.loops.set("move", {
+            fn: async (bot: Type) => { await this.getMonsterHunt(bot) },
+            interval: 100
+        })
+    }
+
+    private async getMonsterHunt(bot: Type) {
+        if (bot.s.monsterhunt) return // We already have a monster hunt
+        await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+        await bot.getMonsterHuntQuest()
+    }
+}
+
+export type HoldPositionMoveStrategyOptions = {
+    /** If set, we will offset the given location by this amount */
+    offset?: {
+        x?: number
+        y?: number
+    }
+}
+
+export class HoldPositionMoveStrategy implements Strategy<Character> {
+    public loops = new Map<LoopName, Loop<Character>>()
+
+    public location: IPosition
+
+    public constructor(location: IPosition, options?: HoldPositionMoveStrategyOptions) {
+        this.location = location
+
+        if (options?.offset) {
+            if (options.offset.x) location.x += options.offset.x
+            if (options.offset.y) location.y += options.offset.y
+        }
+
+        this.loops.set("move", {
+            fn: async (bot: Character) => { await this.move(bot) },
+            interval: 1000
+        })
+    }
+
+    private async move(bot: Character) {
+        await bot.smartMove(this.location)
+    }
+}
+
 export class ImprovedMoveStrategy implements Strategy<Character> {
     public loops = new Map<LoopName, Loop<Character>>()
 
@@ -85,65 +195,6 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
             this.spawns.sort(sortClosestDistance(bot))
             bot.smartMove(offsetPositionParty(this.spawns[0], bot), { resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         }
-    }
-}
-
-export type HoldPositionMoveStrategyOptions = {
-    /** If set, we will offset the given location by this amount */
-    offset?: {
-        x?: number
-        y?: number
-    }
-}
-
-export class HoldPositionMoveStrategy implements Strategy<Character> {
-    public loops = new Map<LoopName, Loop<Character>>()
-
-    public location: IPosition
-
-    public constructor(location: IPosition, options?: HoldPositionMoveStrategyOptions) {
-        this.location = location
-
-        if (options?.offset) {
-            if (options.offset.x) location.x += options.offset.x
-            if (options.offset.y) location.y += options.offset.y
-        }
-
-        this.loops.set("move", {
-            fn: async (bot: Character) => { await this.move(bot) },
-            interval: 1000
-        })
-    }
-
-    private async move(bot: Character) {
-        await bot.smartMove(this.location)
-    }
-}
-
-export class FollowFriendMoveStrategy implements Strategy<Character> {
-    public loops = new Map<LoopName, Loop<Character>>()
-
-    public friendContext: Strategist<PingCompensatedCharacter>
-
-    /**
-     * Follows another bot
-     * @param friendContext The friend to follow
-     */
-    public constructor(friendContext: Strategist<PingCompensatedCharacter>) {
-        this.friendContext = friendContext
-        if (!friendContext) throw new Error("No friend specified")
-
-        this.loops.set("move", {
-            fn: async (bot: Character) => { await this.move(bot) },
-            interval: 1000
-        })
-    }
-
-    private async move(bot: Character) {
-        const friend = this.friendContext.bot
-        if (!friend || !friend.ready) return // No friend!?
-
-        return bot.smartMove(friend, { getWithin: 10 })
     }
 }
 

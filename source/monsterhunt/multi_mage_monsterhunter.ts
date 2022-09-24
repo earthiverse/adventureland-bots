@@ -2,8 +2,7 @@ import AL, { IPosition, Mage, Merchant, MonsterName, PingCompensatedCharacter, S
 import { Strategist, Strategy } from "../strategy_pattern/context.js"
 import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
 import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
-import { FinishMonsterHuntStrategy, GetMonsterHuntStrategy } from "../strategy_pattern/strategies/monsterhunt.js"
-import { BasicMoveStrategy, HoldPositionMoveStrategy } from "../strategy_pattern/strategies/move.js"
+import { BasicMoveStrategy, FinishMonsterHuntStrategy, GetMonsterHuntStrategy, HoldPositionMoveStrategy } from "../strategy_pattern/strategies/move.js"
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "../strategy_pattern/strategies/party.js"
 import { ToggleStandByMovementStrategy } from "../strategy_pattern/strategies/stand.js"
 

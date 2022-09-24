@@ -199,7 +199,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
             if (bot.esize == 0) {
                 this.debug(bot, "Emergency Banking")
                 // Go to bank and get item counts
-                this.toUpgrade = undefined
+                this.toUpgrade = []
                 await bot.smartMove(bankingPosition)
                 this.itemCounts = await getItemCountsForEverything(bot.owner)
 
@@ -219,7 +219,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
             // Do banking if we have a lot of gold, or it's been a while (15 minutes)
             if (
                 (bot.gold > (this.options.goldToHold * 2))
-                || (bot.esize < 2 && this.toUpgrade.length == 0)
+                || (bot.esize < 2 && (this.toUpgrade.length))
                 || checkOnlyEveryMS(`${bot.id}_banking`, 900_000)
             ) {
                 this.debug(bot, "Normal Banking")
@@ -227,7 +227,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 await bot.smartMove("main")
 
                 // Then go to the bank to bank things
-                this.toUpgrade = undefined
+                this.toUpgrade = []
                 await bot.smartMove(bankingPosition)
                 this.itemCounts = await getItemCountsForEverything(bot.owner)
 

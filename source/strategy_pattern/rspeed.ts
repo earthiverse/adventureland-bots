@@ -1,4 +1,4 @@
-import AL, { Character, ItemName, LimitDCReportData, PingCompensatedCharacter, Rogue } from "alclient"
+import AL, { ItemName, LimitDCReportData, PingCompensatedCharacter, Rogue } from "alclient"
 import { Loop, LoopName, Strategist, Strategy } from "./context.js"
 import { suppress_errors } from "./logging.js"
 import { BaseAttackStrategy } from "./strategies/attack.js"
@@ -9,6 +9,10 @@ import { RespawnStrategy } from "./strategies/respawn.js"
 import { GiveRogueSpeedStrategy } from "./strategies/rspeed.js"
 import { SellStrategy } from "./strategies/sell.js"
 import { TrackerStrategy } from "./strategies/tracker.js"
+
+// Login and prepare pathfinding
+await Promise.all([AL.Game.loginJSONFile("../../credentials_attack.json"), AL.Game.getGData(true)])
+await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 
 async function getPlayerWithoutRSpeed(bot: PingCompensatedCharacter) {
     const noSpeedChars = await AL.PlayerModel.find({
@@ -57,10 +61,6 @@ export class GoSellThingsStrategy<Type extends PingCompensatedCharacter> impleme
 }
 
 async function run() {
-    // Login and prepare pathfinding
-    await Promise.all([AL.Game.loginJSONFile("../../credentials_attack.json"), AL.Game.getGData(true)])
-    await AL.Pathfinder.prepare(AL.Game.G)
-
     const baseStrategy = new BaseStrategy()
 
     const rogue1 = await AL.Game.startRogue("attackRog", "US", "I")

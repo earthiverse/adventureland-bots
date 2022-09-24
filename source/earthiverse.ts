@@ -1,12 +1,9 @@
-import AL, { ItemName, Merchant, MonsterName, PingCompensatedCharacter, Priest, Mage, Warrior } from "alclient"
+import AL, { ItemName, Merchant, PingCompensatedCharacter, Priest, Mage, Warrior, ServerRegion, ServerIdentifier } from "alclient"
 import { DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, startMerchant } from "./merchant/strategy.js"
 import { Strategist } from "./strategy_pattern/context.js"
-import { PriestAttackStrategy } from "./strategy_pattern/strategies/attack_priest.js"
-import { MageAttackStrategy } from "./strategy_pattern/strategies/attack_mage.js"
-import { WarriorAttackStrategy } from "./strategy_pattern/strategies/attack_warrior.js"
 import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "./strategy_pattern/strategies/buy.js"
-import { HoldPositionMoveStrategy, MoveInCircleMoveStrategy } from "./strategy_pattern/strategies/move.js"
+import { FinishMonsterHuntStrategy, GetMonsterHuntStrategy } from "./strategy_pattern/strategies/move.js"
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategy_pattern/strategies/party.js"
 import { RespawnStrategy } from "./strategy_pattern/strategies/respawn.js"
 import { TrackerStrategy } from "./strategy_pattern/strategies/tracker.js"
@@ -41,12 +38,45 @@ const buyStrategy = new BuyStrategy({
     ])
 })
 
+//// Strategies
+// Monster Hunt
+const finishMonsterHuntStrategy = new FinishMonsterHuntStrategy()
+const getMonsterHuntStrategy = new GetMonsterHuntStrategy()
+// Party
+const partyAcceptStrategy = new AcceptPartyRequestStrategy({ allowList: PARTY_ALLOWLIST })
+const partyRequestStrategy = new RequestPartyStrategy(WARRIOR)
+// Priest
+const partyHealStrategy = new PartyHealStrategy(ALL_CONTEXTS)
+const trackerStrategy = new TrackerStrategy()
+const respawnStrategy = new RespawnStrategy()
+
 const privateContextsLogic = () => {
     try {
         for (const context of PRIVATE_CONTEXTS) {
             if (context.isStopped()) continue
             if (!context.bot || !context.bot.ready || !context.bot.socket.disconnected) continue
             if (context.bot.ctype == "merchant") continue
+            const bot = context.bot
+
+            // Get a monster hunt
+            if (!bot.s.monsterhunt) {
+                context.applyStrategy(getMonsterHuntStrategy)
+                return
+            }
+
+            // Turn in our monster hunt
+            if (bot.s.monsterhunt?.c == 0) {
+                const [region, id] = bot.s.monsterhunt.sn.split(" ") as [ServerRegion, ServerIdentifier]
+                if (region == bot.serverData.region && id == bot.serverData.name) {
+                    context.applyStrategy(finishMonsterHuntStrategy)
+                    return
+                }
+            }
+
+            // Holiday spirit
+            if (bot.S.holidayseason && !bot.s.holidayspirit) {
+                // TODO: implement going to get holiday spirit
+            }
 
             // TODO: Get target
         }
@@ -58,28 +88,24 @@ const privateContextsLogic = () => {
 }
 privateContextsLogic()
 
-const publicContextsLogic = () => {
-    try {
-        for (const context of PRIVATE_CONTEXTS) {
-            if (context.isStopped()) continue
-            if (!context.bot || !context.bot.ready || !context.bot.socket.disconnected) continue
-            if (context.bot.ctype == "merchant") continue
+// const publicContextsLogic = () => {
+//     try {
+//         for (const context of PUBLIC_CONTEXTS) {
+//             if (context.isStopped()) continue
+//             if (!context.bot || !context.bot.ready || !context.bot.socket.disconnected) continue
+//             if (context.bot.ctype == "merchant") continue
 
-            // TODO: If full, go to bank and deposit things
-        }
-    } catch (e) {
-        console.error(e)
-    } finally {
-        setTimeout(publicContextsLogic, 1000)
-    }
-}
-publicContextsLogic()
+//             // TODO: If full, go to bank and deposit things
+//         }
+//     } catch (e) {
+//         console.error(e)
+//     } finally {
+//         setTimeout(publicContextsLogic, 1000)
+//     }
+// }
+// publicContextsLogic()
 
-//// Shared strategies
-const partyAcceptStrategy = new AcceptPartyRequestStrategy({ allowList: PARTY_ALLOWLIST })
-const partyRequestStrategy = new RequestPartyStrategy(WARRIOR)
-const trackerStrategy = new TrackerStrategy()
-const respawnStrategy = new RespawnStrategy()
+// Shared setup
 async function startShared(context: Strategist<PingCompensatedCharacter>) {
     if (context.bot.id == PARTY_LEADER) {
         context.applyStrategy(partyAcceptStrategy)
@@ -92,19 +118,18 @@ async function startShared(context: Strategist<PingCompensatedCharacter>) {
     context.applyStrategy(new ElixirStrategy("elixirluck"))
 }
 
-//// Mage strategies
+// Mage strategies
 async function startMage(context: Strategist<Mage>) {
     startShared(context)
 }
 
-//// Priest strategies
-const partyHealStrategy = new PartyHealStrategy(ALL_CONTEXTS)
+// Priest setup
 async function startPriest(context: Strategist<Priest>) {
     startShared(context)
     context.applyStrategy(partyHealStrategy)
 }
 
-//// Warrior strategies
+// Warrior setup
 async function startWarrior(context: Strategist<Warrior>) {
     startShared(context)
 }
