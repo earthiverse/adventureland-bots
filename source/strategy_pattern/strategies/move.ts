@@ -142,7 +142,7 @@ export class HoldPositionMoveStrategy implements Strategy<Character> {
 
     private async move(bot: Character) {
         console.log("location", bot.id, this.location.map, this.location.x, this.location.y)
-        await bot.smartMove(this.location)
+        console.log(await bot.smartMove(this.location, { showConsole: true }))
         console.log("bot", bot.id, bot.map, bot.x, bot.y)
     }
 }
