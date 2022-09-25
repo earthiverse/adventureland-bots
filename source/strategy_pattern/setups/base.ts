@@ -6,6 +6,7 @@ import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { constructPlantoidSetup } from "./plantoid.js"
+import { constructPorcupineSetup } from "./porcupine.js"
 
 export type CharacterConfig = {
     ctype: "mage"
@@ -99,10 +100,13 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
     return {
         arcticbee: constructGenericSetup(contexts, "arcticbee"),
         armadillo: constructGenericSetup(contexts, "armadillo"),
+        crab: constructGenericSetup(contexts, "armadillo"),
         crabx: constructGenericSetup(contexts, "crabx"),
         croc: constructGenericSetup(contexts, "croc"),
         goo: constructGenericSetup(contexts, "goo"),
         plantoid: constructPlantoidSetup(contexts),
+        poisio: constructGenericSetup(contexts, "poisio"),
+        porcupine: constructPorcupineSetup(contexts),
         spider: constructGenericSetup(contexts, "spider"),
         tortoise: constructGenericSetup(contexts, "tortoise"),
     }

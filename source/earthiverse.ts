@@ -125,8 +125,8 @@ const applySetups = (contexts: Strategist<PingCompensatedCharacter>[]) => {
         priority.push(bot.s.monsterhunt.id)
     }
 
-    // Default target
-    priority.push("plantoid")
+    // Default targets
+    priority.push("plantoid", "croc", "crab", "goo")
 
     for (const id of priority) {
         if (setupContexts.length == 0) break // All set up
