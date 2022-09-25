@@ -9,9 +9,9 @@ import { RespawnStrategy } from "./strategy_pattern/strategies/respawn.js"
 import { TrackerStrategy } from "./strategy_pattern/strategies/tracker.js"
 import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
 import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
-import { Config, constructSetups, Setup } from "./strategy_pattern/setups/base.js"
+import { Config, constructSetups } from "./strategy_pattern/setups/base.js"
 
-await Promise.all([AL.Game.loginJSONFile("././credentials.json"), AL.Game.getGData(true)])
+await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 
 const MERCHANT = "earthMer"
