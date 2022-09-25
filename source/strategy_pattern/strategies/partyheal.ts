@@ -42,7 +42,7 @@ export class PartyHealStrategy implements Strategy<Priest> {
     }
 
     private async partyHeal(bot: Priest) {
-        if (!bot.rip) return
+        if (bot.rip) return
         if (!bot.canUse("partyheal")) return
 
         for (const context of this.contexts) {
