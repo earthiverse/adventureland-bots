@@ -1,5 +1,6 @@
 import AL, { Character, EntitiesData, Entity, GetEntitiesFilters, ItemName, LocateItemFilters, Mage, PingCompensatedCharacter, SkillName, SlotType } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
+import { sleep } from "../../base/general.js"
 import { sortPriority } from "../../base/sort.js"
 import { Loop, LoopName, Strategist, Strategy } from "../context.js"
 
@@ -14,6 +15,7 @@ export type BaseAttackStrategyOptions = GetEntitiesFilters & {
     contexts: Strategist<PingCompensatedCharacter>[]
     disableCreditCheck?: true
     disableEnergize?: true
+    disableScare?: true
     disableZapper?: true
     /** If set, we will aggro as many nearby monsters as we can */
     enableGreedyAggro?: true
@@ -41,6 +43,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
         this.loops.set("attack", {
             fn: async (bot: Type) => {
+                if (this.shouldScare(bot)) await this.scare(bot)
                 if (!this.shouldAttack(bot)) return
                 await this.attack(bot)
             },
@@ -172,6 +175,16 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         }
     }
 
+    protected async scare(bot: Type) {
+        if (!(bot.hasItem("jacko") && bot.isEquipped("jacko"))) return // No jacko to scare
+        if (!bot.isEquipped("jacko")) {
+            await bot.equip(bot.locateItem("jacko"), "orb")
+            if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
+        }
+        if (!bot.canUse("scare")) return // Can't use scare
+        return bot.scare().catch(console.error)
+    }
+
     protected async zapperAttack(bot: Type, priority: (a: Entity, b: Entity) => boolean) {
         if (!bot.canUse("zapperzap")) return // We can't zap
 
@@ -301,5 +314,20 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (bot.c.fishing || bot.c.mining) return false // Don't attack if mining or fishing
         if (bot.isOnCooldown("scare")) return false // Don't attack if scare is on cooldown
         return true
+    }
+
+    protected shouldScare(bot: Character) {
+        if (bot.targets == 0) return false // Nothing is targeting us
+        if (this.options.disableScare) return false // We have scare disabled
+
+        if (this.options.type || this.options.typeList) {
+            // If something else is targeting us, scare
+            const targetingMe = bot.getEntities({ notType: this.options.type, notTypeList: this.options.typeList, targetingMe: true })
+            if (targetingMe.length) return true
+        }
+
+        if (this.options.enableGreedyAggro) return false // We are okay with a lot of targets
+
+        return bot.isScared()
     }
 }

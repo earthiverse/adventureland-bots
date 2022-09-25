@@ -54,7 +54,7 @@ const respawnStrategy = new RespawnStrategy()
 // Setups
 const setups = constructSetups(ALL_CONTEXTS)
 
-const currentSetups = new Map<Strategist<PingCompensatedCharacter>, string>()
+const currentSetups = new Map<Strategist<PingCompensatedCharacter>, Config>()
 const applySetups = (contexts: Strategist<PingCompensatedCharacter>[]) => {
     // Setup a list of ready contexts
     const setupContexts = [...contexts]
@@ -95,11 +95,17 @@ const applySetups = (contexts: Strategist<PingCompensatedCharacter>[]) => {
                 const context = doableWith[i]
                 if (context.bot.ctype == characterConfig.ctype) {
                     const current = currentSetups.get(context)
-                    if (current !== config.id) {
-                        // Apply the strategies
+                    if (current !== config) {
+                        if (current) {
+                            // Remove the old strategies
+                            context.removeStrategy(characterConfig.attack)
+                            context.removeStrategy(characterConfig.move)
+                        }
+
+                        // Apply the new strategies
                         context.applyStrategy(characterConfig.attack)
                         context.applyStrategy(characterConfig.move)
-                        currentSetups.set(context, config.id)
+                        currentSetups.set(context, config)
                     }
                     doableWith.splice(i, 1)
                     continue nextConfig

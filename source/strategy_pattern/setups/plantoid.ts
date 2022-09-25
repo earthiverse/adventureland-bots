@@ -21,6 +21,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableEnergize: true,
                             disableZapper: true,
+                            targetingPartyMember: true,
                             type: "plantoid"
                         }),
                         move: new HoldPositionMoveStrategy(spawn, { offset: { x: 5 } })
@@ -46,6 +47,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                                 mainhand: { name: "vhammer" },
                                 offhand: { name: "glolipop" }
                             },
+                            targetingPartyMember: true,
                             type: "plantoid"
                         }),
                         move: new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } })

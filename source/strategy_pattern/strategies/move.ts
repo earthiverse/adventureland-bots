@@ -1,4 +1,5 @@
 import AL, { IPosition, MonsterName, Pathfinder, Character, Tools, PingCompensatedCharacter } from "alclient"
+import { sleep } from "../../base/general.js"
 import { offsetPositionParty } from "../../base/locations.js"
 import { sortClosestDistance } from "../../base/sort.js"
 import { Loop, LoopName, Strategist, Strategy } from "../context.js"
@@ -41,12 +42,30 @@ export class FinishMonsterHuntStrategy<Type extends Character> implements Strate
             fn: async (bot: Type) => { await this.turnInMonsterHunt(bot) },
             interval: 100
         })
+
+        // Scare if we need
+        this.loops.set("attack", {
+            fn: async (bot: Type) => { await this.scare(bot) },
+            interval: 50
+        })
     }
 
-    private async turnInMonsterHunt(bot: Type) {
+    protected async turnInMonsterHunt(bot: Type) {
         if (!bot.s.monsterhunt) return // We already have a monster hunt
         await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+        await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50, avoidTownWarps: true })
         await bot.finishMonsterHuntQuest()
+    }
+
+    protected async scare(bot: Type) {
+        if (bot.targets == 0) return // No targets
+        if (!(bot.hasItem("jacko") && bot.isEquipped("jacko"))) return // No jacko to scare
+        if (!bot.isEquipped("jacko")) {
+            await bot.equip(bot.locateItem("jacko"), "orb")
+            if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
+        }
+        if (!bot.canUse("scare")) return // Can't use scare
+        await bot.scare().catch(console.error)
     }
 }
 
@@ -85,12 +104,30 @@ export class GetHolidaySpiritStrategy<Type extends Character> implements Strateg
             fn: async (bot: Type) => { await this.getHolidaySpirit(bot) },
             interval: 100
         })
+
+        // Scare if we need
+        this.loops.set("attack", {
+            fn: async (bot: Type) => { await this.scare(bot) },
+            interval: 50
+        })
     }
 
     private async getHolidaySpirit(bot: Type) {
         if (bot.s.holidayspirit) return // We already have holiday spirit
         await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+        await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50, avoidTownWarps: true })
         await bot.getHolidaySpirit()
+    }
+
+    protected async scare(bot: Type) {
+        if (bot.targets == 0) return // No targets
+        if (!(bot.hasItem("jacko") && bot.isEquipped("jacko"))) return // No jacko to scare
+        if (!bot.isEquipped("jacko")) {
+            await bot.equip(bot.locateItem("jacko"), "orb")
+            if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
+        }
+        if (!bot.canUse("scare")) return // Can't use scare
+        await bot.scare().catch(console.error)
     }
 }
 
@@ -102,12 +139,30 @@ export class GetMonsterHuntStrategy<Type extends Character> implements Strategy<
             fn: async (bot: Type) => { await this.getMonsterHunt(bot) },
             interval: 100
         })
+
+        // Scare if we need
+        this.loops.set("attack", {
+            fn: async (bot: Type) => { await this.scare(bot) },
+            interval: 50
+        })
     }
 
     private async getMonsterHunt(bot: Type) {
         if (bot.s.monsterhunt) return // We already have a monster hunt
         await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+        await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50, avoidTownWarps: true })
         await bot.getMonsterHuntQuest()
+    }
+
+    protected async scare(bot: Type) {
+        if (bot.targets == 0) return // No targets
+        if (!(bot.hasItem("jacko") && bot.isEquipped("jacko"))) return // No jacko to scare
+        if (!bot.isEquipped("jacko")) {
+            await bot.equip(bot.locateItem("jacko"), "orb")
+            if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
+        }
+        if (!bot.canUse("scare")) return // Can't use scare
+        await bot.scare().catch(console.error)
     }
 }
 
@@ -250,6 +305,5 @@ export class MoveInCircleMoveStrategy implements Strategy<Character> {
             // Move to where we can walk
             return bot.smartMove(center, { getWithin: radius })
         }
-
     }
 }
