@@ -333,7 +333,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
         }
     }
 
-    if (!options.disableZapper && bot.canUse("zapperzap", { ignoreEquipped: true }) && bot.cc < 100) {
+    if (!options.disableZapper && bot.canUse("zapperzap") && bot.cc < 100) {
         const targets = new FastPriorityQueue<Entity>(priority)
         for (const target of bot.getEntities({
             canDamage: true,
@@ -351,20 +351,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
 
         if (targets.size) {
             const target = targets.peek()
-
-            const zapper: number = bot.locateItem("zapper", bot.items, { returnHighestLevel: true })
-            if (bot.isEquipped("zapper") || (zapper !== undefined)) {
-                // Equip zapper
-                if (zapper !== undefined) bot.equip(zapper, "ring1")
-
-                // Zap
-                const promises: Promise<unknown>[] = []
-                promises.push(bot.zapperZap(target.id).catch(console.error))
-
-                // Re-equip ring
-                if (zapper !== undefined) promises.push(bot.equip(zapper, "ring1"))
-                await Promise.all(promises)
-            }
+            await bot.zapperZap(target.id).catch(console.error)
         }
     }
 

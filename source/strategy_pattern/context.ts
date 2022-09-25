@@ -162,6 +162,10 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         })
     }
 
+    public isReady() {
+        return !this.stopped && this.bot && this.bot.ready && this.bot.socket.connected
+    }
+
     public isStopped() {
         return this.stopped
     }

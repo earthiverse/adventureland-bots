@@ -77,7 +77,7 @@ export class FollowFriendMoveStrategy implements Strategy<Character> {
     }
 }
 
-export class GetHolidaySpirit<Type extends Character> implements Strategy<Type> {
+export class GetHolidaySpiritStrategy<Type extends Character> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
 
     public constructor() {
@@ -143,13 +143,20 @@ export class HoldPositionMoveStrategy implements Strategy<Character> {
     }
 }
 
+export type ImprovedMoveStrategyOptions = {
+    /** Where to wait if there are no monsters to move to */
+    idlePosition?: IPosition
+}
+
 export class ImprovedMoveStrategy implements Strategy<Character> {
     public loops = new Map<LoopName, Loop<Character>>()
 
     public types: MonsterName[]
-    protected spawns: IPosition[]
+    protected spawns: IPosition[] = []
 
-    public constructor(type: MonsterName | MonsterName[]) {
+    public constructor(type: MonsterName | MonsterName[], options?: ImprovedMoveStrategyOptions) {
+        if (!options) options = {}
+
         if (Array.isArray(type)) {
             this.types = type
         } else {
@@ -161,8 +168,11 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
             interval: 250
         })
 
-        this.spawns = []
-        for (const type of this.types) this.spawns.push(...Pathfinder.locateMonster(type))
+        if (options.idlePosition) {
+            this.spawns.push(options.idlePosition)
+        } else {
+            for (const type of this.types) this.spawns.push(...Pathfinder.locateMonster(type))
+        }
     }
 
     private async move(bot: Character) {

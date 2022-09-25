@@ -1,14 +1,15 @@
-import AL, { ItemName, Merchant, PingCompensatedCharacter, Priest, Mage, Warrior, ServerRegion, ServerIdentifier } from "alclient"
+import AL, { ItemName, Merchant, PingCompensatedCharacter, Priest, Mage, Warrior, ServerRegion, ServerIdentifier, MonsterName, ServerInfoDataLive } from "alclient"
 import { DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, startMerchant } from "./merchant/strategy.js"
 import { Strategist } from "./strategy_pattern/context.js"
 import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "./strategy_pattern/strategies/buy.js"
-import { FinishMonsterHuntStrategy, GetMonsterHuntStrategy } from "./strategy_pattern/strategies/move.js"
+import { FinishMonsterHuntStrategy, GetHolidaySpiritStrategy, GetMonsterHuntStrategy } from "./strategy_pattern/strategies/move.js"
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategy_pattern/strategies/party.js"
 import { RespawnStrategy } from "./strategy_pattern/strategies/respawn.js"
 import { TrackerStrategy } from "./strategy_pattern/strategies/tracker.js"
 import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
 import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
+import { Config, constructSetups, Setup } from "./strategy_pattern/setups/base.js"
 
 await Promise.all([AL.Game.loginJSONFile("././credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
@@ -39,7 +40,8 @@ const buyStrategy = new BuyStrategy({
 })
 
 //// Strategies
-// Monster Hunt
+// Movement
+const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
 const finishMonsterHuntStrategy = new FinishMonsterHuntStrategy()
 const getMonsterHuntStrategy = new GetMonsterHuntStrategy()
 // Party
@@ -49,19 +51,113 @@ const partyRequestStrategy = new RequestPartyStrategy(WARRIOR)
 const partyHealStrategy = new PartyHealStrategy(ALL_CONTEXTS)
 const trackerStrategy = new TrackerStrategy()
 const respawnStrategy = new RespawnStrategy()
+// Setups
+const setups = constructSetups(ALL_CONTEXTS)
+
+const currentSetups = new Map<Strategist<PingCompensatedCharacter>, string>()
+const applySetups = (contexts: Strategist<PingCompensatedCharacter>[]) => {
+    // Setup a list of ready contexts
+    const setupContexts = [...contexts]
+    for (let i = 0; i < setupContexts.length; i++) {
+        const context = setupContexts[i]
+        if (!context.isReady()) {
+            setupContexts.splice(i, 1)
+            i--
+        }
+    }
+    if (setupContexts.length == 0) return
+    const S = setupContexts[0].bot.S
+
+    const isDoable = (config: Config): Strategist<PingCompensatedCharacter>[] | false => {
+        const tempContexts = [...setupContexts]
+        const doableWith: Strategist<PingCompensatedCharacter>[] = []
+        nextConfig:
+        for (const characterConfig of config.characters) {
+            for (let i = 0; i < tempContexts.length; i++) {
+                const context = tempContexts[i]
+                if (context.bot.ctype == characterConfig.ctype) {
+                    doableWith.push(context)
+                    tempContexts.splice(i, 1)
+                    continue nextConfig
+                }
+            }
+            return false // Not doable
+        }
+        return doableWith
+    }
+
+    const applyConfig = (config: Config): boolean => {
+        const doableWith = isDoable(config)
+        if (!doableWith) return false// Not doable
+        nextConfig:
+        for (const characterConfig of config.characters) {
+            for (let i = 0; i < doableWith.length; i++) {
+                const context = doableWith[i]
+                if (context.bot.ctype == characterConfig.ctype) {
+                    const current = currentSetups.get(context)
+                    if (current !== config.id) {
+                        // Apply the strategies
+                        context.applyStrategy(characterConfig.attack)
+                        context.applyStrategy(characterConfig.move)
+                        currentSetups.set(context, config.id)
+                    }
+                    doableWith.splice(i, 1)
+                    continue nextConfig
+                }
+            }
+        }
+        return true
+    }
+
+    // Priority of targets
+    const priority: MonsterName[] = []
+
+    // TODO: Add more event monsters
+    if (S.crabxx && (S.crabx as ServerInfoDataLive).live) {
+        priority.push("crabxx")
+    }
+
+    // Monster hunt targets
+    for (const context of PRIVATE_CONTEXTS) {
+        if (!context.isReady()) continue
+        const bot = context.bot
+        if (!bot.s.monsterhunt || bot.s.monsterhunt.c == 0) continue
+        priority.push(bot.s.monsterhunt.id)
+    }
+
+    // Default target
+    priority.push("plantoid")
+
+    for (const id of priority) {
+        if (setupContexts.length == 0) break // All set up
+        const setup = setups[id]
+        if (!setup) continue // No setup for current
+    }
+
+    for (const id in setups) {
+        if (setupContexts.length == 0) break // All set up
+        const monster = id as MonsterName
+        const setup = setups[monster]
+
+        if (!priority.includes(monster)) continue // Not in our priority list
+        for (const config of setup.configs) {
+            if (applyConfig(config)) break // We found a config that works
+        }
+    }
+}
 
 const privateContextsLogic = () => {
     try {
+        const freeContexts: Strategist<PingCompensatedCharacter>[] = []
         for (const context of PRIVATE_CONTEXTS) {
-            if (context.isStopped()) continue
-            if (!context.bot || !context.bot.ready || !context.bot.socket.disconnected) continue
+            if (!context.isReady()) continue
             if (context.bot.ctype == "merchant") continue
             const bot = context.bot
 
             // Get a monster hunt
             if (!bot.s.monsterhunt) {
                 context.applyStrategy(getMonsterHuntStrategy)
-                return
+                continue
             }
 
             // Turn in our monster hunt
@@ -69,17 +165,21 @@ const privateContextsLogic = () => {
                 const [region, id] = bot.s.monsterhunt.sn.split(" ") as [ServerRegion, ServerIdentifier]
                 if (region == bot.serverData.region && id == bot.serverData.name) {
                     context.applyStrategy(finishMonsterHuntStrategy)
-                    return
+                    continue
                 }
             }
 
             // Holiday spirit
             if (bot.S.holidayseason && !bot.s.holidayspirit) {
                 // TODO: implement going to get holiday spirit
+                context.applyStrategy(getHolidaySpiritStrategy)
+                continue
             }
 
-            // TODO: Get target
+            freeContexts.push(context)
         }
+
+        applySetups(freeContexts)
     } catch (e) {
         console.error(e)
     } finally {
@@ -92,7 +192,6 @@ privateContextsLogic()
 //     try {
 //         for (const context of PUBLIC_CONTEXTS) {
 //             if (context.isStopped()) continue
-//             if (!context.bot || !context.bot.ready || !context.bot.socket.disconnected) continue
 //             if (context.bot.ctype == "merchant") continue
 
 //             // TODO: If full, go to bank and deposit things

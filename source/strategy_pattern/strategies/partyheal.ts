@@ -46,7 +46,7 @@ export class PartyHealStrategy implements Strategy<Priest> {
         if (!bot.canUse("partyheal")) return
 
         for (const context of this.contexts) {
-            if (context.isStopped()) continue
+            if (!context.isReady()) continue
             const friend = context.bot
             if (!friend || !friend.ready || friend.socket.disconnected) continue
 

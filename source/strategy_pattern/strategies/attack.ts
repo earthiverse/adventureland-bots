@@ -3,6 +3,13 @@ import FastPriorityQueue from "fastpriorityqueue"
 import { sortPriority } from "../../base/sort.js"
 import { Loop, LoopName, Strategist, Strategy } from "../context.js"
 
+export type EnsureEquipped = {
+    [T in SlotType]?: {
+        name: ItemName
+        filters?: LocateItemFilters
+    }
+}
+
 export type BaseAttackStrategyOptions = GetEntitiesFilters & {
     contexts: Strategist<PingCompensatedCharacter>[]
     disableCreditCheck?: true
@@ -11,19 +18,14 @@ export type BaseAttackStrategyOptions = GetEntitiesFilters & {
     /** If set, we will aggro as many nearby monsters as we can */
     enableGreedyAggro?: true
     /** If set, we will check if we have the correct items equipped before and after attacking */
-    ensureEquipped?: {
-        [T in SlotType]?: {
-            name: ItemName
-            filters?: LocateItemFilters
-        }
-    }
+    ensureEquipped?: EnsureEquipped
     maximumTargets?: number
 }
 
 export class BaseAttackStrategy<Type extends Character> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
 
-    protected greedyOnEntities: (data: EntitiesData) => Promise<void>
+    protected greedyOnEntities: (data: EntitiesData) => Promise<unknown>
 
     protected options: BaseAttackStrategyOptions
     protected interval: SkillName[] = ["attack"]
@@ -50,13 +52,23 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (this.options.enableGreedyAggro && !this.options.disableZapper) {
             this.greedyOnEntities = async (data: EntitiesData) => {
                 if (data.monsters.length == 0) return // No monsters
-                if (!bot.canUse("zapperzap")) return // Can't zap
-                for (const monster of data.monsters) {
-                    if (monster.target) continue // Already has a target
-                    if (this.options.type && monster.type !== this.options.type) continue
-                    if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
-                    if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.zapperzap.range) continue
-                    await bot.zapperZap(monster.id).catch(console.error)
+                if (bot.canUse("zapperzap")) {
+                    for (const monster of data.monsters) {
+                        if (monster.target) continue // Already has a target
+                        if (this.options.type && monster.type !== this.options.type) continue
+                        if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
+                        if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.zapperzap.range) continue
+                        return bot.zapperZap(monster.id).catch(console.error)
+                    }
+                }
+                if (bot.canUse("attack")) {
+                    for (const monster of data.monsters) {
+                        if (monster.target) continue // Already has a target
+                        if (this.options.type && monster.type !== this.options.type) continue
+                        if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
+                        if (AL.Tools.distance(bot, monster) > bot.range) continue
+                        return bot.basicAttack(monster.id).catch(console.error)
+                    }
                 }
             }
             bot.socket.on("entities", this.greedyOnEntities)
@@ -144,6 +156,17 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             if (!bot.slots[slotType] || bot.slots[slotType].name !== ensure.name) {
                 const toEquip = bot.locateItem(ensure.name, bot.items, ensure.filters)
                 if (toEquip == undefined) throw new Error(`Couldn't find ${ensure.name} to equip in ${sT}.`)
+
+                // Doublehand logic
+                if (slotType == "mainhand") {
+                    const weaponType = AL.Game.G.items[ensure.name].wtype
+                    const doubleHandTypes = AL.Game.G.classes[bot.ctype].doublehand
+                    if (weaponType && doubleHandTypes && doubleHandTypes[weaponType]) {
+                        if (this.options.ensureEquipped.offhand) throw new Error(`'${ensure.name}' is a doublehand for ${bot.ctype}. We can't equip '${this.options.ensureEquipped.offhand}' in our offhand.`)
+                        if (bot.slots.offhand) await bot.unequip("offhand")
+                    }
+                }
+
                 await bot.equip(toEquip, slotType)
             }
         }
