@@ -60,7 +60,5 @@ export class PartyHealStrategy implements Strategy<Priest> {
                 return bot.partyHeal().catch(console.error)
             }
         }
-
-        await bot.respawn().catch(console.error)
     }
 }
