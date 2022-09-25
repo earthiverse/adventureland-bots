@@ -63,9 +63,8 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
             if (nearby.length > 0) return
         }
 
-        // Find all targets we want to attack
+        // Find all targets within range of cleave
         const entities = bot.getEntities({
-            ...this.options,
             withinRange: "cleave",
             canDamage: "cleave"
         })
