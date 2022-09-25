@@ -10,6 +10,8 @@ export type PartyHealStrategyOptions = {
          * NOTE: If there is a context with max_hp lower than this, we will spend all of our mp party healing...
          */
         hp?: number
+        /** Heal when a context's bot is missing more than this amount of hp */
+        hpMissing?: number
         /** Heal when a context's bot goes below the ratio `bot.hp / bot.max_hp` */
         hpRatio?: number
     }
@@ -53,6 +55,7 @@ export class PartyHealStrategy implements Strategy<Priest> {
             if (
                 (this.options.healWhenLessThan.hp !== undefined && friend.hp < this.options.healWhenLessThan.hp)
                 || (this.options.healWhenLessThan.hpRatio !== undefined && (friend.hp / friend.max_hp) < this.options.healWhenLessThan.hpRatio)
+                || (this.options.healWhenLessThan.hpMissing !== undefined && (friend.max_hp - friend.hp > this.options.healWhenLessThan.hpMissing))
             ) {
                 return bot.partyHeal().catch(console.error)
             }
