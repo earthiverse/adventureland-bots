@@ -101,16 +101,14 @@ const applySetups = (contexts: Strategist<PingCompensatedCharacter>[]) => {
                     const current = currentSetups.get(context)
                     if (current?.id !== config.id) {
                         if (current) {
-                            console.debug("REMOVING OLD STRATS")
-                            console.debug("OLD: ", current.id)
+                            console.debug(context.bot.id, "is switching from", current.id)
                             // Remove the old strategies
                             context.removeStrategy(characterConfig.attack)
                             context.removeStrategy(characterConfig.move)
                         }
 
                         // Apply the new strategies
-                        console.debug("APPLYING NEW STRATS")
-                        console.debug("NEW: ", config.id)
+                        console.debug(context.bot.id, "is switching to", config.id)
                         context.applyStrategy(characterConfig.attack)
                         context.applyStrategy(characterConfig.move)
                         currentSetups.set(context, config)
@@ -146,16 +144,11 @@ const applySetups = (contexts: Strategist<PingCompensatedCharacter>[]) => {
         if (setupContexts.length == 0) break // All set up
         const setup = setups[id]
         if (!setup) continue // No setup for current
-    }
 
-    for (const id in setups) {
-        if (setupContexts.length == 0) break // All set up
-        const monster = id as MonsterName
-        const setup = setups[monster]
-
-        if (!priority.includes(monster)) continue // Not in our priority list
         for (const config of setup.configs) {
-            if (applyConfig(config)) break // We found a config that works
+            if (applyConfig(config)) {
+                break // We found a config that works
+            }
         }
     }
 }

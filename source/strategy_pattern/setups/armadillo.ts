@@ -6,36 +6,36 @@ import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 
-export function constructPorcupineSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+export function constructArmadilloSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     return {
         configs: [
             {
-                id: "porcupine_mage",
+                id: "armadillo_mage",
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, type: "porcupine" }),
-                        move: new ImprovedMoveStrategy("porcupine")
+                        attack: new MageAttackStrategy({ contexts: contexts, type: "armadillo" }),
+                        move: new ImprovedMoveStrategy("armadillo")
                     }
                 ]
             },
             {
-                id: "porcupine_priest",
+                id: "armadillo_priest",
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, type: "porcupine" }),
-                        move: new ImprovedMoveStrategy("porcupine")
+                        attack: new PriestAttackStrategy({ contexts: contexts, type: "armadillo" }),
+                        move: new ImprovedMoveStrategy("armadillo")
                     }
                 ]
             },
             {
-                id: "porcupine_ranger",
+                id: "armadillo_ranger",
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, type: "porcupine" }),
-                        move: new ImprovedMoveStrategy("porcupine")
+                        attack: new RangerAttackStrategy({ contexts: contexts, type: "armadillo" }),
+                        move: new ImprovedMoveStrategy("armadillo")
                     }
                 ]
             },

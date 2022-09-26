@@ -326,7 +326,11 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             if (targetingMe.length) return true
         }
 
-        if (this.options.enableGreedyAggro) return false // We are okay with a lot of targets
+        // If we have more targets than what our maximum is set to, we probably want to scare
+        if (this.options.maximumTargets !== undefined && bot.targets > this.options.maximumTargets) return true
+
+        // If we have enableGreedyAggro on, we are probably okay with a lot of targets
+        if (this.options.enableGreedyAggro) return false
 
         return bot.isScared()
     }
