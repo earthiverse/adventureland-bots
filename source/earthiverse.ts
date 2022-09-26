@@ -10,6 +10,7 @@ import { TrackerStrategy } from "./strategy_pattern/strategies/tracker.js"
 import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
 import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
 import { Config, constructSetups } from "./strategy_pattern/setups/base.js"
+import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
@@ -40,6 +41,10 @@ const buyStrategy = new BuyStrategy({
 })
 
 //// Strategies
+// Debug
+const debugStrategy = new DebugStrategy({
+    logLimitDCReport: true
+})
 // Movement
 const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
 const finishMonsterHuntStrategy = new FinishMonsterHuntStrategy()
@@ -91,23 +96,26 @@ const applySetups = (contexts: Strategist<PingCompensatedCharacter>[]) => {
         if (!doableWith) return false// Not doable
         nextConfig:
         for (const characterConfig of config.characters) {
-            for (let i = 0; i < doableWith.length; i++) {
-                const context = doableWith[i]
+            for (const context of doableWith) {
                 if (context.bot.ctype == characterConfig.ctype) {
                     const current = currentSetups.get(context)
-                    if (current !== config) {
+                    if (current?.id !== config.id) {
                         if (current) {
+                            console.debug("REMOVING OLD STRATS")
+                            console.debug("OLD: ", current.id)
                             // Remove the old strategies
                             context.removeStrategy(characterConfig.attack)
                             context.removeStrategy(characterConfig.move)
                         }
 
                         // Apply the new strategies
+                        console.debug("APPLYING NEW STRATS")
+                        console.debug("NEW: ", config.id)
                         context.applyStrategy(characterConfig.attack)
                         context.applyStrategy(characterConfig.move)
                         currentSetups.set(context, config)
                     }
-                    doableWith.splice(i, 1)
+                    setupContexts.splice(setupContexts.indexOf(context), 1)
                     continue nextConfig
                 }
             }
@@ -119,7 +127,7 @@ const applySetups = (contexts: Strategist<PingCompensatedCharacter>[]) => {
     const priority: MonsterName[] = []
 
     // TODO: Add more event monsters
-    if (S.crabxx && (S.crabx as ServerInfoDataLive).live) {
+    if (S.crabxx && (S.crabx as ServerInfoDataLive)?.live) {
         priority.push("crabxx")
     }
 
@@ -212,6 +220,7 @@ privateContextsLogic()
 
 // Shared setup
 async function startShared(context: Strategist<PingCompensatedCharacter>) {
+    context.applyStrategy(debugStrategy)
     if (context.bot.id == PARTY_LEADER) {
         context.applyStrategy(partyAcceptStrategy)
     } else {
@@ -241,57 +250,61 @@ async function startWarrior(context: Strategist<Warrior>) {
 
 // Login and prepare pathfinding
 const startMerchantContext = async () => {
+    let merchant: Merchant
     try {
-        const merchant = await AL.Game.startMerchant(MERCHANT, "US", "I")
-        const MERCHANT_CONTEXT = new Strategist<Merchant>(merchant, baseStrategy)
-        startMerchant(MERCHANT_CONTEXT, PRIVATE_CONTEXTS, { ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, debug: true, enableUpgrade: true })
-        PRIVATE_CONTEXTS.push(MERCHANT_CONTEXT)
-        ALL_CONTEXTS.push(MERCHANT_CONTEXT)
+        merchant = await AL.Game.startMerchant(MERCHANT, "US", "I")
     } catch (e) {
         console.error(e)
         setTimeout(startMerchantContext, 10_000)
     }
+    const CONTEXT = new Strategist<Merchant>(merchant, baseStrategy)
+    startMerchant(CONTEXT, PRIVATE_CONTEXTS, { ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, debug: true, enableUpgrade: true })
+    PRIVATE_CONTEXTS.push(CONTEXT)
+    ALL_CONTEXTS.push(CONTEXT)
 }
 startMerchantContext()
 
 const startWarriorContext = async () => {
+    let warrior: Warrior
     try {
-        const warrior = await AL.Game.startWarrior(WARRIOR, "US", "I")
-        const WARRIOR_CONTEXT = new Strategist<Warrior>(warrior, baseStrategy)
-        startWarrior(WARRIOR_CONTEXT).catch(console.error)
-        PRIVATE_CONTEXTS.push(WARRIOR_CONTEXT)
-        ALL_CONTEXTS.push(WARRIOR_CONTEXT)
+        warrior = await AL.Game.startWarrior(WARRIOR, "US", "I")
     } catch (e) {
         console.error(e)
         setTimeout(startWarriorContext, 10_000)
     }
+    const CONTEXT = new Strategist<Warrior>(warrior, baseStrategy)
+    startWarrior(CONTEXT).catch(console.error)
+    PRIVATE_CONTEXTS.push(CONTEXT)
+    ALL_CONTEXTS.push(CONTEXT)
 }
 startWarriorContext()
 
 const startMageContext = async () => {
+    let mage: Mage
     try {
-        const mage = await AL.Game.startMage(MAGE, "US", "I")
-        const RANGER_CONTEXT = new Strategist<Mage>(mage, baseStrategy)
-        startMage(RANGER_CONTEXT).catch(console.error)
-        PRIVATE_CONTEXTS.push(RANGER_CONTEXT)
-        ALL_CONTEXTS.push(RANGER_CONTEXT)
+        mage = await AL.Game.startMage(MAGE, "US", "I")
     } catch (e) {
         console.error(e)
         setTimeout(startMageContext, 10_000)
     }
+    const CONTEXT = new Strategist<Mage>(mage, baseStrategy)
+    startMage(CONTEXT).catch(console.error)
+    PRIVATE_CONTEXTS.push(CONTEXT)
+    ALL_CONTEXTS.push(CONTEXT)
 }
 startMageContext()
 
 const startPriestContext = async () => {
+    let priest: Priest
     try {
-        const priest = await AL.Game.startPriest(PRIEST, "US", "I")
-        const PRIEST_CONTEXT = new Strategist<Priest>(priest, baseStrategy)
-        startPriest(PRIEST_CONTEXT).catch(console.error)
-        PRIVATE_CONTEXTS.push(PRIEST_CONTEXT)
-        ALL_CONTEXTS.push(PRIEST_CONTEXT)
+        priest = await AL.Game.startPriest(PRIEST, "US", "I")
     } catch (e) {
         console.error(e)
         setTimeout(startPriestContext, 10_000)
     }
+    const CONTEXT = new Strategist<Priest>(priest, baseStrategy)
+    startPriest(CONTEXT).catch(console.error)
+    PRIVATE_CONTEXTS.push(CONTEXT)
+    ALL_CONTEXTS.push(CONTEXT)
 }
 startPriestContext()
