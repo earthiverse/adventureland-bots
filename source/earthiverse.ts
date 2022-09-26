@@ -129,6 +129,7 @@ const applySetups = (contexts: Strategist<PingCompensatedCharacter>[]) => {
         priority.push("crabxx")
     }
 
+    // TODO: Sort these by time remaining
     // Monster hunt targets
     for (const context of PRIVATE_CONTEXTS) {
         if (!context.isReady()) continue

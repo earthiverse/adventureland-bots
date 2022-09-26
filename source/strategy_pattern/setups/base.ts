@@ -50,7 +50,7 @@ export type Setup = {
 
 export type Setups = { [T in MonsterName]?: Setup }
 
-export function constructGenericSetup(contexts: Strategist<PingCompensatedCharacter>[], monster: MonsterName): Setup {
+export function constructGenericSetup(contexts: Strategist<PingCompensatedCharacter>[], monsters: MonsterName[]): Setup {
     return {
         configs: [
             {
@@ -58,8 +58,8 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, type: monster }),
-                        move: new ImprovedMoveStrategy(monster)
+                        attack: new MageAttackStrategy({ contexts: contexts, typeList: monsters }),
+                        move: new ImprovedMoveStrategy(monsters)
                     }
                 ]
             },
@@ -68,8 +68,8 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, type: monster }),
-                        move: new ImprovedMoveStrategy(monster)
+                        attack: new PriestAttackStrategy({ contexts: contexts, typeList: monsters }),
+                        move: new ImprovedMoveStrategy(monsters)
                     }
                 ]
             },
@@ -78,8 +78,8 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, type: monster }),
-                        move: new ImprovedMoveStrategy(monster)
+                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: monsters }),
+                        move: new ImprovedMoveStrategy(monsters)
                     }
                 ]
             },
@@ -88,8 +88,8 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                 characters: [
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({ contexts: contexts, type: monster }),
-                        move: new ImprovedMoveStrategy(monster)
+                        attack: new WarriorAttackStrategy({ contexts: contexts, typeList: monsters }),
+                        move: new ImprovedMoveStrategy(monsters)
                     }
                 ]
             }
@@ -99,17 +99,21 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
 
 export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]): Setups {
     return {
-        arcticbee: constructGenericSetup(contexts, "arcticbee"),
+        arcticbee: constructGenericSetup(contexts, ["arcticbee"]),
         armadillo: constructArmadilloSetup(contexts),
-        crab: constructGenericSetup(contexts, "crab"),
-        crabx: constructGenericSetup(contexts, "crabx"),
-        croc: constructGenericSetup(contexts, "croc"),
-        frog: constructGenericSetup(contexts, "frog"),
-        goo: constructGenericSetup(contexts, "goo"),
+        cgoo: constructGenericSetup(contexts, ["cgoo"]),
+        crab: constructGenericSetup(contexts, ["crab"]),
+        crabx: constructGenericSetup(contexts, ["crabx"]),
+        croc: constructGenericSetup(contexts, ["croc"]),
+        frog: constructGenericSetup(contexts, ["frog"]),
+        goo: constructGenericSetup(contexts, ["goo"]),
+        osnake: constructGenericSetup(contexts, ["osnake", "snake"]),
         plantoid: constructPlantoidSetup(contexts),
-        poisio: constructGenericSetup(contexts, "poisio"),
+        poisio: constructGenericSetup(contexts, ["poisio"]),
         porcupine: constructPorcupineSetup(contexts),
-        spider: constructGenericSetup(contexts, "spider"),
-        tortoise: constructGenericSetup(contexts, "tortoise"),
+        scorpion: constructGenericSetup(contexts, ["scorpion"]),
+        snake: constructGenericSetup(contexts, ["snake", "osnake"]),
+        spider: constructGenericSetup(contexts, ["spider"]),
+        tortoise: constructGenericSetup(contexts, ["tortoise"]),
     }
 }
