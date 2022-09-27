@@ -1,4 +1,4 @@
-import { Mage, Merchant, MonsterName, Paladin, PingCompensatedCharacter, Priest, Ranger, Rogue, Warrior } from "alclient"
+import { CharacterType, Mage, Merchant, MonsterName, Paladin, PingCompensatedCharacter, Priest, Ranger, Rogue, Warrior } from "alclient"
 import { Strategist, Strategy } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
@@ -6,6 +6,8 @@ import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { constructArmadilloSetup } from "./armadillo.js"
+import { constructGigaCrabSetup } from "./crabxxx.js"
+import { constructOSnakeSetup } from "./osnake.js"
 import { constructPlantoidSetup } from "./plantoid.js"
 import { constructPorcupineSetup } from "./porcupine.js"
 
@@ -51,10 +53,11 @@ export type Setup = {
 export type Setups = { [T in MonsterName]?: Setup }
 
 export function constructGenericSetup(contexts: Strategist<PingCompensatedCharacter>[], monsters: MonsterName[]): Setup {
+    const id_prefix = monsters.join("+")
     return {
         configs: [
             {
-                id: "goo_mage",
+                id: `${id_prefix}_mage`,
                 characters: [
                     {
                         ctype: "mage",
@@ -64,7 +67,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                 ]
             },
             {
-                id: "goo_priest",
+                id: `${id_prefix}_priest`,
                 characters: [
                     {
                         ctype: "priest",
@@ -74,7 +77,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                 ]
             },
             {
-                id: "goo_ranger",
+                id: `${id_prefix}_ranger`,
                 characters: [
                     {
                         ctype: "ranger",
@@ -84,7 +87,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                 ]
             },
             {
-                id: "goo_warrior",
+                id: `${id_prefix}_warrior`,
                 characters: [
                     {
                         ctype: "warrior",
@@ -104,10 +107,11 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         cgoo: constructGenericSetup(contexts, ["cgoo"]),
         crab: constructGenericSetup(contexts, ["crab"]),
         crabx: constructGenericSetup(contexts, ["crabx"]),
+        crabxx: constructGigaCrabSetup(contexts),
         croc: constructGenericSetup(contexts, ["croc"]),
         frog: constructGenericSetup(contexts, ["frog"]),
         goo: constructGenericSetup(contexts, ["goo"]),
-        osnake: constructGenericSetup(contexts, ["osnake", "snake"]),
+        osnake: constructOSnakeSetup(contexts),
         plantoid: constructPlantoidSetup(contexts),
         poisio: constructGenericSetup(contexts, ["poisio"]),
         porcupine: constructPorcupineSetup(contexts),

@@ -11,9 +11,10 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
     const spawn = AL.Pathfinder.locateMonster("plantoid")[0]
 
     return {
+        // TODO: This is for farming level 1 plantoids, when doing monsterhunts we probably don't want to do this...
         configs: [
             {
-                id: "plantoid_mage,priest,warrior",
+                id: "greedy_plantoid_mage,priest,warrior",
                 characters: [
                     {
                         ctype: "mage",

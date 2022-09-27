@@ -15,15 +15,18 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
             {
                 id: "crabxxx_mage,priest,warrior",
                 characters: [
+                    // The mage will prioritize crabx so that the giga crab can take damage
                     {
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
+                            disableCreditCheck: true, // Giga crab will only take 1 damage while any crabx are alive, so help kill others', too
                             disableEnergize: true,
                             typeList: ["crabx", "crabxx"]
                         }),
                         move: moveStrategy
                     },
+                    // The priest will tank the giga crab
                     {
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
@@ -35,11 +38,12 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                         }),
                         move: new ImprovedMoveStrategy("crabxx")
                     },
+                    // The warrior will prioritize crabx so that the giga crab can take damage
                     {
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
-                            disableZapper: true,
+                            disableCreditCheck: true, // Giga crab will only take 1 damage while any crabx are alive, so help kill others', too
                             enableEquipForCleave: true,
                             ensureEquipped: {
                                 mainhand: { name: "bataxe" },

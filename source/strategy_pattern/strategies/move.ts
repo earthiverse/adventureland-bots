@@ -3,6 +3,7 @@ import { sleep } from "../../base/general.js"
 import { offsetPositionParty } from "../../base/locations.js"
 import { sortClosestDistance } from "../../base/sort.js"
 import { Loop, LoopName, Strategist, Strategy } from "../context.js"
+import { suppress_errors } from "../logging.js"
 
 export class BasicMoveStrategy implements Strategy<Character> {
     public loops = new Map<LoopName, Loop<Character>>()
@@ -52,7 +53,7 @@ export class FinishMonsterHuntStrategy<Type extends Character> implements Strate
 
     protected async turnInMonsterHunt(bot: Type) {
         if (!bot.s.monsterhunt) return // We already have a monster hunt
-        await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+        await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 }).catch(suppress_errors)
         await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50, avoidTownWarps: true })
         await bot.finishMonsterHuntQuest()
     }
@@ -114,7 +115,7 @@ export class GetHolidaySpiritStrategy<Type extends Character> implements Strateg
 
     private async getHolidaySpirit(bot: Type) {
         if (bot.s.holidayspirit) return // We already have holiday spirit
-        await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+        await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 }).catch(suppress_errors)
         await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50, avoidTownWarps: true })
         await bot.getHolidaySpirit()
     }
@@ -149,7 +150,7 @@ export class GetMonsterHuntStrategy<Type extends Character> implements Strategy<
 
     private async getMonsterHunt(bot: Type) {
         if (bot.s.monsterhunt) return // We already have a monster hunt
-        await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+        await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 }).catch(suppress_errors)
         await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50, avoidTownWarps: true })
         await bot.getMonsterHuntQuest()
     }
@@ -208,9 +209,11 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
 
     public types: MonsterName[]
     protected spawns: IPosition[] = []
+    protected options: ImprovedMoveStrategyOptions
 
     public constructor(type: MonsterName | MonsterName[], options?: ImprovedMoveStrategyOptions) {
         if (!options) options = {}
+        this.options = options
 
         if (Array.isArray(type)) {
             this.types = type
@@ -231,6 +234,16 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
     }
 
     private async move(bot: Character) {
+        if (this.options.idlePosition && this.options.idlePosition.map && bot.map !== this.options.idlePosition.map) {
+            await bot.smartMove(this.options.idlePosition, {
+                useBlink: true,
+                stopIfTrue: () => {
+                    if (bot.map !== this.options.idlePosition.map) return false
+                    const entities = bot.getEntities({ canDamage: true, couldGiveCredit: true, typeList: this.types, willBurnToDeath: false, willDieToProjectiles: false })
+                    return entities.length > 0
+                }
+            })
+        }
         const targets = bot.getEntities({ canDamage: true, couldGiveCredit: true, typeList: this.types, willBurnToDeath: false, willDieToProjectiles: false })
         targets.sort(sortClosestDistance(bot))
 
@@ -258,7 +271,7 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
         } else if (!bot.smartMoving) {
             // No targets nearby, move to spawn
             this.spawns.sort(sortClosestDistance(bot))
-            bot.smartMove(offsetPositionParty(this.spawns[0], bot), { resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(this.spawns[0], bot), { resolveOnFinalMoveStart: true, useBlink: true }).catch(() => { /** Suppress Error */ })
         }
     }
 }

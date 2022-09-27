@@ -15,6 +15,11 @@ import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
 await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 
+// TODO: Make these configurable through /comm using a similar system to how lulz works
+// Toggles
+const ENABLE_EVENTS = true
+const ENABLE_MONSTERHUNTS = false
+
 const MERCHANT = "earthMer"
 const WARRIOR = "earthWar"
 const MAGE = "earthMag"
@@ -101,14 +106,12 @@ const applySetups = (contexts: Strategist<PingCompensatedCharacter>[]) => {
                     const current = currentSetups.get(context)
                     if (current?.id !== config.id) {
                         if (current) {
-                            console.debug(context.bot.id, "is switching from", current.id)
                             // Remove the old strategies
                             context.removeStrategy(characterConfig.attack)
                             context.removeStrategy(characterConfig.move)
                         }
 
                         // Apply the new strategies
-                        console.debug(context.bot.id, "is switching to", config.id)
                         context.applyStrategy(characterConfig.attack)
                         context.applyStrategy(characterConfig.move)
                         currentSetups.set(context, config)
@@ -124,18 +127,24 @@ const applySetups = (contexts: Strategist<PingCompensatedCharacter>[]) => {
     // Priority of targets
     const priority: MonsterName[] = []
 
-    // TODO: Add more event monsters
-    if (S.crabxx && (S.crabx as ServerInfoDataLive)?.live) {
-        priority.push("crabxx")
+    if (ENABLE_EVENTS) {
+        for (const id in S) {
+            if (!AL.Game.G.monsters[id]) continue // Not a monster
+            if ((S[id] as ServerInfoDataLive)?.live) {
+                priority.push(id as MonsterName)
+            }
+        }
     }
 
-    // TODO: Sort these by time remaining
-    // Monster hunt targets
-    for (const context of PRIVATE_CONTEXTS) {
-        if (!context.isReady()) continue
-        const bot = context.bot
-        if (!bot.s.monsterhunt || bot.s.monsterhunt.c == 0) continue
-        priority.push(bot.s.monsterhunt.id)
+    if (ENABLE_MONSTERHUNTS) {
+        // TODO: Sort these by time remaining
+        // Monster hunt targets
+        for (const context of PRIVATE_CONTEXTS) {
+            if (!context.isReady()) continue
+            const bot = context.bot
+            if (!bot.s.monsterhunt || bot.s.monsterhunt.c == 0) continue
+            priority.push(bot.s.monsterhunt.id)
+        }
     }
 
     // Default targets
@@ -162,24 +171,29 @@ const privateContextsLogic = () => {
             if (context.bot.ctype == "merchant") continue
             const bot = context.bot
 
-            // Get a monster hunt
-            if (!bot.s.monsterhunt) {
-                context.applyStrategy(getMonsterHuntStrategy)
-                continue
-            }
-
-            // Turn in our monster hunt
-            if (bot.s.monsterhunt?.c == 0) {
-                const [region, id] = bot.s.monsterhunt.sn.split(" ") as [ServerRegion, ServerIdentifier]
-                if (region == bot.serverData.region && id == bot.serverData.name) {
-                    context.applyStrategy(finishMonsterHuntStrategy)
+            if (ENABLE_MONSTERHUNTS) {
+                // Get a monster hunt
+                if (!bot.s.monsterhunt) {
+                    currentSetups.delete(context)
+                    context.applyStrategy(getMonsterHuntStrategy)
                     continue
+                }
+
+                // Turn in our monster hunt
+                if (bot.s.monsterhunt?.c == 0) {
+                    const [region, id] = bot.s.monsterhunt.sn.split(" ") as [ServerRegion, ServerIdentifier]
+                    if (region == bot.serverData.region && id == bot.serverData.name) {
+                        currentSetups.delete(context)
+                        context.applyStrategy(finishMonsterHuntStrategy)
+                        continue
+                    }
                 }
             }
 
             // Holiday spirit
             if (bot.S.holidayseason && !bot.s.holidayspirit) {
                 // TODO: implement going to get holiday spirit
+                currentSetups.delete(context)
                 context.applyStrategy(getHolidaySpiritStrategy)
                 continue
             }
