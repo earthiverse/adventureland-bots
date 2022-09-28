@@ -219,7 +219,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
             // Do banking if we have a lot of gold, or it's been a while (15 minutes)
             if (
                 (bot.gold > (this.options.goldToHold * 2))
-                || (bot.esize < 2 && (this.toUpgrade.length))
+                || (bot.esize < 2 && !this.toUpgrade.length)
                 || checkOnlyEveryMS(`${bot.id}_banking`, 900_000)
             ) {
                 this.debug(bot, "Normal Banking")
@@ -881,12 +881,15 @@ export class MerchantStrategy implements Strategy<Merchant> {
             const offering = getOfferingToUse(item)
             if (offering && !bot.hasItem(offering)) {
                 this.debug(bot, `Compound - Offering - We don't have a '${offering}' to compound ${item.name}(${item.level})`)
+                this.toUpgrade.splice(i, 1)
+                i--
                 continue
             }
             const grade = bot.calculateItemGrade(item)
             if (grade === undefined) {
                 this.debug(bot, `Compound - Couldn't compute grade for ${item.name}`)
                 this.toUpgrade.splice(i, 1)
+                i--
                 continue
             }
             const scroll = `cscroll${grade}` as ItemName
@@ -896,6 +899,8 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     return bot.buy(scroll)
                 } else {
                     this.debug(bot, `Compound - Scroll - We don't have a '${scroll}' to compound ${item.name}(${item.level})`)
+                    this.toUpgrade.splice(i, 1)
+                    i--
                     continue
                 }
             }
@@ -919,12 +924,15 @@ export class MerchantStrategy implements Strategy<Merchant> {
             const offering = getOfferingToUse(item)
             if (offering && !bot.hasItem(offering)) {
                 this.debug(bot, `Upgrade - Offering - We don't have a '${offering}' to upgrade ${item.name}(${item.level})`)
+                this.toUpgrade.splice(i, 1)
+                i--
                 continue
             }
             const grade = bot.calculateItemGrade(item)
             if (grade === undefined) {
                 this.debug(bot, `Upgrade - Couldn't compute grade for ${item.name}`)
                 this.toUpgrade.splice(i, 1)
+                i--
                 continue
             }
             const scroll = `scroll${grade}` as ItemName
@@ -934,6 +942,8 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     return bot.buy(scroll)
                 } else {
                     this.debug(bot, `Upgrade - Scroll - We don't have a '${scroll}' to upgrade ${item.name}(${item.level})`)
+                    this.toUpgrade.splice(i, 1)
+                    i--
                     continue
                 }
             }
