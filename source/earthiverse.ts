@@ -134,6 +134,8 @@ const applySetups = (contexts: Strategist<PingCompensatedCharacter>[]) => {
                 priority.push(id as MonsterName)
             }
         }
+
+        if (S.goobrawl) priority.push("rgoo")
     }
 
     if (ENABLE_MONSTERHUNTS) {
@@ -146,6 +148,8 @@ const applySetups = (contexts: Strategist<PingCompensatedCharacter>[]) => {
             priority.push(bot.s.monsterhunt.id)
         }
     }
+
+    // TODO: add special monsters
 
     // Default targets
     priority.push("plantoid", "croc", "crab", "goo")
@@ -195,6 +199,12 @@ const privateContextsLogic = () => {
                 // TODO: implement going to get holiday spirit
                 currentSetups.delete(context)
                 context.applyStrategy(getHolidaySpiritStrategy)
+                continue
+            }
+
+            // Stay on goobrawl if there are still monsters around
+            if (bot.map == "goobrawl" && bot.getEntities({ typeList: ["bgoo", "rgoo"] }).length > 0) {
+                currentSetups.delete(context)
                 continue
             }
 

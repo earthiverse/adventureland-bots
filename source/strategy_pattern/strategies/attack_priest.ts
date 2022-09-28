@@ -7,7 +7,7 @@ export type PriestAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableAbsorb?: true
     disableCurse?: true
     disableDarkBlessing?: true
-    healStrangers?: true
+    enableHealStrangers?: true
 }
 
 export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
@@ -104,7 +104,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
 
         for (const player of bot.getPlayers({
             isDead: false,
-            isFriendly: this.options.healStrangers ? undefined : true,
+            isFriendly: this.options.enableHealStrangers ? undefined : true,
             isNPC: false,
             withinRange: "heal",
         })) {
