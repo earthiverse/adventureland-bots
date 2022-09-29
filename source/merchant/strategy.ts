@@ -2,6 +2,7 @@ import AL, { BankPackName, Character, IPosition, ItemName, LocateItemsFilters, M
 import { getItemCountsForEverything, getItemsToCompoundOrUpgrade, getOfferingToUse, IndexesToCompoundOrUpgrade, ItemCount, withdrawItemFromBank } from "../base/banking.js"
 import { checkOnlyEveryMS, sleep } from "../base/general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
+import { MERCHANT_ITEMS_TO_HOLD } from "../base/merchant.js"
 import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
 import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
@@ -17,13 +18,20 @@ export const DEFAULT_EXCHANGEABLES = new Set<ItemName>([
 export const DEFAULT_GOLD_TO_HOLD = 100_000_000
 export const DEFAULT_ITEMS_TO_HOLD = new Set<ItemName>([
     "computer",
-    "cscroll0",
-    "cscroll1",
-    "cscroll2",
     "goldbooster",
     "hpot1",
     "luckbooster",
     "mpot1",
+    "supercomputer",
+    "tracker",
+    "xpbooster",
+    "xptome"
+])
+export const DEFAULT_MERCHANT_ITEMS_TO_HOLD = new Set<ItemName>([
+    ...DEFAULT_ITEMS_TO_HOLD,
+    "cscroll0",
+    "cscroll1",
+    "cscroll2",
     "offering",
     "offeringp",
     "pickaxe",
@@ -31,10 +39,6 @@ export const DEFAULT_ITEMS_TO_HOLD = new Set<ItemName>([
     "scroll0",
     "scroll1",
     "scroll2",
-    "supercomputer",
-    "tracker",
-    "xpbooster",
-    "xptome"
 ])
 export const DEFAULT_POSITION: IPosition = { x: 0, y: 0, map: "main" }
 export const DEFAULT_REPLENISHABLES = new Map<ItemName, number>([
@@ -149,7 +153,7 @@ export const DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS: MerchantMoveStrategyOptions
     },
     // enableUpgrade: true,
     goldToHold: DEFAULT_GOLD_TO_HOLD,
-    itemsToHold: DEFAULT_ITEMS_TO_HOLD,
+    itemsToHold: MERCHANT_ITEMS_TO_HOLD,
 }
 
 export class MerchantStrategy implements Strategy<Merchant> {
