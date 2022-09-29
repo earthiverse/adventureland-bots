@@ -8,8 +8,8 @@ import { ImprovedMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/mo
 import { Setup } from "./base"
 import { PRIEST_LUCK } from "./equipment.js"
 
-export function constructPlantoidSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const spawn = AL.Pathfinder.locateMonster("plantoid")[0]
+export function constructBScorpionSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const spawn = AL.Pathfinder.locateMonster("bscorpion")[0]
 
     return {
         configs: [
@@ -23,7 +23,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             disableEnergize: true,
                             disableZapper: true,
                             targetingPartyMember: true,
-                            type: "plantoid"
+                            type: "bscorpion"
                         }),
                         move: new ImprovedMoveStrategy("bscorpion", { idlePosition: offsetPosition(spawn, 5, 0) })
                     },
@@ -34,7 +34,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             disableEnergize: true,
                             enableGreedyAggro: true,
                             ensureEquipped: PRIEST_LUCK,
-                            type: "plantoid",
+                            type: "bscorpion",
                         }),
                         move: new MoveInCircleMoveStrategy({ center: spawn, radius: 100, sides: 16 })
                     },
@@ -49,7 +49,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                                 offhand: { name: "fireblade", filters: { returnHighestLevel: true } }
                             },
                             targetingPartyMember: true,
-                            type: "plantoid"
+                            type: "bscorpion"
                         }),
                         move: new ImprovedMoveStrategy("bscorpion", { idlePosition: offsetPosition(spawn, -5, 0) })
                     }
