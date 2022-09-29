@@ -22,6 +22,10 @@ export function constructBScorpionSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             disableEnergize: true,
                             disableZapper: true,
+                            ensureEquipped: {
+                                mainhand: { name: "firestaff", filters: { returnHighestLevel: true } },
+                                offhand: { name: "wbook1", filters: { returnHighestLevel: true } }
+                            },
                             targetingPartyMember: true,
                             type: "bscorpion"
                         }),
