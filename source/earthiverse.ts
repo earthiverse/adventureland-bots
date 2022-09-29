@@ -152,7 +152,7 @@ const applySetups = (contexts: Strategist<PingCompensatedCharacter>[]) => {
     // TODO: add special monsters
 
     // Default targets
-    priority.push("plantoid", "croc", "crab", "goo")
+    priority.push("bscorpion", "croc", "crab", "goo")
 
     for (const id of priority) {
         if (setupContexts.length == 0) break // All set up

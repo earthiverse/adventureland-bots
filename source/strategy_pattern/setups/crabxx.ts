@@ -22,6 +22,11 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableCreditCheck: true, // Giga crab will only take 1 damage while any crabx are alive, so help kill others', too
                             disableEnergize: true,
+                            ensureEquipped: {
+                                mainhand: { name: "fireblade", filters: { returnHighestLevel: true } },
+                                offhand: { name: "wbookhs", filters: { returnHighestLevel: true } },
+                                orb: { name: "jacko", filters: { returnHighestLevel: true } }
+                            },
                             typeList: ["crabx", "crabxx"]
                         }),
                         move: moveStrategy
@@ -46,7 +51,8 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             disableCreditCheck: true, // Giga crab will only take 1 damage while any crabx are alive, so help kill others', too
                             enableEquipForCleave: true,
                             ensureEquipped: {
-                                mainhand: { name: "bataxe" },
+                                mainhand: { name: "bataxe", filters: { returnHighestLevel: true } },
+                                orb: { name: "jacko", filters: { returnHighestLevel: true } }
                             },
                             typeList: ["crabx", "crabxx"]
                         }),

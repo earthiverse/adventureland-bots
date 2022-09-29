@@ -1,4 +1,4 @@
-import AL, { Character, EntitiesData, Entity, GetEntitiesFilters, ItemName, LocateItemFilters, Mage, PingCompensatedCharacter, SkillName, SlotType } from "alclient"
+import AL, { Character, EntitiesData, Entity, GetEntitiesFilters, ItemName, LocateItemFilters, Mage, PingCompensatedCharacter, SkillName, SlotType, Warrior } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { sleep } from "../../base/general.js"
 import { sortPriority } from "../../base/sort.js"
@@ -62,6 +62,26 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.zapperzap.range) continue
                         return bot.zapperZap(monster.id).catch(console.error)
+                    }
+                }
+                // TODO: Refactor so this can be put in attack_warrior
+                if (bot.ctype == "warrior" && bot.canUse("taunt")) {
+                    for (const monster of data.monsters) {
+                        if (monster.target) continue // Already has a target
+                        if (this.options.type && monster.type !== this.options.type) continue
+                        if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
+                        if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.taunt.range) continue
+                        return (bot as unknown as Warrior).taunt(monster.id).catch(console.error)
+                    }
+                }
+                // TODO: Refactor so this can be put in attack_mage
+                if (bot.ctype == "mage" && bot.canUse("cburst")) {
+                    for (const monster of data.monsters) {
+                        if (monster.target) continue // Already has a target
+                        if (this.options.type && monster.type !== this.options.type) continue
+                        if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
+                        if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.taunt.range) continue
+                        return (bot as unknown as Mage).cburst([[monster.id, 1]]).catch(console.error)
                     }
                 }
                 if (bot.canUse("attack")) {
@@ -331,6 +351,14 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
         // If we have enableGreedyAggro on, we are probably okay with a lot of targets
         if (this.options.enableGreedyAggro) return false
+
+        // If we could die due to attacks from incoming monsters
+        let potentialIncomingDamage = 0
+        for (const entity of bot.getEntities({ targetingMe: true })) {
+            if (AL.Tools.distance(bot, entity) > entity.range + entity.speed) continue // Too far away to attack us
+            potentialIncomingDamage += entity.calculateDamageRange(bot)[1]
+        }
+        if (potentialIncomingDamage >= bot.hp) return true
 
         return bot.isScared()
     }
