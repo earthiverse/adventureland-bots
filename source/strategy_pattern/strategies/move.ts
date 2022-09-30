@@ -1,4 +1,4 @@
-import AL, { IPosition, MonsterName, Pathfinder, Character, Tools, PingCompensatedCharacter } from "alclient"
+import AL, { IPosition, MonsterName, Pathfinder, Character, PingCompensatedCharacter } from "alclient"
 import { sleep } from "../../base/general.js"
 import { offsetPositionParty } from "../../base/locations.js"
 import { sortClosestDistance } from "../../base/sort.js"
@@ -247,6 +247,7 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
     }
 
     private async move(bot: Character) {
+        // Move to the idle position first
         if (this.options.idlePosition && this.options.idlePosition.map && bot.map !== this.options.idlePosition.map) {
             await bot.smartMove(this.options.idlePosition, {
                 useBlink: true,
@@ -257,6 +258,7 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
                 }
             })
         }
+
         const targets = bot.getEntities({ canDamage: true, couldGiveCredit: true, typeList: this.types, willBurnToDeath: false, willDieToProjectiles: false })
         targets.sort(sortClosestDistance(bot))
 
@@ -280,7 +282,7 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
         if (lastD) {
             // Move towards center of closest spawn
             this.spawns.sort(sortClosestDistance(bot))
-            bot.smartMove(offsetPositionParty(this.spawns[0], bot), { getWithin: Tools.distance(bot, this.spawns[0]) - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(this.spawns[0], bot), { getWithin: AL.Tools.distance({ x: bot.x, y: bot.y }, this.spawns[0]) - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         } else if (!bot.smartMoving) {
             // No targets nearby, move to spawn
             this.spawns.sort(sortClosestDistance(bot))
