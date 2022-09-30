@@ -8,8 +8,6 @@ import { Setup } from "./base"
 import { PRIEST_ARMOR } from "./equipment.js"
 
 export function constructFrankySetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new ImprovedMoveStrategy(["franky"])
-
     return {
         configs: [
             {
@@ -26,7 +24,7 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
                             },
                             typeList: ["franky", "nerfedmummy"]
                         }),
-                        move: moveStrategy
+                        move: new ImprovedMoveStrategy(["franky"], { idlePosition: { map: "level2w", x: 0, y: 0, }, offset: { x: 5 } })
                     },
                     {
                         ctype: "priest",
@@ -51,7 +49,7 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
                             },
                             typeList: ["nerfedmummy", "franky"]
                         }),
-                        move: moveStrategy
+                        move: new ImprovedMoveStrategy(["franky"], { idlePosition: { map: "level2w", x: 0, y: 0 }, offset: { x: -5 } })
                     }
                 ]
             },

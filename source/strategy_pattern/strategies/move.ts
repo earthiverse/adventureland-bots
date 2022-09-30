@@ -202,6 +202,12 @@ export class HoldPositionMoveStrategy implements Strategy<Character> {
 export type ImprovedMoveStrategyOptions = {
     /** Where to wait if there are no monsters to move to */
     idlePosition?: IPosition
+
+    /** If set, we will offset the given location by this amount */
+    offset?: {
+        x?: number
+        y?: number
+    }
 }
 
 export class ImprovedMoveStrategy implements Strategy<Character> {
@@ -230,6 +236,13 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
             this.spawns.push(options.idlePosition)
         } else {
             for (const type of this.types) this.spawns.push(...Pathfinder.locateMonster(type))
+        }
+
+        if (this.options.offset) {
+            for (const spawn of this.spawns) {
+                if (this.options.offset.x) spawn.x += this.options.offset.x
+                if (this.options.offset.y) spawn.y += this.options.offset.y
+            }
         }
     }
 
