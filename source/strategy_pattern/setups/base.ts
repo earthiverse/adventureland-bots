@@ -8,6 +8,7 @@ import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { constructArmadilloSetup } from "./armadillo.js"
 import { constructBScorpionSetup } from "./bscorpion.js"
 import { constructGigaCrabSetup } from "./crabxx.js"
+import { constructFrankySetup } from "./franky.js"
 import { constructOSnakeSetup } from "./osnake.js"
 import { constructPlantoidSetup } from "./plantoid.js"
 import { constructPorcupineSetup } from "./porcupine.js"
@@ -111,6 +112,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         crabx: constructGenericSetup(contexts, ["crabx"]),
         crabxx: constructGigaCrabSetup(contexts),
         croc: constructGenericSetup(contexts, ["croc"]),
+        franky: constructFrankySetup(contexts),
         frog: constructGenericSetup(contexts, ["frog"]),
         goo: constructGenericSetup(contexts, ["goo"]),
         osnake: constructOSnakeSetup(contexts),
