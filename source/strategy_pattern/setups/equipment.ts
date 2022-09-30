@@ -21,7 +21,7 @@ export const PRIEST_LUCK: EnsureEquipped = {
     earring2: { name: "dexearringx", filters: { returnHighestLevel: true } },
     gloves: { name: "wgloves", filters: { returnHighestLevel: true } },
     helmet: { name: "wcap", filters: { returnHighestLevel: true } },
-    mainhand: { name: "firestaff", filters: { returnHighestLevel: true } },
+    mainhand: { name: "lmace", filters: { returnHighestLevel: true } },
     offhand: { name: "mshield", filters: { returnHighestLevel: true } },
     orb: { name: "rabbitsfoot", filters: { returnHighestLevel: true } },
     pants: { name: "wbreeches", filters: { returnHighestLevel: true } },
