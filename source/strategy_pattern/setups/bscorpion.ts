@@ -1,5 +1,4 @@
 import AL, { PingCompensatedCharacter } from "alclient"
-import { offsetPosition } from "../../base/locations.js"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
@@ -29,7 +28,7 @@ export function constructBScorpionSetup(contexts: Strategist<PingCompensatedChar
                             targetingPartyMember: true,
                             type: "bscorpion"
                         }),
-                        move: new ImprovedMoveStrategy("bscorpion", { idlePosition: offsetPosition(spawn, 5, 0) })
+                        move: new ImprovedMoveStrategy("bscorpion", { offset: { x: 5 } })
                     },
                     {
                         ctype: "priest",
@@ -55,7 +54,7 @@ export function constructBScorpionSetup(contexts: Strategist<PingCompensatedChar
                             targetingPartyMember: true,
                             type: "bscorpion"
                         }),
-                        move: new ImprovedMoveStrategy("bscorpion", { idlePosition: offsetPosition(spawn, -5, 0) })
+                        move: new ImprovedMoveStrategy("bscorpion", { idlePosition: spawn, offset: { x: -5 } })
                     }
                 ]
             },

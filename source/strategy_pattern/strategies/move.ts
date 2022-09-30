@@ -233,9 +233,13 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
         })
 
         if (options.idlePosition) {
-            this.spawns.push(options.idlePosition)
+            this.spawns.push({ ...options.idlePosition })
         } else {
-            for (const type of this.types) this.spawns.push(...Pathfinder.locateMonster(type))
+            for (const type of this.types) {
+                for (const spawn of Pathfinder.locateMonster(type)) {
+                    this.spawns.push({ ...spawn })
+                }
+            }
         }
 
         if (this.options.offset) {
@@ -298,6 +302,8 @@ export type MoveInCircleMoveStrategyOptions = {
     radius: number
     /** The number of sides to make the circle */
     sides?: number
+    /** If true, we will move counter-clockwise instead */
+    ccw?: true
 }
 
 export class MoveInCircleMoveStrategy implements Strategy<Character> {
@@ -326,7 +332,7 @@ export class MoveInCircleMoveStrategy implements Strategy<Character> {
         const radius = this.options.radius
         if (AL.Pathfinder.canWalkPath(bot, center)) {
             const angleFromCenterToCurrent = Math.atan2(bot.y - center.y, bot.x - center.x)
-            const endGoalAngle = angleFromCenterToCurrent + angle
+            const endGoalAngle = angleFromCenterToCurrent + (this.options.ccw ? -angle : angle)
             const endGoal = { x: center.x + radius * Math.cos(endGoalAngle), y: center.y + radius * Math.sin(endGoalAngle) }
             bot.move(endGoal.x, endGoal.y, { resolveOnStart: true }).catch(() => { /** Suppress errors */ })
         } else {
