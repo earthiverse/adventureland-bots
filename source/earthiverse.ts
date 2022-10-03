@@ -11,6 +11,7 @@ import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
 import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
 import { Config, constructSetups } from "./strategy_pattern/setups/base.js"
 import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
+import { getHalloweenMonsterPriority } from "./base/serverhop.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
@@ -18,6 +19,7 @@ await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 // TODO: Make these configurable through /comm using a similar system to how lulz works
 // Toggles
 const ENABLE_EVENTS = true
+const ENABLE_SERVER_HOPS = true
 const ENABLE_MONSTERHUNTS = false
 
 const MERCHANT = "earthMer"
@@ -65,7 +67,7 @@ const respawnStrategy = new RespawnStrategy()
 const setups = constructSetups(ALL_CONTEXTS)
 
 const currentSetups = new Map<Strategist<PingCompensatedCharacter>, Config>()
-const applySetups = (contexts: Strategist<PingCompensatedCharacter>[]) => {
+const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[]) => {
     // Setup a list of ready contexts
     const setupContexts = [...contexts]
     for (let i = 0; i < setupContexts.length; i++) {
@@ -128,6 +130,25 @@ const applySetups = (contexts: Strategist<PingCompensatedCharacter>[]) => {
     const priority: MonsterName[] = []
 
     if (ENABLE_EVENTS) {
+        if (S.halloween) {
+            if ((S.mrgreen as ServerInfoDataLive).live) {
+                if ((S.mrpumpkin as ServerInfoDataLive).live) {
+                    // Both are alive, target the lower hp one
+                    if ((S.mrgreen as ServerInfoDataLive).hp > (S.mrpumpkin as ServerInfoDataLive).hp) {
+                        priority.push("mrpumpkin", "mrgreen")
+                    } else {
+                        priority.push("mrgreen", "mrpumpkin")
+                    }
+                } else {
+                    // Only mrgreen is alive
+                    priority.push("mrgreen")
+                }
+            } else if ((S.mrpumpkin as ServerInfoDataLive).live) {
+                // Only mrpumpkin is alive
+                priority.push("mrpumpkin")
+            }
+        }
+
         for (const id in S) {
             if (!AL.Game.G.monsters[id]) continue // Not a monster
             if ((S[id] as ServerInfoDataLive)?.live) {
@@ -149,8 +170,6 @@ const applySetups = (contexts: Strategist<PingCompensatedCharacter>[]) => {
         }
     }
 
-    // TODO: add special monsters
-
     // Default targets
     priority.push("bscorpion", "croc", "crab", "goo")
 
@@ -167,13 +186,26 @@ const applySetups = (contexts: Strategist<PingCompensatedCharacter>[]) => {
     }
 }
 
-const privateContextsLogic = () => {
+const privateContextsLogic = async () => {
     try {
         const freeContexts: Strategist<PingCompensatedCharacter>[] = []
         for (const context of PRIVATE_CONTEXTS) {
             if (!context.isReady()) continue
             if (context.bot.ctype == "merchant") continue
             const bot = context.bot
+
+            if (ENABLE_SERVER_HOPS) {
+                if (bot.S.halloween) {
+                    const monster = (await getHalloweenMonsterPriority())[0]
+                    if (
+                        monster.serverRegion !== bot.serverData.region
+                        || monster.serverIdentifier !== bot.serverData.name
+                    ) {
+                        // We want to switch servers
+                        await context.changeServer(monster.serverRegion, monster.serverIdentifier)
+                    }
+                }
+            }
 
             if (ENABLE_MONSTERHUNTS) {
                 // Get a monster hunt
@@ -211,7 +243,7 @@ const privateContextsLogic = () => {
             freeContexts.push(context)
         }
 
-        applySetups(freeContexts)
+        await applySetups(freeContexts)
     } catch (e) {
         console.error(e)
     } finally {

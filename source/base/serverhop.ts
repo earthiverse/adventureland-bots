@@ -121,3 +121,48 @@ export async function getTargetServerFromPlayer(defaultRegion: ServerRegion, def
     if (player && player.serverRegion && player.serverIdentifier) return [player.serverRegion, player.serverIdentifier]
     return [defaultRegion, defaultIdentifier]
 }
+
+export async function getHalloweenMonsterPriority() {
+    const monsterPriority: MonsterName[] = ["mrpumpkin", "mrgreen"]
+    const serverPriority = ["EUI", "EUII", "USI", "USII", "USIII", "ASIAI", "EUPVP", "USPVP"]
+
+    const entitiesFilters = { lastSeen: { $gt: Date.now() - 30000 }, type: { $in: monsterPriority } }
+
+    const entitiesP = await AL.EntityModel.find(entitiesFilters).lean().exec()
+
+    const entities = await entitiesP
+    entities.sort((a, b) => {
+        // Lower HP first
+        if (a.hp !== b.hp) return a.hp - b.hp
+
+        // Monster Priority
+        if (a.type !== b.type) return monsterPriority.indexOf(a.type) - monsterPriority.indexOf(b.type)
+
+        // Server Priority
+        if (a.serverRegion !== b.serverRegion || a.serverIdentifier !== b.serverIdentifier) {
+            const aKey = `${a.serverRegion}${a.serverIdentifier}`
+            const bKey = `${b.serverRegion}${b.serverIdentifier}`
+            return serverPriority.indexOf(aKey) - serverPriority.indexOf(bKey)
+        }
+    })
+
+    const toReturn = []
+    for (const entity of entities) {
+        if (entity.in && entity.in !== entity.map) continue // Don't include instanced monsters
+        toReturn.push({
+            hp: entity.hp,
+            id: entity.name,
+            lastSeen: new Date(entity.lastSeen).toISOString(),
+            level: entity.level,
+            map: entity.map,
+            serverIdentifier: entity.serverIdentifier,
+            serverRegion: entity.serverRegion,
+            target: entity.target,
+            type: entity.type,
+            x: entity.x,
+            y: entity.y
+        })
+    }
+
+    return toReturn
+}
