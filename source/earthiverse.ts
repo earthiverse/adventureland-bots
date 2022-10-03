@@ -191,7 +191,6 @@ const privateContextsLogic = async () => {
         const freeContexts: Strategist<PingCompensatedCharacter>[] = []
         for (const context of PRIVATE_CONTEXTS) {
             if (!context.isReady()) continue
-            if (context.bot.ctype == "merchant") continue
             const bot = context.bot
 
             if (ENABLE_SERVER_HOPS) {
@@ -212,6 +211,8 @@ const privateContextsLogic = async () => {
                     }
                 }
             }
+
+            if (bot.ctype == "merchant") continue
 
             if (ENABLE_MONSTERHUNTS) {
                 // Get a monster hunt
