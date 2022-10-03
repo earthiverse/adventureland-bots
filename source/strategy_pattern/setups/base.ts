@@ -14,6 +14,7 @@ import { constructMrPumpkinSetup } from "./mrpumpkin.js"
 import { constructOSnakeSetup } from "./osnake.js"
 import { constructPlantoidSetup } from "./plantoid.js"
 import { constructPorcupineSetup } from "./porcupine.js"
+import { constructRGooSetup } from "./rgoo.js"
 
 export type CharacterConfig = {
     ctype: "mage"
@@ -108,6 +109,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
     return {
         arcticbee: constructGenericSetup(contexts, ["arcticbee"]),
         armadillo: constructArmadilloSetup(contexts),
+        bgoo: constructRGooSetup(contexts),
         bscorpion: constructBScorpionSetup(contexts),
         cgoo: constructGenericSetup(contexts, ["cgoo"]),
         crab: constructGenericSetup(contexts, ["crab"]),
@@ -123,6 +125,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         plantoid: constructPlantoidSetup(contexts),
         poisio: constructGenericSetup(contexts, ["poisio"]),
         porcupine: constructPorcupineSetup(contexts),
+        rgoo: constructRGooSetup(contexts),
         scorpion: constructGenericSetup(contexts, ["scorpion"]),
         snake: constructGenericSetup(contexts, ["snake", "osnake"]),
         spider: constructGenericSetup(contexts, ["spider"]),
