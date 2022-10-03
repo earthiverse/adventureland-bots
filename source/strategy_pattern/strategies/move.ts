@@ -254,6 +254,7 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
         // Move to the idle position first
         if (this.options.idlePosition && this.options.idlePosition.map && bot.map !== this.options.idlePosition.map) {
             await bot.smartMove(this.options.idlePosition, {
+                avoidTownWarps: bot.targets > 0,
                 useBlink: true,
                 stopIfTrue: () => {
                     if (bot.map !== this.options.idlePosition.map) return false
