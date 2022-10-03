@@ -623,7 +623,10 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 }).lean().exec()
                 if (player) {
                     this.debug(bot, `Moving to ${player.name} to mluck them`)
-                    return bot.smartMove(player, { getWithin: AL.Game.G.skills.mluck.range / 2 })
+                    await bot.smartMove(player, { getWithin: AL.Game.G.skills.mluck.range / 2 })
+                    // Wait a bit if we had to enter a door
+                    if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms + 1000)
+                    return
                 }
             }
 
