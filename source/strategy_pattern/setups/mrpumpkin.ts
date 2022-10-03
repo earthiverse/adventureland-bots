@@ -23,7 +23,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                             disableEnergize: true,
                             disableZapper: true,
                             ensureEquipped: {
-                                mainhand: { name: "fireblade", filters: { returnHighestLevel: true } },
+                                mainhand: { name: "firestaff", filters: { returnHighestLevel: true } },
                                 offhand: { name: "wbookhs", filters: { returnHighestLevel: true } },
                                 orb: { name: "jacko", filters: { returnHighestLevel: true } }
                             },
