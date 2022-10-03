@@ -26,7 +26,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                             },
                             type: "mrgreen",
                         }),
-                        move: new ImprovedMoveStrategy("mrgreen", { offset: { x: 5 } })
+                        move: new ImprovedMoveStrategy("mrgreen")
                     },
                     // The priest will tank the giga crab
                     {
@@ -53,7 +53,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                             },
                             type: "mrgreen",
                         }),
-                        move: new ImprovedMoveStrategy("mrgreen", { offset: { x: -5 } })
+                        move: new ImprovedMoveStrategy("mrgreen")
                     }
                 ]
             },

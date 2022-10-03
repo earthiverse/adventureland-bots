@@ -28,7 +28,7 @@ export function constructBScorpionSetup(contexts: Strategist<PingCompensatedChar
                             targetingPartyMember: true,
                             type: "bscorpion"
                         }),
-                        move: new ImprovedMoveStrategy("bscorpion", { offset: { x: 5 } })
+                        move: new ImprovedMoveStrategy("bscorpion")
                     },
                     {
                         ctype: "priest",
@@ -54,7 +54,7 @@ export function constructBScorpionSetup(contexts: Strategist<PingCompensatedChar
                             targetingPartyMember: true,
                             type: "bscorpion"
                         }),
-                        move: new ImprovedMoveStrategy("bscorpion", { idlePosition: spawn, offset: { x: -5 } })
+                        move: new ImprovedMoveStrategy("bscorpion")
                     }
                 ]
             },

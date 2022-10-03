@@ -24,7 +24,7 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
                             },
                             typeList: ["franky", "nerfedmummy"]
                         }),
-                        move: new ImprovedMoveStrategy(["franky"], { idlePosition: { map: "level2w", x: 0, y: 0, }, offset: { x: 5 } })
+                        move: new ImprovedMoveStrategy(["franky"], { idlePosition: { map: "level2w", x: 0, y: 0, } })
                     },
                     {
                         ctype: "priest",
@@ -49,7 +49,7 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
                             },
                             typeList: ["nerfedmummy", "franky"]
                         }),
-                        move: new ImprovedMoveStrategy(["franky"], { idlePosition: { map: "level2w", x: 0, y: 0 }, offset: { x: -5 } })
+                        move: new ImprovedMoveStrategy(["franky"], { idlePosition: { map: "level2w", x: 0, y: 0 } })
                     }
                 ]
             },

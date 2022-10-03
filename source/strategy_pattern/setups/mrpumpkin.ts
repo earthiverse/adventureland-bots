@@ -29,7 +29,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                             },
                             type: "mrpumpkin",
                         }),
-                        move: new ImprovedMoveStrategy("mrpumpkin", { offset: { x: 5 } })
+                        move: new ImprovedMoveStrategy("mrpumpkin")
                     },
                     // The priest will tank the giga crab
                     {
@@ -55,7 +55,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                             },
                             type: "mrpumpkin",
                         }),
-                        move: new ImprovedMoveStrategy("mrpumpkin", { offset: { x: -5 } })
+                        move: new ImprovedMoveStrategy("mrpumpkin")
                     }
                 ]
             },
