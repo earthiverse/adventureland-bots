@@ -41,6 +41,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
 
     private strategies = new Set<Strategy<Type>>()
     private loops: Loops<Type> = new Map<LoopName, Loop<Type>>()
+    private started: Date
     private stopped = false
     private timeouts = new Map<LoopName, NodeJS.Timeout>()
 
@@ -100,6 +101,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
     public changeBot(newBot: Type) {
         this.bot = newBot
         this.bot.socket.on("disconnect", () => this.reconnect())
+        this.started = new Date()
 
         for (const strategy of this.strategies) {
             if (strategy.onApply) {
@@ -254,5 +256,10 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         this.stopped = true
         for (const [, timeout] of this.timeouts) clearTimeout(timeout)
         this.bot.disconnect()
+    }
+
+    public uptime(): number {
+        if (!this.isReady()) return 0
+        return Date.now() - this.started.getTime()
     }
 }

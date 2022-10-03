@@ -198,10 +198,16 @@ const privateContextsLogic = async () => {
                 if (bot.S.halloween) {
                     const monster = (await getHalloweenMonsterPriority())[0]
                     if (
-                        monster.serverRegion !== bot.serverData.region
-                        || monster.serverIdentifier !== bot.serverData.name
+                        context.uptime() > 60_000
+                        && monster
+                        && (
+                            monster.serverRegion !== bot.serverData.region
+                            || monster.serverIdentifier !== bot.serverData.name
+                        )
                     ) {
                         // We want to switch servers
+                        console.log(bot.id, "changing server from", bot.serverData.region, bot.serverData.name)
+                        console.log(bot.id, "changing server to", monster.serverRegion, monster.serverIdentifier)
                         await context.changeServer(monster.serverRegion, monster.serverIdentifier)
                     }
                 }
