@@ -34,12 +34,15 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
     }
 
     protected async attack(bot: Warrior) {
+        if (!this.options.disableWarCry) this.applyWarCry(bot)
+
+        if (!this.shouldAttack(bot)) return
+
         const priority = sortPriority(bot, this.options.typeList)
 
         await this.ensureEquipped(bot)
 
         if (!this.options.disableAgitate) this.agitateTargets(bot)
-        if (!this.options.disableWarCry) this.applyWarCry(bot)
         await this.basicAttack(bot, priority)
         if (!this.options.disableCleave) await this.cleave(bot)
 

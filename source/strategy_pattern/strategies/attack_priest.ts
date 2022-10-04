@@ -20,12 +20,15 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
     }
 
     protected async attack(bot: Priest): Promise<void> {
+        await this.healFriendsOrSelf(bot)
+        if (!this.options.disableDarkBlessing) this.applyDarkBlessing(bot)
+
+        if (!this.shouldAttack(bot)) return
+
         const priority = sortPriority(bot, this.options.typeList)
 
         await this.ensureEquipped(bot)
 
-        await this.healFriendsOrSelf(bot)
-        if (!this.options.disableDarkBlessing) this.applyDarkBlessing(bot)
         await this.basicAttack(bot, priority)
         if (!this.options.disableAbsorb) await this.absorbTargets(bot)
 

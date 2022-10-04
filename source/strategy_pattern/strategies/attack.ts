@@ -44,7 +44,6 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         this.loops.set("attack", {
             fn: async (bot: Type) => {
                 if (this.shouldScare(bot)) await this.scare(bot)
-                if (!this.shouldAttack(bot)) return
                 await this.attack(bot)
             },
             interval: this.interval
@@ -55,6 +54,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (this.options.enableGreedyAggro && !this.options.disableZapper) {
             this.greedyOnEntities = async (data: EntitiesData) => {
                 if (data.monsters.length == 0) return // No monsters
+                if (!this.shouldAttack(bot)) return
                 if (bot.canUse("zapperzap")) {
                     for (const monster of data.monsters) {
                         if (monster.target) continue // Already has a target
@@ -104,6 +104,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
     protected async attack(bot: Type) {
         const priority = sortPriority(bot, this.options.typeList)
+
+        if (!this.shouldAttack(bot)) return
 
         await this.ensureEquipped(bot)
 
@@ -201,7 +203,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
     }
 
     protected async scare(bot: Type) {
-        if (!(bot.hasItem("jacko") && !bot.isEquipped("jacko"))) return // No jacko to scare
+        if (!(bot.hasItem("jacko") || bot.isEquipped("jacko"))) return // No jacko to scare
         if (!bot.isEquipped("jacko")) {
             await bot.equip(bot.locateItem("jacko"), "orb")
             if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
