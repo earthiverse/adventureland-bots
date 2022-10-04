@@ -251,19 +251,6 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
     }
 
     private async move(bot: Character) {
-        // Move to the idle position first
-        if (this.options.idlePosition && this.options.idlePosition.map && bot.map !== this.options.idlePosition.map) {
-            await bot.smartMove(this.options.idlePosition, {
-                avoidTownWarps: bot.targets > 0,
-                useBlink: true,
-                stopIfTrue: () => {
-                    if (bot.map !== this.options.idlePosition.map) return false
-                    const entities = bot.getEntities({ canDamage: true, couldGiveCredit: true, typeList: this.types, willBurnToDeath: false, willDieToProjectiles: false })
-                    return entities.length > 0
-                }
-            })
-        }
-
         const targets = bot.getEntities({ canDamage: true, couldGiveCredit: true, typeList: this.types, willBurnToDeath: false, willDieToProjectiles: false })
         targets.sort(sortClosestDistance(bot))
 
@@ -284,13 +271,23 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
             return
         }
 
-        if (lastD) {
+        this.spawns.sort(sortClosestDistance(bot))
+        if (bot.map !== this.spawns[0].map) {
+            await bot.smartMove(this.spawns[0], {
+                avoidTownWarps: bot.targets > 0,
+                resolveOnFinalMoveStart: true,
+                useBlink: true,
+                stopIfTrue: () => {
+                    if (bot.map !== this.spawns[0].map) return false
+                    const entities = bot.getEntities({ canDamage: true, couldGiveCredit: true, typeList: this.types, willBurnToDeath: false, willDieToProjectiles: false })
+                    return entities.length > 0
+                }
+            })
+        } else if (lastD) {
             // Move towards center of closest spawn
-            this.spawns.sort(sortClosestDistance(bot))
             bot.smartMove(offsetPositionParty(this.spawns[0], bot), { getWithin: AL.Tools.distance({ x: bot.x, y: bot.y }, this.spawns[0]) - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         } else if (!bot.smartMoving) {
             // No targets nearby, move to spawn
-            this.spawns.sort(sortClosestDistance(bot))
             bot.smartMove(offsetPositionParty(this.spawns[0], bot), { resolveOnFinalMoveStart: true, useBlink: true }).catch(() => { /** Suppress Error */ })
         }
     }
