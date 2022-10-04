@@ -102,6 +102,10 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         }
     }
 
+    public async onRemove(bot: Type) {
+        bot.socket.removeListener("entities", this.greedyOnEntities)
+    }
+
     protected async attack(bot: Type) {
         const priority = sortPriority(bot, this.options.typeList)
 
