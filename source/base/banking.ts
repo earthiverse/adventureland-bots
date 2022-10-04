@@ -22,6 +22,10 @@ const ULTRA_RARE = {
     offeringp: 1,
     offering: 2
 }
+const COMMON_HIGH = {
+    offeringp: 7,
+    offering: 9
+}
 /** What we do with upgradable items that are common at level 0 */
 const DEFAULT_UPGRADE_BASE_COMMON = {
     offeringp: 8,
@@ -63,6 +67,13 @@ export const ITEM_UPGRADE_CONF: {
     }
 } = {
     fury: ULTRA_RARE,
+    hboots: COMMON_HIGH,
+    harmor: COMMON_HIGH,
+    hgloves: COMMON_HIGH,
+    hhelmet: COMMON_HIGH,
+    hpants: COMMON_HIGH,
+    gphelmet: COMMON_HIGH,
+    phelmet: COMMON_HIGH,
     lostearring: {
         // Level 2 is the best for exchanging
         stop: 2
