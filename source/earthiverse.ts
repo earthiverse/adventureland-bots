@@ -12,6 +12,7 @@ import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
 import { Config, constructSetups } from "./strategy_pattern/setups/base.js"
 import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
 import { getHalloweenMonsterPriority } from "./base/serverhop.js"
+import { sleep } from "./base/general.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
@@ -207,6 +208,7 @@ const privateContextsLogic = async () => {
                         // We want to switch servers
                         console.log(bot.id, "changing server from", bot.serverData.region, bot.serverData.name)
                         console.log(bot.id, "changing server to", monster.serverRegion, monster.serverIdentifier)
+                        await sleep(5000) // Sleep for a bit to make sure we loot everything
                         await context.changeServer(monster.serverRegion, monster.serverIdentifier)
                     }
                 }
