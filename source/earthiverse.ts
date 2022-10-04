@@ -21,6 +21,7 @@ await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 // Toggles
 const ENABLE_EVENTS = true
 const ENABLE_SERVER_HOPS = true
+const ENABLE_SPECIAL_MONSTERS = true
 const ENABLE_MONSTERHUNTS = false
 
 const MERCHANT = "earthMer"
@@ -79,6 +80,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[]) => 
         }
     }
     if (setupContexts.length == 0) return
+    const serverData = setupContexts[0].bot.serverData
     const S = setupContexts[0].bot.S
 
     const isDoable = (config: Config): Strategist<PingCompensatedCharacter>[] | false => {
@@ -129,6 +131,22 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[]) => 
 
     // Priority of targets
     const priority: MonsterName[] = []
+
+    if (ENABLE_SPECIAL_MONSTERS) {
+        if (S.halloween) {
+            // Only target `jr` and `greenjr` during halloween
+            for (const specialMonster of await AL.EntityModel.find({
+                lastSeen: { $gt: Date.now() - 30000 },
+                serverIdentifier: serverData.name,
+                serverRegion: serverData.region,
+                type: { $in: ["greenjr", "jr"] }
+            }, {
+                name: 1
+            }).lean().exec()) {
+                priority.push(specialMonster.name as MonsterName)
+            }
+        }
+    }
 
     if (ENABLE_EVENTS) {
         if (S.halloween) {

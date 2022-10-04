@@ -34,7 +34,6 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                         }),
                         move: new ImprovedMoveStrategy("mrpumpkin", { idlePosition: idleLocation })
                     },
-                    // The priest will tank the giga crab
                     {
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
@@ -46,7 +45,6 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                         }),
                         move: new ImprovedMoveStrategy("mrpumpkin", { idlePosition: idleLocation })
                     },
-                    // The warrior will prioritize xscorpion so that the giga crab can take damage
                     {
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
@@ -62,6 +60,35 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                     }
                 ]
             },
+            {
+                id: "mrpumpkin_priest,warrior",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            enableGreedyAggro: true,
+                            ensureEquipped: PRIEST_ARMOR,
+                            type: "mrpumpkin",
+                        }),
+                        move: new ImprovedMoveStrategy("mrpumpkin", { idlePosition: idleLocation })
+                    },
+                    {
+                        ctype: "warrior",
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            ensureEquipped: {
+                                mainhand: { name: "fireblade", filters: { returnHighestLevel: true } },
+                                offhand: { name: "fireblade", filters: { returnHighestLevel: true } },
+                                orb: { name: "jacko", filters: { returnHighestLevel: true } }
+                            },
+                            type: "mrpumpkin",
+                        }),
+                        move: new ImprovedMoveStrategy("mrpumpkin", { idlePosition: idleLocation })
+                    }
+                ]
+            }
         ]
     }
 }

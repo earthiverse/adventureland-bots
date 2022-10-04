@@ -9,6 +9,8 @@ import { constructArmadilloSetup } from "./armadillo.js"
 import { constructBScorpionSetup } from "./bscorpion.js"
 import { constructGigaCrabSetup } from "./crabxx.js"
 import { constructFrankySetup } from "./franky.js"
+import { constructGreenJrSetup } from "./greenjr.js"
+import { constructJrSetup } from "./jr.js"
 import { constructMrGreenSetup } from "./mrgreen.js"
 import { constructMrPumpkinSetup } from "./mrpumpkin.js"
 import { constructOSnakeSetup } from "./osnake.js"
@@ -119,6 +121,8 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         franky: constructFrankySetup(contexts),
         frog: constructGenericSetup(contexts, ["frog"]),
         goo: constructGenericSetup(contexts, ["goo"]),
+        greenjr: constructGreenJrSetup(contexts),
+        jr: constructJrSetup(contexts),
         mrgreen: constructMrGreenSetup(contexts),
         mrpumpkin: constructMrPumpkinSetup(contexts),
         osnake: constructOSnakeSetup(contexts),

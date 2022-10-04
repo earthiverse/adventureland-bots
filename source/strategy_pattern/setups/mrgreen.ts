@@ -28,7 +28,6 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                         }),
                         move: new ImprovedMoveStrategy("mrgreen")
                     },
-                    // The priest will tank the giga crab
                     {
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
@@ -40,7 +39,36 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                         }),
                         move: new ImprovedMoveStrategy("mrgreen")
                     },
-                    // The warrior will prioritize xscorpion so that the giga crab can take damage
+                    {
+                        ctype: "warrior",
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            disableCleave: true,
+                            ensureEquipped: {
+                                mainhand: { name: "fireblade", filters: { returnHighestLevel: true } },
+                                offhand: { name: "fireblade", filters: { returnHighestLevel: true } },
+                                orb: { name: "jacko", filters: { returnHighestLevel: true } }
+                            },
+                            type: "mrgreen",
+                        }),
+                        move: new ImprovedMoveStrategy("mrgreen")
+                    }
+                ]
+            },
+            {
+                id: "mrgreen_priest,warrior",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            enableGreedyAggro: true,
+                            ensureEquipped: PRIEST_ARMOR,
+                            type: "mrgreen",
+                        }),
+                        move: new ImprovedMoveStrategy("mrgreen")
+                    },
                     {
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
