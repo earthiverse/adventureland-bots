@@ -1,4 +1,4 @@
-import { PingCompensatedCharacter } from "alclient"
+import { IPosition, PingCompensatedCharacter } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
@@ -10,6 +10,9 @@ import { PRIEST_ARMOR } from "./equipment.js"
 export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     // TODO: Make a PvP safe configuration that will allow for splash damage on public servers
     //       and no splash on PvP servers
+
+    // This is between the xscorpions and the minimushes
+    const idleLocation: IPosition = { map: "halloween", x: -250, y: 725 }
 
     return {
         configs: [
@@ -29,7 +32,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                             },
                             type: "mrpumpkin",
                         }),
-                        move: new ImprovedMoveStrategy("mrpumpkin")
+                        move: new ImprovedMoveStrategy("mrpumpkin", { idlePosition: idleLocation })
                     },
                     // The priest will tank the giga crab
                     {
@@ -41,7 +44,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                             ensureEquipped: PRIEST_ARMOR,
                             type: "mrpumpkin",
                         }),
-                        move: new ImprovedMoveStrategy("mrpumpkin")
+                        move: new ImprovedMoveStrategy("mrpumpkin", { idlePosition: idleLocation })
                     },
                     // The warrior will prioritize xscorpion so that the giga crab can take damage
                     {
@@ -55,7 +58,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                             },
                             type: "mrpumpkin",
                         }),
-                        move: new ImprovedMoveStrategy("mrpumpkin")
+                        move: new ImprovedMoveStrategy("mrpumpkin", { idlePosition: idleLocation })
                     }
                 ]
             },
