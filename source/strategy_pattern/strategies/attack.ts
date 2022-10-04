@@ -366,9 +366,6 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             return true
         }
 
-        // If we have enableGreedyAggro on, we are probably okay with a lot of targets
-        if (this.options.enableGreedyAggro) return false
-
         // If we could die due to attacks from incoming monsters
         let potentialIncomingDamage = 0
         for (const entity of bot.getEntities({ targetingMe: true })) {
@@ -379,6 +376,9 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             console.debug(bot.id, "wants to scare because we're about to take a lot of damage:", potentialIncomingDamage)
             return true
         }
+
+        // If we have enableGreedyAggro on, we are probably okay with a lot of targets
+        if (this.options.enableGreedyAggro) return false
 
         return bot.isScared()
     }
