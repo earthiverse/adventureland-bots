@@ -1,4 +1,4 @@
-import { IPosition, PingCompensatedCharacter } from "alclient"
+import { IPosition, Mage, PingCompensatedCharacter, Priest, Warrior } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
@@ -7,10 +7,56 @@ import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { PRIEST_ARMOR } from "./equipment.js"
 
-export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    // TODO: Make a PvP safe configuration that will allow for splash damage on public servers
-    //       and no splash on PvP servers
+class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
+    public onApply(bot: Mage): void {
+        if (bot.isPVP()) {
+            // No splash damage
+            this.options.ensureEquipped.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
+            this.options.ensureEquipped.offhand = { name: "wbookhs", filters: { returnHighestLevel: true } }
+            this.options.typeList = ["mrpumpkin"]
+        } else {
+            // Splash damage & additional monsters
+            this.options.ensureEquipped.mainhand = { name: "gstaff", filters: { returnHighestLevel: true } }
+            delete this.options.ensureEquipped.offhand
+            this.options.typeList = ["mrpumpkin", "xscorpion", "minimush"]
+        }
+    }
+}
 
+class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
+    public onApply(bot: Priest): void {
+        if (bot.isPVP()) {
+            this.options.ensureEquipped.orb = { name: "jacko", filters: { returnHighestLevel: true } }
+            this.options.typeList = ["mrpumpkin"]
+        } else {
+            // Additional monsters
+            this.options.ensureEquipped.orb = { name: "jacko", filters: { returnHighestLevel: true } }
+            this.options.typeList = ["mrpumpkin", "xscorpion", "minimush"]
+        }
+    }
+}
+
+class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
+    public onApply(bot: Warrior): void {
+        if (bot.isPVP()) {
+            // No Splash Damage
+            this.options.disableCleave = true
+            this.options.ensureEquipped.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } },
+            this.options.ensureEquipped.offhand = { name: "fireblade", filters: { returnHighestLevel: true } },
+            this.options.enableEquipForCleave = true
+            this.options.typeList = ["mrpumpkin"]
+        } else {
+            // Splash Damage & additional monsters
+            delete this.options.disableCleave
+            this.options.ensureEquipped.mainhand = { name: "bataxe", filters: { returnHighestLevel: true } },
+            delete this.options.ensureEquipped.offhand
+            this.options.enableEquipForCleave = true
+            this.options.typeList = ["mrpumpkin", "xscorpion", "minimush"]
+        }
+    }
+}
+
+export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     // This is between the xscorpions and the minimushes
     const idleLocation: IPosition = { map: "halloween", x: -250, y: 725 }
 
@@ -21,40 +67,33 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({
+                        attack: new MageMrPumpkinAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
                             disableZapper: true,
                             ensureEquipped: {
-                                mainhand: { name: "firestaff", filters: { returnHighestLevel: true } },
-                                offhand: { name: "wbookhs", filters: { returnHighestLevel: true } },
                                 orb: { name: "jacko", filters: { returnHighestLevel: true } }
-                            },
-                            type: "mrpumpkin",
+                            }
                         }),
                         move: new ImprovedMoveStrategy("mrpumpkin", { idlePosition: idleLocation })
                     },
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({
+                        attack: new PriestMrPumpkinAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
                             ensureEquipped: PRIEST_ARMOR,
-                            type: "mrpumpkin",
                         }),
                         move: new ImprovedMoveStrategy("mrpumpkin", { idlePosition: idleLocation })
                     },
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({
+                        attack: new WarriorMrPumpkinAttackStrategy({
                             contexts: contexts,
                             ensureEquipped: {
-                                mainhand: { name: "fireblade", filters: { returnHighestLevel: true } },
-                                offhand: { name: "fireblade", filters: { returnHighestLevel: true } },
                                 orb: { name: "jacko", filters: { returnHighestLevel: true } }
-                            },
-                            type: "mrpumpkin",
+                            }
                         }),
                         move: new ImprovedMoveStrategy("mrpumpkin", { idlePosition: idleLocation })
                     }
@@ -65,25 +104,21 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({
+                        attack: new PriestMrPumpkinAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
                             ensureEquipped: PRIEST_ARMOR,
-                            type: "mrpumpkin",
                         }),
                         move: new ImprovedMoveStrategy("mrpumpkin", { idlePosition: idleLocation })
                     },
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({
+                        attack: new WarriorMrPumpkinAttackStrategy({
                             contexts: contexts,
                             ensureEquipped: {
-                                mainhand: { name: "fireblade", filters: { returnHighestLevel: true } },
-                                offhand: { name: "fireblade", filters: { returnHighestLevel: true } },
                                 orb: { name: "jacko", filters: { returnHighestLevel: true } }
-                            },
-                            type: "mrpumpkin",
+                            }
                         }),
                         move: new ImprovedMoveStrategy("mrpumpkin", { idlePosition: idleLocation })
                     }
