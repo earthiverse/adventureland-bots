@@ -4,6 +4,7 @@ import { sortPriority } from "../../base/sort.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
 
 export type WarriorAttackStrategyOptions = BaseAttackStrategyOptions & {
+    disableAgitate?: true
     disableCleave?: true
     disableWarCry?: true
     /**
@@ -37,11 +38,28 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
         await this.ensureEquipped(bot)
 
+        if (!this.options.disableAgitate) this.agitateTargets(bot)
         if (!this.options.disableWarCry) this.applyWarCry(bot)
         await this.basicAttack(bot, priority)
         if (!this.options.disableCleave) await this.cleave(bot)
 
         await this.ensureEquipped(bot)
+    }
+
+    protected async agitateTargets(bot: Warrior) {
+        if (!bot.canUse("agitate")) return // Can't agitate
+
+        if (this.options.enableGreedyAggro) {
+            // Agitate all nearby enemies if there are no others nearby
+            const entity = bot.getEntity({
+                hasTarget: false,
+                notType: this.options.type,
+                notTypeList: this.options.typeList,
+                withinRange: "agitate"
+            })
+            if (entity) return // Something we don't want to agitate is nearby
+            return bot.agitate()
+        }
     }
 
     protected async cleave(bot: Warrior) {

@@ -125,10 +125,10 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
         if (!bot.canUse("absorb")) return // Can't absorb
 
         if (this.options.enableGreedyAggro) {
-            // Absorb the sins of party members
+            // Absorb the sins of other players attacking coop monsters
             const entity = bot.getEntity({
                 couldGiveCredit: true,
-                targetingMe: false,
+                targetingPartyMember: false,
                 type: this.options.type,
                 typeList: this.options.typeList,
             })

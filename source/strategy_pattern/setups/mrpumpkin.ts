@@ -14,12 +14,15 @@ class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
             this.options.ensureEquipped.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
             this.options.ensureEquipped.offhand = { name: "wbookhs", filters: { returnHighestLevel: true } }
             this.options.typeList = ["mrpumpkin"]
+            delete this.options.enableGreedyAggro
         } else {
             // Splash damage & additional monsters
             this.options.ensureEquipped.mainhand = { name: "gstaff", filters: { returnHighestLevel: true } }
             delete this.options.ensureEquipped.offhand
             this.options.typeList = ["mrpumpkin", "xscorpion", "minimush"]
+            this.options.enableGreedyAggro = true
         }
+        super.onApply(bot)
     }
 }
 
@@ -33,6 +36,7 @@ class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
             this.options.ensureEquipped.orb = { name: "jacko", filters: { returnHighestLevel: true } }
             this.options.typeList = ["mrpumpkin", "xscorpion", "minimush"]
         }
+        super.onApply(bot)
     }
 }
 
@@ -45,6 +49,7 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
             this.options.ensureEquipped.offhand = { name: "fireblade", filters: { returnHighestLevel: true } },
             this.options.enableEquipForCleave = true
             this.options.typeList = ["mrpumpkin"]
+            delete this.options.enableGreedyAggro
         } else {
             // Splash Damage & additional monsters
             delete this.options.disableCleave
@@ -52,7 +57,9 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
             delete this.options.ensureEquipped.offhand
             this.options.enableEquipForCleave = true
             this.options.typeList = ["mrpumpkin", "xscorpion", "minimush"]
+            this.options.enableGreedyAggro = true
         }
+        super.onApply(bot)
     }
 }
 

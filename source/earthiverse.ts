@@ -116,6 +116,9 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[]) => 
                             context.removeStrategy(characterConfig.move)
                         }
 
+                        // Stop smart moving if we are, so we can do the new strategy movement quicker
+                        if (context.bot.smartMoving) context.bot.stopSmartMove().catch(console.error)
+
                         // Apply the new strategies
                         context.applyStrategy(characterConfig.attack)
                         context.applyStrategy(characterConfig.move)
@@ -208,6 +211,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[]) => 
 const privateContextsLogic = async () => {
     try {
         const freeContexts: Strategist<PingCompensatedCharacter>[] = []
+
         for (const context of PRIVATE_CONTEXTS) {
             if (!context.isReady()) continue
             const bot = context.bot
@@ -224,9 +228,7 @@ const privateContextsLogic = async () => {
                         )
                     ) {
                         // We want to switch servers
-                        console.log(bot.id, "changing server from", bot.serverData.region, bot.serverData.name)
-                        console.log(bot.id, "changing server to", monster.serverRegion, monster.serverIdentifier)
-                        await sleep(5000) // Sleep for a bit to make sure we loot everything
+                        console.log(bot.id, "is changing server from", bot.serverData.region, bot.serverData.name, "to", monster.serverRegion, monster.serverIdentifier)
                         await context.changeServer(monster.serverRegion, monster.serverIdentifier)
                     }
                 }

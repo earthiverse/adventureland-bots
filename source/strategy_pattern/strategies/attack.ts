@@ -61,6 +61,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         if (this.options.type && monster.type !== this.options.type) continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.zapperzap.range) continue
+                        bot.nextSkill.set("zapperzap", new Date(Date.now() + (bot.ping * 2)))
                         return bot.zapperZap(monster.id).catch(console.error)
                     }
                 }
@@ -71,6 +72,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         if (this.options.type && monster.type !== this.options.type) continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.taunt.range) continue
+                        bot.nextSkill.set("taunt", new Date(Date.now() + (bot.ping * 2)))
                         return (bot as unknown as Warrior).taunt(monster.id).catch(console.error)
                     }
                 }
@@ -81,6 +83,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         if (this.options.type && monster.type !== this.options.type) continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.taunt.range) continue
+                        bot.nextSkill.set("cburst", new Date(Date.now() + (bot.ping * 2)))
                         return (bot as unknown as Mage).cburst([[monster.id, 1]]).catch(console.error)
                     }
                 }
@@ -90,6 +93,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         if (this.options.type && monster.type !== this.options.type) continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > bot.range) continue
+                        bot.nextSkill.set("attack", new Date(Date.now() + (bot.ping * 2)))
                         return bot.basicAttack(monster.id).catch(console.error)
                     }
                 }
@@ -113,6 +117,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (!bot.canUse("attack")) return // We can't attack
 
         if (this.options.enableGreedyAggro) {
+            // Attack an entity that doesn't have a target if we can
             const entities = bot.getEntities({
                 canDamage: "attack",
                 hasTarget: false,
