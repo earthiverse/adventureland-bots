@@ -132,6 +132,10 @@ export async function getHalloweenMonsterPriority() {
 
     const entities = await entitiesP
     entities.sort((a, b) => {
+        // PVP Priority
+        if (a.serverIdentifier !== "PVP" && b.serverIdentifier == "PVP") return -1
+        if (b.serverIdentifier !== "PVP" && a.serverIdentifier == "PVP") return 1
+
         // Lower HP first
         if (a.hp !== b.hp) return a.hp - b.hp
 
