@@ -335,6 +335,7 @@ const startMerchantContext = async () => {
     try {
         merchant = await AL.Game.startMerchant(MERCHANT, "US", "I")
     } catch (e) {
+        if (merchant) merchant.disconnect()
         console.error(e)
         setTimeout(startMerchantContext, 10_000)
     }
@@ -350,6 +351,7 @@ const startWarriorContext = async () => {
     try {
         warrior = await AL.Game.startWarrior(WARRIOR, "US", "I")
     } catch (e) {
+        if (warrior) warrior.disconnect()
         console.error(e)
         setTimeout(startWarriorContext, 10_000)
     }
@@ -365,6 +367,7 @@ const startMageContext = async () => {
     try {
         mage = await AL.Game.startMage(MAGE, "US", "I")
     } catch (e) {
+        if (mage) mage.disconnect()
         console.error(e)
         setTimeout(startMageContext, 10_000)
     }
@@ -380,6 +383,7 @@ const startPriestContext = async () => {
     try {
         priest = await AL.Game.startPriest(PRIEST, "US", "I")
     } catch (e) {
+        if (priest) priest.disconnect()
         console.error(e)
         setTimeout(startPriestContext, 10_000)
     }
