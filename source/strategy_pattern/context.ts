@@ -177,6 +177,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                     this.changeBot(newBot as Type)
                 } catch (e) {
                     setTimeout(switchBots, 1000)
+                    return
                 }
                 resolve()
             }
