@@ -151,9 +151,9 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[]) => 
                 serverRegion: serverData.region,
                 type: { $in: ["greenjr", "jr"] }
             }, {
-                name: 1
+                type: 1
             }).lean().exec()) {
-                priority.push(specialMonster.name as MonsterName)
+                priority.push(specialMonster.type)
             }
         }
     }
