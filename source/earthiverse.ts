@@ -228,8 +228,10 @@ const privateContextsLogic = async () => {
                         )
                     ) {
                         // We want to switch servers
+                        await sleep(1000)
                         console.log(bot.id, "is changing server from", bot.serverData.region, bot.serverData.name, "to", monster.serverRegion, monster.serverIdentifier)
-                        await context.changeServer(monster.serverRegion, monster.serverIdentifier)
+                        context.changeServer(monster.serverRegion, monster.serverIdentifier).catch(console.error)
+                        return
                     }
                 }
             }
