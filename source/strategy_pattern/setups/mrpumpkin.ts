@@ -67,7 +67,8 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
     const moveStrategy = new MoveInCircleMoveStrategy({
         // This is between the xscorpions and the minimushes
         center: { map: "halloween", x: -250, y: 725 },
-        radius: 20
+        radius: 20,
+        sides: 16
     })
 
     return {
