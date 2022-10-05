@@ -208,8 +208,6 @@ export class Strategist<Type extends PingCompensatedCharacter> {
     }
 
     public removeStrategy(strategy: Strategy<Type>) {
-        if (!this.strategies.has(strategy)) return // We don't have this strategy enabled
-
         if (strategy.loops) {
             for (const [loopName] of strategy.loops) {
                 this.stopLoop(loopName)

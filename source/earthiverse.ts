@@ -1,6 +1,6 @@
 import AL, { ItemName, Merchant, PingCompensatedCharacter, Priest, Mage, Warrior, ServerRegion, ServerIdentifier, MonsterName, ServerInfoDataLive } from "alclient"
 import { DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, startMerchant } from "./merchant/strategy.js"
-import { Strategist } from "./strategy_pattern/context.js"
+import { Strategist, Strategy } from "./strategy_pattern/context.js"
 import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "./strategy_pattern/strategies/buy.js"
 import { FinishMonsterHuntStrategy, GetHolidaySpiritStrategy, GetMonsterHuntStrategy } from "./strategy_pattern/strategies/move.js"
@@ -68,7 +68,7 @@ const respawnStrategy = new RespawnStrategy()
 // Setups
 const setups = constructSetups(ALL_CONTEXTS)
 
-const currentSetups = new Map<Strategist<PingCompensatedCharacter>, Config>()
+const currentSetups = new Map<Strategist<PingCompensatedCharacter>, { attack: Strategy<PingCompensatedCharacter>, move: Strategy<PingCompensatedCharacter> }>()
 const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[]) => {
     // Setup a list of ready contexts
     const setupContexts = [...contexts]
@@ -109,21 +109,34 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[]) => 
             for (const context of doableWith) {
                 if (context.bot.ctype == characterConfig.ctype) {
                     const current = currentSetups.get(context)
-                    if (current?.id !== config.id) {
-                        if (current) {
-                            // Remove the old strategies
-                            context.removeStrategy(characterConfig.attack)
-                            context.removeStrategy(characterConfig.move)
+
+                    if (current) {
+                        // Swap the strategies
+                        if (current.attack !== characterConfig.attack) {
+                            context.removeStrategy(current.attack)
+                            context.applyStrategy(characterConfig.attack)
                         }
+                        if (current.move !== characterConfig.move) {
+                            context.removeStrategy(characterConfig.move)
 
-                        // Stop smart moving if we are, so we can do the new strategy movement quicker
-                        if (context.bot.smartMoving) context.bot.stopSmartMove().catch(console.error)
+                            // Stop smart moving if we are, so we can do the new strategy movement quicker
+                            if (context.bot.smartMoving) context.bot.stopSmartMove().catch(console.error)
 
+                            context.removeStrategy(characterConfig.attack)
+                        }
+                    } else {
                         // Apply the new strategies
                         context.applyStrategy(characterConfig.attack)
                         context.applyStrategy(characterConfig.move)
-                        currentSetups.set(context, config)
                     }
+
+                    if (current.move !== characterConfig.move) {
+                        // Swap the move strategy
+                        context.removeStrategy(characterConfig.move)
+                        context.removeStrategy(characterConfig.attack)
+                    }
+
+                    currentSetups.set(context, { attack: characterConfig.attack, move: characterConfig.move })
                     setupContexts.splice(setupContexts.indexOf(context), 1)
                     continue nextConfig
                 }
