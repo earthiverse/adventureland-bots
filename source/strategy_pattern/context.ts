@@ -68,11 +68,12 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                 // Stop the loop
                 this.stopLoop(name)
             } else if (this.loops.has(name)) {
+                const oldLoop = this.loops.get(name)
                 // Change the loop
                 this.loops.set(name, {
                     fn: loop.fn,
                     interval: loop.interval,
-                    started: new Date()
+                    started: oldLoop.started
                 })
             } else {
                 // Start the loop
@@ -97,7 +98,11 @@ export class Strategist<Type extends PingCompensatedCharacter> {
 
                     // Setup the next run
                     const loop = this.loops.get(name)
-                    if (!loop || this.stopped || loop.started.getTime() > started) return // Stop the loop
+                    if (!loop || this.stopped) return // Stop the loop
+                    if (loop.started.getTime() > started) {
+                        console.debug("stopping loop because we started a new one")
+                        return
+                    }
                     if (typeof loop.interval == "number") this.timeouts.set(name, setTimeout(newLoop, loop.interval)) // Continue the loop
                     else if (Array.isArray(loop.interval)) {
                         const cooldown = Math.max(50, Math.min(...loop.interval.map((skill) => this.bot.getCooldown(skill))))
