@@ -218,6 +218,24 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 // Go to town and wait a while for things to upgrade
                 await bot.smartMove("main")
                 await sleep(60000)
+                return
+            }
+
+            // Move things from "overflow" slots
+            for (let i = bot.isize; i < bot.items.length; i++) {
+                let free: number
+                for (let j = 0; j < bot.isize; j++) {
+                    const item = bot.items[j]
+                    if (!item) {
+                        free = j
+                        break
+                    }
+                }
+                if (free !== undefined) {
+                    await bot.swapItems(i, free)
+                } else {
+                    break
+                }
             }
 
             // Do banking if we have a lot of gold, or it's been a while (15 minutes)
