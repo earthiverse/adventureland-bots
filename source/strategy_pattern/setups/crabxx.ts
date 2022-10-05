@@ -23,7 +23,7 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             disableCreditCheck: true, // Giga crab will only take 1 damage while any crabx are alive, so help kill others', too
                             disableEnergize: true,
                             ensureEquipped: {
-                                mainhand: { name: "fireblade", filters: { returnHighestLevel: true } },
+                                mainhand: { name: "firestaff", filters: { returnHighestLevel: true } },
                                 offhand: { name: "wbookhs", filters: { returnHighestLevel: true } },
                                 orb: { name: "jacko", filters: { returnHighestLevel: true } }
                             },
