@@ -122,7 +122,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[]) => 
                             // Stop smart moving if we are, so we can do the new strategy movement quicker
                             if (context.bot.smartMoving) context.bot.stopSmartMove().catch(console.error)
 
-                            context.applyStrategy(characterConfig.attack)
+                            context.applyStrategy(characterConfig.move)
                         }
                     } else {
                         // Apply the strategy
