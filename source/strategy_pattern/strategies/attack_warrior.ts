@@ -23,14 +23,6 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
         if (!options.disableCleave) this.interval.push("cleave")
         if (!options.disableWarCry) this.interval.push("warcry")
-
-        this.loops.set("attack", {
-            fn: async (bot: Warrior) => {
-                if (!this.shouldAttack(bot)) return
-                await this.attack(bot)
-            },
-            interval: this.interval
-        })
     }
 
     protected async attack(bot: Warrior) {
