@@ -99,7 +99,7 @@ class DisconnectOnCommandStrategy implements Strategy<Character> {
     }
 
     public onRemove(bot: Character) {
-        bot.socket.removeListener("code_eval", this.onCodeEval)
+        if (this.onCodeEval) bot.socket.removeListener("code_eval", this.onCodeEval)
     }
 }
 

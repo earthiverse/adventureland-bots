@@ -35,6 +35,6 @@ export class AvoidStackingStrategy<Type extends Character> implements Strategy<T
     }
 
     public onRemove(bot: Type) {
-        bot.socket.removeListener("hit", this.onHit)
+        if (this.onHit) bot.socket.removeListener("hit", this.onHit)
     }
 }

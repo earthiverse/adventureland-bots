@@ -215,6 +215,16 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[]) => 
     }
 }
 
+const removeSetup = (context: Strategist<PingCompensatedCharacter>) => {
+    const current = currentSetups.get(context)
+
+    if (current) {
+        context.removeStrategy(current.attack)
+        context.removeStrategy(current.move)
+        currentSetups.delete(context)
+    }
+}
+
 const privateContextsLogic = async () => {
     try {
         const freeContexts: Strategist<PingCompensatedCharacter>[] = []
@@ -248,7 +258,7 @@ const privateContextsLogic = async () => {
             if (ENABLE_MONSTERHUNTS) {
                 // Get a monster hunt
                 if (!bot.s.monsterhunt) {
-                    currentSetups.delete(context)
+                    removeSetup(context)
                     context.applyStrategy(getMonsterHuntStrategy)
                     continue
                 }
@@ -257,7 +267,7 @@ const privateContextsLogic = async () => {
                 if (bot.s.monsterhunt?.c == 0) {
                     const [region, id] = bot.s.monsterhunt.sn.split(" ") as [ServerRegion, ServerIdentifier]
                     if (region == bot.serverData.region && id == bot.serverData.name) {
-                        currentSetups.delete(context)
+                        removeSetup(context)
                         context.applyStrategy(finishMonsterHuntStrategy)
                         continue
                     }
@@ -267,14 +277,14 @@ const privateContextsLogic = async () => {
             // Holiday spirit
             if (bot.S.holidayseason && !bot.s.holidayspirit) {
                 // TODO: implement going to get holiday spirit
-                currentSetups.delete(context)
+                removeSetup(context)
                 context.applyStrategy(getHolidaySpiritStrategy)
                 continue
             }
 
             // Stay on goobrawl if there are still monsters around
             if (bot.map == "goobrawl" && bot.getEntities({ typeList: ["bgoo", "rgoo"] }).length > 0) {
-                currentSetups.delete(context)
+                removeSetup(context)
                 continue
             }
 
