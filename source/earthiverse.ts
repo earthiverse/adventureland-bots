@@ -117,23 +117,17 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[]) => 
                             context.applyStrategy(characterConfig.attack)
                         }
                         if (current.move !== characterConfig.move) {
-                            context.removeStrategy(characterConfig.move)
+                            context.removeStrategy(current.move)
 
                             // Stop smart moving if we are, so we can do the new strategy movement quicker
                             if (context.bot.smartMoving) context.bot.stopSmartMove().catch(console.error)
 
-                            context.removeStrategy(characterConfig.attack)
+                            context.applyStrategy(characterConfig.attack)
                         }
                     } else {
-                        // Apply the new strategies
+                        // Apply the strategy
                         context.applyStrategy(characterConfig.attack)
                         context.applyStrategy(characterConfig.move)
-                    }
-
-                    if (current.move !== characterConfig.move) {
-                        // Swap the move strategy
-                        context.removeStrategy(characterConfig.move)
-                        context.removeStrategy(characterConfig.attack)
                     }
 
                     currentSetups.set(context, { attack: characterConfig.attack, move: characterConfig.move })
