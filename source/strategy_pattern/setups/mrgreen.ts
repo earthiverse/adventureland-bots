@@ -8,6 +8,8 @@ import { Setup } from "./base"
 import { PRIEST_ARMOR } from "./equipment.js"
 
 export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const moveStrategy = new ImprovedMoveStrategy("mrgreen")
+
     return {
         configs: [
             {
@@ -26,7 +28,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                             },
                             type: "mrgreen",
                         }),
-                        move: new ImprovedMoveStrategy("mrgreen")
+                        move: moveStrategy
                     },
                     {
                         ctype: "priest",
@@ -37,7 +39,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                             ensureEquipped: PRIEST_ARMOR,
                             type: "mrgreen",
                         }),
-                        move: new ImprovedMoveStrategy("mrgreen")
+                        move: moveStrategy
                     },
                     {
                         ctype: "warrior",
@@ -51,7 +53,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                             },
                             type: "mrgreen",
                         }),
-                        move: new ImprovedMoveStrategy("mrgreen")
+                        move: moveStrategy
                     }
                 ]
             },
@@ -67,7 +69,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                             ensureEquipped: PRIEST_ARMOR,
                             type: "mrgreen",
                         }),
-                        move: new ImprovedMoveStrategy("mrgreen")
+                        move: moveStrategy
                     },
                     {
                         ctype: "warrior",
@@ -81,7 +83,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                             },
                             type: "mrgreen",
                         }),
-                        move: new ImprovedMoveStrategy("mrgreen")
+                        move: moveStrategy
                     }
                 ]
             },

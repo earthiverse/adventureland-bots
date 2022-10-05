@@ -1,4 +1,4 @@
-import { IPosition, Mage, PingCompensatedCharacter, Priest, Warrior } from "alclient"
+import { Mage, PingCompensatedCharacter, Priest, Warrior } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
@@ -64,12 +64,13 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
 }
 
 export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new MoveInCircleMoveStrategy({
-        // This is between the xscorpions and the minimushes
-        center: { map: "halloween", x: -250, y: 725 },
-        radius: 20,
-        sides: 16
-    })
+    // const moveStrategy = new MoveInCircleMoveStrategy({
+    //     // This is between the xscorpions and the minimushes
+    //     center: { map: "halloween", x: -250, y: 725 },
+    //     radius: 20,
+    //     sides: 16
+    // })
+    const moveStrategy = new ImprovedMoveStrategy("mrpumpkin", { idlePosition: { map: "halloween", x: -250, y: 725 } })
 
     return {
         configs: [
