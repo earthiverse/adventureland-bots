@@ -42,7 +42,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
         await this.ensureEquipped(bot)
 
-        if (!this.options.disableAgitate) this.agitateTargets(bot)
+        if (!this.options.disableAgitate) await this.agitateTargets(bot)
         await this.basicAttack(bot, priority)
         if (!this.options.disableCleave) await this.cleave(bot)
 
@@ -67,7 +67,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
                 typeList: this.options.typeList,
                 withinRange: "agitate"
             })
-            if (wantedEntity) return bot.agitate()
+            if (wantedEntity) return bot.agitate().catch(console.error)
         }
     }
 

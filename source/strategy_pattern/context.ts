@@ -1,9 +1,14 @@
 import AL, { PingCompensatedCharacter, ServerIdentifier, ServerRegion, SkillName } from "alclient"
 
 export type Loop<Type> = {
-    fn: (bot: Type) => Promise<unknown>,
+    fn: (bot: Type) => Promise<unknown>
     /** If number, it will loop every this many ms. If SkillName, it will loop based on the cooldown of the skills in the array */
     interval: SkillName[] | number
+}
+type ContextLoop<Type> = Loop<Type> & {
+    fn: (bot: Type) => Promise<unknown>
+    interval: SkillName[] | number
+    started: Date
 }
 
 export type LoopName =
@@ -27,6 +32,7 @@ export type LoopName =
     | "upgrade"
 
 export type Loops<Type> = Map<LoopName, Loop<Type>>
+type ContextLoops<Type> = Map<LoopName, ContextLoop<Type>>
 
 export interface Strategy<Type> {
     loops?: Loops<Type>
@@ -40,7 +46,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
     public bot: Type
 
     private strategies = new Set<Strategy<Type>>()
-    private loops: Loops<Type> = new Map<LoopName, Loop<Type>>()
+    private loops: ContextLoops<Type> = new Map<LoopName, ContextLoop<Type>>()
     private started: Date
     private stopped = false
     private timeouts = new Map<LoopName, NodeJS.Timeout>()
@@ -57,19 +63,28 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         if (strategy.onApply) strategy.onApply(this.bot)
 
         if (!strategy.loops) return
-        for (const [name, fn] of strategy.loops) {
-            if (fn == undefined) {
+        for (const [name, loop] of strategy.loops) {
+            if (loop == undefined) {
                 // Stop the loop
                 this.stopLoop(name)
             } else if (this.loops.has(name)) {
                 // Change the loop
-                this.loops.set(name, fn)
+                this.loops.set(name, {
+                    fn: loop.fn,
+                    interval: loop.interval,
+                    started: new Date()
+                })
             } else {
                 // Start the loop
-                this.loops.set(name, fn)
+                this.loops.set(name, {
+                    fn: loop.fn,
+                    interval: loop.interval,
+                    started: new Date()
+                })
 
                 const newLoop = async () => {
                     // Run the loop
+                    const started = Date.now()
                     try {
                         const loop = this.loops.get(name)
                         if (!loop || this.stopped) return // Stop the loop
@@ -82,7 +97,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
 
                     // Setup the next run
                     const loop = this.loops.get(name)
-                    if (!loop || this.stopped) return // Stop the loop
+                    if (!loop || this.stopped || loop.started.getTime() > started) return // Stop the loop
                     if (typeof loop.interval == "number") this.timeouts.set(name, setTimeout(newLoop, loop.interval)) // Continue the loop
                     else if (Array.isArray(loop.interval)) {
                         const cooldown = Math.max(50, Math.min(...loop.interval.map((skill) => this.bot.getCooldown(skill))))
