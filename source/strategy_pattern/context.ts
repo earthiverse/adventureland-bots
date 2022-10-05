@@ -132,13 +132,13 @@ export class Strategist<Type extends PingCompensatedCharacter> {
 
     public async changeServer(region: ServerRegion, id: ServerIdentifier) {
         return new Promise<void>((resolve) => {
-            // Disconnect the bot (this will remove the disconnect listener, too)
+            // Disconnect the bot
             this.bot.socket.removeAllListeners("disconnect")
             this.bot.disconnect()
 
             const switchBots = async () => {
+                let newBot: PingCompensatedCharacter
                 try {
-                    let newBot: PingCompensatedCharacter
                     switch (this.bot.ctype) {
                         case "mage": {
                             newBot = new AL.Mage(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[region][id])
@@ -176,7 +176,19 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                     await newBot.connect()
                     this.changeBot(newBot as Type)
                 } catch (e) {
-                    setTimeout(switchBots, 1000)
+                    if (newBot) {
+                        newBot.socket.removeAllListeners("disconnect")
+                        newBot.disconnect()
+                    }
+                    console.error(e)
+                    const wait = /wait_(\d+)_second/.exec(e)
+                    if (wait && wait[1]) {
+                        setTimeout(() => switchBots(), 2000 + Number.parseInt(wait[1]) * 1000)
+                    } else if (/limits/.test(e)) {
+                        setTimeout(() => switchBots(), AL.Constants.RECONNECT_TIMEOUT_MS)
+                    } else {
+                        setTimeout(() => switchBots(), 10000)
+                    }
                     return
                 }
                 resolve()
@@ -210,8 +222,8 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         this.bot.socket.removeAllListeners("disconnect")
         this.bot.disconnect()
 
+        let newBot: PingCompensatedCharacter
         try {
-            let newBot: PingCompensatedCharacter
             switch (this.bot.ctype) {
                 case "mage": {
                     newBot = new AL.Mage(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name])
@@ -249,8 +261,10 @@ export class Strategist<Type extends PingCompensatedCharacter> {
             await newBot.connect()
             this.changeBot(newBot as Type)
         } catch (e) {
-            this.bot.socket.removeAllListeners("disconnect")
-            this.bot.disconnect()
+            if (newBot) {
+                newBot.socket.removeAllListeners("disconnect")
+                newBot.disconnect()
+            }
             console.error(e)
             const wait = /wait_(\d+)_second/.exec(e)
             if (wait && wait[1]) {

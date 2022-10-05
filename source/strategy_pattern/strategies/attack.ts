@@ -51,11 +51,11 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
     }
 
     public onApply(bot: Type) {
-        if (this.options.enableGreedyAggro && !this.options.disableZapper) {
+        if (this.options.enableGreedyAggro) {
             this.greedyOnEntities = async (data: EntitiesData) => {
                 if (data.monsters.length == 0) return // No monsters
                 if (!this.shouldAttack(bot)) return
-                if (bot.canUse("zapperzap")) {
+                if (!this.options.disableZapper && bot.canUse("zapperzap")) {
                     for (const monster of data.monsters) {
                         if (monster.target) continue // Already has a target
                         if (this.options.type && monster.type !== this.options.type) continue
