@@ -3,7 +3,7 @@ import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { ImprovedMoveStrategy } from "../strategies/move.js"
+import { ImprovedMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { PRIEST_ARMOR } from "./equipment.js"
 
@@ -47,14 +47,14 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
             this.options.disableCleave = true
             this.options.ensureEquipped.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } },
             this.options.ensureEquipped.offhand = { name: "fireblade", filters: { returnHighestLevel: true } },
-            this.options.enableEquipForCleave = true
+            delete this.options.enableEquipForCleave
             this.options.typeList = ["mrpumpkin"]
             delete this.options.enableGreedyAggro
         } else {
             // Splash Damage & additional monsters
             delete this.options.disableCleave
-            this.options.ensureEquipped.mainhand = { name: "bataxe", filters: { returnHighestLevel: true } },
-            delete this.options.ensureEquipped.offhand
+            this.options.ensureEquipped.mainhand = { name: "vhammer", filters: { returnHighestLevel: true } },
+            this.options.ensureEquipped.offhand = { name: "ololipop", filters: { returnHighestLevel: true } },
             this.options.enableEquipForCleave = true
             this.options.typeList = ["mrpumpkin", "xscorpion", "minimush"]
             this.options.enableGreedyAggro = true
@@ -64,8 +64,11 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
 }
 
 export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    // This is between the xscorpions and the minimushes
-    const idleLocation: IPosition = { map: "halloween", x: -250, y: 725 }
+    const moveStrategy = new MoveInCircleMoveStrategy({
+        // This is between the xscorpions and the minimushes
+        center: { map: "halloween", x: -250, y: 725 },
+        radius: 20
+    })
 
     return {
         configs: [
@@ -82,7 +85,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                                 orb: { name: "jacko", filters: { returnHighestLevel: true } }
                             }
                         }),
-                        move: new ImprovedMoveStrategy("mrpumpkin", { idlePosition: idleLocation })
+                        move: moveStrategy
                     },
                     {
                         ctype: "priest",
@@ -92,7 +95,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                             enableGreedyAggro: true,
                             ensureEquipped: PRIEST_ARMOR,
                         }),
-                        move: new ImprovedMoveStrategy("mrpumpkin", { idlePosition: idleLocation })
+                        move: moveStrategy
                     },
                     {
                         ctype: "warrior",
@@ -102,7 +105,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                                 orb: { name: "jacko", filters: { returnHighestLevel: true } }
                             }
                         }),
-                        move: new ImprovedMoveStrategy("mrpumpkin", { idlePosition: idleLocation })
+                        move: moveStrategy
                     }
                 ]
             },
@@ -117,7 +120,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                             enableGreedyAggro: true,
                             ensureEquipped: PRIEST_ARMOR,
                         }),
-                        move: new ImprovedMoveStrategy("mrpumpkin", { idlePosition: idleLocation })
+                        move: moveStrategy
                     },
                     {
                         ctype: "warrior",
@@ -127,7 +130,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                                 orb: { name: "jacko", filters: { returnHighestLevel: true } }
                             }
                         }),
-                        move: new ImprovedMoveStrategy("mrpumpkin", { idlePosition: idleLocation })
+                        move: moveStrategy
                     }
                 ]
             }
