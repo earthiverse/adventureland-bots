@@ -77,10 +77,11 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                 })
             } else {
                 // Start the loop
+                const now = new Date()
                 this.loops.set(name, {
                     fn: loop.fn,
                     interval: loop.interval,
-                    started: new Date()
+                    started: now
                 })
 
                 const newLoop = async () => {
@@ -103,10 +104,10 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                         console.debug("stopping loop because we started a new one")
                         return
                     }
-                    if (typeof loop.interval == "number") this.timeouts.set(name, setTimeout(newLoop, loop.interval)) // Continue the loop
+                    if (typeof loop.interval == "number") this.timeouts.set(name, setTimeout(async () => { newLoop() }, loop.interval)) // Continue the loop
                     else if (Array.isArray(loop.interval)) {
                         const cooldown = Math.max(50, Math.min(...loop.interval.map((skill) => this.bot.getCooldown(skill))))
-                        this.timeouts.set(name, setTimeout(newLoop, cooldown)) // Continue the loop
+                        this.timeouts.set(name, setTimeout(async () => { newLoop() }, cooldown)) // Continue the loop
                     }
                 }
                 newLoop().catch(console.error)
