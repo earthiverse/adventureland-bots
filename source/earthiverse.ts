@@ -13,6 +13,7 @@ import { Config, constructSetups } from "./strategy_pattern/setups/base.js"
 import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
 import { getHalloweenMonsterPriority } from "./base/serverhop.js"
 import { sleep } from "./base/general.js"
+import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
@@ -46,6 +47,19 @@ const buyStrategy = new BuyStrategy({
         ["hpot1", 2500],
         ["mpot1", 2500],
         ["xptome", 1],
+    ])
+})
+
+const sellStrategy = new SellStrategy({
+    sellMap: new Map<ItemName, [number, number][]>([
+        ["coat1", undefined],
+        ["gloves1", undefined],
+        ["gphelmet", undefined],
+        ["helmet1", undefined],
+        ["pants1", undefined],
+        ["phelmet", undefined],
+        ["shoes1", undefined],
+        ["stramulet", undefined]
     ])
 })
 
@@ -325,6 +339,7 @@ async function startShared(context: Strategist<PingCompensatedCharacter>) {
         context.applyStrategy(partyRequestStrategy)
     }
     context.applyStrategy(buyStrategy)
+    context.applyStrategy(sellStrategy)
     context.applyStrategy(respawnStrategy)
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(new ElixirStrategy("elixirluck"))
