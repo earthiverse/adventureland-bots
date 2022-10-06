@@ -95,8 +95,10 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         if (cbursts.some((cburst) => cburst[0] == monster.id)) continue // Already in our list to cburst
                         cbursts.push([monster.id, 1])
                     }
-                    bot.nextSkill.set("cburst", new Date(Date.now() + (bot.ping * 2)))
-                    return (bot as unknown as Mage).cburst(cbursts).catch(console.error)
+                    if (cbursts.length) {
+                        bot.nextSkill.set("cburst", new Date(Date.now() + (bot.ping * 2)))
+                        return (bot as unknown as Mage).cburst(cbursts).catch(console.error)
+                    }
                 }
                 if (bot.canUse("attack")) {
                     for (const monster of data.monsters) {
