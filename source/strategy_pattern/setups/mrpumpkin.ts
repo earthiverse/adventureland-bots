@@ -15,12 +15,14 @@ class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
             // No splash damage
             this.options.ensureEquipped.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
             this.options.ensureEquipped.offhand = { name: "wbookhs", filters: { returnHighestLevel: true } }
+            this.options.ensureEquipped.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
             this.options.typeList = ["mrpumpkin"]
             delete this.options.enableGreedyAggro
         } else {
             // Splash damage & additional monsters
             this.options.ensureEquipped.mainhand = { name: "gstaff", filters: { returnHighestLevel: true } }
             delete this.options.ensureEquipped.offhand
+            this.options.ensureEquipped.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
             this.options.typeList = NON_PVP_MONSTERS
             this.options.enableGreedyAggro = true
         }
@@ -32,10 +34,12 @@ class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
     public onApply(bot: Priest): void {
         if (bot.isPVP()) {
             this.options.ensureEquipped.orb = { name: "jacko", filters: { returnHighestLevel: true } }
+            this.options.ensureEquipped.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
             this.options.typeList = ["mrpumpkin"]
         } else {
             // Additional monsters
             this.options.ensureEquipped.orb = { name: "jacko", filters: { returnHighestLevel: true } }
+            this.options.ensureEquipped.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
             this.options.typeList = NON_PVP_MONSTERS
         }
         super.onApply(bot)
@@ -49,6 +53,7 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
             this.options.disableCleave = true
             this.options.ensureEquipped.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } },
             this.options.ensureEquipped.offhand = { name: "fireblade", filters: { returnHighestLevel: true } },
+            this.options.ensureEquipped.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
             delete this.options.enableEquipForCleave
             this.options.typeList = ["mrpumpkin"]
             delete this.options.enableGreedyAggro
@@ -57,6 +62,7 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
             delete this.options.disableCleave
             this.options.ensureEquipped.mainhand = { name: "vhammer", filters: { returnHighestLevel: true } },
             this.options.ensureEquipped.offhand = { name: "ololipop", filters: { returnHighestLevel: true } },
+            this.options.ensureEquipped.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
             this.options.enableEquipForCleave = true
             this.options.typeList = NON_PVP_MONSTERS
             this.options.enableGreedyAggro = true
