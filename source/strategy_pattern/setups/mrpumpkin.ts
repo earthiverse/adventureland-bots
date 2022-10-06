@@ -53,7 +53,7 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
             this.options.disableCleave = true
             this.options.ensureEquipped.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } },
             this.options.ensureEquipped.offhand = { name: "fireblade", filters: { returnHighestLevel: true } },
-            this.options.ensureEquipped.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
+            this.options.ensureEquipped.ring1 = { name: "strring", filters: { returnHighestLevel: true } }
             delete this.options.enableEquipForCleave
             this.options.typeList = ["mrpumpkin"]
             delete this.options.enableGreedyAggro
