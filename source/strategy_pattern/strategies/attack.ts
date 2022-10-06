@@ -78,14 +78,25 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 }
                 // TODO: Refactor so this can be put in attack_mage
                 if (bot.ctype == "mage" && bot.canUse("cburst")) {
+                    const cbursts: [string, number][] = []
                     for (const monster of data.monsters) {
                         if (monster.target) continue // Already has a target
                         if (this.options.type && monster.type !== this.options.type) continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.taunt.range) continue
-                        bot.nextSkill.set("cburst", new Date(Date.now() + (bot.ping * 2)))
-                        return (bot as unknown as Mage).cburst([[monster.id, 1]]).catch(console.error)
+                        cbursts.push([monster.id, 1])
                     }
+                    for (const monster of bot.getEntities({
+                        hasTarget: false,
+                        type: this.options.type,
+                        typeList: this.options.typeList,
+                        withinRange: "cburst"
+                    })) {
+                        if (cbursts.some((cburst) => cburst[0] == monster.id)) continue // Already in our list to cburst
+                        cbursts.push([monster.id, 1])
+                    }
+                    bot.nextSkill.set("cburst", new Date(Date.now() + (bot.ping * 2)))
+                    return (bot as unknown as Mage).cburst(cbursts).catch(console.error)
                 }
                 if (bot.canUse("attack")) {
                     for (const monster of data.monsters) {

@@ -1,11 +1,13 @@
-import { Mage, PingCompensatedCharacter, Priest, Warrior } from "alclient"
+import { Mage, MonsterName, PingCompensatedCharacter, Priest, Warrior } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { ImprovedMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
+import { ImprovedMoveStrategy, } from "../strategies/move.js"
 import { Setup } from "./base"
 import { PRIEST_ARMOR } from "./equipment.js"
+
+const NON_PVP_MONSTERS: MonsterName[] = ["mrpumpkin", "phoenix", "xscorpion", "minimush", "tinyp"]
 
 class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
     public onApply(bot: Mage): void {
@@ -19,7 +21,7 @@ class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
             // Splash damage & additional monsters
             this.options.ensureEquipped.mainhand = { name: "gstaff", filters: { returnHighestLevel: true } }
             delete this.options.ensureEquipped.offhand
-            this.options.typeList = ["mrpumpkin", "xscorpion", "minimush"]
+            this.options.typeList = NON_PVP_MONSTERS
             this.options.enableGreedyAggro = true
         }
         super.onApply(bot)
@@ -34,7 +36,7 @@ class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
         } else {
             // Additional monsters
             this.options.ensureEquipped.orb = { name: "jacko", filters: { returnHighestLevel: true } }
-            this.options.typeList = ["mrpumpkin", "xscorpion", "minimush"]
+            this.options.typeList = NON_PVP_MONSTERS
         }
         super.onApply(bot)
     }
@@ -56,7 +58,7 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
             this.options.ensureEquipped.mainhand = { name: "vhammer", filters: { returnHighestLevel: true } },
             this.options.ensureEquipped.offhand = { name: "ololipop", filters: { returnHighestLevel: true } },
             this.options.enableEquipForCleave = true
-            this.options.typeList = ["mrpumpkin", "xscorpion", "minimush"]
+            this.options.typeList = NON_PVP_MONSTERS
             this.options.enableGreedyAggro = true
         }
         super.onApply(bot)
