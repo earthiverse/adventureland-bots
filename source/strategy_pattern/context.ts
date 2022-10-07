@@ -20,6 +20,7 @@ export type LoopName =
     | "equip"
     | "heal"
     | "loot"
+    | "magiport"
     | "merchant_stand"
     | "mluck"
     | "move"

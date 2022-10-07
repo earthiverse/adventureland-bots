@@ -14,6 +14,7 @@ import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
 import { getHalloweenMonsterPriority } from "./base/serverhop.js"
 import { sleep } from "./base/general.js"
 import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
+import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
@@ -75,12 +76,16 @@ const getMonsterHuntStrategy = new GetMonsterHuntStrategy()
 // Party
 const partyAcceptStrategy = new AcceptPartyRequestStrategy({ allowList: PARTY_ALLOWLIST })
 const partyRequestStrategy = new RequestPartyStrategy(WARRIOR)
+// Mage
+const magiportStrategy = new MagiportOthersSmartMovingToUsStrategy(ALL_CONTEXTS)
 // Priest
 const partyHealStrategy = new PartyHealStrategy(ALL_CONTEXTS)
 const trackerStrategy = new TrackerStrategy()
 const respawnStrategy = new RespawnStrategy()
 // Setups
 const setups = constructSetups(ALL_CONTEXTS)
+// Etc.
+const elixirStrategy = new ElixirStrategy("elixirluck")
 
 const currentSetups = new Map<Strategist<PingCompensatedCharacter>, { attack: Strategy<PingCompensatedCharacter>, move: Strategy<PingCompensatedCharacter> }>()
 const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[]) => {
@@ -342,11 +347,12 @@ async function startShared(context: Strategist<PingCompensatedCharacter>) {
     context.applyStrategy(sellStrategy)
     context.applyStrategy(respawnStrategy)
     context.applyStrategy(trackerStrategy)
-    context.applyStrategy(new ElixirStrategy("elixirluck"))
+    context.applyStrategy(elixirStrategy)
 }
 
 // Mage strategies
 async function startMage(context: Strategist<Mage>) {
+    context.applyStrategy(magiportStrategy)
     startShared(context)
 }
 
