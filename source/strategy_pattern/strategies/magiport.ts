@@ -27,18 +27,20 @@ export class MagiportOthersSmartMovingToUsStrategy implements Strategy<Mage> {
 
     protected async magiport(bot: Mage) {
         if (!bot.canUse("magiport")) return // We can't magiport anyone
+        if (bot.smartMoving) return // We're currently moving somewhere
 
         for (const context of this.contexts) {
             if (!context.isReady()) continue
             const friend = context.bot
             if (friend.id == bot.id) continue // It's us
             if (!friend.smartMoving) continue // They're not smart moving
+            if (AL.Pathfinder.canWalkPath(bot, friend)) continue // They can walk to us
             if (AL.Tools.distance(bot, friend.smartMoving) > this.options.range) continue // They're not smart moving to a place near us
 
             // Offer the magiport
             try {
                 await bot.magiport(friend.id)
-                await friend.acceptMagiport(bot.id)
+                return friend.acceptMagiport(bot.id)
             } catch (e) {
                 console.error(e)
             }
