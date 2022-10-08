@@ -99,8 +99,9 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[]) => 
         }
     }
     if (setupContexts.length == 0) return
-    const serverData = setupContexts[0].bot.serverData
-    const S = setupContexts[0].bot.S
+    const bot = setupContexts[0].bot
+    const serverData = bot.serverData
+    const S = bot.S
 
     const isDoable = (config: Config): Strategist<PingCompensatedCharacter>[] | false => {
         const tempContexts = [...setupContexts]
@@ -219,7 +220,10 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[]) => 
     }
 
     // Default targets
-    priority.push("bscorpion", "croc", "crab", "goo")
+    if (!bot.isPVP()) {
+        priority.push("bscorpion")
+    }
+    priority.push("frog", "osnake", "minimush")
 
     for (const id of priority) {
         if (setupContexts.length == 0) break // All set up

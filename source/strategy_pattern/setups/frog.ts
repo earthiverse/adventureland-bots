@@ -13,8 +13,8 @@ export function constructFrogSetup(contexts: Strategist<PingCompensatedCharacter
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, type: "frog" }),
-                        move: new ImprovedMoveStrategy("frog")
+                        attack: new MageAttackStrategy({ contexts: contexts, typeList: ["frog", "tortoise"] }),
+                        move: new ImprovedMoveStrategy(["frog", "tortoise"])
                     }
                 ]
             },
@@ -23,8 +23,8 @@ export function constructFrogSetup(contexts: Strategist<PingCompensatedCharacter
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, type: "frog" }),
-                        move: new ImprovedMoveStrategy("frog")
+                        attack: new PriestAttackStrategy({ contexts: contexts, typeList: ["frog", "tortoise"] }),
+                        move: new ImprovedMoveStrategy(["frog", "tortoise"])
                     }
                 ]
             }

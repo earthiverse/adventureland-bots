@@ -396,6 +396,7 @@ export async function getPriority2Entities(bot: Character): Promise<Entity[] | I
                     { target: { $in: partyList } },
                     { type: { $in: ["pinkgoo", "snowman", "wabbit"] } } // Coop monsters will give credit
                 ],
+                lastSeen: { $gt: Date.now() - 60_000 },
                 serverIdentifier: bot.server.name,
                 serverRegion: bot.server.region,
                 type: { $in: solo },
