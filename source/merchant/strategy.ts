@@ -4,6 +4,7 @@ import { checkOnlyEveryMS, sleep } from "../base/general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
 import { MERCHANT_ITEMS_TO_HOLD } from "../base/merchant.js"
 import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
+import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
 import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
@@ -985,6 +986,10 @@ export async function startMerchant(context: Strategist<Merchant>, friends: Stra
     context.applyStrategy(new MerchantStrategy(friends, options))
     context.applyStrategy(new TrackerStrategy())
     context.applyStrategy(new AcceptPartyRequestStrategy())
+    context.applyStrategy(new BaseAttackStrategy({
+        contexts: friends,
+        disableBasicAttack: true
+    }))
     context.applyStrategy(new ToggleStandStrategy({
         offWhenMoving: true,
         onWhenNear: [

@@ -13,6 +13,7 @@ export type EnsureEquipped = {
 
 export type BaseAttackStrategyOptions = GetEntitiesFilters & {
     contexts: Strategist<PingCompensatedCharacter>[]
+    disableBasicAttack?: true
     disableCreditCheck?: true
     disableEnergize?: true
     disableScare?: true
@@ -126,7 +127,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
         await this.ensureEquipped(bot)
 
-        await this.basicAttack(bot, priority)
+        if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority)
         if (!this.options.disableZapper) await this.zapperAttack(bot, priority)
 
         await this.ensureEquipped(bot)
