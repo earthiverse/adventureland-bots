@@ -624,29 +624,52 @@ export class MerchantStrategy implements Strategy<Merchant> {
             const broom = bot.locateItem("broom", bot.items, { returnHighestLevel: true })
             if (broom !== undefined) await bot.equip(broom)
 
-            // Go mluck others
+            // Go travel to mluck players
             if (this.options.enableMluck?.travel) {
-                const player = await AL.PlayerModel.findOne({
-                    $or: [
-                        { "s.mluck": undefined }, // They don't have mluck
-                        { "s.mluck.f": { "$ne": bot.id }, "s.mluck.strong": undefined } // We can steal mluck
-                    ],
-                    lastSeen: { $gt: Date.now() - 120000 },
-                    serverIdentifier: bot.server.name,
-                    serverRegion: bot.server.region },
-                {
-                    _id: 0,
-                    map: 1,
-                    name: 1,
-                    x: 1,
-                    y: 1
-                }).lean().exec()
-                if (player) {
-                    this.debug(bot, `Moving to ${player.name} to mluck them`)
-                    await bot.smartMove(player, { getWithin: AL.Game.G.skills.mluck.range / 2 })
-                    // Wait a bit if we had to enter a door
-                    if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms + 1000)
-                    return
+                if (this.options.enableMluck.contexts) {
+                    for (const context of this.contexts) {
+                        if (!context.isReady()) continue
+                        const friend = context.bot
+                        if (
+                            bot.s.mluck // They have mluck
+                            && bot.s.mluck.f == bot.id // It's from us
+                            && bot.s.mluck?.ms > 900_000 // There's 15 minutes or more left
+                        ) continue // Ignore
+                        if (
+                            bot.s.mluck // They have mluck
+                            && bot.s.mluck.f !== bot.id // It's not from us
+                            && bot.s.mluck.strong // It's strong
+                        ) continue // Ignore, because we can't override it
+                        this.debug(bot, `Moving to ${friend.name} (context) to mluck them`)
+                        await bot.smartMove(friend, { getWithin: AL.Game.G.skills.mluck.range / 2 })
+                        // Wait a bit if we had to enter a door
+                        if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms + 1000)
+                        return
+                    }
+                }
+                if (this.options.enableMluck.others) {
+                    const player = await AL.PlayerModel.findOne({
+                        $or: [
+                            { "s.mluck": undefined }, // They don't have mluck
+                            { "s.mluck.f": { "$ne": bot.id }, "s.mluck.strong": undefined } // We can steal mluck
+                        ],
+                        lastSeen: { $gt: Date.now() - 30000 },
+                        serverIdentifier: bot.server.name,
+                        serverRegion: bot.server.region },
+                    {
+                        _id: 0,
+                        map: 1,
+                        name: 1,
+                        x: 1,
+                        y: 1
+                    }).lean().exec()
+                    if (player) {
+                        this.debug(bot, `Moving to ${player.name} to mluck them`)
+                        await bot.smartMove(player, { getWithin: AL.Game.G.skills.mluck.range / 2 })
+                        // Wait a bit if we had to enter a door
+                        if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms + 1000)
+                        return
+                    }
                 }
             }
 
