@@ -120,7 +120,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         for (const strategy of strategies) this.applyStrategy(strategy)
     }
 
-    public changeBot(newBot: Type) {
+    protected changeBot(newBot: Type) {
         this.bot = newBot
         this.bot.socket.on("disconnect", () => this.reconnect())
         this.started = new Date()
@@ -221,8 +221,10 @@ export class Strategist<Type extends PingCompensatedCharacter> {
     }
 
     public async reconnect(): Promise<void> {
-        this.bot.socket.removeAllListeners("disconnect")
-        this.bot.disconnect()
+        if (this.bot) {
+            this.bot.socket.removeAllListeners("disconnect")
+            this.bot.disconnect()
+        }
 
         let newBot: PingCompensatedCharacter
         try {
