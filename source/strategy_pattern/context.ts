@@ -101,10 +101,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                     // Setup the next run
                     const loop = this.loops.get(name)
                     if (!loop || this.stopped) return // Stop the loop
-                    if (loop.started.getTime() > started) {
-                        console.debug("stopping loop because we started a new one")
-                        return
-                    }
+                    if (loop.started.getTime() > started) return
                     if (typeof loop.interval == "number") this.timeouts.set(name, setTimeout(async () => { newLoop() }, loop.interval)) // Continue the loop
                     else if (Array.isArray(loop.interval)) {
                         const cooldown = Math.max(50, Math.min(...loop.interval.map((skill) => this.bot.getCooldown(skill))))
