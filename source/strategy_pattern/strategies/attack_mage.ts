@@ -25,6 +25,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
 
         if (!this.options.disableCburst) await this.cburstHumanoids(bot)
         if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority)
+        if (!this.options.disableZapper) await this.zapperAttack(bot, priority)
 
         await this.ensureEquipped(bot)
     }

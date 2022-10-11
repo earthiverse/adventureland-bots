@@ -31,6 +31,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
 
         if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority)
         if (!this.options.disableAbsorb) await this.absorbTargets(bot)
+        if (!this.options.disableZapper) await this.zapperAttack(bot, priority)
 
         await this.ensureEquipped(bot)
     }
