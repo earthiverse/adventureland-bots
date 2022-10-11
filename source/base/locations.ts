@@ -48,6 +48,9 @@ export const halloweenXScorpions: IPosition = { map: "halloween", x: -485.5, y: 
 export const level1PratsNearDoor: IPosition = { map: "level1", x: -11, y: 114.5 }
 export const level1PratsNearLedge: IPosition = { map: "level1", x: -154, y: 695.5 }
 
+// Level2W
+export const frankyIdlePosition: IPosition = { map: "level2w", x: 0, y: 0 }
+
 // Tunnel
 export const miningSpot: IPosition = { map: "tunnel", x: -280, y: -10 }
 
