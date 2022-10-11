@@ -95,7 +95,6 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
                             contexts: contexts,
                             enableEquipForCleave: true,
                             ensureEquipped: {
-                                mainhand: { name: "bataxe", filters: { returnHighestLevel: true } },
                                 orb: { name: "jacko", filters: { returnHighestLevel: true } }
                             },
                             typeList: ["nerfedmummy", "franky"]
