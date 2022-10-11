@@ -15,14 +15,12 @@ class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
             // No splash damage
             this.options.ensureEquipped.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
             this.options.ensureEquipped.offhand = { name: "wbookhs", filters: { returnHighestLevel: true } }
-            this.options.ensureEquipped.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
             this.options.typeList = ["mrpumpkin"]
             delete this.options.enableGreedyAggro
         } else {
             // Splash damage & additional monsters
             this.options.ensureEquipped.mainhand = { name: "gstaff", filters: { returnHighestLevel: true } }
             delete this.options.ensureEquipped.offhand
-            this.options.ensureEquipped.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
             this.options.typeList = NON_PVP_MONSTERS
             this.options.enableGreedyAggro = true
         }
@@ -53,7 +51,7 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
             this.options.disableCleave = true
             this.options.ensureEquipped.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } },
             this.options.ensureEquipped.offhand = { name: "fireblade", filters: { returnHighestLevel: true } },
-            this.options.ensureEquipped.ring1 = { name: "strring", filters: { returnHighestLevel: true } }
+            this.options.ensureEquipped.ring1 = { name: "strring", filters: { returnHighestLevel: true } },
             delete this.options.enableEquipForCleave
             this.options.typeList = ["mrpumpkin"]
             delete this.options.enableGreedyAggro
@@ -92,7 +90,9 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                             disableEnergize: true,
                             disableZapper: true,
                             ensureEquipped: {
-                                orb: { name: "jacko", filters: { returnHighestLevel: true } }
+                                orb: { name: "jacko", filters: { returnHighestLevel: true } },
+                                ring1: { name: "zapper", filters: { returnHighestLevel: true } },
+                                ring2: { name: "cring", filters: { returnHighestLevel: true } }
                             }
                         }),
                         move: moveStrategy

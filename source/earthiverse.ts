@@ -223,7 +223,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[]) => 
     if (!bot.isPVP()) {
         priority.push("bscorpion")
     }
-    priority.push("frog", "osnake", "minimush")
+    priority.push("frog", "osnake", "osnake")
 
     for (const id of priority) {
         if (setupContexts.length == 0) break // All set up

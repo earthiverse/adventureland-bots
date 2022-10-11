@@ -24,7 +24,9 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                             ensureEquipped: {
                                 mainhand: { name: "firestaff", filters: { returnHighestLevel: true } },
                                 offhand: { name: "wbookhs", filters: { returnHighestLevel: true } },
-                                orb: { name: "jacko", filters: { returnHighestLevel: true } }
+                                orb: { name: "jacko", filters: { returnHighestLevel: true } },
+                                ring1: { name: "zapper", filters: { returnHighestLevel: true } },
+                                ring2: { name: "cring", filters: { returnHighestLevel: true } }
                             },
                             type: "mrgreen",
                         }),
