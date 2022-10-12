@@ -76,7 +76,7 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
                 }
             }
 
-            if (best !== bot) continue // We're not the best one to loot the chest
+            if (best && best !== bot) continue // We're not the best one to loot the chest
 
             // Open the chest
             await bot.openChest(id).catch(console.error)
