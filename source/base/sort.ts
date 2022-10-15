@@ -19,6 +19,27 @@ export function sortClosestDistance(to: Character) {
 /**
  * This function is meant to be used with `[].sort()`
  *
+ * Example: `targets.sort(sortTypeThenClosest(bot, ["osnake", "snake"]))`
+ *
+ * @param to Compare the distance to this point
+ * @returns A sorting function that will sort the objects closest to the position first
+ */
+export function sortTypeThenClosest(to: Character, types: MonsterName[]) {
+    return (a: Entity, b: Entity) => {
+        const a_index = types.indexOf(a.type)
+        const b_index = types.indexOf(b.type)
+        if (a_index < b_index) return -1
+        else if (a_index > b_index) return 1
+
+        const d_a = AL.Tools.squaredDistance(to, a)
+        const d_b = AL.Tools.squaredDistance(to, b)
+        return d_a - d_b
+    }
+}
+
+/**
+ * This function is meant to be used with `[].sort()`
+ *
  * Example: `targets.sort(sortFurthestDistance(bot))`
  *
  * @param from Compare the distance to this point

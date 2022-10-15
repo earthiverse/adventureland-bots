@@ -113,6 +113,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
     return {
         arcticbee: constructGenericSetup(contexts, ["arcticbee"]),
         armadillo: constructArmadilloSetup(contexts),
+        bee: constructGenericSetup(contexts, ["bee"]),
         bgoo: constructRGooSetup(contexts),
         bscorpion: constructBScorpionSetup(contexts),
         cgoo: constructGenericSetup(contexts, ["cgoo"]),
@@ -138,5 +139,21 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         squig: constructSquigToadSetup(contexts),
         squigtoad: constructSquigToadSetup(contexts),
         tortoise: constructGenericSetup(contexts, ["tortoise", "frog"]),
+    }
+}
+
+export function constructHelperSetups(contexts: Strategist<PingCompensatedCharacter>[]): Setups {
+    return {
+        bee: constructGenericSetup(contexts, ["bee"]),
+        crab: constructGenericSetup(contexts, ["phoenix", "crab"]),
+        crabx: constructGenericSetup(contexts, ["crabx"]),
+        croc: constructGenericSetup(contexts, ["croc"]),
+        goo: constructGenericSetup(contexts, ["goo"]),
+        poisio: constructGenericSetup(contexts, ["poisio"]),
+        scorpion: constructGenericSetup(contexts, ["scorpion"]),
+        snake: constructGenericSetup(contexts, ["snake", "osnake"]),
+        spider: constructGenericSetup(contexts, ["spider"]),
+        squig: constructSquigToadSetup(contexts),
+        squigtoad: constructSquigToadSetup(contexts),
     }
 }

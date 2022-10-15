@@ -1,7 +1,7 @@
-import AL, { IPosition, MonsterName, Pathfinder, Character, PingCompensatedCharacter } from "alclient"
+import AL, { IPosition, MonsterName, Pathfinder, Character, PingCompensatedCharacter, Entity } from "alclient"
 import { sleep } from "../../base/general.js"
 import { offsetPositionParty } from "../../base/locations.js"
-import { sortClosestDistance } from "../../base/sort.js"
+import { sortClosestDistance, sortTypeThenClosest } from "../../base/sort.js"
 import { Loop, LoopName, Strategist, Strategy } from "../context.js"
 import { suppress_errors } from "../logging.js"
 
@@ -216,6 +216,7 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
     public types: MonsterName[]
     protected spawns: IPosition[] = []
     protected options: ImprovedMoveStrategyOptions
+    protected sort: (a: Entity, b: Entity) => number
 
     public constructor(type: MonsterName | MonsterName[], options?: ImprovedMoveStrategyOptions) {
         if (!options) options = {}
@@ -250,9 +251,14 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
         }
     }
 
+    public onApply (bot: Character) {
+        this.spawns.sort(sortClosestDistance(bot))
+        this.sort = sortTypeThenClosest(bot, this.types)
+    }
+
     private async move(bot: Character) {
         const targets = bot.getEntities({ canDamage: true, couldGiveCredit: true, typeList: this.types, willBurnToDeath: false, willDieToProjectiles: false })
-        targets.sort(sortClosestDistance(bot))
+        targets.sort(this.sort)
 
         // Move to next monster
         let lastD = 0
@@ -271,15 +277,15 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
             return
         }
 
-        this.spawns.sort(sortClosestDistance(bot))
         if (bot.map !== this.spawns[0].map) {
+            // Move to spawn
             await bot.smartMove(this.spawns[0], {
                 avoidTownWarps: bot.targets > 0,
                 resolveOnFinalMoveStart: true,
                 useBlink: true,
                 stopIfTrue: () => {
                     if (bot.map !== this.spawns[0].map) return false
-                    const entities = bot.getEntities({ canDamage: true, couldGiveCredit: true, typeList: this.types, willBurnToDeath: false, willDieToProjectiles: false })
+                    const entities = bot.getEntities({ canDamage: true, couldGiveCredit: true, typeList: this.types, willBurnToDeath: false, willDieToProjectiles: false, withinRange: "attack" })
                     return entities.length > 0
                 }
             })

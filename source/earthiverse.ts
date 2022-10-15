@@ -1,4 +1,4 @@
-import AL, { ItemName, Merchant, PingCompensatedCharacter, Priest, Mage, Warrior, ServerRegion, ServerIdentifier, MonsterName, ServerInfoDataLive } from "alclient"
+import AL, { ItemName, Merchant, PingCompensatedCharacter, Priest, Mage, Warrior, ServerRegion, ServerIdentifier, MonsterName, ServerInfoDataLive, CharacterType, Paladin, Ranger, Rogue } from "alclient"
 import { DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, startMerchant } from "./merchant/strategy.js"
 import { Strategist, Strategy } from "./strategy_pattern/context.js"
 import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
@@ -9,12 +9,18 @@ import { RespawnStrategy } from "./strategy_pattern/strategies/respawn.js"
 import { TrackerStrategy } from "./strategy_pattern/strategies/tracker.js"
 import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
 import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
-import { Config, constructSetups } from "./strategy_pattern/setups/base.js"
+import { Config, constructHelperSetups, constructSetups, Setups } from "./strategy_pattern/setups/base.js"
 import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
 import { getHalloweenMonsterPriority } from "./base/serverhop.js"
 import { sleep } from "./base/general.js"
 import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
+
+import bodyParser from "body-parser"
+import cors from "cors"
+import express from "express"
+import path from "path"
+import { body, validationResult } from "express-validator"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
@@ -34,10 +40,13 @@ const PRIEST = "earthPri"
 const PARTY_LEADER = "earthWar"
 const PARTY_ALLOWLIST = ["earthiverse", "earthMag", "earthPri", "earthWar"]
 
+let TARGET_REGION: ServerRegion = "US"
+let TARGET_IDENTIFIER: ServerIdentifier = "I"
+
 /** My characters */
 const PRIVATE_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 // /** Others that have joined */
-// const PUBLIC_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
+const PUBLIC_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 /** All contexts */
 const ALL_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 
@@ -83,12 +92,13 @@ const partyHealStrategy = new PartyHealStrategy(ALL_CONTEXTS)
 const trackerStrategy = new TrackerStrategy()
 const respawnStrategy = new RespawnStrategy()
 // Setups
-const setups = constructSetups(ALL_CONTEXTS)
+const privateSetups = constructSetups(ALL_CONTEXTS)
+const publicSetups = constructHelperSetups(ALL_CONTEXTS)
 // Etc.
 const elixirStrategy = new ElixirStrategy("elixirluck")
 
 const currentSetups = new Map<Strategist<PingCompensatedCharacter>, { attack: Strategy<PingCompensatedCharacter>, move: Strategy<PingCompensatedCharacter> }>()
-const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[]) => {
+const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], setups: Setups) => {
     // Setup a list of ready contexts
     const setupContexts = [...contexts]
     for (let i = 0; i < setupContexts.length; i++) {
@@ -184,28 +194,28 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[]) => 
                 if ((S.mrpumpkin as ServerInfoDataLive).live) {
                     // Both are alive, target the lower hp one
                     if ((S.mrgreen as ServerInfoDataLive).hp > (S.mrpumpkin as ServerInfoDataLive).hp) {
-                        priority.push("mrpumpkin", "mrgreen")
+                        for (let i = 0; i < contexts.length; i++) priority.push("mrpumpkin")
                     } else {
-                        priority.push("mrgreen", "mrpumpkin")
+                        for (let i = 0; i < contexts.length; i++) priority.push("mrgreen")
                     }
                 } else {
                     // Only mrgreen is alive
-                    priority.push("mrgreen")
+                    for (let i = 0; i < contexts.length; i++) priority.push("mrgreen")
                 }
             } else if ((S.mrpumpkin as ServerInfoDataLive).live) {
                 // Only mrpumpkin is alive
-                priority.push("mrpumpkin")
+                for (let i = 0; i < contexts.length; i++) priority.push("mrpumpkin")
             }
         }
 
         for (const id in S) {
             if (!AL.Game.G.monsters[id]) continue // Not a monster
             if ((S[id] as ServerInfoDataLive)?.live) {
-                priority.push(id as MonsterName)
+                for (let i = 0; i < contexts.length; i++) priority.push(id as MonsterName)
             }
         }
 
-        if (S.goobrawl) priority.push("rgoo")
+        if (S.goobrawl) for (let i = 0; i < contexts.length; i++) priority.push("rgoo")
     }
 
     if (ENABLE_MONSTERHUNTS) {
@@ -217,13 +227,30 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[]) => 
             if (!bot.s.monsterhunt || bot.s.monsterhunt.c == 0) continue
             priority.push(bot.s.monsterhunt.id)
         }
+
+        for (const context of PUBLIC_CONTEXTS) {
+            if (!context.isReady()) continue
+            const bot = context.bot
+            if (!bot.s.monsterhunt || bot.s.monsterhunt.c == 0) continue
+            priority.push(bot.s.monsterhunt.id)
+        }
     }
 
     // Default targets
-    if (!bot.isPVP()) {
-        priority.push("bscorpion")
+    for (const context of contexts) {
+        if (PRIVATE_CONTEXTS.includes(context)) {
+            if (!bot.isPVP()) {
+                priority.push("bscorpion")
+            }
+            if (context.bot.ctype == "mage") {
+                priority.push("frog")
+            } else {
+                priority.push("osnake")
+            }
+        } else {
+            priority.push("bee")
+        }
     }
-    priority.push("frog", "osnake", "osnake")
 
     for (const id of priority) {
         if (setupContexts.length == 0) break // All set up
@@ -248,11 +275,11 @@ const removeSetup = (context: Strategist<PingCompensatedCharacter>) => {
     }
 }
 
-const privateContextsLogic = async () => {
+const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], setups: Setups) => {
     try {
         const freeContexts: Strategist<PingCompensatedCharacter>[] = []
 
-        for (const context of PRIVATE_CONTEXTS) {
+        for (const context of contexts) {
             if (!context.isReady()) continue
             const bot = context.bot
 
@@ -268,6 +295,8 @@ const privateContextsLogic = async () => {
                         )
                     ) {
                         // We want to switch servers
+                        TARGET_IDENTIFIER = monster.serverIdentifier
+                        TARGET_REGION = monster.serverRegion
                         await sleep(1000)
                         console.log(bot.id, "is changing server from", bot.serverData.region, bot.serverData.name, "to", monster.serverRegion, monster.serverIdentifier)
                         context.changeServer(monster.serverRegion, monster.serverIdentifier).catch(console.error)
@@ -297,9 +326,10 @@ const privateContextsLogic = async () => {
                 }
             }
 
+            // TODO: Add go to bank if full logic
+
             // Holiday spirit
             if (bot.S.holidayseason && !bot.s.holidayspirit) {
-                // TODO: implement going to get holiday spirit
                 removeSetup(context)
                 context.applyStrategy(getHolidaySpiritStrategy)
                 continue
@@ -314,30 +344,15 @@ const privateContextsLogic = async () => {
             freeContexts.push(context)
         }
 
-        await applySetups(freeContexts)
+        await applySetups(freeContexts, setups)
     } catch (e) {
         console.error(e)
     } finally {
-        setTimeout(privateContextsLogic, 1000)
+        setTimeout(contextsLogic, 1000, contexts)
     }
 }
-privateContextsLogic()
-
-// const publicContextsLogic = () => {
-//     try {
-//         for (const context of PUBLIC_CONTEXTS) {
-//             if (context.isStopped()) continue
-//             if (context.bot.ctype == "merchant") continue
-
-//             // TODO: If full, go to bank and deposit things
-//         }
-//     } catch (e) {
-//         console.error(e)
-//     } finally {
-//         setTimeout(publicContextsLogic, 1000)
-//     }
-// }
-// publicContextsLogic()
+contextsLogic(PRIVATE_CONTEXTS, privateSetups)
+contextsLogic(PUBLIC_CONTEXTS, publicSetups)
 
 // Shared setup
 async function startShared(context: Strategist<PingCompensatedCharacter>) {
@@ -371,11 +386,11 @@ async function startWarrior(context: Strategist<Warrior>) {
     startShared(context)
 }
 
-// Login and prepare pathfinding
+// Start my characters
 const startMerchantContext = async () => {
     let merchant: Merchant
     try {
-        merchant = await AL.Game.startMerchant(MERCHANT, "US", "I")
+        merchant = await AL.Game.startMerchant(MERCHANT, TARGET_REGION, TARGET_IDENTIFIER)
     } catch (e) {
         if (merchant) merchant.disconnect()
         console.error(e)
@@ -391,7 +406,7 @@ startMerchantContext()
 const startWarriorContext = async () => {
     let warrior: Warrior
     try {
-        warrior = await AL.Game.startWarrior(WARRIOR, "US", "I")
+        warrior = await AL.Game.startWarrior(WARRIOR, TARGET_REGION, TARGET_IDENTIFIER)
     } catch (e) {
         if (warrior) warrior.disconnect()
         console.error(e)
@@ -407,7 +422,7 @@ startWarriorContext()
 const startMageContext = async () => {
     let mage: Mage
     try {
-        mage = await AL.Game.startMage(MAGE, "US", "I")
+        mage = await AL.Game.startMage(MAGE, TARGET_REGION, TARGET_IDENTIFIER)
     } catch (e) {
         if (mage) mage.disconnect()
         console.error(e)
@@ -423,7 +438,7 @@ startMageContext()
 const startPriestContext = async () => {
     let priest: Priest
     try {
-        priest = await AL.Game.startPriest(PRIEST, "US", "I")
+        priest = await AL.Game.startPriest(PRIEST, TARGET_REGION, TARGET_IDENTIFIER)
     } catch (e) {
         if (priest) priest.disconnect()
         console.error(e)
@@ -435,3 +450,124 @@ const startPriestContext = async () => {
     ALL_CONTEXTS.push(CONTEXT)
 }
 startPriestContext()
+
+// Allow others to join me
+const startPublicContext = async (type: CharacterType, userID: string, userAuth: string, characterID: string) => {
+    let bot: PingCompensatedCharacter
+    try {
+        switch (type) {
+            case "mage": {
+                bot = new AL.Mage(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER])
+                break
+            }
+            case "paladin": {
+                bot = new AL.Paladin(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER])
+                break
+            }
+            case "priest": {
+                bot = new AL.Priest(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER])
+                break
+            }
+            case "ranger": {
+                bot = new AL.Ranger(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER])
+                break
+            }
+            case "rogue": {
+                bot = new AL.Rogue(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER])
+                break
+            }
+            case "warrior": {
+                bot = new AL.Warrior(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER])
+                break
+            }
+        }
+    } catch (e) {
+        if (bot) bot.disconnect()
+        console.error(e)
+        setTimeout(startPublicContext, 10_000, type, userID, userAuth, characterID)
+    }
+    let context: Strategist<PingCompensatedCharacter>
+    switch (type) {
+        case "mage": {
+            context = new Strategist<Mage>(bot as Mage, baseStrategy)
+            startMage(context as Strategist<Mage>).catch(console.error)
+            break
+        }
+        case "paladin": {
+            context = new Strategist<Paladin>(bot as Paladin, baseStrategy)
+            // startMage(context as Strategist<Paladin>).catch(console.error)
+            break
+        }
+        case "priest": {
+            context = new Strategist<Priest>(bot as Priest, baseStrategy)
+            startPriest(context as Strategist<Priest>).catch(console.error)
+            break
+        }
+        case "ranger": {
+            context = new Strategist<Ranger>(bot as Ranger, baseStrategy)
+            // startRanger(context as Strategist<Ranger>).catch(console.error)
+            break
+        }
+        case "rogue": {
+            context = new Strategist<Rogue>(bot as Rogue, baseStrategy)
+            // startRogue(context as Strategist<Rogue>).catch(console.error)
+            break
+        }
+        case "warrior": {
+            context = new Strategist<Warrior>(bot as Warrior, baseStrategy)
+            startWarrior(context as Strategist<Warrior>).catch(console.error)
+            break
+        }
+    }
+    PUBLIC_CONTEXTS.push(context)
+    ALL_CONTEXTS.push(context)
+}
+
+const app = express()
+app.use(express.json())
+app.use(cors())
+app.use(bodyParser.urlencoded({ extended: true }))
+const port = 80
+
+app.get("/", (_req, res) => {
+    res.sendFile(path.join(path.resolve(), "/earthiverse.html"))
+})
+
+app.post("/",
+    body("user").trim().isLength({ max: 16, min: 16 }).withMessage("User IDs are exactly 16 digits."),
+    body("user").trim().isNumeric().withMessage("User IDs are numeric"),
+    body("auth").trim().isLength({ max: 21, min: 21 }).withMessage("Auth codes are exactly 21 characters."),
+    body("auth").trim().isAlphanumeric("en-US", { ignore: /\s/ }).withMessage("Auth codes are alphanumeric."),
+    body("char").trim().isLength({ max: 16, min: 16 }).withMessage("Character IDs are exactly 16 digits."),
+    body("char").trim().isNumeric().withMessage("Character IDs are numeric"),
+    async (req, res) => {
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() })
+        }
+
+        try {
+            const charType = req.body.char_type
+
+            switch (charType) {
+                case "mage":
+                case "priest":
+                case "warrior": {
+                    // Extra checks can be performed here
+                    break
+                }
+                default: {
+                    return res.status(400).send(`This service doesn't currently support ${charType}, sorry!`)
+                }
+            }
+
+            startPublicContext(charType, req.body.user, req.body.auth, req.body.char)
+            return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
+        } catch (e) {
+            return res.status(500).send(e)
+        }
+    })
+
+app.listen(port, async () => {
+    console.log(`Ready on port ${port}!`)
+})
