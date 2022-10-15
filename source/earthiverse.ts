@@ -348,7 +348,7 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
     } catch (e) {
         console.error(e)
     } finally {
-        setTimeout(contextsLogic, 1000, contexts)
+        setTimeout(contextsLogic, 1000, contexts, setups)
     }
 }
 contextsLogic(PRIVATE_CONTEXTS, privateSetups)
