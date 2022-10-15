@@ -1,8 +1,10 @@
 import { Mage, Merchant, MonsterName, Paladin, PingCompensatedCharacter, Priest, Ranger, Rogue, Warrior } from "alclient"
 import { Strategist, Strategy } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
+import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
+import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { constructArmadilloSetup } from "./armadillo.js"
@@ -12,8 +14,8 @@ import { constructFrankySetup } from "./franky.js"
 import { constructFrogSetup } from "./frog.js"
 import { constructGreenJrSetup } from "./greenjr.js"
 import { constructJrSetup } from "./jr.js"
-import { constructMrGreenSetup } from "./mrgreen.js"
-import { constructMrPumpkinSetup } from "./mrpumpkin.js"
+import { constructMrGreenHelperSetup, constructMrGreenSetup } from "./mrgreen.js"
+import { constructMrPumpkinHelperSetup, constructMrPumpkinSetup } from "./mrpumpkin.js"
 import { constructOSnakeSetup } from "./osnake.js"
 import { constructPlantoidSetup } from "./plantoid.js"
 import { constructPorcupineSetup } from "./porcupine.js"
@@ -76,6 +78,16 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                 ]
             },
             {
+                id: `${id_prefix}_paladin`,
+                characters: [
+                    {
+                        ctype: "paladin",
+                        attack: new PaladinAttackStrategy({ contexts: contexts, typeList: monsters }),
+                        move: new ImprovedMoveStrategy(monsters)
+                    }
+                ]
+            },
+            {
                 id: `${id_prefix}_priest`,
                 characters: [
                     {
@@ -91,6 +103,16 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                     {
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({ contexts: contexts, typeList: monsters }),
+                        move: new ImprovedMoveStrategy(monsters)
+                    }
+                ]
+            },
+            {
+                id: `${id_prefix}_rogue`,
+                characters: [
+                    {
+                        ctype: "rogue",
+                        attack: new RogueAttackStrategy({ contexts: contexts, typeList: monsters }),
                         move: new ImprovedMoveStrategy(monsters)
                     }
                 ]
@@ -149,6 +171,8 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         crabx: constructGenericSetup(contexts, ["crabx"]),
         croc: constructGenericSetup(contexts, ["croc"]),
         goo: constructGenericSetup(contexts, ["goo"]),
+        mrgreen: constructMrGreenHelperSetup(contexts),
+        mrpumpkin: constructMrPumpkinHelperSetup(contexts),
         poisio: constructGenericSetup(contexts, ["poisio"]),
         scorpion: constructGenericSetup(contexts, ["scorpion"]),
         snake: constructGenericSetup(contexts, ["snake", "osnake"]),

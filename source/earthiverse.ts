@@ -369,16 +369,26 @@ async function startShared(context: Strategist<PingCompensatedCharacter>) {
     context.applyStrategy(elixirStrategy)
 }
 
-// Mage strategies
 async function startMage(context: Strategist<Mage>) {
     context.applyStrategy(magiportStrategy)
     startShared(context)
 }
 
-// Priest setup
+async function startPaladin(context: Strategist<Paladin>) {
+    startShared(context)
+}
+
 async function startPriest(context: Strategist<Priest>) {
     startShared(context)
     context.applyStrategy(partyHealStrategy)
+}
+
+async function startRanger(context: Strategist<Ranger>) {
+    startShared(context)
+}
+
+async function startRogue(context: Strategist<Rogue>) {
+    startShared(context)
 }
 
 // Warrior setup
@@ -451,6 +461,25 @@ const startPriestContext = async () => {
 }
 startPriestContext()
 
+class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> {
+    private onCodeEval: (data: string) => Promise<void>
+
+    public onApply(bot: PingCompensatedCharacter) {
+        this.onCodeEval = async (data: string) => {
+            if (data == "stop" || data == "disconnect") {
+                stopPublicContext(bot.characterID).catch(console.error)
+            }
+        }
+
+        bot.socket.on("code_eval", this.onCodeEval)
+    }
+
+    public onRemove(bot: PingCompensatedCharacter) {
+        if (this.onCodeEval) bot.socket.removeListener("code_eval", this.onCodeEval)
+    }
+}
+const disconnectOnCommandStrategy = new DisconnectOnCommandStrategy()
+
 // Allow others to join me
 const startPublicContext = async (type: CharacterType, userID: string, userAuth: string, characterID: string) => {
     let bot: PingCompensatedCharacter
@@ -495,7 +524,7 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
         }
         case "paladin": {
             context = new Strategist<Paladin>(bot as Paladin, baseStrategy)
-            // startMage(context as Strategist<Paladin>).catch(console.error)
+            startPaladin(context as Strategist<Paladin>).catch(console.error)
             break
         }
         case "priest": {
@@ -505,12 +534,12 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
         }
         case "ranger": {
             context = new Strategist<Ranger>(bot as Ranger, baseStrategy)
-            // startRanger(context as Strategist<Ranger>).catch(console.error)
+            startRanger(context as Strategist<Ranger>).catch(console.error)
             break
         }
         case "rogue": {
             context = new Strategist<Rogue>(bot as Rogue, baseStrategy)
-            // startRogue(context as Strategist<Rogue>).catch(console.error)
+            startRogue(context as Strategist<Rogue>).catch(console.error)
             break
         }
         case "warrior": {
@@ -519,8 +548,26 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
             break
         }
     }
+    if (PARTY_ALLOWLIST.indexOf(bot.id) < 0) PARTY_ALLOWLIST.push(bot.id)
+    context.applyStrategy(disconnectOnCommandStrategy)
     PUBLIC_CONTEXTS.push(context)
     ALL_CONTEXTS.push(context)
+}
+
+async function stopPublicContext(characterID: string) {
+    let context: Strategist<PingCompensatedCharacter>
+    for (const find of PUBLIC_CONTEXTS) {
+        if (find.bot.characterID !== characterID) continue
+        context = find
+        break
+    }
+
+    const publicIndex = PUBLIC_CONTEXTS.indexOf(context)
+    const allIndex = ALL_CONTEXTS.indexOf(context)
+
+    context.stop()
+    PUBLIC_CONTEXTS.splice(publicIndex, 1)
+    ALL_CONTEXTS.splice(allIndex, 1)
 }
 
 const app = express()
@@ -551,13 +598,16 @@ app.post("/",
 
             switch (charType) {
                 case "mage":
+                case "paladin":
                 case "priest":
+                case "ranger":
+                case "rogue":
                 case "warrior": {
                     // Extra checks can be performed here
                     break
                 }
                 default: {
-                    return res.status(400).send(`This service doesn't currently support ${charType}, sorry!`)
+                    return res.status(400).send(`This service doesn't currently support ${charType}s, sorry!`)
                 }
             }
 

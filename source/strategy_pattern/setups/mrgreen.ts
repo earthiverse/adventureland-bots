@@ -1,7 +1,10 @@
 import { PingCompensatedCharacter, Warrior } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
+import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
+import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
+import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
@@ -107,6 +110,74 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                     }
                 ]
             },
+            ...constructMrGreenHelperSetup(contexts).configs
+        ]
+    }
+}
+
+export function constructMrGreenHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    return {
+        configs: [
+            {
+                id: "mrgreen_mage",
+                characters: [
+                    {
+                        ctype: "mage",
+                        attack: new MageAttackStrategy({ contexts: contexts, type: "mrgreen", hasTarget: true }),
+                        move: new ImprovedMoveStrategy("mrgreen")
+                    }
+                ]
+            },
+            {
+                id: "mrgreen_paladin",
+                characters: [
+                    {
+                        ctype: "paladin",
+                        attack: new PaladinAttackStrategy({ contexts: contexts, type: "mrgreen", hasTarget: true }),
+                        move: new ImprovedMoveStrategy("mrgreen")
+                    }
+                ]
+            },
+            {
+                id: "mrgreen_priest",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, type: "mrgreen", hasTarget: true }),
+                        move: new ImprovedMoveStrategy("mrgreen")
+                    }
+                ]
+            },
+            {
+                id: "mrgreen_ranger",
+                characters: [
+                    {
+                        ctype: "ranger",
+                        attack: new RangerAttackStrategy({ contexts: contexts, type: "mrgreen", hasTarget: true }),
+                        move: new ImprovedMoveStrategy("mrgreen")
+                    }
+                ]
+            },
+            {
+                id: "mrgreen_rogue",
+                characters: [
+                    {
+                        ctype: "rogue",
+                        attack: new RogueAttackStrategy({ contexts: contexts, type: "mrgreen", hasTarget: true }),
+                        move: new ImprovedMoveStrategy("mrgreen")
+                    }
+                ]
+            },
+            {
+                id: "mrgreen_warrior",
+                characters: [
+                    {
+                        ctype: "warrior",
+                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, disableCleave: true, type: "mrgreen", hasTarget: true }),
+                        move: new ImprovedMoveStrategy("mrgreen")
+                    }
+                ]
+            }
         ]
     }
 }

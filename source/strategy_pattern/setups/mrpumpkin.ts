@@ -1,7 +1,10 @@
 import { Mage, MonsterName, PingCompensatedCharacter, Priest, Warrior } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
+import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
+import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
+import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy, } from "../strategies/move.js"
 import { Setup } from "./base"
@@ -141,6 +144,74 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                             }
                         }),
                         move: moveStrategy
+                    }
+                ]
+            },
+            ...constructMrPumpkinHelperSetup(contexts).configs
+        ]
+    }
+}
+
+export function constructMrPumpkinHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    return {
+        configs: [
+            {
+                id: "mrpumpkin_mage",
+                characters: [
+                    {
+                        ctype: "mage",
+                        attack: new MageAttackStrategy({ contexts: contexts, type: "mrpumpkin", hasTarget: true }),
+                        move: new ImprovedMoveStrategy("mrpumpkin")
+                    }
+                ]
+            },
+            {
+                id: "mrpumpkin_paladin",
+                characters: [
+                    {
+                        ctype: "paladin",
+                        attack: new PaladinAttackStrategy({ contexts: contexts, type: "mrpumpkin", hasTarget: true }),
+                        move: new ImprovedMoveStrategy("mrpumpkin")
+                    }
+                ]
+            },
+            {
+                id: "mrpumpkin_priest",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, type: "mrpumpkin", hasTarget: true }),
+                        move: new ImprovedMoveStrategy("mrpumpkin")
+                    }
+                ]
+            },
+            {
+                id: "mrpumpkin_ranger",
+                characters: [
+                    {
+                        ctype: "ranger",
+                        attack: new RangerAttackStrategy({ contexts: contexts, type: "mrpumpkin", hasTarget: true }),
+                        move: new ImprovedMoveStrategy("mrpumpkin")
+                    }
+                ]
+            },
+            {
+                id: "mrpumpkin_rogue",
+                characters: [
+                    {
+                        ctype: "rogue",
+                        attack: new RogueAttackStrategy({ contexts: contexts, type: "mrpumpkin", hasTarget: true }),
+                        move: new ImprovedMoveStrategy("mrpumpkin")
+                    }
+                ]
+            },
+            {
+                id: "mrpumpkin_warrior",
+                characters: [
+                    {
+                        ctype: "warrior",
+                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, disableCleave: true, type: "mrpumpkin", hasTarget: true }),
+                        move: new ImprovedMoveStrategy("mrpumpkin")
                     }
                 ]
             }
