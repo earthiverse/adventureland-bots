@@ -201,7 +201,12 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         for (const sT in this.options.ensureEquipped) {
             const slotType = sT as SlotType
             const ensure = this.options.ensureEquipped[slotType]
-            if (!bot.slots[slotType] || bot.slots[slotType].name !== ensure.name) {
+            if (
+                !bot.slots[slotType]
+                || bot.slots[slotType].name !== ensure.name
+                || (ensure.filters.returnHighestLevel && bot.hasItem(ensure.name, bot.items, { ...ensure.filters, levelGreaterThan: bot.slots[slotType].level })) // We have a higher level one to equip
+                || (ensure.filters.returnLowestLevel && bot.hasItem(ensure.name, bot.items, { ...ensure.filters, levelLessThan: bot.slots[slotType].level })) // We have a lower level one to equip
+            ) {
                 const toEquip = bot.locateItem(ensure.name, bot.items, ensure.filters)
                 if (toEquip == undefined) throw new Error(`Couldn't find ${ensure.name} to equip in ${sT}.`)
 
@@ -221,6 +226,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
     }
 
     protected async scare(bot: Type) {
+        if (this.options.disableScare) return
         if (!(bot.hasItem("jacko") || bot.isEquipped("jacko"))) return // No jacko to scare
         if (!bot.isEquipped("jacko")) {
             await bot.equip(bot.locateItem("jacko"), "orb")
@@ -231,6 +237,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
     }
 
     protected async zapperAttack(bot: Type, priority: (a: Entity, b: Entity) => boolean) {
+        if (this.options.disableZapper) return
         if (!bot.canUse("zapperzap")) return // We can't zap
 
         if (this.options.enableGreedyAggro) {
@@ -314,19 +321,20 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
      * @param bot The bot to energize
      */
     protected getEnergizeFromOther(bot: Character) {
-        if (!bot.s.energized && !this.options.disableEnergize) {
-            for (const context of this.options.contexts) {
-                const char = context.bot
-                if (!char) continue // Friend is missing
-                if (char.socket.disconnected) continue // Friend is disconnected
-                if (char == bot) continue // Can't energize ourselves
-                if (AL.Tools.distance(bot, char) > bot.G.skills.energize.range) continue // Too far away
-                if (!char.canUse("energize")) continue // Friend can't use energize
+        if (this.options.disableEnergize) return
+        if (bot.s.energized) return // We're already energized
 
-                // Energize!
-                (char as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp))).catch(console.error)
-                return
-            }
+        for (const context of this.options.contexts) {
+            if (!context.isReady()) continue
+            const char = context.bot
+            if (!char) continue // Friend is missing
+            if (char == bot) continue // Can't energize ourselves
+            if (AL.Tools.distance(bot, char) > bot.G.skills.energize.range) continue // Too far away
+            if (!char.canUse("energize")) continue // Friend can't use energize
+
+            // Energize!
+            (char as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp))).catch(console.error)
+            return
         }
     }
 
@@ -341,8 +349,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
      */
     protected preventOverkill(bot: Character, target: Entity) {
         for (const context of this.options.contexts) {
+            if (!context.isReady()) continue
             const char = context.bot
-            if (!char) continue
             if (char == bot) continue // Don't remove it from ourself
             if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
             char.deleteEntity(target.id)
