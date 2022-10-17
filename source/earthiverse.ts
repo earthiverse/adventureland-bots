@@ -1,5 +1,5 @@
 import AL, { ItemName, Merchant, PingCompensatedCharacter, Priest, Mage, Warrior, ServerRegion, ServerIdentifier, MonsterName, ServerInfoDataLive, CharacterType, Paladin, Ranger, Rogue } from "alclient"
-import { DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, startMerchant } from "./merchant/strategy.js"
+import { DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO, startMerchant } from "./merchant/strategy.js"
 import { Strategist, Strategy } from "./strategy_pattern/context.js"
 import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "./strategy_pattern/strategies/buy.js"
@@ -408,6 +408,7 @@ const startMerchantContext = async () => {
     }
     const CONTEXT = new Strategist<Merchant>(merchant, baseStrategy)
     startMerchant(CONTEXT, PRIVATE_CONTEXTS, { ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, debug: true, enableUpgrade: true })
+    CONTEXT.applyStrategy(sellStrategy)
     PRIVATE_CONTEXTS.push(CONTEXT)
     ALL_CONTEXTS.push(CONTEXT)
 }
@@ -489,6 +490,10 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
                 bot = new AL.Mage(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER])
                 break
             }
+            case "merchant": {
+                bot = new AL.Merchant(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER])
+                break
+            }
             case "paladin": {
                 bot = new AL.Paladin(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER])
                 break
@@ -520,6 +525,29 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
         case "mage": {
             context = new Strategist<Mage>(bot as Mage, baseStrategy)
             startMage(context as Strategist<Mage>).catch(console.error)
+            break
+        }
+        case "merchant": {
+            context = new Strategist<Merchant>(bot as Merchant, baseStrategy)
+            startMerchant(context as Strategist<Merchant>, PUBLIC_CONTEXTS, {
+                enableBuyAndUpgrade: {
+                    upgradeToLevel: 9
+                },
+                enableBuyReplenishables: {
+                    all: DEFAULT_REPLENISHABLES,
+                    ratio: DEFAULT_REPLENISH_RATIO,
+                },
+                enableFishing: true,
+                enableMining: true,
+                enableOffload: {
+                    esize: 3,
+                    goldToHold: 10_000_000,
+                    itemsToHold: DEFAULT_ITEMS_TO_HOLD,
+                },
+                goldToHold: 50_000_000,
+                itemsToHold: DEFAULT_MERCHANT_ITEMS_TO_HOLD,
+            })
+            context.applyStrategy(sellStrategy)
             break
         }
         case "paladin": {
@@ -595,22 +623,6 @@ app.post("/",
 
         try {
             const charType = req.body.char_type
-
-            switch (charType) {
-                case "mage":
-                case "paladin":
-                case "priest":
-                case "ranger":
-                case "rogue":
-                case "warrior": {
-                    // Extra checks can be performed here
-                    break
-                }
-                default: {
-                    return res.status(400).send(`This service doesn't currently support ${charType}s, sorry!`)
-                }
-            }
-
             startPublicContext(charType, req.body.user, req.body.auth, req.body.char)
             return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
         } catch (e) {
