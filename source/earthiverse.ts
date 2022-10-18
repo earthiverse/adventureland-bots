@@ -31,6 +31,7 @@ const ENABLE_EVENTS = true
 const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
 const ENABLE_MONSTERHUNTS = false
+const MAX_PUBLIC_CHARACTERS = 6
 
 const MERCHANT = "earthMer"
 const WARRIOR = "earthWar"
@@ -497,6 +498,26 @@ const disconnectOnCommandStrategy = new DisconnectOnCommandStrategy()
 
 // Allow others to join me
 const startPublicContext = async (type: CharacterType, userID: string, userAuth: string, characterID: string) => {
+    // Checks
+    if (type == "merchant") {
+        for (const context of ALL_CONTEXTS) {
+            const character = context.bot
+            if (character.owner == characterID) throw `There is a merchant with the ID '${characterID}' (${character.id}) already running. You can only run one merchant.`
+        }
+    } else {
+        let numChars = 0
+        for (const context of ALL_CONTEXTS) {
+            const character = context.bot
+            if (character.ctype == "merchant") continue // Merchants don't count
+            numChars++
+        }
+        if (numChars >= MAX_PUBLIC_CHARACTERS) throw `Too many characters are already running (We only support ${MAX_PUBLIC_CHARACTERS} characters simultaneously)`
+        for (const context of ALL_CONTEXTS) {
+            const character = context.bot
+            if (character.characterID == characterID) throw `There is a character with the ID '${characterID}' (${character.id}) already running. Stop the character first to change its settings.`
+        }
+    }
+
     let bot: PingCompensatedCharacter
     try {
         switch (type) {
@@ -630,6 +651,7 @@ app.post("/",
     body("auth").trim().isAlphanumeric("en-US", { ignore: /\s/ }).withMessage("Auth codes are alphanumeric."),
     body("char").trim().isLength({ max: 16, min: 16 }).withMessage("Character IDs are exactly 16 digits."),
     body("char").trim().isNumeric().withMessage("Character IDs are numeric"),
+    body("char_type").trim().isWhitelisted(["mage", "merchant", "paladin", "priest", "ranger", "rogue", "warrior"]),
     async (req, res) => {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
@@ -637,8 +659,11 @@ app.post("/",
         }
 
         try {
-            const charType = req.body.char_type
-            startPublicContext(charType, req.body.user, req.body.auth, req.body.char)
+            const charType = req.body.char_type.trim()
+            const userID = req.body.user.trim()
+            const userAuth = req.body.auth.trim()
+            const characterID = req.body.char.trim()
+            startPublicContext(charType, userID, userAuth, characterID).catch(console.error)
             return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
         } catch (e) {
             return res.status(500).send(e)

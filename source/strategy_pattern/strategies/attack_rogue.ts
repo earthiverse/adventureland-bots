@@ -3,6 +3,7 @@ import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
 
 export type RogueAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableQuickPunch?: boolean
+    disableQuickStab?: boolean
 }
 
 export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
@@ -12,6 +13,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
         super(options)
 
         if (!this.options.disableQuickPunch) this.interval.push("quickpunch")
+        if (!this.options.disableQuickStab) this.interval.push("quickstab")
     }
 
     // TODO: Implement rogue special strategies
