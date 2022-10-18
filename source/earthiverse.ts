@@ -529,6 +529,7 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
                 break
             }
         }
+        await bot.connect()
     } catch (e) {
         if (bot) bot.disconnect()
         console.error(e)
