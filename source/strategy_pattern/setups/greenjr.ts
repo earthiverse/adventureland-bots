@@ -12,7 +12,7 @@ export function constructGreenJrSetup(contexts: Strategist<PingCompensatedCharac
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, type: "greenjr" }),
+                        attack: new MageAttackStrategy({ contexts: contexts, typeList: ["greenjr", "osnake", "snake"] }),
                         move: new ImprovedMoveStrategy("greenjr")
                     }
                 ]
