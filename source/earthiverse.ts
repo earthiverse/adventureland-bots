@@ -247,6 +247,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
             }
             if (context.bot.ctype == "mage") {
                 priority.push("frog")
+                priority.push("osnake")
             } else {
                 priority.push("osnake")
             }
