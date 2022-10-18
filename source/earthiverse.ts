@@ -555,6 +555,7 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
         if (bot) bot.disconnect()
         console.error(e)
         setTimeout(startPublicContext, 10_000, type, userID, userAuth, characterID)
+        return
     }
     let context: Strategist<PingCompensatedCharacter>
     switch (type) {
