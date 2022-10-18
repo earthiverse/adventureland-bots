@@ -86,9 +86,11 @@ const getMonsterHuntStrategy = new GetMonsterHuntStrategy()
 const partyAcceptStrategy = new AcceptPartyRequestStrategy({ allowList: PARTY_ALLOWLIST })
 const partyRequestStrategy = new RequestPartyStrategy(WARRIOR)
 // Mage
-const magiportStrategy = new MagiportOthersSmartMovingToUsStrategy(ALL_CONTEXTS)
+const privateMagiportStrategy = new MagiportOthersSmartMovingToUsStrategy(PRIVATE_CONTEXTS)
+const publicMagiportStrategy = new MagiportOthersSmartMovingToUsStrategy(ALL_CONTEXTS)
 // Priest
-const partyHealStrategy = new PartyHealStrategy(ALL_CONTEXTS)
+const privatePartyHealStrategy = new PartyHealStrategy(PRIVATE_CONTEXTS)
+const publicPartyHealStrategy = new PartyHealStrategy(ALL_CONTEXTS)
 const trackerStrategy = new TrackerStrategy()
 const respawnStrategy = new RespawnStrategy()
 // Setups
@@ -369,18 +371,26 @@ async function startShared(context: Strategist<PingCompensatedCharacter>) {
     context.applyStrategy(elixirStrategy)
 }
 
-async function startMage(context: Strategist<Mage>) {
-    context.applyStrategy(magiportStrategy)
+async function startMage(context: Strategist<Mage>, privateContext = false) {
     startShared(context)
+    if (privateContext) {
+        context.applyStrategy(privateMagiportStrategy)
+    } else {
+        context.applyStrategy(publicMagiportStrategy)
+    }
 }
 
 async function startPaladin(context: Strategist<Paladin>) {
     startShared(context)
 }
 
-async function startPriest(context: Strategist<Priest>) {
+async function startPriest(context: Strategist<Priest>, privateContext = false) {
     startShared(context)
-    context.applyStrategy(partyHealStrategy)
+    if (privateContext) {
+        context.applyStrategy(privatePartyHealStrategy)
+    } else {
+        context.applyStrategy(publicPartyHealStrategy)
+    }
 }
 
 async function startRanger(context: Strategist<Ranger>) {
@@ -440,7 +450,7 @@ const startMageContext = async () => {
         setTimeout(startMageContext, 10_000)
     }
     const CONTEXT = new Strategist<Mage>(mage, baseStrategy)
-    startMage(CONTEXT).catch(console.error)
+    startMage(CONTEXT, true).catch(console.error)
     PRIVATE_CONTEXTS.push(CONTEXT)
     ALL_CONTEXTS.push(CONTEXT)
 }
@@ -456,7 +466,7 @@ const startPriestContext = async () => {
         setTimeout(startPriestContext, 10_000)
     }
     const CONTEXT = new Strategist<Priest>(priest, baseStrategy)
-    startPriest(CONTEXT).catch(console.error)
+    startPriest(CONTEXT, true).catch(console.error)
     PRIVATE_CONTEXTS.push(CONTEXT)
     ALL_CONTEXTS.push(CONTEXT)
 }
@@ -468,6 +478,10 @@ class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> 
     public onApply(bot: PingCompensatedCharacter) {
         this.onCodeEval = async (data: string) => {
             if (data == "stop" || data == "disconnect") {
+                if (PARTY_ALLOWLIST.includes(bot.id)) {
+                    // Don't allow them to party with us anymore
+                    PARTY_ALLOWLIST.splice(PARTY_ALLOWLIST.indexOf(bot.id), 1)
+                }
                 stopPublicContext(bot.characterID).catch(console.error)
             }
         }
