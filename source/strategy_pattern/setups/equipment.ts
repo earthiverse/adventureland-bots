@@ -42,6 +42,6 @@ export const WARRIOR_NORMAL: EnsureEquipped = {
     orb: { name: "jacko", filters: { returnHighestLevel: true } },
     pants: { name: "pants1", filters: { returnHighestLevel: true } },
     ring1: { name: "zapper", filters: { returnHighestLevel: true } },
-    ring2: { name: "cring", filters: { returnHighestLevel: true } },
+    ring2: { name: "strring", filters: { returnHighestLevel: true } },
     shoes: { name: "wingedboots", filters: { returnHighestLevel: true } },
 }
