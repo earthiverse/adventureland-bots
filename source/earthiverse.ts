@@ -192,6 +192,15 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
     }
 
     if (ENABLE_EVENTS) {
+        for (const context of contexts) {
+            if (
+                S.goobrawl
+                || (context.bot.map == "goobrawl" && bot.getEntity({ typeList: ["rgoo", "bgoo"] }))
+            ) {
+                priority.push("rgoo")
+            }
+        }
+
         if (S.halloween) {
             if ((S.mrgreen as ServerInfoDataLive).live) {
                 if ((S.mrpumpkin as ServerInfoDataLive).live) {
@@ -217,8 +226,6 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 for (let i = 0; i < contexts.length; i++) priority.push(id as MonsterName)
             }
         }
-
-        if (S.goobrawl) for (let i = 0; i < contexts.length; i++) priority.push("rgoo")
     }
 
     if (ENABLE_MONSTERHUNTS) {
@@ -336,12 +343,6 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
             if (bot.S.holidayseason && !bot.s.holidayspirit) {
                 removeSetup(context)
                 context.applyStrategy(getHolidaySpiritStrategy)
-                continue
-            }
-
-            // Stay on goobrawl if there are still monsters around
-            if (bot.map == "goobrawl" && bot.getEntities({ typeList: ["bgoo", "rgoo"] }).length > 0) {
-                removeSetup(context)
                 continue
             }
 
