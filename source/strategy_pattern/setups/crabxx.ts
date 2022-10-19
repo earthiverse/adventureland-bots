@@ -8,6 +8,8 @@ import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { PRIEST_ARMOR } from "./equipment.js"
 
+// TODO: Add PvP Support
+
 export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new ImprovedMoveStrategy(["crabx", "crabxx"])
 

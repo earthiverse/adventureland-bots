@@ -83,6 +83,14 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
             if (nearby.length > 0) return
         }
 
+        const unwantedEntity = bot.getEntity({
+            hasTarget: false,
+            notType: this.options.type,
+            notTypeList: this.options.typeList,
+            withinRange: "cleave"
+        })
+        if (unwantedEntity) return // Something we don't want to cleave is nearby
+
         // Find all targets within range of cleave
         const entities = bot.getEntities({
             withinRange: "cleave",

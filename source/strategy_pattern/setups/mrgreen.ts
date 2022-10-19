@@ -8,7 +8,7 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { PRIEST_ARMOR } from "./equipment.js"
+import { PRIEST_ARMOR, WARRIOR_NORMAL } from "./equipment.js"
 
 class WarriorMrGreenAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
@@ -68,12 +68,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                         attack: new WarriorMrGreenAttackStrategy({
                             contexts: contexts,
                             disableCleave: true,
-                            ensureEquipped: {
-                                mainhand: { name: "fireblade", filters: { returnHighestLevel: true } },
-                                offhand: { name: "fireblade", filters: { returnHighestLevel: true } },
-                                orb: { name: "jacko", filters: { returnHighestLevel: true } },
-                                ring1: { name: "zapper", filters: { returnHighestLevel: true } },
-                            },
+                            ensureEquipped: WARRIOR_NORMAL,
                             type: "mrgreen",
                         }),
                         move: moveStrategy
@@ -99,11 +94,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             disableCleave: true,
-                            ensureEquipped: {
-                                mainhand: { name: "fireblade", filters: { returnHighestLevel: true } },
-                                offhand: { name: "fireblade", filters: { returnHighestLevel: true } },
-                                orb: { name: "jacko", filters: { returnHighestLevel: true } },
-                            },
+                            ensureEquipped: WARRIOR_NORMAL,
                             type: "mrgreen",
                         }),
                         move: moveStrategy

@@ -8,7 +8,7 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy, } from "../strategies/move.js"
 import { Setup } from "./base"
-import { PRIEST_ARMOR } from "./equipment.js"
+import { PRIEST_ARMOR, WARRIOR_NORMAL } from "./equipment.js"
 
 const NON_PVP_MONSTERS: MonsterName[] = ["mrpumpkin", "phoenix", "xscorpion", "minimush", "tinyp"]
 
@@ -54,7 +54,6 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
             this.options.disableCleave = true
             this.options.ensureEquipped.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } },
             this.options.ensureEquipped.offhand = { name: "fireblade", filters: { returnHighestLevel: true } },
-            this.options.ensureEquipped.ring1 = { name: "strring", filters: { returnHighestLevel: true } },
             delete this.options.enableEquipForCleave
             this.options.typeList = ["mrpumpkin"]
             delete this.options.enableGreedyAggro
@@ -63,7 +62,6 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
             delete this.options.disableCleave
             this.options.ensureEquipped.mainhand = { name: "vhammer", filters: { returnHighestLevel: true } },
             this.options.ensureEquipped.offhand = { name: "ololipop", filters: { returnHighestLevel: true } },
-            this.options.ensureEquipped.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
             this.options.enableEquipForCleave = true
             this.options.typeList = NON_PVP_MONSTERS
             this.options.enableGreedyAggro = true
@@ -114,9 +112,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                         ctype: "warrior",
                         attack: new WarriorMrPumpkinAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: {
-                                orb: { name: "jacko", filters: { returnHighestLevel: true } }
-                            }
+                            ensureEquipped: WARRIOR_NORMAL
                         }),
                         move: moveStrategy
                     }
@@ -139,9 +135,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                         ctype: "warrior",
                         attack: new WarriorMrPumpkinAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: {
-                                orb: { name: "jacko", filters: { returnHighestLevel: true } }
-                            }
+                            ensureEquipped: WARRIOR_NORMAL
                         }),
                         move: moveStrategy
                     }

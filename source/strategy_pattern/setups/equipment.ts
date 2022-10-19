@@ -29,3 +29,19 @@ export const PRIEST_LUCK: EnsureEquipped = {
     ring2: { name: "ringofluck", filters: { returnHighestLevel: true } },
     shoes: { name: "wingedboots", filters: { returnHighestLevel: true } },
 }
+
+export const WARRIOR_NORMAL: EnsureEquipped = {
+    amulet: { name: "snring", filters: { returnHighestLevel: true } },
+    belt: { name: "strbelt", filters: { returnHighestLevel: true } },
+    cape: { name: "bcape", filters: { returnHighestLevel: true } },
+    chest: { name: "coat1", filters: { returnHighestLevel: true } },
+    gloves: { name: "gloves1", filters: { returnHighestLevel: true } },
+    helmet: { name: "helmet1", filters: { returnHighestLevel: true } },
+    mainhand: { name: "fireblade", filters: { returnHighestLevel: true } },
+    offhand: { name: "fireblade", filters: { returnHighestLevel: true } },
+    orb: { name: "jacko", filters: { returnHighestLevel: true } },
+    pants: { name: "pants1", filters: { returnHighestLevel: true } },
+    ring1: { name: "zapper", filters: { returnHighestLevel: true } },
+    ring2: { name: "cring", filters: { returnHighestLevel: true } },
+    shoes: { name: "wingedboots", filters: { returnHighestLevel: true } },
+}
