@@ -73,7 +73,7 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
                                 mainhand: { name: "gstaff", filters: { returnHighestLevel: true } },
                                 orb: { name: "jacko", filters: { returnHighestLevel: true } }
                             },
-                            typeList: ["franky", "nerfedmummy"]
+                            typeList: ["nerfedmummy", "franky"]
                         }),
                         move: new ImprovedMoveStrategy(["franky"], { idlePosition: frankyIdlePosition })
                     },
@@ -84,9 +84,8 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
                             disableEnergize: true,
                             enableGreedyAggro: true,
                             ensureEquipped: PRIEST_ARMOR,
-                            type: "franky",
+                            typeList: ["franky", "nerfedmummy"],
                         }),
-                        // TODO: Move this position to a constant somewhere
                         move: new ImprovedMoveStrategy("franky", { idlePosition: frankyIdlePosition })
                     },
                     {
