@@ -2,10 +2,14 @@ import AL, { Mage, PingCompensatedCharacter } from "alclient"
 import { Loop, LoopName, Strategist, Strategy } from "../context"
 
 export class MagiportOthersSmartMovingToUsStrategyOptions {
+    delayMs: number
     range: number
 }
 
 export const DefaultMagiportOthersSmartMovingToUsStrategyOptions: MagiportOthersSmartMovingToUsStrategyOptions = {
+    /** Don't magiport the same bot within this interval (in ms) */
+    delayMs: 5000,
+    /** Offer magiports to those smart moving within this range of us */
     range: 100
 }
 
@@ -14,6 +18,8 @@ export class MagiportOthersSmartMovingToUsStrategy implements Strategy<Mage> {
 
     protected contexts: Strategist<PingCompensatedCharacter>[]
     protected options: MagiportOthersSmartMovingToUsStrategyOptions
+
+    protected recentlyMagiported = new Map<string, number>()
 
     public constructor(contexts: Strategist<PingCompensatedCharacter>[], options = DefaultMagiportOthersSmartMovingToUsStrategyOptions) {
         this.contexts = contexts
@@ -37,9 +43,13 @@ export class MagiportOthersSmartMovingToUsStrategy implements Strategy<Mage> {
             if (AL.Pathfinder.canWalkPath(bot, friend)) continue // They can walk to us
             if (AL.Tools.distance(bot, friend.smartMoving) > this.options.range) continue // They're not smart moving to a place near us
 
+            const lastMagiport = this.recentlyMagiported.get(friend.id)
+            if (lastMagiport && lastMagiport + this.options.delayMs > Date.now()) continue // We recently magiported them
+
             // Offer the magiport
             try {
                 await bot.magiport(friend.id)
+                this.recentlyMagiported.set(friend.id, Date.now())
                 return friend.acceptMagiport(bot.id)
             } catch (e) {
                 console.error(e)
