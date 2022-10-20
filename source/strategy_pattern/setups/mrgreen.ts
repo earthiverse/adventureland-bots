@@ -100,8 +100,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                         move: moveStrategy
                     }
                 ]
-            },
-            ...constructMrGreenHelperSetup(contexts).configs
+            }
         ]
     }
 }

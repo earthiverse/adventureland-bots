@@ -140,8 +140,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                         move: moveStrategy
                     }
                 ]
-            },
-            ...constructMrPumpkinHelperSetup(contexts).configs
+            }
         ]
     }
 }
