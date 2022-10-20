@@ -202,8 +202,8 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
         }
 
         if (S.halloween) {
-            if ((S.mrgreen as ServerInfoDataLive).live) {
-                if ((S.mrpumpkin as ServerInfoDataLive).live) {
+            if ((S.mrgreen as ServerInfoDataLive)?.live) {
+                if ((S.mrpumpkin as ServerInfoDataLive)?.live) {
                     // Both are alive, target the lower hp one
                     if ((S.mrgreen as ServerInfoDataLive).hp > (S.mrpumpkin as ServerInfoDataLive).hp) {
                         for (let i = 0; i < contexts.length; i++) priority.push("mrpumpkin")
@@ -214,7 +214,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                     // Only mrgreen is alive
                     for (let i = 0; i < contexts.length; i++) priority.push("mrgreen")
                 }
-            } else if ((S.mrpumpkin as ServerInfoDataLive).live) {
+            } else if ((S.mrpumpkin as ServerInfoDataLive)?.live) {
                 // Only mrpumpkin is alive
                 for (let i = 0; i < contexts.length; i++) priority.push("mrpumpkin")
             }
