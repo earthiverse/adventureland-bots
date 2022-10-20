@@ -41,7 +41,7 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: PRIEST_ARMOR,
+                            ensureEquipped: { ...PRIEST_ARMOR },
                             type: "crabxx",
                         }),
                         move: new ImprovedMoveStrategy("crabxx")
@@ -88,7 +88,7 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: PRIEST_ARMOR,
+                            ensureEquipped: { ...PRIEST_ARMOR },
                             type: "crabxx",
                         }),
                         move: new ImprovedMoveStrategy("crabxx")
@@ -120,7 +120,7 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: PRIEST_ARMOR,
+                            ensureEquipped: { ...PRIEST_ARMOR },
                             type: "crabxx",
                         }),
                         move: new ImprovedMoveStrategy("crabxx")

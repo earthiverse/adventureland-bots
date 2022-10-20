@@ -36,7 +36,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: PRIEST_LUCK,
+                            ensureEquipped: { ...PRIEST_LUCK },
                             type: "plantoid",
                         }),
                         move: new MoveInCircleMoveStrategy({ center: spawn, radius: 20, sides: 8 })

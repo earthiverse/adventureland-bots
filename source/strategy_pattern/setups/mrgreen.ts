@@ -58,7 +58,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: PRIEST_ARMOR,
+                            ensureEquipped: { ...PRIEST_ARMOR },
                             type: "mrgreen",
                         }),
                         move: moveStrategy
@@ -68,7 +68,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                         attack: new WarriorMrGreenAttackStrategy({
                             contexts: contexts,
                             disableCleave: true,
-                            ensureEquipped: WARRIOR_NORMAL,
+                            ensureEquipped: { ...WARRIOR_NORMAL },
                             type: "mrgreen",
                         }),
                         move: moveStrategy
@@ -84,7 +84,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: PRIEST_ARMOR,
+                            ensureEquipped: { ...PRIEST_ARMOR },
                             type: "mrgreen",
                         }),
                         move: moveStrategy
@@ -94,7 +94,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             disableCleave: true,
-                            ensureEquipped: WARRIOR_NORMAL,
+                            ensureEquipped: { ...WARRIOR_NORMAL },
                             type: "mrgreen",
                         }),
                         move: moveStrategy

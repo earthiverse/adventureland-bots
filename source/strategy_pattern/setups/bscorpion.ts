@@ -36,7 +36,7 @@ export function constructBScorpionSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: PRIEST_LUCK,
+                            ensureEquipped: { ...PRIEST_LUCK },
                             type: "bscorpion",
                         }),
                         move: new MoveInCircleMoveStrategy({ center: spawn, radius: 100, sides: 16 })

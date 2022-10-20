@@ -51,7 +51,7 @@ async function run() {
         try {
             const botName = PEEK_CHARS[1]
             if (!botName) return
-            const server = (await getHalloweenMonsterPriority(true))[0]
+            const server = (await getHalloweenMonsterPriority())[0]
             if (server) {
                 console.log(`Checking for jr on ${server.serverRegion} ${server.serverIdentifier}...`)
                 jrChecker = await AL.Game.startCharacter(botName, server.serverRegion, server.serverIdentifier)

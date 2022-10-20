@@ -32,7 +32,7 @@ export function constructRGooSetup(contexts: Strategist<PingCompensatedCharacter
                             disableEnergize: true,
                             enableGreedyAggro: true,
                             enableHealStrangers: true,
-                            ensureEquipped: PRIEST_LUCK,
+                            ensureEquipped: { ...PRIEST_LUCK },
                             typeList: goos
                         }),
                         move: moveStrategy

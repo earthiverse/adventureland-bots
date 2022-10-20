@@ -104,7 +104,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: PRIEST_ARMOR,
+                            ensureEquipped: { ...PRIEST_ARMOR },
                         }),
                         move: moveStrategy
                     },
@@ -112,7 +112,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                         ctype: "warrior",
                         attack: new WarriorMrPumpkinAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: WARRIOR_NORMAL
+                            ensureEquipped: { ...WARRIOR_NORMAL }
                         }),
                         move: moveStrategy
                     }
@@ -127,7 +127,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: PRIEST_ARMOR,
+                            ensureEquipped: { ...PRIEST_ARMOR },
                         }),
                         move: moveStrategy
                     },
@@ -135,7 +135,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                         ctype: "warrior",
                         attack: new WarriorMrPumpkinAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: WARRIOR_NORMAL
+                            ensureEquipped: { ...WARRIOR_NORMAL }
                         }),
                         move: moveStrategy
                     }

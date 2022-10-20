@@ -83,7 +83,7 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: PRIEST_ARMOR,
+                            ensureEquipped: { ...PRIEST_ARMOR },
                             typeList: ["franky", "nerfedmummy"],
                         }),
                         move: new ImprovedMoveStrategy("franky", { idlePosition: frankyIdlePosition })
@@ -111,7 +111,7 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: PRIEST_ARMOR,
+                            ensureEquipped: { ...PRIEST_ARMOR },
                             type: "franky",
                         }),
                         move: new ImprovedMoveStrategy("franky", { idlePosition: frankyIdlePosition })
