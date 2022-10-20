@@ -122,11 +122,12 @@ export async function getTargetServerFromPlayer(defaultRegion: ServerRegion, def
     return [defaultRegion, defaultIdentifier]
 }
 
-export async function getHalloweenMonsterPriority() {
+export async function getHalloweenMonsterPriority(avoidPVP = false) {
     const monsterPriority: MonsterName[] = ["mrpumpkin", "mrgreen"]
     const serverPriority = ["EUI", "EUII", "USI", "USII", "USIII", "ASIAI", "EUPVP", "USPVP"]
 
     const entitiesFilters = { lastSeen: { $gt: Date.now() - 30000 }, type: { $in: monsterPriority } }
+    if (avoidPVP) entitiesFilters["serverRegion"] = { $ne: "PVP" }
 
     const entitiesP = await AL.EntityModel.find(entitiesFilters).lean().exec()
 

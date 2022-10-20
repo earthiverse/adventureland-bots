@@ -296,7 +296,7 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
 
             if (ENABLE_SERVER_HOPS) {
                 if (bot.S.halloween) {
-                    const monster = (await getHalloweenMonsterPriority())[0]
+                    const monster = (await getHalloweenMonsterPriority(true))[0]
                     if (
                         context.uptime() > 60_000
                         && monster

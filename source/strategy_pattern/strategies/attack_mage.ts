@@ -1,19 +1,54 @@
-import { Mage, SlotType, TradeItemInfo, TradeSlotType } from "alclient"
+import AL, { ActionData, ActionDataRay, Mage, SlotType, TradeItemInfo, TradeSlotType } from "alclient"
 import { sortPriority } from "../../base/sort.js"
-import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
+import { suppress_errors } from "../logging.js"
+import { BaseAttackStrategy, BaseAttackStrategyOptions, KILL_STEAL_AVOID_MONSTERS } from "./attack.js"
 
 export type MageAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableCburst?: boolean
-    disableCburstKillSteal?: boolean
 }
 
 export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
     protected options: MageAttackStrategyOptions
 
+    protected stealOnActionCburst: (data: ActionData) => Promise<unknown>
+
     public constructor(options?: MageAttackStrategyOptions) {
         super(options)
 
         if (!this.options.disableCburst) this.interval.push("cburst")
+    }
+
+    public onApply(bot: Mage): void {
+        super.onApply(bot)
+        if (!this.options.disableCburst && !this.options.disableKillSteal) {
+            this.stealOnActionCburst = async (data: ActionData) => {
+                // TODO: Improve for if we see 3shot or 5shot
+                //       Maybe sleep for a few ms?
+                if (!bot.canUse("zapperzap")) return
+                if ((data as ActionDataRay).instant) return // We can't kill steal if the projectile is instant
+
+                const attacker = bot.players.get(data.attacker)
+                if (!attacker) return // Not a player
+
+                const target = bot.entities.get(data.target)
+                if (!target) return // Not an entity
+                if (target.target) return // Already has a target, can't steal
+                if (target.immune) return // Can't damage with zapper
+                if (KILL_STEAL_AVOID_MONSTERS.includes(target.type)) return // Want to avoid kill stealing these
+                if (AL.Tools.distance(bot, target) > AL.Game.G.skills.zapperzap.range) return // Too far away to zap
+                if (!target.willDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)) return // It won't die to projectiles
+
+                // Zap to try and kill steal the entity
+                this.preventOverkill(bot, target)
+                bot.cburst([[data.target, 5]]).catch(suppress_errors)
+            }
+            bot.socket.on("action", this.stealOnActionCburst)
+        }
+    }
+
+    public onRemove(bot: Mage) {
+        super.onRemove(bot)
+        if (this.stealOnActionCburst) bot.socket.removeListener("action", this.stealOnActionCburst)
     }
 
     protected async attack(bot: Mage): Promise<void> {
@@ -76,7 +111,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
      * If there are projectiles going to monsters that don't have a target,
      * we can use `cburst` which immediately casts to steal the kill.
      *
-     * TODO: Move this to a listener on projectiles
+     * TODO: Move this to a listener on action
      */
     protected async cburstKillSteal(bot: Mage): Promise<void> {
         if (!bot.canUse("cburst")) return

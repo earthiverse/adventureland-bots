@@ -1,8 +1,9 @@
-import AL, { Character, EntitiesData, Entity, GetEntitiesFilters, ItemName, LocateItemFilters, Mage, PingCompensatedCharacter, SkillName, SlotType, Warrior } from "alclient"
+import AL, { ActionData, Character, EntitiesData, Entity, GetEntitiesFilters, ItemName, LocateItemFilters, Mage, MonsterName, PingCompensatedCharacter, SkillName, SlotType, Warrior } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { sleep } from "../../base/general.js"
 import { sortPriority } from "../../base/sort.js"
 import { Loop, LoopName, Strategist, Strategy } from "../context.js"
+import { suppress_errors } from "../logging.js"
 
 export type EnsureEquipped = {
     [T in SlotType]?: {
@@ -16,6 +17,7 @@ export type BaseAttackStrategyOptions = GetEntitiesFilters & {
     disableBasicAttack?: true
     disableCreditCheck?: true
     disableEnergize?: true
+    disableKillSteal?: true
     disableScare?: true
     disableZapper?: true
     /** If set, we will aggro as many nearby monsters as we can */
@@ -25,10 +27,13 @@ export type BaseAttackStrategyOptions = GetEntitiesFilters & {
     maximumTargets?: number
 }
 
+export const KILL_STEAL_AVOID_MONSTERS: MonsterName[] = ["kitty1", "kitty2", "kitty3", "kitty4", "puppy1", "puppy2", "puppy3", "puppy4"]
+
 export class BaseAttackStrategy<Type extends Character> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
 
     protected greedyOnEntities: (data: EntitiesData) => Promise<unknown>
+    protected stealOnAction: (data: ActionData) => Promise<unknown>
 
     protected options: BaseAttackStrategyOptions
     protected interval: SkillName[] = ["attack"]
@@ -52,6 +57,27 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
     }
 
     public onApply(bot: Type) {
+        if (!this.options.disableKillSteal && !this.options.disableZapper) {
+            this.stealOnAction = async (data: ActionData) => {
+                if (!bot.canUse("zapperzap")) return
+
+                const attacker = bot.players.get(data.attacker)
+                if (!attacker) return // Not a player
+
+                const target = bot.entities.get(data.target)
+                if (!target) return // Not an entity
+                if (target.target) return // Already has a target, can't steal
+                if (target.immune) return // Can't damage with zapper
+                if (KILL_STEAL_AVOID_MONSTERS.includes(target.type)) return // Want to avoid kill stealing these
+                if (AL.Tools.distance(bot, target) > AL.Game.G.skills.zapperzap.range) return // Too far away to zap
+                if (!target.willDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)) return // It won't die to projectiles
+
+                // Zap to try and kill steal the entity
+                this.preventOverkill(bot, target)
+                bot.zapperZap(data.target).catch(suppress_errors)
+            }
+            bot.socket.on("action", this.stealOnAction)
+        }
         if (this.options.enableGreedyAggro) {
             this.greedyOnEntities = async (data: EntitiesData) => {
                 if (data.monsters.length == 0) return // No monsters
@@ -116,8 +142,9 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         }
     }
 
-    public async onRemove(bot: Type) {
+    public onRemove(bot: Type) {
         if (this.greedyOnEntities) bot.socket.removeListener("entities", this.greedyOnEntities)
+        if (this.stealOnAction) bot.socket.removeListener("action", this.stealOnAction)
     }
 
     protected async attack(bot: Type) {
