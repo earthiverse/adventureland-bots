@@ -43,7 +43,7 @@ export function constructRGooSetup(contexts: Strategist<PingCompensatedCharacter
                             contexts: contexts,
                             enableEquipForCleave: true,
                             ensureEquipped: {
-                                mainhand: { name: "bataxe" },
+                                mainhand: { name: "bataxe", filters: { returnHighestLevel: true } },
                             },
                             typeList: goos
                         }),

@@ -231,8 +231,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             if (
                 !bot.slots[slotType]
                 || bot.slots[slotType].name !== ensure.name
-                || (ensure.filters.returnHighestLevel && bot.hasItem(ensure.name, bot.items, { ...ensure.filters, levelGreaterThan: bot.slots[slotType].level })) // We have a higher level one to equip
-                || (ensure.filters.returnLowestLevel && bot.hasItem(ensure.name, bot.items, { ...ensure.filters, levelLessThan: bot.slots[slotType].level })) // We have a lower level one to equip
+                || (ensure.filters && ensure.filters.returnHighestLevel && bot.hasItem(ensure.name, bot.items, { ...ensure.filters, levelGreaterThan: bot.slots[slotType].level })) // We have a higher level one to equip
+                || (ensure.filters && ensure.filters.returnLowestLevel && bot.hasItem(ensure.name, bot.items, { ...ensure.filters, levelLessThan: bot.slots[slotType].level })) // We have a lower level one to equip
             ) {
                 const toEquip = bot.locateItem(ensure.name, bot.items, ensure.filters)
                 if (toEquip == undefined) throw new Error(`Couldn't find ${ensure.name} to equip in ${sT}.`)
