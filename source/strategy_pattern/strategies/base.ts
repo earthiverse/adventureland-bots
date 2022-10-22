@@ -1,9 +1,11 @@
-import AL, { Character, PingCompensatedCharacter, Tools } from "alclient"
+import { Character, ChestData, PingCompensatedCharacter, Tools } from "alclient"
 import { Loop, LoopName, Strategist, Strategy } from "../context.js"
 
 export class BaseStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
     private contexts: Strategist<Type>[]
+
+    protected lootOnDrop: (data: ChestData) => void
 
     public constructor(contexts?: Strategist<Type>[]) {
         this.contexts = contexts ?? []
@@ -12,9 +14,24 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
             interval: ["use_hp"]
         })
         this.loops.set("loot", {
-            fn: async (bot: Type) => { await this.loot(bot) },
+            fn: async (bot: Type) => {
+                for (const [, chest] of bot.chests) {
+                    await this.lootChest(bot, chest)
+                }
+            },
             interval: 250
         })
+    }
+
+    public onApply(bot: Type) {
+        this.lootOnDrop = async (data: ChestData) => {
+            this.lootChest(bot, data).catch(console.error)
+        }
+        bot.socket.on("drop", this.lootOnDrop)
+    }
+
+    public onRemove(bot: Type) {
+        if (this.lootOnDrop) bot.socket.removeListener("drop", this.lootOnDrop)
     }
 
     private async heal(bot: Type) {
@@ -61,27 +78,25 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
         }
     }
 
-    private async loot(bot: Type) {
-        for (const [id, chest] of bot.chests) {
-            if (Tools.distance(chest, bot) > 800) continue // It's far away from us
+    private async lootChest(bot: Type, chest: ChestData) {
+        if (Tools.distance(chest, bot) > 800) return // It's far away from us
 
-            let goldM = 0
-            let best: Character
-            for (const context of this.contexts) {
-                if (!context.isReady()) continue // They're not ready
-                const friend = context.bot
-                if (friend.serverData.region !== bot.serverData.region || friend.serverData.name !== bot.serverData.name) continue // They're on a different server
-                if (Tools.distance(chest, friend) > 800) continue // It's far away from them
-                if (friend.goldm > goldM) {
-                    goldM = friend.goldm
-                    best = friend
-                }
+        let goldM = 0
+        let best: Character
+        for (const context of this.contexts) {
+            if (!context.isReady()) continue // They're not ready
+            const friend = context.bot
+            if (friend.serverData.region !== bot.serverData.region || friend.serverData.name !== bot.serverData.name) continue // They're on a different server
+            if (Tools.distance(chest, friend) > 800) continue // It's far away from them
+            if (friend.goldm > goldM) {
+                goldM = friend.goldm
+                best = friend
             }
-
-            if (best && best !== bot) continue // We're not the best one to loot the chest
-
-            // Open the chest
-            await bot.openChest(id).catch(console.error)
         }
+
+        if (best && best !== bot) return // We're not the best one to loot the chest
+
+        // Open the chest
+        return bot.openChest(chest.id).catch(console.error)
     }
 }
