@@ -1,4 +1,4 @@
-import AL, { BankPackName, Character, IPosition, ItemName, LocateItemsFilters, Merchant, PingCompensatedCharacter, SlotType, Tools } from "alclient"
+import AL, { BankPackName, Character, IPosition, ItemName, LocateItemsFilters, Merchant, PingCompensatedCharacter, SlotType, Tools, TradeSlotType } from "alclient"
 import { getItemCountsForEverything, getItemsToCompoundOrUpgrade, getOfferingToUse, IndexesToCompoundOrUpgrade, ItemCount, withdrawItemFromBank } from "../base/banking.js"
 import { checkOnlyEveryMS, sleep } from "../base/general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
@@ -90,6 +90,10 @@ export type MerchantMoveStrategyOptions = {
      * - go fishing
      */
     enableFishing?: true
+    /** If enabled the merchant will
+     * - join all giveaways it sees that it's not currently a part of
+     */
+    enableJoinGiveaways?: true
     /** If enabled, the merchant will
      * - make a pickaxe if it doesn't have one
      * - go mining
@@ -140,6 +144,7 @@ export const DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS: MerchantMoveStrategyOptions
         items: DEFAULT_EXCHANGEABLES,
     },
     enableFishing: true,
+    enableJoinGiveaways: true,
     enableMining: true,
     enableMluck: {
         contexts: true,
@@ -364,6 +369,19 @@ export class MerchantStrategy implements Strategy<Merchant> {
             if (bot.map.startsWith("bank")) {
                 this.debug(bot, "Moving out of bank...")
                 await bot.smartMove("main")
+            }
+
+            if (this.options.enableJoinGiveaways) {
+                for (const player of bot.getPlayers({ withinRange: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })) {
+                    for (const s in player.slots) {
+                        const slot = s as TradeSlotType
+                        const item = player.slots[slot]
+                        if (!item) continue // Nothing in the slot
+                        if (!item.giveaway) continue // Not a giveaway
+                        if (item.list && item.list.includes(bot.id)) continue // We're already in the giveaway
+                        await (bot as Merchant).joinGiveaway(slot, player.id, item.rid)
+                    }
+                }
             }
 
             if (this.options.enableBuyReplenishables) {

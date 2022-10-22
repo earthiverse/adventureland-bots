@@ -112,9 +112,6 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
         }
     }
     if (setupContexts.length == 0) return
-    const bot = setupContexts[0].bot
-    const serverData = bot.serverData
-    const S = bot.S
 
     const isDoable = (config: Config): Strategist<PingCompensatedCharacter>[] | false => {
         const tempContexts = [...setupContexts]
@@ -175,81 +172,91 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
     // Priority of targets
     const priority: MonsterName[] = []
 
-    if (ENABLE_SPECIAL_MONSTERS) {
-        if (S.halloween) {
-            // Only target `jr` and `greenjr` during halloween
-            for (const specialMonster of await AL.EntityModel.find({
-                lastSeen: { $gt: Date.now() - 30000 },
-                serverIdentifier: serverData.name,
-                serverRegion: serverData.region,
-                type: { $in: ["greenjr", "jr"] }
-            }, {
-                type: 1
-            }).lean().exec()) {
-                priority.push(specialMonster.type)
+    for (const context of contexts) {
+        if (ENABLE_SPECIAL_MONSTERS) {
+            if (context.bot.S.halloween) {
+                // Only target `jr` and `greenjr` during halloween
+                for (const specialMonster of await AL.EntityModel.find({
+                    lastSeen: { $gt: Date.now() - 30000 },
+                    serverIdentifier: context.bot.serverData.name,
+                    serverRegion: context.bot.serverData.region,
+                    type: { $in: ["greenjr", "jr"] }
+                }, {
+                    type: 1
+                }).lean().exec()) {
+                    priority.push(specialMonster.type)
+                }
             }
         }
-    }
 
-    if (ENABLE_EVENTS) {
-        for (const context of contexts) {
+        if (ENABLE_EVENTS) {
+            // Goobrawl
             if (
-                S.goobrawl
-                || (context.bot.map == "goobrawl" && bot.getEntity({ typeList: ["rgoo", "bgoo"] }))
+                (
+                    // Can join
+                    context.bot.S.goobrawl
+                    && !context.bot.s.hopsickness
+                    && !context.bot.map.startsWith("bank")
+                ) || (
+                    // Already there
+                    context.bot.map == "goobrawl"
+                    && context.bot.getEntity({ typeList: ["rgoo", "bgoo"] })
+                )
             ) {
                 priority.push("rgoo")
             }
-        }
 
-        if (S.halloween) {
-            if ((S.mrgreen as ServerInfoDataLive)?.live) {
-                if ((S.mrpumpkin as ServerInfoDataLive)?.live) {
-                    // Both are alive, target the lower hp one
-                    if ((S.mrgreen as ServerInfoDataLive).hp > (S.mrpumpkin as ServerInfoDataLive).hp) {
-                        for (let i = 0; i < contexts.length; i++) priority.push("mrpumpkin")
+            // Halloween
+            if (context.bot.S.halloween) {
+                if ((context.bot.S.mrgreen as ServerInfoDataLive)?.live) {
+                    if ((context.bot.S.mrpumpkin as ServerInfoDataLive)?.live) {
+                        // Both are alive, target the lower hp one
+                        if ((context.bot.S.mrgreen as ServerInfoDataLive).hp > (context.bot.S.mrpumpkin as ServerInfoDataLive).hp) {
+                            priority.push("mrpumpkin")
+                        } else {
+                            priority.push("mrgreen")
+                        }
                     } else {
-                        for (let i = 0; i < contexts.length; i++) priority.push("mrgreen")
+                        // Only mrgreen is alive
+                        priority.push("mrgreen")
                     }
-                } else {
-                    // Only mrgreen is alive
-                    for (let i = 0; i < contexts.length; i++) priority.push("mrgreen")
+                } else if ((context.bot.S.mrpumpkin as ServerInfoDataLive)?.live) {
+                    // Only mrpumpkin is alive
+                    priority.push("mrpumpkin")
                 }
-            } else if ((S.mrpumpkin as ServerInfoDataLive)?.live) {
-                // Only mrpumpkin is alive
-                for (let i = 0; i < contexts.length; i++) priority.push("mrpumpkin")
+            }
+
+            // Special monsters
+            for (const id in context.bot.S) {
+                if (!AL.Game.G.monsters[id]) continue // Not a monster
+                if ((context.bot.S[id] as ServerInfoDataLive)?.live) {
+                    priority.push(id as MonsterName)
+                }
             }
         }
 
-        for (const id in S) {
-            if (!AL.Game.G.monsters[id]) continue // Not a monster
-            if ((S[id] as ServerInfoDataLive)?.live) {
-                for (let i = 0; i < contexts.length; i++) priority.push(id as MonsterName)
+        if (ENABLE_MONSTERHUNTS) {
+            for (const contexts of [PRIVATE_CONTEXTS, PUBLIC_CONTEXTS]) {
+                const monsterhunts: {
+                    ms: number
+                    id: MonsterName
+                }[] = []
+                for (const context2 of contexts) {
+                    if (!context2.isReady()) continue
+                    const bot2 = context2.bot
+                    if (!bot2.s.monsterhunt || bot2.s.monsterhunt.c == 0) continue
+                    monsterhunts.push(bot2.s.monsterhunt)
+                }
+
+                monsterhunts.sort((a, b) => a.ms - b.ms) // Lower time remaining first
+
+                for (const monsterhunt of monsterhunts) priority.push(monsterhunt.id)
             }
         }
-    }
 
-    if (ENABLE_MONSTERHUNTS) {
-        // TODO: Sort these by time remaining
-        // Monster hunt targets
-        for (const context of PRIVATE_CONTEXTS) {
-            if (!context.isReady()) continue
-            const bot = context.bot
-            if (!bot.s.monsterhunt || bot.s.monsterhunt.c == 0) continue
-            priority.push(bot.s.monsterhunt.id)
-        }
-
-        for (const context of PUBLIC_CONTEXTS) {
-            if (!context.isReady()) continue
-            const bot = context.bot
-            if (!bot.s.monsterhunt || bot.s.monsterhunt.c == 0) continue
-            priority.push(bot.s.monsterhunt.id)
-        }
-    }
-
-    // Default targets
-    for (const context of contexts) {
+        // Default targets
         if (PRIVATE_CONTEXTS.includes(context)) {
-            if (!bot.isPVP()) {
+            if (!context.bot.isPVP()) {
                 priority.push("bscorpion")
             }
             if (context.bot.ctype == "mage") {
