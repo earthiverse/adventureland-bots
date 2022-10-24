@@ -88,7 +88,7 @@ export class SellStrategy<Type extends Character> implements SellStrategyOptions
                 if (!criteria) continue // We don't want to sell it
                 if (!criteria.some((a) => {
                     const level = a[0]
-                    const sellFor = (a[1] ?? AL.Game.G.items[item.name].g * 0.6) * (1 + bot.tax)
+                    const sellFor = (a[1] ?? AL.Game.G.items[item.name].g * AL.Game.G.multipliers.buy_to_sell) * (1 + bot.tax)
 
                     return level == item.level && item.price >= sellFor
                 })) continue // They're not paying enough, or they're buying at a level we're not selling

@@ -278,60 +278,21 @@ export function getOfferingToUse(item: ItemData): ItemName {
     if (!item) return undefined
 
     const gItem = AL.Game.G.items[item.name]
-    const conf = ITEM_UPGRADE_CONF[item.name]
+    let conf = ITEM_UPGRADE_CONF[item.name]
+    if (!conf) {
+        if (gItem.compound) {
+            if (gItem.grades[0] > 0) conf = DEFAULT_COMPOUND_BASE_COMMON
+            else if (gItem.grades[1] > 0) conf = DEFAULT_COMPOUND_BASE_HIGH
+            else if (gItem.grades[2] > 0) conf = DEFAULT_COMPOUND_BASE_RARE
+        } else if (gItem.upgrade) {
+            if (gItem.grades[0] > 0) conf = DEFAULT_UPGRADE_BASE_COMMON
+            else if (gItem.grades[1] > 0) conf = DEFAULT_UPGRADE_BASE_HIGH
+            else if (gItem.grades[2] > 0) conf = DEFAULT_UPGRADE_BASE_RARE
+        }
+    }
     if (conf) {
-        // We have special configuration about this item
-        if (item.level >= conf?.offering) {
-            return "offering"
-        } else if (item.level >= conf?.offeringp) {
-            return "offeringp"
-        }
-    } else if (gItem.compound) {
-        if (gItem.grades[0] > 0) {
-            // Common at base 0
-            if (item.level >= DEFAULT_COMPOUND_BASE_COMMON.offering) {
-                return "offering"
-            } else if (item.level >= DEFAULT_COMPOUND_BASE_COMMON.offeringp) {
-                return "offeringp"
-            }
-        } else if (gItem.grades[1] > 0) {
-            // High at base 0
-            if (item.level >= DEFAULT_COMPOUND_BASE_HIGH.offering) {
-                return "offering"
-            } else if (item.level >= DEFAULT_COMPOUND_BASE_HIGH.offeringp) {
-                return "offeringp"
-            }
-        } else if (gItem.grades[2] > 0) {
-            // Rare at base 0
-            if (item.level >= DEFAULT_COMPOUND_BASE_RARE.offering) {
-                return "offering"
-            } else if (item.level >= DEFAULT_COMPOUND_BASE_RARE.offeringp) {
-                return "offeringp"
-            }
-        }
-    } else if (gItem.upgrade) {
-        if (gItem.grades[0] > 0) {
-            // Common at base 0
-            if (item.level >= DEFAULT_UPGRADE_BASE_COMMON.offering) {
-                return "offering"
-            } else if (item.level >= DEFAULT_UPGRADE_BASE_COMMON.offeringp) {
-                return "offeringp"
-            }
-        } else if (gItem.grades[1] > 0) {
-            // High at base 0
-            if (item.level >= DEFAULT_UPGRADE_BASE_HIGH.offering) {
-                return "offering"
-            } else if (item.level >= DEFAULT_UPGRADE_BASE_HIGH.offeringp) {
-                return "offeringp"
-            }
-        } else if (gItem.grades[2] > 0) {
-            // Rare at base 0
-            if (item.level >= DEFAULT_UPGRADE_BASE_RARE.offering) {
-                return "offering"
-            } else if (item.level >= DEFAULT_UPGRADE_BASE_RARE.offeringp) {
-                return "offeringp"
-            }
-        }
+        if (item.level >= conf.offering) return "offering"
+        else if (item.level >= conf.offeringp) return "offeringp"
     }
 
     return undefined
@@ -642,9 +603,9 @@ export async function upgradeOrCompoundItems(bot: Character, allIndexes: Indexes
             }
         }
 
-        if (allIndexes.length == 1) {
+        if (indexes.length == 1) {
             // We want to upgrade this item
-        } else if (allIndexes.length == 3) {
+        } else if (indexes.length == 3) {
             // We want to compound these items
         }
     }

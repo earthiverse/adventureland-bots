@@ -5,6 +5,7 @@ import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.
 import { MERCHANT_ITEMS_TO_HOLD } from "../base/merchant.js"
 import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
 import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
+import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
 import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
@@ -56,6 +57,21 @@ export const DEFAULT_MERCHANT_REPLENISHABLES = new Map<ItemName, number>([
     ["scroll2", 5],
 ])
 export const DEFAULT_REPLENISH_RATIO = 0.5
+export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
+    ["5bucks", 100_000_000],
+    ["computer", 100_000_000],
+    ["cryptkey", 1_000_000],
+    ["cxjar", 1_000_000],
+    ["dkey", 100_000_000],
+    ["emotionjar", 1_000_000],
+    ["goldingot", AL.Game.G.items.goldingot.g * AL.Constants.PONTY_MARKUP],
+    ["goldnugget", AL.Game.G.items.goldnugget.g * AL.Constants.PONTY_MARKUP],
+    ["networkcard", AL.Game.G.items.networkcard.g * AL.Constants.PONTY_MARKUP],
+    ["platinumingot", AL.Game.G.items.platinumingot.g * AL.Constants.PONTY_MARKUP],
+    ["platinumnugget", AL.Game.G.items.platinumnugget.g * AL.Constants.PONTY_MARKUP],
+    ["supercomputer", 100_000_000],
+    ["wblade", 100_000_000]
+])
 
 export type MerchantMoveStrategyOptions = {
     /** If enabled, we will log debug messages */
@@ -372,7 +388,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
             }
 
             if (this.options.enableJoinGiveaways) {
-                for (const player of bot.getPlayers({ withinRange: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })) {
+                for (const player of bot.getPlayers({ withinRange: AL.Constants.NPC_INTERACTION_DISTANCE })) {
                     for (const s in player.slots) {
                         const slot = s as TradeSlotType
                         const item = player.slots[slot]
@@ -1032,6 +1048,50 @@ export class MerchantStrategy implements Strategy<Merchant> {
 }
 
 export async function startMerchant(context: Strategist<Merchant>, friends: Strategist<PingCompensatedCharacter>[], options?: MerchantMoveStrategyOptions) {
+    const itemsToBuy = new Map<ItemName, number>(DEFAULT_ITEMS_TO_BUY.entries())
+
+    for (const iN in AL.Game.G.items) {
+        const itemName = iN as ItemName
+        const gItem = AL.Game.G.items[itemName]
+        if (itemsToBuy.has(itemName)) continue // Price is already set
+
+        if (gItem.e) {
+            // Buy all exchangables
+            itemsToBuy.set(itemName, gItem.g * AL.Constants.PONTY_MARKUP)
+            continue
+        }
+
+        if (gItem.type == "token") {
+            // Buy all tokens
+            itemsToBuy.set(itemName, gItem.g * AL.Constants.PONTY_MARKUP)
+            continue
+        }
+
+        if (gItem.type == "bank_key" || gItem.type == "dungeon_key") {
+            // Buy all keys
+            itemsToBuy.set(itemName, gItem.g * AL.Constants.PONTY_MARKUP)
+            continue
+        }
+
+        if (gItem.tier >= 3) {
+            // Buy all high level items
+            itemsToBuy.set(itemName, gItem.g * AL.Constants.PONTY_MARKUP)
+            continue
+        }
+
+        if (gItem.name.includes("Darkforge")) {
+            // Buy all darkforge items
+            itemsToBuy.set(itemName, gItem.g * AL.Constants.PONTY_MARKUP)
+            continue
+        }
+
+        // TODO: Add more logic for things to buy
+    }
+
+    context.applyStrategy(new BuyStrategy({
+        buyMap: itemsToBuy,
+        enableBuyForProfit: true
+    }))
     context.applyStrategy(new MerchantStrategy(friends, options))
     context.applyStrategy(new TrackerStrategy())
     context.applyStrategy(new AcceptPartyRequestStrategy())

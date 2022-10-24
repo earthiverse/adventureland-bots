@@ -50,7 +50,9 @@ export class MagiportOthersSmartMovingToUsStrategy implements Strategy<Mage> {
             try {
                 await bot.magiport(friend.id)
                 this.recentlyMagiported.set(friend.id, Date.now())
-                return friend.acceptMagiport(bot.id)
+                await friend.acceptMagiport(bot.id)
+                await friend.stopSmartMove()
+                await friend.stopWarpToTown()
             } catch (e) {
                 console.error(e)
             }
