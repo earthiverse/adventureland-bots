@@ -64,11 +64,11 @@ export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
     ["cxjar", 1_000_000],
     ["dkey", 100_000_000],
     ["emotionjar", 1_000_000],
-    ["goldingot", AL.Game.G.items.goldingot.g * AL.Constants.PONTY_MARKUP],
-    ["goldnugget", AL.Game.G.items.goldnugget.g * AL.Constants.PONTY_MARKUP],
-    ["networkcard", AL.Game.G.items.networkcard.g * AL.Constants.PONTY_MARKUP],
-    ["platinumingot", AL.Game.G.items.platinumingot.g * AL.Constants.PONTY_MARKUP],
-    ["platinumnugget", AL.Game.G.items.platinumnugget.g * AL.Constants.PONTY_MARKUP],
+    // ["goldingot", AL.Game.G.items.goldingot.g * AL.Constants.PONTY_MARKUP],
+    // ["goldnugget", AL.Game.G.items.goldnugget.g * AL.Constants.PONTY_MARKUP],
+    // ["networkcard", AL.Game.G.items.networkcard.g * AL.Constants.PONTY_MARKUP],
+    // ["platinumingot", AL.Game.G.items.platinumingot.g * AL.Constants.PONTY_MARKUP],
+    // ["platinumnugget", AL.Game.G.items.platinumnugget.g * AL.Constants.PONTY_MARKUP],
     ["supercomputer", 100_000_000],
     ["wblade", 100_000_000]
 ])
