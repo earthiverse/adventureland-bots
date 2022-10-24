@@ -1073,8 +1073,8 @@ export async function startMerchant(context: Strategist<Merchant>, friends: Stra
             continue
         }
 
-        if (gItem.tier >= 3) {
-            // Buy all high level items
+        if (gItem.tier >= 4) {
+            // Buy all super high tier items
             itemsToBuy.set(itemName, gItem.g * AL.Constants.PONTY_MARKUP)
             continue
         }
