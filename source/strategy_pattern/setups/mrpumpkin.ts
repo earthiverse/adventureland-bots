@@ -8,7 +8,7 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy, } from "../strategies/move.js"
 import { Setup } from "./base"
-import { PRIEST_ARMOR, WARRIOR_NORMAL } from "./equipment.js"
+import { MAGE_NORMAL, PRIEST_ARMOR, WARRIOR_NORMAL } from "./equipment.js"
 
 const NON_PVP_MONSTERS: MonsterName[] = ["mrpumpkin", "phoenix", "xscorpion", "minimush", "tinyp"]
 
@@ -90,11 +90,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             disableEnergize: true,
                             disableZapper: true,
-                            ensureEquipped: {
-                                orb: { name: "jacko", filters: { returnHighestLevel: true } },
-                                ring1: { name: "zapper", filters: { returnHighestLevel: true } },
-                                ring2: { name: "cring", filters: { returnHighestLevel: true } }
-                            }
+                            ensureEquipped: { ... MAGE_NORMAL }
                         }),
                         move: moveStrategy
                     },

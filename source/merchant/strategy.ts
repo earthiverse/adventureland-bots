@@ -747,7 +747,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         if (!(["chest", "gloves", "helmet", "mainhand", "pants", "shoes"]).includes(slotName)) continue
                         const slot = friend.slots[slotName]
                         if (!slot) {
-                        // We have nothing in this slot, let's get something for it
+                            // We have nothing in this slot, let's get something for it
                             lowestItemSlot = slotName
                             lowestItemLevel = 0
                             getFor = friend

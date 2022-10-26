@@ -8,7 +8,7 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { PRIEST_ARMOR, WARRIOR_NORMAL } from "./equipment.js"
+import { MAGE_NORMAL, PRIEST_ARMOR, WARRIOR_NORMAL } from "./equipment.js"
 
 class WarriorMrGreenAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
@@ -41,13 +41,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             disableEnergize: true,
                             disableZapper: true,
-                            ensureEquipped: {
-                                mainhand: { name: "firestaff", filters: { returnHighestLevel: true } },
-                                offhand: { name: "wbookhs", filters: { returnHighestLevel: true } },
-                                orb: { name: "jacko", filters: { returnHighestLevel: true } },
-                                ring1: { name: "zapper", filters: { returnHighestLevel: true } },
-                                ring2: { name: "cring", filters: { returnHighestLevel: true } },
-                            },
+                            ensureEquipped: { ...MAGE_NORMAL },
                             type: "mrgreen",
                         }),
                         move: moveStrategy

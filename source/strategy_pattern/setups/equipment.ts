@@ -1,5 +1,49 @@
 import { EnsureEquipped } from "../strategies/attack"
 
+export const MAGE_ARMOR: EnsureEquipped = {
+    chest: { name: "harmor", filters: { returnHighestLevel: true } },
+    earring1: { name: "cearring", filters: { returnHighestLevel: true } },
+    earring2: { name: "cearring", filters: { returnHighestLevel: true } },
+    gloves: { name: "hgloves", filters: { returnHighestLevel: true } },
+    helmet: { name: "hhelmet", filters: { returnHighestLevel: true } },
+    mainhand: { name: "firestaff", filters: { returnHighestLevel: true } },
+    offhand: { name: "wbookhs", filters: { returnHighestLevel: true } },
+    orb: { name: "jacko", filters: { returnHighestLevel: true } },
+    pants: { name: "hpants", filters: { returnHighestLevel: true } },
+    ring1: { name: "zapper", filters: { returnHighestLevel: true } },
+    ring2: { name: "cring", filters: { returnHighestLevel: true } },
+    shoes: { name: "hboots", filters: { returnHighestLevel: true } },
+}
+
+export const MAGE_NORMAL: EnsureEquipped = {
+    chest: { name: "wattire", filters: { returnHighestLevel: true } },
+    earring1: { name: "cearring", filters: { returnHighestLevel: true } },
+    earring2: { name: "cearring", filters: { returnHighestLevel: true } },
+    gloves: { name: "wgloves", filters: { returnHighestLevel: true } },
+    helmet: { name: "wcap", filters: { returnHighestLevel: true } },
+    mainhand: { name: "firestaff", filters: { returnHighestLevel: true } },
+    offhand: { name: "wbook1", filters: { returnHighestLevel: true } },
+    orb: { name: "jacko", filters: { returnHighestLevel: true } },
+    pants: { name: "wbreeches", filters: { returnHighestLevel: true } },
+    ring1: { name: "zapper", filters: { returnHighestLevel: true } },
+    ring2: { name: "cring", filters: { returnHighestLevel: true } },
+    shoes: { name: "wshoes", filters: { returnHighestLevel: true } },
+}
+
+export const MAGE_SPLASH: EnsureEquipped = {
+    chest: { name: "harmor", filters: { returnHighestLevel: true } },
+    earring1: { name: "cearring", filters: { returnHighestLevel: true } },
+    earring2: { name: "cearring", filters: { returnHighestLevel: true } },
+    gloves: { name: "hgloves", filters: { returnHighestLevel: true } },
+    helmet: { name: "hhelmet", filters: { returnHighestLevel: true } },
+    mainhand: { name: "gstaff", filters: { returnHighestLevel: true } },
+    orb: { name: "jacko", filters: { returnHighestLevel: true } },
+    pants: { name: "hpants", filters: { returnHighestLevel: true } },
+    ring1: { name: "zapper", filters: { returnHighestLevel: true } },
+    ring2: { name: "cring", filters: { returnHighestLevel: true } },
+    shoes: { name: "hboots", filters: { returnHighestLevel: true } },
+}
+
 export const PRIEST_ARMOR: EnsureEquipped = {
     chest: { name: "vattire", filters: { returnHighestLevel: true } },
     earring1: { name: "cearring", filters: { returnHighestLevel: true } },

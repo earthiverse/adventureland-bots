@@ -7,6 +7,7 @@ import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
+import { MAGE_NORMAL, WARRIOR_NORMAL } from "./equipment.js"
 
 export function constructOSnakeSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     return {
@@ -16,7 +17,7 @@ export function constructOSnakeSetup(contexts: Strategist<PingCompensatedCharact
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, typeList: ["osnake", "snake"] }),
+                        attack: new MageAttackStrategy({ contexts: contexts, ensureEquipped: { ...MAGE_NORMAL }, typeList: ["osnake", "snake"] }),
                         move: new ImprovedMoveStrategy(["osnake", "snake"], { idlePosition: halloweenSafeSnakes })
                     }
                 ]
@@ -46,7 +47,7 @@ export function constructOSnakeSetup(contexts: Strategist<PingCompensatedCharact
                 characters: [
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({ contexts: contexts, typeList: ["osnake", "snake"] }),
+                        attack: new WarriorAttackStrategy({ contexts: contexts, ensureEquipped: { ...WARRIOR_NORMAL }, typeList: ["osnake", "snake"] }),
                         move: new ImprovedMoveStrategy(["osnake", "snake"], { idlePosition: halloweenSafeSnakes })
                     }
                 ]
