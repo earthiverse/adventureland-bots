@@ -5,7 +5,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { PRIEST_LUCK, WARRIOR_SPLASH } from "./equipment.js"
+import { MAGE_SPLASH, PRIEST_LUCK, WARRIOR_SPLASH } from "./equipment.js"
 
 class MageRGooAttackStrategy extends MageAttackStrategy {
     public onApply(bot: Mage): void {
@@ -58,6 +58,7 @@ export function constructRGooSetup(contexts: Strategist<PingCompensatedCharacter
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
+                            ensureEquipped: { ...MAGE_SPLASH },
                             typeList: goos
                         }),
                         move: moveStrategy
