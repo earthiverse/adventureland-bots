@@ -57,20 +57,94 @@ export const DEFAULT_MERCHANT_REPLENISHABLES = new Map<ItemName, number>([
     ["scroll2", 5],
 ])
 export const DEFAULT_REPLENISH_RATIO = 0.5
+
+/**
+ * Prices set < 0 will be set to `G.items[itemName].g * (-price)`
+ * For example, if an item's price is set to `-0.9`, we will pay up to `G.items[itemName].g * 0.9` for it.
+ */
 export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
     ["5bucks", 100_000_000],
+    ["amuletofm", -AL.Constants.PONTY_MARKUP],
+    ["basher", -AL.Constants.PONTY_MARKUP],
+    ["bataxe", -AL.Constants.PONTY_MARKUP],
+    ["bcape", -AL.Constants.PONTY_MARKUP],
+    ["bottleofxp", -AL.Constants.PONTY_MARKUP],
     ["computer", 100_000_000],
+    ["crossbow", -AL.Constants.PONTY_MARKUP],
     ["cryptkey", 1_000_000],
+    ["cscroll3", -AL.Constants.PONTY_MARKUP],
     ["cxjar", 1_000_000],
+    ["cyber", -AL.Constants.PONTY_MARKUP],
+    ["dartgun", -AL.Constants.PONTY_MARKUP],
+    ["dexearringx", -AL.Constants.PONTY_MARKUP],
     ["dkey", 100_000_000],
+    ["dragondagger", -AL.Constants.PONTY_MARKUP],
     ["emotionjar", 1_000_000],
-    // ["goldingot", AL.Game.G.items.goldingot.g * AL.Constants.PONTY_MARKUP],
-    // ["goldnugget", AL.Game.G.items.goldnugget.g * AL.Constants.PONTY_MARKUP],
-    // ["networkcard", AL.Game.G.items.networkcard.g * AL.Constants.PONTY_MARKUP],
-    // ["platinumingot", AL.Game.G.items.platinumingot.g * AL.Constants.PONTY_MARKUP],
-    // ["platinumnugget", AL.Game.G.items.platinumnugget.g * AL.Constants.PONTY_MARKUP],
+    ["essenceoffire", -AL.Constants.PONTY_MARKUP],
+    ["essenceoffrost", -AL.Constants.PONTY_MARKUP],
+    ["essenceofgreed", 25_000_000],
+    ["essenceofnature", -AL.Constants.PONTY_MARKUP],
+    ["exoarm", -AL.Constants.PONTY_MARKUP],
+    ["fallen", -AL.Constants.PONTY_MARKUP],
+    ["fierygloves", -AL.Constants.PONTY_MARKUP],
+    ["firebow", -AL.Constants.PONTY_MARKUP],
+    ["firestars", -AL.Constants.PONTY_MARKUP],
+    ["frostbow", -AL.Constants.PONTY_MARKUP],
+    ["froststaff", -AL.Constants.PONTY_MARKUP],
+    ["fury", -AL.Constants.PONTY_MARKUP],
+    ["gbow", -AL.Constants.PONTY_MARKUP],
+    ["goldenpowerglove", -AL.Constants.PONTY_MARKUP],
+    ["goldingot", -AL.Constants.PONTY_MARKUP],
+    ["goldnugget", -AL.Constants.PONTY_MARKUP],
+    ["gstaff", -AL.Constants.PONTY_MARKUP],
+    ["harbringer", -AL.Constants.PONTY_MARKUP],
+    ["harpybow", -AL.Constants.PONTY_MARKUP],
+    ["hboots", -AL.Constants.PONTY_MARKUP],
+    ["hdagger", -AL.Constants.PONTY_MARKUP],
+    ["lmace", -AL.Constants.PONTY_MARKUP],
+    ["luckyt", -AL.Constants.PONTY_MARKUP],
+    ["mearring", -AL.Constants.PONTY_MARKUP],
+    ["mpxamulet", -AL.Constants.PONTY_MARKUP],
+    ["mpxbelt", -AL.Constants.PONTY_MARKUP],
+    ["mpxgloves", -AL.Constants.PONTY_MARKUP],
+    ["mshield", -AL.Constants.PONTY_MARKUP],
+    ["networkcard", -AL.Constants.PONTY_MARKUP],
+    ["northstar", -AL.Constants.PONTY_MARKUP],
+    ["offering", -0.95],
+    ["offeringp", -AL.Constants.PONTY_MARKUP],
+    ["oxhelmet", -AL.Constants.PONTY_MARKUP],
+    ["pinkie", -AL.Constants.PONTY_MARKUP],
+    ["platinumingot", -AL.Constants.PONTY_MARKUP],
+    ["platinumnugget", -AL.Constants.PONTY_MARKUP],
+    ["powerglove", -AL.Constants.PONTY_MARKUP],
+    ["rabbitsfoot", -AL.Constants.PONTY_MARKUP],
+    ["sanguine", -AL.Constants.PONTY_MARKUP],
+    ["sbelt", -AL.Constants.PONTY_MARKUP],
+    ["scroll3", -AL.Constants.PONTY_MARKUP],
+    ["scroll4", -AL.Constants.PONTY_MARKUP],
+    ["scythe", -AL.Constants.PONTY_MARKUP],
+    ["snakeoil", -AL.Constants.PONTY_MARKUP],
+    ["snowflakes", -AL.Constants.PONTY_MARKUP],
+    ["snring", -AL.Constants.PONTY_MARKUP],
+    ["starkillers", -AL.Constants.PONTY_MARKUP],
+    ["stealthcape", -AL.Constants.PONTY_MARKUP],
     ["supercomputer", 100_000_000],
-    ["wblade", 100_000_000]
+    ["supermittens", -AL.Constants.PONTY_MARKUP],
+    ["t2quiver", -AL.Constants.PONTY_MARKUP],
+    ["t3bow", -AL.Constants.PONTY_MARKUP],
+    ["tshirt3", -AL.Constants.PONTY_MARKUP],
+    ["tshirt6", -AL.Constants.PONTY_MARKUP],
+    ["tshirt7", -AL.Constants.PONTY_MARKUP],
+    ["tshirt8", -AL.Constants.PONTY_MARKUP],
+    ["tshirt88", -AL.Constants.PONTY_MARKUP],
+    ["tshirt9", -AL.Constants.PONTY_MARKUP],
+    ["vhammer", -AL.Constants.PONTY_MARKUP],
+    ["vorb", -AL.Constants.PONTY_MARKUP],
+    ["warpvest", -AL.Constants.PONTY_MARKUP],
+    ["wblade", 100_000_000],
+    ["wbook1", -AL.Constants.PONTY_MARKUP],
+    ["xshield", -AL.Constants.PONTY_MARKUP],
+    ["zapper", -AL.Constants.PONTY_MARKUP],
 ])
 
 export type MerchantMoveStrategyOptions = {
@@ -1049,6 +1123,12 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
 export async function startMerchant(context: Strategist<Merchant>, friends: Strategist<PingCompensatedCharacter>[], options?: MerchantMoveStrategyOptions) {
     const itemsToBuy = new Map<ItemName, number>(DEFAULT_ITEMS_TO_BUY.entries())
+    for (const [itemName, price] of itemsToBuy) {
+        if (price < 0) {
+            const gItem = AL.Game.G.items[itemName]
+            itemsToBuy.set(itemName, gItem.g * (-price))
+        }
+    }
 
     for (const iN in AL.Game.G.items) {
         const itemName = iN as ItemName

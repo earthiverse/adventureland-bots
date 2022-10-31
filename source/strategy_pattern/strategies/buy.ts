@@ -51,6 +51,7 @@ export class BuyStrategy<Type extends Character> implements BuyStrategyOptions, 
 
         for (const [itemName, buyFor] of this.buyMap ?? []) {
             const gItem = AL.Game.G.items[itemName]
+            if (gItem.cash) continue // Can't buy this item with gold, only cash
             const gPrice = gItem.g * (gItem.markup ?? 1)
 
             // Check if it's buyable from an NPC

@@ -70,6 +70,7 @@ const sellStrategy = new SellStrategy({
         ["pants1", undefined],
         ["phelmet", undefined],
         ["shoes1", undefined],
+        ["stand0", undefined],
         ["stramulet", undefined]
     ])
 })
