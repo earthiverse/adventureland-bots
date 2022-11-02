@@ -69,6 +69,12 @@ const sellStrategy = new SellStrategy({
         ["helmet1", undefined],
         ["pants1", undefined],
         ["phelmet", undefined],
+        ["pickaxe", [
+            [0, 1_000_000]
+        ]],
+        ["rod", [
+            [0, 1_000_000]
+        ]],
         ["shoes1", undefined],
         ["stand0", undefined],
         ["stramulet", undefined]
