@@ -24,7 +24,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
             this.stealOnActionCburst = async (data: ActionData) => {
                 // TODO: Improve for if we see 3shot or 5shot
                 //       Maybe sleep for a few ms?
-                if (!bot.canUse("zapperzap")) return
+                if (!bot.canUse("cburst")) return
                 if ((data as ActionDataRay).instant) return // We can't kill steal if the projectile is instant
 
                 const attacker = bot.players.get(data.attacker)
@@ -33,12 +33,12 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
                 const target = bot.entities.get(data.target)
                 if (!target) return // Not an entity
                 if (target.target) return // Already has a target, can't steal
-                if (target.immune) return // Can't damage with zapper
+                if (target.immune) return // Can't damage with cburst
                 if (KILL_STEAL_AVOID_MONSTERS.includes(target.type)) return // Want to avoid kill stealing these
                 if (AL.Tools.distance(bot, target) > AL.Game.G.skills.zapperzap.range) return // Too far away to zap
                 if (!target.willDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)) return // It won't die to projectiles
 
-                // Zap to try and kill steal the entity
+                // Cburst to try and kill steal the entity
                 this.preventOverkill(bot, target)
                 bot.cburst([[data.target, 5]]).catch(suppress_errors)
             }
@@ -105,20 +105,5 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
         }
 
         await bot.cburst([...targets.entries()])
-    }
-
-    /**
-     * If there are projectiles going to monsters that don't have a target,
-     * we can use `cburst` which immediately casts to steal the kill.
-     *
-     * TODO: Move this to a listener on action
-     */
-    protected async cburstKillSteal(bot: Mage): Promise<void> {
-        if (!bot.canUse("cburst")) return
-
-        const targets = new Map<string, number>()
-
-        this.options.canDamage = "cburst"
-        this.options.withinRange = "cburst"
     }
 }

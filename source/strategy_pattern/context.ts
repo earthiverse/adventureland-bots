@@ -131,9 +131,10 @@ export class Strategist<Type extends PingCompensatedCharacter> {
 
     public async changeServer(region: ServerRegion, id: ServerIdentifier) {
         return new Promise<void>((resolve) => {
-            // Disconnect the bot
-            this.bot.socket.removeAllListeners("disconnect")
-            this.bot.disconnect()
+            if (this.bot) {
+                this.bot.socket.removeAllListeners("disconnect")
+                this.bot.disconnect()
+            }
 
             const switchBots = async () => {
                 let newBot: PingCompensatedCharacter

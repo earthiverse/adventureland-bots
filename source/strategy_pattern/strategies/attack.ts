@@ -354,6 +354,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         for (const context of this.options.contexts) {
             if (!context.isReady()) continue
             const char = context.bot
+            if (char.serverData.region !== bot.serverData.region || char.serverData.name !== bot.serverData.name) continue // Different server
             if (!char) continue // Friend is missing
             if (char == bot) continue // Can't energize ourselves
             if (AL.Tools.distance(bot, char) > bot.G.skills.energize.range) continue // Too far away
