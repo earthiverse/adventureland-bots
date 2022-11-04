@@ -14,7 +14,10 @@ export function constructPorcupineSetup(contexts: Strategist<PingCompensatedChar
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, type: "porcupine" }),
+                        attack: new MageAttackStrategy({
+                            contexts: contexts,
+                            type: "porcupine",
+                        }),
                         move: new ImprovedMoveStrategy("porcupine")
                     }
                 ]

@@ -18,6 +18,7 @@ import { constructGreenJrSetup } from "./greenjr.js"
 import { constructJrSetup } from "./jr.js"
 import { constructMrGreenHelperSetup, constructMrGreenSetup } from "./mrgreen.js"
 import { constructMrPumpkinHelperSetup, constructMrPumpkinSetup } from "./mrpumpkin.js"
+import { constructMummySetup } from "./mummy.js"
 import { constructOSnakeSetup } from "./osnake.js"
 import { constructPlantoidSetup } from "./plantoid.js"
 import { constructPorcupineSetup } from "./porcupine.js"
@@ -67,6 +68,8 @@ export type Setup = {
 export type Setups = { [T in MonsterName]?: Setup }
 
 export function constructGenericSetup(contexts: Strategist<PingCompensatedCharacter>[], monsters: MonsterName[]): Setup {
+    // TODO: If the damage type is physical, make warrior splash and greed
+    // TODO: If the damage type is magical, make mage splash and greed, and priest greed
     const id_prefix = monsters.join("+")
     return {
         configs: [
@@ -159,6 +162,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         minimush: constructGenericSetup(contexts, ["minimush", "phoenix"]),
         mrgreen: constructMrGreenSetup(contexts),
         mrpumpkin: constructMrPumpkinSetup(contexts),
+        mummy: constructMummySetup(contexts),
         osnake: constructOSnakeSetup(contexts),
         plantoid: constructPlantoidSetup(contexts),
         poisio: constructGenericSetup(contexts, ["poisio"]),

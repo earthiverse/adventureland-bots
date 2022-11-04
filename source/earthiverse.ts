@@ -190,18 +190,15 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
 
     for (const context of contexts) {
         if (ENABLE_SPECIAL_MONSTERS) {
-            if (context.bot.S.halloween) {
-                // Only target `jr` and `greenjr` during halloween
-                for (const specialMonster of await AL.EntityModel.find({
-                    lastSeen: { $gt: Date.now() - 30000 },
-                    serverIdentifier: context.bot.serverData.name,
-                    serverRegion: context.bot.serverData.region,
-                    type: { $in: ["greenjr", "jr"] }
-                }, {
-                    type: 1
-                }).lean().exec()) {
-                    priority.push(specialMonster.type)
-                }
+            for (const specialMonster of await AL.EntityModel.find({
+                lastSeen: { $gt: Date.now() - 30000 },
+                serverIdentifier: context.bot.serverData.name,
+                serverRegion: context.bot.serverData.region,
+                type: { $in: ["cutebee", "goldenbat", "greenjr", "jr", "tinyp"] }
+            }, {
+                type: 1
+            }).lean().exec()) {
+                priority.push(specialMonster.type)
             }
         }
 
