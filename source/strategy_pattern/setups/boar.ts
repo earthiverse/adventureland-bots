@@ -3,17 +3,15 @@ import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { ImprovedMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
+import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { MAGE_SPLASH, PRIEST_LUCK, WARRIOR_SPLASH } from "./equipment.js"
 
-export function constructStoneWormSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const spawn = AL.Pathfinder.locateMonster("stoneworm")[0]
-
+export function constructBoarSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     return {
         configs: [
             {
-                id: "stoneworm_mage,priest,warrior",
+                id: "boar_mage,priest,warrior",
                 characters: [
                     {
                         ctype: "mage",
@@ -21,9 +19,9 @@ export function constructStoneWormSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             disableEnergize: true,
                             ensureEquipped: { ...MAGE_SPLASH },
-                            type: "stoneworm"
+                            type: "boar"
                         }),
-                        move: new ImprovedMoveStrategy("stoneworm")
+                        move: new ImprovedMoveStrategy("boar")
                     },
                     {
                         ctype: "priest",
@@ -31,9 +29,9 @@ export function constructStoneWormSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             disableEnergize: true,
                             ensureEquipped: { ...PRIEST_LUCK },
-                            type: "stoneworm",
+                            type: "boar",
                         }),
-                        move: new MoveInCircleMoveStrategy({ center: spawn, radius: 20, sides: 16 })
+                        move: new ImprovedMoveStrategy("boar")
                     },
                     {
                         ctype: "warrior",
@@ -41,9 +39,10 @@ export function constructStoneWormSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             enableEquipForCleave: true,
                             ensureEquipped: { ...WARRIOR_SPLASH },
-                            type: "stoneworm"
+                            enableGreedyAggro: true,
+                            type: "boar"
                         }),
-                        move: new ImprovedMoveStrategy("stoneworm")
+                        move: new ImprovedMoveStrategy("boar")
                     }
                 ]
             },
