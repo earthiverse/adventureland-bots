@@ -1,4 +1,4 @@
-import { Mage, Merchant, MonsterName, Paladin, PingCompensatedCharacter, Priest, Ranger, Rogue, Warrior } from "alclient"
+import AL, { Mage, Merchant, MonsterName, Paladin, PingCompensatedCharacter, Priest, Ranger, Rogue, Warrior } from "alclient"
 import { Strategist, Strategy } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
@@ -15,6 +15,7 @@ import { constructGigaCrabSetup } from "./crabxx.js"
 import { constructFrankySetup } from "./franky.js"
 import { constructFrogSetup } from "./frog.js"
 import { constructGhostSetup } from "./ghost.js"
+import { constructGoldenbatSetup } from "./goldenbat.js"
 import { constructGreenJrSetup } from "./greenjr.js"
 import { constructJrSetup } from "./jr.js"
 import { constructMoleSetup } from "./mole.js"
@@ -74,6 +75,8 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
     // TODO: If the damage type is physical, make warrior splash and greed
     // TODO: If the damage type is magical, make mage splash and greed, and priest greed
     const id_prefix = monsters.join("+")
+    const spawn = AL.Pathfinder.locateMonster(monsters[0])[0]
+
     return {
         configs: [
             {
@@ -82,7 +85,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                     {
                         ctype: "mage",
                         attack: new MageAttackStrategy({ contexts: contexts, typeList: monsters }),
-                        move: new ImprovedMoveStrategy(monsters)
+                        move: new ImprovedMoveStrategy(monsters, { idlePosition: spawn })
                     }
                 ]
             },
@@ -92,7 +95,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                     {
                         ctype: "paladin",
                         attack: new PaladinAttackStrategy({ contexts: contexts, typeList: monsters }),
-                        move: new ImprovedMoveStrategy(monsters)
+                        move: new ImprovedMoveStrategy(monsters, { idlePosition: spawn })
                     }
                 ]
             },
@@ -102,7 +105,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                     {
                         ctype: "priest",
                         attack: new PriestAttackStrategy({ contexts: contexts, typeList: monsters }),
-                        move: new ImprovedMoveStrategy(monsters)
+                        move: new ImprovedMoveStrategy(monsters, { idlePosition: spawn })
                     }
                 ]
             },
@@ -112,7 +115,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                     {
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({ contexts: contexts, typeList: monsters }),
-                        move: new ImprovedMoveStrategy(monsters)
+                        move: new ImprovedMoveStrategy(monsters, { idlePosition: spawn })
                     }
                 ]
             },
@@ -122,7 +125,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                     {
                         ctype: "rogue",
                         attack: new RogueAttackStrategy({ contexts: contexts, typeList: monsters }),
-                        move: new ImprovedMoveStrategy(monsters)
+                        move: new ImprovedMoveStrategy(monsters, { idlePosition: spawn })
                     }
                 ]
             },
@@ -132,7 +135,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                     {
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({ contexts: contexts, typeList: monsters, enableEquipForCleave: true }),
-                        move: new ImprovedMoveStrategy(monsters)
+                        move: new ImprovedMoveStrategy(monsters, { idlePosition: spawn })
                     }
                 ]
             }
@@ -158,7 +161,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         franky: constructFrankySetup(contexts),
         frog: constructFrogSetup(contexts),
         ghost: constructGhostSetup(contexts),
-        goldenbat: constructGenericSetup(contexts, ["goldenbat", "bat"]),
+        goldenbat: constructGoldenbatSetup(contexts),
         goo: constructGenericSetup(contexts, ["goo"]),
         greenjr: constructGreenJrSetup(contexts),
         iceroamer: constructGenericSetup(contexts, ["iceroamer"]),
