@@ -60,7 +60,7 @@ export class FinishMonsterHuntStrategy<Type extends Character> implements Strate
 
     protected async scare(bot: Type) {
         if (bot.targets == 0) return // No targets
-        if (!(bot.hasItem("jacko") && !bot.isEquipped("jacko"))) return // No jacko to scare
+        if (!(bot.hasItem("jacko") || bot.isEquipped("jacko"))) return // No jacko to scare
         if (!bot.isEquipped("jacko")) {
             await bot.equip(bot.locateItem("jacko"), "orb")
             if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
@@ -122,7 +122,7 @@ export class GetHolidaySpiritStrategy<Type extends Character> implements Strateg
 
     protected async scare(bot: Type) {
         if (bot.targets == 0) return // No targets
-        if (!(bot.hasItem("jacko") && !bot.isEquipped("jacko"))) return // No jacko to scare
+        if (!(bot.hasItem("jacko") || bot.isEquipped("jacko"))) return // No jacko to scare
         if (!bot.isEquipped("jacko")) {
             await bot.equip(bot.locateItem("jacko"), "orb")
             if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
@@ -157,7 +157,7 @@ export class GetMonsterHuntStrategy<Type extends Character> implements Strategy<
 
     protected async scare(bot: Type) {
         if (bot.targets == 0) return // No targets
-        if (!(bot.hasItem("jacko") && !bot.isEquipped("jacko"))) return // No jacko to scare
+        if (!(bot.hasItem("jacko") || bot.isEquipped("jacko"))) return // No jacko to scare
         if (!bot.isEquipped("jacko")) {
             await bot.equip(bot.locateItem("jacko"), "orb")
             if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
