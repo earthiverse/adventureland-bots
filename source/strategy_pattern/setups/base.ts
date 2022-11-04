@@ -122,7 +122,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                 characters: [
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({ contexts: contexts, typeList: monsters }),
+                        attack: new WarriorAttackStrategy({ contexts: contexts, typeList: monsters, enableEquipForCleave: true }),
                         move: new ImprovedMoveStrategy(monsters)
                     }
                 ]
@@ -139,28 +139,30 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         bgoo: constructRGooSetup(contexts),
         bscorpion: constructBScorpionSetup(contexts),
         cgoo: constructGenericSetup(contexts, ["cgoo"]),
-        crab: constructGenericSetup(contexts, ["crab"]),
+        crab: constructGenericSetup(contexts, ["crab", "phoenix"]),
         crabx: constructGenericSetup(contexts, ["crabx"]),
         crabxx: constructGigaCrabSetup(contexts),
-        croc: constructGenericSetup(contexts, ["croc"]),
+        croc: constructGenericSetup(contexts, ["croc", "phoenix"]),
         franky: constructFrankySetup(contexts),
         frog: constructFrogSetup(contexts),
         goo: constructGenericSetup(contexts, ["goo"]),
         greenjr: constructGreenJrSetup(contexts),
         jr: constructJrSetup(contexts),
+        minimush: constructGenericSetup(contexts, ["minimush", "phoenix"]),
         mrgreen: constructMrGreenSetup(contexts),
         mrpumpkin: constructMrPumpkinSetup(contexts),
         osnake: constructOSnakeSetup(contexts),
         plantoid: constructPlantoidSetup(contexts),
         poisio: constructGenericSetup(contexts, ["poisio"]),
         porcupine: constructPorcupineSetup(contexts),
+        rat: constructGenericSetup(contexts, ["rat"]),
         rgoo: constructRGooSetup(contexts),
         scorpion: constructGenericSetup(contexts, ["scorpion"]),
         snake: constructGenericSetup(contexts, ["snake", "osnake"]),
         spider: constructGenericSetup(contexts, ["spider"]),
         squig: constructSquigToadSetup(contexts),
         squigtoad: constructSquigToadSetup(contexts),
-        tortoise: constructGenericSetup(contexts, ["tortoise", "frog"]),
+        tortoise: constructGenericSetup(contexts, ["tortoise", "frog", "phoenix"]),
     }
 }
 

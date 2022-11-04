@@ -1,4 +1,4 @@
-import { PingCompensatedCharacter } from "alclient"
+import { MonsterName, PingCompensatedCharacter } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
@@ -7,6 +7,7 @@ import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 
 export function constructArmadilloSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const monsters: MonsterName[] = ["armadillo", "phoenix"]
     return {
         configs: [
             {
@@ -14,7 +15,7 @@ export function constructArmadilloSetup(contexts: Strategist<PingCompensatedChar
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, type: "armadillo" }),
+                        attack: new MageAttackStrategy({ contexts: contexts, typeList: monsters }),
                         move: new ImprovedMoveStrategy("armadillo")
                     }
                 ]
@@ -24,7 +25,7 @@ export function constructArmadilloSetup(contexts: Strategist<PingCompensatedChar
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, type: "armadillo" }),
+                        attack: new PriestAttackStrategy({ contexts: contexts, typeList: monsters }),
                         move: new ImprovedMoveStrategy("armadillo")
                     }
                 ]
@@ -34,7 +35,7 @@ export function constructArmadilloSetup(contexts: Strategist<PingCompensatedChar
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, type: "armadillo" }),
+                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: monsters }),
                         move: new ImprovedMoveStrategy("armadillo")
                     }
                 ]
