@@ -8,6 +8,7 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { constructArmadilloSetup } from "./armadillo.js"
+import { constructBBPomPomSetup } from "./bbpompom.js"
 import { constructBScorpionSetup } from "./bscorpion.js"
 import { constructGigaCrabSetup } from "./crabxx.js"
 import { constructFrankySetup } from "./franky.js"
@@ -135,6 +136,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
     return {
         arcticbee: constructGenericSetup(contexts, ["arcticbee"]),
         armadillo: constructArmadilloSetup(contexts),
+        bbpompom: constructBBPomPomSetup(contexts),
         bee: constructGenericSetup(contexts, ["bee"]),
         bgoo: constructRGooSetup(contexts),
         bscorpion: constructBScorpionSetup(contexts),
