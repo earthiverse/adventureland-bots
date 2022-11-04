@@ -9,6 +9,7 @@ import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { constructArmadilloSetup } from "./armadillo.js"
 import { constructBBPomPomSetup } from "./bbpompom.js"
+import { constructBooBooSetup } from "./booboo.js"
 import { constructBScorpionSetup } from "./bscorpion.js"
 import { constructGigaCrabSetup } from "./crabxx.js"
 import { constructFrankySetup } from "./franky.js"
@@ -140,6 +141,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         bat: constructGenericSetup(contexts, ["goldenbat", "bat"]),
         bee: constructGenericSetup(contexts, ["bee"]),
         bgoo: constructRGooSetup(contexts),
+        booboo: constructBooBooSetup(contexts),
         bscorpion: constructBScorpionSetup(contexts),
         cgoo: constructGenericSetup(contexts, ["cgoo"]),
         crab: constructGenericSetup(contexts, ["crab", "phoenix"]),
