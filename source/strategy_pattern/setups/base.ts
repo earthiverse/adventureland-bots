@@ -1,4 +1,5 @@
 import AL, { Mage, Merchant, MonsterName, Paladin, PingCompensatedCharacter, Priest, Ranger, Rogue, Warrior } from "alclient"
+import { ensureEquipped } from "../../base/general.js"
 import { Strategist, Strategy } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
@@ -12,6 +13,7 @@ import { constructBBPomPomSetup } from "./bbpompom.js"
 import { constructBooBooSetup } from "./booboo.js"
 import { constructBScorpionSetup } from "./bscorpion.js"
 import { constructGigaCrabSetup } from "./crabxx.js"
+import { WARRIOR_NORMAL, WARRIOR_SPLASH } from "./equipment.js"
 import { constructFrankySetup } from "./franky.js"
 import { constructFrogSetup } from "./frog.js"
 import { constructGhostSetup } from "./ghost.js"
@@ -72,10 +74,24 @@ export type Setup = {
 export type Setups = { [T in MonsterName]?: Setup }
 
 export function constructGenericSetup(contexts: Strategist<PingCompensatedCharacter>[], monsters: MonsterName[]): Setup {
-    // TODO: If the damage type is physical, make warrior splash and greed
-    // TODO: If the damage type is magical, make mage splash and greed, and priest greed
     const id_prefix = monsters.join("+")
     const spawn = AL.Pathfinder.locateMonster(monsters[0])[0]
+
+    let allMagical = true
+    let allPhysical = true
+    for (const monster of monsters) {
+        if (AL.Constants.ONE_SPAWN_MONSTERS.includes(monster)) continue // There will only be one of this monster, that's okay
+        const gInfo = AL.Game.G.monsters[monster]
+        if (gInfo.damage_type == "pure") {
+            allMagical = undefined
+            allPhysical = undefined
+            break
+        } else if (gInfo.damage_type == "physical") {
+            allMagical = undefined
+        } else if (gInfo.damage_type == "magical") {
+            allPhysical = undefined
+        }
+    }
 
     return {
         configs: [
@@ -84,7 +100,10 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, typeList: monsters }),
+                        attack: new MageAttackStrategy({
+                            contexts: contexts,
+                            typeList: monsters
+                        }),
                         move: new ImprovedMoveStrategy(monsters, { idlePosition: spawn })
                     }
                 ]
@@ -104,7 +123,11 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, typeList: monsters }),
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            typeList: monsters,
+                            enableGreedyAggro: allMagical ? true : undefined
+                        }),
                         move: new ImprovedMoveStrategy(monsters, { idlePosition: spawn })
                     }
                 ]
@@ -134,7 +157,13 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                 characters: [
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({ contexts: contexts, typeList: monsters, enableEquipForCleave: true }),
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            typeList: monsters,
+                            enableEquipForCleave: true,
+                            enableGreedyAggro: allPhysical ? true : undefined,
+                            ensureEquipped: allPhysical ? { ...WARRIOR_SPLASH } : { ...WARRIOR_NORMAL },
+                        }),
                         move: new ImprovedMoveStrategy(monsters, { idlePosition: spawn })
                     }
                 ]
