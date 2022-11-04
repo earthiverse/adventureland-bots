@@ -16,6 +16,7 @@ import { constructFrankySetup } from "./franky.js"
 import { constructFrogSetup } from "./frog.js"
 import { constructGreenJrSetup } from "./greenjr.js"
 import { constructJrSetup } from "./jr.js"
+import { constructMoleSetup } from "./mole.js"
 import { constructMrGreenHelperSetup, constructMrGreenSetup } from "./mrgreen.js"
 import { constructMrPumpkinHelperSetup, constructMrPumpkinSetup } from "./mrpumpkin.js"
 import { constructMummySetup } from "./mummy.js"
@@ -160,6 +161,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         iceroamer: constructGenericSetup(contexts, ["iceroamer"]),
         jr: constructJrSetup(contexts),
         minimush: constructGenericSetup(contexts, ["minimush", "phoenix"]),
+        mole: constructMoleSetup(contexts),
         mrgreen: constructMrGreenSetup(contexts),
         mrpumpkin: constructMrPumpkinSetup(contexts),
         mummy: constructMummySetup(contexts),
