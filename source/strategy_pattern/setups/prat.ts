@@ -1,4 +1,4 @@
-import { IPosition, PingCompensatedCharacter } from "alclient"
+import AL, { PingCompensatedCharacter } from "alclient"
 import { Strategist } from "../context.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
@@ -6,13 +6,13 @@ import { HoldPositionMoveStrategy, MoveInCircleMoveStrategy } from "../strategie
 import { Setup } from "./base"
 import { PRIEST_ARMOR, WARRIOR_SPLASH } from "./equipment.js"
 
-export function constructMoleSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const spawn: IPosition = { map: "tunnel", x: -15, y: -329 }
+export function constructPRatSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const spawn = AL.Pathfinder.locateMonster("prat")[0]
 
     return {
         configs: [
             {
-                id: "mole_priest,warrior",
+                id: "prat_priest,warrior",
                 characters: [
                     {
                         ctype: "priest",
@@ -20,7 +20,7 @@ export function constructMoleSetup(contexts: Strategist<PingCompensatedCharacter
                             contexts: contexts,
                             disableEnergize: true,
                             ensureEquipped: { ...PRIEST_ARMOR },
-                            type: "mole",
+                            type: "prat",
                         }),
                         move: new HoldPositionMoveStrategy(spawn)
                     },
@@ -31,7 +31,7 @@ export function constructMoleSetup(contexts: Strategist<PingCompensatedCharacter
                             enableEquipForCleave: true,
                             ensureEquipped: { ...WARRIOR_SPLASH },
                             enableGreedyAggro: true,
-                            type: "mole"
+                            type: "prat"
                         }),
                         move: new MoveInCircleMoveStrategy({ center: spawn, radius: 20, sides: 8 })
                     }

@@ -37,7 +37,6 @@ export function constructMummySetup(contexts: Strategist<PingCompensatedCharacte
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
-                            disableZapper: true,
                             enableEquipForCleave: true,
                             ensureEquipped: { ...WARRIOR_SPLASH },
                             enableGreedyAggro: true,

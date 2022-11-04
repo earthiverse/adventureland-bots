@@ -23,6 +23,7 @@ import { constructMummySetup } from "./mummy.js"
 import { constructOSnakeSetup } from "./osnake.js"
 import { constructPlantoidSetup } from "./plantoid.js"
 import { constructPorcupineSetup } from "./porcupine.js"
+import { constructPRatSetup } from "./prat.js"
 import { constructRGooSetup } from "./rgoo.js"
 import { constructSquigToadSetup } from "./squigtoad.js"
 import { constructStoneWormSetup } from "./stoneworm.js"
@@ -169,6 +170,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         plantoid: constructPlantoidSetup(contexts),
         poisio: constructGenericSetup(contexts, ["poisio"]),
         porcupine: constructPorcupineSetup(contexts),
+        prat: constructPRatSetup(contexts),
         rat: constructGenericSetup(contexts, ["rat"]),
         rgoo: constructRGooSetup(contexts),
         scorpion: constructGenericSetup(contexts, ["scorpion"]),
