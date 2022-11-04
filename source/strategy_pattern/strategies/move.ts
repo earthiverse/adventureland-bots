@@ -195,7 +195,7 @@ export class HoldPositionMoveStrategy implements Strategy<Character> {
     }
 
     private async move(bot: Character) {
-        await bot.smartMove(this.location)
+        await bot.smartMove(this.location, { useBlink: true })
     }
 }
 
@@ -341,7 +341,7 @@ export class MoveInCircleMoveStrategy implements Strategy<Character> {
             bot.move(endGoal.x, endGoal.y, { resolveOnStart: true }).catch(() => { /** Suppress errors */ })
         } else {
             // Move to where we can walk
-            return bot.smartMove(center, { getWithin: radius })
+            return bot.smartMove(center, { getWithin: radius, useBlink: true })
         }
     }
 }
