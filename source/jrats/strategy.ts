@@ -36,12 +36,12 @@ let charactersDataUpdated: Date
 
 setInterval(async () => {
     try {
-        console.log("Getting Halloween data...")
-        const aldata = await fetch("https://aldata.earthiverse.ca/halloween")
-        if (aldata.status == 200) {
-            halloweenData = await aldata.json()
-            halloweenDataUpdated = new Date()
-        }
+        // console.log("Getting Halloween data...")
+        // const aldata = await fetch("https://aldata.earthiverse.ca/halloween")
+        // if (aldata.status == 200) {
+        //     halloweenData = await aldata.json()
+        halloweenDataUpdated = new Date()
+        // }
     } catch (e) {
         console.error(e)
     }
@@ -122,11 +122,11 @@ async function startBot(characterName: string, characterType: CharacterType, ser
                 console.log(`Not connecting to ${serverRegion} ${serverIdentifier} (Halloween data is old)!`)
                 return
             }
-            if (halloweenData[0].serverRegion == serverRegion && halloweenData[0].serverIdentifier == serverIdentifier) {
+            if (halloweenData.length > 0 && halloweenData[0].serverRegion == serverRegion && halloweenData[0].serverIdentifier == serverIdentifier) {
                 console.log(`Not connecting to ${serverRegion} ${serverIdentifier} (Currently on Halloween)!`)
                 return
             }
-            if (halloweenData[1].serverRegion == serverRegion && halloweenData[1].serverIdentifier == serverIdentifier) {
+            if (halloweenData.length > 1 && halloweenData[1].serverRegion == serverRegion && halloweenData[1].serverIdentifier == serverIdentifier) {
                 console.log(`Not connecting to ${serverRegion} ${serverIdentifier} (Next on Halloween)!`)
                 return
             }
@@ -168,14 +168,12 @@ async function startBot(characterName: string, characterType: CharacterType, ser
     setTimeout(async () => { await disconnectLoop() }, getMsToNextMinute() - BUFFER)
 }
 
-setTimeout(startBot, getMsToNextMinute() + BUFFER, "earthiverse", "ranger", "US", "I", ["jrat"])
+setTimeout(startBot, getMsToNextMinute() + BUFFER, "earthiverse", "ranger", "US", "II", ["jrat"])
 
-setTimeout(startBot, getMsToNextMinute() + BUFFER, "earthPri2", "priest", "US", "II", ["jrat"])
+setTimeout(startBot, getMsToNextMinute() + BUFFER, "earthPri2", "priest", "US", "III", ["jrat"])
 
-setTimeout(startBot, getMsToNextMinute() + BUFFER, "earthMag2", "priest", "US", "III", ["jrat"])
+setTimeout(startBot, getMsToNextMinute() + BUFFER, "earthRan2", "ranger", "EU", "I", ["jrat"])
 
-setTimeout(startBot, getMsToNextMinute() + BUFFER, "earthRan2", "ranger", "US", "PVP", ["jrat"])
+setTimeout(startBot, getMsToNextMinute() + BUFFER, "earthMag3", "priest", "EU", "II", ["jrat"])
 
-setTimeout(startBot, getMsToNextMinute() + BUFFER, "earthMag3", "priest", "EU", "I", ["jrat"])
-
-setTimeout(startBot, getMsToNextMinute() + BUFFER, "earthRan3", "ranger", "EU", "PVP", ["jrat"])
+setTimeout(startBot, getMsToNextMinute() + BUFFER, "earthRan3", "ranger", "ASIA", "I", ["jrat"])
