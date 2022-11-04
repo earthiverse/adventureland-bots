@@ -163,7 +163,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         greenjr: constructGreenJrSetup(contexts),
         iceroamer: constructGenericSetup(contexts, ["iceroamer"]),
         jr: constructJrSetup(contexts),
-        minimush: constructGenericSetup(contexts, ["minimush", "phoenix"]),
+        minimush: constructGenericSetup(contexts, ["minimush", "phoenix", "tinyp"]),
         mole: constructMoleSetup(contexts),
         mrgreen: constructMrGreenSetup(contexts),
         mrpumpkin: constructMrPumpkinSetup(contexts),

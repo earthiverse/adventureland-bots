@@ -21,7 +21,7 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                             disableEnergize: true,
                             ensureEquipped: { ...PRIEST_ARMOR },
                             enableGreedyAggro: true,
-                            type: "ghost",
+                            typeList: ["ghost", "tinyp"],
                         }),
                         move: new MoveInCircleMoveStrategy({ center: spawn, radius: 20, sides: 8 })
                     },
@@ -31,7 +31,7 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                             contexts: contexts,
                             disableEnergize: true,
                             ensureEquipped: { ...MAGE_SPLASH },
-                            type: "ghost"
+                            typeList: ["ghost", "tinyp"],
                         }),
                         move: new HoldPositionMoveStrategy(spawn)
                     }
