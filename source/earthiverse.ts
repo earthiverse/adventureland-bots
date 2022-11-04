@@ -27,10 +27,10 @@ await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 
 // TODO: Make these configurable through /comm using a similar system to how lulz works
 // Toggles
-const ENABLE_EVENTS = true
-const ENABLE_SERVER_HOPS = true
+const ENABLE_EVENTS = false
+const ENABLE_SERVER_HOPS = false
 const ENABLE_SPECIAL_MONSTERS = true
-const ENABLE_MONSTERHUNTS = false
+const ENABLE_MONSTERHUNTS = true
 const MAX_PUBLIC_CHARACTERS = 6
 
 const MERCHANT = "earthMer"
@@ -52,7 +52,16 @@ const PUBLIC_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 const ALL_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 
 const baseStrategy = new BaseStrategy(ALL_CONTEXTS)
-const buyStrategy = new BuyStrategy({
+const privateBuyStrategy = new BuyStrategy({
+    buyMap: undefined,
+    enableBuyForProfit: true,
+    replenishables: new Map<ItemName, number>([
+        ["hpot1", 2500],
+        ["mpot1", 2500],
+        ["xptome", 1],
+    ])
+})
+const publicBuyStrategy = new BuyStrategy({
     buyMap: undefined,
     replenishables: new Map<ItemName, number>([
         ["hpot1", 2500],
@@ -374,14 +383,20 @@ contextsLogic(PRIVATE_CONTEXTS, privateSetups)
 contextsLogic(PUBLIC_CONTEXTS, publicSetups)
 
 // Shared setup
-async function startShared(context: Strategist<PingCompensatedCharacter>) {
+async function startShared(context: Strategist<PingCompensatedCharacter>, privateContext = false) {
     context.applyStrategy(debugStrategy)
     if (context.bot.id == PARTY_LEADER) {
         context.applyStrategy(partyAcceptStrategy)
     } else {
         context.applyStrategy(partyRequestStrategy)
     }
-    context.applyStrategy(buyStrategy)
+
+    if (privateContext) {
+        context.applyStrategy(privateBuyStrategy)
+    } else {
+        context.applyStrategy(publicBuyStrategy)
+    }
+
     context.applyStrategy(sellStrategy)
     context.applyStrategy(respawnStrategy)
     context.applyStrategy(trackerStrategy)
@@ -389,7 +404,7 @@ async function startShared(context: Strategist<PingCompensatedCharacter>) {
 }
 
 async function startMage(context: Strategist<Mage>, privateContext = false) {
-    startShared(context)
+    startShared(context, privateContext)
     if (privateContext) {
         context.applyStrategy(privateMagiportStrategy)
     } else {
@@ -397,12 +412,12 @@ async function startMage(context: Strategist<Mage>, privateContext = false) {
     }
 }
 
-async function startPaladin(context: Strategist<Paladin>) {
-    startShared(context)
+async function startPaladin(context: Strategist<Paladin>, privateContext = false) {
+    startShared(context, privateContext)
 }
 
 async function startPriest(context: Strategist<Priest>, privateContext = false) {
-    startShared(context)
+    startShared(context, privateContext)
     if (privateContext) {
         context.applyStrategy(privatePartyHealStrategy)
     } else {
@@ -410,17 +425,17 @@ async function startPriest(context: Strategist<Priest>, privateContext = false) 
     }
 }
 
-async function startRanger(context: Strategist<Ranger>) {
-    startShared(context)
+async function startRanger(context: Strategist<Ranger>, privateContext = false) {
+    startShared(context, privateContext)
 }
 
-async function startRogue(context: Strategist<Rogue>) {
-    startShared(context)
+async function startRogue(context: Strategist<Rogue>, privateContext = false) {
+    startShared(context, privateContext)
 }
 
 // Warrior setup
-async function startWarrior(context: Strategist<Warrior>) {
-    startShared(context)
+async function startWarrior(context: Strategist<Warrior>, privateContext = false) {
+    startShared(context, privateContext)
 }
 
 // Start my characters
@@ -451,7 +466,7 @@ const startWarriorContext = async () => {
         setTimeout(startWarriorContext, 10_000)
     }
     const CONTEXT = new Strategist<Warrior>(warrior, baseStrategy)
-    startWarrior(CONTEXT).catch(console.error)
+    startWarrior(CONTEXT, true).catch(console.error)
     PRIVATE_CONTEXTS.push(CONTEXT)
     ALL_CONTEXTS.push(CONTEXT)
 }

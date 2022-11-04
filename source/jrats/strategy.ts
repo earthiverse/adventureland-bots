@@ -29,19 +29,6 @@ const buyStrategy = new BuyStrategy({
 const trackerStrategy = new TrackerStrategy()
 const respawnStrategy = new RespawnStrategy()
 
-async function startRanger(context: Strategist<Ranger>, monsters: MonsterName[]) {
-
-    context.applyStrategy(buyStrategy)
-    context.applyStrategy(trackerStrategy)
-    context.applyStrategy(respawnStrategy)
-
-    // Attack
-    context.applyStrategy(new RangerAttackStrategy({ contexts: CONTEXTS, disableHuntersMark: true, disableMultiShot: true, typeList: monsters }))
-
-    // Move
-    context.applyStrategy(new ImprovedMoveStrategy(monsters))
-}
-
 let halloweenData
 let halloweenDataUpdated: Date
 let charactersData
