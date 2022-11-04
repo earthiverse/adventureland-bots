@@ -54,7 +54,7 @@ export const PRIEST_ARMOR: EnsureEquipped = {
     offhand: { name: "tigershield", filters: { returnHighestLevel: true } },
     orb: { name: "tigerstone", filters: { returnHighestLevel: true } },
     pants: { name: "hpants", filters: { returnHighestLevel: true } },
-    ring1: { name: "cring", filters: { returnHighestLevel: true } },
+    ring1: { name: "zapper", filters: { returnHighestLevel: true } },
     ring2: { name: "cring", filters: { returnHighestLevel: true } },
     shoes: { name: "hboots", filters: { returnHighestLevel: true } },
 }
