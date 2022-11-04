@@ -12,7 +12,7 @@ export const MAGE_ARMOR: EnsureEquipped = {
     pants: { name: "hpants", filters: { returnHighestLevel: true } },
     ring1: { name: "zapper", filters: { returnHighestLevel: true } },
     ring2: { name: "cring", filters: { returnHighestLevel: true } },
-    shoes: { name: "hboots", filters: { returnHighestLevel: true } },
+    shoes: { name: "vboots", filters: { returnHighestLevel: true } },
 }
 
 export const MAGE_NORMAL: EnsureEquipped = {
@@ -41,7 +41,7 @@ export const MAGE_SPLASH: EnsureEquipped = {
     pants: { name: "hpants", filters: { returnHighestLevel: true } },
     ring1: { name: "zapper", filters: { returnHighestLevel: true } },
     ring2: { name: "cring", filters: { returnHighestLevel: true } },
-    shoes: { name: "hboots", filters: { returnHighestLevel: true } },
+    shoes: { name: "vboots", filters: { returnHighestLevel: true } },
 }
 
 export const PRIEST_ARMOR: EnsureEquipped = {
