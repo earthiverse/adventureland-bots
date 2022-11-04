@@ -46,6 +46,32 @@ export function constructMummySetup(contexts: Strategist<PingCompensatedCharacte
                     }
                 ]
             },
+            {
+                id: "mummy_priest,warrior",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            ensureEquipped: { ...PRIEST_ARMOR },
+                            type: "mummy",
+                        }),
+                        move: new HoldPositionMoveStrategy({ map: "spookytown", x: 270, y: -1129 })
+                    },
+                    {
+                        ctype: "warrior",
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            enableEquipForCleave: true,
+                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            enableGreedyAggro: true,
+                            type: "mummy"
+                        }),
+                        move: new HoldPositionMoveStrategy({ map: "spookytown", x: 230, y: -1129 })
+                    }
+                ]
+            },
         ]
     }
 }

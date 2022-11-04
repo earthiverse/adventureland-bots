@@ -10,7 +10,7 @@ import { Setup } from "./base"
 import { MAGE_SPLASH, WARRIOR_SPLASH } from "./equipment.js"
 
 export function constructOSnakeSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const monsters: MonsterName[] = ["osnake", "snake"]
+    const monsters: MonsterName[] = ["osnake", "snake", "tinyp"]
     return {
         configs: [
             {

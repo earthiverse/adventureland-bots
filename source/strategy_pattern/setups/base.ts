@@ -210,7 +210,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         rat: constructGenericSetup(contexts, ["rat"]),
         rgoo: constructRGooSetup(contexts),
         scorpion: constructGenericSetup(contexts, ["scorpion"]),
-        snake: constructGenericSetup(contexts, ["snake", "osnake"]),
+        snake: constructGenericSetup(contexts, ["snake", "osnake", "tinyp"]),
         snowman: constructGenericSetup(contexts, ["snowman", "arcticbee"]),
         spider: constructGenericSetup(contexts, ["spider"]),
         squig: constructSquigToadSetup(contexts),
