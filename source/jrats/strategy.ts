@@ -122,11 +122,11 @@ async function startBot(characterName: string, characterType: CharacterType, ser
                 console.log(`Not connecting to ${serverRegion} ${serverIdentifier} (Halloween data is old)!`)
                 return
             }
-            if (halloweenData.length > 0 && halloweenData[0].serverRegion == serverRegion && halloweenData[0].serverIdentifier == serverIdentifier) {
+            if (halloweenData?.length > 0 && halloweenData[0].serverRegion == serverRegion && halloweenData[0].serverIdentifier == serverIdentifier) {
                 console.log(`Not connecting to ${serverRegion} ${serverIdentifier} (Currently on Halloween)!`)
                 return
             }
-            if (halloweenData.length > 1 && halloweenData[1].serverRegion == serverRegion && halloweenData[1].serverIdentifier == serverIdentifier) {
+            if (halloweenData?.length > 1 && halloweenData[1].serverRegion == serverRegion && halloweenData[1].serverIdentifier == serverIdentifier) {
                 console.log(`Not connecting to ${serverRegion} ${serverIdentifier} (Next on Halloween)!`)
                 return
             }
