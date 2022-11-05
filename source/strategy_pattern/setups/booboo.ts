@@ -4,7 +4,7 @@ import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { HoldPositionMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { PRIEST_LUCK } from "./equipment.js"
+import { PRIEST_ARMOR, PRIEST_LUCK } from "./equipment.js"
 
 export function constructBooBooSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     return {
@@ -31,6 +31,21 @@ export function constructBooBooSetup(contexts: Strategist<PingCompensatedCharact
                             contexts: contexts,
                             disableEnergize: true,
                             ensureEquipped: { ...PRIEST_LUCK },
+                            type: "booboo",
+                        }),
+                        move: new HoldPositionMoveStrategy({ map: "spookytown", x: 265, y: -605 })
+                    }
+                ]
+            },
+            {
+                id: "booboo_priest",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            ensureEquipped: { ...PRIEST_ARMOR },
                             type: "booboo",
                         }),
                         move: new HoldPositionMoveStrategy({ map: "spookytown", x: 265, y: -605 })
