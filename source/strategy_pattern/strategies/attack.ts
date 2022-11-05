@@ -88,6 +88,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         if (this.options.type && monster.type !== this.options.type) continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.zapperzap.range) continue
+                        if (AL.Game.G.monsters[monster.type].immune) continue // Can't damage immune monsters with zapperzap
                         bot.nextSkill.set("zapperzap", new Date(Date.now() + (bot.ping * 2)))
                         return bot.zapperZap(monster.id).catch(console.error)
                     }

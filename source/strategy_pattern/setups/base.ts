@@ -14,7 +14,7 @@ import { constructBoarSetup } from "./boar.js"
 import { constructBooBooSetup } from "./booboo.js"
 import { constructBScorpionSetup } from "./bscorpion.js"
 import { constructGigaCrabSetup } from "./crabxx.js"
-import { WARRIOR_NORMAL, WARRIOR_SPLASH } from "./equipment.js"
+import { MAGE_NORMAL, WARRIOR_NORMAL, WARRIOR_SPLASH } from "./equipment.js"
 import { constructFrankySetup } from "./franky.js"
 import { constructFrogSetup } from "./frog.js"
 import { constructGhostSetup } from "./ghost.js"
@@ -105,6 +105,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
+                            ensureEquipped: { ...MAGE_NORMAL },
                             typeList: monsters
                         }),
                         move: new ImprovedMoveStrategy(monsters, { idlePosition: spawn })

@@ -12,7 +12,7 @@ import { TrackerStrategy } from "./strategies/tracker.js"
 
 // Login and prepare pathfinding
 await Promise.all([AL.Game.loginJSONFile("../../credentials_attack.json"), AL.Game.getGData(true)])
-await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
+await AL.Pathfinder.prepare(AL.Game.G, { cheat: false })
 
 async function getPlayerWithoutRSpeed(bot: PingCompensatedCharacter) {
     const noSpeedChars = await AL.PlayerModel.find({
