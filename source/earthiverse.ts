@@ -21,6 +21,7 @@ import cors from "cors"
 import express from "express"
 import path from "path"
 import { body, validationResult } from "express-validator"
+import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
@@ -110,6 +111,8 @@ const privatePartyHealStrategy = new PartyHealStrategy(PRIVATE_CONTEXTS)
 const publicPartyHealStrategy = new PartyHealStrategy(ALL_CONTEXTS)
 const trackerStrategy = new TrackerStrategy()
 const respawnStrategy = new RespawnStrategy()
+// Warrior
+const chargeStrategy = new ChargeStrategy()
 // Setups
 const privateSetups = constructSetups(ALL_CONTEXTS)
 const publicSetups = constructHelperSetups(ALL_CONTEXTS)
@@ -432,6 +435,7 @@ async function startRogue(context: Strategist<Rogue>, privateContext = false) {
 
 // Warrior setup
 async function startWarrior(context: Strategist<Warrior>, privateContext = false) {
+    context.applyStrategy(chargeStrategy)
     startShared(context, privateContext)
 }
 

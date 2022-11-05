@@ -32,7 +32,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
         this.loops.set("attack", {
             fn: async (bot: Warrior) => {
-                if (this.shouldHardshell(bot)) await bot.hardshell()
+                if (this.shouldHardshell(bot)) await bot.hardshell().catch(console.error)
                 if (this.shouldScare(bot)) await this.scare(bot)
                 await this.attack(bot)
             },

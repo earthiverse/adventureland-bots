@@ -50,7 +50,7 @@ export class PartyHealStrategy implements Strategy<Priest> {
         for (const context of this.contexts) {
             if (!context.isReady()) continue
             const friend = context.bot
-            if (!friend || !friend.ready || friend.socket.disconnected) continue
+            if (!friend || !friend.ready || friend.socket.disconnected || friend.rip) continue
 
             if (
                 (this.options.healWhenLessThan.hp !== undefined && friend.hp < this.options.healWhenLessThan.hp)
