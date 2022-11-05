@@ -1,10 +1,27 @@
-import AL, { PingCompensatedCharacter } from "alclient"
+import AL, { PingCompensatedCharacter, Priest } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { HoldPositionMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { MAGE_SPLASH, PRIEST_ARMOR } from "./equipment.js"
+
+class PriestGhostAttackStrategy extends PriestAttackStrategy {
+    protected async attack(bot: Priest): Promise<void> {
+        if (this.shouldAttack(bot)) {
+            // Heal ghost to farm life essence
+            if (bot.canUse("heal")) {
+                for (const entity of bot.getEntities({ type: "ghost", withinRange: bot.range })) {
+                    if (entity.s.healed) continue
+
+                    await bot.healSkill(entity.id)
+                }
+            }
+        }
+
+        return super.attack(bot)
+    }
+}
 
 export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const spawn = AL.Pathfinder.locateMonster("ghost")[0]
@@ -16,7 +33,7 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({
+                        attack: new PriestGhostAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
                             ensureEquipped: { ...PRIEST_ARMOR },
