@@ -1,4 +1,4 @@
-import AL, { PingCompensatedCharacter } from "alclient"
+import { PingCompensatedCharacter } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
