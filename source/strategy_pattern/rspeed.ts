@@ -1,4 +1,5 @@
 import AL, { ItemName, LimitDCReportData, PingCompensatedCharacter, Rogue } from "alclient"
+import { sleep } from "../base/general.js"
 import { Loop, LoopName, Strategist, Strategy } from "./context.js"
 import { suppress_errors } from "./logging.js"
 import { BaseAttackStrategy } from "./strategies/attack.js"
@@ -44,6 +45,7 @@ export class GoGiveRogueSpeedStrategy<Type extends Rogue> implements Strategy<Ty
         console.log(`[${bot.id}] Moving to rspeed '${player.name}'.`)
         await bot.smartMove(player, { avoidTownWarps: true, getWithin: 25 }).catch(suppress_errors)
         await bot.requestEntitiesData()
+        if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
     }
 }
 
