@@ -28,7 +28,7 @@ await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 
 // TODO: Make these configurable through /comm using a similar system to how lulz works
 // Toggles
-const ENABLE_EVENTS = false
+const ENABLE_EVENTS = true
 const ENABLE_SERVER_HOPS = false
 const ENABLE_SPECIAL_MONSTERS = true
 const ENABLE_MONSTERHUNTS = true
