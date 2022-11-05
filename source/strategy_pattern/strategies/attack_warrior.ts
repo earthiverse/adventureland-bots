@@ -1,4 +1,4 @@
-import { ItemData, Warrior } from "alclient"
+import AL, { ItemData, Warrior } from "alclient"
 import { sleep } from "../../base/general.js"
 import { sortPriority } from "../../base/sort.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
@@ -29,6 +29,15 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
     public constructor(options?: WarriorAttackStrategyOptions) {
         super(options)
+
+        this.loops.set("attack", {
+            fn: async (bot: Warrior) => {
+                if (this.shouldHardshell(bot)) await bot.hardshell()
+                if (this.shouldScare(bot)) await this.scare(bot)
+                await this.attack(bot)
+            },
+            interval: this.interval
+        })
 
         if (!options.disableCleave) this.interval.push("cleave")
         if (!options.disableWarCry) this.interval.push("warcry")
@@ -220,5 +229,20 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
         if (!bot.getEntity(this.options)) return // We aren't about to attack
 
         bot.warcry().catch(console.error)
+    }
+
+    protected async shouldHardshell(bot: Warrior): Promise<boolean> {
+        if (!bot.canUse("hardshell")) return false
+
+        // If we are taking a lot of damage
+        let potentialIncomingDamage = 0
+        for (const entity of bot.getEntities({ targetingMe: true })) {
+            if (entity.damage_type !== "physical") continue // Hardshell only adds armor
+            if (AL.Tools.distance(bot, entity) > entity.range + entity.speed) continue // Too far away to attack us
+            potentialIncomingDamage += entity.calculateDamageRange(bot)[1]
+        }
+        if (potentialIncomingDamage * 3 >= bot.hp) {
+            return true
+        }
     }
 }
