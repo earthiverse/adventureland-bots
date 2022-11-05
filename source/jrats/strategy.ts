@@ -147,6 +147,7 @@ async function startBot(characterName: string, characterType: CharacterType, ser
         } catch (e) {
             console.error(e)
         } finally {
+            context?.bot?.socket?.removeAllListeners("disconnect")
             setTimeout(async () => { await connectLoop() }, getMsToNextMinute() + BUFFER)
         }
     }
@@ -158,7 +159,6 @@ async function startBot(characterName: string, characterType: CharacterType, ser
 
             context.bot.socket.removeAllListeners("disconnect")
             await context.bot.disconnect()
-
         } catch (e) {
             console.error(e)
         } finally {
