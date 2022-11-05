@@ -232,7 +232,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
         bot.warcry().catch(console.error)
     }
 
-    protected async shouldHardshell(bot: Warrior): Promise<boolean> {
+    protected shouldHardshell(bot: Warrior): boolean {
         if (!bot.canUse("hardshell")) return false
         if (this.options.disableHardshell) return false
 
