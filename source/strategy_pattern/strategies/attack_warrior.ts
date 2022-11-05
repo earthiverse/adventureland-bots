@@ -6,13 +6,22 @@ import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
 export type WarriorAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableAgitate?: true
     disableCleave?: true
+    disableStomp?: true
     disableWarCry?: true
     /**
      * If true, we will swap weapons to one that can cleave, cleave, and then swap back.
      *
-     * NOTE: It's possible that things can fail, and you will be left holding the item that can cleave
+     * NOTE: It's possible that things can fail, and you will be left holding the item that can cleave.
+     *       Use `ensureEquipped` to help alleviate this problem.
      */
     enableEquipForCleave?: true
+    /**
+     * If true, we will swap weapons to one that can stomp, stomp, and then swap back.
+     *
+     * NOTE: It's possible that things can fail, and you will be left holding the item that can stomp.
+     *       Use `ensureEquipped` to help alleviate this problem.
+     */
+    enableEquipForStomp?: true
 }
 
 export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
@@ -35,6 +44,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
         await this.ensureEquipped(bot)
 
         if (!this.options.disableAgitate) await this.agitateTargets(bot)
+        if (!this.options.disableStomp) await this.stomp(bot)
         if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority)
         if (!this.options.disableCleave) await this.cleave(bot)
         if (!this.options.disableZapper) await this.zapperAttack(bot, priority)
@@ -172,6 +182,36 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
                 await bot.equip(bot.locateItem(offhand.name, bot.items, { level: offhand.level, special: offhand.p, statType: offhand.stat_type }))
             }
         }
+    }
+
+    protected async stomp(bot: Warrior) {
+        if (this.options.enableEquipForStomp) {
+            if (
+                !(
+                    bot.canUse("stomp", { ignoreEquipped: true }) // We can stomp
+                    && (bot.isEquipped("basher") || bot.isEquipped("wbasher") || bot.hasItem(["basher", "wbasher"])) // We have an item that can stomp
+                )
+            ) return
+        } else if (!bot.canUse("stomp")) return
+
+        if (bot.isPVP()) {
+            const nearby = bot.getPlayers({
+                // TODO: Confirm that we can't stun party members and friends with stomp on PvP
+                isFriendly: true,
+                withinRange: "stomp"
+            })
+            if (nearby.length > 0) return
+        }
+
+        // Find all targets within range of stomp
+        const entities = bot.getEntities({
+            type: this.options.type,
+            typeList: this.options.typeList,
+            withinRange: "stomp",
+        })
+        if (entities.length == 0) return // No targets to stomp
+
+        await bot.stomp().catch(console.error)
     }
 
     protected async applyWarCry(bot: Warrior) {

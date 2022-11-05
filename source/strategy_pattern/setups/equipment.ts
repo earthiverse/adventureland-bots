@@ -105,3 +105,18 @@ export const WARRIOR_SPLASH: EnsureEquipped = {
     ring2: { name: "strring", filters: { returnHighestLevel: true } },
     shoes: { name: "wingedboots", filters: { returnHighestLevel: true } },
 }
+
+export const WARRIOR_STOMP: EnsureEquipped = {
+    amulet: { name: "snring", filters: { returnHighestLevel: true } },
+    belt: { name: "strbelt", filters: { returnHighestLevel: true } },
+    cape: { name: "bcape", filters: { returnHighestLevel: true } },
+    chest: { name: "coat1", filters: { returnHighestLevel: true } },
+    gloves: { name: "gloves1", filters: { returnHighestLevel: true } },
+    helmet: { name: "helmet1", filters: { returnHighestLevel: true } },
+    mainhand: { name: "basher", filters: { returnHighestLevel: true } },
+    orb: { name: "jacko", filters: { returnHighestLevel: true } },
+    pants: { name: "pants1", filters: { returnHighestLevel: true } },
+    ring1: { name: "zapper", filters: { returnHighestLevel: true } },
+    ring2: { name: "strring", filters: { returnHighestLevel: true } },
+    shoes: { name: "wingedboots", filters: { returnHighestLevel: true } },
+}

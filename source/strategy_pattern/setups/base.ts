@@ -32,6 +32,7 @@ import { constructPRatSetup } from "./prat.js"
 import { constructRGooSetup } from "./rgoo.js"
 import { constructSquigToadSetup } from "./squigtoad.js"
 import { constructStoneWormSetup } from "./stoneworm.js"
+import { constructTinyPSetup } from "./tinyp.js"
 
 export type CharacterConfig = {
     ctype: "mage"
@@ -216,6 +217,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         squig: constructSquigToadSetup(contexts),
         squigtoad: constructSquigToadSetup(contexts),
         stoneworm: constructStoneWormSetup(contexts),
+        tinyp: constructTinyPSetup(contexts),
         tortoise: constructGenericSetup(contexts, ["tortoise", "frog", "phoenix"]),
     }
 }
