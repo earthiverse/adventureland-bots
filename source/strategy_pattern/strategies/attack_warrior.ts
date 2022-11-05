@@ -6,6 +6,7 @@ import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
 export type WarriorAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableAgitate?: true
     disableCleave?: true
+    disableHardshell?: true
     disableStomp?: true
     disableWarCry?: true
     /**
@@ -233,6 +234,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
     protected async shouldHardshell(bot: Warrior): Promise<boolean> {
         if (!bot.canUse("hardshell")) return false
+        if (this.options.disableHardshell) return false
 
         // If we are taking a lot of damage
         let potentialIncomingDamage = 0
@@ -244,5 +246,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
         if (potentialIncomingDamage * 3 >= bot.hp) {
             return true
         }
+
+        return false
     }
 }
