@@ -17,6 +17,7 @@ import { constructGigaCrabSetup } from "./crabxx.js"
 import { MAGE_NORMAL, WARRIOR_NORMAL, WARRIOR_SPLASH } from "./equipment.js"
 import { constructFrankySetup } from "./franky.js"
 import { constructFrogSetup } from "./frog.js"
+import { constructFVampireSetup } from "./fvampire.js"
 import { constructGhostSetup } from "./ghost.js"
 import { constructGoldenbatSetup } from "./goldenbat.js"
 import { constructGreenJrSetup } from "./greenjr.js"
@@ -25,6 +26,7 @@ import { constructMoleSetup } from "./mole.js"
 import { constructMrGreenHelperSetup, constructMrGreenSetup } from "./mrgreen.js"
 import { constructMrPumpkinHelperSetup, constructMrPumpkinSetup } from "./mrpumpkin.js"
 import { constructMummySetup } from "./mummy.js"
+import { constructMVampireSetup } from "./mvampire.js"
 import { constructOSnakeSetup } from "./osnake.js"
 import { constructPlantoidSetup } from "./plantoid.js"
 import { constructPorcupineSetup } from "./porcupine.js"
@@ -195,6 +197,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         croc: constructGenericSetup(contexts, ["croc", "phoenix"]),
         franky: constructFrankySetup(contexts),
         frog: constructFrogSetup(contexts),
+        fvampire: constructFVampireSetup(contexts),
         ghost: constructGhostSetup(contexts),
         goldenbat: constructGoldenbatSetup(contexts),
         goo: constructGenericSetup(contexts, ["goo"]),
@@ -206,6 +209,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         mrgreen: constructMrGreenSetup(contexts),
         mrpumpkin: constructMrPumpkinSetup(contexts),
         mummy: constructMummySetup(contexts),
+        mvampire: constructMVampireSetup(contexts),
         osnake: constructOSnakeSetup(contexts),
         plantoid: constructPlantoidSetup(contexts),
         poisio: constructGenericSetup(contexts, ["poisio"]),

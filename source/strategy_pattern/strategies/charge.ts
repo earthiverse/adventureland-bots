@@ -7,7 +7,7 @@ export class ChargeStrategy implements Strategy<Warrior> {
     public constructor() {
         this.loops.set("charge", {
             fn: async (bot: Warrior) => { await this.applyCharge(bot) },
-            interval: 1000
+            interval: ["charge"]
         })
     }
 

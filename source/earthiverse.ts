@@ -31,6 +31,7 @@ await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 const ENABLE_EVENTS = true
 const ENABLE_SERVER_HOPS = false
 const ENABLE_SPECIAL_MONSTERS = true
+const SPECIAL_MONSTERS: MonsterName[] = ["cutebee", "fvampire", "goldenbat", "greenjr", "jr", "mvampire", "stompy", "tinyp"]
 const ENABLE_MONSTERHUNTS = true
 const MAX_PUBLIC_CHARACTERS = 6
 
@@ -197,7 +198,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 lastSeen: { $gt: Date.now() - 30000 },
                 serverIdentifier: context.bot.serverData.name,
                 serverRegion: context.bot.serverData.region,
-                type: { $in: ["cutebee", "goldenbat", "greenjr", "jr", "tinyp"] }
+                type: { $in: SPECIAL_MONSTERS }
             }, {
                 type: 1
             }).lean().exec()) {
