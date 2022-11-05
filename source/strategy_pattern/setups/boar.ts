@@ -46,6 +46,32 @@ export function constructBoarSetup(contexts: Strategist<PingCompensatedCharacter
                     }
                 ]
             },
+            {
+                id: "boar_priest,warrior",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            ensureEquipped: { ...PRIEST_LUCK },
+                            type: "boar",
+                        }),
+                        move: new ImprovedMoveStrategy("boar")
+                    },
+                    {
+                        ctype: "warrior",
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            enableEquipForCleave: true,
+                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            enableGreedyAggro: true,
+                            type: "boar"
+                        }),
+                        move: new ImprovedMoveStrategy("boar")
+                    }
+                ]
+            },
         ]
     }
 }
