@@ -15,6 +15,7 @@ import { constructBooBooSetup } from "./booboo.js"
 import { constructBScorpionSetup } from "./bscorpion.js"
 import { constructGigaCrabSetup } from "./crabxx.js"
 import { MAGE_NORMAL, WARRIOR_NORMAL, WARRIOR_SPLASH } from "./equipment.js"
+import { constructFireRoamerSetup } from "./fireroamer.js"
 import { constructFrankySetup } from "./franky.js"
 import { constructFrogSetup } from "./frog.js"
 import { constructFVampireSetup } from "./fvampire.js"
@@ -35,6 +36,7 @@ import { constructRGooSetup } from "./rgoo.js"
 import { constructSquigToadSetup } from "./squigtoad.js"
 import { constructStoneWormSetup } from "./stoneworm.js"
 import { constructTinyPSetup } from "./tinyp.js"
+import { constructWolfSetup } from "./wolf.js"
 import { constructWolfieSetup } from "./wolfie.js"
 
 export type CharacterConfig = {
@@ -195,6 +197,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         crabx: constructGenericSetup(contexts, ["crabx"]),
         crabxx: constructGigaCrabSetup(contexts),
         croc: constructGenericSetup(contexts, ["croc", "phoenix"]),
+        fireroamer: constructFireRoamerSetup(contexts),
         franky: constructFrankySetup(contexts),
         frog: constructFrogSetup(contexts),
         fvampire: constructFVampireSetup(contexts),
@@ -226,6 +229,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         stoneworm: constructStoneWormSetup(contexts),
         tinyp: constructTinyPSetup(contexts),
         tortoise: constructGenericSetup(contexts, ["tortoise", "frog", "phoenix"]),
+        wolf: constructWolfSetup(contexts),
         wolfie: constructWolfieSetup(contexts),
     }
 }
