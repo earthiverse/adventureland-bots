@@ -41,6 +41,7 @@ import { constructStoneWormSetup } from "./stoneworm.js"
 import { constructTinyPSetup } from "./tinyp.js"
 import { constructWolfSetup } from "./wolf.js"
 import { constructWolfieSetup } from "./wolfie.js"
+import { constructXScorpionSetup } from "./xscorpion.js"
 
 export type CharacterConfig = {
     ctype: "mage"
@@ -237,6 +238,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         tortoise: constructGenericSetup(contexts, ["tortoise", "frog", "phoenix"]),
         wolf: constructWolfSetup(contexts),
         wolfie: constructWolfieSetup(contexts),
+        xscorpion: constructXScorpionSetup(contexts),
     }
 }
 
