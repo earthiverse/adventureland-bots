@@ -48,6 +48,57 @@ export function constructBigBirdSetup(contexts: Strategist<PingCompensatedCharac
                     }
                 ]
             },
+            {
+                id: "greedy_bigbird_mage,priest",
+                characters: [
+                    {
+                        ctype: "mage",
+                        attack: new MageAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            ensureEquipped: { ...MAGE_SPLASH },
+                            type: "bigbird"
+                        }),
+                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: 5 } })
+                    },
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            ensureEquipped: { ...PRIEST_LUCK },
+                            type: "bigbird",
+                        }),
+                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } })
+                    },
+                ]
+            },
+            {
+                id: "greedy_bigbird_priest,warrior",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            ensureEquipped: { ...PRIEST_LUCK },
+                            type: "bigbird",
+                        }),
+                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } })
+                    },
+                    {
+                        ctype: "warrior",
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            enableEquipForCleave: true,
+                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            enableGreedyAggro: true,
+                            type: "bigbird"
+                        }),
+                        move: new MoveInCircleMoveStrategy({ center: spawn, radius: 20, sides: 8 })
+                    }
+                ]
+            },
         ]
     }
 }
