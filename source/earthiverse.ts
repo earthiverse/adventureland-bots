@@ -195,6 +195,11 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
     for (const context of contexts) {
         if (ENABLE_SPECIAL_MONSTERS) {
             for (const specialMonster of await AL.EntityModel.find({
+                $or: [
+                    { target: undefined },
+                    { target: { $in: PARTY_ALLOWLIST } },
+                    { type: { $in: ["pinkgoo", "snowman", "wabbit"] } } // Coop monsters will give credit
+                ],
                 lastSeen: { $gt: Date.now() - 30000 },
                 serverIdentifier: context.bot.serverData.name,
                 serverRegion: context.bot.serverData.region,
