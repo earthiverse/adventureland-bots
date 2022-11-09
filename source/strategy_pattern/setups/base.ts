@@ -84,7 +84,7 @@ export type Setup = {
 
 export type Setups = { [T in MonsterName]?: Setup }
 
-export function constructGenericSetup(contexts: Strategist<PingCompensatedCharacter>[], monsters: MonsterName[]): Setup {
+export function constructGenericSetup(contexts: Strategist<PingCompensatedCharacter>[], monsters: MonsterName[], privateInstance = false): Setup {
     const id_prefix = monsters.join("+")
     const spawn = AL.Pathfinder.locateMonster(monsters[0])[0]
 
@@ -113,7 +113,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...MAGE_NORMAL },
+                            ensureEquipped: privateInstance ? { ...MAGE_NORMAL } : undefined,
                             typeList: monsters
                         }),
                         move: new ImprovedMoveStrategy(monsters, { idlePosition: spawn })
@@ -138,7 +138,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             typeList: monsters,
-                            enableGreedyAggro: allMagical ? true : undefined
+                            enableGreedyAggro: (privateInstance && allMagical) ? true : undefined
                         }),
                         move: new ImprovedMoveStrategy(monsters, { idlePosition: spawn })
                     }
@@ -173,8 +173,8 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             typeList: monsters,
                             enableEquipForCleave: true,
-                            enableGreedyAggro: allPhysical ? true : undefined,
-                            ensureEquipped: allPhysical ? { ...WARRIOR_SPLASH } : { ...WARRIOR_NORMAL },
+                            enableGreedyAggro: (privateInstance && allPhysical) ? true : undefined,
+                            ensureEquipped: privateInstance ? (allPhysical ? { ...WARRIOR_SPLASH } : { ...WARRIOR_NORMAL }) : undefined,
                         }),
                         move: new ImprovedMoveStrategy(monsters, { idlePosition: spawn })
                     }
@@ -186,33 +186,33 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
 
 export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]): Setups {
     return {
-        arcticbee: constructGenericSetup(contexts, ["arcticbee", "snowman"]),
+        arcticbee: constructGenericSetup(contexts, ["arcticbee", "snowman"], true),
         armadillo: constructArmadilloSetup(contexts),
         bbpompom: constructBBPomPomSetup(contexts),
-        bat: constructGenericSetup(contexts, ["goldenbat", "bat"]),
-        bee: constructGenericSetup(contexts, ["bee"]),
+        bat: constructGenericSetup(contexts, ["goldenbat", "bat"], true),
+        bee: constructGenericSetup(contexts, ["bee"], true),
         bgoo: constructRGooSetup(contexts),
         bigbird: constructBigBirdSetup(contexts),
         boar: constructBoarSetup(contexts),
         booboo: constructBooBooSetup(contexts),
         bscorpion: constructBScorpionSetup(contexts),
-        cgoo: constructGenericSetup(contexts, ["cgoo"]),
-        crab: constructGenericSetup(contexts, ["crab", "phoenix"]),
-        crabx: constructGenericSetup(contexts, ["crabx"]),
+        cgoo: constructGenericSetup(contexts, ["cgoo"], true),
+        crab: constructGenericSetup(contexts, ["crab", "phoenix"], true),
+        crabx: constructGenericSetup(contexts, ["crabx"], true),
         crabxx: constructGigaCrabSetup(contexts),
-        croc: constructGenericSetup(contexts, ["croc", "phoenix"]),
+        croc: constructGenericSetup(contexts, ["croc", "phoenix"], true),
         fireroamer: constructFireRoamerSetup(contexts),
         franky: constructFrankySetup(contexts),
         frog: constructFrogSetup(contexts),
         fvampire: constructFVampireSetup(contexts),
         ghost: constructGhostSetup(contexts),
         goldenbat: constructGoldenbatSetup(contexts),
-        goo: constructGenericSetup(contexts, ["goo"]),
+        goo: constructGenericSetup(contexts, ["goo"], true),
         greenjr: constructGreenJrSetup(contexts),
         // harpy: constructHarpySetup(contexts),
-        iceroamer: constructGenericSetup(contexts, ["iceroamer"]),
+        iceroamer: constructGenericSetup(contexts, ["iceroamer"], true),
         jr: constructJrSetup(contexts),
-        minimush: constructGenericSetup(contexts, ["minimush", "phoenix", "tinyp"]),
+        minimush: constructGenericSetup(contexts, ["minimush", "phoenix", "tinyp"], true),
         mole: constructMoleSetup(contexts),
         mrgreen: constructMrGreenSetup(contexts),
         mrpumpkin: constructMrPumpkinSetup(contexts),
@@ -220,22 +220,22 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         mvampire: constructMVampireSetup(contexts),
         osnake: constructOSnakeSetup(contexts),
         plantoid: constructPlantoidSetup(contexts),
-        poisio: constructGenericSetup(contexts, ["poisio"]),
+        poisio: constructGenericSetup(contexts, ["poisio"], true),
         porcupine: constructPorcupineSetup(contexts),
         pppompom: constructPPPomPomSetup(contexts),
         prat: constructPRatSetup(contexts),
-        rat: constructGenericSetup(contexts, ["rat"]),
+        rat: constructGenericSetup(contexts, ["rat"], true),
         rgoo: constructRGooSetup(contexts),
         // rharpy: constructRHarpySetup(contexts),
-        scorpion: constructGenericSetup(contexts, ["scorpion"]),
-        snake: constructGenericSetup(contexts, ["snake", "osnake", "tinyp"]),
-        snowman: constructGenericSetup(contexts, ["snowman", "arcticbee"]),
-        spider: constructGenericSetup(contexts, ["spider"]),
+        scorpion: constructGenericSetup(contexts, ["scorpion"], true),
+        snake: constructGenericSetup(contexts, ["snake", "osnake", "tinyp"], true),
+        snowman: constructGenericSetup(contexts, ["snowman", "arcticbee"], true),
+        spider: constructGenericSetup(contexts, ["spider"], true),
         squig: constructSquigToadSetup(contexts),
         squigtoad: constructSquigToadSetup(contexts),
         stoneworm: constructStoneWormSetup(contexts),
         tinyp: constructTinyPSetup(contexts),
-        tortoise: constructGenericSetup(contexts, ["tortoise", "frog", "phoenix"]),
+        tortoise: constructGenericSetup(contexts, ["tortoise", "frog", "phoenix"], true),
         wolf: constructWolfSetup(contexts),
         wolfie: constructWolfieSetup(contexts),
         xscorpion: constructXScorpionSetup(contexts),
