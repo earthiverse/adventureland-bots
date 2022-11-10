@@ -2,9 +2,10 @@ import AL, { PingCompensatedCharacter, Priest } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
+import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { HoldPositionMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_SPLASH, PRIEST_ARMOR } from "./equipment.js"
+import { MAGE_SPLASH, PRIEST_ARMOR, WARRIOR_SPLASH } from "./equipment.js"
 
 class PriestGhostAttackStrategy extends PriestAttackStrategy {
     protected async attack(bot: Priest): Promise<void> {
@@ -48,6 +49,33 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                             contexts: contexts,
                             disableEnergize: true,
                             ensureEquipped: { ...MAGE_SPLASH },
+                            typeList: ["ghost", "tinyp"],
+                        }),
+                        move: new HoldPositionMoveStrategy(spawn)
+                    }
+                ]
+            },
+            {
+                id: "ghost_priest,warrior",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestGhostAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            ensureEquipped: { ...PRIEST_ARMOR },
+                            enableGreedyAggro: true,
+                            typeList: ["ghost", "tinyp"],
+                        }),
+                        move: new MoveInCircleMoveStrategy({ center: spawn, radius: 20, sides: 8 })
+                    },
+                    {
+                        ctype: "warrior",
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            enableEquipForCleave: true,
+                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            enableGreedyAggro: true,
                             typeList: ["ghost", "tinyp"],
                         }),
                         move: new HoldPositionMoveStrategy(spawn)

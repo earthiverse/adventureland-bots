@@ -7,13 +7,14 @@ import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
-import { constructArmadilloSetup } from "./armadillo.js"
+import { constructArmadilloHelperSetup, constructArmadilloSetup } from "./armadillo.js"
 import { constructBBPomPomSetup } from "./bbpompom.js"
 import { constructBigBirdSetup } from "./bigbird.js"
 import { constructBoarSetup } from "./boar.js"
 import { constructBooBooSetup } from "./booboo.js"
 import { constructBScorpionSetup } from "./bscorpion.js"
 import { constructGigaCrabSetup } from "./crabxx.js"
+import { constructCuteBeeSetup } from "./cutebee.js"
 import { MAGE_NORMAL, WARRIOR_NORMAL, WARRIOR_SPLASH } from "./equipment.js"
 import { constructFireRoamerSetup } from "./fireroamer.js"
 import { constructFrankySetup } from "./franky.js"
@@ -22,7 +23,6 @@ import { constructFVampireSetup } from "./fvampire.js"
 import { constructGhostSetup } from "./ghost.js"
 import { constructGoldenbatSetup } from "./goldenbat.js"
 import { constructGreenJrSetup } from "./greenjr.js"
-import { constructHarpySetup } from "./harpy.js"
 import { constructJrSetup } from "./jr.js"
 import { constructMoleSetup } from "./mole.js"
 import { constructMrGreenHelperSetup, constructMrGreenSetup } from "./mrgreen.js"
@@ -35,10 +35,9 @@ import { constructPorcupineSetup } from "./porcupine.js"
 import { constructPPPomPomSetup } from "./pppompom.js"
 import { constructPRatSetup } from "./prat.js"
 import { constructRGooSetup } from "./rgoo.js"
-import { constructRHarpySetup } from "./rharpy.js"
 import { constructSquigToadSetup } from "./squigtoad.js"
+import { constructStompySetup } from "./stompy.js"
 import { constructStoneWormSetup } from "./stoneworm.js"
-import { constructTinyPSetup } from "./tinyp.js"
 import { constructWolfSetup } from "./wolf.js"
 import { constructWolfieSetup } from "./wolfie.js"
 import { constructXScorpionSetup } from "./xscorpion.js"
@@ -201,6 +200,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         crabx: constructGenericSetup(contexts, ["crabx"], true),
         crabxx: constructGigaCrabSetup(contexts),
         croc: constructGenericSetup(contexts, ["croc", "phoenix"], true),
+        cutebee: constructCuteBeeSetup(contexts),
         fireroamer: constructFireRoamerSetup(contexts),
         franky: constructFrankySetup(contexts),
         frog: constructFrogSetup(contexts),
@@ -233,8 +233,9 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         spider: constructGenericSetup(contexts, ["spider"], true),
         squig: constructSquigToadSetup(contexts),
         squigtoad: constructSquigToadSetup(contexts),
+        stompy: constructStompySetup(contexts),
         stoneworm: constructStoneWormSetup(contexts),
-        tinyp: constructTinyPSetup(contexts),
+        // tinyp: constructTinyPSetup(contexts),
         tortoise: constructGenericSetup(contexts, ["tortoise", "frog", "phoenix"], true),
         wolf: constructWolfSetup(contexts),
         wolfie: constructWolfieSetup(contexts),
@@ -244,16 +245,25 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
 
 export function constructHelperSetups(contexts: Strategist<PingCompensatedCharacter>[]): Setups {
     return {
+        arcticbee: constructGenericSetup(contexts, ["arcticbee", "snowman"]),
+        armadillo: constructArmadilloHelperSetup(contexts),
+        bat: constructGenericSetup(contexts, ["bat"]),
         bee: constructGenericSetup(contexts, ["bee"]),
+        bgoo: constructGenericSetup(contexts, ["rgoo", "bgoo"]),
         crab: constructGenericSetup(contexts, ["phoenix", "crab"]),
         crabx: constructGenericSetup(contexts, ["crabx"]),
         croc: constructGenericSetup(contexts, ["croc"]),
+        cutebee: constructCuteBeeSetup(contexts),
         goo: constructGenericSetup(contexts, ["goo"]),
+        minimush: constructGenericSetup(contexts, ["minimush", "phoenix", "tinyp"]),
         mrgreen: constructMrGreenHelperSetup(contexts),
         mrpumpkin: constructMrPumpkinHelperSetup(contexts),
+        osnake: constructGenericSetup(contexts, ["osnake", "snake"]),
         poisio: constructGenericSetup(contexts, ["poisio"]),
+        rat: constructGenericSetup(contexts, ["rat"]),
         scorpion: constructGenericSetup(contexts, ["scorpion"]),
         snake: constructGenericSetup(contexts, ["snake", "osnake"]),
+        snowman: constructGenericSetup(contexts, ["snowman", "arcticbee"]),
         spider: constructGenericSetup(contexts, ["spider"]),
         squig: constructSquigToadSetup(contexts),
         squigtoad: constructSquigToadSetup(contexts),

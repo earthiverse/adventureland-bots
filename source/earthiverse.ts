@@ -31,7 +31,7 @@ await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 const ENABLE_EVENTS = true
 const ENABLE_SERVER_HOPS = false
 const ENABLE_SPECIAL_MONSTERS = true
-const SPECIAL_MONSTERS: MonsterName[] = ["cutebee", "fvampire", "goldenbat", "greenjr", "jr", "mvampire", "stompy", "tinyp"]
+const SPECIAL_MONSTERS: MonsterName[] = ["cutebee", "fvampire", "goldenbat", "greenjr", "jr", "mvampire", "pinkgoo", "snowman", "stompy", "tinyp"]
 const ENABLE_MONSTERHUNTS = true
 const MAX_PUBLIC_CHARACTERS = 6
 
@@ -72,7 +72,7 @@ const publicBuyStrategy = new BuyStrategy({
     ])
 })
 
-const sellStrategy = new SellStrategy({
+const privateSellStrategy = new SellStrategy({
     sellMap: new Map<ItemName, [number, number][]>([
         ["coat1", undefined],
         ["gloves1", undefined],
@@ -89,6 +89,21 @@ const sellStrategy = new SellStrategy({
         ["shoes1", undefined],
         ["stand0", undefined],
         ["stramulet", undefined]
+    ])
+})
+const publicSellStrategy = new SellStrategy({
+    sellMap: new Map<ItemName, [number, number][]>([
+        ["coat1", undefined],
+        ["gloves1", undefined],
+        ["gphelmet", undefined],
+        ["helmet1", undefined],
+        ["hpamulet", undefined],
+        ["hpbelt", undefined],
+        ["pants1", undefined],
+        ["phelmet", undefined],
+        ["shoes1", undefined],
+        ["stramulet", undefined],
+        ["vitearring", undefined]
     ])
 })
 
@@ -193,24 +208,6 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
     const priority: MonsterName[] = []
 
     for (const context of contexts) {
-        if (ENABLE_SPECIAL_MONSTERS) {
-            for (const specialMonster of await AL.EntityModel.find({
-                $or: [
-                    { target: undefined },
-                    { target: { $in: PARTY_ALLOWLIST } },
-                    { type: { $in: ["pinkgoo", "snowman", "wabbit"] } } // Coop monsters will give credit
-                ],
-                lastSeen: { $gt: Date.now() - 30000 },
-                serverIdentifier: context.bot.serverData.name,
-                serverRegion: context.bot.serverData.region,
-                type: { $in: SPECIAL_MONSTERS }
-            }, {
-                type: 1
-            }).lean().exec()) {
-                priority.push(specialMonster.type)
-            }
-        }
-
         if (ENABLE_EVENTS) {
             // Goobrawl
             if (
@@ -254,6 +251,24 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 if ((context.bot.S[id] as ServerInfoDataLive)?.live) {
                     priority.push(id as MonsterName)
                 }
+            }
+        }
+
+        if (ENABLE_SPECIAL_MONSTERS) {
+            for (const specialMonster of await AL.EntityModel.find({
+                $or: [
+                    { target: undefined },
+                    { target: { $in: PARTY_ALLOWLIST } },
+                    { type: { $in: ["pinkgoo", "snowman", "wabbit"] } } // Coop monsters will give credit
+                ],
+                lastSeen: { $gt: Date.now() - 30000 },
+                serverIdentifier: context.bot.serverData.name,
+                serverRegion: context.bot.serverData.region,
+                type: { $in: SPECIAL_MONSTERS }
+            }, {
+                type: 1
+            }).lean().exec()) {
+                priority.push(specialMonster.type)
             }
         }
 
@@ -399,11 +414,12 @@ async function startShared(context: Strategist<PingCompensatedCharacter>, privat
 
     if (privateContext) {
         context.applyStrategy(privateBuyStrategy)
+        context.applyStrategy(privateSellStrategy)
     } else {
         context.applyStrategy(publicBuyStrategy)
+        context.applyStrategy(publicSellStrategy)
     }
 
-    context.applyStrategy(sellStrategy)
     context.applyStrategy(respawnStrategy)
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(elixirStrategy)
@@ -457,7 +473,7 @@ const startMerchantContext = async () => {
     }
     const CONTEXT = new Strategist<Merchant>(merchant, baseStrategy)
     startMerchant(CONTEXT, PRIVATE_CONTEXTS, { ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, debug: true, enableUpgrade: true })
-    CONTEXT.applyStrategy(sellStrategy)
+    CONTEXT.applyStrategy(privateSellStrategy)
     PRIVATE_CONTEXTS.push(CONTEXT)
     ALL_CONTEXTS.push(CONTEXT)
 }
@@ -616,13 +632,13 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
                 enableMining: true,
                 enableOffload: {
                     esize: 3,
-                    goldToHold: 10_000_000,
+                    goldToHold: 1_000_000,
                     itemsToHold: DEFAULT_ITEMS_TO_HOLD,
                 },
                 goldToHold: 50_000_000,
                 itemsToHold: DEFAULT_MERCHANT_ITEMS_TO_HOLD,
             })
-            context.applyStrategy(sellStrategy)
+            context.applyStrategy(privateSellStrategy)
             break
         }
         case "paladin": {
