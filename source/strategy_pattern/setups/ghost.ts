@@ -12,8 +12,13 @@ class PriestGhostAttackStrategy extends PriestAttackStrategy {
         if (this.shouldAttack(bot)) {
             // Heal ghost to farm life essence
             if (bot.canUse("heal")) {
+                entity:
                 for (const entity of bot.getEntities({ type: "ghost", withinRange: bot.range })) {
                     if (entity.s.healed) continue
+                    for (const projectile of bot.projectiles.values()) {
+                        if (projectile.type !== "heal") continue // Not a healing projectile
+                        continue entity // There is a healing projectile already going towards this entity
+                    }
 
                     await bot.healSkill(entity.id)
                 }
@@ -37,6 +42,7 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                         attack: new PriestGhostAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
+                            disableZapper: true,
                             ensureEquipped: { ...PRIEST_ARMOR },
                             enableGreedyAggro: true,
                             typeList: ["ghost", "tinyp"],
@@ -63,6 +69,7 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                         attack: new PriestGhostAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
+                            disableZapper: true,
                             ensureEquipped: { ...PRIEST_ARMOR },
                             enableGreedyAggro: true,
                             typeList: ["ghost", "tinyp"],
