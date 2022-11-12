@@ -41,8 +41,6 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                         ctype: "priest",
                         attack: new PriestGhostAttackStrategy({
                             contexts: contexts,
-                            disableEnergize: true,
-                            disableZapper: true,
                             ensureEquipped: { ...PRIEST_ARMOR },
                             enableGreedyAggro: true,
                             typeList: ["ghost", "tinyp"],
@@ -68,8 +66,6 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                         ctype: "priest",
                         attack: new PriestGhostAttackStrategy({
                             contexts: contexts,
-                            disableEnergize: true,
-                            disableZapper: true,
                             ensureEquipped: { ...PRIEST_ARMOR },
                             enableGreedyAggro: true,
                             typeList: ["ghost", "tinyp"],
@@ -80,9 +76,9 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
+                            disableZapper: true,
                             enableEquipForCleave: true,
                             ensureEquipped: { ...WARRIOR_SPLASH },
-                            enableGreedyAggro: true,
                             typeList: ["ghost", "tinyp"],
                         }),
                         move: new HoldPositionMoveStrategy(spawn)
