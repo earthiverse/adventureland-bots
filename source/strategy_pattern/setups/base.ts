@@ -268,5 +268,6 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         spider: constructGenericSetup(contexts, ["spider"]),
         squig: constructSquigToadSetup(contexts),
         squigtoad: constructSquigToadSetup(contexts),
+        tortoise: constructGenericSetup(contexts, ["tortoise", "frog", "phoenix"]),
     }
 }
