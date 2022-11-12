@@ -45,3 +45,43 @@ export function constructPorcupineSetup(contexts: Strategist<PingCompensatedChar
         ]
     }
 }
+
+export function constructPorcupineHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    return {
+        configs: [
+            {
+                id: "porcupine_mage",
+                characters: [
+                    {
+                        ctype: "mage",
+                        attack: new MageAttackStrategy({
+                            contexts: contexts,
+                            type: "porcupine",
+                        }),
+                        move: new ImprovedMoveStrategy("porcupine")
+                    }
+                ]
+            },
+            {
+                id: "porcupine_priest",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({ contexts: contexts, type: "porcupine" }),
+                        move: new ImprovedMoveStrategy("porcupine")
+                    }
+                ]
+            },
+            {
+                id: "porcupine_ranger",
+                characters: [
+                    {
+                        ctype: "ranger",
+                        attack: new RangerAttackStrategy({ contexts: contexts, type: "porcupine" }),
+                        move: new ImprovedMoveStrategy("porcupine")
+                    }
+                ]
+            },
+        ]
+    }
+}
