@@ -43,7 +43,7 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
         })
         if (entities.length == 0) return // No targets to attack
 
-        const targetingMe = bot.calculateTargets()
+        let targetingMe = bot.calculateTargets()
         const targets = new FastPriorityQueue<Entity>(priority)
         const threeShotTargets = new FastPriorityQueue<Entity>(priority)
         const fiveShotTargets = new FastPriorityQueue<Entity>(priority)
@@ -124,6 +124,9 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
             this.getEnergizeFromOther(bot)
             return bot.threeShot(entities[0].id, entities[1].id, entities[2].id).catch(console.error)
         }
+
+        // Recalculate our targets, because we changed this for multi-shot, but didn't use multi-shot.
+        targetingMe = bot.calculateTargets()
 
         const canUsePiercingShot = bot.canUse("piercingshot")
         while (targets.size) {
