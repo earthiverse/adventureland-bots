@@ -494,7 +494,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         if (numToBuy > 0) {
                             if (!bot.hasItem(["computer", "supercomputer"])) {
                                 this.debug(bot, `Replenishables - Moving to buy ${numToBuy}x${item}`)
-                                await bot.smartMove(item, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED / 2 })
+                                await bot.smartMove(item, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                             }
                             this.debug(bot, `Replenishables - Buying ${numToBuy}x${item}`)
                             if (bot.canBuy(item, { quantity: numToBuy })) await bot.buy(item, numToBuy)
