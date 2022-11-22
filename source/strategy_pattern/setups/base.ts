@@ -30,6 +30,7 @@ import { constructMrGreenHelperSetup, constructMrGreenSetup } from "./mrgreen.js
 import { constructMrPumpkinHelperSetup, constructMrPumpkinSetup } from "./mrpumpkin.js"
 import { constructMummySetup } from "./mummy.js"
 import { constructMVampireSetup } from "./mvampire.js"
+import { constructOneEyeSetup } from "./oneeye.js"
 import { constructOSnakeSetup } from "./osnake.js"
 import { constructPlantoidSetup } from "./plantoid.js"
 import { constructPorcupineHelperSetup, constructPorcupineSetup } from "./porcupine.js"
@@ -220,6 +221,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         mrpumpkin: constructMrPumpkinSetup(contexts),
         mummy: constructMummySetup(contexts),
         mvampire: constructMVampireSetup(contexts),
+        oneeye: constructOneEyeSetup(contexts),
         osnake: constructOSnakeSetup(contexts),
         plantoid: constructPlantoidSetup(contexts),
         poisio: constructGenericSetup(contexts, ["poisio"], true),
