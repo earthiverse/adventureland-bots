@@ -162,6 +162,11 @@ async function startLulzMerchant(userID: string, userAuth: string, characterID: 
     updateFriendLoop()
 
     const merchantMoveStrategy = new MerchantStrategy(friends, {
+        defaultPosition: {
+            map: "main",
+            x: 0,
+            y: 0
+        },
         enableBuyAndUpgrade: {
             upgradeToLevel: 9
         },
