@@ -2,7 +2,10 @@ import { Mage, PingCompensatedCharacter, Priest, Warrior } from "alclient"
 import { frankyIdlePosition } from "../../base/locations.js"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
+import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
+import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
+import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
@@ -58,6 +61,8 @@ class WarriorFrankyAttackStrategy extends WarriorAttackStrategy {
     }
 }
 
+const frankyMoveStrategy = new ImprovedMoveStrategy("franky", { idlePosition: frankyIdlePosition })
+
 export function constructFrankySetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     return {
         configs: [
@@ -75,7 +80,7 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
                             },
                             typeList: ["nerfedmummy", "franky"]
                         }),
-                        move: new ImprovedMoveStrategy(["franky"], { idlePosition: frankyIdlePosition })
+                        move: frankyMoveStrategy
                     },
                     {
                         ctype: "priest",
@@ -86,7 +91,7 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
                             ensureEquipped: { ...PRIEST_ARMOR },
                             typeList: ["franky", "nerfedmummy"],
                         }),
-                        move: new ImprovedMoveStrategy("franky", { idlePosition: frankyIdlePosition })
+                        move: frankyMoveStrategy
                     },
                     {
                         ctype: "warrior",
@@ -98,7 +103,7 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
                             },
                             typeList: ["nerfedmummy", "franky"]
                         }),
-                        move: new ImprovedMoveStrategy(["franky"], { idlePosition: frankyIdlePosition })
+                        move: frankyMoveStrategy
                     }
                 ]
             },
@@ -112,9 +117,9 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
                             disableEnergize: true,
                             enableGreedyAggro: true,
                             ensureEquipped: { ...PRIEST_ARMOR },
-                            type: "franky",
+                            typeList: ["franky", "nerfedmummy"],
                         }),
-                        move: new ImprovedMoveStrategy("franky", { idlePosition: frankyIdlePosition })
+                        move: frankyMoveStrategy
                     },
                     {
                         ctype: "warrior",
@@ -127,10 +132,77 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
                             },
                             typeList: ["nerfedmummy", "franky"]
                         }),
-                        move: new ImprovedMoveStrategy(["franky"], { idlePosition: frankyIdlePosition })
+                        move: frankyMoveStrategy
                     }
                 ]
             },
+        ]
+    }
+}
+
+export function constructFrankyHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    return {
+        configs: [
+            {
+                id: "franky_mage",
+                characters: [
+                    {
+                        ctype: "mage",
+                        attack: new MageAttackStrategy({ contexts: contexts, typeList: ["nerfedmummy", "franky"], hasTarget: true }),
+                        move: frankyMoveStrategy
+                    }
+                ]
+            },
+            {
+                id: "franky_paladin",
+                characters: [
+                    {
+                        ctype: "paladin",
+                        attack: new PaladinAttackStrategy({ contexts: contexts, typeList: ["nerfedmummy", "franky"], hasTarget: true }),
+                        move: frankyMoveStrategy
+                    }
+                ]
+            },
+            {
+                id: "franky_priest",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, typeList: ["nerfedmummy", "franky"], hasTarget: true }),
+                        move: frankyMoveStrategy
+                    }
+                ]
+            },
+            {
+                id: "franky_ranger",
+                characters: [
+                    {
+                        ctype: "ranger",
+                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: ["nerfedmummy", "franky"], hasTarget: true }),
+                        move: frankyMoveStrategy
+                    }
+                ]
+            },
+            {
+                id: "franky_rogue",
+                characters: [
+                    {
+                        ctype: "rogue",
+                        attack: new RogueAttackStrategy({ contexts: contexts, typeList: ["nerfedmummy", "franky"], hasTarget: true }),
+                        move: frankyMoveStrategy
+                    }
+                ]
+            },
+            {
+                id: "franky_warrior",
+                characters: [
+                    {
+                        ctype: "warrior",
+                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, disableCleave: true, typeList: ["nerfedmummy", "franky"], hasTarget: true }),
+                        move: frankyMoveStrategy
+                    }
+                ]
+            }
         ]
     }
 }

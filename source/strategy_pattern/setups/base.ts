@@ -17,12 +17,13 @@ import { constructGigaCrabSetup } from "./crabxx.js"
 import { constructCuteBeeSetup } from "./cutebee.js"
 import { MAGE_NORMAL, WARRIOR_NORMAL, WARRIOR_SPLASH } from "./equipment.js"
 import { constructFireRoamerSetup } from "./fireroamer.js"
-import { constructFrankySetup } from "./franky.js"
+import { constructFrankyHelperSetup, constructFrankySetup } from "./franky.js"
 import { constructFrogSetup } from "./frog.js"
 import { constructFVampireSetup } from "./fvampire.js"
 import { constructGhostSetup } from "./ghost.js"
 import { constructGoldenbatSetup } from "./goldenbat.js"
 import { constructGreenJrSetup } from "./greenjr.js"
+import { constructIceGolemHelperSetup, constructIceGolemSetup } from "./icegolem.js"
 import { constructJrSetup } from "./jr.js"
 import { constructMoleSetup } from "./mole.js"
 import { constructMrGreenHelperSetup, constructMrGreenSetup } from "./mrgreen.js"
@@ -210,6 +211,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         goo: constructGenericSetup(contexts, ["goo"], true),
         greenjr: constructGreenJrSetup(contexts),
         // harpy: constructHarpySetup(contexts),
+        icegolem: constructIceGolemSetup(contexts),
         iceroamer: constructGenericSetup(contexts, ["iceroamer"], true),
         jr: constructJrSetup(contexts),
         minimush: constructGenericSetup(contexts, ["minimush", "phoenix", "tinyp"], true),
@@ -254,7 +256,9 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         crabx: constructGenericSetup(contexts, ["crabx"]),
         croc: constructGenericSetup(contexts, ["croc"]),
         cutebee: constructCuteBeeSetup(contexts),
+        franky: constructFrankyHelperSetup(contexts),
         goo: constructGenericSetup(contexts, ["goo"]),
+        icegolem: constructIceGolemHelperSetup(contexts),
         minimush: constructGenericSetup(contexts, ["minimush", "phoenix", "tinyp"]),
         mrgreen: constructMrGreenHelperSetup(contexts),
         mrpumpkin: constructMrPumpkinHelperSetup(contexts),
