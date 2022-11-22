@@ -42,7 +42,6 @@ export const DEFAULT_MERCHANT_ITEMS_TO_HOLD = new Set<ItemName>([
     "scroll1",
     "scroll2",
 ])
-export const DEFAULT_POSITION: IPosition = { x: 0, y: 0, map: "main" }
 export const DEFAULT_REPLENISHABLES = new Map<ItemName, number>([
     ["hpot1", 2500],
     ["mpot1", 2500],
@@ -152,6 +151,8 @@ export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
 export type MerchantMoveStrategyOptions = {
     /** If enabled, we will log debug messages */
     debug?: true
+    /** The default position to stand when upgrading / waiting for things to do */
+    defaultPosition: IPosition
     /** If enabled, the merchant will
      *  - find the lowest level piece of armor that's lower than the level set on the bots running in the given contexts
      *  - buy and upgrade store armor (helmet, coat, pants, boots, and gloves) until it's 1 level higher than what's currently equipped
@@ -227,6 +228,11 @@ export const DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS: MerchantMoveStrategyOptions
     // enableBuyAndUpgrade: {
     //     upgradeToLevel: 9
     // },
+    defaultPosition: {
+        map: "main",
+        x: 0,
+        y: 0
+    },
     enableBuyReplenishables: {
         all: DEFAULT_REPLENISHABLES,
         merchant: DEFAULT_MERCHANT_REPLENISHABLES,
@@ -313,8 +319,8 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 // Withdraw extra gold
                 if (bot.bank.gold > this.options.goldToHold) await bot.withdrawGold(this.options.goldToHold)
 
-                // Go to town and wait a while for things to upgrade
-                await bot.smartMove("main")
+                // Go to our default position and wait a while for things to upgrade
+                await bot.smartMove(this.options.defaultPosition)
                 await sleep(60000)
                 return
             }
@@ -979,8 +985,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
             }
 
             // Go to our default position and wait for things to do
-            // TODO: Move this position to options
-            await bot.smartMove(DEFAULT_POSITION)
+            await bot.smartMove(this.options.defaultPosition)
         } catch (e) {
             console.error(e)
         }
@@ -1184,7 +1189,7 @@ export async function startMerchant(context: Strategist<Merchant>, friends: Stra
     context.applyStrategy(new ToggleStandStrategy({
         offWhenMoving: true,
         onWhenNear: [
-            { distance: 10, position: DEFAULT_POSITION }
+            { distance: 10, position: options.defaultPosition }
         ]
     }))
 }

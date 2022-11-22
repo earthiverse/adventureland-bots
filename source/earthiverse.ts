@@ -12,7 +12,7 @@ import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
 import { Config, constructHelperSetups, constructSetups, Setups } from "./strategy_pattern/setups/base.js"
 import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
 import { getHalloweenMonsterPriority } from "./base/serverhop.js"
-import { sleep } from "./base/general.js"
+import { randomIntFromInterval, sleep } from "./base/general.js"
 import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
 
@@ -621,6 +621,11 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
         case "merchant": {
             context = new Strategist<Merchant>(bot as Merchant, baseStrategy)
             startMerchant(context as Strategist<Merchant>, PUBLIC_CONTEXTS, {
+                defaultPosition: {
+                    map: "main",
+                    x: randomIntFromInterval(-50, 50),
+                    y: randomIntFromInterval(-50, 50)
+                },
                 enableBuyAndUpgrade: {
                     upgradeToLevel: 9
                 },
