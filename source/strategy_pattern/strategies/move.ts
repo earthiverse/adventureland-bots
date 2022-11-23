@@ -370,6 +370,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         // Look for it nearby
         let target = bot.getEntity({ returnNearest: true, type: this.type })
         if (target) {
+            console.debug("SpecialMonsterMoveStrategy - Nearby")
             await bot.smartMove(target, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
             return bot.smartMove(target, { getWithin: bot.range - 10, useBlink: true })
         }
@@ -377,18 +378,23 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         // Look for it in the server data
         if ((bot.S?.[this.type] as ServerInfoDataLive)?.live && bot.S[this.type]["x"] !== undefined && bot.S[this.type]["y"] !== undefined) {
             const destination = bot.S[this.type] as IPosition
-            if (AL.Tools.distance(bot, destination) > bot.range) return bot.smartMove(destination, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
+            if (AL.Tools.distance(bot, destination) > bot.range) {
+                console.debug("SpecialMonsterMoveStrategy - Using S")
+                return bot.smartMove(destination, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
+            }
         }
 
         // Look for it in our database
         const dbTarget = await AL.EntityModel.findOne({ serverIdentifier: bot.server.name, serverRegion: bot.server.region, type: this.type }).lean().exec()
         if (dbTarget && dbTarget.x !== undefined && dbTarget.y !== undefined) {
+            console.debug("SpecialMonsterMoveStrategy - Using DB location")
             return bot.smartMove(dbTarget, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
         }
 
         // Look for if there's a spawn for it
         for (const spawn of Pathfinder.locateMonster(this.type)) {
-        // Move to the next spawn
+            console.debug(`SpecialMonsterMoveStrategy - Using spawn (${spawn.map},${spawn.x},${spawn.y})`)
+            // Move to the next spawn
             await bot.smartMove(spawn, { getWithin: bot.range - 10, stopIfTrue: () => bot.getEntity({ type: this.type }) !== undefined })
 
             target = bot.getEntity({ returnNearest: true, type: this.type })
