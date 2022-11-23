@@ -20,7 +20,8 @@ export function constructHarpySetup(contexts: Strategist<PingCompensatedCharacte
                             contexts: contexts,
                             disableEnergize: true,
                             ensureEquipped: { ... MAGE_ARMOR },
-                            typeList: ["harpy", "rharpy"],
+                            maximumTargets: 1,
+                            type: "harpy",
                         }),
                         move: moveStrategy
                     },
@@ -31,7 +32,8 @@ export function constructHarpySetup(contexts: Strategist<PingCompensatedCharacte
                             disableEnergize: true,
                             enableGreedyAggro: true,
                             ensureEquipped: { ...PRIEST_ARMOR },
-                            typeList: ["harpy", "rharpy"],
+                            maximumTargets: 1,
+                            type: "harpy",
                         }),
                         move: moveStrategy
                     },
@@ -40,7 +42,8 @@ export function constructHarpySetup(contexts: Strategist<PingCompensatedCharacte
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             ensureEquipped: { ...WARRIOR_NORMAL },
-                            typeList: ["harpy", "rharpy"],
+                            maximumTargets: 1,
+                            type: "harpy",
                         }),
                         move: moveStrategy
                     }

@@ -23,6 +23,7 @@ import { constructFVampireSetup } from "./fvampire.js"
 import { constructGhostSetup } from "./ghost.js"
 import { constructGoldenbatSetup } from "./goldenbat.js"
 import { constructGreenJrSetup } from "./greenjr.js"
+import { constructHarpySetup } from "./harpy.js"
 import { constructIceGolemHelperSetup, constructIceGolemSetup } from "./icegolem.js"
 import { constructJrSetup } from "./jr.js"
 import { constructMoleSetup } from "./mole.js"
@@ -37,6 +38,7 @@ import { constructPorcupineHelperSetup, constructPorcupineSetup } from "./porcup
 import { constructPPPomPomSetup } from "./pppompom.js"
 import { constructPRatSetup } from "./prat.js"
 import { constructRGooSetup } from "./rgoo.js"
+import { constructRHarpySetup } from "./rharpy.js"
 import { constructSquigToadSetup } from "./squigtoad.js"
 import { constructStompySetup } from "./stompy.js"
 import { constructStoneWormSetup } from "./stoneworm.js"
@@ -211,7 +213,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         goldenbat: constructGoldenbatSetup(contexts),
         goo: constructGenericSetup(contexts, ["goo"], true),
         greenjr: constructGreenJrSetup(contexts),
-        // harpy: constructHarpySetup(contexts),
+        harpy: constructHarpySetup(contexts),
         icegolem: constructIceGolemSetup(contexts),
         iceroamer: constructGenericSetup(contexts, ["iceroamer"], true),
         jr: constructJrSetup(contexts),
@@ -230,7 +232,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         prat: constructPRatSetup(contexts),
         rat: constructGenericSetup(contexts, ["rat"], true),
         rgoo: constructRGooSetup(contexts),
-        // rharpy: constructRHarpySetup(contexts),
+        rharpy: constructRHarpySetup(contexts),
         scorpion: constructGenericSetup(contexts, ["scorpion"], true),
         snake: constructGenericSetup(contexts, ["snake", "osnake", "tinyp"], true),
         snowman: constructGenericSetup(contexts, ["snowman", "arcticbee"], true),

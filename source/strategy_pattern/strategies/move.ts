@@ -360,7 +360,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         })
     }
 
-    private async move(bot: Character) {
+    protected async move(bot: Character) {
         const stopIfTrue = (): boolean => {
             const target = bot.getEntity({ type: this.type })
             if (!target) return false // No target, don't stop
