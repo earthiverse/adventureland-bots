@@ -32,3 +32,30 @@ export function constructFrogSetup(contexts: Strategist<PingCompensatedCharacter
         ]
     }
 }
+
+export function constructFrogHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    return {
+        configs: [
+            {
+                id: "frog_mage",
+                characters: [
+                    {
+                        ctype: "mage",
+                        attack: new MageAttackStrategy({ contexts: contexts, typeList: ["frog", "tortoise"] }),
+                        move: new ImprovedMoveStrategy(["frog", "tortoise"])
+                    }
+                ]
+            },
+            {
+                id: "frog_priest",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({ contexts: contexts, typeList: ["frog", "tortoise"] }),
+                        move: new ImprovedMoveStrategy(["frog", "tortoise"])
+                    }
+                ]
+            }
+        ]
+    }
+}

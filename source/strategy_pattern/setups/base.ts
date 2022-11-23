@@ -18,7 +18,7 @@ import { constructCuteBeeSetup } from "./cutebee.js"
 import { MAGE_NORMAL, WARRIOR_NORMAL, WARRIOR_SPLASH } from "./equipment.js"
 import { constructFireRoamerSetup } from "./fireroamer.js"
 import { constructFrankyHelperSetup, constructFrankySetup } from "./franky.js"
-import { constructFrogSetup } from "./frog.js"
+import { constructFrogHelperSetup, constructFrogSetup } from "./frog.js"
 import { constructFVampireSetup } from "./fvampire.js"
 import { constructGhostSetup } from "./ghost.js"
 import { constructGoldenbatSetup } from "./goldenbat.js"
@@ -261,6 +261,7 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         croc: constructGenericSetup(contexts, ["croc"]),
         cutebee: constructCuteBeeSetup(contexts),
         franky: constructFrankyHelperSetup(contexts),
+        frog: constructFrogHelperSetup(contexts),
         goo: constructGenericSetup(contexts, ["goo"]),
         icegolem: constructIceGolemHelperSetup(contexts),
         minimush: constructGenericSetup(contexts, ["minimush", "phoenix", "tinyp"]),
