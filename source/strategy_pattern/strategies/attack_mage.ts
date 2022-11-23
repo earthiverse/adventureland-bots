@@ -149,7 +149,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
         // Look for everything we can kill in one shot with cburst
         for (let i = 0; i < entities.length; i++) {
             const entity = entities[i]
-            const mpNeededToKill = entity.hp * 1.1 * AL.Game.G.skills.cburst.ratio * AL.Tools.damage_multiplier(bot.rpiercing - entity.resistance)
+            const mpNeededToKill = entity.hp * 1.1 / AL.Game.G.skills.cburst.ratio * AL.Tools.damage_multiplier(bot.rpiercing - entity.resistance)
             if (mpNeededToKill > mpPool) continue
             mpPool -= mpNeededToKill
             targets.set(entity.id, mpNeededToKill)
