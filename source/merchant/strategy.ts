@@ -314,7 +314,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 for (let i = 0; i < bot.isize; i++) {
                     const item = bot.items[i]
                     if (!item) continue // No item
-                    if (item.q === undefined) continue // Not stackable
+                    if (!item.q) continue // Not stackable
                     if (this.options.itemsToHold.has(item.name)) continue // We want to hold these items
                     if (item.l) continue // It's locked, which means we probably want to hold it, too
 
@@ -328,7 +328,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                             if (!bankItem) continue // Empty slot
                             if (bankItem.name !== item.name) continue // Not the same item
                             if ((item.q + bankItem.q) > AL.Game.G.items[bankItem.name].s) continue // Depositing would exceed stack limit
-                            await bot.depositItem(j, bankSlot as BankPackName, j)
+                            await bot.depositItem(i, bankSlot as BankPackName, j)
                         }
                     }
                 }
