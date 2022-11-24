@@ -309,6 +309,30 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 // Go to bank and get item counts
                 this.toUpgrade = []
                 await bot.smartMove(bankingPosition)
+
+                // Deposit things we can stack without taking up an extra slot
+                for (let i = 0; i < bot.isize; i++) {
+                    const item = bot.items[i]
+                    if (!item) continue // No item
+                    if (item.q === undefined) continue // Not stackable
+                    if (this.options.itemsToHold.has(item.name)) continue // We want to hold these items
+                    if (item.l) continue // It's locked, which means we probably want to hold it, too
+
+                    for (const bankSlot in bot.bank) {
+                        // Only get stuff from the packs in the first level
+                        const matches = /items(\d+)/.exec(bankSlot)
+                        if (!matches || Number.parseInt(matches[1]) > 7) continue
+
+                        for (let j = 0; j < bot.bank[bankSlot as BankPackName].length; j++) {
+                            const bankItem = bot.bank[bankSlot as BankPackName][j]
+                            if (!bankItem) continue // Empty slot
+                            if (bankItem.name !== item.name) continue // Not the same item
+                            if ((item.q + bankItem.q) > AL.Game.G.items[bankItem.name].s) continue // Depositing would exceed stack limit
+                            await bot.depositItem(j, bankSlot as BankPackName, j)
+                        }
+                    }
+                }
+
                 this.itemCounts = await getItemCountsForEverything(bot.owner)
 
                 // Withdraw things that we can upgrade

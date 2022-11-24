@@ -406,14 +406,12 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             // If something else is targeting us, scare
             const targetingMe = bot.getEntities({ notType: this.options.type, notTypeList: this.options.typeList, targetingMe: true, willDieToProjectiles: false })
             if (targetingMe.length) {
-                console.debug(bot.id, "wants to scare because something random is targeting us:", targetingMe[0].type)
                 return true
             }
         }
 
         // If we have more targets than what our maximum is set to, we probably want to scare
         if (this.options.maximumTargets !== undefined && bot.targets > this.options.maximumTargets) {
-            console.debug(bot.id, "wants to scare because they are over the maximumTargets set:", bot.targets, "/", this.options.maximumTargets)
             return true
         }
 
@@ -424,7 +422,6 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             potentialIncomingDamage += entity.calculateDamageRange(bot)[1]
         }
         if (potentialIncomingDamage >= bot.hp) {
-            console.debug(bot.id, "wants to scare because we're about to take a lot of damage:", potentialIncomingDamage)
             return true
         }
 

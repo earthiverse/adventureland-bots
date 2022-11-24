@@ -8,7 +8,7 @@ import { Setup } from "./base"
 import { MAGE_ARMOR, PRIEST_ARMOR, WARRIOR_NORMAL } from "./equipment.js"
 
 export function constructHarpySetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new SpecialMonsterMoveStrategy("harpy")
+    const moveStrategy = new SpecialMonsterMoveStrategy({ disableCheckDB: true, type: "harpy" })
     return {
         configs: [
             {
@@ -30,7 +30,6 @@ export function constructHarpySetup(contexts: Strategist<PingCompensatedCharacte
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            enableGreedyAggro: true,
                             ensureEquipped: { ...PRIEST_ARMOR },
                             maximumTargets: 1,
                             type: "harpy",

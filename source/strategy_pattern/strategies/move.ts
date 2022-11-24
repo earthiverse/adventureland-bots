@@ -346,13 +346,20 @@ export class MoveInCircleMoveStrategy implements Strategy<Character> {
     }
 }
 
+export type SpecialMonsterMoveStrategyOptions = {
+    /** If true, we won't use the database locations */
+    disableCheckDB?: true
+    /** The monster we want to look for */
+    type: MonsterName
+}
+
 export class SpecialMonsterMoveStrategy implements Strategy<Character> {
     public loops = new Map<LoopName, Loop<Character>>()
 
-    public type: MonsterName
+    protected options: SpecialMonsterMoveStrategyOptions
 
-    public constructor(type: MonsterName) {
-        this.type = type
+    public constructor(options: SpecialMonsterMoveStrategyOptions) {
+        this.options = options
 
         this.loops.set("move", {
             fn: async (bot: Character) => { await this.move(bot) },
@@ -362,51 +369,55 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
 
     protected async move(bot: Character) {
         const stopIfTrue = (): boolean => {
-            const target = bot.getEntity({ type: this.type })
+            const target = bot.getEntity({ type: this.options.type })
             if (!target) return false // No target, don't stop
             if (Pathfinder.canWalkPath(bot, target)) return true // We can walk to it, stop!
         }
 
         // Look for it nearby
-        let target = bot.getEntity({ returnNearest: true, type: this.type })
+        let target = bot.getEntity({ returnNearest: true, type: this.options.type })
         if (target) {
-            console.debug("SpecialMonsterMoveStrategy - Nearby")
             await bot.smartMove(target, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
             return bot.smartMove(target, { getWithin: bot.range - 10, useBlink: true })
         }
 
         // Look for it in the server data
-        if ((bot.S?.[this.type] as ServerInfoDataLive)?.live && bot.S[this.type]["x"] !== undefined && bot.S[this.type]["y"] !== undefined) {
-            const destination = bot.S[this.type] as IPosition
+        if ((bot.S?.[this.options.type] as ServerInfoDataLive)?.live && bot.S[this.options.type]["x"] !== undefined && bot.S[this.options.type]["y"] !== undefined) {
+            const destination = bot.S[this.options.type] as IPosition
             if (AL.Tools.distance(bot, destination) > bot.range) {
-                console.debug("SpecialMonsterMoveStrategy - Using S")
                 return bot.smartMove(destination, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
             }
         }
 
-        // Look for it in our database
-        const dbTarget = await AL.EntityModel.findOne({ serverIdentifier: bot.server.name, serverRegion: bot.server.region, type: this.type }).lean().exec()
-        if (dbTarget && dbTarget.x !== undefined && dbTarget.y !== undefined) {
-            console.debug("SpecialMonsterMoveStrategy - Using DB location")
-            return bot.smartMove(dbTarget, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
+        let dbTarget: IPosition
+        if (!this.options.disableCheckDB) {
+            // Look for it in our database
+            dbTarget = await AL.EntityModel.findOne({
+                lastSeen: { $gt: Date.now() - 60_000 },
+                serverIdentifier: bot.server.name,
+                serverRegion: bot.server.region,
+                type: this.options.type
+            }).sort({ lastSeen: -1 }).lean().exec()
+            if (dbTarget && dbTarget.x !== undefined && dbTarget.y !== undefined) {
+                return bot.smartMove(dbTarget, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
+            }
         }
 
         // Look for if there's a spawn for it
-        for (const spawn of Pathfinder.locateMonster(this.type)) {
-            console.debug(`SpecialMonsterMoveStrategy - Using spawn (${spawn.map},${spawn.x},${spawn.y})`)
+        for (const spawn of Pathfinder.locateMonster(this.options.type)) {
             // Move to the next spawn
-            await bot.smartMove(spawn, { getWithin: bot.range - 10, stopIfTrue: () => bot.getEntity({ type: this.type }) !== undefined })
+            await bot.smartMove(spawn, { getWithin: bot.range - 10, stopIfTrue: () => bot.getEntity({ type: this.options.type }) !== undefined })
 
-            target = bot.getEntity({ returnNearest: true, type: this.type })
+            target = bot.getEntity({ returnNearest: true, type: this.options.type })
             if (target) return bot.smartMove(target, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
         }
 
         // Go through all the spawns on the map to look for it
         if ((dbTarget && dbTarget.x == undefined && dbTarget.y == undefined && dbTarget.map)
-        || ((bot.S?.[this.type] as ServerInfoDataLive)?.live && bot.S[this.type]["x"] !== undefined && bot.S[this.type]["y"] !== undefined)) {
+        || ((bot.S?.[this.options.type] as ServerInfoDataLive)?.live && bot.S[this.options.type]["x"] !== undefined && bot.S[this.options.type]["y"] !== undefined)) {
             const spawns: IPosition[] = []
 
-            const gMap = bot.G.maps[(dbTarget.map ?? bot.S[this.type]["map"]) as MapName] as GMap
+            const gMap = bot.G.maps[(dbTarget.map ?? bot.S[this.options.type]["map"]) as MapName] as GMap
             if (gMap.ignore) return
             if (gMap.instance || !gMap.monsters || gMap.monsters.length == 0) return // Map is unreachable, or there are no monsters
 
@@ -427,9 +438,9 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
 
             for (const spawn of spawns) {
                 // Move to the next spawn
-                await bot.smartMove(spawn, { getWithin: bot.range - 10, stopIfTrue: () => bot.getEntity({ type: this.type }) !== undefined })
+                await bot.smartMove(spawn, { getWithin: bot.range - 10, stopIfTrue: () => bot.getEntity({ type: this.options.type }) !== undefined })
 
-                target = bot.getEntity({ returnNearest: true, type: this.type })
+                target = bot.getEntity({ returnNearest: true, type: this.options.type })
                 if (target) return bot.smartMove(target, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
             }
         }
