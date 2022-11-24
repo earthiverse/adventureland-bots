@@ -19,7 +19,7 @@ export function constructTinyPSetup(contexts: Strategist<PingCompensatedCharacte
                             isDisabled: true,
                             type: "tinyp",
                         }),
-                        move: new SpecialMonsterMoveStrategy("tinyp")
+                        move: new SpecialMonsterMoveStrategy({ type: "tinyp" })
                     }
                 ]
             }

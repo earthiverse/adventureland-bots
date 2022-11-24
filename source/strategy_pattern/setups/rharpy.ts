@@ -8,7 +8,7 @@ import { Setup } from "./base"
 import { MAGE_ARMOR, PRIEST_ARMOR, WARRIOR_NORMAL } from "./equipment.js"
 
 export function constructRHarpySetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new SpecialMonsterMoveStrategy("rharpy")
+    const moveStrategy = new SpecialMonsterMoveStrategy({ type: "rharpy" })
     return {
         configs: [
             {

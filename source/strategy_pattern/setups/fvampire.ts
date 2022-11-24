@@ -8,7 +8,7 @@ import { Setup } from "./base"
 import { MAGE_NORMAL, PRIEST_LUCK, WARRIOR_NORMAL } from "./equipment.js"
 
 export function constructFVampireSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new SpecialMonsterMoveStrategy("fvampire")
+    const moveStrategy = new SpecialMonsterMoveStrategy({ type: "fvampire" })
     return {
         configs: [
             {
