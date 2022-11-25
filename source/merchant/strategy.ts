@@ -328,7 +328,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                             if (!bankItem) continue // Empty slot
                             if (bankItem.name !== item.name) continue // Not the same item
                             if ((item.q + bankItem.q) > AL.Game.G.items[bankItem.name].s) continue // Depositing would exceed stack limit
-                            await bot.depositItem(i, bankSlot as BankPackName, j)
+                            await bot.depositItem(i, bankSlot as BankPackName, j).catch(console.error)
                         }
                     }
                 }
