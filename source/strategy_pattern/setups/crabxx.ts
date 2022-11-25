@@ -101,6 +101,7 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableCreditCheck: true, // Giga crab will only take 1 damage while any crabx are alive, so help kill others', too
                             enableEquipForCleave: true,
+                            enableEquipForStomp: true,
                             enableGreedyAggro: true,
                             ensureEquipped: { ...WARRIOR_SPLASH },
                             typeList: ["crabx", "crabxx"]
@@ -147,6 +148,7 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableCreditCheck: true, // Giga crab will only take 1 damage while any crabx are alive, so help kill others', too
                             enableEquipForCleave: true,
+                            enableEquipForStomp: true,
                             enableGreedyAggro: true,
                             ensureEquipped: { ...WARRIOR_SPLASH },
                             typeList: ["crabx", "crabxx"]
@@ -178,6 +180,7 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableCreditCheck: true, // Giga crab will only take 1 damage while any crabx are alive, so help kill others', too
                             enableEquipForCleave: true,
+                            enableEquipForStomp: true,
                             enableGreedyAggro: true,
                             ensureEquipped: { ...WARRIOR_SPLASH },
                             typeList: ["crabx", "crabxx"]
@@ -249,7 +252,7 @@ export function constructGigaCrabHelperSetup(contexts: Strategist<PingCompensate
                 characters: [
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, disableCleave: true, disableCreditCheck: true, typeList: ["crabx", "crabxx"] }),
+                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, disableCleave: true, disableCreditCheck: true, enableEquipForStomp: true, typeList: ["crabx", "crabxx"] }),
                         move: new ImprovedMoveStrategy(["crabx", "crabxx"])
                     }
                 ]

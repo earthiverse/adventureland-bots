@@ -13,7 +13,7 @@ import { constructBigBirdSetup } from "./bigbird.js"
 import { constructBoarSetup } from "./boar.js"
 import { constructBooBooSetup } from "./booboo.js"
 import { constructBScorpionSetup } from "./bscorpion.js"
-import { constructGigaCrabSetup } from "./crabxx.js"
+import { constructGigaCrabHelperSetup, constructGigaCrabSetup } from "./crabxx.js"
 import { constructCuteBeeSetup } from "./cutebee.js"
 import { MAGE_NORMAL, WARRIOR_NORMAL, WARRIOR_SPLASH } from "./equipment.js"
 import { constructFireRoamerSetup } from "./fireroamer.js"
@@ -258,6 +258,7 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         bgoo: constructGenericSetup(contexts, ["rgoo", "bgoo"]),
         crab: constructGenericSetup(contexts, ["phoenix", "crab"]),
         crabx: constructGenericSetup(contexts, ["crabx"]),
+        crabxx: constructGigaCrabHelperSetup(contexts),
         croc: constructGenericSetup(contexts, ["croc"]),
         cutebee: constructCuteBeeSetup(contexts),
         franky: constructFrankyHelperSetup(contexts),
