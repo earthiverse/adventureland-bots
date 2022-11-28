@@ -1,4 +1,4 @@
-import { Mage, MonsterName, PingCompensatedCharacter, Priest, Warrior } from "alclient"
+import { MonsterName, PingCompensatedCharacter } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
@@ -8,60 +8,10 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { PRIEST_LUCK } from "./equipment.js"
-
-class MageGrinchAttackStrategy extends MageAttackStrategy {
-    public onApply(bot: Mage): void {
-        if (bot.isPVP()) {
-            // No splash damage
-            this.options.ensureEquipped.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
-            this.options.ensureEquipped.offhand = { name: "wbookhs", filters: { returnHighestLevel: true } }
-        } else {
-            // Splash damage & additional monsters
-            this.options.ensureEquipped.mainhand = { name: "gstaff", filters: { returnHighestLevel: true } }
-            delete this.options.ensureEquipped.offhand
-        }
-        super.onApply(bot)
-    }
-}
-
-class PriestGrinchAttackStrategy extends PriestAttackStrategy {
-    public onApply(bot: Priest): void {
-        if (bot.isPVP()) {
-            this.options.ensureEquipped.orb = { name: "jacko", filters: { returnHighestLevel: true } }
-            this.options.ensureEquipped.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
-        } else {
-            // Additional monsters
-            this.options.ensureEquipped.orb = { name: "jacko", filters: { returnHighestLevel: true } }
-            this.options.ensureEquipped.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
-        }
-        super.onApply(bot)
-    }
-}
-
-class WarriorGrinchAttackStrategy extends WarriorAttackStrategy {
-    public onApply(bot: Warrior): void {
-        if (bot.isPVP()) {
-            // No Splash Damage
-            this.options.disableCleave = true
-            this.options.ensureEquipped.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } },
-            this.options.ensureEquipped.offhand = { name: "fireblade", filters: { returnHighestLevel: true } },
-            this.options.ensureEquipped.ring1 = { name: "strring", filters: { returnHighestLevel: true } },
-            delete this.options.enableEquipForCleave
-        } else {
-            // Splash Damage & additional monsters
-            delete this.options.disableCleave
-            this.options.ensureEquipped.mainhand = { name: "vhammer", filters: { returnHighestLevel: true } },
-            this.options.ensureEquipped.offhand = { name: "ololipop", filters: { returnHighestLevel: true } },
-            this.options.ensureEquipped.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
-            this.options.enableEquipForCleave = true
-        }
-        super.onApply(bot)
-    }
-}
+import { MAGE_NORMAL, PRIEST_LUCK, WARRIOR_NORMAL } from "./equipment.js"
 
 const grinchMoveStrategy = new SpecialMonsterMoveStrategy({ type: "grinch" })
-const typeList: MonsterName[] = ["grinch", "arcticbee", "bee", "crab", "crabx", "croc", "goo", "minimush", "osnake", "poisio", "scorpion", "snake", "spider"]
+const typeList: MonsterName[] = ["grinch"]
 
 export function constructGrinchSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     return {
@@ -71,23 +21,19 @@ export function constructGrinchSetup(contexts: Strategist<PingCompensatedCharact
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageGrinchAttackStrategy({
+                        attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: {
-                                mainhand: { name: "gstaff", filters: { returnHighestLevel: true } },
-                                orb: { name: "jacko", filters: { returnHighestLevel: true } }
-                            },
+                            ensureEquipped: { ...MAGE_NORMAL },
                             typeList: typeList
                         }),
                         move: grinchMoveStrategy
                     },
                     {
                         ctype: "priest",
-                        attack: new PriestGrinchAttackStrategy({
+                        attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            enableGreedyAggro: true,
                             ensureEquipped: { ...PRIEST_LUCK },
                             typeList: typeList,
                         }),
@@ -95,13 +41,12 @@ export function constructGrinchSetup(contexts: Strategist<PingCompensatedCharact
                     },
                     {
                         ctype: "warrior",
-                        attack: new WarriorGrinchAttackStrategy({
+                        attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             enableEquipForCleave: true,
                             enableEquipForStomp: true,
-                            ensureEquipped: {
-                                orb: { name: "jacko", filters: { returnHighestLevel: true } }
-                            },
+                            enableGreedyAggro: true,
+                            ensureEquipped: { ...WARRIOR_NORMAL },
                             typeList: typeList
                         }),
                         move: grinchMoveStrategy
@@ -113,10 +58,9 @@ export function constructGrinchSetup(contexts: Strategist<PingCompensatedCharact
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestGrinchAttackStrategy({
+                        attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            enableGreedyAggro: true,
                             ensureEquipped: { ...PRIEST_LUCK },
                             typeList: typeList,
                         }),
@@ -124,13 +68,11 @@ export function constructGrinchSetup(contexts: Strategist<PingCompensatedCharact
                     },
                     {
                         ctype: "warrior",
-                        attack: new WarriorGrinchAttackStrategy({
+                        attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             enableEquipForCleave: true,
-                            ensureEquipped: {
-                                mainhand: { name: "bataxe", filters: { returnHighestLevel: true } },
-                                orb: { name: "jacko", filters: { returnHighestLevel: true } }
-                            },
+                            enableGreedyAggro: true,
+                            ensureEquipped: { ...WARRIOR_NORMAL },
                             typeList: typeList
                         }),
                         move: grinchMoveStrategy
