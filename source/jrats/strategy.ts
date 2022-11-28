@@ -6,7 +6,7 @@ import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 import { RangerAttackStrategy } from "../strategy_pattern/strategies/attack_ranger.js"
 import { getMsToNextMinute } from "../base/general.js"
-import { ImprovedMoveStrategy } from "../strategy_pattern/strategies/move.js"
+import { GetHolidaySpiritStrategy, ImprovedMoveStrategy } from "../strategy_pattern/strategies/move.js"
 import { MageAttackStrategy } from "../strategy_pattern/strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategy_pattern/strategies/attack_priest.js"
 
@@ -26,6 +26,7 @@ const buyStrategy = new BuyStrategy({
         ["xptome", 1],
     ])
 })
+const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
 const trackerStrategy = new TrackerStrategy()
 const respawnStrategy = new RespawnStrategy()
 
@@ -113,7 +114,17 @@ async function startBot(characterName: string, characterType: CharacterType, ser
     context.applyStrategy(buyStrategy)
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(respawnStrategy)
-    context.applyStrategy(new ImprovedMoveStrategy(monsters))
+
+    const moveLoop = async () => {
+        if (!context.isReady() || !context.bot.ready || context.bot.rip) return // Not ready
+        if (bot.S.holidayseason && !bot.s.holidayspirit) {
+            context.applyStrategy(getHolidaySpiritStrategy)
+            return
+        }
+        context.applyStrategy(new ImprovedMoveStrategy(monsters))
+    }
+    setInterval(moveLoop, 1000)
+
     CONTEXTS.push(context)
 
     const connectLoop = async () => {
