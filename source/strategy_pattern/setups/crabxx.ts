@@ -222,7 +222,7 @@ export function constructGigaCrabHelperSetup(contexts: Strategist<PingCompensate
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, disableCreditCheck: true, typeList: ["crabx", "crabxx"] }),
+                        attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, disableCreditCheck: true, enableHealStrangers: true, typeList: ["crabx", "crabxx"] }),
                         move: new ImprovedMoveStrategy(["crabx", "crabxx"])
                     }
                 ]

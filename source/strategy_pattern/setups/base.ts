@@ -23,6 +23,7 @@ import { constructFVampireSetup } from "./fvampire.js"
 import { constructGhostSetup } from "./ghost.js"
 import { constructGoldenbatSetup } from "./goldenbat.js"
 import { constructGreenJrSetup } from "./greenjr.js"
+import { constructGrinchHelperSetup, constructGrinchSetup } from "./grinch.js"
 import { constructHarpySetup } from "./harpy.js"
 import { constructIceGolemHelperSetup, constructIceGolemSetup } from "./icegolem.js"
 import { constructJrSetup } from "./jr.js"
@@ -39,6 +40,7 @@ import { constructPPPomPomSetup } from "./pppompom.js"
 import { constructPRatSetup } from "./prat.js"
 import { constructRGooSetup } from "./rgoo.js"
 import { constructRHarpySetup } from "./rharpy.js"
+import { constructSnowmanHelperSetup, constructSnowmanSetup } from "./snowman.js"
 import { constructSquigToadSetup } from "./squigtoad.js"
 import { constructStompySetup } from "./stompy.js"
 import { constructStoneWormSetup } from "./stoneworm.js"
@@ -213,6 +215,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         goldenbat: constructGoldenbatSetup(contexts),
         goo: constructGenericSetup(contexts, ["goo"], true),
         greenjr: constructGreenJrSetup(contexts),
+        grinch: constructGrinchSetup(contexts),
         harpy: constructHarpySetup(contexts),
         icegolem: constructIceGolemSetup(contexts),
         iceroamer: constructGenericSetup(contexts, ["iceroamer"], true),
@@ -235,7 +238,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         rharpy: constructRHarpySetup(contexts),
         scorpion: constructGenericSetup(contexts, ["scorpion"], true),
         snake: constructGenericSetup(contexts, ["snake", "osnake", "tinyp"], true),
-        snowman: constructGenericSetup(contexts, ["snowman", "arcticbee"], true),
+        snowman: constructSnowmanSetup(contexts),
         spider: constructGenericSetup(contexts, ["spider"], true),
         squig: constructSquigToadSetup(contexts),
         squigtoad: constructSquigToadSetup(contexts),
@@ -264,6 +267,7 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         franky: constructFrankyHelperSetup(contexts),
         frog: constructFrogHelperSetup(contexts),
         goo: constructGenericSetup(contexts, ["goo"]),
+        grinch: constructGrinchHelperSetup(contexts),
         icegolem: constructIceGolemHelperSetup(contexts),
         minimush: constructGenericSetup(contexts, ["minimush", "phoenix", "tinyp"]),
         mrgreen: constructMrGreenHelperSetup(contexts),
@@ -274,7 +278,7 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         rat: constructGenericSetup(contexts, ["rat"]),
         scorpion: constructGenericSetup(contexts, ["scorpion"]),
         snake: constructGenericSetup(contexts, ["snake", "osnake"]),
-        snowman: constructGenericSetup(contexts, ["snowman", "arcticbee"]),
+        snowman: constructSnowmanHelperSetup(contexts),
         spider: constructGenericSetup(contexts, ["spider"]),
         squig: constructSquigToadSetup(contexts),
         squigtoad: constructSquigToadSetup(contexts),
