@@ -84,7 +84,6 @@ async function startBot(characterName: string, characterType: CharacterType, ser
                 return
             }
             context = new Strategist<Mage>(bot as Mage, baseStrategy)
-            context.applyStrategy(new MageAttackStrategy({ contexts: CONTEXTS, typeList: monsters }))
             break
         case "priest":
             try {
@@ -95,7 +94,6 @@ async function startBot(characterName: string, characterType: CharacterType, ser
                 return
             }
             context = new Strategist<Priest>(bot as Priest, baseStrategy)
-            context.applyStrategy(new PriestAttackStrategy({ contexts: CONTEXTS, typeList: monsters }))
             break
         case "ranger":
             try {
@@ -106,7 +104,6 @@ async function startBot(characterName: string, characterType: CharacterType, ser
                 return
             }
             context = new Strategist<Ranger>(bot as Ranger, baseStrategy)
-            context.applyStrategy(new RangerAttackStrategy({ contexts: CONTEXTS, disableHuntersMark: true, disableMultiShot: true, typeList: monsters }))
             break
         default:
             break
@@ -122,6 +119,18 @@ async function startBot(characterName: string, characterType: CharacterType, ser
             return
         }
         context.applyStrategy(new ImprovedMoveStrategy(monsters))
+
+        switch (characterType) {
+            case "mage":
+                context.applyStrategy(new MageAttackStrategy({ contexts: CONTEXTS, typeList: monsters }))
+                break
+            case "priest":
+                context.applyStrategy(new PriestAttackStrategy({ contexts: CONTEXTS, typeList: monsters }))
+                break
+            case "ranger":
+                context.applyStrategy(new RangerAttackStrategy({ contexts: CONTEXTS, disableHuntersMark: true, disableMultiShot: true, typeList: monsters }))
+                break
+        }
     }
     setInterval(moveLoop, 1000)
 
