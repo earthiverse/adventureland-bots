@@ -207,8 +207,8 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
     // Priority of targets
     const priority: MonsterName[] = []
 
-    for (const context of contexts) {
-        if (ENABLE_EVENTS) {
+    if (ENABLE_EVENTS) {
+        for (const context of contexts) {
             // Goobrawl
             if (
                 (
@@ -253,8 +253,10 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 }
             }
         }
+    }
 
-        if (ENABLE_SPECIAL_MONSTERS) {
+    if (ENABLE_SPECIAL_MONSTERS) {
+        for (const context of contexts) {
             for (const specialMonster of await AL.EntityModel.find({
                 $or: [
                     { target: undefined },
@@ -271,14 +273,16 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 priority.push(specialMonster.type)
             }
         }
+    }
 
-        if (ENABLE_MONSTERHUNTS) {
-            for (const contexts of [PRIVATE_CONTEXTS, PUBLIC_CONTEXTS]) {
+    if (ENABLE_MONSTERHUNTS) {
+        for (const _context of contexts) {
+            for (const contexts2 of [PRIVATE_CONTEXTS, PUBLIC_CONTEXTS]) {
                 const monsterhunts: {
                     ms: number
                     id: MonsterName
                 }[] = []
-                for (const context2 of contexts) {
+                for (const context2 of contexts2) {
                     if (!context2.isReady()) continue
                     const bot2 = context2.bot
                     if (!bot2.s.monsterhunt || bot2.s.monsterhunt.c == 0) continue
@@ -287,11 +291,16 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
 
                 monsterhunts.sort((a, b) => a.ms - b.ms) // Lower time remaining first
 
-                for (const monsterhunt of monsterhunts) priority.push(monsterhunt.id)
+
+                for (const monsterhunt of monsterhunts) {
+                    priority.push(monsterhunt.id)
+                }
             }
         }
+    }
 
-        // Default targets
+    // Default targets
+    for (const context of contexts) {
         if (PRIVATE_CONTEXTS.includes(context)) {
             if (!context.bot.isPVP()) {
                 priority.push("bscorpion")
