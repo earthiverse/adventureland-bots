@@ -349,6 +349,8 @@ export class MoveInCircleMoveStrategy implements Strategy<Character> {
 export type SpecialMonsterMoveStrategyOptions = {
     /** If true, we won't use the database locations */
     disableCheckDB?: true
+    /** If true, we will ignore moving if the monster is on one of these maps */
+    ignoreMaps?: MapName[]
     /** The monster we want to look for */
     type: MonsterName
 }
@@ -360,6 +362,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
 
     public constructor(options: SpecialMonsterMoveStrategyOptions) {
         this.options = options
+        if (!this.options.ignoreMaps) this.options.ignoreMaps = []
 
         this.loops.set("move", {
             fn: async (bot: Character) => { await this.move(bot) },
@@ -382,7 +385,11 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         }
 
         // Look for it in the server data
-        if ((bot.S?.[this.options.type] as ServerInfoDataLive)?.live && bot.S[this.options.type]["x"] !== undefined && bot.S[this.options.type]["y"] !== undefined) {
+        const sInfo = bot.S?.[this.options.type] as ServerInfoDataLive
+        if (
+            sInfo && sInfo.live && sInfo.x !== undefined && sInfo.y !== undefined
+            && !this.options.ignoreMaps.includes(sInfo.map)
+        ) {
             const destination = bot.S[this.options.type] as IPosition
             if (AL.Tools.distance(bot, destination) > bot.range) {
                 return bot.smartMove(destination, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
@@ -394,6 +401,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             // Look for it in our database
             dbTarget = await AL.EntityModel.findOne({
                 lastSeen: { $gt: Date.now() - 60_000 },
+                map: { $nin: this.options.ignoreMaps },
                 serverIdentifier: bot.server.name,
                 serverRegion: bot.server.region,
                 type: this.options.type
@@ -405,6 +413,8 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
 
         // Look for if there's a spawn for it
         for (const spawn of Pathfinder.locateMonster(this.options.type)) {
+            if (this.options.ignoreMaps.includes(spawn.map)) continue
+
             // Move to the next spawn
             await bot.smartMove(spawn, { getWithin: bot.range - 10, stopIfTrue: () => bot.getEntity({ type: this.options.type }) !== undefined })
 
@@ -414,7 +424,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
 
         // Go through all the spawns on the map to look for it
         if ((dbTarget && dbTarget.x == undefined && dbTarget.y == undefined && dbTarget.map)
-        || ((bot.S?.[this.options.type] as ServerInfoDataLive)?.live && bot.S[this.options.type]["x"] !== undefined && bot.S[this.options.type]["y"] !== undefined)) {
+        || (sInfo && sInfo.live && sInfo.x !== undefined && sInfo.y !== undefined && !this.options.ignoreMaps.includes(sInfo.map))) {
             const spawns: IPosition[] = []
 
             const gMap = bot.G.maps[(dbTarget.map ?? bot.S[this.options.type]["map"]) as MapName] as GMap
