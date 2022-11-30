@@ -372,6 +372,12 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
 
     protected async move(bot: Character) {
         const stopIfTrue = (): boolean => {
+            const sInfo = bot.S?.[this.options.type] as ServerInfoDataLive
+            if (sInfo) {
+                if (!sInfo.live) return true // It's dead
+                if (sInfo.map !== bot.smartMoving.map) return true // It moved maps
+            }
+
             const target = bot.getEntity({ type: this.options.type })
             if (!target) return false // No target, don't stop
             if (Pathfinder.canWalkPath(bot, target)) return true // We can walk to it, stop!
@@ -448,7 +454,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
 
             for (const spawn of spawns) {
                 // Move to the next spawn
-                await bot.smartMove(spawn, { getWithin: bot.range - 10, stopIfTrue: () => bot.getEntity({ type: this.options.type }) !== undefined })
+                await bot.smartMove(spawn, { getWithin: AL.Constants.MAX_VISIBLE_RANGE / 2, stopIfTrue: () => bot.getEntity({ type: this.options.type }) !== undefined })
 
                 target = bot.getEntity({ returnNearest: true, type: this.options.type })
                 if (target) return bot.smartMove(target, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
