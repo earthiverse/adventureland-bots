@@ -514,6 +514,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     if (friend.serverData.region !== bot.serverData.region || friend.serverData.name !== bot.serverData.name) continue // Different server
                     for (const [item, numTotal] of this.options.enableBuyReplenishables.all) {
                         const numFriendHas = friend.countItem(item)
+                        if (numFriendHas == 0 && friend.esize == 0) continue // Friend has no space for more items
                         if (numFriendHas > numTotal * this.options.enableBuyReplenishables.ratio) continue // They still have enough
 
                         const numWeHave = bot.countItem(item)
