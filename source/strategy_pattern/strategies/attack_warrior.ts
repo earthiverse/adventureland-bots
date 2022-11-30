@@ -221,7 +221,36 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
         })
         if (entities.length == 0) return // No targets to stomp
 
+        let mainhand: ItemData
+        let offhand: ItemData
+        if (this.options.enableEquipForStomp) {
+            if (!(bot.isEquipped(["basher", "wbasher"]))) {
+                // Unequip offhand if we have it
+                if (bot.slots.offhand) {
+                    if (bot.esize == 0) return // We don't have an inventory slot to unequip the offhand
+                    offhand = { ...bot.slots.offhand }
+                    await bot.unequip("offhand")
+                }
+                if (bot.slots.mainhand) mainhand = { ...bot.slots.mainhand }
+                await bot.equip(bot.locateItem(["basher", "wbasher"], bot.items, { returnHighestLevel: true }))
+                if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms) // Await the penalty cooldown so we can stomp right away
+            }
+        }
+
         await bot.stomp().catch(console.error)
+
+        if (this.options.enableEquipForStomp) {
+            // Re-equip items
+            if (mainhand) {
+                await bot.equip(bot.locateItem(mainhand.name, bot.items, { level: mainhand.level, special: mainhand.p }))
+            } else {
+                await bot.unequip("mainhand")
+            }
+
+            if (offhand) {
+                await bot.equip(bot.locateItem(offhand.name, bot.items, { level: offhand.level, special: offhand.p, statType: offhand.stat_type }))
+            }
+        }
     }
 
     protected async applyWarCry(bot: Warrior) {
