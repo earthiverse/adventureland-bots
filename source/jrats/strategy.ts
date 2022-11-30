@@ -114,7 +114,7 @@ async function startBot(characterName: string, characterType: CharacterType, ser
 
     const moveLoop = async () => {
         if (!context.isReady() || !context.bot.ready || context.bot.rip) return // Not ready
-        if (bot.S.holidayseason && !bot.s.holidayspirit) {
+        if (context.bot.S.holidayseason && !context.bot.s.holidayspirit) {
             context.applyStrategy(getHolidaySpiritStrategy)
             return
         }
