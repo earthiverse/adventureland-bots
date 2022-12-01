@@ -303,7 +303,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
     for (const context of contexts) {
         if (PRIVATE_CONTEXTS.includes(context)) {
             if (!context.bot.isPVP()) {
-                priority.push("bscorpion")
+                priority.push("arcticbee")
             }
             if (context.bot.ctype == "mage") {
                 priority.push("frog")
