@@ -40,6 +40,7 @@ import { constructPPPomPomSetup } from "./pppompom.js"
 import { constructPRatSetup } from "./prat.js"
 import { constructRGooSetup } from "./rgoo.js"
 import { constructRHarpySetup } from "./rharpy.js"
+import { constructSkeletorSetup } from "./skeletor.js"
 import { constructSnowmanHelperSetup, constructSnowmanSetup } from "./snowman.js"
 import { constructSquigToadSetup } from "./squigtoad.js"
 import { constructStompySetup } from "./stompy.js"
@@ -237,6 +238,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         rgoo: constructRGooSetup(contexts),
         rharpy: constructRHarpySetup(contexts),
         scorpion: constructGenericSetup(contexts, ["scorpion"], true),
+        skeletor: constructSkeletorSetup(contexts),
         snake: constructGenericSetup(contexts, ["snake", "osnake", "tinyp"], true),
         snowman: constructSnowmanSetup(contexts),
         spider: constructGenericSetup(contexts, ["spider"], true),
