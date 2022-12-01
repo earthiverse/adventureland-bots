@@ -11,7 +11,7 @@ import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
 import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
 import { Config, constructHelperSetups, constructSetups, Setups } from "./strategy_pattern/setups/base.js"
 import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
-import { getHalloweenMonsterPriority } from "./base/serverhop.js"
+import { getHalloweenMonsterPriority, getHolidaySeasonMonsterPriority } from "./base/serverhop.js"
 import { randomIntFromInterval, sleep } from "./base/general.js"
 import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
@@ -29,10 +29,10 @@ await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 // TODO: Make these configurable through /comm using a similar system to how lulz works
 // Toggles
 const ENABLE_EVENTS = true
-const ENABLE_SERVER_HOPS = false
+const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
 const SPECIAL_MONSTERS: MonsterName[] = ["cutebee", "fvampire", "goldenbat", "greenjr", "jr", "mvampire", "pinkgoo", "snowman", "stompy", "tinyp"]
-const ENABLE_MONSTERHUNTS = true
+const ENABLE_MONSTERHUNTS = false
 const MAX_PUBLIC_CHARACTERS = 6
 
 const MERCHANT = "earthMer"
@@ -350,6 +350,26 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
             if (ENABLE_SERVER_HOPS) {
                 if (bot.S.halloween) {
                     const monster = (await getHalloweenMonsterPriority())[0]
+                    if (
+                        context.uptime() > 60_000
+                        && monster
+                        && (
+                            monster.serverRegion !== bot.serverData.region
+                            || monster.serverIdentifier !== bot.serverData.name
+                        )
+                    ) {
+                        // We want to switch servers
+                        TARGET_IDENTIFIER = monster.serverIdentifier
+                        TARGET_REGION = monster.serverRegion
+                        await sleep(1000)
+                        console.log(bot.id, "is changing server from", bot.serverData.region, bot.serverData.name, "to", monster.serverRegion, monster.serverIdentifier)
+                        context.changeServer(monster.serverRegion, monster.serverIdentifier).catch(console.error)
+                        return
+                    }
+                }
+
+                if (bot.S.holidayseason) {
+                    const monster = (await getHolidaySeasonMonsterPriority())[0]
                     if (
                         context.uptime() > 60_000
                         && monster
