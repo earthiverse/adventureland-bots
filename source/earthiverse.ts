@@ -87,6 +87,7 @@ const privateSellStrategy = new SellStrategy({
             [0, 1_000_000]
         ]],
         ["shoes1", undefined],
+        ["snowball", undefined],
         ["stand0", undefined],
         ["stramulet", undefined]
     ])
