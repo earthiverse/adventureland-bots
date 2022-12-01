@@ -1,4 +1,4 @@
-import AL, { Character, Entity, IPosition, MonsterName } from "alclient"
+import AL, { Character, Entity, IPosition, MapName, MonsterName } from "alclient"
 
 /**
  * This function is meant to be used with `[].sort()`
@@ -12,6 +12,25 @@ export function sortClosestDistance(to: Character) {
     return (a: IPosition, b: IPosition) => {
         const d_a = AL.Tools.squaredDistance(to, a)
         const d_b = AL.Tools.squaredDistance(to, b)
+        return d_a - d_b
+    }
+}
+
+/**
+ * This function is meant to be used with `[].sort()`. This function will use the pathfinder's
+ * logic to determine closest distance across maps, too.
+ *
+ * Example: `targets.sort(sortClosestDistance(bot))`
+ *
+ * @param to Compare the distance to this point
+ * @returns A sorting function that will sort the objects closest to the position first
+ */
+export function sortClosestDistancePathfinder(to: Character) {
+    return (a: IPosition & { map: MapName }, b: IPosition & { map: MapName }) => {
+        const path_a = AL.Pathfinder.getPath(to, a)
+        const path_b = AL.Pathfinder.getPath(to, b)
+        const d_a = AL.Pathfinder.computePathCost(path_a)
+        const d_b = AL.Pathfinder.computePathCost(path_b)
         return d_a - d_b
     }
 }

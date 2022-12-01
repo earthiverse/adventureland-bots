@@ -1,7 +1,7 @@
 import AL, { IPosition, MonsterName, Pathfinder, Character, PingCompensatedCharacter, Entity, ServerInfoDataLive, MapName, GMap } from "alclient"
 import { sleep } from "../../base/general.js"
 import { offsetPositionParty } from "../../base/locations.js"
-import { sortClosestDistance, sortTypeThenClosest } from "../../base/sort.js"
+import { sortClosestDistancePathfinder, sortTypeThenClosest } from "../../base/sort.js"
 import { Loop, LoopName, Strategist, Strategy } from "../context.js"
 import { suppress_errors } from "../logging.js"
 
@@ -252,7 +252,7 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
     }
 
     public onApply (bot: Character) {
-        this.spawns.sort(sortClosestDistance(bot))
+        this.spawns.sort(sortClosestDistancePathfinder(bot))
         this.sort = sortTypeThenClosest(bot, this.types)
     }
 
