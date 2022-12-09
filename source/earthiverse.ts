@@ -258,12 +258,38 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
 
     if (ENABLE_SPECIAL_MONSTERS) {
         for (const context of contexts) {
+            for (const specialMonster of context.bot.getEntities({
+                couldGiveCredit: true,
+                typeList: SPECIAL_MONSTERS
+            })) {
+                if (
+                    specialMonster.s?.fullguard?.ms > 30000
+                    || specialMonster.s?.fullguardx?.ms > 30000
+                ) {
+                    // Can't damage for another 30s
+                    continue
+                }
+                priority.push(specialMonster.type)
+            }
+
             for (const specialMonster of await AL.EntityModel.find({
-                $or: [
-                    { target: undefined },
-                    { target: { $in: PARTY_ALLOWLIST } },
-                    { type: { $in: ["pinkgoo", "snowman", "wabbit"] } } // Coop monsters will give credit
-                ],
+                $and: [{
+                    $or: [
+                        { target: undefined },
+                        { target: { $in: PARTY_ALLOWLIST } },
+                        { type: { $in: ["pinkgoo", "snowman", "wabbit"] } } // Coop monsters will give credit
+                    ]
+                }, {
+                    $or: [
+                        { "s.fullguardx": undefined },
+                        { "s.fullguardx.ms": { $lt: 30000 } }
+                    ],
+                }, {
+                    $or: [
+                        { "s.fullguard": undefined },
+                        { "s.fullguard.ms": { $lt: 30000 } }
+                    ]
+                }],
                 lastSeen: { $gt: Date.now() - 30000 },
                 serverIdentifier: context.bot.serverData.name,
                 serverRegion: context.bot.serverData.region,
