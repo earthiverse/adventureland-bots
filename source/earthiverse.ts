@@ -245,14 +245,6 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                     priority.push("mrpumpkin")
                 }
             }
-
-            // Special monsters
-            for (const id in context.bot.S) {
-                if (!AL.Game.G.monsters[id]) continue // Not a monster
-                if ((context.bot.S[id] as ServerInfoDataLive)?.live) {
-                    priority.push(id as MonsterName)
-                }
-            }
         }
     }
 
