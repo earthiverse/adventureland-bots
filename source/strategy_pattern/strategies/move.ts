@@ -115,8 +115,8 @@ export class GetHolidaySpiritStrategy<Type extends Character> implements Strateg
 
     private async getHolidaySpirit(bot: Type) {
         if (bot.s.holidayspirit) return // We already have holiday spirit
-        await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 }).catch(suppress_errors)
-        await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50, avoidTownWarps: true })
+        await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 }).catch(suppress_errors)
+        await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, avoidTownWarps: true })
         await bot.getHolidaySpirit()
     }
 

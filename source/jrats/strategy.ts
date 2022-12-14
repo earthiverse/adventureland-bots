@@ -30,19 +30,19 @@ const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
 const trackerStrategy = new TrackerStrategy()
 const respawnStrategy = new RespawnStrategy()
 
-let halloweenData
-let halloweenDataUpdated: Date
+let eventData
+let eventDataUpdated: Date
 let charactersData
 let charactersDataUpdated: Date
 
 setInterval(async () => {
     try {
-        // console.log("Getting Halloween data...")
-        // const aldata = await fetch("https://aldata.earthiverse.ca/halloween")
-        // if (aldata.status == 200) {
-        //     halloweenData = await aldata.json()
-        halloweenDataUpdated = new Date()
-        // }
+        console.log("Getting Halloween data...")
+        const aldata = await fetch("https://aldata.earthiverse.ca/christmas")
+        if (aldata.status == 200) {
+            eventData = await aldata.json()
+            eventDataUpdated = new Date()
+        }
     } catch (e) {
         console.error(e)
     }
@@ -138,16 +138,16 @@ async function startBot(characterName: string, characterType: CharacterType, ser
 
     const connectLoop = async () => {
         try {
-            if (halloweenDataUpdated.getTime() < Date.now() - 60_000) {
-                console.log(`Not connecting to ${serverRegion} ${serverIdentifier} (Halloween data is old)!`)
+            if (eventDataUpdated.getTime() < Date.now() - 60_000) {
+                console.log(`Not connecting to ${serverRegion} ${serverIdentifier} (Event data is old)!`)
                 return
             }
-            if (halloweenData?.length > 0 && halloweenData[0].serverRegion == serverRegion && halloweenData[0].serverIdentifier == serverIdentifier) {
-                console.log(`Not connecting to ${serverRegion} ${serverIdentifier} (Currently on Halloween)!`)
+            if (eventData?.length > 0 && eventData[0].serverRegion == serverRegion && eventData[0].serverIdentifier == serverIdentifier) {
+                console.log(`Not connecting to ${serverRegion} ${serverIdentifier} (Main characters probably on event)!`)
                 return
             }
-            if (halloweenData?.length > 1 && halloweenData[1].serverRegion == serverRegion && halloweenData[1].serverIdentifier == serverIdentifier) {
-                console.log(`Not connecting to ${serverRegion} ${serverIdentifier} (Next on Halloween)!`)
+            if (eventData?.length > 1 && eventData[1].serverRegion == serverRegion && eventData[1].serverIdentifier == serverIdentifier) {
+                console.log(`Not connecting to ${serverRegion} ${serverIdentifier} (Main characters probably on event soon)!`)
                 return
             }
 
