@@ -54,7 +54,7 @@ const PUBLIC_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 /** All contexts */
 const ALL_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 
-const guiStrategy = new GuiStrategy({ port: 80 })
+const guiStrategy = new GuiStrategy({ port: 8080 })
 const baseStrategy = new BaseStrategy(ALL_CONTEXTS)
 const privateBuyStrategy = new BuyStrategy({
     buyMap: undefined,
