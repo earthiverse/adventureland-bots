@@ -22,6 +22,7 @@ import express from "express"
 import path from "path"
 import { body, validationResult } from "express-validator"
 import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
+import { GuiStrategy } from "./strategy_pattern/strategies/gui.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
@@ -31,7 +32,7 @@ await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 const ENABLE_EVENTS = true
 const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
-const SPECIAL_MONSTERS: MonsterName[] = ["cutebee", "fvampire", "goldenbat", "greenjr", "jr", "mvampire", "pinkgoo", "snowman", "stompy", "tinyp"]
+const SPECIAL_MONSTERS: MonsterName[] = ["cutebee", "fvampire", "goldenbat", "greenjr", "grinch", "jr", "mvampire", "pinkgoo", "snowman", "stompy", "tinyp"]
 const ENABLE_MONSTERHUNTS = false
 const MAX_PUBLIC_CHARACTERS = 6
 
@@ -53,6 +54,7 @@ const PUBLIC_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 /** All contexts */
 const ALL_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 
+const guiStrategy = new GuiStrategy({ port: 80 })
 const baseStrategy = new BaseStrategy(ALL_CONTEXTS)
 const privateBuyStrategy = new BuyStrategy({
     buyMap: undefined,
@@ -244,6 +246,10 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                     // Only mrpumpkin is alive
                     priority.push("mrpumpkin")
                 }
+            }
+
+            if (context.bot.S.holidayseason) {
+                priority.push("grinch")
             }
         }
     }
@@ -454,6 +460,7 @@ contextsLogic(PUBLIC_CONTEXTS, publicSetups)
 // Shared setup
 async function startShared(context: Strategist<PingCompensatedCharacter>, privateContext = false) {
     context.applyStrategy(debugStrategy)
+    context.applyStrategy(guiStrategy)
     if (context.bot.id == PARTY_LEADER) {
         context.applyStrategy(partyAcceptStrategy)
     } else {
@@ -521,6 +528,7 @@ const startMerchantContext = async () => {
     }
     const CONTEXT = new Strategist<Merchant>(merchant, baseStrategy)
     startMerchant(CONTEXT, PRIVATE_CONTEXTS, { ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, debug: true, enableUpgrade: true })
+    CONTEXT.applyStrategy(guiStrategy)
     CONTEXT.applyStrategy(privateSellStrategy)
     PRIVATE_CONTEXTS.push(CONTEXT)
     ALL_CONTEXTS.push(CONTEXT)
