@@ -249,7 +249,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
             }
 
             if (context.bot.S.holidayseason) {
-                priority.push("grinch")
+                if ((context.bot.S as ServerInfoDataLive)?.live) priority.push("grinch")
             }
         }
     }
