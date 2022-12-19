@@ -44,8 +44,10 @@ const PRIEST = "earthPri"
 const PARTY_LEADER = "earthWar"
 const PARTY_ALLOWLIST = ["earthiverse", "earthMag", "earthPri", "earthWar"]
 
-let TARGET_REGION: ServerRegion = "US"
-let TARGET_IDENTIFIER: ServerIdentifier = "I"
+const DEFAULT_REGION: ServerRegion = "US"
+const DEFAULT_IDENTIFIER: ServerIdentifier = "I"
+let TARGET_REGION: ServerRegion = DEFAULT_REGION
+let TARGET_IDENTIFIER: ServerIdentifier = DEFAULT_IDENTIFIER
 
 /** My characters */
 const PRIVATE_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
@@ -368,50 +370,47 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
     try {
         const freeContexts: Strategist<PingCompensatedCharacter>[] = []
 
+        // Check for server hop
+        const bot1 = contexts[0]?.bot
+        if (!bot1) return
+        if (ENABLE_SERVER_HOPS) {
+            // Default
+            TARGET_REGION = DEFAULT_REGION
+            TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
+
+            // Halloween
+            if (bot1.S.halloween) {
+                const monster = (await getHalloweenMonsterPriority(true))[0]
+                if (monster) {
+                    // We want to switch servers
+                    TARGET_IDENTIFIER = monster.serverIdentifier
+                    TARGET_REGION = monster.serverRegion
+                }
+            }
+
+            // Christmas
+            if (bot1.S.holidayseason) {
+                const monster = (await getHolidaySeasonMonsterPriority(true))[0]
+                if (monster) {
+                    // We want to switch servers
+                    TARGET_IDENTIFIER = monster.serverIdentifier
+                    TARGET_REGION = monster.serverRegion
+                }
+            }
+        }
+
         for (const context of contexts) {
             if (!context.isReady()) continue
             const bot = context.bot
 
-            if (ENABLE_SERVER_HOPS) {
-                if (bot.S.halloween) {
-                    const monster = (await getHalloweenMonsterPriority(true))[0]
-                    if (
-                        context.uptime() > 60_000
-                        && monster
-                        && (
-                            monster.serverRegion !== bot.serverData.region
-                            || monster.serverIdentifier !== bot.serverData.name
-                        )
-                    ) {
-                        // We want to switch servers
-                        TARGET_IDENTIFIER = monster.serverIdentifier
-                        TARGET_REGION = monster.serverRegion
-                        await sleep(1000)
-                        console.log(bot.id, "is changing server from", bot.serverData.region, bot.serverData.name, "to", monster.serverRegion, monster.serverIdentifier)
-                        context.changeServer(monster.serverRegion, monster.serverIdentifier).catch(console.error)
-                        return
-                    }
-                }
-
-                if (bot.S.holidayseason) {
-                    const monster = (await getHolidaySeasonMonsterPriority(true))[0]
-                    if (
-                        context.uptime() > 60_000
-                        && monster
-                        && (
-                            monster.serverRegion !== bot.serverData.region
-                            || monster.serverIdentifier !== bot.serverData.name
-                        )
-                    ) {
-                        // We want to switch servers
-                        TARGET_IDENTIFIER = monster.serverIdentifier
-                        TARGET_REGION = monster.serverRegion
-                        await sleep(1000)
-                        console.log(bot.id, "is changing server from", bot.serverData.region, bot.serverData.name, "to", monster.serverRegion, monster.serverIdentifier)
-                        context.changeServer(monster.serverRegion, monster.serverIdentifier).catch(console.error)
-                        return
-                    }
-                }
+            if (
+                context.uptime() > 60_000
+                && (bot.serverData.region !== TARGET_REGION || bot.serverData.name !== TARGET_IDENTIFIER)
+            ) {
+                await sleep(1000)
+                console.log(bot.id, "is changing server from", bot.serverData.region, bot.serverData.name, "to", TARGET_REGION, TARGET_IDENTIFIER)
+                context.changeServer(TARGET_REGION, TARGET_IDENTIFIER).catch(console.error)
+                continue
             }
 
             if (bot.ctype == "merchant") continue
