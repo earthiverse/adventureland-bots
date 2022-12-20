@@ -23,6 +23,7 @@ import path from "path"
 import { body, validationResult } from "express-validator"
 import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
 import { GuiStrategy } from "./strategy_pattern/strategies/gui.js"
+import { OptimizeItemsStrategy } from "./strategy_pattern/strategies/item.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
@@ -139,6 +140,7 @@ const privateSetups = constructSetups(ALL_CONTEXTS)
 const publicSetups = constructHelperSetups(ALL_CONTEXTS)
 // Etc.
 const elixirStrategy = new ElixirStrategy("elixirluck")
+const itemStrategy = new OptimizeItemsStrategy()
 
 const currentSetups = new Map<Strategist<PingCompensatedCharacter>, { attack: Strategy<PingCompensatedCharacter>, move: Strategy<PingCompensatedCharacter> }>()
 const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], setups: Setups) => {
@@ -477,6 +479,8 @@ async function startShared(context: Strategist<PingCompensatedCharacter>, privat
     context.applyStrategy(respawnStrategy)
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(elixirStrategy)
+    context.applyStrategy(itemStrategy)
+
 }
 
 async function startMage(context: Strategist<Mage>, privateContext = false) {
