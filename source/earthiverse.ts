@@ -306,7 +306,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
         }
     }
 
-    if (ENABLE_MONSTERHUNTS) {
+    if (ENABLE_MONSTERHUNTS && TARGET_REGION == DEFAULT_REGION && TARGET_IDENTIFIER == DEFAULT_IDENTIFIER) {
         for (const _context of contexts) {
             for (const contexts2 of [PRIVATE_CONTEXTS, PUBLIC_CONTEXTS]) {
                 const monsterhunts: {
