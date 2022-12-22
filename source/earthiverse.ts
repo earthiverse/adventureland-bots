@@ -24,6 +24,7 @@ import { body, validationResult } from "express-validator"
 import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
 import { GuiStrategy } from "./strategy_pattern/strategies/gui.js"
 import { OptimizeItemsStrategy } from "./strategy_pattern/strategies/item.js"
+import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
@@ -119,6 +120,7 @@ const debugStrategy = new DebugStrategy({
     logLimitDCReport: true
 })
 // Movement
+const avoidStackingStrategy = new AvoidStackingStrategy()
 const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
 const finishMonsterHuntStrategy = new FinishMonsterHuntStrategy()
 const getMonsterHuntStrategy = new GetMonsterHuntStrategy()
@@ -476,6 +478,7 @@ async function startShared(context: Strategist<PingCompensatedCharacter>, privat
         context.applyStrategy(publicSellStrategy)
     }
 
+    context.applyStrategy(avoidStackingStrategy)
     context.applyStrategy(respawnStrategy)
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(elixirStrategy)
