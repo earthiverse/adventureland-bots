@@ -34,7 +34,7 @@ const ENABLE_EVENTS = true
 const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
 const SPECIAL_MONSTERS: MonsterName[] = ["cutebee", "fvampire", "goldenbat", "greenjr", "grinch", "jr", "mvampire", "pinkgoo", "snowman", "stompy", "tinyp"]
-const ENABLE_MONSTERHUNTS = false
+const ENABLE_MONSTERHUNTS = true
 const MAX_PUBLIC_CHARACTERS = 6
 
 const MERCHANT = "earthMer"
@@ -417,7 +417,7 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
 
             if (bot.ctype == "merchant") continue
 
-            if (ENABLE_MONSTERHUNTS) {
+            if (ENABLE_MONSTERHUNTS && bot.serverData.region == DEFAULT_REGION && bot.serverData.name == DEFAULT_IDENTIFIER) {
                 // Get a monster hunt
                 if (!bot.s.monsterhunt) {
                     removeSetup(context)
