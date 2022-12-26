@@ -80,22 +80,38 @@ const publicBuyStrategy = new BuyStrategy({
 
 const privateSellStrategy = new SellStrategy({
     sellMap: new Map<ItemName, [number, number][]>([
+        ["cclaw", undefined],
         ["coat1", undefined],
+        ["dexring", undefined],
         ["gloves1", undefined],
         ["gphelmet", undefined],
         ["helmet1", undefined],
+        ["hpamulet", undefined],
+        ["hpbelt", undefined],
+        ["iceskates", undefined],
+        ["intring", undefined],
+        ["intearring", undefined],
+        ["monstertoken", [
+            [undefined, 500_000]
+        ]],
+        ["mushroomstaff", undefined],
         ["pants1", undefined],
         ["phelmet", undefined],
         ["pickaxe", [
             [0, 1_000_000]
         ]],
+        ["ringsj", undefined],
         ["rod", [
             [0, 1_000_000]
         ]],
         ["shoes1", undefined],
+        ["slimestaff", undefined],
         ["snowball", undefined],
         ["stand0", undefined],
-        ["stramulet", undefined]
+        ["stramulet", undefined],
+        ["strearring", undefined],
+        ["vitearring", undefined],
+        ["vitring", undefined],
     ])
 })
 const publicSellStrategy = new SellStrategy({
@@ -106,11 +122,12 @@ const publicSellStrategy = new SellStrategy({
         ["helmet1", undefined],
         ["hpamulet", undefined],
         ["hpbelt", undefined],
+        ["iceskates", undefined],
         ["pants1", undefined],
         ["phelmet", undefined],
         ["shoes1", undefined],
         ["stramulet", undefined],
-        ["vitearring", undefined]
+        ["vitearring", undefined],
     ])
 })
 
