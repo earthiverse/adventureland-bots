@@ -112,6 +112,7 @@ const privateSellStrategy = new SellStrategy({
         ["strearring", undefined],
         ["vitearring", undefined],
         ["vitring", undefined],
+        ["xmace", undefined],
     ])
 })
 const publicSellStrategy = new SellStrategy({
