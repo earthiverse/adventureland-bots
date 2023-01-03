@@ -50,7 +50,7 @@ class WarriorGigaCrabAttackStrategy extends WarriorAttackStrategy {
             this.options.ensureEquipped.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } },
             this.options.ensureEquipped.offhand = { name: "fireblade", filters: { returnHighestLevel: true } },
             delete this.options.enableEquipForCleave
-            this.options.typeList = ["mrpumpkin"]
+            this.options.typeList = ["crabxx"]
         } else {
             // Splash Damage
             delete this.options.disableCleave

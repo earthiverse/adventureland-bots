@@ -85,7 +85,7 @@ export function constructIceGolemSetup(contexts: Strategist<PingCompensatedChara
                     },
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({
+                        attack: new WarriorIceGolemAttackStrategy({
                             contexts: contexts,
                             disableCleave: true,
                             ensureEquipped: { ...WARRIOR_NORMAL },
