@@ -34,7 +34,7 @@ await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 const ENABLE_EVENTS = true
 const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
-const SPECIAL_MONSTERS: MonsterName[] = ["cutebee", "fvampire", "goldenbat", "greenjr", "grinch", "jr", "mvampire", "pinkgoo", "snowman", "stompy", "tinyp"]
+const SPECIAL_MONSTERS: MonsterName[] = ["crabxx", "cutebee", "franky", "fvampire", "goldenbat", "greenjr", "grinch", "icegolem", "jr", "mvampire", "pinkgoo", "snowman", "stompy", "tinyp"]
 const ENABLE_MONSTERHUNTS = true
 const MAX_PUBLIC_CHARACTERS = 6
 
@@ -300,7 +300,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                     $or: [
                         { target: undefined },
                         { target: { $in: PARTY_ALLOWLIST } },
-                        { type: { $in: ["pinkgoo", "snowman", "wabbit"] } } // Coop monsters will give credit
+                        { type: { $in: ["phoenix", "pinkgoo", "snowman", "wabbit"] } } // Coop monsters will give credit
                     ]
                 }, {
                     $or: [
@@ -340,7 +340,6 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 }
 
                 monsterhunts.sort((a, b) => a.ms - b.ms) // Lower time remaining first
-
 
                 for (const monsterhunt of monsterhunts) {
                     priority.push(monsterhunt.id)
