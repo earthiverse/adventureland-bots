@@ -46,11 +46,13 @@ export class PartyHealStrategy implements Strategy<Priest> {
     private async partyHeal(bot: Priest) {
         if (bot.rip) return
         if (!bot.canUse("partyheal")) return
+        if (!bot.party) return // Not in a party
 
         for (const context of this.contexts) {
             if (!context.isReady()) continue
             const friend = context.bot
             if (!friend || !friend.ready || friend.socket.disconnected || friend.rip) continue
+            if (friend.party !== bot.party) continue // They're in a different party
 
             if (
                 (this.options.healWhenLessThan.hp !== undefined && friend.hp < this.options.healWhenLessThan.hp)
