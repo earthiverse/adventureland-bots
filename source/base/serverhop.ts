@@ -73,12 +73,10 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
                     $or: [
                         {
                             // Grinch hops around a lot, stay on the server where he's the lowest HP until he's dead
-                            serverIdentifier: { $nin: ["PVP"] },
                             type: { $in: ["grinch"] }
                         },
                         {
                             // We only want to attack most coop monsters if others are attacking too, since they're high HP
-                            serverIdentifier: { $nin: ["PVP"] },
                             target: { $ne: undefined },
                             type: { $in: coop }
                         },
@@ -88,11 +86,11 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
                                 { target: undefined },
                                 { type: { $in: ["pinkgoo", "snowman", "tiger", "wabbit"] } }
                             ],
-                            serverIdentifier: { $nin: ["PVP"] },
                             type: { $in: solo },
 
                         }
                     ],
+                    serverIdentifier: { $nin: ["PVP"] },
                     lastSeen: { $gt: Date.now() - 120_000 },
                 }
             },
@@ -120,6 +118,61 @@ export async function getTargetServerFromPlayer(defaultRegion: ServerRegion, def
     const player = await AL.PlayerModel.findOne({ lastSeen: { $gt: Date.now() - lastSeen }, name: playerID }).lean().exec()
     if (player && player.serverRegion && player.serverIdentifier) return [player.serverRegion, player.serverIdentifier]
     return [defaultRegion, defaultIdentifier]
+}
+
+export async function getServerHopMonsterPriority(avoidPVP = false) {
+    const monsterPriority: MonsterName[] = ["franky", "crabxx", "icegolem", "goldenbat", "cutebee"]
+    const serverPriority = ["EUI", "EUII", "USI", "USII", "USIII", "ASIAI", "EUPVP", "USPVP"]
+
+    const entitiesFilters = { lastSeen: { $gt: Date.now() - 30000 }, type: { $in: monsterPriority } }
+    if (avoidPVP) entitiesFilters["serverIdentifier"] = { $ne: "PVP" }
+
+    const entitiesP = await AL.EntityModel.find(entitiesFilters).lean().exec()
+
+    const entities = await entitiesP
+    entities.sort((a, b) => {
+        // Monster Priority
+        if (a.type !== b.type) return monsterPriority.indexOf(a.type) - monsterPriority.indexOf(b.type)
+
+        // PVP Priority
+        if (a.serverIdentifier !== "PVP" && b.serverIdentifier == "PVP") return -1
+        if (b.serverIdentifier !== "PVP" && a.serverIdentifier == "PVP") return 1
+
+        // Lower HP first
+        if (a.hp !== b.hp) return a.hp - b.hp
+
+        // Server Priority
+        if (a.serverRegion !== b.serverRegion || a.serverIdentifier !== b.serverIdentifier) {
+            const aKey = `${a.serverRegion}${a.serverIdentifier}`
+            const bKey = `${b.serverRegion}${b.serverIdentifier}`
+            return serverPriority.indexOf(aKey) - serverPriority.indexOf(bKey)
+        }
+    })
+
+    const toReturn = []
+    for (const entity of entities) {
+        if (entity.in && entity.in !== entity.map) continue // Don't include instanced monsters
+        if (
+            entity.target
+            && (entity.type == "goldenbat" || entity.type == "cutebee")
+        ) continue
+
+        toReturn.push({
+            hp: entity.hp,
+            id: entity.name,
+            lastSeen: new Date(entity.lastSeen).toISOString(),
+            level: entity.level,
+            map: entity.map,
+            serverIdentifier: entity.serverIdentifier,
+            serverRegion: entity.serverRegion,
+            target: entity.target,
+            type: entity.type,
+            x: entity.x,
+            y: entity.y
+        })
+    }
+
+    return toReturn
 }
 
 export async function getHalloweenMonsterPriority(avoidPVP = false) {

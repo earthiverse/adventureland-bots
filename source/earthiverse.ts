@@ -11,7 +11,7 @@ import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
 import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
 import { Config, constructHelperSetups, constructSetups, Setups } from "./strategy_pattern/setups/base.js"
 import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
-import { getHalloweenMonsterPriority, getHolidaySeasonMonsterPriority } from "./base/serverhop.js"
+import { getHalloweenMonsterPriority, getHolidaySeasonMonsterPriority, getServerHopMonsterPriority } from "./base/serverhop.js"
 import { randomIntFromInterval, sleep } from "./base/general.js"
 import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
@@ -272,6 +272,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 }
             }
 
+            // Christmas
             if (context.bot.S.holidayseason) {
                 if ((context.bot.S.grinch as ServerInfoDataLive)?.live) priority.push("grinch")
             }
@@ -413,6 +414,16 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
             // Christmas
             if (bot1.S.holidayseason) {
                 const monster = (await getHolidaySeasonMonsterPriority(true))[0]
+                if (monster) {
+                    // We want to switch servers
+                    TARGET_IDENTIFIER = monster.serverIdentifier
+                    TARGET_REGION = monster.serverRegion
+                }
+            }
+
+            // Everyday
+            if (TARGET_REGION !== DEFAULT_REGION || TARGET_IDENTIFIER !== DEFAULT_IDENTIFIER) {
+                const monster = (await getServerHopMonsterPriority(true)[0])
                 if (monster) {
                     // We want to switch servers
                     TARGET_IDENTIFIER = monster.serverIdentifier
