@@ -7,7 +7,7 @@
   "dependencies": {
     "@types/cors": "^2.8.12",
     "alclient": "^0.15.65",
-    "algui": "^0.1.21",
+    "algui": "^0.1.22",
     "axios": "^0.25.0",
     "body-parser": "^1.19.2",
     "console-table-printer": "^2.10.0",
