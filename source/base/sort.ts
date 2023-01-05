@@ -98,6 +98,17 @@ export function sortPriority(bot: Character, types?: MonsterName[]) {
         if (!a_willBurn && b_willBurn) return true
         else if (a_willBurn && !b_willBurn) return false
 
+        // If we have a splash weapon, prioritize monsters with other monsters around them
+        const equipped = AL.Game.G.items[bot.slots.mainhand.name]
+        if (equipped?.blast || equipped?.explosion) {
+            // TODO: According to https://discord.com/channels/238332476743745536/238366540091621377/1060555230246354965, the range is 50 for explosion
+            //       If that's true, we should move the 50 to a constant in AL.Constants
+            const a_nearby = bot.getEntities({ withinRangeOf: a, withinRange: 50 }).length
+            const b_nearby = bot.getEntities({ withinRangeOf: b, withinRange: 50 }).length
+            if (a_nearby > b_nearby) return true
+            else if (b_nearby > a_nearby) return false
+        }
+
         // Lower HP -> higher priority
         if (a.hp < b.hp) return true
         else if (a.hp > b.hp) return false
