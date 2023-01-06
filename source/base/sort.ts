@@ -109,9 +109,9 @@ export function sortPriority(bot: Character, types?: MonsterName[]) {
             else if (b_nearby > a_nearby) return false
         }
 
-        // Lower HP -> higher priority
-        if (a.hp < b.hp) return true
-        else if (a.hp > b.hp) return false
+        // Higher HP -> higher priority
+        if (a.hp > b.hp) return true
+        else if (a.hp < b.hp) return false
 
         // Closer -> higher priority
         return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
