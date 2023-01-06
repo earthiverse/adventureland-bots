@@ -429,8 +429,13 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         }
 
         // Go through all the spawns on the map to look for it
-        if ((dbTarget && dbTarget.x == undefined && dbTarget.y == undefined && dbTarget.map)
-        || (sInfo && sInfo.live && sInfo.x !== undefined && sInfo.y !== undefined && !this.options.ignoreMaps.includes(sInfo.map))) {
+        if (
+            // We have no information about it at all
+            (!dbTarget && !sInfo)
+            // Or, we have information about it, but it only includes information about what map it's on
+            || (dbTarget && dbTarget.x == undefined && dbTarget.y == undefined && dbTarget.map && !this.options.ignoreMaps.includes(dbTarget.map))
+            || (sInfo && sInfo.live && sInfo.x !== undefined && sInfo.y !== undefined && sInfo.map && !this.options.ignoreMaps.includes(sInfo.map))
+        ) {
             const spawns: IPosition[] = []
 
             const gMap = bot.G.maps[(dbTarget.map ?? bot.S[this.options.type]["map"]) as MapName] as GMap
