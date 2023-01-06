@@ -12,6 +12,7 @@ import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 
 export const DEFAULT_EXCHANGEABLES = new Set<ItemName>([
     "armorbox",
+    "candycane",
     "gem0",
     "gem1",
     "seashell",
@@ -102,6 +103,7 @@ export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
     ["hboots", -AL.Constants.PONTY_MARKUP],
     ["hdagger", -AL.Constants.PONTY_MARKUP],
     ["lmace", -AL.Constants.PONTY_MARKUP],
+    ["lostearring", -AL.Constants.PONTY_MARKUP],
     ["luckyt", -AL.Constants.PONTY_MARKUP],
     ["mearring", -AL.Constants.PONTY_MARKUP],
     ["mpxamulet", -AL.Constants.PONTY_MARKUP],
