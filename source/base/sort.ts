@@ -99,8 +99,9 @@ export function sortPriority(bot: Character, types?: MonsterName[]) {
         else if (a_willBurn && !b_willBurn) return false
 
         // If we have a splash weapon, prioritize monsters with other monsters around them
-        const equipped = AL.Game.G.items[bot.slots.mainhand.name]
-        if (equipped?.blast || equipped?.explosion) {
+        const mainhand = AL.Game.G.items[bot.slots.mainhand.name]
+        const offhand = AL.Game.G.items[bot.slots.offhand.name]
+        if (mainhand?.blast || mainhand?.explosion || offhand?.blast || offhand?.explosion) {
             // TODO: According to https://discord.com/channels/238332476743745536/238366540091621377/1060555230246354965, the range is 50 for explosion
             //       If that's true, we should move the 50 to a constant in AL.Constants
             const a_nearby = bot.getEntities({ withinRangeOf: a, withinRange: 50 }).length
@@ -112,6 +113,18 @@ export function sortPriority(bot: Character, types?: MonsterName[]) {
         // Higher HP -> higher priority
         if (a.hp > b.hp) return true
         else if (a.hp < b.hp) return false
+
+        // Further from other party members -> higher priority
+        const players = bot.getPlayers({ isPartyMember: true })
+        if (players.length) {
+            const a_party_distance = players
+                .map(player => AL.Tools.squaredDistance(a, player))
+                .reduce((sum, distance) => sum + distance, 0)
+            const b_party_distance = players
+                .map(player => AL.Tools.squaredDistance(b, player))
+                .reduce((sum, distance) => sum + distance, 0)
+            return a_party_distance > b_party_distance
+        }
 
         // Closer -> higher priority
         return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
