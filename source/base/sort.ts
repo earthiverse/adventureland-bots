@@ -99,8 +99,8 @@ export function sortPriority(bot: Character, types?: MonsterName[]) {
         else if (a_willBurn && !b_willBurn) return false
 
         // If we have a splash weapon, prioritize monsters with other monsters around them
-        const mainhand = AL.Game.G.items[bot.slots.mainhand.name]
-        const offhand = AL.Game.G.items[bot.slots.offhand.name]
+        const mainhand = AL.Game.G.items[bot.slots.mainhand?.name]
+        const offhand = AL.Game.G.items[bot.slots.offhand?.name]
         if (mainhand?.blast || mainhand?.explosion || offhand?.blast || offhand?.explosion) {
             // TODO: According to https://discord.com/channels/238332476743745536/238366540091621377/1060555230246354965, the range is 50 for explosion
             //       If that's true, we should move the 50 to a constant in AL.Constants
