@@ -10,6 +10,13 @@ import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 
+export const DEFAULT_CRAFTABLES = new Set<ItemName>([
+    "armorring",
+    "bfangamulet",
+    "pouchbow",
+    "resistancering"
+])
+
 export const DEFAULT_EXCHANGEABLES = new Set<ItemName>([
     "armorbox",
     "candycane",
@@ -68,7 +75,9 @@ export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
     ["basher", -AL.Constants.PONTY_MARKUP],
     ["bataxe", -AL.Constants.PONTY_MARKUP],
     ["bcape", -AL.Constants.PONTY_MARKUP],
+    ["bfang", -AL.Constants.PONTY_MARKUP],
     ["bottleofxp", -AL.Constants.PONTY_MARKUP],
+    ["bwing", -AL.Constants.PONTY_MARKUP],
     ["computer", 100_000_000],
     ["crossbow", -AL.Constants.PONTY_MARKUP],
     ["cryptkey", 1_000_000],
@@ -173,6 +182,15 @@ export type MerchantMoveStrategyOptions = {
         ratio: number,
     }
     /** If enabled, the merchant will
+     * - withdraw items needed to craft the items in the list from the bank
+     * - craft the items in the given list
+     * - buy items from the vendor if they are needed to craft
+     */
+    enableCraft?: {
+        items: Set<ItemName>
+    },
+    /** If enabled, the merchant will
+     * - withdraw items to exchange from the bank if we have enough free spaces
      * - if they have the required amount of each exchangeable
      *   - move to where they can exchange the item(s)
      *   - exchange the item(s)
@@ -333,7 +351,9 @@ export class MerchantStrategy implements Strategy<Merchant> {
                             if (!bankItem) continue // Empty slot
                             if (bankItem.name !== item.name) continue // Not the same item
                             if ((item.q + bankItem.q) > AL.Game.G.items[bankItem.name].s) continue // Depositing would exceed stack limit
-                            await bot.depositItem(i, bankSlot as BankPackName, j).catch(console.error)
+                            await bot.depositItem(i, bankSlot as BankPackName).catch(console.error)
+                            // TODO: Set the index if it ever gets fixed
+                            // await bot.depositItem(i, bankSlot as BankPackName, j).catch(console.error)
                         }
                     }
                 }
@@ -467,6 +487,59 @@ export class MerchantStrategy implements Strategy<Merchant> {
                                 break
                             }
 
+                        }
+                    }
+                }
+
+                // Withdraw an item we want to craft
+                if (this.options.enableCraft && bot.esize >= 3) {
+                    this.debug(bot, "Looking for craftables in bank...")
+                    for (const itemToCraft of this.options.enableCraft.items) {
+                        const gCraft = AL.Game.G.craft[itemToCraft]
+                        const itemsToWithdraw: [BankPackName, number][] = []
+                        let foundAll = true
+                        craftItemCheck:
+                        for (const [requiredQuantity, requiredItem, requiredItemLevel] of gCraft.items) {
+                            // If the item is compoundable or upgradable, the level needs to be 0
+                            let fixedItemLevel = requiredItemLevel
+                            if (fixedItemLevel === undefined) {
+                                const gInfo = AL.Game.G.items[requiredItem]
+                                if (gInfo.upgrade || gInfo.compound) fixedItemLevel = 0
+                            }
+
+                            // Check if it's already in our inventory
+                            if (bot.hasItem(requiredItem, bot.items, { level: requiredItemLevel })) continue
+
+                            // Look in bank
+                            for (const bankSlot in bot.bank) {
+                                // Only get stuff from the packs in the first level
+                                const matches = /items(\d+)/.exec(bankSlot)
+                                if (!matches || Number.parseInt(matches[1]) > 7) continue
+
+                                for (let i = 0; i < bot.bank[bankSlot as BankPackName].length; i++) {
+                                    const bankItem = bot.bank[bankSlot as BankPackName][i]
+                                    if (!bankItem) continue // Empty slot
+                                    if (bankItem.name !== requiredItem) continue // Not the required item
+                                    if (bankItem.level !== fixedItemLevel) continue // Not the required level
+                                    if (bankItem.q !== undefined && bankItem.q < requiredQuantity) continue // Not enough
+
+                                    // We found it in our bank
+                                    itemsToWithdraw.push([bankSlot as BankPackName, i])
+                                    continue craftItemCheck
+                                }
+                            }
+
+                            if (!fixedItemLevel && bot.canBuy(requiredItem, { ignoreLocation: true, quantity: requiredQuantity })) continue
+
+                            // We don't have this required item
+                            foundAll = false
+                            break
+                        }
+                        if (foundAll && bot.esize > itemsToWithdraw.length) {
+                            for (const [bankPack, i] of itemsToWithdraw) {
+                                await bot.withdrawItem(bankPack, i).catch(console.error)
+                            }
+                            break
                         }
                     }
                 }
@@ -825,6 +898,35 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms + 1000)
                         return
                     }
+                }
+            }
+
+            if (this.options.enableCraft) {
+                // Craft items in our list
+                for (const itemToCraft of this.options.enableCraft.items) {
+                    if (!bot.canCraft(itemToCraft, { ignoreLocation: true, ignoreNpcItems: true })) continue // We can't craft it
+
+                    if (!bot.canCraft(itemToCraft, { ignoreLocation: true })) {
+                        // We need to buy some items from the NPCs first
+                        const gCraft = AL.Game.G.craft[itemToCraft]
+                        for (const [requiredQuantity, requiredItem] of gCraft.items) {
+                            if (!bot.hasItem(["computer", "supercomputer"])) {
+                                this.debug(bot, `Moving to NPC to buy ${requiredItem}x${requiredQuantity} to craft ${itemToCraft}`)
+                                await bot.smartMove(requiredItem)
+                            }
+                            this.debug(bot, `Buying ${requiredItem}x${requiredQuantity} to craft ${itemToCraft}`)
+                            await bot.buy(requiredItem, requiredQuantity)
+                        }
+                    }
+
+                    if (!bot.hasItem(["computer", "supercomputer"])) {
+                        // Walk to the NPC
+                        const npc = AL.Pathfinder.locateCraftNPC(itemToCraft)
+                        this.debug(bot, `Moving to NPC to craft ${itemToCraft}`)
+                        await bot.smartMove(npc, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+                    }
+                    bot.craft(itemToCraft).catch(console.error)
+                    break
                 }
             }
 
