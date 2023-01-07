@@ -442,15 +442,21 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             if (gMap.instance || !gMap.monsters || gMap.monsters.length == 0) return // Map is unreachable, or there are no monsters
 
             for (const spawn of gMap.monsters) {
+                // Add monster spawns
                 const gMonster = bot.G.monsters[spawn.type]
                 if (gMonster.aggro >= 100 || gMonster.rage >= 100) continue // Skip aggro spawns
                 if (spawn.boundary) {
-                    spawns.push({ "map": map, "x": (spawn.boundary[0] + spawn.boundary[2]) / 2, "y": (spawn.boundary[1] + spawn.boundary[3]) / 2 })
+                    spawns.push({ map: map, x: (spawn.boundary[0] + spawn.boundary[2]) / 2, y: (spawn.boundary[1] + spawn.boundary[3]) / 2 })
                 } else if (spawn.boundaries) {
                     for (const boundary of spawn.boundaries) {
-                        spawns.push({ "map": boundary[0], "x": (boundary[1] + boundary[3]) / 2, "y": (boundary[2] + boundary[4]) / 2 })
+                        spawns.push({ map: boundary[0], x: (boundary[1] + boundary[3]) / 2, y: (boundary[2] + boundary[4]) / 2 })
                     }
                 }
+            }
+
+            for (const spawn of gMap.spawns) {
+                // Add map spawns
+                spawns.push({ map: map, x: spawn[0], y: spawn[1] })
             }
 
             // Sort to improve efficiency a little
