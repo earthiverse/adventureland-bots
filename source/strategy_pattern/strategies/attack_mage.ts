@@ -1,3 +1,4 @@
+
 import AL, { ActionData, ActionDataRay, Entity, Mage, SlotType, TradeItemInfo, TradeSlotType } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { sortPriority } from "../../base/sort.js"
@@ -66,6 +67,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
         }
         if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority)
         if (!this.options.disableZapper) await this.zapperAttack(bot, priority)
+        if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority)
 
         await this.ensureEquipped(bot)
     }

@@ -28,6 +28,7 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
         await this.multiAttack(bot, priority)
         if (!this.options.disableSuperShot) await this.supershot(bot, priority)
         if (!this.options.disableZapper) await this.zapperAttack(bot, priority)
+        if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority)
 
         await this.ensureEquipped(bot)
     }

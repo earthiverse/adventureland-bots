@@ -17,6 +17,7 @@ export type BaseAttackStrategyOptions = GetEntitiesFilters & {
     disableBasicAttack?: true
     disableCreditCheck?: true
     disableEnergize?: true
+    disableIdleAttack?: true
     disableKillSteal?: true
     disableScare?: true
     disableZapper?: true
@@ -157,6 +158,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
         if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority)
         if (!this.options.disableZapper) await this.zapperAttack(bot, priority)
+        if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority)
 
         await this.ensureEquipped(bot)
     }
@@ -188,6 +190,51 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         const entities = bot.getEntities({
             ...this.options,
             canDamage: "attack",
+            withinRange: "attack"
+        })
+        if (entities.length == 0) return // No targets to attack
+
+        // Prioritize the entities
+        const targets = new FastPriorityQueue<Entity>(priority)
+        for (const entity of entities) targets.add(entity)
+
+        const targetingMe = bot.calculateTargets()
+
+        while (targets.size) {
+            const target = targets.poll()
+
+            if (!target.target) {
+                // We're going to be tanking this monster, don't attack if it pushes us over our limit
+                if (bot.targets >= this.options.maximumTargets) continue // We don't want another target
+                switch (target.damage_type) {
+                    case "magical":
+                        if (bot.mcourage <= targetingMe.magical) continue // We can't tank any more magical monsters
+                        break
+                    case "physical":
+                        if (bot.courage <= targetingMe.physical) continue // We can't tank any more physical monsters
+                        break
+                    case "pure":
+                        if (bot.courage <= targetingMe.pure) continue // We can't tank any more pure monsters
+                        break
+                }
+            }
+
+            const canKill = bot.canKillInOneShot(target)
+            if (canKill) this.preventOverkill(bot, target)
+            if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot)
+            return bot.basicAttack(target.id).catch(console.error)
+        }
+    }
+
+    protected async idleAttack(bot: Type, priority: (a: Entity, b: Entity) => boolean): Promise<unknown> {
+        if (!bot.canUse("attack")) return // We can't attack
+
+        const entities = bot.getEntities({
+            notTypeList: KILL_STEAL_AVOID_MONSTERS,
+            canDamage: "attack",
+            couldGiveCredit: true,
+            willBurnToDeath: false,
+            willDieToProjectiles: false,
             withinRange: "attack"
         })
         if (entities.length == 0) return // No targets to attack

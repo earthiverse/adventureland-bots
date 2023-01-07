@@ -58,6 +58,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
         if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority)
         if (!this.options.disableCleave) await this.cleave(bot)
         if (!this.options.disableZapper) await this.zapperAttack(bot, priority)
+        if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority)
 
         await this.ensureEquipped(bot)
     }
