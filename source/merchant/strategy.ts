@@ -179,6 +179,8 @@ export type MerchantMoveStrategyOptions = {
      */
     enableExchange?: {
         items: Set<ItemName>
+        /** Lost earrings can be exchanged at different levels for different items, if this is set we will exchange them at the level provided */
+        lostEarring?: number
     }
     /** If enabled, the merchant will
      * - make a rod if it doesn't have one
@@ -242,6 +244,7 @@ export const DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS: MerchantMoveStrategyOptions
     },
     enableExchange: {
         items: DEFAULT_EXCHANGEABLES,
+        lostEarring: 2,
     },
     enableFishing: true,
     enableJoinGiveaways: true,
@@ -478,6 +481,9 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         }
                         await withdrawItemFromBank(bot, item, options, { freeSpaces: 3, itemsToHold: this.options.itemsToHold })
                         if (bot.hasItem(item, bot.items, options)) break // We found something to exchange
+                    }
+                    if (this.options.enableExchange.lostEarring !== undefined) {
+                        await withdrawItemFromBank(bot, "lostearring", { level: this.options.enableExchange.lostEarring, locked: false }, { freeSpaces: 1, itemsToHold: this.options.itemsToHold })
                     }
                 }
 
@@ -823,6 +829,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
             }
 
             if (this.options.enableExchange) {
+                // Exchange items in our list
                 for (let i = 0; i < bot.isize && bot.esize > 1; i++) {
                     const item = bot.items[i]
                     if (!item) continue // No item
@@ -837,6 +844,24 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     }
                     if (!bot.q.exchange) bot.exchange(i).catch(console.error)
                     break
+                }
+
+                if (this.options.enableExchange.lostEarring !== undefined) {
+                    // Exchange earrings of the provided level
+                    for (let i = 0; i < bot.isize; i++) {
+                        const item = bot.items[i]
+                        if (!item) continue // No item
+                        if (item.l) continue // Item is locked
+                        if (item.name !== "lostearring" || item.level !== this.options.enableExchange.lostEarring) continue // Wrong level of earring
+                        if (!bot.hasItem(["computer", "supercomputer"])) {
+                            // Walk to the NPC
+                            const npc = AL.Pathfinder.locateExchangeNPC(item.name)
+                            this.debug(bot, `Moving to NPC to exchange ${item.name}`)
+                            await bot.smartMove(npc, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+                        }
+                        if (!bot.q.exchange) bot.exchange(i).catch(console.error)
+                        break
+                    }
                 }
             }
 
