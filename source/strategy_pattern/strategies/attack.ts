@@ -454,7 +454,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             // If something else is targeting us, scare
             const targetingMe = bot.getEntities({
                 notType: this.options.type,
-                notTypeList: [...this.options.typeList, ...(this.options.disableIdleAttack ? [] : IDLE_ATTACK_MONSTERS)],
+                notTypeList: [...(this.options.typeList ?? []), ...(this.options.disableIdleAttack ? [] : IDLE_ATTACK_MONSTERS)],
                 targetingMe: true,
                 willDieToProjectiles: false }
             )
