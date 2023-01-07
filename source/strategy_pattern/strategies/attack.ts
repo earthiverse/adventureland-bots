@@ -29,6 +29,7 @@ export type BaseAttackStrategyOptions = GetEntitiesFilters & {
 }
 
 export const KILL_STEAL_AVOID_MONSTERS: MonsterName[] = ["kitty1", "kitty2", "kitty3", "kitty4", "puppy1", "puppy2", "puppy3", "puppy4"]
+export const IDLE_ATTACK_MONSTERS: MonsterName[] = ["arcticbee", "armadillo", "bee", "boar", "crab", "crabx", "croc", "goo", "iceroamer", "minimush", "osnake", "poisio", "rat", "scorpion", "snake", "spider"]
 
 export class BaseAttackStrategy<Type extends Character> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
@@ -230,9 +231,9 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (!bot.canUse("attack")) return // We can't attack
 
         const entities = bot.getEntities({
-            notTypeList: KILL_STEAL_AVOID_MONSTERS,
             canDamage: "attack",
             couldGiveCredit: true,
+            typeList: IDLE_ATTACK_MONSTERS,
             willBurnToDeath: false,
             willDieToProjectiles: false,
             withinRange: "attack"
@@ -449,9 +450,14 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (bot.targets == 0) return false // Nothing is targeting us
         if (this.options.disableScare) return false // We have scare disabled
 
-        if (this.options.disableIdleAttack && (this.options.type || this.options.typeList)) {
+        if (this.options.type || this.options.typeList) {
             // If something else is targeting us, scare
-            const targetingMe = bot.getEntities({ notType: this.options.type, notTypeList: this.options.typeList, targetingMe: true, willDieToProjectiles: false })
+            const targetingMe = bot.getEntities({
+                notType: this.options.type,
+                notTypeList: [...this.options.typeList, ...(this.options.disableIdleAttack ? [] : IDLE_ATTACK_MONSTERS)],
+                targetingMe: true,
+                willDieToProjectiles: false }
+            )
             if (targetingMe.length) {
                 return true
             }
