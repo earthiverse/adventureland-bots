@@ -449,7 +449,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (bot.targets == 0) return false // Nothing is targeting us
         if (this.options.disableScare) return false // We have scare disabled
 
-        if (this.options.type || this.options.typeList) {
+        if (this.options.disableIdleAttack && (this.options.type || this.options.typeList)) {
             // If something else is targeting us, scare
             const targetingMe = bot.getEntities({ notType: this.options.type, notTypeList: this.options.typeList, targetingMe: true, willDieToProjectiles: false })
             if (targetingMe.length) {
