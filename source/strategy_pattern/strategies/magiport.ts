@@ -10,7 +10,7 @@ export const DefaultMagiportOthersSmartMovingToUsStrategyOptions: MagiportOthers
     /** Don't magiport the same bot within this interval (in ms) */
     delayMs: 5000,
     /** Offer magiports to those smart moving within this range of us */
-    range: 100
+    range: 250
 }
 
 export class MagiportOthersSmartMovingToUsStrategy implements Strategy<Mage> {
@@ -41,6 +41,8 @@ export class MagiportOthersSmartMovingToUsStrategy implements Strategy<Mage> {
             if (friend.id == bot.id) continue // It's us
             if (!friend.smartMoving) continue // They're not smart moving
             if (AL.Pathfinder.canWalkPath(bot, friend)) continue // They can walk to us
+            if (!AL.Pathfinder.canWalkPath(bot, friend.smartMoving)) continue // We can't walk to where they want to go
+            if (AL.Tools.distance(friend, friend.smartMoving) > 2 * this.options.range) continue // They're fairly close
             if (AL.Tools.distance(bot, friend.smartMoving) > this.options.range) continue // They're not smart moving to a place near us
 
             const lastMagiport = this.recentlyMagiported.get(friend.id)
