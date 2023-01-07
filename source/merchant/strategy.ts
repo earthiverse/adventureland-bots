@@ -142,6 +142,7 @@ export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
     ["stealthcape", -AL.Constants.PONTY_MARKUP],
     ["supercomputer", 100_000_000],
     ["supermittens", -AL.Constants.PONTY_MARKUP],
+    ["stealthcape", -AL.Constants.PONTY_MARKUP],
     ["t2quiver", -AL.Constants.PONTY_MARKUP],
     ["t3bow", -AL.Constants.PONTY_MARKUP],
     ["tshirt3", -AL.Constants.PONTY_MARKUP],
@@ -371,9 +372,9 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 // Withdraw extra gold
                 if (bot.bank.gold > this.options.goldToHold) await bot.withdrawGold(this.options.goldToHold)
 
-                // Go to our default position and wait a while for things to upgrade
+                // Go to our default position and wait a bit for things to upgrade
                 await bot.smartMove(this.options.defaultPosition)
-                await sleep(60000)
+                await sleep(15_000)
                 return
             }
 
