@@ -393,8 +393,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         // Look for it in the server data
         const sInfo = bot.S?.[this.options.type] as ServerInfoDataLive
         if (
-            sInfo && sInfo.live && sInfo.x !== undefined && sInfo.y !== undefined
-            && !this.options.ignoreMaps.includes(sInfo.map)
+            sInfo && sInfo.live && sInfo.x !== undefined && sInfo.y !== undefined && !this.options.ignoreMaps.includes(sInfo.map)
         ) {
             const destination = bot.S[this.options.type] as IPosition
             if (AL.Tools.distance(bot, destination) > bot.range) {
@@ -438,7 +437,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         ) {
             const spawns: IPosition[] = []
 
-            const gMap = bot.G.maps[(dbTarget.map ?? bot.S[this.options.type]["map"] ?? bot.map) as MapName] as GMap
+            const gMap = bot.G.maps[(dbTarget.map ?? (bot.S[this.options.type] as ServerInfoDataLive)?.map ?? bot.map) as MapName] as GMap
             if (gMap.ignore) return
             if (gMap.instance || !gMap.monsters || gMap.monsters.length == 0) return // Map is unreachable, or there are no monsters
 
