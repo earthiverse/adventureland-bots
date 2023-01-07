@@ -260,6 +260,9 @@ export const DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS: MerchantMoveStrategyOptions
         merchant: DEFAULT_MERCHANT_REPLENISHABLES,
         ratio: DEFAULT_REPLENISH_RATIO,
     },
+    enableCraft: {
+        items: DEFAULT_CRAFTABLES
+    },
     enableExchange: {
         items: DEFAULT_EXCHANGEABLES,
         lostEarring: 2,
