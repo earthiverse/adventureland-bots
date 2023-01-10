@@ -34,8 +34,9 @@ await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 const ENABLE_EVENTS = true
 const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
+const DEFAULT_MONSTER: MonsterName = "ent"
 const SPECIAL_MONSTERS: MonsterName[] = ["crabxx", "cutebee", "franky", "fvampire", "goldenbat", "greenjr", "grinch", "icegolem", "jr", "mvampire", "pinkgoo", "snowman", "stompy", "tinyp"]
-const ENABLE_MONSTERHUNTS = true
+const ENABLE_MONSTERHUNTS = false
 const MAX_PUBLIC_CHARACTERS = 6
 
 const MERCHANT = "earthMer"
@@ -349,20 +350,8 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
     }
 
     // Default targets
-    for (const context of contexts) {
-        if (PRIVATE_CONTEXTS.includes(context)) {
-            if (!context.bot.isPVP()) {
-                priority.push("arcticbee")
-            }
-            if (context.bot.ctype == "mage") {
-                priority.push("frog")
-                priority.push("osnake")
-            } else {
-                priority.push("osnake")
-            }
-        } else {
-            priority.push("bee")
-        }
+    for (const _context of contexts) {
+        priority.push(DEFAULT_MONSTER)
     }
 
     for (const id of priority) {
