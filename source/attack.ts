@@ -16,7 +16,7 @@ import { OptimizeItemsStrategy } from "./strategy_pattern/strategies/item.js"
 import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials_attack.json"), AL.Game.getGData(true)])
-await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
+await AL.Pathfinder.prepare(AL.Game.G)
 
 const DEFAULT_MONSTER: MonsterName = "bee"
 
