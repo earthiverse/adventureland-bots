@@ -145,7 +145,7 @@ const finishMonsterHuntStrategy = new FinishMonsterHuntStrategy()
 const getMonsterHuntStrategy = new GetMonsterHuntStrategy()
 // Party
 const partyAcceptStrategy = new AcceptPartyRequestStrategy({ allowList: PARTY_ALLOWLIST })
-const partyRequestStrategy = new RequestPartyStrategy(WARRIOR)
+const partyRequestStrategy = new RequestPartyStrategy(PARTY_LEADER)
 // Mage
 const privateMagiportStrategy = new MagiportOthersSmartMovingToUsStrategy(PRIVATE_CONTEXTS)
 const publicMagiportStrategy = new MagiportOthersSmartMovingToUsStrategy(ALL_CONTEXTS)
