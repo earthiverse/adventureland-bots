@@ -70,14 +70,12 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
             // Agitate all nearby enemies if there are no others nearby
             const unwantedEntity = bot.getEntity({
                 hasTarget: false,
-                notType: this.options.type,
                 notTypeList: this.options.typeList,
                 withinRange: "agitate"
             })
             if (unwantedEntity) return // Something we don't want to agitate is nearby
             const wantedEntity = bot.getEntity({
                 hasTarget: false,
-                type: this.options.type,
                 typeList: this.options.typeList,
                 withinRange: "agitate"
             })
@@ -106,7 +104,6 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
         const unwantedEntity = bot.getEntity({
             hasTarget: false,
-            notType: this.options.type,
             notTypeList: this.options.typeList,
             withinRange: "cleave"
         })
@@ -130,8 +127,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
                 // We want to avoid aggro
                 return
             }
-            if ((this.options.type && entity.type !== this.options.type)
-                || (this.options.typeList && !this.options.typeList.includes(entity.type))) {
+            if (this.options.typeList && !this.options.typeList.includes(entity.type)) {
                 // We don't want to attack something that's within cleave range
                 return
             }
@@ -216,7 +212,6 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
         // Find all targets within range of stomp
         const entities = bot.getEntities({
-            type: this.options.type,
             typeList: this.options.typeList,
             withinRange: "stomp",
         })

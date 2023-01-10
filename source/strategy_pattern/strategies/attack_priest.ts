@@ -134,7 +134,6 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
             const entity = bot.getEntity({
                 couldGiveCredit: true,
                 targetingPartyMember: false,
-                type: this.options.type,
                 typeList: this.options.typeList,
             })
             if (entity) {

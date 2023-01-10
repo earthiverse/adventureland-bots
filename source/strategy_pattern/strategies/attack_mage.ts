@@ -126,7 +126,6 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
             const entities = bot.getEntities({
                 canDamage: "cburst",
                 hasTarget: false,
-                type: this.options.type,
                 typeList: this.options.typeList,
                 withinRange: "cburst"
             })

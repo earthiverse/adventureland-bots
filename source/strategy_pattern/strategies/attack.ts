@@ -49,6 +49,11 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
         if (!options.disableZapper) this.interval.push("zapperzap")
 
+        if (this.options.type) {
+            this.options.typeList = [this.options.type]
+            delete this.options.type
+        }
+
         this.loops.set("attack", {
             fn: async (bot: Type) => {
                 if (this.shouldScare(bot)) await this.scare(bot)
@@ -87,7 +92,6 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 if (!this.options.disableZapper && bot.canUse("zapperzap")) {
                     for (const monster of data.monsters) {
                         if (monster.target) continue // Already has a target
-                        if (this.options.type && monster.type !== this.options.type) continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.zapperzap.range) continue
                         if (AL.Game.G.monsters[monster.type].immune) continue // Can't damage immune monsters with zapperzap
@@ -99,7 +103,6 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 if (bot.ctype == "warrior" && bot.canUse("taunt")) {
                     for (const monster of data.monsters) {
                         if (monster.target) continue // Already has a target
-                        if (this.options.type && monster.type !== this.options.type) continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.taunt.range) continue
                         bot.nextSkill.set("taunt", new Date(Date.now() + (bot.ping * 2)))
@@ -111,14 +114,12 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                     const cbursts: [string, number][] = []
                     for (const monster of data.monsters) {
                         if (monster.target) continue // Already has a target
-                        if (this.options.type && monster.type !== this.options.type) continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.taunt.range) continue
                         cbursts.push([monster.id, 1])
                     }
                     for (const monster of bot.getEntities({
                         hasTarget: false,
-                        type: this.options.type,
                         typeList: this.options.typeList,
                         withinRange: "cburst"
                     })) {
@@ -133,7 +134,6 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 if (bot.canUse("attack")) {
                     for (const monster of data.monsters) {
                         if (monster.target) continue // Already has a target
-                        if (this.options.type && monster.type !== this.options.type) continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > bot.range) continue
                         bot.nextSkill.set("attack", new Date(Date.now() + (bot.ping * 2)))
@@ -172,7 +172,6 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             const entities = bot.getEntities({
                 canDamage: "attack",
                 hasTarget: false,
-                type: this.options.type,
                 typeList: this.options.typeList,
                 withinRange: "attack"
             })
@@ -320,7 +319,6 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             const entities = bot.getEntities({
                 canDamage: "zapperzap",
                 hasTarget: false,
-                type: this.options.type,
                 typeList: this.options.typeList,
                 withinRange: "zapperzap"
             })
@@ -450,10 +448,9 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (bot.targets == 0) return false // Nothing is targeting us
         if (this.options.disableScare) return false // We have scare disabled
 
-        if (this.options.type || this.options.typeList) {
+        if (this.options.typeList) {
             // If something else is targeting us, scare
             const targetingMe = bot.getEntities({
-                notType: this.options.type,
                 notTypeList: [...(this.options.typeList ?? []), ...(this.options.disableIdleAttack ? [] : IDLE_ATTACK_MONSTERS)],
                 targetingMe: true,
                 willDieToProjectiles: false }

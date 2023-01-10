@@ -72,6 +72,10 @@ export function sortFurthestDistance(from: Character) {
     }
 }
 
+export function sortHighestHpFirst(a: Entity, b: Entity) {
+    return a.hp > b.hp
+}
+
 export function sortPriority(bot: Character, types?: MonsterName[]) {
     return (a: Entity, b: Entity): boolean => {
         // Order in array
