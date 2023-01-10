@@ -148,7 +148,7 @@ export function constructFrankyHelperSetup(contexts: Strategist<PingCompensatedC
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, typeList: ["nerfedmummy", "franky"], hasTarget: true }),
+                        attack: new MageAttackStrategy({ contexts: contexts, typeList: ["nerfedmummy", "franky"], hasTarget: true, maximumTargets: 0 }),
                         move: frankyMoveStrategy
                     }
                 ]
@@ -158,7 +158,7 @@ export function constructFrankyHelperSetup(contexts: Strategist<PingCompensatedC
                 characters: [
                     {
                         ctype: "paladin",
-                        attack: new PaladinAttackStrategy({ contexts: contexts, typeList: ["nerfedmummy", "franky"], hasTarget: true }),
+                        attack: new PaladinAttackStrategy({ contexts: contexts, typeList: ["nerfedmummy", "franky"], hasTarget: true, maximumTargets: 0 }),
                         move: frankyMoveStrategy
                     }
                 ]
@@ -168,7 +168,7 @@ export function constructFrankyHelperSetup(contexts: Strategist<PingCompensatedC
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, typeList: ["nerfedmummy", "franky"], hasTarget: true }),
+                        attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, typeList: ["nerfedmummy", "franky"], hasTarget: true, maximumTargets: 0 }),
                         move: frankyMoveStrategy
                     }
                 ]
@@ -178,7 +178,7 @@ export function constructFrankyHelperSetup(contexts: Strategist<PingCompensatedC
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: ["nerfedmummy", "franky"], hasTarget: true }),
+                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: ["nerfedmummy", "franky"], hasTarget: true, maximumTargets: 0 }),
                         move: frankyMoveStrategy
                     }
                 ]
@@ -188,7 +188,7 @@ export function constructFrankyHelperSetup(contexts: Strategist<PingCompensatedC
                 characters: [
                     {
                         ctype: "rogue",
-                        attack: new RogueAttackStrategy({ contexts: contexts, typeList: ["nerfedmummy", "franky"], hasTarget: true }),
+                        attack: new RogueAttackStrategy({ contexts: contexts, typeList: ["nerfedmummy", "franky"], hasTarget: true, maximumTargets: 0 }),
                         move: frankyMoveStrategy
                     }
                 ]
@@ -198,7 +198,7 @@ export function constructFrankyHelperSetup(contexts: Strategist<PingCompensatedC
                 characters: [
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, disableCleave: true, typeList: ["nerfedmummy", "franky"], hasTarget: true }),
+                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, disableCleave: true, typeList: ["nerfedmummy", "franky"], hasTarget: true, maximumTargets: 0 }),
                         move: frankyMoveStrategy
                     }
                 ]

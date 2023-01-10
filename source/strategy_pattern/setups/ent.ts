@@ -1,9 +1,12 @@
 import AL, { PingCompensatedCharacter } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
+import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
+import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
+import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { HoldPositionMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
+import { BasicMoveStrategy, HoldPositionMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { MAGE_SPLASH, PRIEST_ARMOR } from "./equipment.js"
 
@@ -65,6 +68,75 @@ export function constructEntSetup(contexts: Strategist<PingCompensatedCharacter>
                     }
                 ]
             },
+        ]
+    }
+}
+
+export function constructEntHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const moveStrategy = new BasicMoveStrategy("ent")
+
+    return {
+        configs: [
+            {
+                id: "ent_mage",
+                characters: [
+                    {
+                        ctype: "mage",
+                        attack: new MageAttackStrategy({ contexts: contexts, type: "ent", hasTarget: true, maximumTargets: 0 }),
+                        move: moveStrategy
+                    }
+                ]
+            },
+            {
+                id: "ent_paladin",
+                characters: [
+                    {
+                        ctype: "paladin",
+                        attack: new PaladinAttackStrategy({ contexts: contexts, type: "ent", hasTarget: true, maximumTargets: 0 }),
+                        move: moveStrategy
+                    }
+                ]
+            },
+            {
+                id: "ent_priest",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, type: "ent", hasTarget: true, maximumTargets: 0 }),
+                        move: moveStrategy
+                    }
+                ]
+            },
+            {
+                id: "ent_ranger",
+                characters: [
+                    {
+                        ctype: "ranger",
+                        attack: new RangerAttackStrategy({ contexts: contexts, type: "ent", hasTarget: true, maximumTargets: 0 }),
+                        move: moveStrategy
+                    }
+                ]
+            },
+            {
+                id: "ent_rogue",
+                characters: [
+                    {
+                        ctype: "rogue",
+                        attack: new RogueAttackStrategy({ contexts: contexts, type: "ent", hasTarget: true, maximumTargets: 0 }),
+                        move: moveStrategy
+                    }
+                ]
+            },
+            {
+                id: "ent_warrior",
+                characters: [
+                    {
+                        ctype: "warrior",
+                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, disableCleave: true, type: "ent", hasTarget: true, maximumTargets: 0 }),
+                        move: moveStrategy
+                    }
+                ]
+            }
         ]
     }
 }
