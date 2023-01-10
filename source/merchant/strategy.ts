@@ -1033,7 +1033,17 @@ export class MerchantStrategy implements Strategy<Merchant> {
                                     item = "bow"
                                     break
                                 case "rogue":
-                                    item = "blade"
+                                    item = "claw"
+                                    break
+                                case "warrior":
+                                    item = "claw"
+                                    break
+                            }
+                            break
+                        case "offhand":
+                            switch (getFor.ctype) {
+                                case "rogue":
+                                    item = "claw"
                                     break
                                 case "warrior":
                                     item = "claw"
@@ -1089,7 +1099,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                             await bot.sendItem(getFor.id, potentialWithScroll)
                             await sleep(1000)
                             const equipItem = getFor.locateItem(item, getFor.items, { levelGreaterThan: lowestItemLevel, returnHighestLevel: true, statType: stat })
-                            await getFor.equip(equipItem)
+                            await getFor.equip(equipItem, lowestItemSlot)
 
                             // Send the old item back to the merchant
                             await getFor.sendItem(bot.id, equipItem)
