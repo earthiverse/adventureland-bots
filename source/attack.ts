@@ -14,6 +14,7 @@ import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
 
 import { OptimizeItemsStrategy } from "./strategy_pattern/strategies/item.js"
 import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
+import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials_attack.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
@@ -84,6 +85,8 @@ const debugStrategy = new DebugStrategy({
 // Movement
 const avoidStackingStrategy = new AvoidStackingStrategy()
 const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
+
+const rspeedStrategy = new GiveRogueSpeedStrategy()
 
 // Party
 const partyAcceptStrategy = new AcceptPartyRequestStrategy({ allowList: PARTY_ALLOWLIST })
@@ -255,6 +258,7 @@ async function startShared(context: Strategist<PingCompensatedCharacter>) {
 
 async function startRogue(context: Strategist<Rogue>) {
     startShared(context)
+    context.applyStrategy(rspeedStrategy)
 }
 
 // Start my characters
@@ -274,47 +278,19 @@ const startMerchantContext = async () => {
 }
 startMerchantContext()
 
-const startRogue1Context = async () => {
+const startRogueContext = async (name: string) => {
     let rogue: Rogue
     try {
-        rogue = await AL.Game.startRogue(ROGUE_1, DEFAULT_REGION, DEFAULT_IDENTIFIER)
+        rogue = await AL.Game.startRogue(name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
     } catch (e) {
         if (rogue) rogue.disconnect()
         console.error(e)
-        setTimeout(startRogue1Context, 10_000)
+        setTimeout(startRogueContext, 10_000)
     }
     const CONTEXT = new Strategist<Rogue>(rogue, baseStrategy)
     startRogue(CONTEXT).catch(console.error)
     PRIVATE_CONTEXTS.push(CONTEXT)
 }
-startRogue1Context()
-
-const startRogue2Context = async () => {
-    let rogue: Rogue
-    try {
-        rogue = await AL.Game.startRogue(ROGUE_2, DEFAULT_REGION, DEFAULT_IDENTIFIER)
-    } catch (e) {
-        if (rogue) rogue.disconnect()
-        console.error(e)
-        setTimeout(startRogue2Context, 10_000)
-    }
-    const CONTEXT = new Strategist<Rogue>(rogue, baseStrategy)
-    startRogue(CONTEXT).catch(console.error)
-    PRIVATE_CONTEXTS.push(CONTEXT)
-}
-startRogue2Context()
-
-const startRogue3Context = async () => {
-    let rogue: Rogue
-    try {
-        rogue = await AL.Game.startRogue(ROGUE_3, DEFAULT_REGION, DEFAULT_IDENTIFIER)
-    } catch (e) {
-        if (rogue) rogue.disconnect()
-        console.error(e)
-        setTimeout(startRogue3Context, 10_000)
-    }
-    const CONTEXT = new Strategist<Rogue>(rogue, baseStrategy)
-    startRogue(CONTEXT).catch(console.error)
-    PRIVATE_CONTEXTS.push(CONTEXT)
-}
-startRogue3Context()
+startRogueContext(ROGUE_1)
+startRogueContext(ROGUE_2)
+startRogueContext(ROGUE_3)

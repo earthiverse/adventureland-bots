@@ -25,6 +25,7 @@ import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
 import { GuiStrategy } from "./strategy_pattern/strategies/gui.js"
 import { OptimizeItemsStrategy } from "./strategy_pattern/strategies/item.js"
 import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
+import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
@@ -154,6 +155,8 @@ const privatePartyHealStrategy = new PartyHealStrategy(PRIVATE_CONTEXTS)
 const publicPartyHealStrategy = new PartyHealStrategy(ALL_CONTEXTS)
 const trackerStrategy = new TrackerStrategy()
 const respawnStrategy = new RespawnStrategy()
+// Rogue
+const rspeedStrategy = new GiveRogueSpeedStrategy()
 // Warrior
 const chargeStrategy = new ChargeStrategy()
 // Setups
@@ -531,6 +534,7 @@ async function startRanger(context: Strategist<Ranger>, privateContext = false) 
 
 async function startRogue(context: Strategist<Rogue>, privateContext = false) {
     startShared(context, privateContext)
+    context.applyStrategy(rspeedStrategy)
 }
 
 // Warrior setup
