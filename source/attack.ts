@@ -268,7 +268,7 @@ const startMerchantContext = async () => {
         setTimeout(startMerchantContext, 10_000)
     }
     const CONTEXT = new Strategist<Merchant>(merchant, baseStrategy)
-    startMerchant(CONTEXT, PRIVATE_CONTEXTS, { ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, debug: true, enableBuyAndUpgrade: { upgradeToLevel: 9 }, enableUpgrade: true })
+    startMerchant(CONTEXT, PRIVATE_CONTEXTS, { ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, debug: true, enableBuyAndUpgrade: { upgradeToLevel: 9 }, enableMluck: { contexts: true, self: true }, enableUpgrade: true })
     CONTEXT.applyStrategy(privateSellStrategy)
     PRIVATE_CONTEXTS.push(CONTEXT)
 }
