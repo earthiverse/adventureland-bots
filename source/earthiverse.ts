@@ -48,7 +48,7 @@ const PRIEST = "earthPri"
 const PARTY_LEADER = "earthWar"
 const PARTY_ALLOWLIST = ["earthiverse", "earthMag", "earthPri", "earthWar"]
 
-const DEFAULT_REGION: ServerRegion = "US"
+const DEFAULT_REGION: ServerRegion = "EU"
 const DEFAULT_IDENTIFIER: ServerIdentifier = "I"
 let TARGET_REGION: ServerRegion = DEFAULT_REGION
 let TARGET_IDENTIFIER: ServerIdentifier = DEFAULT_IDENTIFIER
@@ -145,7 +145,7 @@ const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
 const finishMonsterHuntStrategy = new FinishMonsterHuntStrategy()
 const getMonsterHuntStrategy = new GetMonsterHuntStrategy()
 // Party
-const partyAcceptStrategy = new AcceptPartyRequestStrategy({ allowList: PARTY_ALLOWLIST })
+const partyAcceptStrategy = new AcceptPartyRequestStrategy(/** TODO: TEMP: Allow anyone to join { allowList: PARTY_ALLOWLIST } */)
 const partyRequestStrategy = new RequestPartyStrategy(PARTY_LEADER)
 // Mage
 const privateMagiportStrategy = new MagiportOthersSmartMovingToUsStrategy(PRIVATE_CONTEXTS)
