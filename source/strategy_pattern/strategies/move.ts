@@ -29,7 +29,7 @@ export class BasicMoveStrategy implements Strategy<Character> {
             if (!bot.smartMoving) {
                 bot.smartMove(this.types[0]).catch(() => { /** Suppress Error */ })
             }
-        } else if (AL.Tools.distance(bot, nearest) > bot.range) {
+        } else if (AL.Tools.distance({ x: bot.x, y: bot.y }, { x: nearest.x, y: nearest.y }) > bot.range) {
             bot.smartMove(nearest, { getWithin: Math.max(0, bot.range - nearest.speed), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         }
     }
