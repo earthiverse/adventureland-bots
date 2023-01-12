@@ -1,4 +1,4 @@
-import { Entity, Rogue } from "alclient"
+import AL, { Entity, Rogue } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { sortHighestHpFirst, sortPriority } from "../../base/sort.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions, KILL_STEAL_AVOID_MONSTERS } from "./attack.js"
@@ -87,6 +87,8 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
             }
         }
 
+        if (bot.mp < AL.Game.G.skills.quickpunch.mp * 2) return // Save the MP for use with normal attacks for rogue stack
+
         // Find all targets we want to quick punch
         const entities = bot.getEntities({
             ...this.options,
@@ -148,6 +150,8 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
                 return bot.quickStab(targets.peek().id).catch(console.error)
             }
         }
+
+        if (bot.mp < AL.Game.G.skills.quickstab.mp * 2) return // Save the MP for use with normal attacks for rogue stack
 
         // Find all targets we want to quick stab
         const entities = bot.getEntities({
