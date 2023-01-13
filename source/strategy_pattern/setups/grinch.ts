@@ -10,10 +10,10 @@ import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { MAGE_NORMAL, PRIEST_LUCK, WARRIOR_NORMAL } from "./equipment.js"
 
-const grinchMoveStrategy = new SpecialMonsterMoveStrategy({ ignoreMaps: ["bank", "bank_b", "bank_u", "hut", "woffice"], type: "grinch" })
-const typeList: MonsterName[] = ["grinch"]
-
 export function constructGrinchSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const grinchMoveStrategy = new SpecialMonsterMoveStrategy({ ignoreMaps: ["bank", "bank_b", "bank_u", "hut", "woffice"], type: "grinch" })
+    const typeList: MonsterName[] = ["grinch"]
+
     return {
         configs: [
             {
@@ -84,6 +84,9 @@ export function constructGrinchSetup(contexts: Strategist<PingCompensatedCharact
 }
 
 export function constructGrinchHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const grinchMoveStrategy = new SpecialMonsterMoveStrategy({ ignoreMaps: ["bank", "bank_b", "bank_u", "hut", "woffice"], type: "grinch" })
+    const typeList: MonsterName[] = ["grinch"]
+
     return {
         configs: [
             {
