@@ -258,6 +258,7 @@ async function startShared(context: Strategist<PingCompensatedCharacter>) {
 }
 
 async function startMage(context: Strategist<Mage>) {
+    startShared(context)
     context.applyStrategy(magiportStrategy)
 }
 
