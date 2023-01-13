@@ -82,6 +82,19 @@ export function constructPhoenixSetup(contexts: Strategist<PingCompensatedCharac
                 ]
             },
             {
+                id: "phoenix_mage",
+                characters: [
+                    {
+                        ctype: "mage",
+                        attack: new MageAttackStrategy({
+                            contexts: contexts,
+                            typeList: typeList,
+                        }),
+                        move: phoenixMoveStrategy
+                    },
+                ]
+            },
+            {
                 id: "phoenix_rogue",
                 characters: [
                     {
