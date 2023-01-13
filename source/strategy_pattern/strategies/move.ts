@@ -418,6 +418,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             for (const context of this.options.contexts) {
                 if (bot == context.bot) continue // We've already looked for it around ourself
                 const target = context.bot.getEntity({ type: this.options.type })
+                if (!target) continue // No target
                 await bot.smartMove(target, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
                 return bot.smartMove(target, { getWithin: bot.range - 10, useBlink: true })
             }
