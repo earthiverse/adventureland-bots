@@ -438,8 +438,15 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         if (target) return bot.smartMove(target, smartMoveOptions)
 
         // Look for if there's a spawn for it
+        spawns:
         for (const spawn of this.spawns) {
             if (this.options.ignoreMaps && this.options.ignoreMaps.includes(spawn.map)) continue // Map is ignored
+            if (this.options.contexts) {
+                for (const context of this.options.contexts) {
+                    if (context.bot == bot) continue // We've already checked ourselves
+                    if (AL.Tools.distance(bot, spawn) < 400) continue spawns // Another bot is already checking there
+                }
+            }
 
             // Move to the next spawn
             await bot.smartMove(spawn, smartMoveOptions)
@@ -461,6 +468,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                 spawns.push({ map: bot.map, x: (spawn.boundary[0] + spawn.boundary[2]) / 2, y: (spawn.boundary[1] + spawn.boundary[3]) / 2 })
             } else if (spawn.boundaries) {
                 for (const boundary of spawn.boundaries) {
+                    if (this.options.ignoreMaps && this.options.ignoreMaps.includes(boundary[0])) continue // Map is ignored
                     spawns.push({ map: boundary[0], x: (boundary[1] + boundary[3]) / 2, y: (boundary[2] + boundary[4]) / 2 })
                 }
             }
@@ -474,7 +482,15 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         // Sort spawns
         spawns.sort((a, b) => a.x - b.x)
 
+        spawns:
         for (const spawn of spawns) {
+            if (this.options.contexts) {
+                for (const context of this.options.contexts) {
+                    if (context.bot == bot) continue // We've already checked ourselves
+                    if (AL.Tools.distance(bot, spawn) < 400) continue spawns // Another bot is already checking there
+                }
+            }
+
             // Move to the next spawn
             await bot.smartMove(spawn, smartMoveOptions)
 
