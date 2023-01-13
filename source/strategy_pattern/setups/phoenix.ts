@@ -10,10 +10,10 @@ import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { MAGE_NORMAL, PRIEST_LUCK, WARRIOR_NORMAL } from "./equipment.js"
 
-const phoenixMoveStrategy = new SpecialMonsterMoveStrategy({ type: "phoenix" })
-const typeList: MonsterName[] = ["phoenix"]
-
 export function constructPhoenixSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const phoenixMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, type: "phoenix" })
+    const typeList: MonsterName[] = ["phoenix"]
+
     return {
         configs: [
             {
@@ -112,6 +112,9 @@ export function constructPhoenixSetup(contexts: Strategist<PingCompensatedCharac
 }
 
 export function constructPhoenixHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const phoenixMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, type: "phoenix" })
+    const typeList: MonsterName[] = ["phoenix"]
+
     return {
         configs: [
             {

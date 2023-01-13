@@ -7,7 +7,7 @@ import { Setup } from "./base"
 import { MAGE_SPLASH, WARRIOR_SPLASH } from "./equipment.js"
 
 export function constructCuteBeeSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new SpecialMonsterMoveStrategy({ type: "cutebee" })
+    const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, type: "cutebee" })
     return {
         configs: [
             {

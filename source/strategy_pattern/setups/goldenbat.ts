@@ -14,7 +14,7 @@ export function constructGoldenbatSetup(contexts: Strategist<PingCompensatedChar
                     {
                         ctype: "mage",
                         attack: new MageAttackStrategy({ contexts: contexts, ensureEquipped: { ...MAGE_NORMAL }, type: "goldenbat" }),
-                        move: new SpecialMonsterMoveStrategy({ type: "goldenbat" })
+                        move: new SpecialMonsterMoveStrategy({ contexts: contexts, type: "goldenbat" })
                     }
                 ]
             }

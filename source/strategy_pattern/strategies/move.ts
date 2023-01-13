@@ -347,6 +347,8 @@ export class MoveInCircleMoveStrategy implements Strategy<Character> {
 }
 
 export type SpecialMonsterMoveStrategyOptions = {
+    /** If set, we will check other contexts for the monster we're looking for, too */
+    contexts?: Strategist<PingCompensatedCharacter>[]
     /** If true, we won't use the database locations */
     disableCheckDB?: true
     /** If true, we will ignore moving if the monster is on one of these maps */
@@ -378,6 +380,16 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                 if (sInfo.map !== bot.smartMoving.map) return true // It moved maps
             }
 
+            if (this.options.contexts) {
+                for (const context of this.options.contexts) {
+                    if (bot == context.bot) continue // We'll check ourself later
+                    const target = context.bot.getEntity({ type: this.options.type })
+                    if (!target) continue
+                    if (target.map !== bot.map) return true // We're smart moving to a map that the monster isn't on
+                    if (AL.Tools.distance(target, bot.smartMoving) > bot.range) return true // We're smart moving to a place that's pretty far away from the monster
+                }
+            }
+
             const target = bot.getEntity({ type: this.options.type })
             if (!target) return false // No target, don't stop
             if (Pathfinder.canWalkPath(bot, target)) return true // We can walk to it, stop!
@@ -398,6 +410,16 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             const destination = bot.S[this.options.type] as IPosition
             if (AL.Tools.distance(bot, destination) > bot.range) {
                 return bot.smartMove(destination, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
+            }
+        }
+
+        // Look for it in the contexts provided
+        if (this.options.contexts) {
+            for (const context of this.options.contexts) {
+                if (bot == context.bot) continue // We've already looked for it around ourself
+                const target = context.bot.getEntity({ type: this.options.type })
+                await bot.smartMove(target, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
+                return bot.smartMove(target, { getWithin: bot.range - 10, useBlink: true })
             }
         }
 
@@ -464,7 +486,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
 
             for (const spawn of spawns) {
                 // Move to the next spawn
-                await bot.smartMove(spawn, { getWithin: AL.Constants.MAX_VISIBLE_RANGE / 2, stopIfTrue: () => bot.getEntity({ type: this.options.type }) !== undefined })
+                await bot.smartMove(spawn, { getWithin: AL.Constants.MAX_VISIBLE_RANGE / 2, stopIfTrue: stopIfTrue, useBlink: true })
 
                 target = bot.getEntity({ returnNearest: true, type: this.options.type })
                 if (target) return bot.smartMove(target, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
