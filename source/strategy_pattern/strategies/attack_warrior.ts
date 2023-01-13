@@ -1,7 +1,7 @@
 import AL, { ItemData, Warrior } from "alclient"
 import { sleep } from "../../base/general.js"
 import { sortPriority } from "../../base/sort.js"
-import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
+import { BaseAttackStrategy, BaseAttackStrategyOptions, IDLE_ATTACK_MONSTERS } from "./attack.js"
 
 export type WarriorAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableAgitate?: true
@@ -104,7 +104,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
         const unwantedEntity = bot.getEntity({
             hasTarget: false,
-            notTypeList: this.options.typeList,
+            notTypeList: [...(this.options.typeList ?? []), ...(this.options.disableIdleAttack ? [] : IDLE_ATTACK_MONSTERS)],
             withinRange: "cleave"
         })
         if (unwantedEntity) return // Something we don't want to cleave is nearby
