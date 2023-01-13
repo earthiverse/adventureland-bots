@@ -444,7 +444,9 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             if (this.options.contexts) {
                 for (const context of this.options.contexts) {
                     if (context.bot == bot) continue // We've already checked ourselves
-                    if (AL.Tools.distance(bot, spawn) < 400) continue spawns // Another bot is already checking there
+                    if (AL.Tools.distance(context.bot, spawn) < 400) continue spawns // Another bot is already there
+                    if (!context.bot.smartMoving) continue
+                    if (AL.Tools.distance(context.bot.smartMoving, spawn) < 100) continue spawns // Another bot is already checking there
                 }
             }
 
@@ -487,7 +489,9 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             if (this.options.contexts) {
                 for (const context of this.options.contexts) {
                     if (context.bot == bot) continue // We've already checked ourselves
-                    if (AL.Tools.distance(bot, spawn) < 400) continue spawns // Another bot is already checking there
+                    if (AL.Tools.distance(context.bot, spawn) < 400) continue spawns // Another bot is already there
+                    if (!context.bot.smartMoving) continue
+                    if (AL.Tools.distance(context.bot.smartMoving, spawn) < 100) continue spawns // Another bot is already checking there
                 }
             }
 
