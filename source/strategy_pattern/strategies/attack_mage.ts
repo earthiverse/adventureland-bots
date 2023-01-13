@@ -68,6 +68,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
         if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority)
         if (!this.options.disableZapper) await this.zapperAttack(bot, priority)
         if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority)
+        // TODO: Idle cburst
 
         await this.ensureEquipped(bot)
     }
@@ -163,7 +164,6 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
             for (const entity of entities) {
                 priorityTargets.add(entity)
             }
-            if (priorityTargets.isEmpty) return // Nothing to attack
             const priorityTarget = priorityTargets.peek()
             if (priorityTarget) {
                 targets.set(priorityTarget.id, mpPool)
