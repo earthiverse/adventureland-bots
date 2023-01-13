@@ -1,4 +1,4 @@
-import AL, { IPosition, MonsterName, Pathfinder, Character, PingCompensatedCharacter, Entity, ServerInfoDataLive, MapName, GMap } from "alclient"
+import AL, { IPosition, MonsterName, Pathfinder, Character, PingCompensatedCharacter, Entity, ServerInfoDataLive, MapName, GMap, SmartMoveOptions } from "alclient"
 import { sleep } from "../../base/general.js"
 import { offsetPositionParty } from "../../base/locations.js"
 import { sortClosestDistancePathfinder, sortTypeThenClosest } from "../../base/sort.js"
@@ -283,7 +283,7 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
                 avoidTownWarps: bot.targets > 0,
                 resolveOnFinalMoveStart: true,
                 useBlink: true,
-                stopIfTrue: () => {
+                stopIfTrue: async () => {
                     if (bot.map !== this.spawns[0].map) return false
                     const entities = bot.getEntities({ canDamage: true, couldGiveCredit: true, typeList: this.types, willBurnToDeath: false, willDieToProjectiles: false, withinRange: "attack" })
                     return entities.length > 0
@@ -362,136 +362,125 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
 
     protected options: SpecialMonsterMoveStrategyOptions
 
+    protected spawns: IPosition[]
+
     public constructor(options: SpecialMonsterMoveStrategyOptions) {
         this.options = options
         if (!this.options.ignoreMaps) this.options.ignoreMaps = []
 
+        this.spawns = Pathfinder.locateMonster(this.options.type)
+
         this.loops.set("move", {
-            fn: async (bot: Character) => { await this.move(bot) },
+            fn: async (bot: Character) => {
+                await this.move(bot)
+            },
             interval: 250
         })
     }
 
-    protected async move(bot: Character) {
-        const stopIfTrue = (): boolean => {
-            const sInfo = bot.S?.[this.options.type] as ServerInfoDataLive
-            if (sInfo) {
-                if (!sInfo.live) return true // It's dead
-                if (sInfo.map !== bot.smartMoving.map) return true // It moved maps
-            }
+    protected returnUndefinedIfMapIgnored(position: { map: MapName; x: number; y: number }) {
+        if (!this.options.ignoreMaps) return position
+        if (this.options.ignoreMaps.includes(position.map)) return undefined
+        return position
+    }
 
-            if (this.options.contexts) {
-                for (const context of this.options.contexts) {
-                    if (bot == context.bot) continue // We'll check ourself later
-                    const target = context.bot.getEntity({ type: this.options.type })
-                    if (!target) continue
-                    if (target.map !== bot.map) return true // We're smart moving to a map that the monster isn't on
-                    if (AL.Tools.distance(target, bot.smartMoving) > bot.range) return true // We're smart moving to a place that's pretty far away from the monster
-                }
-            }
-
-            const target = bot.getEntity({ type: this.options.type })
-            if (!target) return false // No target, don't stop
-            if (Pathfinder.canWalkPath(bot, target)) return true // We can walk to it, stop!
-        }
-
+    /**
+     * This function checks "good" sources of data where the entity we're trying to find could be
+     * @param bot
+     */
+    protected async checkGoodData(bot: Character, disableCheckDB = this.options.disableCheckDB): Promise<{ map: MapName; x: number; y: number }> {
         // Look for it nearby
-        let target = bot.getEntity({ returnNearest: true, type: this.options.type })
-        if (target) {
-            await bot.smartMove(target, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
-            return bot.smartMove(target, { getWithin: bot.range - 10, useBlink: true })
-        }
+        const target = bot.getEntity({ returnNearest: true, type: this.options.type })
+        if (target) return this.returnUndefinedIfMapIgnored(target)
 
-        // Look for it in the server data
-        const sInfo = bot.S?.[this.options.type] as ServerInfoDataLive
-        if (
-            sInfo && sInfo.live && sInfo.x !== undefined && sInfo.y !== undefined && !this.options.ignoreMaps.includes(sInfo.map)
-        ) {
-            const destination = bot.S[this.options.type] as IPosition
-            if (AL.Tools.distance(bot, destination) > bot.range) {
-                return bot.smartMove(destination, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
-            }
-        }
-
-        // Look for it in the contexts provided
         if (this.options.contexts) {
+            // Look for it around the other contexts
             for (const context of this.options.contexts) {
                 if (bot == context.bot) continue // We've already looked for it around ourself
-                const target = context.bot.getEntity({ type: this.options.type })
-                if (!target) continue // No target
-                await bot.smartMove(target, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
-                return bot.smartMove(target, { getWithin: bot.range - 10, useBlink: true })
+                const target = context.bot.getEntity({ returnNearest: true, type: this.options.type })
+                if (target) return this.returnUndefinedIfMapIgnored(target)
             }
         }
 
-        let dbTarget: IPosition
-        if (!this.options.disableCheckDB) {
+        // Look for it in server data
+        const sInfo = bot.S?.[this.options.type] as ServerInfoDataLive
+        if (sInfo?.live && sInfo.map && sInfo.x !== undefined && sInfo.y !== undefined) return this.returnUndefinedIfMapIgnored(sInfo as { map: MapName; x: number; y: number })
+
+        if (!disableCheckDB) {
             // Look for it in our database
-            dbTarget = await AL.EntityModel.findOne({
+            const targets = await AL.EntityModel.find({
                 lastSeen: { $gt: Date.now() - 60_000 },
                 map: { $nin: this.options.ignoreMaps },
                 serverIdentifier: bot.server.name,
                 serverRegion: bot.server.region,
                 type: this.options.type
             }).sort({ lastSeen: -1 }).lean().exec()
-            if (dbTarget && dbTarget.x !== undefined && dbTarget.y !== undefined) {
-                return bot.smartMove(dbTarget, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
+            for (const target of targets) {
+                if (!target.map || target.x === undefined || target.y === undefined) continue
+                return target
             }
         }
+    }
+
+    protected async move(bot: Character) {
+        const smartMoveOptions: SmartMoveOptions = {
+            getWithin: bot.range - 10,
+            stopIfTrue: async (): Promise<boolean> => {
+                const target = await this.checkGoodData(bot, true)
+                if (!target) return false // No target, keep looking
+                return AL.Tools.distance(target, bot.smartMoving) > bot.range // It's moved far from where we're smart moving to
+            },
+            useBlink: true
+        }
+
+        const target = await this.checkGoodData(bot)
+        // Go to the target if we have good data where it is
+        if (target) return bot.smartMove(target, smartMoveOptions)
 
         // Look for if there's a spawn for it
-        for (const spawn of Pathfinder.locateMonster(this.options.type)) {
-            if (this.options.ignoreMaps.includes(spawn.map)) continue
+        for (const spawn of this.spawns) {
+            if (this.options.ignoreMaps && this.options.ignoreMaps.includes(spawn.map)) continue // Map is ignored
 
             // Move to the next spawn
-            await bot.smartMove(spawn, { getWithin: bot.range - 10, stopIfTrue: () => bot.getEntity({ type: this.options.type }) !== undefined })
+            await bot.smartMove(spawn, smartMoveOptions)
 
-            target = bot.getEntity({ returnNearest: true, type: this.options.type })
-            if (target) return bot.smartMove(target, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
+            // If there's good data where it is, stop & smart move there
+            const target = await this.checkGoodData(bot)
+            if (target) return bot.smartMove(target, smartMoveOptions)
         }
+        if (this.spawns.length && !AL.Game.G.monsters[this.options.type].roam) return // Don't search all spawns if the monster doesn't roam
 
-        // Go through all the spawns on the map to look for it
-        if (
-            // We have no information about it at all
-            (!dbTarget && !sInfo)
-            // Or, we have information about it, but it only includes information about what map it's on
-            || (dbTarget && dbTarget.x == undefined && dbTarget.y == undefined && dbTarget.map && !this.options.ignoreMaps.includes(dbTarget.map))
-            || (sInfo && sInfo.live && sInfo.x !== undefined && sInfo.y !== undefined && sInfo.map && !this.options.ignoreMaps.includes(sInfo.map))
-        ) {
-            const spawns: IPosition[] = []
-            const map = (dbTarget?.map ?? (bot.S[this.options.type] as ServerInfoDataLive)?.map ?? bot.map) as MapName
-            const gMap = bot.G.maps[map] as GMap
-            if (gMap.ignore) return
-            if (gMap.instance || !gMap.monsters || gMap.monsters.length == 0) return // Map is unreachable, or there are no monsters
-
-            for (const spawn of gMap.monsters) {
-                // Add monster spawns
-                const gMonster = bot.G.monsters[spawn.type]
-                if (gMonster.aggro >= 100 || gMonster.rage >= 100) continue // Skip aggro spawns
-                if (spawn.boundary) {
-                    spawns.push({ map: map, x: (spawn.boundary[0] + spawn.boundary[2]) / 2, y: (spawn.boundary[1] + spawn.boundary[3]) / 2 })
-                } else if (spawn.boundaries) {
-                    for (const boundary of spawn.boundaries) {
-                        spawns.push({ map: boundary[0], x: (boundary[1] + boundary[3]) / 2, y: (boundary[2] + boundary[4]) / 2 })
-                    }
+        // Look through all spawns on the current map for it
+        const gMap = bot.G.maps[bot.map] as GMap
+        const spawns: IPosition[] = []
+        for (const spawn of gMap.monsters) {
+            // Add monster spawns
+            const gMonster = bot.G.monsters[spawn.type]
+            if (gMonster.aggro >= 100 || gMonster.rage >= 100) continue // Skip aggro spawns
+            if (spawn.boundary) {
+                spawns.push({ map: bot.map, x: (spawn.boundary[0] + spawn.boundary[2]) / 2, y: (spawn.boundary[1] + spawn.boundary[3]) / 2 })
+            } else if (spawn.boundaries) {
+                for (const boundary of spawn.boundaries) {
+                    spawns.push({ map: boundary[0], x: (boundary[1] + boundary[3]) / 2, y: (boundary[2] + boundary[4]) / 2 })
                 }
             }
+        }
 
-            for (const spawn of gMap.spawns) {
-                // Add map spawns
-                spawns.push({ map: map, x: spawn[0], y: spawn[1] })
-            }
+        for (const spawn of gMap.spawns) {
+            // Add map spawns
+            spawns.push({ map: bot.map, x: spawn[0], y: spawn[1] })
+        }
 
-            // Sort to improve efficiency a little
-            spawns.sort((a, b) => a.x - b.x)
+        // Sort spawns
+        spawns.sort((a, b) => a.x - b.x)
 
-            for (const spawn of spawns) {
-                // Move to the next spawn
-                await bot.smartMove(spawn, { getWithin: AL.Constants.MAX_VISIBLE_RANGE / 2, stopIfTrue: stopIfTrue, useBlink: true })
+        for (const spawn of spawns) {
+            // Move to the next spawn
+            await bot.smartMove(spawn, smartMoveOptions)
 
-                target = bot.getEntity({ returnNearest: true, type: this.options.type })
-                if (target) return bot.smartMove(target, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
-            }
+            // If there's good data where it is, stop & smart move there
+            const target = await this.checkGoodData(bot)
+            if (target) return bot.smartMove(target, smartMoveOptions)
         }
     }
 }

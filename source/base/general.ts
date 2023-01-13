@@ -544,7 +544,7 @@ export async function goGetRspeedBuff(bot: Character, msToWait = 10000): Promise
 
     if (friendlyRogue) {
         if (bot.ctype == "merchant") (bot as Merchant).closeMerchantStand().catch(console.error)
-        await bot.smartMove(friendlyRogue, { getWithin: 20, stopIfTrue: () => bot.s.rspeed !== undefined, useBlink: true })
+        await bot.smartMove(friendlyRogue, { getWithin: 20, stopIfTrue: async () => bot.s.rspeed !== undefined, useBlink: true })
         if (["earthRog"].includes(friendlyRogue.id)) return // Don't remove earthRog from the list, they're probably just low MP
 
         // Wait a bit for rspeed
@@ -774,11 +774,11 @@ export async function goToPriestIfHurt(bot: Character, priest: Character): Promi
     if (bot.hp > bot.max_hp / 2) return // We still have over half our HP
     if (!priest) return // Priest is not available
 
-    return bot.smartMove(priest, { getWithin: priest.range, stopIfTrue: () => bot.hp >= bot.max_hp * 0.6 })
+    return bot.smartMove(priest, { getWithin: priest.range, stopIfTrue: async () => bot.hp >= bot.max_hp * 0.6 })
 }
 
 export async function goToSpecialMonster(bot: Character, type: MonsterName, options: { requestMagiport?: true} = {}): Promise<unknown> {
-    const stopIfTrue = (): boolean => {
+    const stopIfTrue = async (): Promise<boolean> => {
         const target = bot.getEntity({ type: type })
         if (!target) return false // No target, don't stop
         if (Pathfinder.canWalkPath(bot, target)) return true // We can walk to it, stop!
@@ -808,7 +808,7 @@ export async function goToSpecialMonster(bot: Character, type: MonsterName, opti
     // Look for if there's a spawn for it
     for (const spawn of Pathfinder.locateMonster(type)) {
         // Move to the next spawn
-        await bot.smartMove(spawn, { getWithin: bot.range - 10, stopIfTrue: () => bot.getEntity({ type: type }) !== undefined })
+        await bot.smartMove(spawn, { getWithin: bot.range - 10, stopIfTrue: async () => bot.getEntity({ type: type }) !== undefined })
 
         target = bot.getEntity({ returnNearest: true, type: type })
         if (target) return bot.smartMove(target, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
@@ -840,7 +840,7 @@ export async function goToSpecialMonster(bot: Character, type: MonsterName, opti
 
         for (const spawn of spawns) {
             // Move to the next spawn
-            await bot.smartMove(spawn, { getWithin: bot.range - 10, stopIfTrue: () => bot.getEntity({ type: type }) !== undefined })
+            await bot.smartMove(spawn, { getWithin: bot.range - 10, stopIfTrue: async () => bot.getEntity({ type: type }) !== undefined })
 
             target = bot.getEntity({ returnNearest: true, type: type })
             if (target) return bot.smartMove(target, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
@@ -916,10 +916,10 @@ export async function goToNearestWalkableToMonster(bot: Character, types: Monste
         if (AL.Pathfinder.canWalkPath(bot, destination)) {
             bot.move(destination.x, destination.y, { resolveOnStart: true }).catch(() => { /* Suppress errors */ })
         } else {
-            return bot.smartMove(destination, { stopIfTrue: () => bot.getEntity({ canWalkTo: true, typeList: types }) !== undefined, useBlink: true })
+            return bot.smartMove(destination, { stopIfTrue: async () => bot.getEntity({ canWalkTo: true, typeList: types }) !== undefined, useBlink: true })
         }
     } else if (!nearest) {
-        return bot.smartMove(types[0], { stopIfTrue: () => bot.getEntity({ canWalkTo: true, typeList: types }) !== undefined, useBlink: true })
+        return bot.smartMove(types[0], { stopIfTrue: async () => bot.getEntity({ canWalkTo: true, typeList: types }) !== undefined, useBlink: true })
     }
 }
 

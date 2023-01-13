@@ -113,7 +113,7 @@ async function startMerchant(bot: Merchant) {
                         // Move to them, and we'll automatically mluck them
                         if (AL.Tools.distance(bot, friend) > bot.G.skills.mluck.range) {
                             console.log(`[merchant] We are moving to ${friend.name} to mluck them!`)
-                            await merchantSmartMove(bot, friend, { attackWhileMoving: true, getWithin: bot.G.skills.mluck.range / 2, stopIfTrue: () => (friend.s.mluck?.strong && friend.s.mluck?.ms >= 120000) || Tools.distance(bot.smartMoving, friend) > bot.G.skills.mluck.range })
+                            await merchantSmartMove(bot, friend, { attackWhileMoving: true, getWithin: bot.G.skills.mluck.range / 2, stopIfTrue: async () => (friend.s.mluck?.strong && friend.s.mluck?.ms >= 120000) || Tools.distance(bot.smartMoving, friend) > bot.G.skills.mluck.range })
                         }
 
                         bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
@@ -128,7 +128,7 @@ async function startMerchant(bot: Merchant) {
 
                 // Get stuff from our friends
                 if (friend.isFull()) {
-                    await merchantSmartMove(bot, friend, { attackWhileMoving: true, getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, stopIfTrue: () => bot.isFull() || !friend.isFull() || Tools.distance(bot.smartMoving, friend) > 400 })
+                    await merchantSmartMove(bot, friend, { attackWhileMoving: true, getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, stopIfTrue: async () => bot.isFull() || !friend.isFull() || Tools.distance(bot.smartMoving, friend) > 400 })
                     bot.timeouts.set("moveLoop", setTimeout(moveLoop, 250))
                     return
                 }
@@ -428,7 +428,7 @@ async function startMage(bot: Mage) {
                 return
             }
 
-            const stopLogic = () => {
+            const stopLogic = async () => {
                 // We're near a crypt monster
                 const nearest = getNearestCryptMonster(bot)
                 if (nearest) return true
@@ -579,7 +579,7 @@ async function startWarrior(bot: Warrior) {
                 return
             }
 
-            const stopLogic = () => {
+            const stopLogic = async () => {
                 // We're near a crypt monster
                 const nearest = getNearestCryptMonster(bot)
                 if (nearest) return true
