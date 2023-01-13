@@ -42,7 +42,7 @@ export class MagiportOthersSmartMovingToUsStrategy implements Strategy<Mage> {
             if (!friend.smartMoving) continue // They're not smart moving
             if (AL.Pathfinder.canWalkPath(bot, friend)) continue // They can walk to us
             if (!AL.Pathfinder.canWalkPath(bot, friend.smartMoving)) continue // We can't walk to where they want to go
-            if (AL.Tools.distance(friend, friend.smartMoving) > 2 * this.options.range) continue // They're fairly close
+            if (AL.Tools.distance(friend, friend.smartMoving) < 2 * this.options.range) continue // They're fairly close
             if (AL.Tools.distance(bot, friend.smartMoving) > this.options.range) continue // They're not smart moving to a place near us
 
             const lastMagiport = this.recentlyMagiported.get(friend.id)
