@@ -15,6 +15,7 @@ import { constructBooBooSetup } from "./booboo.js"
 import { constructBScorpionSetup } from "./bscorpion.js"
 import { constructGigaCrabHelperSetup, constructGigaCrabSetup } from "./crabxx.js"
 import { constructCuteBeeSetup } from "./cutebee.js"
+import { constructDragoldHelperSetup, constructDragoldSetup } from "./dragold.js"
 import { constructEntHelperSetup, constructEntSetup } from "./ent.js"
 import { MAGE_NORMAL, WARRIOR_NORMAL, WARRIOR_SPLASH } from "./equipment.js"
 import { constructFireRoamerSetup } from "./fireroamer.js"
@@ -210,6 +211,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         crabxx: constructGigaCrabSetup(contexts),
         croc: constructGenericSetup(contexts, ["croc", "phoenix"], true),
         cutebee: constructCuteBeeSetup(contexts),
+        dragold: constructDragoldSetup(contexts),
         ent: constructEntSetup(contexts),
         fireroamer: constructFireRoamerSetup(contexts),
         franky: constructFrankySetup(contexts),
@@ -270,6 +272,7 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         crabxx: constructGigaCrabHelperSetup(contexts),
         croc: constructGenericSetup(contexts, ["croc"]),
         cutebee: constructCuteBeeSetup(contexts),
+        dragold: constructDragoldHelperSetup(contexts),
         ent: constructEntHelperSetup(contexts),
         franky: constructFrankyHelperSetup(contexts),
         frog: constructFrogHelperSetup(contexts),

@@ -35,9 +35,9 @@ await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 const ENABLE_EVENTS = true
 const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
-const DEFAULT_MONSTER: MonsterName = "ent"
-const SPECIAL_MONSTERS: MonsterName[] = ["crabxx", "cutebee", "franky", "fvampire", "goldenbat", "greenjr", "grinch", "icegolem", "jr", "mvampire", "pinkgoo", "snowman", "stompy", "tinyp"]
-const ENABLE_MONSTERHUNTS = false
+const DEFAULT_MONSTER: MonsterName = "bee"
+const SPECIAL_MONSTERS: MonsterName[] = ["crabxx", "cutebee", "dragold", "franky", "fvampire", "goldenbat", "greenjr", "grinch", "icegolem", "jr", "mvampire", "pinkgoo", "snowman", "stompy", "tiger", "tinyp"]
+const ENABLE_MONSTERHUNTS = true
 const MAX_PUBLIC_CHARACTERS = 6
 
 const MERCHANT = "earthMer"
@@ -280,6 +280,11 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
             if (context.bot.S.holidayseason) {
                 if ((context.bot.S.grinch as ServerInfoDataLive)?.live) priority.push("grinch")
             }
+
+            // Lunar New Year
+            if (context.bot.S.lunarnewyear) {
+                if ((context.bot.S.dragold as ServerInfoDataLive)?.live) priority.push("dragold")
+            }
         }
     }
 
@@ -411,6 +416,9 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
                     TARGET_REGION = monster.serverRegion
                 }
             }
+
+            // Lunar New Year
+            // TODO
 
             // Everyday
             if (TARGET_REGION !== DEFAULT_REGION || TARGET_IDENTIFIER !== DEFAULT_IDENTIFIER) {
