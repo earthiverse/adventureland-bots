@@ -22,13 +22,13 @@ export function sortClosestDistance(to: Character) {
  *
  * Example: `targets.sort(sortClosestDistance(bot))`
  *
- * @param to Compare the distance to this point
+ * @param from Compare the distance from this point
  * @returns A sorting function that will sort the objects closest to the position first
  */
-export function sortClosestDistancePathfinder(to: Character) {
+export function sortClosestDistancePathfinder(from: Character) {
     return (a: IPosition & { map: MapName }, b: IPosition & { map: MapName }) => {
-        const path_a = AL.Pathfinder.getPath(to, a)
-        const path_b = AL.Pathfinder.getPath(to, b)
+        const path_a = AL.Pathfinder.getPath(from, a)
+        const path_b = AL.Pathfinder.getPath(from, b)
         const d_a = AL.Pathfinder.computePathCost(path_a)
         const d_b = AL.Pathfinder.computePathCost(path_b)
         return d_a - d_b

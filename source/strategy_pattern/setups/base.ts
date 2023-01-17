@@ -95,7 +95,6 @@ export type Setups = { [T in MonsterName]?: Setup }
 
 export function constructGenericSetup(contexts: Strategist<PingCompensatedCharacter>[], monsters: MonsterName[], privateInstance = false): Setup {
     const id_prefix = monsters.join("+")
-    const spawn = AL.Pathfinder.locateMonster(monsters[0])[0]
 
     let allMagical = true
     let allPhysical = true
@@ -125,7 +124,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                             ensureEquipped: privateInstance ? { ...MAGE_NORMAL } : undefined,
                             typeList: monsters
                         }),
-                        move: new ImprovedMoveStrategy(monsters, { idlePosition: spawn })
+                        move: new ImprovedMoveStrategy(monsters)
                     }
                 ]
             },
@@ -135,7 +134,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                     {
                         ctype: "paladin",
                         attack: new PaladinAttackStrategy({ contexts: contexts, typeList: monsters }),
-                        move: new ImprovedMoveStrategy(monsters, { idlePosition: spawn })
+                        move: new ImprovedMoveStrategy(monsters)
                     }
                 ]
             },
@@ -149,7 +148,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                             typeList: monsters,
                             enableGreedyAggro: (privateInstance && allMagical) ? true : undefined
                         }),
-                        move: new ImprovedMoveStrategy(monsters, { idlePosition: spawn })
+                        move: new ImprovedMoveStrategy(monsters)
                     }
                 ]
             },
@@ -159,7 +158,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                     {
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({ contexts: contexts, typeList: monsters }),
-                        move: new ImprovedMoveStrategy(monsters, { idlePosition: spawn })
+                        move: new ImprovedMoveStrategy(monsters)
                     }
                 ]
             },
@@ -169,7 +168,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                     {
                         ctype: "rogue",
                         attack: new RogueAttackStrategy({ contexts: contexts, typeList: monsters }),
-                        move: new ImprovedMoveStrategy(monsters, { idlePosition: spawn })
+                        move: new ImprovedMoveStrategy(monsters)
                     }
                 ]
             },
@@ -185,7 +184,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                             enableGreedyAggro: (privateInstance && allPhysical) ? true : undefined,
                             ensureEquipped: privateInstance ? (allPhysical ? { ...WARRIOR_SPLASH } : { ...WARRIOR_NORMAL }) : undefined,
                         }),
-                        move: new ImprovedMoveStrategy(monsters, { idlePosition: spawn })
+                        move: new ImprovedMoveStrategy(monsters)
                     }
                 ]
             }
