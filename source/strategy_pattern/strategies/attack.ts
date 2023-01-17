@@ -279,12 +279,9 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             const slotType = sT as SlotType
             const ensure = this.options.ensureEquipped[slotType]
 
-            if (
-                ensure.unequip
-                && bot.slots[slotType]
-            ) {
+            if (ensure.unequip) {
                 // We want no item in this slot
-                await bot.unequip(slotType)
+                if (bot.slots[slotType]) await bot.unequip(slotType)
                 continue
             }
 
