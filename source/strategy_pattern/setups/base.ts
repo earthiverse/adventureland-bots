@@ -124,7 +124,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                             ensureEquipped: privateInstance ? { ...MAGE_NORMAL } : undefined,
                             typeList: monsters
                         }),
-                        move: new ImprovedMoveStrategy(monsters)
+                        move: new ImprovedMoveStrategy(monsters[0])
                     }
                 ]
             },
@@ -134,7 +134,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                     {
                         ctype: "paladin",
                         attack: new PaladinAttackStrategy({ contexts: contexts, typeList: monsters }),
-                        move: new ImprovedMoveStrategy(monsters)
+                        move: new ImprovedMoveStrategy(monsters[0])
                     }
                 ]
             },
@@ -148,7 +148,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                             typeList: monsters,
                             enableGreedyAggro: (privateInstance && allMagical) ? true : undefined
                         }),
-                        move: new ImprovedMoveStrategy(monsters)
+                        move: new ImprovedMoveStrategy(monsters[0])
                     }
                 ]
             },
@@ -158,7 +158,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                     {
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({ contexts: contexts, typeList: monsters }),
-                        move: new ImprovedMoveStrategy(monsters)
+                        move: new ImprovedMoveStrategy(monsters[0])
                     }
                 ]
             },
@@ -168,7 +168,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                     {
                         ctype: "rogue",
                         attack: new RogueAttackStrategy({ contexts: contexts, typeList: monsters }),
-                        move: new ImprovedMoveStrategy(monsters)
+                        move: new ImprovedMoveStrategy(monsters[0])
                     }
                 ]
             },
@@ -184,7 +184,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                             enableGreedyAggro: (privateInstance && allPhysical) ? true : undefined,
                             ensureEquipped: privateInstance ? (allPhysical ? { ...WARRIOR_SPLASH } : { ...WARRIOR_NORMAL }) : undefined,
                         }),
-                        move: new ImprovedMoveStrategy(monsters)
+                        move: new ImprovedMoveStrategy(monsters[0])
                     }
                 ]
             }
