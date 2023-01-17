@@ -36,7 +36,7 @@ const ENABLE_EVENTS = true
 const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
 const DEFAULT_MONSTER: MonsterName = "bee"
-const SPECIAL_MONSTERS: MonsterName[] = ["crabxx", "cutebee", "dragold", "franky", "fvampire", "goldenbat", "greenjr", "grinch", "icegolem", "jr", "mvampire", "pinkgoo", "snowman", "stompy", "tiger", "tinyp"]
+const SPECIAL_MONSTERS: MonsterName[] = ["crabxx", "cutebee", "dragold", "franky", "fvampire", "goldenbat", "greenjr", "grinch", "icegolem", "jr", "mvampire", "pinkgoo", "skeletor", "snowman", "stompy", "tiger", "tinyp"]
 const ENABLE_MONSTERHUNTS = true
 const MAX_PUBLIC_CHARACTERS = 6
 
