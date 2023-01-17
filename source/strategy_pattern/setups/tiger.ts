@@ -1,8 +1,6 @@
 import { MonsterName, PingCompensatedCharacter } from "alclient"
 import { Strategist } from "../context.js"
-import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
-import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
@@ -17,45 +15,16 @@ export function constructTigerSetup(contexts: Strategist<PingCompensatedCharacte
     return {
         configs: [
             {
-                id: "tiger_mage,priest,warrior",
+                id: "tiger_warrior",
                 characters: [
-                    {
-                        ctype: "mage",
-                        attack: new MageAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            ensureEquipped: {
-                                ...UNEQUIP_EVERYTHING,
-                                earring2: { name: "dexearringx" },
-                            },
-                            typeList: typeList
-                        }),
-                        move: tigerMoveStrategy
-                    },
-                    {
-                        ctype: "priest",
-                        attack: new PriestAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            enableGreedyAggro: true,
-                            ensureEquipped: {
-                                ...UNEQUIP_EVERYTHING,
-                                earring2: { name: "dexearringx" },
-                                orb: { name: "rabbitsfoot" },
-                                ring2: { name: "ringofluck" },
-                            },
-                            typeList: typeList,
-                        }),
-                        move: tigerMoveStrategy
-                    },
                     {
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
-                            enableEquipForCleave: true,
-                            enableEquipForStomp: true,
-                            enableGreedyAggro: true,
-                            ensureEquipped: { ...UNEQUIP_EVERYTHING },
+                            ensureEquipped: {
+                                ...UNEQUIP_EVERYTHING,
+                                earring2: { name: "dexearringx" },
+                            },
                             typeList: typeList
                         }),
                         move: tigerMoveStrategy
@@ -63,48 +32,13 @@ export function constructTigerSetup(contexts: Strategist<PingCompensatedCharacte
                 ]
             },
             {
-                id: "tiger_priest,warrior",
+                id: "tiger_paladin",
                 characters: [
                     {
-                        ctype: "priest",
-                        attack: new PriestAttackStrategy({
+                        ctype: "paladin",
+                        attack: new PaladinAttackStrategy({
                             contexts: contexts,
-                            disableEnergize: true,
-                            enableGreedyAggro: true,
-                            ensureEquipped: {
-                                ...UNEQUIP_EVERYTHING,
-                                earring2: { name: "dexearringx" },
-                                orb: { name: "rabbitsfoot" },
-                                ring2: { name: "ringofluck" },
-                            },
-                            typeList: typeList,
-                        }),
-                        move: tigerMoveStrategy
-                    },
-                    {
-                        ctype: "warrior",
-                        attack: new WarriorAttackStrategy({
-                            contexts: contexts,
-                            enableEquipForCleave: true,
-                            enableGreedyAggro: true,
                             ensureEquipped: { ...UNEQUIP_EVERYTHING },
-                            typeList: typeList
-                        }),
-                        move: tigerMoveStrategy
-                    }
-                ]
-            },
-            {
-                id: "tiger_mage",
-                characters: [
-                    {
-                        ctype: "mage",
-                        attack: new MageAttackStrategy({
-                            contexts: contexts,
-                            ensureEquipped: {
-                                ...UNEQUIP_EVERYTHING,
-                                earring2: { name: "dexearringx" },
-                            },
                             typeList: typeList,
                         }),
                         move: tigerMoveStrategy
@@ -136,31 +70,11 @@ export function constructTigerHelperSetup(contexts: Strategist<PingCompensatedCh
     return {
         configs: [
             {
-                id: "tiger_helper_mage",
-                characters: [
-                    {
-                        ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, ensureEquipped: { ...UNEQUIP_EVERYTHING }, typeList: typeList }),
-                        move: tigerMoveStrategy
-                    }
-                ]
-            },
-            {
                 id: "tiger_helper_paladin",
                 characters: [
                     {
                         ctype: "paladin",
                         attack: new PaladinAttackStrategy({ contexts: contexts, ensureEquipped: { ...UNEQUIP_EVERYTHING }, typeList: typeList }),
-                        move: tigerMoveStrategy
-                    }
-                ]
-            },
-            {
-                id: "tiger_helper_priest",
-                characters: [
-                    {
-                        ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, ensureEquipped: { ...UNEQUIP_EVERYTHING }, typeList: typeList }),
                         move: tigerMoveStrategy
                     }
                 ]
