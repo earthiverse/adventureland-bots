@@ -24,7 +24,10 @@ export function constructTigerSetup(contexts: Strategist<PingCompensatedCharacte
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...UNEQUIP_EVERYTHING },
+                            ensureEquipped: {
+                                ...UNEQUIP_EVERYTHING,
+                                earring1: { name: "dexearringx" },
+                            },
                             typeList: typeList
                         }),
                         move: tigerMoveStrategy
@@ -35,7 +38,12 @@ export function constructTigerSetup(contexts: Strategist<PingCompensatedCharacte
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...UNEQUIP_EVERYTHING },
+                            ensureEquipped: {
+                                ...UNEQUIP_EVERYTHING,
+                                earring1: { name: "dexearringx" },
+                                orb: { name: "rabbitsfoot" },
+                                ring1: { name: "ringofluck" },
+                            },
                             typeList: typeList,
                         }),
                         move: tigerMoveStrategy
@@ -63,7 +71,12 @@ export function constructTigerSetup(contexts: Strategist<PingCompensatedCharacte
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...UNEQUIP_EVERYTHING },
+                            ensureEquipped: {
+                                ...UNEQUIP_EVERYTHING,
+                                earring1: { name: "dexearringx" },
+                                orb: { name: "rabbitsfoot" },
+                                ring1: { name: "ringofluck" },
+                            },
                             typeList: typeList,
                         }),
                         move: tigerMoveStrategy
@@ -88,7 +101,10 @@ export function constructTigerSetup(contexts: Strategist<PingCompensatedCharacte
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...UNEQUIP_EVERYTHING },
+                            ensureEquipped: {
+                                ...UNEQUIP_EVERYTHING,
+                                earring1: { name: "dexearringx" },
+                            },
                             typeList: typeList,
                         }),
                         move: tigerMoveStrategy
