@@ -40,9 +40,9 @@ export function constructTigerSetup(contexts: Strategist<PingCompensatedCharacte
                             enableGreedyAggro: true,
                             ensureEquipped: {
                                 ...UNEQUIP_EVERYTHING,
-                                earring1: { name: "dexearringx" },
+                                earring2: { name: "dexearringx" },
                                 orb: { name: "rabbitsfoot" },
-                                ring1: { name: "ringofluck" },
+                                ring2: { name: "ringofluck" },
                             },
                             typeList: typeList,
                         }),
@@ -73,9 +73,9 @@ export function constructTigerSetup(contexts: Strategist<PingCompensatedCharacte
                             enableGreedyAggro: true,
                             ensureEquipped: {
                                 ...UNEQUIP_EVERYTHING,
-                                earring1: { name: "dexearringx" },
+                                earring2: { name: "dexearringx" },
                                 orb: { name: "rabbitsfoot" },
-                                ring1: { name: "ringofluck" },
+                                ring2: { name: "ringofluck" },
                             },
                             typeList: typeList,
                         }),
@@ -103,7 +103,7 @@ export function constructTigerSetup(contexts: Strategist<PingCompensatedCharacte
                             contexts: contexts,
                             ensureEquipped: {
                                 ...UNEQUIP_EVERYTHING,
-                                earring1: { name: "dexearringx" },
+                                earring2: { name: "dexearringx" },
                             },
                             typeList: typeList,
                         }),
