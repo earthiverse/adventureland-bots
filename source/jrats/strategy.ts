@@ -38,7 +38,7 @@ let charactersDataUpdated: Date
 setInterval(async () => {
     try {
         console.log("Getting Event data...")
-        const aldata = await fetch("https://aldata.earthiverse.ca/christmas")
+        const aldata = await fetch("https://aldata.earthiverse.ca/lunarnewyear")
         if (aldata.status == 200) {
             eventData = await aldata.json()
             eventDataUpdated = new Date()

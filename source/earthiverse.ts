@@ -11,7 +11,7 @@ import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
 import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
 import { Config, constructHelperSetups, constructSetups, Setups } from "./strategy_pattern/setups/base.js"
 import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
-import { getHalloweenMonsterPriority, getHolidaySeasonMonsterPriority, getServerHopMonsterPriority } from "./base/serverhop.js"
+import { getHalloweenMonsterPriority, getHolidaySeasonMonsterPriority, getLunarNewYearMonsterPriority, getServerHopMonsterPriority } from "./base/serverhop.js"
 import { randomIntFromInterval, sleep } from "./base/general.js"
 import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
@@ -35,9 +35,9 @@ await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 const ENABLE_EVENTS = true
 const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
+const ENABLE_MONSTERHUNTS = true
 const DEFAULT_MONSTER: MonsterName = "bee"
 const SPECIAL_MONSTERS: MonsterName[] = ["crabxx", "cutebee", "dragold", "franky", "fvampire", "goldenbat", "greenjr", "grinch", "icegolem", "jr", "mvampire", "pinkgoo", "skeletor", "snowman", "stompy", "tiger", "tinyp"]
-const ENABLE_MONSTERHUNTS = true
 const MAX_PUBLIC_CHARACTERS = 6
 
 const MERCHANT = "earthMer"
@@ -418,7 +418,14 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
             }
 
             // Lunar New Year
-            // TODO
+            if (bot1.S.lunarnewyear) {
+                const monster = (await getLunarNewYearMonsterPriority(true))[0]
+                if (monster) {
+                    // We want to switch servers
+                    TARGET_IDENTIFIER = monster.serverIdentifier
+                    TARGET_REGION = monster.serverRegion
+                }
+            }
 
             // Everyday
             if (TARGET_REGION !== DEFAULT_REGION || TARGET_IDENTIFIER !== DEFAULT_IDENTIFIER) {

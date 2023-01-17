@@ -9,6 +9,8 @@ export type EnsureEquipped = {
     [T in SlotType]?: {
         name: ItemName
         filters?: LocateItemFilters
+        /** If set, we will unequip the slot instead */
+        unequip?: true
     }
 }
 
@@ -276,6 +278,16 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         for (const sT in this.options.ensureEquipped) {
             const slotType = sT as SlotType
             const ensure = this.options.ensureEquipped[slotType]
+
+            if (
+                ensure.unequip
+                && bot.slots[slotType]
+            ) {
+                // We want no item in this slot
+                await bot.unequip(slotType)
+                continue
+            }
+
             if (
                 !bot.slots[slotType]
                 || bot.slots[slotType].name !== ensure.name

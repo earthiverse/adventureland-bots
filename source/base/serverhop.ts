@@ -250,6 +250,9 @@ export async function getHolidaySeasonMonsterPriority(avoidPVP = false) {
 
     const entities = await entitiesP
     entities.sort((a, b) => {
+        // Monster Priority
+        if (a.type !== b.type) return monsterPriority.indexOf(a.type) - monsterPriority.indexOf(b.type)
+
         // Lower HP first
         if (a.hp !== b.hp) return a.hp - b.hp
 
@@ -257,8 +260,69 @@ export async function getHolidaySeasonMonsterPriority(avoidPVP = false) {
         if (a.serverIdentifier !== "PVP" && b.serverIdentifier == "PVP") return -1
         if (b.serverIdentifier !== "PVP" && a.serverIdentifier == "PVP") return 1
 
+        // Server Priority
+        if (a.serverRegion !== b.serverRegion || a.serverIdentifier !== b.serverIdentifier) {
+            const aKey = `${a.serverRegion}${a.serverIdentifier}`
+            const bKey = `${b.serverRegion}${b.serverIdentifier}`
+            return serverPriority.indexOf(aKey) - serverPriority.indexOf(bKey)
+        }
+    })
+
+    const toReturn = []
+    for (const entity of entities) {
+        if (entity.in && entity.in !== entity.map) continue // Don't include instanced monsters
+        toReturn.push({
+            hp: entity.hp,
+            id: entity.name,
+            lastSeen: new Date(entity.lastSeen).toISOString(),
+            level: entity.level,
+            map: entity.map,
+            serverIdentifier: entity.serverIdentifier,
+            serverRegion: entity.serverRegion,
+            target: entity.target,
+            type: entity.type,
+            x: entity.x,
+            y: entity.y
+        })
+    }
+
+    return toReturn
+}
+
+export async function getLunarNewYearMonsterPriority(avoidPVP = false) {
+    const monsterPriority: MonsterName[] = ["dragold", "tiger"]
+    const serverPriority = ["EUI", "EUII", "USI", "USII", "USIII", "ASIAI", "EUPVP", "USPVP"]
+
+    const entitiesFilters = {
+        $and: [{
+            $or: [
+                { "s.fullguardx": undefined },
+                { "s.fullguardx.ms": { $lt: 30000 } }
+            ],
+        }, {
+            $or: [
+                { "s.fullguard": undefined },
+                { "s.fullguard.ms": { $lt: 30000 } }
+            ]
+        }],
+        lastSeen: { $gt: Date.now() - 30000 },
+        type: { $in: monsterPriority }
+    }
+    if (avoidPVP) entitiesFilters["serverIdentifier"] = { $ne: "PVP" }
+
+    const entitiesP = await AL.EntityModel.find(entitiesFilters).lean().exec()
+
+    const entities = await entitiesP
+    entities.sort((a, b) => {
         // Monster Priority
         if (a.type !== b.type) return monsterPriority.indexOf(a.type) - monsterPriority.indexOf(b.type)
+
+        // Lower HP first
+        if (a.hp !== b.hp) return a.hp - b.hp
+
+        // PVP Priority
+        if (a.serverIdentifier !== "PVP" && b.serverIdentifier == "PVP") return -1
+        if (b.serverIdentifier !== "PVP" && a.serverIdentifier == "PVP") return 1
 
         // Server Priority
         if (a.serverRegion !== b.serverRegion || a.serverIdentifier !== b.serverIdentifier) {

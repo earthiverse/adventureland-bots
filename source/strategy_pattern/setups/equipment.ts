@@ -120,3 +120,21 @@ export const WARRIOR_STOMP: EnsureEquipped = {
     ring2: { name: "strring", filters: { returnHighestLevel: true } },
     shoes: { name: "wingedboots", filters: { returnHighestLevel: true } },
 }
+
+export const UNEQUIP_EVERYTHING: EnsureEquipped = {
+    amulet: { name: undefined, unequip: true },
+    belt: { name: undefined, unequip: true },
+    cape: { name: undefined, unequip: true },
+    chest: { name: undefined, unequip: true },
+    earring1: { name: undefined, unequip: true },
+    earring2: { name: undefined, unequip: true },
+    gloves: { name: undefined, unequip: true },
+    helmet: { name: undefined, unequip: true },
+    mainhand: { name: undefined, unequip: true },
+    offhand: { name: undefined, unequip: true },
+    orb: { name: undefined, unequip: true },
+    pants: { name: undefined, unequip: true },
+    ring1: { name: undefined, unequip: true },
+    ring2: { name: undefined, unequip: true },
+    shoes: { name: undefined, unequip: true },
+}
