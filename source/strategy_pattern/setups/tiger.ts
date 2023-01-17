@@ -26,7 +26,7 @@ export function constructTigerSetup(contexts: Strategist<PingCompensatedCharacte
                             disableEnergize: true,
                             ensureEquipped: {
                                 ...UNEQUIP_EVERYTHING,
-                                earring1: { name: "dexearringx" },
+                                earring2: { name: "dexearringx" },
                             },
                             typeList: typeList
                         }),

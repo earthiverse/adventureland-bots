@@ -17,7 +17,7 @@ import { constructGigaCrabHelperSetup, constructGigaCrabSetup } from "./crabxx.j
 import { constructCuteBeeSetup } from "./cutebee.js"
 import { constructDragoldHelperSetup, constructDragoldSetup } from "./dragold.js"
 import { constructEntHelperSetup, constructEntSetup } from "./ent.js"
-import { MAGE_NORMAL, WARRIOR_NORMAL, WARRIOR_SPLASH } from "./equipment.js"
+import { MAGE_NORMAL, MAGE_SPLASH, PRIEST_NORMAL, WARRIOR_NORMAL, WARRIOR_SPLASH } from "./equipment.js"
 import { constructFireRoamerSetup } from "./fireroamer.js"
 import { constructFrankyHelperSetup, constructFrankySetup } from "./franky.js"
 import { constructFrogHelperSetup, constructFrogSetup } from "./frog.js"
@@ -122,7 +122,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: privateInstance ? { ...MAGE_NORMAL } : undefined,
+                            ensureEquipped: privateInstance ? (allMagical ? { ...MAGE_SPLASH } : { ...MAGE_NORMAL }) : undefined,
                             typeList: monsters
                         }),
                         move: new ImprovedMoveStrategy(monsters[0])
@@ -146,6 +146,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
+                            ensureEquipped: privateInstance ? { ...PRIEST_NORMAL } : undefined,
                             typeList: monsters,
                             enableGreedyAggro: (privateInstance && allMagical) ? true : undefined
                         }),
@@ -180,10 +181,10 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
-                            typeList: monsters,
                             enableEquipForCleave: true,
                             enableGreedyAggro: (privateInstance && allPhysical) ? true : undefined,
                             ensureEquipped: privateInstance ? (allPhysical ? { ...WARRIOR_SPLASH } : { ...WARRIOR_NORMAL }) : undefined,
+                            typeList: monsters,
                         }),
                         move: new ImprovedMoveStrategy(monsters[0])
                     }

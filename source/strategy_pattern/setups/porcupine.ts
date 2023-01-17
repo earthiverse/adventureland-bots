@@ -5,6 +5,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
+import { MAGE_NORMAL, PRIEST_NORMAL } from "./equipment.js"
 
 export function constructPorcupineSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     return {
@@ -16,6 +17,7 @@ export function constructPorcupineSetup(contexts: Strategist<PingCompensatedChar
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
+                            ensureEquipped: { ...MAGE_NORMAL },
                             type: "porcupine",
                         }),
                         move: new ImprovedMoveStrategy("porcupine")
@@ -27,7 +29,11 @@ export function constructPorcupineSetup(contexts: Strategist<PingCompensatedChar
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, type: "porcupine" }),
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            ensureEquipped: { ...PRIEST_NORMAL },
+                            type: "porcupine"
+                        }),
                         move: new ImprovedMoveStrategy("porcupine")
                     }
                 ]
@@ -37,7 +43,11 @@ export function constructPorcupineSetup(contexts: Strategist<PingCompensatedChar
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, type: "porcupine" }),
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            // TODO: Ranger normal
+                            type: "porcupine"
+                        }),
                         move: new ImprovedMoveStrategy("porcupine")
                     }
                 ]

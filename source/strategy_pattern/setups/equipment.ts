@@ -59,6 +59,21 @@ export const PRIEST_ARMOR: EnsureEquipped = {
     shoes: { name: "hboots", filters: { returnHighestLevel: true } },
 }
 
+export const PRIEST_NORMAL: EnsureEquipped = {
+    chest: { name: "vattire", filters: { returnHighestLevel: true } },
+    earring1: { name: "cearring", filters: { returnHighestLevel: true } },
+    earring2: { name: "cearring", filters: { returnHighestLevel: true } },
+    gloves: { name: "vgloves", filters: { returnHighestLevel: true } },
+    helmet: { name: "hhelmet", filters: { returnHighestLevel: true } },
+    mainhand: { name: "firestaff", filters: { returnHighestLevel: true } },
+    offhand: { name: "wbookhs", filters: { returnHighestLevel: true } },
+    orb: { name: "jacko", filters: { returnHighestLevel: true } },
+    pants: { name: "hpants", filters: { returnHighestLevel: true } },
+    ring1: { name: "zapper", filters: { returnHighestLevel: true } },
+    ring2: { name: "cring", filters: { returnHighestLevel: true } },
+    shoes: { name: "hboots", filters: { returnHighestLevel: true } },
+}
+
 export const PRIEST_LUCK: EnsureEquipped = {
     chest: { name: "tshirt88", filters: { returnHighestLevel: true } },
     earring1: { name: "cearring", filters: { returnHighestLevel: true } },
