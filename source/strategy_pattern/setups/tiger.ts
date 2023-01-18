@@ -74,7 +74,7 @@ export function constructTigerHelperSetup(contexts: Strategist<PingCompensatedCh
                 characters: [
                     {
                         ctype: "paladin",
-                        attack: new PaladinAttackStrategy({ contexts: contexts, ensureEquipped: { ...UNEQUIP_EVERYTHING }, typeList: typeList }),
+                        attack: new PaladinAttackStrategy({ contexts: contexts, typeList: typeList }),
                         move: tigerMoveStrategy
                     }
                 ]
@@ -84,7 +84,7 @@ export function constructTigerHelperSetup(contexts: Strategist<PingCompensatedCh
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, ensureEquipped: { ...UNEQUIP_EVERYTHING }, typeList: typeList }),
+                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: typeList }),
                         move: tigerMoveStrategy
                     }
                 ]
@@ -94,7 +94,7 @@ export function constructTigerHelperSetup(contexts: Strategist<PingCompensatedCh
                 characters: [
                     {
                         ctype: "rogue",
-                        attack: new RogueAttackStrategy({ contexts: contexts, ensureEquipped: { ...UNEQUIP_EVERYTHING }, typeList: typeList }),
+                        attack: new RogueAttackStrategy({ contexts: contexts, typeList: typeList }),
                         move: tigerMoveStrategy
                     }
                 ]
@@ -104,7 +104,7 @@ export function constructTigerHelperSetup(contexts: Strategist<PingCompensatedCh
                 characters: [
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, enableEquipForCleave: true, enableEquipForStomp: true, ensureEquipped: { ...UNEQUIP_EVERYTHING }, typeList: typeList }),
+                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, enableEquipForCleave: true, enableEquipForStomp: true, typeList: typeList }),
                         move: tigerMoveStrategy
                     }
                 ]

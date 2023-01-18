@@ -724,9 +724,9 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
                     x: randomIntFromInterval(-50, 50),
                     y: randomIntFromInterval(-50, 50)
                 },
-                enableBuyAndUpgrade: {
-                    upgradeToLevel: 9
-                },
+                // enableBuyAndUpgrade: {
+                //     upgradeToLevel: 9
+                // },
                 enableBuyReplenishables: {
                     all: DEFAULT_REPLENISHABLES,
                     ratio: DEFAULT_REPLENISH_RATIO,
