@@ -14,7 +14,7 @@ import { constructBoarSetup } from "./boar.js"
 import { constructBooBooSetup } from "./booboo.js"
 import { constructBScorpionSetup } from "./bscorpion.js"
 import { constructGigaCrabHelperSetup, constructGigaCrabSetup } from "./crabxx.js"
-import { constructCuteBeeSetup } from "./cutebee.js"
+import { constructCuteBeeHelperSetup, constructCuteBeeSetup } from "./cutebee.js"
 import { constructDragoldHelperSetup, constructDragoldSetup } from "./dragold.js"
 import { constructEntHelperSetup, constructEntSetup } from "./ent.js"
 import { MAGE_NORMAL, MAGE_SPLASH, PRIEST_NORMAL, WARRIOR_NORMAL, WARRIOR_SPLASH } from "./equipment.js"
@@ -45,7 +45,7 @@ import { constructRGooHelperSetup, constructRGooSetup } from "./rgoo.js"
 import { constructRHarpySetup } from "./rharpy.js"
 import { constructSkeletorSetup } from "./skeletor.js"
 import { constructSnowmanHelperSetup, constructSnowmanSetup } from "./snowman.js"
-import { constructSquigToadSetup } from "./squigtoad.js"
+import { constructSquigToadHelperSetup, constructSquigToadSetup } from "./squigtoad.js"
 import { constructStompySetup } from "./stompy.js"
 import { constructStoneWormSetup } from "./stoneworm.js"
 import { constructTigerHelperSetup, constructTigerSetup } from "./tiger.js"
@@ -273,7 +273,7 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         crabx: constructGenericSetup(contexts, ["crabx"]),
         crabxx: constructGigaCrabHelperSetup(contexts),
         croc: constructGenericSetup(contexts, ["croc"]),
-        cutebee: constructCuteBeeSetup(contexts),
+        cutebee: constructCuteBeeHelperSetup(contexts),
         dragold: constructDragoldHelperSetup(contexts),
         ent: constructEntHelperSetup(contexts),
         franky: constructFrankyHelperSetup(contexts),
@@ -294,8 +294,8 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         snake: constructGenericSetup(contexts, ["snake", "osnake"]),
         snowman: constructSnowmanHelperSetup(contexts),
         spider: constructGenericSetup(contexts, ["spider"]),
-        squig: constructSquigToadSetup(contexts),
-        squigtoad: constructSquigToadSetup(contexts),
+        squig: constructSquigToadHelperSetup(contexts),
+        squigtoad: constructSquigToadHelperSetup(contexts),
         tiger: constructTigerHelperSetup(contexts),
         tortoise: constructGenericSetup(contexts, ["tortoise", "frog", "phoenix"]),
     }
