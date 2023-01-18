@@ -648,6 +648,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     if (!friendContext.isReady()) continue
                     const friend = friendContext.bot
                     if (friend == bot) continue // Skip ourself
+                    if (friend.owner !== bot.owner) continue // Skip other public players
                     if (friend.serverData.region !== bot.serverData.region || friend.serverData.name !== bot.serverData.name) continue // Different server
                     if (friend.gold < (this.options.enableOffload.goldToHold * 2)) {
                         if (friend.esize > 3) continue // They don't have a lot to offload
@@ -981,6 +982,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 for (const friendContext of this.contexts) {
                     const friend = friendContext.bot
                     if (friend == bot) continue // Skip ourself
+                    if (friend.owner !== bot.owner) continue // Skip other public players
                     if (friend.serverData.region !== bot.serverData.region || friend.serverData.name !== bot.serverData.name) continue // Different server
                     for (const sN in friend.slots) {
                         const slotName = sN as SlotType

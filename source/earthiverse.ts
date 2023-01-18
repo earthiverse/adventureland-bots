@@ -630,6 +630,7 @@ class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> 
 
     public onApply(bot: PingCompensatedCharacter) {
         this.onCodeEval = async (data: string) => {
+            data = data.toLowerCase()
             if (data == "stop" || data == "disconnect") {
                 if (PARTY_ALLOWLIST.includes(bot.id)) {
                     // Don't allow them to party with us anymore
@@ -652,19 +653,19 @@ const disconnectOnCommandStrategy = new DisconnectOnCommandStrategy()
 const startPublicContext = async (type: CharacterType, userID: string, userAuth: string, characterID: string) => {
     // Checks
     if (type == "merchant") {
-        for (const context of ALL_CONTEXTS) {
+        for (const context of PUBLIC_CONTEXTS) {
             const character = context.bot
             if (character.owner == characterID) throw `There is a merchant with the ID '${characterID}' (${character.id}) already running. You can only run one merchant.`
         }
     } else {
         let numChars = 0
-        for (const context of ALL_CONTEXTS) {
+        for (const context of PUBLIC_CONTEXTS) {
             const character = context.bot
             if (character.ctype == "merchant") continue // Merchants don't count
             numChars++
         }
         if (numChars >= MAX_PUBLIC_CHARACTERS) throw `Too many characters are already running (We only support ${MAX_PUBLIC_CHARACTERS} characters simultaneously)`
-        for (const context of ALL_CONTEXTS) {
+        for (const context of PUBLIC_CONTEXTS) {
             const character = context.bot
             if (character.characterID == characterID) throw `There is a character with the ID '${characterID}' (${character.id}) already running. Stop the character first to change its settings.`
         }

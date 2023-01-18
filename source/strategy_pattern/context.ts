@@ -269,6 +269,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                 newBot.socket.removeAllListeners("disconnect")
                 newBot.disconnect()
             }
+            console.error(`Couldn't reconnect ${this.bot.name}!`)
             console.error(e)
             const wait = /wait_(\d+)_second/.exec(e)
             if (wait && wait[1]) {
