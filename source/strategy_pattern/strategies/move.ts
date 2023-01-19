@@ -396,6 +396,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         if (this.options.contexts) {
             // Look for it around the other contexts
             for (const context of this.options.contexts) {
+                if (!context.isReady()) continue
                 if (bot == context.bot) continue // We've already looked for it around ourself
                 const target = context.bot.getEntity({ returnNearest: true, type: this.options.type })
                 if (target) return this.returnUndefinedIfMapIgnored(target)
@@ -415,11 +416,23 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                 serverRegion: bot.server.region,
                 type: this.options.type
             }).sort({ lastSeen: -1 }).lean().exec()
+            targets:
             for (const target of targets) {
                 if (!target.map || target.x === undefined || target.y === undefined) continue
+
+                if (this.options.contexts) {
+                    // Check if one of our contexts should be able to see it
+                    for (const context of this.options.contexts) {
+                        if (!context.isReady()) continue
+                        if (AL.Tools.distance(context.bot, target) < (AL.Constants.MAX_VISIBLE_RANGE / 2)) continue targets // We should be able to see it, the data is not valid
+                    }
+                }
                 return target
             }
         }
+
+        // Couldn't find a good data source for the monster
+        return undefined
     }
 
     protected async move(bot: Character) {
