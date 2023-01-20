@@ -284,7 +284,11 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
             // Lunar New Year
             if (context.bot.S.lunarnewyear) {
                 if ((context.bot.S.dragold as ServerInfoDataLive)?.live) priority.push("dragold")
-                if (context.bot.serverData.name == DEFAULT_IDENTIFIER && context.bot.serverData.region == DEFAULT_REGION) priority.push("tiger")
+                if (
+                    (context.bot.S.tiger as ServerInfoDataLive)?.live
+                    && context.bot.serverData.name == DEFAULT_IDENTIFIER
+                    && context.bot.serverData.region == DEFAULT_REGION
+                ) priority.push("tiger")
             }
         }
     }
