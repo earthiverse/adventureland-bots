@@ -37,7 +37,7 @@ const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
 const ENABLE_MONSTERHUNTS = true
 const DEFAULT_MONSTER: MonsterName = "bee"
-const SPECIAL_MONSTERS: MonsterName[] = ["crabxx", "cutebee", "dragold", "franky", "fvampire", "goldenbat", "greenjr", "grinch", "icegolem", "jr", "mvampire", "pinkgoo", "skeletor", "snowman", "stompy", "tiger", "tinyp"]
+const SPECIAL_MONSTERS: MonsterName[] = ["crabxx", "cutebee", "franky", "fvampire", "goldenbat", "greenjr", "icegolem", "jr", "mvampire", "skeletor", "snowman", "stompy", "tinyp"]
 const MAX_PUBLIC_CHARACTERS = 6
 
 const MERCHANT = "earthMer"
@@ -284,6 +284,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
             // Lunar New Year
             if (context.bot.S.lunarnewyear) {
                 if ((context.bot.S.dragold as ServerInfoDataLive)?.live) priority.push("dragold")
+                if (context.bot.serverData.name == DEFAULT_IDENTIFIER && context.bot.serverData.region == DEFAULT_REGION) priority.push("tiger")
             }
         }
     }

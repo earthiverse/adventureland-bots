@@ -290,7 +290,7 @@ export async function getHolidaySeasonMonsterPriority(avoidPVP = false) {
 }
 
 export async function getLunarNewYearMonsterPriority(avoidPVP = false) {
-    const monsterPriority: MonsterName[] = ["dragold", "tiger"]
+    const monsterPriority: MonsterName[] = ["dragold"]
     const serverPriority = ["EUI", "EUII", "USI", "USII", "USIII", "ASIAI", "EUPVP", "USPVP"]
 
     const entitiesFilters = {
