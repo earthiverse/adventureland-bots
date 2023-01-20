@@ -108,6 +108,12 @@ export function sortPriority(bot: Character, types?: MonsterName[]) {
         if (!a_couldDie && b_couldDie) return true
         else if (a_couldDie && !b_couldDie) return false
 
+        // Will die -> lower priority
+        const a_willDie = a.willDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)
+        const b_willDie = b.willDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)
+        if (!a_willDie && b_willDie) return true
+        else if (a_willDie && !b_willDie) return false
+
         // Will burn to death -> lower priority
         const a_willBurn = a.willBurnToDeath()
         const b_willBurn = b.willBurnToDeath()
