@@ -78,6 +78,18 @@ export function sortHighestHpFirst(a: Entity, b: Entity) {
 
 export function sortPriority(bot: Character, types?: MonsterName[]) {
     return (a: Entity, b: Entity): boolean => {
+        const mainhand = AL.Game.G.items[bot.slots.mainhand?.name]
+        const offhand = AL.Game.G.items[bot.slots.offhand?.name]
+        const aoe = mainhand?.blast || mainhand?.explosion || offhand?.blast || offhand?.explosion
+
+        if (aoe) {
+            // 1hp -> lower priority
+            const a_1hp = a["1hp"]
+            const b_1hp = b["1hp"]
+            if (!a_1hp && b_1hp) return true
+            else if (a_1hp && !b_1hp) return false
+        }
+
         // Order in array
         if (types?.length) {
             const a_index = types.indexOf(a.type)
@@ -103,9 +115,7 @@ export function sortPriority(bot: Character, types?: MonsterName[]) {
         else if (a_willBurn && !b_willBurn) return false
 
         // If we have a splash weapon, prioritize monsters with other monsters around them
-        const mainhand = AL.Game.G.items[bot.slots.mainhand?.name]
-        const offhand = AL.Game.G.items[bot.slots.offhand?.name]
-        if (mainhand?.blast || mainhand?.explosion || offhand?.blast || offhand?.explosion) {
+        if (aoe) {
             // TODO: According to https://discord.com/channels/238332476743745536/238366540091621377/1060555230246354965, the range is 50 for explosion
             //       If that's true, we should move the 50 to a constant in AL.Constants
             const a_nearby = bot.getEntities({ withinRangeOf: a, withinRange: 50 }).length

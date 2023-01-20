@@ -50,7 +50,6 @@ class WarriorGigaCrabAttackStrategy extends WarriorAttackStrategy {
             this.options.ensureEquipped.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } },
             this.options.ensureEquipped.offhand = { name: "fireblade", filters: { returnHighestLevel: true } },
             delete this.options.enableEquipForCleave
-            this.options.typeList = ["crabxx"]
         } else {
             // Splash Damage
             delete this.options.disableCleave
@@ -90,7 +89,7 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             disableEnergize: true,
                             enableGreedyAggro: true,
                             ensureEquipped: { ...PRIEST_ARMOR },
-                            typeList: ["crabxx", "crabx"],
+                            typeList: ["crabx", "crabxx"],
                         }),
                         move: new ImprovedMoveStrategy("crabxx")
                     },
@@ -137,9 +136,9 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             disableEnergize: true,
                             enableGreedyAggro: true,
                             ensureEquipped: { ...PRIEST_ARMOR },
-                            typeList: ["crabxx", "crabx"],
+                            typeList: ["crabx", "crabxx"],
                         }),
-                        move: new ImprovedMoveStrategy("crabxx")
+                        move: moveStrategy
                     },
                     // The warrior will prioritize crabx so that the giga crab can take damage
                     {
@@ -169,9 +168,9 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             disableEnergize: true,
                             enableGreedyAggro: true,
                             ensureEquipped: { ...PRIEST_ARMOR },
-                            typeList: ["crabxx", "crabx"],
+                            typeList: ["crabx", "crabxx"],
                         }),
-                        move: new ImprovedMoveStrategy("crabxx")
+                        move: moveStrategy
                     },
                     // The warrior will prioritize crabx so that the giga crab can take damage
                     {
@@ -195,6 +194,8 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
 
 
 export function constructGigaCrabHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const moveStrategy = new ImprovedMoveStrategy(["crabx", "crabxx"])
+
     return {
         configs: [
             {
@@ -203,7 +204,7 @@ export function constructGigaCrabHelperSetup(contexts: Strategist<PingCompensate
                     {
                         ctype: "mage",
                         attack: new MageAttackStrategy({ contexts: contexts, disableCreditCheck: true, typeList: ["crabx", "crabxx"] }),
-                        move: new ImprovedMoveStrategy(["crabx", "crabxx"])
+                        move: moveStrategy
                     }
                 ]
             },
@@ -213,7 +214,7 @@ export function constructGigaCrabHelperSetup(contexts: Strategist<PingCompensate
                     {
                         ctype: "paladin",
                         attack: new PaladinAttackStrategy({ contexts: contexts, disableCreditCheck: true, typeList: ["crabx", "crabxx"] }),
-                        move: new ImprovedMoveStrategy(["crabx", "crabxx"])
+                        move: moveStrategy
                     }
                 ]
             },
@@ -223,7 +224,7 @@ export function constructGigaCrabHelperSetup(contexts: Strategist<PingCompensate
                     {
                         ctype: "priest",
                         attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, disableCreditCheck: true, enableHealStrangers: true, typeList: ["crabx", "crabxx"] }),
-                        move: new ImprovedMoveStrategy(["crabx", "crabxx"])
+                        move: moveStrategy
                     }
                 ]
             },
@@ -233,7 +234,7 @@ export function constructGigaCrabHelperSetup(contexts: Strategist<PingCompensate
                     {
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({ contexts: contexts, disableCreditCheck: true, typeList: ["crabx", "crabxx"] }),
-                        move: new ImprovedMoveStrategy(["crabx", "crabxx"])
+                        move: moveStrategy
                     }
                 ]
             },
@@ -243,7 +244,7 @@ export function constructGigaCrabHelperSetup(contexts: Strategist<PingCompensate
                     {
                         ctype: "rogue",
                         attack: new RogueAttackStrategy({ contexts: contexts, disableCreditCheck: true, typeList: ["crabx", "crabxx"] }),
-                        move: new ImprovedMoveStrategy(["crabx", "crabxx"])
+                        move: moveStrategy
                     }
                 ]
             },
@@ -253,7 +254,7 @@ export function constructGigaCrabHelperSetup(contexts: Strategist<PingCompensate
                     {
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, disableCleave: true, disableCreditCheck: true, enableEquipForStomp: true, typeList: ["crabx", "crabxx"] }),
-                        move: new ImprovedMoveStrategy(["crabx", "crabxx"])
+                        move: moveStrategy
                     }
                 ]
             }
