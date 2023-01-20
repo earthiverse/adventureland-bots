@@ -89,7 +89,7 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
                             disableEnergize: true,
                             enableGreedyAggro: true,
                             ensureEquipped: { ...PRIEST_ARMOR },
-                            typeList: ["franky", "nerfedmummy"],
+                            typeList: ["nerfedmummy", "franky"],
                         }),
                         move: frankyMoveStrategy
                     },
@@ -117,7 +117,7 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
                             disableEnergize: true,
                             enableGreedyAggro: true,
                             ensureEquipped: { ...PRIEST_ARMOR },
-                            typeList: ["franky", "nerfedmummy"],
+                            typeList: ["nerfedmummy", "franky"],
                         }),
                         move: frankyMoveStrategy
                     },
@@ -134,6 +134,35 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
                         }),
                         move: frankyMoveStrategy
                     }
+                ]
+            },
+            {
+                id: "franky_priest,mage",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestFrankyAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            enableGreedyAggro: true,
+                            ensureEquipped: { ...PRIEST_ARMOR },
+                            typeList: ["nerfedmummy", "franky"],
+                        }),
+                        move: frankyMoveStrategy
+                    },
+                    {
+                        ctype: "mage",
+                        attack: new MageFrankyAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            ensureEquipped: {
+                                mainhand: { name: "gstaff", filters: { returnHighestLevel: true } },
+                                orb: { name: "jacko", filters: { returnHighestLevel: true } }
+                            },
+                            typeList: ["nerfedmummy", "franky"]
+                        }),
+                        move: frankyMoveStrategy
+                    },
                 ]
             },
         ]
