@@ -57,6 +57,7 @@ export const DEFAULT_REPLENISHABLES = new Map<ItemName, number>([
     ["xptome", 1],
 ])
 export const DEFAULT_MERCHANT_REPLENISHABLES = new Map<ItemName, number>([
+    ["offering", 1],
     ["cscroll0", 500],
     ["cscroll1", 50],
     ["cscroll2", 5],

@@ -523,7 +523,6 @@ async function startShared(context: Strategist<PingCompensatedCharacter>, privat
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(elixirStrategy)
     context.applyStrategy(itemStrategy)
-
 }
 
 async function startMage(context: Strategist<Mage>, privateContext = false) {
@@ -735,6 +734,15 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
                 // },
                 enableBuyReplenishables: {
                     all: DEFAULT_REPLENISHABLES,
+                    merchant: new Map([
+                        ["offering", 1],
+                        ["cscroll0", 100],
+                        ["cscroll1", 10],
+                        ["cscroll2", 2],
+                        ["scroll0", 100],
+                        ["scroll1", 10],
+                        ["scroll2", 2],
+                    ]),
                     ratio: DEFAULT_REPLENISH_RATIO,
                 },
                 enableFishing: true,
