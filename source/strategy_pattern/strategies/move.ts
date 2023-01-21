@@ -530,7 +530,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             for (const context of this.options.contexts) {
                 if (!context.isReady()) continue
                 if (context.bot == bot) continue // Already checked ourself
-                kane = bot.players.get("$Kane")
+                kane = context.bot.players.get("$Kane")
                 if (kane) break
             }
         }
@@ -540,7 +540,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             for (const context of this.options.contexts) {
                 if (!context.isReady()) continue
                 if (context.bot == bot) continue // Already checked ourself
-                angel = bot.players.get("$Angel")
+                angel = context.bot.players.get("$Angel")
                 if (angel) break
             }
         }
