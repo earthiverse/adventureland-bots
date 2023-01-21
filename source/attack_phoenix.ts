@@ -34,7 +34,7 @@ const PARTY_LEADER = "attackPri"
 const PARTY_ALLOWLIST = ["attackMag", "attackMag2", "attackMag3", "attackPri", "attackPri2", "attackPri3"]
 
 const DEFAULT_REGION: ServerRegion = "US"
-const DEFAULT_IDENTIFIER: ServerIdentifier = "I"
+const DEFAULT_IDENTIFIER: ServerIdentifier = "PVP"
 
 /** My characters */
 const PRIVATE_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
