@@ -9,6 +9,7 @@ import { getMsToNextMinute } from "../base/general.js"
 import { GetHolidaySpiritStrategy, ImprovedMoveStrategy } from "../strategy_pattern/strategies/move.js"
 import { MageAttackStrategy } from "../strategy_pattern/strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategy_pattern/strategies/attack_priest.js"
+import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "../strategy_pattern/strategies/party.js"
 
 await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
@@ -29,6 +30,11 @@ const buyStrategy = new BuyStrategy({
 const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
 const trackerStrategy = new TrackerStrategy()
 const respawnStrategy = new RespawnStrategy()
+
+// Party
+const PARTY_LEADER = "earthiverse"
+const partyAcceptStrategy = new AcceptPartyRequestStrategy()
+const partyRequestStrategy = new RequestPartyStrategy(PARTY_LEADER)
 
 let eventData
 let eventDataUpdated: Date
@@ -112,6 +118,12 @@ async function startBot(characterName: string, characterType: CharacterType, ser
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(respawnStrategy)
 
+    if (characterName == PARTY_LEADER) {
+        context.applyStrategy(partyAcceptStrategy)
+    } else {
+        context.applyStrategy(partyRequestStrategy)
+    }
+
     const moveLoop = async () => {
         if (!context.isReady() || !context.bot.ready || context.bot.rip) return // Not ready
         if (context.bot.S.holidayseason && !context.bot.s.holidayspirit) {
@@ -188,12 +200,9 @@ async function startBot(characterName: string, characterType: CharacterType, ser
     setTimeout(async () => { await disconnectLoop() }, getMsToNextMinute() - BUFFER)
 }
 
-setTimeout(startBot, getMsToNextMinute() + BUFFER, "earthiverse", "ranger", "US", "II", ["jrat"])
+setTimeout(startBot, getMsToNextMinute() + BUFFER, "earthiverse", "ranger", "EU", "PVP", ["jrat"])
+setTimeout(startBot, getMsToNextMinute() + BUFFER, "earthRan2", "ranger", "EU", "PVP", ["jrat"])
+setTimeout(startBot, getMsToNextMinute() + BUFFER, "earthRan3", "ranger", "EU", "PVP", ["jrat"])
 
-setTimeout(startBot, getMsToNextMinute() + BUFFER, "earthPri2", "priest", "US", "III", ["jrat"])
-
-setTimeout(startBot, getMsToNextMinute() + BUFFER, "earthRan2", "ranger", "EU", "I", ["jrat"])
-
-setTimeout(startBot, getMsToNextMinute() + BUFFER, "earthMag3", "priest", "EU", "II", ["jrat"])
-
-setTimeout(startBot, getMsToNextMinute() + BUFFER, "earthRan3", "ranger", "ASIA", "I", ["jrat"])
+// setTimeout(startBot, getMsToNextMinute() + BUFFER, "earthPri2", "priest", "US", "III", ["jrat"])
+// setTimeout(startBot, getMsToNextMinute() + BUFFER, "earthMag3", "priest", "EU", "II", ["jrat"])
