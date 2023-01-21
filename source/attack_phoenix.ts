@@ -1,4 +1,4 @@
-import AL, { ItemName, Merchant, PingCompensatedCharacter, ServerRegion, ServerIdentifier, MonsterName, Mage } from "alclient"
+import AL, { ItemName, Merchant, PingCompensatedCharacter, ServerRegion, ServerIdentifier, MonsterName, Mage, Priest } from "alclient"
 import { DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, startMerchant } from "./merchant/strategy.js"
 import { Strategist, Strategy } from "./strategy_pattern/context.js"
 import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
@@ -15,19 +15,23 @@ import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
 import { OptimizeItemsStrategy } from "./strategy_pattern/strategies/item.js"
 import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
+import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials_attack.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
 
-const DEFAULT_MONSTER: MonsterName = "phoenix"
+const DEFAULT_MONSTER: MonsterName = "tiger"
 
 const MERCHANT = "attackMer"
-const ROGUE_1 = "attackMag"
-const ROGUE_2 = "attackMag2"
-const ROGUE_3 = "attackMag3"
+const MAGE_1 = "attackMag"
+const MAGE_2 = "attackMag2"
+const MAGE_3 = "attackMag3"
+const PRIEST_1 = "attackPri"
+const PRIEST_2 = "attackPri2"
+const PRIEST_3 = "attackPri3"
 
-const PARTY_LEADER = "attackMag"
-const PARTY_ALLOWLIST = ["attackMag", "attackMag2", "attackMag3"]
+const PARTY_LEADER = "attackPri"
+const PARTY_ALLOWLIST = ["attackMag", "attackMag2", "attackMag3", "attackPri", "attackPri2", "attackPri3"]
 
 const DEFAULT_REGION: ServerRegion = "US"
 const DEFAULT_IDENTIFIER: ServerIdentifier = "I"
@@ -45,35 +49,42 @@ const privateBuyStrategy = new BuyStrategy({
     ])
 })
 
+const ITEMS_TO_SELL = new Map<ItemName, [number, number][]>([
+    ["cclaw", undefined],
+    ["coat1", undefined],
+    ["dexearring", undefined],
+    ["gloves1", undefined],
+    ["gphelmet", undefined],
+    ["helmet1", undefined],
+    ["hpamulet", undefined],
+    ["hpbelt", undefined],
+    ["iceskates", undefined],
+    ["intearring", undefined],
+    ["mushroomstaff", undefined],
+    ["pants1", undefined],
+    ["phelmet", undefined],
+    ["pickaxe", [
+        [0, 1_000_000]
+    ]],
+    ["rod", [
+        [0, 1_000_000]
+    ]],
+    ["shoes1", undefined],
+    ["slimestaff", undefined],
+    ["snowball", undefined],
+    ["stand0", undefined],
+    ["stramulet", undefined],
+    ["strearring", undefined],
+    ["tigerhelmet", undefined],
+    ["tigershield", undefined],
+    ["tigerstone", undefined],
+    ["vitearring", undefined],
+    ["vitring", undefined],
+    ["xmace", undefined],
+])
+
 const privateSellStrategy = new SellStrategy({
-    sellMap: new Map<ItemName, [number, number][]>([
-        ["cclaw", undefined],
-        ["coat1", undefined],
-        ["gloves1", undefined],
-        ["gphelmet", undefined],
-        ["helmet1", undefined],
-        ["hpamulet", undefined],
-        ["hpbelt", undefined],
-        ["iceskates", undefined],
-        ["mushroomstaff", undefined],
-        ["pants1", undefined],
-        ["phelmet", undefined],
-        ["pickaxe", [
-            [0, 1_000_000]
-        ]],
-        ["rod", [
-            [0, 1_000_000]
-        ]],
-        ["shoes1", undefined],
-        ["slimestaff", undefined],
-        ["snowball", undefined],
-        ["stand0", undefined],
-        ["stramulet", undefined],
-        ["strearring", undefined],
-        ["vitearring", undefined],
-        ["vitring", undefined],
-        ["xmace", undefined],
-    ])
+    sellMap: ITEMS_TO_SELL
 })
 
 //// Strategies
@@ -88,6 +99,8 @@ const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
 
 
 const magiportStrategy = new MagiportOthersSmartMovingToUsStrategy(PRIVATE_CONTEXTS)
+
+const privatePartyHealStrategy = new PartyHealStrategy(PRIVATE_CONTEXTS)
 
 // Party
 const partyAcceptStrategy = new AcceptPartyRequestStrategy({ allowList: PARTY_ALLOWLIST })
@@ -254,12 +267,16 @@ async function startShared(context: Strategist<PingCompensatedCharacter>) {
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(elixirStrategy)
     context.applyStrategy(itemStrategy)
-
 }
 
 async function startMage(context: Strategist<Mage>) {
     startShared(context)
     context.applyStrategy(magiportStrategy)
+}
+
+async function startPriest(context: Strategist<Priest>) {
+    startShared(context)
+    context.applyStrategy(privatePartyHealStrategy)
 }
 
 // Start my characters
@@ -279,19 +296,36 @@ const startMerchantContext = async () => {
 }
 startMerchantContext()
 
-const startMageContext = async (name: string) => {
-    let mage: Mage
+// const startMageContext = async (name: string) => {
+//     let mage: Mage
+//     try {
+//         mage = await AL.Game.startMage(name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
+//     } catch (e) {
+//         if (mage) mage.disconnect()
+//         console.error(e)
+//         setTimeout(startMageContext, 10_000)
+//     }
+//     const CONTEXT = new Strategist<Mage>(mage, baseStrategy)
+//     startMage(CONTEXT).catch(console.error)
+//     PRIVATE_CONTEXTS.push(CONTEXT)
+// }
+// startMageContext(MAGE_1)
+// startMageContext(MAGE_2)
+// startMageContext(MAGE_3)
+
+const startPriestContext = async (name: string) => {
+    let priest: Priest
     try {
-        mage = await AL.Game.startMage(name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
+        priest = await AL.Game.startPriest(name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
     } catch (e) {
-        if (mage) mage.disconnect()
+        if (priest) priest.disconnect()
         console.error(e)
-        setTimeout(startMageContext, 10_000)
+        setTimeout(startPriestContext, 10_000)
     }
-    const CONTEXT = new Strategist<Mage>(mage, baseStrategy)
-    startMage(CONTEXT).catch(console.error)
+    const CONTEXT = new Strategist<Priest>(priest, baseStrategy)
+    startPriest(CONTEXT).catch(console.error)
     PRIVATE_CONTEXTS.push(CONTEXT)
 }
-startMageContext(ROGUE_1)
-startMageContext(ROGUE_2)
-startMageContext(ROGUE_3)
+startPriestContext(PRIEST_1)
+startPriestContext(PRIEST_2)
+startPriestContext(PRIEST_3)

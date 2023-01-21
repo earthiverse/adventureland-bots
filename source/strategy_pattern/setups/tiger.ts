@@ -1,12 +1,73 @@
-import { MonsterName, PingCompensatedCharacter } from "alclient"
+import { Entity, MonsterName, PingCompensatedCharacter, Priest } from "alclient"
+import FastPriorityQueue from "fastpriorityqueue"
+import { sortPriority } from "../../base/sort.js"
 import { Strategist } from "../context.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
+import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { UNEQUIP_EVERYTHING } from "./equipment.js"
+
+class PriestTigerHealStrategy extends PriestAttackStrategy {
+    protected async attack(bot: Priest): Promise<void> {
+        await this.healFriendsOrSelf(bot)
+        if (!this.options.disableDarkBlessing) this.applyDarkBlessing(bot)
+
+        if (!this.shouldAttack(bot)) return
+
+        const priority = sortPriority(bot, this.options.typeList)
+
+        await this.ensureEquipped(bot)
+
+        if (!this.options.disableBasicAttack) await this.basicHeal(bot, priority)
+        if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority)
+
+        await this.ensureEquipped(bot)
+    }
+
+    protected async basicHeal(bot: Priest, priority: (a: Entity, b: Entity) => boolean): Promise<unknown> {
+        if (!bot.canUse("heal")) return // We can't attack
+
+        // Find all targets we want to attack
+        const entities = bot.getEntities({
+            ...this.options,
+            canDamage: "heal",
+            withinRange: "heal"
+        })
+        if (entities.length == 0) return // No targets to attack
+
+        // Prioritize the entities
+        const targets = new FastPriorityQueue<Entity>(priority)
+        for (const entity of entities) targets.add(entity)
+
+        const targetingMe = bot.calculateTargets()
+
+        while (targets.size) {
+            const target = targets.poll()
+
+            if (!target.target) {
+                // We're going to be tanking this monster, don't attack if it pushes us over our limit
+                if (bot.targets >= this.options.maximumTargets) continue // We don't want another target
+                switch (target.damage_type) {
+                    case "magical":
+                        if (bot.mcourage <= targetingMe.magical) continue // We can't tank any more magical monsters
+                        break
+                    case "physical":
+                        if (bot.courage <= targetingMe.physical) continue // We can't tank any more physical monsters
+                        break
+                    case "pure":
+                        if (bot.courage <= targetingMe.pure) continue // We can't tank any more pure monsters
+                        break
+                }
+            }
+
+            return bot.healSkill(target.id).catch(console.error)
+        }
+    }
+}
 
 export function constructTigerSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const tigerMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, type: "tiger" })
@@ -59,6 +120,19 @@ export function constructTigerSetup(contexts: Strategist<PingCompensatedCharacte
                     },
                 ]
             },
+            {
+                id: "tiger_priest",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestTigerHealStrategy({
+                            contexts: contexts,
+                            typeList: typeList,
+                        }),
+                        move: tigerMoveStrategy
+                    },
+                ]
+            },
         ]
     }
 }
@@ -77,6 +151,19 @@ export function constructTigerHelperSetup(contexts: Strategist<PingCompensatedCh
                         attack: new PaladinAttackStrategy({ contexts: contexts, typeList: typeList }),
                         move: tigerMoveStrategy
                     }
+                ]
+            },
+            {
+                id: "tiger_helper_priest",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestTigerHealStrategy({
+                            contexts: contexts,
+                            typeList: typeList,
+                        }),
+                        move: tigerMoveStrategy
+                    },
                 ]
             },
             {
