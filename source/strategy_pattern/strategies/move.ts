@@ -549,5 +549,10 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             }
             return
         }
+
+        if (lastD) {
+            // Move towards center of an NPC
+            bot.smartMove(offsetPositionParty(targets[1], bot), { getWithin: AL.Tools.distance({ x: bot.x, y: bot.y }, targets[1]) - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+        }
     }
 }
