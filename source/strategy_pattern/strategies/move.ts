@@ -525,9 +525,25 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         if (!target) return // No target to kite to Kane or Angel
 
         const targets: IPosition[] = [target]
-        const kane = bot.players.get("$Kane")
+        let kane = bot.players.get("$Kane")
+        if (!kane && this.options.contexts) {
+            for (const context of this.options.contexts) {
+                if (!context.isReady()) continue
+                if (context.bot == bot) continue // Already checked ourself
+                kane = bot.players.get("$Kane")
+                if (kane) break
+            }
+        }
         if (kane) targets.push(kane)
-        const angel = bot.players.get("$Angel")
+        let angel = bot.players.get("$Angel")
+        if (!angel && this.options.contexts) {
+            for (const context of this.options.contexts) {
+                if (!context.isReady()) continue
+                if (context.bot == bot) continue // Already checked ourself
+                angel = bot.players.get("$Angel")
+                if (angel) break
+            }
+        }
         if (angel) targets.push(angel)
         if (targets.length == 1) return // No NPCS nearby
 
