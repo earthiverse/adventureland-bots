@@ -1,7 +1,7 @@
 import AL, { IPosition, MonsterName, Pathfinder, Character, PingCompensatedCharacter, Entity, ServerInfoDataLive, MapName, GMap, SmartMoveOptions } from "alclient"
 import { sleep } from "../../base/general.js"
 import { offsetPositionParty } from "../../base/locations.js"
-import { sortClosestDistancePathfinder, sortTypeThenClosest } from "../../base/sort.js"
+import { sortClosestDistance, sortClosestDistancePathfinder, sortTypeThenClosest } from "../../base/sort.js"
 import { Loop, LoopName, Strategist, Strategy } from "../context.js"
 import { suppress_errors } from "../logging.js"
 
@@ -373,6 +373,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         this.loops.set("move", {
             fn: async (bot: Character) => {
                 await this.move(bot)
+                await this.kiteToKaneOrAngel(bot)
             },
             interval: 250
         })
@@ -514,6 +515,39 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             // If there's good data where it is, stop & smart move there
             const target = await this.checkGoodData(bot)
             if (target) return bot.smartMove(target, smartMoveOptions)
+        }
+    }
+
+    protected async kiteToKaneOrAngel(bot: Character) {
+        if (bot.map !== "main") return // Can't kite to Angel or Kane
+
+        const target = bot.getEntity({ type: this.options.type })
+        if (!target) return // No target to kite to Kane or Angel
+
+        const targets: IPosition[] = [target]
+        const kane = bot.players.get("$Kane")
+        if (kane) targets.push(kane)
+        const angel = bot.players.get("$Angel")
+        if (angel) targets.push(angel)
+        if (targets.length == 1) return // No NPCS nearby
+
+        targets.sort(sortClosestDistance(bot))
+
+        // Move to next target
+        let lastD = 0
+        for (const target of targets) {
+            const d = AL.Tools.distance({ x: bot.x, y: bot.y }, { x: target.x, y: target.y })
+            if (d < bot.range) {
+                lastD = d
+                continue
+            }
+
+            if (lastD) {
+                bot.smartMove(target, { getWithin: d - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+            } else {
+                bot.smartMove(target, { resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+            }
+            return
         }
     }
 }
