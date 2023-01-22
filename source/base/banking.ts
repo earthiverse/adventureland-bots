@@ -56,6 +56,9 @@ const DEFAULT_COMPOUND_BASE_RARE = {
     offeringp: 1,
     offering: 2
 }
+const PRIMLING_TO_TEN = {
+    offeringp: 10
+}
 export const ITEM_UPGRADE_CONF: {
     [T in ItemName]?: {
         /** What level should we start using an offeringp at? */
@@ -87,12 +90,18 @@ export const ITEM_UPGRADE_CONF: {
     supermittens: ULTRA_RARE,
     t3bow: ULTRA_RARE,
     test_orb: DONT_UPGRADE,
+    tigerhelmet: DEFAULT_UPGRADE_BASE_COMMON,
     throwingstars: DONT_UPGRADE,
     vitring: {
         // We craft with level 2 vit rings
         stop: 2
     },
-    vorb: DONT_UPGRADE
+    vorb: DONT_UPGRADE,
+    wattire: PRIMLING_TO_TEN,
+    wbreeches: PRIMLING_TO_TEN,
+    wcap: PRIMLING_TO_TEN,
+    wgloves: PRIMLING_TO_TEN,
+    wshoes: PRIMLING_TO_TEN,
 }
 
 /**
@@ -424,6 +433,9 @@ export async function getItemsToCompoundOrUpgrade(bot: Character, counts?: ItemC
     }
     if (!counts) counts = await getItemCountsForEverything(bot.owner)
 
+    const hasOffering = bot.hasItem("offering")
+    const hasOfferingP = bot.hasItem("offeringp")
+
     const okayToCompoundOrUpgrade: {
         pack: BankPackName | "inventory"
         name: ItemName
@@ -466,6 +478,14 @@ export async function getItemsToCompoundOrUpgrade(bot: Character, counts?: ItemC
                         else currentCount -= 1
                     }
                     if (slot.l) continue // It's locked!?
+
+                    // Check if we want to upgrade it
+                    if (ITEM_UPGRADE_CONF[slot.name].stop && slot.level >= ITEM_UPGRADE_CONF[slot.name].stop) continue
+
+                    // Check if we have an offering to upgrade this item with. If we don't, leave it.
+                    const offeringToUse = getOfferingToUse(slot)
+                    if (offeringToUse == "offering" && !hasOffering) continue
+                    if (offeringToUse == "offeringp" && !hasOfferingP) continue
 
                     okayToCompoundOrUpgrade.push({
                         pack: inventoryName,
