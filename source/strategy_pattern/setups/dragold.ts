@@ -55,7 +55,6 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            enableGreedyAggro: true,
                             enableHealStrangers: true,
                             ensureEquipped: { ...PRIEST_ARMOR },
                             typeList: types,
@@ -67,6 +66,7 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
                         attack: new WarriorDragoldAttackStrategy({
                             contexts: contexts,
                             disableCleave: true,
+                            enableGreedyAggro: true,
                             ensureEquipped: { ...WARRIOR_SPLASH },
                             typeList: types,
                         }),
@@ -82,7 +82,6 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            enableGreedyAggro: true,
                             enableHealStrangers: true,
                             ensureEquipped: { ...PRIEST_ARMOR },
                             typeList: types,
@@ -94,6 +93,7 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             disableCleave: true,
+                            enableGreedyAggro: true,
                             ensureEquipped: { ...WARRIOR_SPLASH },
                             typeList: types,
                         }),
