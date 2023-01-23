@@ -120,19 +120,19 @@ export function constructTigerSetup(contexts: Strategist<PingCompensatedCharacte
                     },
                 ]
             },
-            {
-                id: "tiger_priest",
-                characters: [
-                    {
-                        ctype: "priest",
-                        attack: new PriestTigerHealStrategy({
-                            contexts: contexts,
-                            typeList: typeList,
-                        }),
-                        move: tigerMoveStrategy
-                    },
-                ]
-            },
+            // {
+            //     id: "tiger_priest",
+            //     characters: [
+            //         {
+            //             ctype: "priest",
+            //             attack: new PriestTigerHealStrategy({
+            //                 contexts: contexts,
+            //                 typeList: typeList,
+            //             }),
+            //             move: tigerMoveStrategy
+            //         },
+            //     ]
+            // },
         ]
     }
 }
@@ -153,19 +153,19 @@ export function constructTigerHelperSetup(contexts: Strategist<PingCompensatedCh
                     }
                 ]
             },
-            {
-                id: "tiger_helper_priest",
-                characters: [
-                    {
-                        ctype: "priest",
-                        attack: new PriestTigerHealStrategy({
-                            contexts: contexts,
-                            typeList: typeList,
-                        }),
-                        move: tigerMoveStrategy
-                    },
-                ]
-            },
+            // {
+            //     id: "tiger_helper_priest",
+            //     characters: [
+            //         {
+            //             ctype: "priest",
+            //             attack: new PriestTigerHealStrategy({
+            //                 contexts: contexts,
+            //                 typeList: typeList,
+            //             }),
+            //             move: tigerMoveStrategy
+            //         },
+            //     ]
+            // },
             {
                 id: "tiger_helper_ranger",
                 characters: [
