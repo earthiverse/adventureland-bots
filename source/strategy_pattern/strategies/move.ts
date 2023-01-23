@@ -465,7 +465,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             }
 
             // Move to the next spawn
-            await bot.smartMove(spawn, smartMoveOptions)
+            await bot.smartMove(spawn, smartMoveOptions).catch()
 
             // If there's good data where it is, stop & smart move there
             const target = await this.checkGoodData(bot)
@@ -510,7 +510,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             }
 
             // Move to the next spawn
-            await bot.smartMove(spawn, smartMoveOptions)
+            await bot.smartMove(spawn, smartMoveOptions).catch()
 
             // If there's good data where it is, stop & smart move there
             const target = await this.checkGoodData(bot)
