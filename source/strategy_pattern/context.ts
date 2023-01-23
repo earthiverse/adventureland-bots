@@ -278,6 +278,9 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                 setTimeout(() => this.reconnect(), AL.Constants.RECONNECT_TIMEOUT_MS)
             } else if (/ingame/.test(e)){
                 setTimeout(() => this.reconnect(), 500)
+            } else if (/nouser/.test(e)) {
+                this.stop()
+                throw new Error(`Authorization failed for ${this.bot.name}! No longer trying to reconnect...`)
             } else {
                 setTimeout(() => this.reconnect(), 10000)
             }

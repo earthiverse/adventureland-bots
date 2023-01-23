@@ -655,6 +655,15 @@ const disconnectOnCommandStrategy = new DisconnectOnCommandStrategy()
 
 // Allow others to join me
 const startPublicContext = async (type: CharacterType, userID: string, userAuth: string, characterID: string) => {
+    // Remove stopped contexts
+    for (let i = 0; i < ALL_CONTEXTS.length; i++) {
+        const context = ALL_CONTEXTS[i]
+        if (context.isStopped() && context.bot.characterID) {
+            await stopPublicContext(context.bot.characterID)
+            i -= 1
+        }
+    }
+
     // Checks
     if (type == "merchant") {
         for (const context of PUBLIC_CONTEXTS) {
@@ -711,6 +720,9 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
     } catch (e) {
         if (bot) bot.disconnect()
         console.error(e)
+        if (/nouser/.test(e)) {
+            throw new Error(`Authorization failed for ${characterID}! No longer trying to connect...`)
+        }
         setTimeout(startPublicContext, 10_000, type, userID, userAuth, characterID)
         return
     }
@@ -787,6 +799,7 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
     }
     if (PARTY_ALLOWLIST.indexOf(bot.id) < 0) PARTY_ALLOWLIST.push(bot.id)
     context.applyStrategy(disconnectOnCommandStrategy)
+
     PUBLIC_CONTEXTS.push(context)
     ALL_CONTEXTS.push(context)
 }
@@ -836,6 +849,7 @@ app.post("/",
             const userID = req.body.user.trim()
             const userAuth = req.body.auth.trim()
             const characterID = req.body.char.trim()
+
             startPublicContext(charType, userID, userAuth, characterID).catch(console.error)
             return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
         } catch (e) {
