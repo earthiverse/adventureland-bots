@@ -85,14 +85,20 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
     protected async healFriendsOrSelf(bot: Priest): Promise<unknown> {
         if (!bot.canUse("heal")) return
 
-        const healPriority = (a: PingCompensatedCharacter, b: PingCompensatedCharacter) => {
-            // Heal our friends first
-            const a_isFriend = this.options.contexts.some((friend) => { friend.bot?.id == a.id })
-            const b_isFriend = this.options.contexts.some((friend) => { friend.bot?.id == b.id })
-            if (a_isFriend && !b_isFriend) return true
-            else if (b_isFriend && !a_isFriend) return false
+        const healPriority = (a: PingCompensatedCharacter | Player, b: PingCompensatedCharacter | Player) => {
+            // Heal our own characters
+            const a_isOurs = a.owner && bot.owner == a.owner
+            const b_isOurs = b.owner && bot.owner == b.owner
+            if (a_isOurs && !b_isOurs) return true
+            else if (b_isOurs && !a_isOurs) return false
 
-            // Heal those with lower HP first
+            // Heal party members
+            const a_party = a.party && bot.party && bot.party == a.party
+            const b_party = b.party && bot.party && bot.party == b.party
+            if (a_party && !b_party) return true
+            else if (b_party && !a_party) return false
+
+            // Heal lower hp players
             const a_hpRatio = a.hp / a.max_hp
             const b_hpRatio = b.hp / b.max_hp
             if (a_hpRatio < b_hpRatio) return true
