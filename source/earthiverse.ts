@@ -26,6 +26,7 @@ import { GuiStrategy } from "./strategy_pattern/strategies/gui.js"
 import { OptimizeItemsStrategy } from "./strategy_pattern/strategies/item.js"
 import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
 import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
+import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
@@ -164,6 +165,7 @@ const privateSetups = constructSetups(ALL_CONTEXTS)
 const publicSetups = constructHelperSetups(ALL_CONTEXTS)
 // Etc.
 const elixirStrategy = new ElixirStrategy("elixirluck")
+const homeServerStrategy = new HomeServerStrategy(DEFAULT_REGION, DEFAULT_IDENTIFIER)
 const itemStrategy = new OptimizeItemsStrategy()
 
 const currentSetups = new Map<Strategist<PingCompensatedCharacter>, { attack: Strategy<PingCompensatedCharacter>, move: Strategy<PingCompensatedCharacter> }>()
@@ -518,6 +520,7 @@ async function startShared(context: Strategist<PingCompensatedCharacter>, privat
         context.applyStrategy(publicSellStrategy)
     }
 
+    context.applyStrategy(homeServerStrategy)
     context.applyStrategy(avoidStackingStrategy)
     context.applyStrategy(respawnStrategy)
     context.applyStrategy(trackerStrategy)

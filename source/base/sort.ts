@@ -102,12 +102,6 @@ export function sortPriority(bot: Character, types?: MonsterName[]) {
         if (a.target && !b.target) return true
         else if (!a.target && b.target) return false
 
-        // Could die -> lower priority
-        const a_couldDie = a.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)
-        const b_couldDie = b.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)
-        if (!a_couldDie && b_couldDie) return true
-        else if (a_couldDie && !b_couldDie) return false
-
         // Will die -> lower priority
         const a_willDie = a.willDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)
         const b_willDie = b.willDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)
@@ -119,6 +113,12 @@ export function sortPriority(bot: Character, types?: MonsterName[]) {
         const b_willBurn = b.willBurnToDeath()
         if (!a_willBurn && b_willBurn) return true
         else if (a_willBurn && !b_willBurn) return false
+
+        // Could die -> lower priority
+        const a_couldDie = a.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)
+        const b_couldDie = b.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)
+        if (!a_couldDie && b_couldDie) return true
+        else if (a_couldDie && !b_couldDie) return false
 
         // If we have a splash weapon, prioritize monsters with other monsters around them
         if (aoe) {
