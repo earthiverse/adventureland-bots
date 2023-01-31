@@ -432,6 +432,12 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             }
         }
 
+        if (sInfo?.live && sInfo.map && bot.map !== sInfo.map) {
+            // We're not on the right map but the default spawn is better than nothing
+            const gInfo: GMap = AL.Game.G.maps[sInfo.map]
+            return { map: sInfo.map, x: gInfo.spawns[0][0], y: gInfo.spawns[0][1] }
+        }
+
         // Couldn't find a good data source for the monster
         return undefined
     }
