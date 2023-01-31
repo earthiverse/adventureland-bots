@@ -69,6 +69,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (!this.options.disableKillSteal && !this.options.disableZapper) {
             this.stealOnAction = async (data: ActionData) => {
                 if (!bot.canUse("zapperzap")) return
+                if (bot.s.town) return // Currently warping to town
 
                 const attacker = bot.players.get(data.attacker)
                 if (!attacker) return // Not a player
@@ -230,6 +231,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
     protected async idleAttack(bot: Type, priority: (a: Entity, b: Entity) => boolean): Promise<unknown> {
         if (!bot.canUse("attack")) return // We can't attack
+        if (bot.s.town) return // We're warping to town
 
         const entities = bot.getEntities({
             canDamage: "attack",
