@@ -20,7 +20,7 @@ import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
 await Promise.all([AL.Game.loginJSONFile("../credentials_attack.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
 
-const DEFAULT_MONSTER: MonsterName = "tiger"
+const DEFAULT_MONSTER: MonsterName = "phoenix"
 
 const MERCHANT = "attackMer"
 const MAGE_1 = "attackMag"
@@ -34,7 +34,7 @@ const PARTY_LEADER = "attackPri"
 const PARTY_ALLOWLIST = ["attackMag", "attackMag2", "attackMag3", "attackPri", "attackPri2", "attackPri3"]
 
 const DEFAULT_REGION: ServerRegion = "US"
-const DEFAULT_IDENTIFIER: ServerIdentifier = "PVP"
+const DEFAULT_IDENTIFIER: ServerIdentifier = "II"
 
 /** My characters */
 const PRIVATE_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
@@ -296,36 +296,36 @@ const startMerchantContext = async () => {
 }
 startMerchantContext()
 
-// const startMageContext = async (name: string) => {
-//     let mage: Mage
-//     try {
-//         mage = await AL.Game.startMage(name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
-//     } catch (e) {
-//         if (mage) mage.disconnect()
-//         console.error(e)
-//         setTimeout(startMageContext, 10_000)
-//     }
-//     const CONTEXT = new Strategist<Mage>(mage, baseStrategy)
-//     startMage(CONTEXT).catch(console.error)
-//     PRIVATE_CONTEXTS.push(CONTEXT)
-// }
-// startMageContext(MAGE_1)
-// startMageContext(MAGE_2)
-// startMageContext(MAGE_3)
-
-const startPriestContext = async (name: string) => {
-    let priest: Priest
+const startMageContext = async (name: string) => {
+    let mage: Mage
     try {
-        priest = await AL.Game.startPriest(name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
+        mage = await AL.Game.startMage(name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
     } catch (e) {
-        if (priest) priest.disconnect()
+        if (mage) mage.disconnect()
         console.error(e)
-        setTimeout(startPriestContext, 10_000)
+        setTimeout(startMageContext, 10_000)
     }
-    const CONTEXT = new Strategist<Priest>(priest, baseStrategy)
-    startPriest(CONTEXT).catch(console.error)
+    const CONTEXT = new Strategist<Mage>(mage, baseStrategy)
+    startMage(CONTEXT).catch(console.error)
     PRIVATE_CONTEXTS.push(CONTEXT)
 }
-startPriestContext(PRIEST_1)
-startPriestContext(PRIEST_2)
-startPriestContext(PRIEST_3)
+startMageContext(MAGE_1)
+startMageContext(MAGE_2)
+startMageContext(MAGE_3)
+
+// const startPriestContext = async (name: string) => {
+//     let priest: Priest
+//     try {
+//         priest = await AL.Game.startPriest(name, DEFAULT_REGION, DEFAULT_IDENTIFIER)
+//     } catch (e) {
+//         if (priest) priest.disconnect()
+//         console.error(e)
+//         setTimeout(startPriestContext, 10_000)
+//     }
+//     const CONTEXT = new Strategist<Priest>(priest, baseStrategy)
+//     startPriest(CONTEXT).catch(console.error)
+//     PRIVATE_CONTEXTS.push(CONTEXT)
+// }
+// startPriestContext(PRIEST_1)
+// startPriestContext(PRIEST_2)
+// startPriestContext(PRIEST_3)
