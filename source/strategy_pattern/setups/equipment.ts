@@ -1,6 +1,9 @@
 import { EnsureEquipped } from "../strategies/attack"
 
 export const MAGE_ARMOR: EnsureEquipped = {
+    amulet: { name: "intamulet", filters: { returnHighestLevel: true } },
+    belt: { name: "intbelt", filters: { returnHighestLevel: true } },
+    cape: { name: "tigercape", filters: { returnHighestLevel: true } },
     chest: { name: "harmor", filters: { returnHighestLevel: true } },
     earring1: { name: "cearring", filters: { returnHighestLevel: true } },
     earring2: { name: "cearring", filters: { returnHighestLevel: true } },
@@ -16,6 +19,9 @@ export const MAGE_ARMOR: EnsureEquipped = {
 }
 
 export const MAGE_NORMAL: EnsureEquipped = {
+    amulet: { name: "intamulet", filters: { returnHighestLevel: true } },
+    belt: { name: "intbelt", filters: { returnHighestLevel: true } },
+    cape: { name: "tigercape", filters: { returnHighestLevel: true } },
     chest: { name: "wattire", filters: { returnHighestLevel: true } },
     earring1: { name: "cearring", filters: { returnHighestLevel: true } },
     earring2: { name: "cearring", filters: { returnHighestLevel: true } },
@@ -31,6 +37,9 @@ export const MAGE_NORMAL: EnsureEquipped = {
 }
 
 export const MAGE_SPLASH: EnsureEquipped = {
+    amulet: { name: "intamulet", filters: { returnHighestLevel: true } },
+    belt: { name: "intbelt", filters: { returnHighestLevel: true } },
+    cape: { name: "tigercape", filters: { returnHighestLevel: true } },
     chest: { name: "harmor", filters: { returnHighestLevel: true } },
     earring1: { name: "cearring", filters: { returnHighestLevel: true } },
     earring2: { name: "cearring", filters: { returnHighestLevel: true } },
@@ -44,7 +53,15 @@ export const MAGE_SPLASH: EnsureEquipped = {
     shoes: { name: "vboots", filters: { returnHighestLevel: true } },
 }
 
+export const MAGE_FAST: EnsureEquipped = {
+    ...MAGE_NORMAL,
+    mainhand: { name: "wand", filters: { returnHighestLevel: true } },
+}
+
 export const PRIEST_ARMOR: EnsureEquipped = {
+    amulet: { name: "intamulet", filters: { returnHighestLevel: true } },
+    belt: { name: "intbelt", filters: { returnHighestLevel: true } },
+    cape: { name: "angelwings", filters: { returnHighestLevel: true } },
     chest: { name: "vattire", filters: { returnHighestLevel: true } },
     earring1: { name: "cearring", filters: { returnHighestLevel: true } },
     earring2: { name: "cearring", filters: { returnHighestLevel: true } },
@@ -60,6 +77,9 @@ export const PRIEST_ARMOR: EnsureEquipped = {
 }
 
 export const PRIEST_NORMAL: EnsureEquipped = {
+    amulet: { name: "intamulet", filters: { returnHighestLevel: true } },
+    belt: { name: "intbelt", filters: { returnHighestLevel: true } },
+    cape: { name: "angelwings", filters: { returnHighestLevel: true } },
     chest: { name: "vattire", filters: { returnHighestLevel: true } },
     earring1: { name: "cearring", filters: { returnHighestLevel: true } },
     earring2: { name: "cearring", filters: { returnHighestLevel: true } },
@@ -75,6 +95,9 @@ export const PRIEST_NORMAL: EnsureEquipped = {
 }
 
 export const PRIEST_LUCK: EnsureEquipped = {
+    amulet: { name: "intamulet", filters: { returnHighestLevel: true } },
+    belt: { name: "intbelt", filters: { returnHighestLevel: true } },
+    cape: { name: "angelwings", filters: { returnHighestLevel: true } },
     chest: { name: "tshirt88", filters: { returnHighestLevel: true } },
     earring1: { name: "cearring", filters: { returnHighestLevel: true } },
     earring2: { name: "dexearringx", filters: { returnHighestLevel: true } },
@@ -89,11 +112,19 @@ export const PRIEST_LUCK: EnsureEquipped = {
     shoes: { name: "wingedboots", filters: { returnHighestLevel: true } },
 }
 
+export const PRIEST_FAST: EnsureEquipped = {
+    ...MAGE_NORMAL,
+    mainhand: { name: "wand", filters: { returnHighestLevel: true } },
+    offhand: undefined
+}
+
 export const WARRIOR_NORMAL: EnsureEquipped = {
     amulet: { name: "snring", filters: { returnHighestLevel: true } },
     belt: { name: "strbelt", filters: { returnHighestLevel: true } },
     cape: { name: "bcape", filters: { returnHighestLevel: true } },
     chest: { name: "coat1", filters: { returnHighestLevel: true } },
+    earring1: { name: "cearring", filters: { returnHighestLevel: true } },
+    earring2: { name: "cearring", filters: { returnHighestLevel: true } },
     gloves: { name: "gloves1", filters: { returnHighestLevel: true } },
     helmet: { name: "helmet1", filters: { returnHighestLevel: true } },
     mainhand: { name: "fireblade", filters: { returnHighestLevel: true } },
@@ -111,6 +142,8 @@ export const WARRIOR_SPLASH: EnsureEquipped = {
     cape: { name: "bcape", filters: { returnHighestLevel: true } },
     chest: { name: "coat1", filters: { returnHighestLevel: true } },
     gloves: { name: "gloves1", filters: { returnHighestLevel: true } },
+    earring1: { name: "cearring", filters: { returnHighestLevel: true } },
+    earring2: { name: "cearring", filters: { returnHighestLevel: true } },
     helmet: { name: "helmet1", filters: { returnHighestLevel: true } },
     mainhand: { name: "vhammer", filters: { returnHighestLevel: true } },
     offhand: { name: "ololipop", filters: { returnHighestLevel: true } },
@@ -126,6 +159,8 @@ export const WARRIOR_STOMP: EnsureEquipped = {
     belt: { name: "strbelt", filters: { returnHighestLevel: true } },
     cape: { name: "bcape", filters: { returnHighestLevel: true } },
     chest: { name: "coat1", filters: { returnHighestLevel: true } },
+    earring1: { name: "cearring", filters: { returnHighestLevel: true } },
+    earring2: { name: "cearring", filters: { returnHighestLevel: true } },
     gloves: { name: "gloves1", filters: { returnHighestLevel: true } },
     helmet: { name: "helmet1", filters: { returnHighestLevel: true } },
     mainhand: { name: "basher", filters: { returnHighestLevel: true } },
