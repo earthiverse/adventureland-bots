@@ -113,7 +113,7 @@ export const PRIEST_LUCK: EnsureEquipped = {
 }
 
 export const PRIEST_FAST: EnsureEquipped = {
-    ...MAGE_NORMAL,
+    ...PRIEST_NORMAL,
     mainhand: { name: "wand", filters: { returnHighestLevel: true } },
     offhand: undefined
 }
