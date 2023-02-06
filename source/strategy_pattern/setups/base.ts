@@ -37,6 +37,7 @@ import { constructMVampireSetup } from "./mvampire.js"
 import { constructOneEyeSetup } from "./oneeye.js"
 import { constructOSnakeSetup } from "./osnake.js"
 import { constructPhoenixHelperSetup, constructPhoenixSetup } from "./phoenix.js"
+import { constructPinkGooHelperSetup, constructPinkGooSetup } from "./pinkgoo.js"
 import { constructPlantoidSetup } from "./plantoid.js"
 import { constructPorcupineHelperSetup, constructPorcupineSetup } from "./porcupine.js"
 import { constructPPPomPomSetup } from "./pppompom.js"
@@ -237,6 +238,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         oneeye: constructOneEyeSetup(contexts),
         osnake: constructOSnakeSetup(contexts),
         phoenix: constructPhoenixSetup(contexts),
+        pinkgoo: constructPinkGooSetup(contexts),
         plantoid: constructPlantoidSetup(contexts),
         poisio: constructGenericSetup(contexts, ["poisio"], true),
         porcupine: constructPorcupineSetup(contexts),
@@ -288,6 +290,7 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         mrpumpkin: constructMrPumpkinHelperSetup(contexts),
         osnake: constructGenericSetup(contexts, ["osnake", "snake"]),
         phoenix: constructPhoenixHelperSetup(contexts),
+        pinkgoo: constructPinkGooHelperSetup(contexts),
         poisio: constructGenericSetup(contexts, ["poisio"]),
         porcupine: constructPorcupineHelperSetup(contexts),
         rat: constructGenericSetup(contexts, ["rat"]),

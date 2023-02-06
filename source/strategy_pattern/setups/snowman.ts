@@ -8,7 +8,7 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { PRIEST_ARMOR } from "./equipment.js"
+import { MAGE_SPLASH, PRIEST_ARMOR, PRIEST_FAST, WARRIOR_SPLASH } from "./equipment.js"
 
 class MageSnowmanAttackStrategy extends MageAttackStrategy {
     public onApply(bot: Mage): void {
@@ -73,10 +73,7 @@ export function constructSnowmanSetup(contexts: Strategist<PingCompensatedCharac
                         attack: new MageSnowmanAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: {
-                                mainhand: { name: "gstaff", filters: { returnHighestLevel: true } },
-                                orb: { name: "jacko", filters: { returnHighestLevel: true } }
-                            },
+                            ensureEquipped: { ...MAGE_SPLASH },
                             typeList: ["snowman", "arcticbee"]
                         }),
                         move: snowmanMoveStrategy
@@ -86,7 +83,7 @@ export function constructSnowmanSetup(contexts: Strategist<PingCompensatedCharac
                         attack: new PriestSnowmanAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            ensureEquipped: { ...PRIEST_FAST },
                             typeList: ["snowman", "arcticbee"],
                         }),
                         move: snowmanMoveStrategy
@@ -97,9 +94,7 @@ export function constructSnowmanSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: {
-                                orb: { name: "jacko", filters: { returnHighestLevel: true } }
-                            },
+                            ensureEquipped: { ...WARRIOR_SPLASH },
                             typeList: ["snowman", "arcticbee"]
                         }),
                         move: snowmanMoveStrategy
@@ -114,7 +109,7 @@ export function constructSnowmanSetup(contexts: Strategist<PingCompensatedCharac
                         attack: new PriestSnowmanAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            ensureEquipped: { ...PRIEST_FAST },
                             typeList: ["snowman", "arcticbee"],
                         }),
                         move: snowmanMoveStrategy
@@ -125,10 +120,7 @@ export function constructSnowmanSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: {
-                                mainhand: { name: "bataxe", filters: { returnHighestLevel: true } },
-                                orb: { name: "jacko", filters: { returnHighestLevel: true } }
-                            },
+                            ensureEquipped: { ...WARRIOR_SPLASH },
                             typeList: ["snowman", "arcticbee"]
                         }),
                         move: snowmanMoveStrategy

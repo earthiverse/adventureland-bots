@@ -292,6 +292,15 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                     && context.bot.serverData.region == DEFAULT_REGION
                 ) priority.push("tiger")
             }
+
+            // Valentines
+            if (context.bot.S.valentines) {
+                if (
+                    (context.bot.S.pinkgoo as ServerInfoDataLive)?.live
+                    && context.bot.serverData.name == DEFAULT_IDENTIFIER
+                    && context.bot.serverData.region == DEFAULT_REGION
+                ) priority.push("pinkgoo")
+            }
         }
     }
 
@@ -316,7 +325,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                     $or: [
                         { target: undefined },
                         { target: { $in: PARTY_ALLOWLIST } },
-                        { type: { $in: ["phoenix", "pinkgoo", "snowman", "wabbit"] } } // Coop monsters will give credit
+                        { type: { $in: ["phoenix", "snowman", "wabbit"] } } // Coop monsters will give credit
                     ]
                 }, {
                     $or: [
