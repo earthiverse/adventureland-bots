@@ -5,6 +5,8 @@ import { sortClosestDistance, sortClosestDistancePathfinder, sortTypeThenClosest
 import { Loop, LoopName, Strategist, Strategy } from "../context.js"
 import { suppress_errors } from "../logging.js"
 
+export const AVOID_DOORS_COSTS = { blink: 999_999_999, enter: 999_999_999, town: 999_999_999, transport: 999_999_999 }
+
 export class BasicMoveStrategy implements Strategy<Character> {
     public loops = new Map<LoopName, Loop<Character>>()
 
@@ -270,9 +272,9 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
             }
 
             if (lastD) {
-                bot.smartMove(target, { avoidTownWarps: true, getWithin: d - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+                bot.smartMove(target, { costs: AVOID_DOORS_COSTS, getWithin: d - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
             } else {
-                bot.smartMove(target, { avoidTownWarps: true, resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+                bot.smartMove(target, { costs: AVOID_DOORS_COSTS, resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
             }
             return
         }
@@ -291,7 +293,7 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
             })
         } else if (lastD) {
             // Move towards center of closest spawn
-            bot.smartMove(offsetPositionParty(this.spawns[0], bot), { avoidTownWarps: true, getWithin: AL.Tools.distance({ x: bot.x, y: bot.y }, this.spawns[0]) - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(this.spawns[0], bot), { costs: AVOID_DOORS_COSTS, getWithin: AL.Tools.distance({ x: bot.x, y: bot.y }, this.spawns[0]) - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         } else if (!bot.smartMoving) {
             // No targets nearby, move to spawn
             bot.smartMove(offsetPositionParty(this.spawns[0], bot), { resolveOnFinalMoveStart: true, useBlink: true }).catch(() => { /** Suppress Error */ })
@@ -576,16 +578,16 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             }
 
             if (lastD) {
-                bot.smartMove(target, { avoidTownWarps: true, getWithin: d - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+                bot.smartMove(target, { costs: AVOID_DOORS_COSTS, getWithin: d - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
             } else {
-                bot.smartMove(target, { avoidTownWarps: true, resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+                bot.smartMove(target, { costs: AVOID_DOORS_COSTS, resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
             }
             return
         }
 
         if (lastD) {
             // Move towards center of an NPC
-            bot.smartMove(offsetPositionParty(targets[1], bot), { avoidTownWarps: true, getWithin: AL.Tools.distance({ x: bot.x, y: bot.y }, { x: targets[1].x, y: targets[1].y }) - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(targets[1], bot), { costs: AVOID_DOORS_COSTS, getWithin: AL.Tools.distance({ x: bot.x, y: bot.y }, { x: targets[1].x, y: targets[1].y }) - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
         }
     }
 }
