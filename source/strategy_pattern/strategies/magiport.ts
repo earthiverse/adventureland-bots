@@ -19,7 +19,7 @@ export class MagiportOthersSmartMovingToUsStrategy implements Strategy<Mage> {
     protected contexts: Strategist<PingCompensatedCharacter>[]
     protected options: MagiportOthersSmartMovingToUsStrategyOptions
 
-    protected recentlyMagiported = new Map<string, number>()
+    protected static recentlyMagiported = new Map<string, number>()
 
     public constructor(contexts: Strategist<PingCompensatedCharacter>[], options = DefaultMagiportOthersSmartMovingToUsStrategyOptions) {
         this.contexts = contexts
@@ -46,13 +46,13 @@ export class MagiportOthersSmartMovingToUsStrategy implements Strategy<Mage> {
             if (AL.Tools.distance(friend, friend.smartMoving) < 2 * this.options.range) continue // They're fairly close
             if (AL.Tools.distance(bot, friend.smartMoving) > this.options.range) continue // They're not smart moving to a place near us
 
-            const lastMagiport = this.recentlyMagiported.get(friend.id)
+            const lastMagiport = MagiportOthersSmartMovingToUsStrategy.recentlyMagiported.get(friend.id)
             if (lastMagiport && lastMagiport + this.options.delayMs > Date.now()) continue // We recently magiported them
 
             // Offer the magiport
             try {
                 await bot.magiport(friend.id)
-                this.recentlyMagiported.set(friend.id, Date.now())
+                MagiportOthersSmartMovingToUsStrategy.recentlyMagiported.set(friend.id, Date.now())
                 await friend.acceptMagiport(bot.id)
                 await friend.stopSmartMove()
                 await friend.stopWarpToTown()
