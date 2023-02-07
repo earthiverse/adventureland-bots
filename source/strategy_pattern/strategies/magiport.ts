@@ -40,6 +40,7 @@ export class MagiportOthersSmartMovingToUsStrategy implements Strategy<Mage> {
             const friend = context.bot
             if (friend.id == bot.id) continue // It's us
             if (!friend.smartMoving) continue // They're not smart moving
+            if (friend.map.startsWith("bank")) continue // Can't warp people from the bank
             if (AL.Pathfinder.canWalkPath(bot, friend)) continue // They can walk to us
             if (!AL.Pathfinder.canWalkPath(bot, friend.smartMoving)) continue // We can't walk to where they want to go
             if (AL.Tools.distance(friend, friend.smartMoving) < 2 * this.options.range) continue // They're fairly close
