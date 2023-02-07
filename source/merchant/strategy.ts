@@ -937,7 +937,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 }
             }
 
-            if (this.options.enableExchange) {
+            if (this.options.enableExchange && !bot.map.startsWith("bank")) {
                 // Exchange items in our list
                 for (let i = 0; i < bot.isize && bot.esize > 1; i++) {
                     const item = bot.items[i]
