@@ -34,7 +34,7 @@ const trackerStrategy = new TrackerStrategy()
 const respawnStrategy = new RespawnStrategy()
 
 // Party
-const PARTY_LEADER = "earthiverse"
+const PARTY_LEADER = "earthRog"
 const partyAcceptStrategy = new AcceptPartyRequestStrategy()
 const partyRequestStrategy = new RequestPartyStrategy(PARTY_LEADER)
 
