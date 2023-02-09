@@ -2,7 +2,6 @@ import AL, { BankPackName, Character, IPosition, ItemName, LocateItemsFilters, M
 import { getItemCountsForEverything, getItemsToCompoundOrUpgrade, getOfferingToUse, IndexesToCompoundOrUpgrade, ItemCount, withdrawItemFromBank } from "../base/banking.js"
 import { checkOnlyEveryMS, sleep } from "../base/general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
-import { MERCHANT_ITEMS_TO_HOLD } from "../base/merchant.js"
 import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
 import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
 import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
@@ -13,16 +12,22 @@ import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 export const DEFAULT_CRAFTABLES = new Set<ItemName>([
     "armorring",
     "bfangamulet",
+    "cake",
+    "firestars",
     "pouchbow",
-    "resistancering"
+    "resistancering",
+    "snowflakes",
 ])
 
 export const DEFAULT_EXCHANGEABLES = new Set<ItemName>([
     "armorbox",
+    "candy0",
+    "candy1",
     "candycane",
     "gem0",
     "gem1",
     "gemfragment",
+    "leather",
     "seashell",
     "weaponbox"
 ])
@@ -40,9 +45,11 @@ export const DEFAULT_ITEMS_TO_HOLD = new Set<ItemName>([
 ])
 export const DEFAULT_MERCHANT_ITEMS_TO_HOLD = new Set<ItemName>([
     ...DEFAULT_ITEMS_TO_HOLD,
+    "broom",
     "cscroll0",
     "cscroll1",
     "cscroll2",
+    "dartgun",
     "offering",
     "offeringp",
     "pickaxe",
@@ -158,6 +165,7 @@ export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
     ["warpvest", -AL.Constants.PONTY_MARKUP],
     ["wblade", 100_000_000],
     ["wbook1", -AL.Constants.PONTY_MARKUP],
+    ["whiteegg", -1], // We can craft them in to cakes and sell the cakes
     ["xshield", -AL.Constants.PONTY_MARKUP],
     ["zapper", -AL.Constants.PONTY_MARKUP],
 ])
@@ -286,7 +294,7 @@ export const DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS: MerchantMoveStrategyOptions
     },
     // enableUpgrade: true,
     goldToHold: DEFAULT_GOLD_TO_HOLD,
-    itemsToHold: MERCHANT_ITEMS_TO_HOLD,
+    itemsToHold: DEFAULT_MERCHANT_ITEMS_TO_HOLD,
 }
 
 export class MerchantStrategy implements Strategy<Merchant> {
