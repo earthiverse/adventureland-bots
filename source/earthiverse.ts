@@ -96,7 +96,7 @@ const privateSellStrategy = new SellStrategy({
         ["intring", undefined],
         ["intearring", undefined],
         ["monstertoken", [
-            [undefined, 500_000]
+            [undefined, 300_000]
         ]],
         ["mushroomstaff", undefined],
         ["pants1", undefined],
@@ -121,6 +121,7 @@ const privateSellStrategy = new SellStrategy({
 })
 const publicSellStrategy = new SellStrategy({
     sellMap: new Map<ItemName, [number, number][]>([
+        ["cake", undefined],
         ["coat1", undefined],
         ["gloves1", undefined],
         ["gphelmet", undefined],

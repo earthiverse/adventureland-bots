@@ -50,6 +50,7 @@ const privateBuyStrategy = new BuyStrategy({
 })
 
 const ITEMS_TO_SELL = new Map<ItemName, [number, number][]>([
+    ["cake", undefined],
     ["cclaw", undefined],
     ["coat1", undefined],
     ["dexearring", undefined],
@@ -60,6 +61,9 @@ const ITEMS_TO_SELL = new Map<ItemName, [number, number][]>([
     ["hpbelt", undefined],
     ["iceskates", undefined],
     ["intearring", undefined],
+    ["monstertoken", [
+        [undefined, 300_000]
+    ]],
     ["mushroomstaff", undefined],
     ["pants1", undefined],
     ["phelmet", undefined],
