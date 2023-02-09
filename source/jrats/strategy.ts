@@ -10,6 +10,7 @@ import { GetHolidaySpiritStrategy, ImprovedMoveStrategy } from "../strategy_patt
 import { MageAttackStrategy } from "../strategy_pattern/strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategy_pattern/strategies/attack_priest.js"
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "../strategy_pattern/strategies/party.js"
+import { OptimizeItemsStrategy } from "../strategy_pattern/strategies/item.js"
 
 await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
@@ -30,6 +31,7 @@ const buyStrategy = new BuyStrategy({
 const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
 const trackerStrategy = new TrackerStrategy()
 const respawnStrategy = new RespawnStrategy()
+const itemStrategy = new OptimizeItemsStrategy()
 
 // Party
 const PARTY_LEADER = "earthiverse"
@@ -117,6 +119,7 @@ async function startBot(characterName: string, characterType: CharacterType, ser
     context.applyStrategy(buyStrategy)
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(respawnStrategy)
+    context.applyStrategy(itemStrategy)
 
     if (characterName == PARTY_LEADER) {
         context.applyStrategy(partyAcceptStrategy)

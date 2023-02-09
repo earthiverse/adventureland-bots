@@ -1,4 +1,4 @@
-import { Character } from "alclient"
+import AL, { Character } from "alclient"
 import { Strategy, LoopName, Loop } from "../context.js"
 
 // TODO: Pass in the friends contexts, so we can potentially transfer items to other players to stack them to reduce overall inventory space
@@ -30,7 +30,26 @@ export class OptimizeItemsStrategy<Type extends Character> implements Strategy<T
      * Look for items that can be stacked and stack them
      */
     private async stackItems(bot: Type) {
-        // TODO: Look for items that we can stack
+        for (let i = 0; i < bot.isize - 1; i++) {
+            const item1 = bot.items[i]
+            if (!item1) continue // No item
+            if (!item1.q) continue // Not stackable
+            if (item1.p) continue // Item is special
+            for (let j = i + 1; j < bot.isize; j++) {
+                const item2 = bot.items[j]
+                if (!item2) continue // No item
+                if (!item2.q) continue // Not stackable
+                if (item2.p) continue // Item is special
+                if (item1.name !== item2.name) continue // Different items
+
+                const gInfo = AL.Game.G.items[item1.name]
+                if (item1.q + item2.q > gInfo.s) continue // Too many to stack
+
+                // Stack the items!
+                await bot.swapItems(j, i)
+                return
+            }
+        }
     }
 
     /**
