@@ -116,6 +116,9 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
         })
         if (entities.length == 0) return // No targets to attack
 
+        // If there's only one entity, and we can kill the entity using one normal attack, don't cleave
+        if (entities.length == 1 && bot.canKillInOneShot(entities[0])) return
+
         // Calculate how much courage we have left to spare
         const targetingMe = bot.calculateTargets()
 

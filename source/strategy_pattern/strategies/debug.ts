@@ -5,6 +5,11 @@ type DebugOptions = {
     /** The size of the events log (default 500) */
     logEventsSize?: number
 
+    /** Will log all incoming sockets */
+    logAllIncoming?: boolean
+    /** Will log all outgoing sockets */
+    logAllOutgoing?: boolean
+
     /** Will log when you get achievement points */
     logAchievementProgress?: boolean
     /** Will log when we attack */
@@ -68,7 +73,11 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
         this.logAllIncoming = (name: string, data: unknown) => {
             // Add the new event
             const events = DebugStrategy.events.get(bot.id)
-            events.push(`[${this.getTimestamp()}] <= [${name}] ${JSON.stringify(data)}`)
+            const log = `[${this.getTimestamp()}] [${bot.id}] [${name}] <= ${JSON.stringify(data)}`
+            events.push(log)
+            if (this.options.logAllIncoming) {
+                console.debug(log)
+            }
 
             // Trim events
             if (events.length > this.options.logEventsSize) events.splice(events.length - this.options.logEventsSize, this.options.logEventsSize)
@@ -78,7 +87,11 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
         this.logAllOutgoing = (name: string, data: unknown) => {
             // Add the new event
             const events = DebugStrategy.events.get(bot.id)
-            events.push(`[${this.getTimestamp()}] => [${name}] ${JSON.stringify(data)}`)
+            const log = `[${this.getTimestamp()}] [${bot.id}] [${name}] => ${JSON.stringify(data)}`
+            events.push(log)
+            if (this.options.logAllOutgoing) {
+                console.debug(log)
+            }
 
             // Trim events
             if (events.length > this.options.logEventsSize) events.splice(events.length - this.options.logEventsSize, this.options.logEventsSize)

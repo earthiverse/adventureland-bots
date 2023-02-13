@@ -14,7 +14,7 @@ import { RogueAttackStrategy } from "../strategy_pattern/strategies/attack_rogue
 import { GiveRogueSpeedStrategy } from "../strategy_pattern/strategies/rspeed.js"
 import { OptimizeItemsStrategy } from "../strategy_pattern/strategies/item.js"
 
-await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
+await Promise.all([AL.Game.loginJSONFile("../../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
 
 const BUFFER = 6_500
@@ -34,6 +34,7 @@ const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
 const trackerStrategy = new TrackerStrategy()
 const respawnStrategy = new RespawnStrategy()
 const itemStrategy = new OptimizeItemsStrategy()
+const rSpeedStrategy = new GiveRogueSpeedStrategy()
 
 // Party
 const PARTY_LEADER = "earthRog"
@@ -142,27 +143,34 @@ async function startBot(characterName: string, characterType: CharacterType, ser
         context.applyStrategy(partyRequestStrategy)
     }
 
+    const mageAttackStrategy = new MageAttackStrategy({ contexts: CONTEXTS, typeList: monsters })
+    const priestAttackStrategy = new PriestAttackStrategy({ contexts: CONTEXTS, typeList: monsters })
+    const rangerAttackStrategy = new RangerAttackStrategy({ contexts: CONTEXTS, disableHuntersMark: true, disableMultiShot: true, typeList: monsters })
+    const rogueAttackStrategy = new RogueAttackStrategy({ contexts: CONTEXTS, typeList: monsters })
+
+    const moveStrategy = new ImprovedMoveStrategy(monsters)
+
     const moveLoop = async () => {
         if (!context.isReady() || !context.bot.ready || context.bot.rip) return // Not ready
         if (context.bot.S.holidayseason && !context.bot.s.holidayspirit) {
             context.applyStrategy(getHolidaySpiritStrategy)
             return
         }
-        context.applyStrategy(new ImprovedMoveStrategy(monsters))
+        context.applyStrategy(moveStrategy)
 
         switch (characterType) {
             case "mage":
-                context.applyStrategy(new MageAttackStrategy({ contexts: CONTEXTS, typeList: monsters }))
+                context.applyStrategy(mageAttackStrategy)
                 break
             case "priest":
-                context.applyStrategy(new PriestAttackStrategy({ contexts: CONTEXTS, typeList: monsters }))
+                context.applyStrategy(priestAttackStrategy)
                 break
             case "ranger":
-                context.applyStrategy(new RangerAttackStrategy({ contexts: CONTEXTS, disableHuntersMark: true, disableMultiShot: true, typeList: monsters }))
+                context.applyStrategy(rangerAttackStrategy)
                 break
             case "rogue":
-                context.applyStrategy(new RogueAttackStrategy({ contexts: CONTEXTS, typeList: monsters }))
-                context.applyStrategy(new GiveRogueSpeedStrategy())
+                context.applyStrategy(rogueAttackStrategy)
+                context.applyStrategy(rSpeedStrategy)
                 break
         }
     }
