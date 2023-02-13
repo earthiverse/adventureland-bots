@@ -43,7 +43,7 @@ let eventDataUpdated: Date
 let charactersData
 let charactersDataUpdated: Date
 
-setInterval(async () => {
+async function updateData() {
     try {
         console.log("Getting Event data...")
         const aldata = await fetch("https://aldata.earthiverse.ca/lunarnewyear")
@@ -64,8 +64,11 @@ setInterval(async () => {
         }
     } catch (e) {
         console.error(e)
+    } finally {
+        setTimeout(async () => { updateData() }, getMsToNextMinute())
     }
-}, 20_000)
+}
+updateData()
 
 async function startBot(characterName: string, characterType: CharacterType, serverRegion: ServerRegion, serverIdentifier: ServerIdentifier, monsters: MonsterName[]) {
     if (charactersDataUpdated.getTime() < Date.now() - 60_000) {
