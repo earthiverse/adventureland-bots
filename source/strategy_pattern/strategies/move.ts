@@ -259,6 +259,8 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
     }
 
     private async move(bot: Character) {
+        if (!AL.Pathfinder.canStand(bot) && bot.moving) return // We're cheating
+
         const targets = bot.getEntities({ canDamage: true, couldGiveCredit: true, typeList: this.types, willBurnToDeath: false, willDieToProjectiles: false })
         targets.sort(this.sort)
 
