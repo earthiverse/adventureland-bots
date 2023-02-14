@@ -37,7 +37,7 @@ const itemStrategy = new OptimizeItemsStrategy()
 const rSpeedStrategy = new GiveRogueSpeedStrategy()
 
 // Party
-const PARTY_LEADER = "earthRog"
+const PARTY_LEADER = "earthiverse"
 const partyAcceptStrategy = new AcceptPartyRequestStrategy()
 const partyRequestStrategy = new RequestPartyStrategy(PARTY_LEADER)
 
