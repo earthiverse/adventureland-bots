@@ -1,8 +1,8 @@
 import { Character, ItemName, Rogue } from "alclient"
-import { sleep } from "../../base/general"
-import { DEFAULT_ITEMS_TO_HOLD } from "../../merchant/strategy"
-import { Strategy, LoopName, Loop } from "../context"
-import { suppress_errors } from "../logging"
+import { sleep } from "../../base/general.js"
+import { DEFAULT_ITEMS_TO_HOLD } from "../../merchant/strategy.js"
+import { Strategy, LoopName, Loop } from "../context.js"
+import { suppress_errors } from "../logging.js"
 
 export type MoveToBankAndDepositStuffStrategyOptions = {
     invisibleRogue?: true,
