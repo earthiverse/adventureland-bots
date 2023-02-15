@@ -1,5 +1,5 @@
 import AL, { CharacterType, ItemName, Mage, MonsterName, PingCompensatedCharacter, Priest, Ranger, Rogue, ServerIdentifier, ServerRegion } from "alclient"
-import { Strategist } from "../strategy_pattern/context.js"
+import { Strategist, Strategy } from "../strategy_pattern/context.js"
 import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
 import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
@@ -13,6 +13,7 @@ import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "../strategy_pa
 import { RogueAttackStrategy } from "../strategy_pattern/strategies/attack_rogue.js"
 import { GiveRogueSpeedStrategy } from "../strategy_pattern/strategies/rspeed.js"
 import { OptimizeItemsStrategy } from "../strategy_pattern/strategies/item.js"
+import { MoveToBankAndDepositStuffStrategy } from "../strategy_pattern/strategies/bank.js"
 
 await Promise.all([AL.Game.loginJSONFile("../../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
@@ -34,6 +35,10 @@ const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
 const trackerStrategy = new TrackerStrategy()
 const respawnStrategy = new RespawnStrategy()
 const itemStrategy = new OptimizeItemsStrategy()
+const bankStrategy = new MoveToBankAndDepositStuffStrategy({
+    invisibleRogue: true,
+    map: "bank_b"
+})
 const rSpeedStrategy = new GiveRogueSpeedStrategy()
 
 // Party
@@ -143,36 +148,45 @@ async function startBot(characterName: string, characterType: CharacterType, ser
         context.applyStrategy(partyRequestStrategy)
     }
 
-    const mageAttackStrategy = new MageAttackStrategy({ contexts: CONTEXTS, typeList: monsters })
-    const priestAttackStrategy = new PriestAttackStrategy({ contexts: CONTEXTS, typeList: monsters })
-    const rangerAttackStrategy = new RangerAttackStrategy({ contexts: CONTEXTS, disableHuntersMark: true, disableMultiShot: true, typeList: monsters })
-    const rogueAttackStrategy = new RogueAttackStrategy({ contexts: CONTEXTS, typeList: monsters })
-
     const moveStrategy = new ImprovedMoveStrategy(monsters)
+
+    let attackStrategy: Strategy<PingCompensatedCharacter>
+    switch (characterType) {
+        case "mage":
+            attackStrategy = new MageAttackStrategy({ contexts: CONTEXTS, typeList: monsters })
+            break
+        case "priest":
+            attackStrategy = new PriestAttackStrategy({ contexts: CONTEXTS, typeList: monsters })
+            break
+        case "ranger":
+            attackStrategy = new RangerAttackStrategy({ contexts: CONTEXTS, disableHuntersMark: true, disableMultiShot: true, typeList: monsters })
+            break
+        case "rogue":
+            attackStrategy = new RogueAttackStrategy({ contexts: CONTEXTS, typeList: monsters })
+            context.applyStrategy(rSpeedStrategy)
+            break
+    }
 
     const moveLoop = async () => {
         if (!context.isReady() || !context.bot.ready || context.bot.rip) return // Not ready
         if (context.bot.S.holidayseason && !context.bot.s.holidayspirit) {
-            context.applyStrategy(getHolidaySpiritStrategy)
+            if (context.hasStrategy(moveStrategy)) context.removeStrategy(moveStrategy)
+            if (!context.hasStrategy(getHolidaySpiritStrategy)) context.applyStrategy(getHolidaySpiritStrategy)
             return
         }
-        context.applyStrategy(moveStrategy)
 
-        switch (characterType) {
-            case "mage":
-                context.applyStrategy(mageAttackStrategy)
-                break
-            case "priest":
-                context.applyStrategy(priestAttackStrategy)
-                break
-            case "ranger":
-                context.applyStrategy(rangerAttackStrategy)
-                break
-            case "rogue":
-                context.applyStrategy(rogueAttackStrategy)
-                context.applyStrategy(rSpeedStrategy)
-                break
+        if (context.bot.esize == 0) {
+            // We're full, go deposit items in the bank
+            if (context.hasStrategy(attackStrategy)) context.removeStrategy(attackStrategy)
+            if (context.hasStrategy(moveStrategy)) context.removeStrategy(moveStrategy)
+
+            if (!context.hasStrategy(bankStrategy)) context.applyStrategy(bankStrategy)
+            return
         }
+
+        // Defaults
+        if (!context.hasStrategy(moveStrategy)) context.applyStrategy(moveStrategy)
+        if (!context.hasStrategy(attackStrategy)) context.applyStrategy(attackStrategy)
     }
     setInterval(moveLoop, 1000)
 

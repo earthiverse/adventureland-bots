@@ -115,6 +115,10 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         }
     }
 
+    public hasStrategy(strategy: Strategy<Type>) {
+        return this.strategies.has(strategy)
+    }
+
     public applyStrategies(strategies: Strategy<Type>[]) {
         for (const strategy of strategies) this.applyStrategy(strategy)
     }
