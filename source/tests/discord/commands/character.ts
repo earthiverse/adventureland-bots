@@ -23,7 +23,7 @@ export const Character: Command = {
                 const json = await getData.json()
                 await interaction.followUp({
                     ephemeral: true,
-                    content: `Here's the latest data I have for \`${character}\` 😄\n\`\`\`json\n${JSON.stringify(json, null, 2)}\n\`\`\``
+                    content: `Here's the latest data I have for \`${character}\` 🙂\n\`\`\`json\n${JSON.stringify(json, null, 2)}\n\`\`\``
                 })
             }
         } catch (e) {
@@ -31,7 +31,7 @@ export const Character: Command = {
 
             await interaction.followUp({
                 ephemeral: true,
-                content: "Sorry, there was an error. 😥"
+                content: `Sorry, I had an error finding data for \`${character}\`. 😥`
             })
         }
     }
