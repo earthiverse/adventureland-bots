@@ -38,11 +38,13 @@ export const Trade: Command = {
                     if (Date.now() - Date.parse(player.lastSeen) > 8.64e+7) continue // Haven't seen in a day
                     let buying: boolean
                     let price: number
+                    let q: number
                     for (const slotName in player.slots) {
                         const slot = player.slots[slotName]
                         if (slot.name == item) {
                             buying = slot.b ?? false
                             price = slot.price
+                            q = slot.q
                             break
                         }
                     }
@@ -54,7 +56,8 @@ export const Trade: Command = {
                         serverIdentifier: player.serverIdentifier,
                         serverRegion: player.serverRegion,
                         buying: buying,
-                        price: price
+                        price: price,
+                        q: q
                     })
                 }
 
@@ -69,13 +72,21 @@ export const Trade: Command = {
                 for (const datum of parsedData) {
                     content += "\n"
                     if (datum.buying) {
-                        content += `${datum.id} (${datum.serverRegion}${datum.serverIdentifier}) is buying for ${datum.price}`
+                        if (datum.q) {
+                            content += `${datum.id} (${datum.serverRegion} ${datum.serverIdentifier}) is buying ${datum.q} @ ${datum.price}`
+                        } else {
+                            content += `${datum.id} (${datum.serverRegion} ${datum.serverIdentifier}) is buying @ ${datum.price}`
+                        }
                     } else {
-                        content += `${datum.id} (${datum.serverRegion}${datum.serverIdentifier}) is selling for ${datum.price}`
+                        if (datum.q) {
+                            content += `${datum.id} (${datum.serverRegion} ${datum.serverIdentifier}) is selling ${datum.q} @ ${datum.price}`
+                        } else {
+                            content += `${datum.id} (${datum.serverRegion} ${datum.serverIdentifier}) is selling @ ${datum.price}`
+                        }
                     }
                 }
                 content += "```"
-                content += `\nThe base price, according to G is \`${gItem.g}\`.`
+                content += `\nThe base price, according to G, is \`${gItem.g}\`.`
 
                 await interaction.followUp({
                     ephemeral: true,
