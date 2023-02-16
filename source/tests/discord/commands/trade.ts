@@ -1,12 +1,14 @@
 import AL, { ItemName } from "alclient"
-import { CommandInteraction, Client, ApplicationCommandType, ApplicationCommandOptionType } from "discord.js"
+import { CommandInteraction, Client, ApplicationCommandType, ApplicationCommandOptionType, AutocompleteInteraction } from "discord.js"
 import { Command } from "../command.js"
 
-export const Trade: Command = {
+// TODO: How do I type this for autocomplete?
+export const Trade: Command & { autocomplete: (client: Client, interaction: AutocompleteInteraction) => void } = {
     name: "trade",
     description: "Returns details about trades for an item (Data from https://aldata.earthiverse.ca)",
     options: [
         {
+            autocomplete: true,
             description: "Item Name",
             name: "item",
             required: true,
@@ -14,6 +16,13 @@ export const Trade: Command = {
         }
     ],
     type: ApplicationCommandType.ChatInput,
+    autocomplete: async (client: Client, interaction: AutocompleteInteraction) => {
+        const G = await AL.Game.getGData()
+        const filtered = Object.keys(G.items).filter(itemName => itemName.startsWith(interaction.options.getFocused()))
+        await interaction.respond(
+            filtered.map(choice => ({ name: choice, value: choice })).splice(0, 25),
+        )
+    },
     run: async (client: Client, interaction: CommandInteraction) => {
         const G = await AL.Game.getGData()
 
