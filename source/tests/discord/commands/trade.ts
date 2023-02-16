@@ -1,3 +1,4 @@
+import AL, { ItemName } from "alclient"
 import { CommandInteraction, Client, ApplicationCommandType, ApplicationCommandOptionType } from "discord.js"
 import { Command } from "../command.js"
 
@@ -14,8 +15,18 @@ export const Trade: Command = {
     ],
     type: ApplicationCommandType.ChatInput,
     run: async (client: Client, interaction: CommandInteraction) => {
+        const G = await AL.Game.getGData()
+
         const item = interaction.options.get("item").value
         console.log(item)
+
+        const gItem = G.items[item as ItemName]
+        if (!gItem) {
+            return interaction.followUp({
+                ephemeral: true,
+                content: `I couldn't find \`${item}\` in G (v${G.version}) 🤔`
+            })
+        }
 
         try {
             const getData = await fetch("https://aldata.earthiverse.ca/merchants/")
@@ -40,29 +51,31 @@ export const Trade: Command = {
                     // Found a player with the item!
                     parsedData.push({
                         id: player.id,
+                        serverIdentifier: player.serverIdentifier,
+                        serverRegion: player.serverRegion,
                         buying: buying,
                         price: price
                     })
                 }
 
                 if (parsedData.length === 0) {
-                    await interaction.followUp({
+                    return await interaction.followUp({
                         ephemeral: true,
                         content: `I couldn't find anyone trading \`${item}\` 🥲`
                     })
-                    return
                 }
 
                 let content = `I found the following players trading \`${item}\` 🙂\n\`\`\``
                 for (const datum of parsedData) {
                     content += "\n"
                     if (datum.buying) {
-                        content += `${datum.id} is buying for ${datum.price}`
+                        content += `${datum.id} (${datum.serverRegion}${datum.serverIdentifier}) is buying for ${datum.price}`
                     } else {
-                        content += `${datum.id} is selling for ${datum.price}`
+                        content += `${datum.id} (${datum.serverRegion}${datum.serverIdentifier}) is selling for ${datum.price}`
                     }
                 }
                 content += "```"
+                content += `\nThe base price, according to G is \`${gItem.g}\`.`
 
                 await interaction.followUp({
                     ephemeral: true,
@@ -72,7 +85,7 @@ export const Trade: Command = {
         } catch (e) {
             console.error(e)
 
-            await interaction.followUp({
+            return await interaction.followUp({
                 ephemeral: true,
                 content: `Sorry, I had an error finding data for \`${item}\`. 😥`
             })
