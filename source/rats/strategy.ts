@@ -178,7 +178,7 @@ async function startBot(characterName: string, characterType: CharacterType, ser
             }
 
             if (context.bot.esize == 0) {
-            // We're full, go deposit items in the bank
+                // We're full, go deposit items in the bank
                 if (context.hasStrategy(attackStrategy)) context.removeStrategy(attackStrategy)
                 if (context.hasStrategy(moveStrategy)) context.removeStrategy(moveStrategy)
 
@@ -188,6 +188,7 @@ async function startBot(characterName: string, characterType: CharacterType, ser
             }
 
             // Defaults
+            context.removeStrategy(bankStrategy)
             if (!context.hasStrategy(moveStrategy)) context.applyStrategy(moveStrategy)
             if (!context.hasStrategy(attackStrategy)) context.applyStrategy(attackStrategy)
         } catch (e) {
