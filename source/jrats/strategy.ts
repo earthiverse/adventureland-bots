@@ -186,9 +186,9 @@ async function startBot(characterName: string, characterType: CharacterType, ser
                 setTimeout(() => { logicLoop() }, getMsToNextMinute() + 60_000)
                 return
             }
+            if (context.hasStrategy(bankStrategy)) context.removeStrategy(bankStrategy)
 
             // Defaults
-            context.removeStrategy(bankStrategy)
             if (!context.hasStrategy(moveStrategy)) context.applyStrategy(moveStrategy)
             if (!context.hasStrategy(attackStrategy)) context.applyStrategy(attackStrategy)
         } catch (e) {
