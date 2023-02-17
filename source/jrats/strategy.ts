@@ -171,26 +171,26 @@ async function startBot(characterName: string, characterType: CharacterType, ser
         try {
             if (!context.isReady() || !context.bot.ready || context.bot.rip) return // Not ready
             if (context.bot.S.holidayseason && !context.bot.s.holidayspirit) {
-                if (context.hasStrategy(moveStrategy)) context.removeStrategy(moveStrategy)
-                if (!context.hasStrategy(getHolidaySpiritStrategy)) context.applyStrategy(getHolidaySpiritStrategy)
+                context.removeStrategy(moveStrategy)
+                context.applyStrategy(getHolidaySpiritStrategy)
                 setTimeout(() => { logicLoop() }, 1000)
                 return
             }
 
             if (context.bot.esize == 0) {
                 // We're full, go deposit items in the bank
-                if (context.hasStrategy(attackStrategy)) context.removeStrategy(attackStrategy)
-                if (context.hasStrategy(moveStrategy)) context.removeStrategy(moveStrategy)
+                context.removeStrategy(attackStrategy)
+                context.removeStrategy(moveStrategy)
 
-                if (!context.hasStrategy(bankStrategy)) context.applyStrategy(bankStrategy)
+                context.applyStrategy(bankStrategy)
                 setTimeout(() => { logicLoop() }, getMsToNextMinute() + 60_000)
                 return
             }
-            if (context.hasStrategy(bankStrategy)) context.removeStrategy(bankStrategy)
+            context.removeStrategy(bankStrategy)
 
             // Defaults
-            if (!context.hasStrategy(moveStrategy)) context.applyStrategy(moveStrategy)
-            if (!context.hasStrategy(attackStrategy)) context.applyStrategy(attackStrategy)
+            context.applyStrategy(moveStrategy)
+            context.applyStrategy(attackStrategy)
         } catch (e) {
             console.error(e)
         }
