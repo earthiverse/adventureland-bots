@@ -206,28 +206,35 @@ export async function startBot(characterName: string, characterType: CharacterTy
             break
     }
 
-    const moveLoop = async () => {
-        if (!context.isReady() || !context.bot.ready || context.bot.rip) return // Not ready
-        if (context.bot.S.holidayseason && !context.bot.s.holidayspirit) {
-            if (context.hasStrategy(moveStrategy)) context.removeStrategy(moveStrategy)
-            if (!context.hasStrategy(getHolidaySpiritStrategy)) context.applyStrategy(getHolidaySpiritStrategy)
-            return
-        }
+    const logicLoop = async () => {
+        try {
+            if (!context.isReady() || !context.bot.ready || context.bot.rip) return // Not ready
+            if (context.bot.S.holidayseason && !context.bot.s.holidayspirit) {
+                if (context.hasStrategy(moveStrategy)) context.removeStrategy(moveStrategy)
+                if (!context.hasStrategy(getHolidaySpiritStrategy)) context.applyStrategy(getHolidaySpiritStrategy)
+                setTimeout(() => { logicLoop() }, 1000)
+                return
+            }
 
-        if (context.bot.esize == 0) {
+            if (context.bot.esize == 0) {
             // We're full, go deposit items in the bank
-            if (context.hasStrategy(attackStrategy)) context.removeStrategy(attackStrategy)
-            if (context.hasStrategy(moveStrategy)) context.removeStrategy(moveStrategy)
+                if (context.hasStrategy(attackStrategy)) context.removeStrategy(attackStrategy)
+                if (context.hasStrategy(moveStrategy)) context.removeStrategy(moveStrategy)
 
-            if (!context.hasStrategy(bankStrategy)) context.applyStrategy(bankStrategy)
-            return
+                if (!context.hasStrategy(bankStrategy)) context.applyStrategy(bankStrategy)
+                setTimeout(() => { logicLoop() }, getMsToNextMinute() + 60_000)
+                return
+            }
+
+            // Defaults
+            if (!context.hasStrategy(moveStrategy)) context.applyStrategy(moveStrategy)
+            if (!context.hasStrategy(attackStrategy)) context.applyStrategy(attackStrategy)
+        } catch (e) {
+            console.error(e)
         }
-
-        // Defaults
-        if (!context.hasStrategy(moveStrategy)) context.applyStrategy(moveStrategy)
-        if (!context.hasStrategy(attackStrategy)) context.applyStrategy(attackStrategy)
+        setTimeout(() => { logicLoop() }, 1000)
     }
-    setInterval(moveLoop, 1000)
+    logicLoop()
 
     CONTEXTS.push(context)
 
