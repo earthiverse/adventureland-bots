@@ -20,6 +20,7 @@ export class MoveToBankAndDepositStuffStrategy<Type extends Character> implement
         if (!options) options = {}
         if (!options.itemsToHold) options.itemsToHold = DEFAULT_ITEMS_TO_HOLD
         if (!options.map) options.map = "bank"
+        this.options = options
 
         this.loops.set("move", {
             fn: async (bot: Type) => { await this.moveAndBank(bot) },

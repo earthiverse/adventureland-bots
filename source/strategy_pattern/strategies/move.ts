@@ -377,7 +377,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         this.loops.set("move", {
             fn: async (bot: Character) => {
                 await this.move(bot)
-                await this.kiteToKaneOrAngel(bot)
+                await this.kiteToNPC(bot)
             },
             interval: 250
         })
@@ -538,35 +538,36 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         }
     }
 
-    protected async kiteToKaneOrAngel(bot: Character) {
-        if (bot.map !== "main") return // Can't kite to Angel or Kane
-
+    protected async kiteToNPC(bot: Character) {
         const target = bot.getEntity({ type: this.options.type })
-        if (!target) return // No target to kite to Kane or Angel
+        if (!target) return // No target to kite to NPC
 
         const targets: IPosition[] = [target]
-        let kane = bot.players.get("$Kane")
-        if (!kane && this.options.contexts) {
-            for (const context of this.options.contexts) {
-                if (!context.isReady()) continue
-                if (context.bot == bot) continue // Already checked ourself
-                kane = context.bot.players.get("$Kane")
-                if (kane) break
-            }
-        }
-        if (kane) targets.push(kane)
-        let angel = bot.players.get("$Angel")
-        if (!angel && this.options.contexts) {
-            for (const context of this.options.contexts) {
-                if (!context.isReady()) continue
-                if (context.bot == bot) continue // Already checked ourself
-                angel = context.bot.players.get("$Angel")
-                if (angel) break
-            }
-        }
-        if (angel) targets.push(angel)
-        if (targets.length == 1) return // No NPCS nearby
 
+        if (bot.map === "main") {
+            let kane = bot.players.get("$Kane")
+            if (!kane && this.options.contexts) {
+                for (const context of this.options.contexts) {
+                    if (!context.isReady()) continue
+                    if (context.bot == bot) continue // Already checked ourself
+                    kane = context.bot.players.get("$Kane")
+                    if (kane) break
+                }
+            }
+            if (kane) targets.push(kane)
+            let angel = bot.players.get("$Angel")
+            if (!angel && this.options.contexts) {
+                for (const context of this.options.contexts) {
+                    if (!context.isReady()) continue
+                    if (context.bot == bot) continue // Already checked ourself
+                    angel = context.bot.players.get("$Angel")
+                    if (angel) break
+                }
+            }
+            if (angel) targets.push(angel)
+        }
+
+        if (targets.length == 1) return // No NPCS nearby
         targets.sort(sortClosestDistance(bot))
 
         // Move to next target
