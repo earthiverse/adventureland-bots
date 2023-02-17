@@ -173,7 +173,7 @@ async function startBot(characterName: string, characterType: CharacterType, ser
             if (context.bot.S.holidayseason && !context.bot.s.holidayspirit) {
                 context.removeStrategy(moveStrategy)
                 context.applyStrategy(getHolidaySpiritStrategy)
-                setTimeout(() => { logicLoop() }, 1000)
+                setTimeout(async () => { logicLoop() }, 1000)
                 return
             }
 
@@ -183,7 +183,7 @@ async function startBot(characterName: string, characterType: CharacterType, ser
                 context.removeStrategy(moveStrategy)
 
                 context.applyStrategy(bankStrategy)
-                setTimeout(() => { logicLoop() }, getMsToNextMinute() + 60_000)
+                setTimeout(async () => { logicLoop() }, getMsToNextMinute() + 60_000)
                 return
             }
             context.removeStrategy(bankStrategy)
@@ -194,7 +194,7 @@ async function startBot(characterName: string, characterType: CharacterType, ser
         } catch (e) {
             console.error(e)
         }
-        setTimeout(() => { logicLoop() }, 1000)
+        setTimeout(async () => { logicLoop() }, 1000)
     }
     logicLoop()
 
