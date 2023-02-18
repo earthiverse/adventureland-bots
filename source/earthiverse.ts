@@ -590,6 +590,7 @@ const startMerchantContext = async () => {
     startMerchant(CONTEXT, PRIVATE_CONTEXTS, { ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, debug: true, enableUpgrade: true })
     CONTEXT.applyStrategy(guiStrategy)
     CONTEXT.applyStrategy(privateSellStrategy)
+    CONTEXT.applyStrategy(itemStrategy)
     PRIVATE_CONTEXTS.push(CONTEXT)
     ALL_CONTEXTS.push(CONTEXT)
 }
