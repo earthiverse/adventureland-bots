@@ -138,10 +138,18 @@ export function sortPriority(bot: Character, types?: MonsterName[]) {
         const players = bot.getPlayers({ isPartyMember: true })
         if (players.length) {
             const a_party_distance = players
-                .map(player => AL.Tools.squaredDistance(a, player))
+                .map(player => {
+                    const distance = AL.Tools.squaredDistance(a, player)
+                    const moving = player.moving ? AL.Tools.squaredDistance(a, { x: player.going_x, y: player.going_y }) : 0
+                    return distance + moving
+                })
                 .reduce((sum, distance) => sum + distance, 0)
             const b_party_distance = players
-                .map(player => AL.Tools.squaredDistance(b, player))
+                .map(player => {
+                    const distance = AL.Tools.squaredDistance(b, player)
+                    const moving = player.moving ? AL.Tools.squaredDistance(b, { x: player.going_x, y: player.going_y }) : 0
+                    return distance + moving
+                })
                 .reduce((sum, distance) => sum + distance, 0)
             return a_party_distance > b_party_distance
         }
