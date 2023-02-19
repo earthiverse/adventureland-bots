@@ -208,7 +208,10 @@ export async function startBot(characterName: string, characterType: CharacterTy
 
     const logicLoop = async () => {
         try {
-            if (!context.isReady() || !context.bot.ready || context.bot.rip) return // Not ready
+            if (!context.isReady() || !context.bot.ready || context.bot.rip) {
+                setTimeout(async () => { logicLoop() }, 1000)
+                return // Not ready
+            }
             if (context.bot.S.holidayseason && !context.bot.s.holidayspirit) {
                 context.removeStrategy(moveStrategy)
                 context.applyStrategy(getHolidaySpiritStrategy)
