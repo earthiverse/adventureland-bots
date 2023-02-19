@@ -18,9 +18,20 @@ export const Trade: Command & { autocomplete: (client: Client, interaction: Auto
     type: ApplicationCommandType.ChatInput,
     autocomplete: async (client: Client, interaction: AutocompleteInteraction) => {
         const G = await AL.Game.getGData()
-        const filtered = Object.keys(G.items).filter(itemName => itemName.startsWith(interaction.options.getFocused()))
+        const item = interaction.options.getFocused()
+        const filtered = Object.keys(G.items)
+            .filter((itemName) => {
+                if (itemName.includes(item)) return true
+                if (AL.Game.G.items[itemName].name.toLowerCase().includes(item.toLowerCase())) return true
+            })
+            .sort()
+            .splice(0, 25)
+            .map(choice => {
+                const gName = AL.Game.G.items[choice].name
+                return { name: `${choice} (${gName})`, value: choice }
+            })
         await interaction.respond(
-            filtered.map(choice => ({ name: choice, value: choice })).splice(0, 25),
+            filtered,
         )
     },
     run: async (client: Client, interaction: CommandInteraction) => {
@@ -31,9 +42,10 @@ export const Trade: Command & { autocomplete: (client: Client, interaction: Auto
 
         const gItem = G.items[item as ItemName]
         if (!gItem) {
+            const content = `I couldn't find \`${item}\` in G (v${G.version}) 🤔`
             return interaction.followUp({
                 ephemeral: true,
-                content: `I couldn't find \`${item}\` in G (v${G.version}) 🤔`
+                content: content
             })
         }
 
@@ -42,73 +54,80 @@ export const Trade: Command & { autocomplete: (client: Client, interaction: Auto
 
             if (getData.status === 200) {
                 const data = await getData.json()
-                const parsedData = []
+                const buyingDataAll = []
+                const sellingDataAll = []
                 for (const player of data) {
                     if (Date.now() - Date.parse(player.lastSeen) > 8.64e+7) continue // Haven't seen in a day
-                    let buying: boolean
-                    let price: number
-                    let q: number
-                    for (const slotName in player.slots) {
-                        const slot = player.slots[slotName]
-                        if (slot.name == item) {
-                            buying = slot.b ?? false
-                            price = slot.price
-                            q = slot.q
-                            break
-                        }
-                    }
-                    if (buying === undefined) continue // They don't have the item we're looking for
-
-                    // Found a player with the item!
-                    parsedData.push({
+                    const buyingData = {
                         id: player.id,
+                        price: Number.MAX_VALUE,
+                        q: 0,
                         serverIdentifier: player.serverIdentifier,
                         serverRegion: player.serverRegion,
-                        buying: buying,
-                        price: price,
-                        q: q
-                    })
+                    }
+                    const sellingData = {
+                        id: player.id,
+                        price: 0,
+                        q: 0,
+                        serverIdentifier: player.serverIdentifier,
+                        serverRegion: player.serverRegion,
+                    }
+                    for (const slotName in player.slots) {
+                        const slot = player.slots[slotName]
+                        if (slot.name !== item) continue
+
+                        if (slot.b) {
+                            buyingData.q += slot.q ?? 1
+                            buyingData.price = Math.min(slot.price, buyingData.price)
+                        } else {
+                            sellingData.q += slot.q ?? 1
+                            sellingData.price = Math.max(slot.price, sellingData.price)
+                        }
+                    }
+
+                    if (buyingData.q) {
+                        buyingDataAll.push(buyingData)
+                    }
+                    if (sellingData.q)
+                        sellingDataAll.push(sellingData)
                 }
 
-                if (parsedData.length === 0) {
+                if (buyingDataAll.length === 0 && sellingDataAll.length === 0) {
                     return await interaction.followUp({
                         ephemeral: true,
                         content: `I couldn't find anyone trading \`${item}\` 🥲`
                     })
                 }
 
-                let content = `I found the following players trading \`${item}\` 🙂\n\`\`\``
-                for (const datum of parsedData) {
-                    content += "\n"
-                    if (datum.buying) {
-                        if (datum.q) {
-                            content += `${datum.id} (${datum.serverRegion} ${datum.serverIdentifier}) is buying ${datum.q} @ ${datum.price}`
-                        } else {
-                            content += `${datum.id} (${datum.serverRegion} ${datum.serverIdentifier}) is buying @ ${datum.price}`
-                        }
-                    } else {
-                        if (datum.q) {
-                            content += `${datum.id} (${datum.serverRegion} ${datum.serverIdentifier}) is selling ${datum.q} @ ${datum.price}`
-                        } else {
-                            content += `${datum.id} (${datum.serverRegion} ${datum.serverIdentifier}) is selling @ ${datum.price}`
-                        }
-                    }
-                }
-                content += "```"
-                content += `\nThe base price, according to G, is \`${gItem.g}\`.`
+                let content = `The base price, according to \`G\`, is \`${gItem.g}\`.`
 
-                await interaction.followUp({
+                if (sellingDataAll.length) {
+                    content += `\nI found the following players selling \`${item}\` 🙂\n\`\`\``
+                    for (const d of sellingDataAll) {
+                        content += `\n${d.id} (${d.serverRegion} ${d.serverIdentifier}) is selling ${d.q} @ ${d.price}`
+                    }
+                    content += "```"
+                }
+
+                if (buyingDataAll.length) {
+                    content += `\nI found the following players buying \`${item}\` 🙂\n\`\`\``
+                    for (const d of buyingDataAll) {
+                        content += `\n${d.id} (${d.serverRegion} ${d.serverIdentifier}) is buying ${d.q} @ ${d.price}`
+                    }
+                    content += "```"
+                }
+
+                return await interaction.followUp({
                     ephemeral: true,
                     content: content
                 })
             }
         } catch (e) {
             console.error(e)
-
-            return await interaction.followUp({
-                ephemeral: true,
-                content: `Sorry, I had an error finding data for \`${item}\`. 😥`
-            })
         }
+        return await interaction.followUp({
+            ephemeral: true,
+            content: `Sorry, I had an error finding data for \`${item}\`. 😥`
+        })
     }
 }
