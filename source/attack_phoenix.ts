@@ -54,6 +54,8 @@ const ITEMS_TO_SELL = new Map<ItemName, [number, number][]>([
     ["cclaw", undefined],
     ["coat1", undefined],
     ["dexearring", undefined],
+    ["fireblade", undefined],
+    ["firestaff", undefined],
     ["gloves1", undefined],
     ["gphelmet", undefined],
     ["helmet1", undefined],
