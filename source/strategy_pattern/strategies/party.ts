@@ -23,7 +23,7 @@ export class AcceptPartyRequestStrategy<Type extends Character> implements Strat
             if (this.options.allowList && !this.options.allowList.includes(data.name)) return // Not in allow list
             if (this.options.denyList && this.options.denyList.includes(data.name)) return // In deny list
 
-            await bot.acceptPartyRequest(data.name)
+            await bot.acceptPartyRequest(data.name).catch(console.error)
         }
         bot.socket.on("request", this.onRequest)
     }
