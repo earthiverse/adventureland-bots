@@ -1,86 +1,120 @@
-import AL, { Character } from "alclient"
-import { getHalloweenMonsterPriority } from "../base/serverhop.js"
+import AL, { IPosition, Rogue, ServerIdentifier, ServerRegion } from "alclient"
+import fs from "fs"
+import { getMsToNextMinute } from "../base/general.js"
+import { Strategist } from "../strategy_pattern/context.js"
+import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
+import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
+import { AlwaysInvisStrategy } from "../strategy_pattern/strategies/invis.js"
+import { HoldPositionMoveStrategy } from "../strategy_pattern/strategies/move.js"
+import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 
-const PEEK_CHARS = ["attackMag", "attackMag2"]
+// Login, prepare, and get game data
+await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
+await Promise.all([AL.Pathfinder.prepare(AL.Game.G, { cheat: true }), AL.Game.updateServersAndCharacters()])
 
-async function run() {
-    await Promise.all([AL.Game.loginJSONFile("../../credentials_attack.json"), AL.Game.getGData(true)])
-    await AL.Pathfinder.prepare(AL.Game.G)
+const BUFFER = 15_000
 
-    // Look for `greenjr` in place #1
-    let greenjrChecker: Character
-    const start_greenjrCheck = async () => {
-        try {
-            const botName = PEEK_CHARS[0]
-            if (!botName) return
-            const server = (await getHalloweenMonsterPriority())[0]
-            if (server) {
-                console.log(`Checking for greenjr on ${server.serverRegion} ${server.serverIdentifier}...`)
-                greenjrChecker = await AL.Game.startCharacter(botName, server.serverRegion, server.serverIdentifier)
+const credentials1 = JSON.parse(fs.readFileSync("../../credentials_test.json", "utf-8"))
+const credentials2 = JSON.parse(fs.readFileSync("../../credentials_test2.json", "utf-8"))
+const credentials3 = JSON.parse(fs.readFileSync("../../credentials_test3.json", "utf-8"))
 
-                if (greenjrChecker.rip) await greenjrChecker.respawn()
-                await Promise.all([greenjrChecker.smartMove({ map: "halloween", x: -569, y: -511.5 }).catch(console.error), greenjrChecker.regenHP()])
-                greenjrChecker.disconnect()
-                greenjrChecker = undefined
-                AL.PlayerModel.updateOne({ name: botName }, { lastSeen: Date.now() - 60_000 }).exec().catch((e) => { console.error(e) })
-            }
-        } catch (e) {
-            console.error(e)
-            if (greenjrChecker) greenjrChecker.disconnect()
-        }
-        const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(start_greenjrCheck, msToNextMinute + 5000)
+const baseStrategy = new BaseStrategy()
+const buyStrategy = new BuyStrategy({
+    buyMap: new Map(),
+    replenishables: new Map()
+})
+const invisStrategy = new AlwaysInvisStrategy()
+const respawnStrategy = new RespawnStrategy()
+
+async function startWatch(userId: string, userAuth: string, characterID: string, location: IPosition, targetRegion: ServerRegion, targetIdentifier: ServerIdentifier) {
+    let bot: Rogue
+    try {
+        bot = new AL.Rogue(userId, userAuth, characterID, AL.Game.G, AL.Game.servers[targetRegion][targetIdentifier])
+        await bot.connect()
+    } catch (e) {
+        console.error(`${characterID} had an error (start) on ${targetRegion}${targetIdentifier}`)
+        console.error(e)
+        setTimeout(startWatch, getMsToNextMinute() + BUFFER, userId, userAuth, characterID, location, targetRegion, targetIdentifier)
+        return
     }
-    const stop_greenjrCheck = async () => {
-        try {
-            if (greenjrChecker) greenjrChecker.disconnect()
-            greenjrChecker = undefined
-        } catch (e) {
-            console.error(e)
-        }
-        const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(stop_greenjrCheck, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
-    }
-    let msToNextMinute = 60_000 - (Date.now() % 60_000)
-    setTimeout(start_greenjrCheck, msToNextMinute + 5000)
-    setTimeout(stop_greenjrCheck, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
 
-    // Look for `jr` in place #1
-    let jrChecker: Character
-    const start_jrCheck = async () => {
-        try {
-            const botName = PEEK_CHARS[1]
-            if (!botName) return
-            const server = (await getHalloweenMonsterPriority())[0]
-            if (server) {
-                console.log(`Checking for jr on ${server.serverRegion} ${server.serverIdentifier}...`)
-                jrChecker = await AL.Game.startCharacter(botName, server.serverRegion, server.serverIdentifier)
+    const context: Strategist<Rogue> = new Strategist<Rogue>(bot, baseStrategy)
+    context.applyStrategy(buyStrategy)
+    context.applyStrategy(invisStrategy)
+    context.applyStrategy(respawnStrategy)
+    context.applyStrategy(new HoldPositionMoveStrategy(location))
 
-                if (jrChecker.rip) await jrChecker.respawn()
-                await Promise.all([jrChecker.smartMove({ map: "spookytown", x: -783.5, y: -301 }).catch(console.error), jrChecker.regenHP()])
-                jrChecker.disconnect()
-                jrChecker = undefined
-                AL.PlayerModel.updateOne({ name: botName }, { lastSeen: Date.now() - 60_000 }).exec().catch((e) => { console.error(e) })
-            }
-        } catch (e) {
-            console.error(e)
-            if (jrChecker) jrChecker.disconnect()
+    const serverLoop = async () => {
+        if (targetRegion == "US") {
+            // if (targetIdentifier == "I") targetIdentifier = "III"
+            // else if (targetIdentifier == "II") targetIdentifier = "III"
+            // else if (targetIdentifier == "III") targetIdentifier = "PVP"
+            // else {
+            targetRegion = "EU"
+            // targetIdentifier = "I"
+            // }
+        } else if (targetRegion == "EU") {
+            // if (targetIdentifier == "I") targetIdentifier = "II"
+            // else if (targetIdentifier == "II") targetIdentifier = "PVP"
+            // else {
+            targetRegion = "ASIA"
+            // targetIdentifier = "I"
+            // }
+        } else {
+            targetRegion = "US"
+            // targetIdentifier = "I"
         }
-        const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(start_jrCheck, msToNextMinute + 5000)
+        setTimeout(serverLoop, getMsToNextMinute())
     }
-    const stop_jrCheck = async () => {
+    serverLoop()
+
+    const connectLoop = async () => {
         try {
-            if (jrChecker) jrChecker.disconnect()
-            jrChecker = undefined
+            console.log(`Connecting to ${targetRegion} ${targetIdentifier}...`)
+            await context.changeServer(targetRegion, targetIdentifier)
         } catch (e) {
+            console.error(`${characterID} had an error (connect) on ${targetRegion}${targetIdentifier}`)
             console.error(e)
+        } finally {
+            context?.bot?.socket?.removeAllListeners("disconnect")
+            setTimeout(async () => { await connectLoop() }, getMsToNextMinute() + BUFFER)
         }
-        const msToNextMinute = 60_000 - (Date.now() % 60_000)
-        setTimeout(stop_jrCheck, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
     }
-    msToNextMinute = 60_000 - (Date.now() % 60_000)
-    setTimeout(start_jrCheck, msToNextMinute + 5000)
-    setTimeout(stop_jrCheck, msToNextMinute - 5000 < 0 ? msToNextMinute + 55_000 : msToNextMinute - 5000)
+    setTimeout(async () => { await connectLoop() }, getMsToNextMinute() + BUFFER)
+
+    const disconnectLoop = async () => {
+        try {
+            console.log("Disconnecting...")
+
+            context.bot.socket.removeAllListeners("disconnect")
+            await context.bot.disconnect()
+        } catch (e) {
+            console.error(`${characterID} had an error (disconnect) on ${targetRegion}${targetIdentifier}`)
+            console.error(e)
+        } finally {
+            setTimeout(async () => { await disconnectLoop() }, getMsToNextMinute() + (60_000 - BUFFER))
+        }
+    }
+    setTimeout(async () => { await disconnectLoop() }, getMsToNextMinute() - BUFFER)
 }
-run()
+
+// 1 - Skeletor
+setTimeout(startWatch, getMsToNextMinute() + BUFFER, credentials1.userID, credentials1.userAuth, "4991719061323776", { map: "arena", x: 379.5, y: -671.5 }, "US", "I")
+// 2 - Male Vampire (1)
+setTimeout(startWatch, getMsToNextMinute() + BUFFER, credentials1.userID, credentials1.userAuth, "4947108980850688", { map: "cave", x: -190.5, y: -1176.5 }, "US", "I")
+// 3 - Male Vampire (2)
+setTimeout(startWatch, getMsToNextMinute() + BUFFER, credentials1.userID, credentials1.userAuth, "5761400101666816", { map: "cave", x: 1244, y: -22.5 }, "US", "I")
+
+// 4 - Female Vampire
+setTimeout(startWatch, getMsToNextMinute() + BUFFER, credentials2.userID, credentials2.userAuth, "5775099889713152", { map: "halloween", x: -405.5, y: -1642.5 }, "EU", "I")
+// 5 - Green Jr.
+setTimeout(startWatch, getMsToNextMinute() + BUFFER, credentials2.userID, credentials2.userAuth, "5917875541377024", { map: "halloween", x: -569, y: -511.5 }, "EU", "I")
+// 6 - Jr.
+setTimeout(startWatch, getMsToNextMinute() + BUFFER, credentials2.userID, credentials2.userAuth, "5189659356823552", { map: "spookytown", x: -783.5, y: -301 }, "EU", "I")
+
+// 7 - Stompy
+setTimeout(startWatch, getMsToNextMinute() + BUFFER, credentials3.userID, credentials3.userAuth, "4706865690181632", { map: "winterland", x: 433, y: -2745 }, "ASIA", "I")
+// 8 - Goos (New Players)
+setTimeout(startWatch, getMsToNextMinute() + BUFFER, credentials3.userID, credentials3.userAuth, "6549055009718272", { map: "main", x: -32, y: 787 }, "ASIA", "I")
+// 9 - Town (Ponty)
+setTimeout(startWatch, getMsToNextMinute() + BUFFER, credentials3.userID, credentials3.userAuth, "5320077179617280", { map: "main", x: -0, y: 0 }, "ASIA", "I")

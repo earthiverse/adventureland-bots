@@ -1,5 +1,5 @@
 import AL, { ItemName, Merchant, PingCompensatedCharacter, Priest, Mage, Warrior, ServerRegion, ServerIdentifier, MonsterName, ServerInfoDataLive, CharacterType, Paladin, Ranger, Rogue } from "alclient"
-import { DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO, startMerchant } from "./merchant/strategy.js"
+import { DEFAULT_ITEMS_TO_BUY, DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO, startMerchant } from "./merchant/strategy.js"
 import { Strategist, Strategy } from "./strategy_pattern/context.js"
 import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "./strategy_pattern/strategies/buy.js"
@@ -64,7 +64,7 @@ const ALL_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 const guiStrategy = new GuiStrategy({ port: 8080 })
 const baseStrategy = new BaseStrategy(ALL_CONTEXTS)
 const privateBuyStrategy = new BuyStrategy({
-    buyMap: undefined,
+    buyMap: DEFAULT_ITEMS_TO_BUY,
     enableBuyForProfit: true,
     replenishables: new Map<ItemName, number>([
         ["hpot1", 2500],
