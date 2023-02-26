@@ -20,6 +20,7 @@ export type LoopName =
     | "elixir"
     | "equip"
     | "heal"
+    | "invis"
     | "item"
     | "loot"
     | "magiport"
