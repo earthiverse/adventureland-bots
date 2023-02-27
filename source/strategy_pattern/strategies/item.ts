@@ -34,13 +34,13 @@ export class OptimizeItemsStrategy<Type extends Character> implements Strategy<T
             const item1 = bot.items[i]
             if (!item1) continue // No item
             if (!item1.q) continue // Not stackable
-            if (item1.p) continue // Item is special
             for (let j = i + 1; j < bot.isize; j++) {
                 const item2 = bot.items[j]
                 if (!item2) continue // No item
                 if (!item2.q) continue // Not stackable
-                if (item2.p) continue // Item is special
                 if (item1.name !== item2.name) continue // Different items
+                if (item1.p !== item2.p) continue // Item is a different kind of special
+                if (item1.v !== item2.v) continue // One is PVP marked
 
                 const gInfo = AL.Game.G.items[item1.name]
                 if (item1.q + item2.q > gInfo.s) continue // Too many to stack
