@@ -1,4 +1,4 @@
-import AL, { Character } from "alclient"
+import AL, { Character, ItemName } from "alclient"
 import { Strategy, LoopName, Loop } from "../context.js"
 
 // TODO: Pass in the friends contexts, so we can potentially transfer items to other players to stack them to reduce overall inventory space
@@ -21,9 +21,36 @@ export class OptimizeItemsStrategy<Type extends Character> implements Strategy<T
      * Sort items how I like them to be sorted
      */
     private async organizeItems (bot: Type) {
-        // TODO: Sort locked items at the beginning
-        // TODO: Sort tracker in last slot
-        // TODO: Sort hp and mp potions in 2nd and 3rd last slot
+        const items: {
+            name: ItemName
+            num: number
+        }[] = []
+        for (let i = 0; i < bot.isize; i++) {
+            const item = bot.items[i]
+            if (!item) continue
+
+            items.push({
+                ...item,
+                num: i
+            })
+        }
+
+        /**
+         * Swaps the item to the given slot if it isn't there
+         */
+        const fixNum = async (find: ItemName[], num: number) => {
+            const item = items.find(i => find.includes(i.name))
+            if (item?.num && item.num !== num) await bot.swapItems(item.num, num)
+        }
+
+        // Put things in certain slots
+        await fixNum(["scroll0"], 36)
+        await fixNum(["scroll1"], 36)
+        await fixNum(["scroll2"], 37)
+        await fixNum(["mpot0"], 38)
+        await fixNum(["hpot0"], 39)
+        await fixNum(["computer", "supercomputer"], 40)
+        await fixNum(["tracker"], 41)
     }
 
     /**
