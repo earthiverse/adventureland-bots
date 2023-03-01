@@ -1,4 +1,4 @@
-import AL, { PingCompensatedCharacter } from "alclient"
+import AL, { MonsterName, PingCompensatedCharacter } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
@@ -9,6 +9,7 @@ import { MAGE_SPLASH, PRIEST_ARMOR, WARRIOR_SPLASH } from "./equipment.js"
 
 export function constructXScorpionSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const spawn = AL.Pathfinder.locateMonster("xscorpion")[0]
+    const monsters: MonsterName[] = ["xscorpion", "tinyp"]
 
     return {
         configs: [
@@ -23,7 +24,7 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                             disableZapper: true,
                             ensureEquipped: { ...MAGE_SPLASH },
                             targetingPartyMember: true,
-                            type: "xscorpion"
+                            typeList: monsters,
                         }),
                         move: new HoldPositionMoveStrategy(spawn, { offset: { x: 5 } })
                     },
@@ -33,7 +34,7 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             disableEnergize: true,
                             ensureEquipped: { ...PRIEST_ARMOR },
-                            type: "xscorpion",
+                            typeList: monsters,
                         }),
                         move: new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } })
                     },
@@ -46,7 +47,7 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                             enableGreedyAggro: true,
                             ensureEquipped: { ...WARRIOR_SPLASH },
                             targetingPartyMember: true,
-                            type: "xscorpion"
+                            typeList: monsters,
                         }),
                         move: new MoveInCircleMoveStrategy({ center: spawn, radius: 20, sides: 8 })
                     }
