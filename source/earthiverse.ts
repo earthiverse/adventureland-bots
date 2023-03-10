@@ -669,7 +669,7 @@ class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> 
 const disconnectOnCommandStrategy = new DisconnectOnCommandStrategy()
 
 // Allow others to join me
-const startPublicContext = async (type: CharacterType, userID: string, userAuth: string, characterID: string) => {
+const startPublicContext = async (type: CharacterType, userID: string, userAuth: string, characterID: string, attemptNum = 0) => {
     // Remove stopped contexts
     for (let i = 0; i < ALL_CONTEXTS.length; i++) {
         const context = ALL_CONTEXTS[i]
@@ -738,7 +738,12 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
         if (/nouser/.test(e)) {
             throw new Error(`Authorization failed for ${characterID}! No longer trying to connect...`)
         }
-        setTimeout(startPublicContext, 10_000, type, userID, userAuth, characterID)
+        attemptNum += 1
+        if (attemptNum < 2) {
+            setTimeout(startPublicContext, 10_000, type, userID, userAuth, characterID, attemptNum)
+        } else {
+            throw new Error(`Failed starting ${characterID}! No longer trying to connect...`)
+        }
         return
     }
     let context: Strategist<PingCompensatedCharacter>

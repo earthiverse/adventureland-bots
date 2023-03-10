@@ -13,6 +13,6 @@ export class HomeServerStrategy<Type extends Character> implements Strategy<Type
         if (`${bot.serverData.region}${bot.serverData.name}` !== this.homeServer) return // We're not on the home server we want to set
 
         // Set the home server to our current server
-        await bot.setHome()
+        await bot.setHome().catch(console.error)
     }
 }
