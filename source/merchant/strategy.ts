@@ -102,6 +102,7 @@ export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
     ["cxjar", 1_000_000],
     ["cyber", -AL.Constants.PONTY_MARKUP],
     ["dartgun", -AL.Constants.PONTY_MARKUP],
+    ["dexearring", -AL.Constants.PONTY_MARKUP],
     ["dexearringx", -AL.Constants.PONTY_MARKUP],
     ["dkey", 100_000_000],
     ["dragondagger", -AL.Constants.PONTY_MARKUP],
@@ -263,6 +264,12 @@ export type MerchantMoveStrategyOptions = {
         items: Set<ItemName>
     },
     /** If enabled, the merchant will
+     * - Look for merchants with things we want to buy and move to them
+     */
+    enableDealFinder?: {
+        itemsToBuy: Map<ItemName, number>
+    }
+    /** If enabled, the merchant will
      * - withdraw items to exchange from the bank if we have enough free spaces
      * - if they have the required amount of each exchangeable
      *   - move to where they can exchange the item(s)
@@ -335,6 +342,9 @@ export const DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS: MerchantMoveStrategyOptions
     },
     enableCraft: {
         items: DEFAULT_CRAFTABLES
+    },
+    enableDealFinder: {
+        itemsToBuy: DEFAULT_ITEMS_TO_BUY
     },
     enableExchange: {
         items: DEFAULT_EXCHANGEABLES,
@@ -410,6 +420,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 await bot.smartMove(bankingPosition)
 
                 // Deposit things we can stack without taking up an extra slot
+                item:
                 for (let i = 0; i < bot.isize; i++) {
                     const item = bot.items[i]
                     if (!item) continue // No item
@@ -418,7 +429,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     if (item.l) continue // It's locked, which means we probably want to hold it, too
 
                     for (const bankSlot in bot.bank) {
-                        // Only get stuff from the packs in the first level
+                        // Only deposit stuff in the packs in the first level
                         const matches = /items(\d+)/.exec(bankSlot)
                         if (!matches || Number.parseInt(matches[1]) > 7) continue
 
@@ -428,11 +439,41 @@ export class MerchantStrategy implements Strategy<Merchant> {
                             if (bankItem.name !== item.name) continue // Not the same item
                             if ((item.q + bankItem.q) > AL.Game.G.items[bankItem.name].s) continue // Depositing would exceed stack limit
                             await bot.depositItem(i, bankSlot as BankPackName).catch(console.error)
+                            continue item
                             // TODO: Set the index if it ever gets fixed
                             // await bot.depositItem(i, bankSlot as BankPackName, j).catch(console.error)
                         }
                     }
                 }
+
+                if (bot.esize == 0) {
+                    // We still have no space, deposit other things
+                    item:
+                    for (let i = 0; i < bot.isize; i++) {
+                        const item = bot.items[i]
+                        if (!item) continue // No item
+                        if (this.options.itemsToHold.has(item.name)) continue // We want to hold these items
+                        if (item.l) continue // It's locked, which means we probably want to hold it, too
+
+                        for (const bankSlot in bot.bank) {
+                            // Only deposit stuff in the packs in the first level
+                            const matches = /items(\d+)/.exec(bankSlot)
+                            if (!matches || Number.parseInt(matches[1]) > 7) continue
+
+                            for (let j = 0; j < bot.bank[bankSlot as BankPackName].length; j++) {
+                                const bankItem = bot.bank[bankSlot as BankPackName][j]
+                                if (!bankItem) {
+                                    // Found an empty slot, let's deposit something
+                                    await bot.depositItem(i, bankSlot as BankPackName).catch(console.error)
+                                    // TODO: Set the index if it ever gets fixed
+                                    // await bot.depositItem(i, bankSlot as BankPackName, j).catch(console.error)
+                                    continue item
+                                }
+                            }
+                        }
+                    }
+                }
+
 
                 this.itemCounts = await getItemCountsForEverything(bot.owner)
 
@@ -1223,6 +1264,68 @@ export class MerchantStrategy implements Strategy<Merchant> {
                             return
                         }
                     }
+                }
+            }
+
+            if (this.options.enableDealFinder) {
+                const merchants = await AL.PlayerModel.find({
+                    lastSeen: { $gt: Date.now() - 120000 },
+                    serverRegion: bot.serverData.region,
+                    serverIdentifier: bot.serverData.name,
+                    $or: [
+                        { "slots.trade1": { $ne: undefined } },
+                        { "slots.trade2": { $ne: undefined } },
+                        { "slots.trade3": { $ne: undefined } },
+                        { "slots.trade4": { $ne: undefined } },
+                        { "slots.trade5": { $ne: undefined } },
+                        { "slots.trade6": { $ne: undefined } },
+                        { "slots.trade7": { $ne: undefined } },
+                        { "slots.trade8": { $ne: undefined } },
+                        { "slots.trade9": { $ne: undefined } },
+                        { "slots.trade10": { $ne: undefined } },
+                        { "slots.trade11": { $ne: undefined } },
+                        { "slots.trade12": { $ne: undefined } },
+                        { "slots.trade13": { $ne: undefined } },
+                        { "slots.trade14": { $ne: undefined } },
+                        { "slots.trade15": { $ne: undefined } },
+                        { "slots.trade16": { $ne: undefined } },
+                        { "slots.trade17": { $ne: undefined } },
+                        { "slots.trade18": { $ne: undefined } },
+                        { "slots.trade19": { $ne: undefined } },
+                        { "slots.trade20": { $ne: undefined } },
+                        { "slots.trade21": { $ne: undefined } },
+                        { "slots.trade22": { $ne: undefined } },
+                        { "slots.trade23": { $ne: undefined } },
+                        { "slots.trade24": { $ne: undefined } },
+                        { "slots.trade25": { $ne: undefined } },
+                        { "slots.trade26": { $ne: undefined } },
+                        { "slots.trade27": { $ne: undefined } },
+                        { "slots.trade28": { $ne: undefined } },
+                        { "slots.trade29": { $ne: undefined } },
+                        { "slots.trade30": { $ne: undefined } },
+                    ],
+                }).lean().exec()
+                const merchantsToCheck = merchants
+                    .filter((v) => {
+                        for (const slotName in v.slots) {
+                            const slotData = v.slots[slotName as TradeSlotType]
+                            if (!slotData) continue // No data
+
+                            if (slotData.giveaway && !slotData.list.includes(bot.id)) return true // There's a giveaway we want to join on this merchant
+
+                            if (!slotData.price) continue // Not a trade slot
+                            if (slotData.b) continue // Buying, not selling
+                            let priceToPay = DEFAULT_ITEMS_TO_BUY.get(slotData.name)
+                            if (priceToPay < 0) priceToPay = AL.Game.G.items[slotData.name].g * -priceToPay
+                            if (!priceToPay || slotData.price > priceToPay) continue // Not on our wishlist, or more than we want to pay
+
+                            return true // There's something we want from this merchant
+                        }
+                    })
+                if (merchantsToCheck.length > 0) {
+                    const target = merchantsToCheck[0]
+                    await bot.smartMove(target, { getWithin: 25 })
+                    return
                 }
             }
 
