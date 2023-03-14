@@ -67,48 +67,6 @@ export function startRunner(character: PingCompensatedCharacter, options: Runner
         case "merchant":
         {
             context = new Strategist<Merchant>(character as Merchant, baseStrategy)
-
-            const defaultPosition: IPosition = {
-                map: "main",
-                x: randomIntFromInterval(-100, -50),
-                y: randomIntFromInterval(-50, 50)
-            }
-
-            context.applyStrategy(new MerchantStrategy(CONTEXTS, {
-                defaultPosition: defaultPosition,
-                enableBuyAndUpgrade: {
-                    upgradeToLevel: 9
-                },
-                enableBuyReplenishables: {
-                    all: DEFAULT_REPLENISHABLES,
-                    merchant: new Map([
-                        ["offering", 1],
-                        ["cscroll0", 100],
-                        ["cscroll1", 10],
-                        ["cscroll2", 2],
-                        ["scroll0", 100],
-                        ["scroll1", 10],
-                        ["scroll2", 2],
-                    ]),
-                    ratio: DEFAULT_REPLENISH_RATIO,
-                },
-                enableFishing: true,
-                enableMining: true,
-                enableOffload: {
-                    esize: 3,
-                    goldToHold: 1_000_000,
-                    itemsToHold: DEFAULT_ITEMS_TO_HOLD,
-                },
-                enableUpgrade: true,
-                goldToHold: 50_000_000,
-                itemsToHold: DEFAULT_MERCHANT_ITEMS_TO_HOLD,
-            }))
-            context.applyStrategy(new ToggleStandStrategy({
-                offWhenMoving: true,
-                onWhenNear: [
-                    { distance: 10, position: defaultPosition }
-                ]
-            }))
             break
         }
         case "paladin":
@@ -166,6 +124,48 @@ export function startRunner(character: PingCompensatedCharacter, options: Runner
                 context.applyStrategy(new RequestPartyStrategy(options.partyLeader))
             }
         }
+    } else {
+        const defaultPosition: IPosition = {
+            map: "main",
+            x: randomIntFromInterval(-100, -50),
+            y: randomIntFromInterval(-50, 50)
+        }
+
+        moveStrategy = new MerchantStrategy(CONTEXTS, {
+            defaultPosition: defaultPosition,
+            enableBuyAndUpgrade: {
+                upgradeToLevel: 9
+            },
+            enableBuyReplenishables: {
+                all: DEFAULT_REPLENISHABLES,
+                merchant: new Map([
+                    ["offering", 1],
+                    ["cscroll0", 100],
+                    ["cscroll1", 10],
+                    ["cscroll2", 2],
+                    ["scroll0", 100],
+                    ["scroll1", 10],
+                    ["scroll2", 2],
+                ]),
+                ratio: DEFAULT_REPLENISH_RATIO,
+            },
+            enableFishing: true,
+            enableMining: true,
+            enableOffload: {
+                esize: 3,
+                goldToHold: 1_000_000,
+                itemsToHold: DEFAULT_ITEMS_TO_HOLD,
+            },
+            enableUpgrade: true,
+            goldToHold: 50_000_000,
+            itemsToHold: DEFAULT_MERCHANT_ITEMS_TO_HOLD,
+        })
+        context.applyStrategy(new ToggleStandStrategy({
+            offWhenMoving: true,
+            onWhenNear: [
+                { distance: 10, position: defaultPosition }
+            ]
+        }))
     }
 
     const logicLoop = async () => {
