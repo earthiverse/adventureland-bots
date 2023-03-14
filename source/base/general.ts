@@ -9,6 +9,10 @@ export function checkOnlyEveryMS(key: string, msSince = 5000) {
     return false
 }
 
+export function getMsToNextMinute(): number {
+    return 60_000 - (Date.now() % 60_000)
+}
+
 export function randomIntFromInterval(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min)
 }

@@ -23,36 +23,38 @@ export class SellStrategy<Type extends Character> implements SellStrategyOptions
     public sellMap: Map<ItemName, [number, number][]>
 
     public constructor(options: SellStrategyOptions = RecommendedSellStrategyOptions) {
-        if (options.sellMap) this.sellMap = options.sellMap
+        if (options.sellMap) {
+            this.sellMap = options.sellMap
 
-        for (const [itemName, criteria] of options.sellMap) {
-            const GData = AL.Game.G.items[itemName]
-            const npcPrice = GData.g * 0.6
-            if (criteria == undefined) {
+            for (const [itemName, criteria] of options.sellMap) {
+                const GData = AL.Game.G.items[itemName]
+                const npcPrice = GData.g * 0.6
+                if (criteria == undefined) {
                 // Sell it for the NPC price
-                if (GData.upgrade || GData.compound) {
-                    options.sellMap.set(itemName, [[0, npcPrice]])
-                } else {
-                    options.sellMap.set(itemName, [[undefined, npcPrice]])
-                }
-                continue
-            }
-            for (const criterion of criteria) {
-                const level = criterion[0]
-                const sellFor = criterion[1]
-
-                // If price is defined, make sure it's higher than what we could sell it to an NPC for
-                if (sellFor !== undefined) {
-                    if (sellFor < npcPrice) {
-                        console.warn(`Raising sell price for ${itemName}${level ?? ` (level ${level})`} from ${sellFor} to ${npcPrice} to match the price NPCs will pay.`)
-                        criterion[1] = npcPrice
+                    if (GData.upgrade || GData.compound) {
+                        options.sellMap.set(itemName, [[0, npcPrice]])
+                    } else {
+                        options.sellMap.set(itemName, [[undefined, npcPrice]])
                     }
+                    continue
                 }
+                for (const criterion of criteria) {
+                    const level = criterion[0]
+                    const sellFor = criterion[1]
 
-                if (sellFor === undefined) {
+                    // If price is defined, make sure it's higher than what we could sell it to an NPC for
+                    if (sellFor !== undefined) {
+                        if (sellFor < npcPrice) {
+                            console.warn(`Raising sell price for ${itemName}${level ?? ` (level ${level})`} from ${sellFor} to ${npcPrice} to match the price NPCs will pay.`)
+                            criterion[1] = npcPrice
+                        }
+                    }
+
+                    if (sellFor === undefined) {
                     // TODO: Make a function that checks the item value
-                    if (level > 0) {
-                        console.warn(`Sell price for ${itemName} (level ${level}) is not set. Selling to NPCs only.`)
+                        if (level > 0) {
+                            console.warn(`Sell price for ${itemName} (level ${level}) is not set. Selling to NPCs only.`)
+                        }
                     }
                 }
             }
@@ -65,10 +67,9 @@ export class SellStrategy<Type extends Character> implements SellStrategyOptions
     }
 
     private async sell(bot: Type) {
-        if (this.sellMap) {
-            await this.sellToMerchants(bot)
-            await this.sellToNPCs(bot)
-        }
+        if (!this.sellMap) return
+        await this.sellToMerchants(bot)
+        await this.sellToNPCs(bot)
     }
 
     private async sellToMerchants(bot: Type) {

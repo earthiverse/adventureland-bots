@@ -43,7 +43,7 @@ export class RequestPartyStrategy<Type extends Character> implements Strategy<Ty
 
         this.loops.set("party", {
             fn: async (bot: Type) => { await this.requestPartyInvite(bot) },
-            interval: 5000
+            interval: 2000
         })
     }
 

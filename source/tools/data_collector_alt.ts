@@ -1,6 +1,6 @@
 import AL, { IPosition, Rogue, ServerIdentifier, ServerRegion } from "alclient"
 import fs from "fs"
-import { getMsToNextMinute } from "../archive/base/general.js"
+import { getMsToNextMinute } from "../base/general.js"
 import { Strategist } from "../strategy_pattern/context.js"
 import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
