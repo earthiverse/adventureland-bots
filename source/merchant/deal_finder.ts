@@ -1,6 +1,6 @@
 import AL, { Merchant, ServerIdentifier, ServerRegion, TradeSlotType } from "alclient"
-import { getMsToNextMinute } from "../base/general.js"
-import { MERCHANT_ITEMS_TO_HOLD } from "../base/merchant.js"
+import { getMsToNextMinute } from "../archive/base/general.js"
+import { MERCHANT_ITEMS_TO_HOLD } from "../archive/base/merchant.js"
 import { Strategist } from "../strategy_pattern/context.js"
 import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
 import { DEFAULT_ITEMS_TO_BUY, startMerchant } from "./strategy.js"

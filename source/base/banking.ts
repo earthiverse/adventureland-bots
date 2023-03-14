@@ -1,7 +1,7 @@
 /* eslint-disable sort-keys */
 import AL, { BankPackName, Character, CharacterType, ItemData, ItemName, LocateItemsFilters, MapName } from "alclient"
 import { bankingPosition } from "./locations.js"
-import { MERCHANT_ITEMS_TO_HOLD } from "./merchant.js"
+import { MERCHANT_ITEMS_TO_HOLD } from "../archive/base/merchant.js"
 
 export type ItemCount = {
     name: ItemName

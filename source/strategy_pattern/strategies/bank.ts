@@ -51,7 +51,7 @@ export class MoveToBankAndDepositStuffStrategy<Type extends Character> implement
             if (this.options.itemsToHold.has(item.name)) continue // We want to hold this item
 
             // Deposit the items
-            await bot.depositItem(i)
+            await bot.depositItem(i).catch(console.error)
         }
     }
 

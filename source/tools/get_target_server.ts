@@ -1,6 +1,6 @@
 import AL from "alclient"
 import { getTargetServerFromMonsters } from "../base/serverhop.js"
-import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "../monsterhunt/shared.js"
+import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "../archive/monsterhunt/shared.js"
 
 AL.Game.loginJSONFile("../../credentials.json").then(async () => {
     const G = await AL.Game.getGData(true)

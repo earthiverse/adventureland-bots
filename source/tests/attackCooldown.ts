@@ -1,5 +1,5 @@
 import AL from "alclient"
-import { startHealLoop, startLootLoop } from "../base/general.js"
+import { startHealLoop, startLootLoop } from "../archive/base/general.js"
 
 async function run() {
     // Login and prepare pathfinding

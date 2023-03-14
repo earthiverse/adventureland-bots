@@ -1,1 +1,44 @@
-You might be able to run your bots, message me (earthiverse) on the Adventure Land discord.
+<pre>
+You might be able to run your bots with my bots depending on how many are currently running.
+Note that if my bots stop or crash for whatever reason, your bots will stop, too.
+Your bots may also not do what you want.
+Lock and/or seal any important items, mail them to yourself, or put them on a character that you won't ever run using this service.
+
+If you need help, or have any questions, message me on Discord (earthiverse#9832)
+
+1. Load the function:
+
+    async function startEarthiverseCharacter(name, url = 'https://monsterhunt.earthiverse.ca/') {
+        if(!parent.X) throw new Error("Couldn't find `X` data!")
+        if(!parent.user_id) throw new Error("Couldn't find `parent.user_id`!")
+        if(!parent.user_auth) throw new Error("Couldn't find `parent.user_auth`!")
+        
+        const xData = parent.X.characters.find(x => x.name == name)
+        if(!xData) throw new Error(`Couldn't find a character with the name ${name}!`)
+        if(xData.online) throw new Error(`It looks like ${name} is already online!`)
+        
+        return fetch(url, {
+            "credentials": "omit",
+            "headers": {
+                ntent-Type": "application/x-www-form-urlencoded",
+            },
+            "referrer": url,
+            "body": new URLSearchParams({
+                "user": parent.user_id,
+                "auth": parent.user_auth,
+                "char": xData.id,
+                "char_type": xData.type
+            }),
+            "method": "POST",
+            "mode": "no-cors"
+        })
+    }
+
+2. Start your characters:
+
+    startEarthiverseCharacter("earthiverse")
+
+3. View your characters:
+
+    https://adventure.land/comm
+</pre>

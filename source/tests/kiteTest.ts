@@ -1,6 +1,6 @@
 import AL, { Mage, MonsterName, ServerIdentifier, ServerRegion } from "alclient"
-import { startHealLoop, startLootLoop, startAvoidStacking, goToKiteStuff, LOOP_MS, startScareLoop } from "../base/general.js"
-import { attackTheseTypesMage } from "../base/mage.js"
+import { startHealLoop, startLootLoop, startAvoidStacking, goToKiteStuff, LOOP_MS, startScareLoop } from "../archive/base/general.js"
+import { attackTheseTypesMage } from "../archive/base/mage.js"
 
 /** Config */
 const mageName = "earthMag"

@@ -1,6 +1,6 @@
 import AL from "alclient"
 import { getItemCountsForEverything, getItemsToCompoundOrUpgrade } from "../base/banking.js"
-import { startDebugLoop, writeLast1000Events } from "../base/general.js"
+import { startDebugLoop, writeLast1000Events } from "../archive/base/general.js"
 
 async function run() {
     console.log("Logging in, etc...")
