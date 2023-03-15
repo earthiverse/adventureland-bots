@@ -68,3 +68,6 @@ credentials*.json
 
 # Typescript build info
 *.tsbuildinfo
+
+# G info
+G_*.json

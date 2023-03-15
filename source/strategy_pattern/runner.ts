@@ -168,6 +168,8 @@ export function startRunner(character: PingCompensatedCharacter, options: Runner
         }))
     }
 
+    let lastMoveStrategy: Strategy<PingCompensatedCharacter>
+    let lastAttackStrategy: Strategy<PingCompensatedCharacter>
     const logicLoop = async () => {
         try {
             if (!context.isReady() || !context.bot.ready || context.bot.rip) {
@@ -175,26 +177,42 @@ export function startRunner(character: PingCompensatedCharacter, options: Runner
                 return // Not ready
             }
             if (context.bot.S.holidayseason && !context.bot.s.holidayspirit) {
-                if (moveStrategy) context.removeStrategy(moveStrategy)
+                if (moveStrategy) {
+                    context.removeStrategy(moveStrategy)
+                    lastMoveStrategy = undefined
+                }
                 context.applyStrategy(getHolidaySpiritStrategy)
                 setTimeout(async () => { logicLoop() }, 1000)
                 return
             }
+            if (context.hasStrategy(getHolidaySpiritStrategy)) context.removeStrategy(getHolidaySpiritStrategy)
 
             if (context.bot.esize == 0) {
                 // We're full, go deposit items in the bank
-                if (attackStrategy) context.removeStrategy(attackStrategy)
-                if (moveStrategy) context.removeStrategy(moveStrategy)
+                if (attackStrategy) {
+                    context.removeStrategy(attackStrategy)
+                    lastAttackStrategy = undefined
+                }
+                if (moveStrategy) {
+                    context.removeStrategy(moveStrategy)
+                    lastMoveStrategy = undefined
+                }
 
                 context.applyStrategy(bankStrategy)
                 setTimeout(async () => { logicLoop() }, getMsToNextMinute() + 60_000)
                 return
             }
-            context.removeStrategy(bankStrategy)
+            if (context.hasStrategy(bankStrategy)) context.removeStrategy(bankStrategy)
 
             // Defaults
-            if (moveStrategy) context.applyStrategy(moveStrategy)
-            if (attackStrategy) context.applyStrategy(attackStrategy)
+            if (moveStrategy && moveStrategy !== lastMoveStrategy) {
+                context.applyStrategy(moveStrategy)
+                lastMoveStrategy = moveStrategy
+            }
+            if (attackStrategy && attackStrategy !== lastAttackStrategy) {
+                context.applyStrategy(attackStrategy)
+                lastAttackStrategy = attackStrategy
+            }
         } catch (e) {
             console.error(e)
         }

@@ -194,10 +194,11 @@ async function checkDeals() {
                 if (!slotData.price) continue // Not a trade slot
                 if (slotData.b) continue // Buying, not selling
                 let priceToPay = DEFAULT_ITEMS_TO_BUY.get(slotData.name)
-                if (priceToPay < 0) priceToPay = AL.Game.G.items[slotData.name].g * -priceToPay
+                if (priceToPay < 0) priceToPay = (AL.Game.G.items[slotData.name].g / AL.Game.G.items[slotData.name].markup ?? 1) * -priceToPay
                 if (!priceToPay || slotData.price > priceToPay) continue // Not on our wishlist, or more than we want to pay
 
                 // There's something we want from this merchant
+                console.log(`${v.name} has a deal! ${slotData.name} for ${slotData.price}`)
                 return true
             }
         })
