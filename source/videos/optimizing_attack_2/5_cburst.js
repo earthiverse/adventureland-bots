@@ -62,7 +62,6 @@ async function attackLoop() {
         const best = getBestTargets({ max_range: character.range, type: MONSTER })[0]
         if (!best) {
             set_message("No Monsters")
-            setTimeout(attackLoop, Math.max(1, ms_to_next_skill("attack")))
             return
         }
 
@@ -103,14 +102,15 @@ async function attackLoop() {
                     remaining_mp -= mpToUse
                 }
 
-                use_skill("cburst", cbursts)
-                parent.next_skill["cburst"] = new Date(Date.now() + G.skills.cburst.cooldown)
+                await use_skill("cburst", cbursts)
             }
         }
     } catch (e) {
         console.error(e)
+    } finally {
+        // Note that we're now queueing up the next run of this loop to whichever skill will be off cooldown first
+        setTimeout(attackLoop, Math.min(ms_to_next_skill("attack"), ms_to_next_skill("cburst")))
     }
-    setTimeout(attackLoop, Math.max(1, Math.min(ms_to_next_skill("attack"), ms_to_next_skill("cburst"))))
 }
 
 if (character.ctype == "merchant") {

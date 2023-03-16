@@ -4,6 +4,7 @@
 
 const fs = require("fs")
 
+// Pausing the game can make your code run a little smoother
 if (!parent.paused) pause()
 
 /******************************************************************************
@@ -244,9 +245,10 @@ async function regenLoop() {
                 // Equip doesn't return a promise yet. When it does, remove the setTimeout to just the function inside of it
                 setTimeout(() => { reduce_cooldown("use_hp", minPing) }, 2 * minPing)
             } else {
-                await use_skill("regen_mp")
-                // Use Skill doesn't return a promise yet. When it does, remove the setTimeout to just the function inside of it
-                setTimeout(() => { reduce_cooldown("use_hp", minPing) }, 2 * minPing)
+                // NOTE: Uncomment to enable regenerating mp without using a potion
+                // await use_skill("regen_mp")
+                // // Use Skill doesn't return a promise yet. When it does, remove the setTimeout to just the function inside of it
+                // setTimeout(() => { reduce_cooldown("use_hp", minPing) }, 2 * minPing)
             }
         } else if (character.hp !== character.max_hp) {
             // We want to regen HP
@@ -262,9 +264,10 @@ async function regenLoop() {
                 // Equip doesn't return a promise yet. When it does, remove the setTimeout to just the function inside of it
                 setTimeout(() => { reduce_cooldown("use_hp", minPing) }, 2 * minPing)
             } else {
-                await use_skill("regen_hp")
-                // Use Skill doesn't return a promise yet. When it does, remove the setTimeout to just the function inside of it
-                setTimeout(() => { reduce_cooldown("use_hp", minPing) }, 2 * minPing)
+                // NOTE: Uncomment to enable regenerating hp without using a potion
+                // await use_skill("regen_hp")
+                // // Use Skill doesn't return a promise yet. When it does, remove the setTimeout to just the function inside of it
+                // setTimeout(() => { reduce_cooldown("use_hp", minPing) }, 2 * minPing)
             }
         }
     } catch (e) {

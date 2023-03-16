@@ -112,8 +112,9 @@ if (character.ctype == "mage") {
             }
         } catch (e) {
             console.error(e)
+        } finally {
+            setTimeout(attackLoop, Math.max(1, Math.min(ms_to_next_skill("attack"), ms_to_next_skill("cburst"))))
         }
-        setTimeout(attackLoop, Math.max(1, Math.min(ms_to_next_skill("attack"), ms_to_next_skill("cburst"))))
     }
 } if (character.ctype == "ranger") {
     attackLoop = async () => {
@@ -158,8 +159,6 @@ if (character.ctype == "mage") {
                 // Only energize up to what we can't regen with a potion
                 if (character.mp < 500) getEnergizeFromFriend(Math.max(1, character.max_mp - character.mp))
 
-                // use_skill isn't await-able yet, so we will await a failed attack to calculate the ping compensation
-                // it shouldn't cause too much extra code cost
                 await use_skill("5shot", fiveShotTargets.reduce((ids, target) => [...ids, target.id], []))
                 await attack(fiveShotTargets[0])
                 reduce_cooldown("attack", minPing)
@@ -172,8 +171,6 @@ if (character.ctype == "mage") {
 
                 if (character.mp < 500) getEnergizeFromFriend(Math.max(1, character.max_mp - character.mp))
 
-                // use_skill isn't await-able yet, so we will await a failed attack to calculate the ping compensation
-                // it shouldn't cause too much extra code cost
                 await use_skill("3shot", threeShotTargets.reduce((ids, target) => [...ids, target.id], []))
                 await attack(threeShotTargets[0])
                 reduce_cooldown("attack", minPing)
@@ -191,8 +188,9 @@ if (character.ctype == "mage") {
             }
         } catch (e) {
             console.error(e)
+        } finally {
+            setTimeout(attackLoop, Math.max(1, Math.min(ms_to_next_skill("attack"))))
         }
-        setTimeout(attackLoop, Math.max(1, Math.min(ms_to_next_skill("attack"))))
     }
 }
 

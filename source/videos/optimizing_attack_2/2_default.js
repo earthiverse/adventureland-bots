@@ -33,8 +33,9 @@ async function attackLoop() {
         }
     } catch (e) {
         console.error(e)
+    } finally {
+        setTimeout(attackLoop, Math.max(1, ms_to_next_skill("attack")))
     }
-    setTimeout(attackLoop, Math.max(1, ms_to_next_skill("attack")))
 }
 
 if (character.ctype == "merchant") {
