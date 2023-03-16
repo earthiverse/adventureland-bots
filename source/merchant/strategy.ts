@@ -2,7 +2,7 @@ import AL, { BankPackName, Character, IPosition, ItemName, LocateItemsFilters, M
 import { getItemCountsForEverything, getItemsToCompoundOrUpgrade, getOfferingToUse, IndexesToCompoundOrUpgrade, ItemCount, withdrawItemFromBank } from "../base/banking.js"
 import { checkOnlyEveryMS, sleep } from "../base/general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
-import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
+import { filterContexts, Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
 import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
 import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
 import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
@@ -711,10 +711,8 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
             if (this.options.enableBuyReplenishables) {
                 // Find own characters with low replenishables and go deliver some
-                for (const friendContext of this.contexts) {
-                    if (!friendContext.isReady()) continue
+                for (const friendContext of filterContexts(this.contexts, { owner: bot.owner, serverData: bot.serverData })) {
                     const friend = friendContext.bot
-                    if (friend.serverData.region !== bot.serverData.region || friend.serverData.name !== bot.serverData.name) continue // Different server
                     for (const [item, numTotal] of this.options.enableBuyReplenishables.all) {
                         const numFriendHas = friend.countItem(item)
                         if (numFriendHas == 0 && friend.esize == 0) continue // Friend has no space for more items
@@ -761,12 +759,9 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
             // Find own characters with low inventory space and go grab some items off of them
             if (this.options.enableOffload) {
-                for (const friendContext of this.contexts) {
-                    if (!friendContext.isReady()) continue
+                for (const friendContext of filterContexts(this.contexts, { owner: bot.owner, serverData: bot.serverData })) {
                     const friend = friendContext.bot
                     if (friend == bot) continue // Skip ourself
-                    if (friend.owner !== bot.owner) continue // Skip other public players
-                    if (friend.serverData.region !== bot.serverData.region || friend.serverData.name !== bot.serverData.name) continue // Different server
                     if (friend.gold < (this.options.enableOffload.goldToHold * 2)) {
                         if (friend.esize > 3) continue // They don't have a lot to offload
 
@@ -976,11 +971,8 @@ export class MerchantStrategy implements Strategy<Merchant> {
             // Go travel to mluck players
             if (this.options.enableMluck?.travel) {
                 if (this.options.enableMluck.contexts) {
-                    for (const context of this.contexts) {
-                        if (!context.isReady()) continue
+                    for (const context of filterContexts(this.contexts, { serverData: bot.serverData })) {
                         const friend = context.bot
-
-                        if (friend.serverData.region !== bot.serverData.region || friend.serverData.name !== bot.serverData.name) continue // Different server
                         if (
                             bot.s.mluck // They have mluck
                             && bot.s.mluck.f == bot.id // It's from us
@@ -1096,11 +1088,9 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 let lowestItemLevel: number = Number.MAX_SAFE_INTEGER
                 let getFor: Character
                 itemSearch:
-                for (const friendContext of this.contexts) {
+                for (const friendContext of filterContexts(this.contexts, { owner: bot.owner, serverData: bot.serverData })) {
                     const friend = friendContext.bot
                     if (friend == bot) continue // Skip ourself
-                    if (friend.owner !== bot.owner) continue // Skip other public players
-                    if (friend.serverData.region !== bot.serverData.region || friend.serverData.name !== bot.serverData.name) continue // Different server
                     for (const sN in friend.slots) {
                         const slotName = sN as SlotType
                         if (slotName.startsWith("trade")) continue // Don't look at trade slots
@@ -1357,10 +1347,8 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
         // mluck contexts
         if (this.options.enableMluck.contexts) {
-            for (const context of this.contexts) {
-                if (!context.isReady()) continue
+            for (const context of filterContexts(this.contexts, { serverData: bot.serverData })) {
                 const friend = context.bot
-                if (friend.serverData.region !== bot.serverData.region || friend.serverData.name !== bot.serverData.name) continue // Different server
                 if (Tools.distance(bot, friend) > AL.Game.G.skills.mluck.range) continue
 
                 if (!friend.s.mluck) return bot.mluck(friend.id) // They don't have mluck

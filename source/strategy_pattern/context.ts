@@ -1,4 +1,4 @@
-import AL, { PingCompensatedCharacter, ServerIdentifier, ServerRegion, SkillName } from "alclient"
+import AL, { PingCompensatedCharacter, ServerData, ServerIdentifier, ServerRegion, SkillName } from "alclient"
 
 export type Loop<Type> = {
     fn: (bot: Type) => Promise<unknown>
@@ -313,4 +313,28 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         if (!this.isReady()) return 0
         return Date.now() - this.started.getTime()
     }
+}
+
+export type FilterContextsOptions = {
+    /** If set, we will only return contexts whose `bot.owner` is equal to this value */
+    owner?: string
+    /** If set, we will return contexts only on this server */
+    serverData?: ServerData
+}
+
+export function filterContexts(contexts: Strategist<PingCompensatedCharacter>[], options: FilterContextsOptions = {}) {
+    const filteredContexts = []
+    for (const context of contexts) {
+        if (!context.isReady()) continue
+        if (options.owner && context.bot.owner !== options.owner) continue // Different owner
+        if (
+            options.serverData
+            && (
+                context.bot.serverData.region !== options.serverData.region
+                || context.bot.serverData.name !== options.serverData.name
+            )
+        ) continue // Different server
+        filteredContexts.push(context)
+    }
+    return filteredContexts
 }
