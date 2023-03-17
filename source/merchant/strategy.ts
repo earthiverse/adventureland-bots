@@ -187,6 +187,7 @@ export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
     ["scroll4", -AL.Constants.PONTY_MARKUP],
     ["scythe", -AL.Constants.PONTY_MARKUP],
     ["shadowstone", -AL.Constants.PONTY_MARKUP],
+    ["skullamulet", -AL.Constants.PONTY_MARKUP],
     ["snakeoil", -AL.Constants.PONTY_MARKUP],
     ["snowflakes", -AL.Constants.PONTY_MARKUP],
     ["snring", -AL.Constants.PONTY_MARKUP],
