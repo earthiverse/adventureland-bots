@@ -187,7 +187,7 @@ export function startRunner(character: PingCompensatedCharacter, options: Runner
             }
             if (context.hasStrategy(getHolidaySpiritStrategy)) context.removeStrategy(getHolidaySpiritStrategy)
 
-            if (context.bot.esize == 0) {
+            if (context.bot.ctype !== "merchant" && context.bot.esize == 0) {
                 // We're full, go deposit items in the bank
                 if (attackStrategy) {
                     context.removeStrategy(attackStrategy)
