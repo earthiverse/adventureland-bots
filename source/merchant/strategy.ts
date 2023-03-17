@@ -212,6 +212,7 @@ export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
     ["vcape", -AL.Constants.PONTY_MARKUP],
     ["vgloves", -AL.Constants.PONTY_MARKUP],
     ["vhammer", -AL.Constants.PONTY_MARKUP],
+    ["vitring", -AL.Constants.PONTY_MARKUP],
     ["vorb", -AL.Constants.PONTY_MARKUP],
     ["vring", -AL.Constants.PONTY_MARKUP],
     ["warpvest", 100_000_000],

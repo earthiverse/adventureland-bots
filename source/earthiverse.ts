@@ -115,7 +115,6 @@ const privateSellStrategy = new SellStrategy({
         ["stramulet", undefined],
         ["strearring", undefined],
         ["vitearring", undefined],
-        ["vitring", undefined],
         ["xmace", undefined],
     ])
 })
