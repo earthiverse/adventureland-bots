@@ -50,7 +50,7 @@ export type RunnerOptions = {
     ephemeral?: {
         buffer: number
     }
-    merchantOptions?: MerchantMoveStrategyOptions
+    merchantOverrides?: Partial<MerchantMoveStrategyOptions>
 }
 
 export function startRunner(character: PingCompensatedCharacter, options: RunnerOptions): Strategist<PingCompensatedCharacter> {
@@ -160,7 +160,7 @@ export function startRunner(character: PingCompensatedCharacter, options: Runner
             enableUpgrade: true,
             goldToHold: 50_000_000,
             itemsToHold: DEFAULT_MERCHANT_ITEMS_TO_HOLD,
-            ...(options.merchantOptions ?? {})
+            ...(options.merchantOverrides ?? {})
         })
         context.applyStrategy(new ToggleStandStrategy({
             offWhenMoving: true,
