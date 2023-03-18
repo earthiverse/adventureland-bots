@@ -1,6 +1,6 @@
 import AL, { CharacterType, IPosition, ItemName, Mage, Merchant, MonsterName, Paladin, PingCompensatedCharacter, Priest, Ranger, Rogue, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { getMsToNextMinute, randomIntFromInterval } from "../base/general.js"
-import { DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO, MerchantStrategy } from "../merchant/strategy.js"
+import { DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO, MerchantMoveStrategyOptions, MerchantStrategy } from "../merchant/strategy.js"
 import { Strategist, Strategy } from "./context.js"
 import { BaseAttackStrategy } from "./strategies/attack.js"
 import { MageAttackStrategy } from "./strategies/attack_mage.js"
@@ -50,6 +50,7 @@ export type RunnerOptions = {
     ephemeral?: {
         buffer: number
     }
+    merchantOptions?: MerchantMoveStrategyOptions
 }
 
 export function startRunner(character: PingCompensatedCharacter, options: RunnerOptions): Strategist<PingCompensatedCharacter> {
@@ -159,6 +160,7 @@ export function startRunner(character: PingCompensatedCharacter, options: Runner
             enableUpgrade: true,
             goldToHold: 50_000_000,
             itemsToHold: DEFAULT_MERCHANT_ITEMS_TO_HOLD,
+            ...(options.merchantOptions ?? {})
         })
         context.applyStrategy(new ToggleStandStrategy({
             offWhenMoving: true,
