@@ -1,17 +1,30 @@
-import AL, { Character, ItemName } from "alclient"
-import { Strategy, LoopName, Loop } from "../context.js"
+import AL, { GItem, ItemName, PingCompensatedCharacter } from "alclient"
+import { DEFAULT_ITEMS_TO_HOLD } from "../../merchant/strategy.js"
+import { Strategy, LoopName, Loop, Strategist, filterContexts } from "../context.js"
 
-// TODO: Pass in the friends contexts, so we can potentially transfer items to other players to stack them to reduce overall inventory space
+export type OptimizeItemsStrategyOptions = {
+    contexts?: Strategist<PingCompensatedCharacter>[]
+    itemsToHold?: Set<ItemName>
+    itemsToSell?: Set<ItemName>
+}
 
-export class OptimizeItemsStrategy<Type extends Character> implements Strategy<Type> {
+export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
 
-    public constructor() {
+    protected options: OptimizeItemsStrategyOptions
+
+    public constructor(options?: OptimizeItemsStrategyOptions) {
+        // Set default options
+        if (!options) options = {}
+        if (!options.itemsToHold) options.itemsToHold = DEFAULT_ITEMS_TO_HOLD
+        this.options = options
+
         this.loops.set("item", {
             fn: async (bot: Type) => {
                 await this.stackItems(bot)
                 await this.organizeItems(bot)
                 await this.moveOverflowItems(bot)
+                await this.transferItems(bot)
             },
             interval: 1_000
         })
@@ -77,6 +90,53 @@ export class OptimizeItemsStrategy<Type extends Character> implements Strategy<T
                 return
             }
         }
+    }
+
+    /**
+     * Transfer items to others
+     * @param bot
+     */
+    private async transferItems(bot: Type) {
+        if (!this.options.contexts || this.options.contexts.length <= 1) return // No contexts
+
+        // Look for items that we both have that are stackable
+        const ourStackables = new Map<ItemName, number>()
+        for (let i = 0 ; i < bot.isize; i++) {
+            const item = bot.items[i]
+            if (!item) continue // No item
+            if (!item.q) continue // It's not stackable
+            if (item.l) continue // It's locked
+            if (this.options.itemsToHold.has(item.name)) continue // We want to hold it
+            ourStackables.set(item.name, i)
+        }
+        if (ourStackables.size == 0) return // No stackables
+
+        for (const context of filterContexts(this.options.contexts, { owner: bot.owner, serverData: bot.serverData })) {
+            const friend = context.bot
+            if (friend == bot) continue // Skip ourself
+            if (AL.Tools.squaredDistance(bot, friend) >= AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) continue // Too far away
+
+            for (let i = 0 ; i < friend.isize; i++) {
+                const item = friend.items[i]
+                if (!item) continue // No item
+                if (!item.q) continue // It's not stackable
+                if (item.l) continue // It's locked
+                if (!ourStackables.has(item.name)) continue // We don't have any
+
+                const ourPosition = ourStackables.get(item.name)
+                const ourItem = bot.items[ourPosition]
+                if (ourItem.v !== item.v) continue // One is PvP marked, the other isn't
+                if (ourItem.q >= item.q) continue // We have more, don't transfer
+                const gItem: GItem = AL.Game.G.items[item.name]
+
+                // Send our stacks to combine them
+                await bot.sendItem(friend.id, ourPosition, Math.min(ourItem.q, gItem.s as number - ourItem.q)).catch(console.error)
+            }
+        }
+
+        if (bot.hasItem(["computer", "supercomputer"])) return // We have a computer to sell things
+
+        // TODO: If there's another context that has a computer, and we have an item in our sell list, transfer it to them so they can sell it
     }
 
     /**

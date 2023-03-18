@@ -322,8 +322,8 @@ export type FilterContextsOptions = {
     serverData?: ServerData
 }
 
-export function filterContexts(contexts: Strategist<PingCompensatedCharacter>[], options: FilterContextsOptions = {}) {
-    const filteredContexts = []
+export function filterContexts(contexts: Strategist<PingCompensatedCharacter>[], options: FilterContextsOptions = {}): Strategist<PingCompensatedCharacter>[] {
+    const filteredContexts: Strategist<PingCompensatedCharacter>[] = []
     for (const context of contexts) {
         if (!context.isReady()) continue
         if (options.owner && context.bot.owner !== options.owner) continue // Different owner

@@ -36,7 +36,6 @@ const bankStrategy = new MoveToBankAndDepositStuffStrategy({
 const baseStrategy = new BaseStrategy(CONTEXTS)
 const chargeStrategy = new ChargeStrategy()
 const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
-const itemStrategy = new OptimizeItemsStrategy()
 const partyHealStrategy = new PartyHealStrategy(CONTEXTS)
 const respawnStrategy = new RespawnStrategy()
 const rSpeedStrategy = new GiveRogueSpeedStrategy()
@@ -109,7 +108,11 @@ export function startRunner(character: PingCompensatedCharacter, options: Runner
     }))
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(respawnStrategy)
-    context.applyStrategy(itemStrategy)
+    context.applyStrategy(new OptimizeItemsStrategy({
+        contexts: CONTEXTS,
+        itemsToHold: context.bot.ctype == "merchant" ? DEFAULT_MERCHANT_ITEMS_TO_HOLD : DEFAULT_ITEMS_TO_HOLD,
+        itemsToSell: new Set<ItemName>(options.sellMap.keys())
+    }))
     context.applyStrategy(new SellStrategy({
         sellMap: options.sellMap
     }))

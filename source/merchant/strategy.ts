@@ -481,7 +481,6 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     }
                 }
 
-
                 this.itemCounts = await getItemCountsForEverything(bot.owner)
 
                 // Withdraw things that we can upgrade
@@ -500,19 +499,9 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
             // Move things from "overflow" slots
             for (let i = bot.isize; i < bot.items.length; i++) {
-                let free: number
-                for (let j = 0; j < bot.isize; j++) {
-                    const item = bot.items[j]
-                    if (!item) {
-                        free = j
-                        break
-                    }
-                }
-                if (free !== undefined) {
-                    await bot.swapItems(i, free)
-                } else {
-                    break
-                }
+                const free = bot.getFirstEmptyInventorySlot()
+                if (free === undefined) break
+                await bot.swapItems(i, free)
             }
 
             // Do banking if we have a lot of gold, or it's been a while (15 minutes)

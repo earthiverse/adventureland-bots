@@ -37,7 +37,7 @@ const ENABLE_EVENTS = true
 const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
 const ENABLE_MONSTERHUNTS = true
-const DEFAULT_MONSTER: MonsterName = "bee"
+const DEFAULT_MONSTER: MonsterName = "snake"
 const SPECIAL_MONSTERS: MonsterName[] = ["crabxx", "cutebee", "franky", "fvampire", "goldenbat", "greenjr", "icegolem", "jr", "mvampire", "skeletor", "snowman", "stompy", "tinyp"]
 const MAX_PUBLIC_CHARACTERS = 6
 
@@ -167,7 +167,9 @@ const publicSetups = constructHelperSetups(ALL_CONTEXTS)
 // Etc.
 const elixirStrategy = new ElixirStrategy("elixirluck")
 const homeServerStrategy = new HomeServerStrategy(DEFAULT_REGION, DEFAULT_IDENTIFIER)
-const itemStrategy = new OptimizeItemsStrategy()
+const itemStrategy = new OptimizeItemsStrategy({
+    contexts: ALL_CONTEXTS
+})
 
 const currentSetups = new Map<Strategist<PingCompensatedCharacter>, { attack: Strategy<PingCompensatedCharacter>, move: Strategy<PingCompensatedCharacter> }>()
 const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], setups: Setups) => {
