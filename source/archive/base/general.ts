@@ -1328,7 +1328,7 @@ export function startDebugLoop(bot: Character): void {
             data.push(bot.entities.size)
             data.push(bot.players.size)
             data.push(bot.chests.size)
-            data.push(AL.Database.nextUpdate.length)
+            data.push(AL.Database.nextUpdate.size)
             data.push(bot.projectiles.size)
             let numListeners = 0
             const listeners = new Map<string, number>()
