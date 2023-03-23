@@ -1,4 +1,4 @@
-import AL, { GItem, ItemName, PingCompensatedCharacter } from "alclient"
+import AL, { GItem, ItemName, PingCompensatedCharacter, Player } from "alclient"
 import { DEFAULT_ITEMS_TO_HOLD } from "../../merchant/strategy.js"
 import { Strategy, LoopName, Loop, Strategist, filterContexts } from "../context.js"
 
@@ -6,6 +6,9 @@ export type OptimizeItemsStrategyOptions = {
     contexts?: Strategist<PingCompensatedCharacter>[]
     itemsToHold?: Set<ItemName>
     itemsToSell?: Set<ItemName>
+
+    /** If set, we will transfer items to this player if we see them and they have space */
+    transferItemsTo?: string
 }
 
 export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
@@ -16,6 +19,7 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
     public constructor(options?: OptimizeItemsStrategyOptions) {
         // Set default options
         if (!options) options = {}
+        if (!options.contexts) options.contexts = []
         if (!options.itemsToHold) options.itemsToHold = DEFAULT_ITEMS_TO_HOLD
         this.options = options
 
@@ -25,6 +29,8 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
                 await this.organizeItems(bot)
                 await this.moveOverflowItems(bot)
                 await this.transferItems(bot)
+                await this.transferSellableItems(bot)
+                await this.transferStackableItems(bot)
             },
             interval: 1_000
         })
@@ -57,7 +63,10 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
         }
 
         // Put things in certain slots
-        await fixNum(["scroll0"], 36)
+        await fixNum(["cscroll0"], 28)
+        await fixNum(["cscroll1"], 29)
+        await fixNum(["cscroll2"], 30)
+        await fixNum(["scroll0"], 35)
         await fixNum(["scroll1"], 36)
         await fixNum(["scroll2"], 37)
         await fixNum(["mpot0"], 38)
@@ -86,8 +95,64 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
                 if (item1.q + item2.q > gInfo.s) continue // Too many to stack
 
                 // Stack the items!
-                await bot.swapItems(j, i)
+                await bot.swapItems(j, i).catch(console.error)
                 return
+            }
+        }
+    }
+
+    private async transferItems(bot: Type) {
+        if (!this.options.transferItemsTo) return // The player to transfer items to isn't set
+        if (bot.id == this.options.transferItemsTo) return // We'd be transferring items to ourself
+
+        const player: PingCompensatedCharacter | Player = bot.players.get(this.options.transferItemsTo)
+        if (!player) return // They're too far away
+        if (AL.Tools.squaredDistance(bot, player) >= AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) return // They're too far away
+
+        for (const context of filterContexts(this.options.contexts, { owner: bot.owner, serverData: bot.serverData })) {
+            if (context.bot.id == this.options.transferItemsTo) continue // Not the player we want to transfer items to
+            if (context.bot.esize == 0) return // They're full
+            break
+        }
+
+        // Transfer items
+        for (let i = 0; i < bot.isize; i++) {
+            const item = bot.items[i]
+            if (!item) continue // No item in this slot
+            if (item.l) continue // Item is locked
+            if (this.options.itemsToHold.has(item.name)) continue // We want to hold this item
+            try {
+                // Send them the item
+                await bot.sendItem(this.options.transferItemsTo, i)
+            } catch {
+                // Don't send any more items if something went wrong
+                break
+            }
+        }
+    }
+
+    private async transferSellableItems(bot: Type) {
+        if (!this.options.contexts || this.options.contexts.length <= 1) return // No contexts
+        if (!this.options.itemsToSell) return // No items to sell
+        if (bot.hasItem(["computer", "supercomputer"])) return // We already have a computer, we can sell it ourself
+
+        for (const context of filterContexts(this.options.contexts, { owner: bot.owner, serverData: bot.serverData })) {
+            const friend = context.bot
+            if (friend.esize == 0) continue // They have no space
+            if (AL.Tools.distance(bot, friend)) continue // They're too far away
+            if (!friend.hasItem(["computer", "supercomputer"])) continue // They don't have a computer to sell the item
+
+            for (let i = 0; i < bot.isize; i++) {
+                const item = bot.items[i]
+                if (!item) continue // No item
+                if (item.l) continue // Item is locked
+                if (!this.options.itemsToSell.has(item.name)) continue // We don't want to sell it
+                try {
+                    // Send them the item so they can sell it
+                    await bot.sendItem(friend.id, i)
+                } catch {
+                    break
+                }
             }
         }
     }
@@ -96,7 +161,7 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
      * Transfer items to others
      * @param bot
      */
-    private async transferItems(bot: Type) {
+    private async transferStackableItems(bot: Type) {
         if (!this.options.contexts || this.options.contexts.length <= 1) return // No contexts
 
         // Look for items that we both have that are stackable
@@ -133,10 +198,6 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
                 await bot.sendItem(friend.id, ourPosition, Math.min(ourItem.q, gItem.s as number - ourItem.q)).catch(console.error)
             }
         }
-
-        if (bot.hasItem(["computer", "supercomputer"])) return // We have a computer to sell things
-
-        // TODO: If there's another context that has a computer, and we have an item in our sell list, transfer it to them so they can sell it
     }
 
     /**
@@ -149,7 +210,7 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
             for (let j = 0; j < bot.isize; j++) {
                 const item2 = bot.items[j]
                 if (item2) continue // Item in normal inventory slot
-                await bot.swapItems(i, j) // Swap the item from overflow in to our normal inventory
+                await bot.swapItems(i, j).catch(console.error) // Swap the item from overflow in to our normal inventory
                 break
             }
         }

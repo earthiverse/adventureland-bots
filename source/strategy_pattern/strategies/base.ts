@@ -1,5 +1,5 @@
 import { Character, ChestData, PingCompensatedCharacter, Tools } from "alclient"
-import { Loop, LoopName, Strategist, Strategy } from "../context.js"
+import { filterContexts, Loop, LoopName, Strategist, Strategy } from "../context.js"
 
 export class BaseStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
@@ -83,10 +83,8 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
 
         let goldM = 0
         let best: Character
-        for (const context of this.contexts) {
-            if (!context.isReady()) continue // They're not ready
+        for (const context of filterContexts(this.contexts, { owner: bot.owner, serverData: bot.serverData })) {
             const friend = context.bot
-            if (friend.serverData.region !== bot.serverData.region || friend.serverData.name !== bot.serverData.name) continue // They're on a different server
             if (Tools.distance(chest, friend) > 800) continue // It's far away from them
             if (friend.goldm > goldM) {
                 goldM = friend.goldm

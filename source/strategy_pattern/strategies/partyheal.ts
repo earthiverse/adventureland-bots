@@ -1,5 +1,5 @@
 import { PingCompensatedCharacter, Priest } from "alclient"
-import { Loop, LoopName, Strategist, Strategy } from "../context.js"
+import { filterContexts, Loop, LoopName, Strategist, Strategy } from "../context.js"
 
 export type PartyHealStrategyOptions = {
     /** When to heal */
@@ -48,10 +48,9 @@ export class PartyHealStrategy implements Strategy<Priest> {
         if (!bot.canUse("partyheal")) return
         if (!bot.party) return // Not in a party
 
-        for (const context of this.contexts) {
-            if (!context.isReady()) continue
+        for (const context of filterContexts(this.contexts, { serverData: bot.serverData })) {
             const friend = context.bot
-            if (!friend || !friend.ready || friend.socket.disconnected || friend.rip) continue
+            if (friend.rip) continue
             if (friend.party !== bot.party) continue // They're in a different party
 
             if (

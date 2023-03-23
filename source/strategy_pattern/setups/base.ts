@@ -51,6 +51,7 @@ import { constructSquigToadHelperSetup, constructSquigToadSetup } from "./squigt
 import { constructStompySetup } from "./stompy.js"
 import { constructStoneWormSetup } from "./stoneworm.js"
 import { constructTigerHelperSetup, constructTigerSetup } from "./tiger.js"
+import { constructWabbitHelperSetup, constructWabbitSetup } from "./wabbit.js"
 import { constructWolfSetup } from "./wolf.js"
 import { constructWolfieSetup } from "./wolfie.js"
 import { constructXScorpionSetup } from "./xscorpion.js"
@@ -260,6 +261,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         tiger: constructTigerSetup(contexts),
         // tinyp: constructTinyPSetup(contexts),
         tortoise: constructGenericSetup(contexts, ["tortoise", "frog", "phoenix"], true),
+        wabbit: constructWabbitSetup(contexts),
         wolf: constructWolfSetup(contexts),
         wolfie: constructWolfieSetup(contexts),
         xscorpion: constructXScorpionSetup(contexts),
@@ -304,5 +306,6 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         squigtoad: constructSquigToadHelperSetup(contexts),
         tiger: constructTigerHelperSetup(contexts),
         tortoise: constructGenericSetup(contexts, ["tortoise", "frog", "phoenix"]),
+        wabbit: constructWabbitHelperSetup(contexts)
     }
 }

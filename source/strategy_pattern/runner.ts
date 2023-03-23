@@ -14,7 +14,7 @@ import { MoveToBankAndDepositStuffStrategy } from "./strategies/bank.js"
 import { BaseStrategy } from "./strategies/base.js"
 import { BuyStrategy } from "./strategies/buy.js"
 import { ChargeStrategy } from "./strategies/charge.js"
-import { OptimizeItemsStrategy } from "./strategies/item.js"
+import { OptimizeItemsStrategy, OptimizeItemsStrategyOptions } from "./strategies/item.js"
 import { GetHolidaySpiritStrategy, ImprovedMoveStrategy } from "./strategies/move.js"
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategies/party.js"
 import { PartyHealStrategy } from "./strategies/partyheal.js"
@@ -49,6 +49,7 @@ export type RunnerOptions = {
     ephemeral?: {
         buffer: number
     }
+    itemOverrides?: Partial<OptimizeItemsStrategyOptions>
     merchantOverrides?: Partial<MerchantMoveStrategyOptions>
 }
 
@@ -111,7 +112,8 @@ export function startRunner(character: PingCompensatedCharacter, options: Runner
     context.applyStrategy(new OptimizeItemsStrategy({
         contexts: CONTEXTS,
         itemsToHold: context.bot.ctype == "merchant" ? DEFAULT_MERCHANT_ITEMS_TO_HOLD : DEFAULT_ITEMS_TO_HOLD,
-        itemsToSell: new Set<ItemName>(options.sellMap.keys())
+        itemsToSell: new Set<ItemName>(options.sellMap.keys()),
+        ...(options.itemOverrides ?? {})
     }))
     context.applyStrategy(new SellStrategy({
         sellMap: options.sellMap

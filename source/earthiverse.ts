@@ -790,6 +790,7 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
                 itemsToHold: DEFAULT_MERCHANT_ITEMS_TO_HOLD,
             })
             context.applyStrategy(privateSellStrategy)
+            context.applyStrategy(itemStrategy)
             break
         }
         case "paladin": {
