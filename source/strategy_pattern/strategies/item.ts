@@ -32,7 +32,7 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
                 await this.transferSellableItems(bot)
                 await this.transferStackableItems(bot)
             },
-            interval: 1_000
+            interval: 5_000
         })
     }
 

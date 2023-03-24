@@ -11,6 +11,7 @@ import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 
 export const DEFAULT_CRAFTABLES = new Set<ItemName>([
     "armorring",
+    "basketofeggs",
     "bfangamulet",
     "cake",
     "firestars",
@@ -21,6 +22,7 @@ export const DEFAULT_CRAFTABLES = new Set<ItemName>([
 
 export const DEFAULT_EXCHANGEABLES = new Set<ItemName>([
     "armorbox",
+    "basketofeggs",
     "candy0",
     "candy1",
     "candycane",
@@ -1197,7 +1199,6 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
                             // Send it and equip it
                             await bot.sendItem(getFor.id, potentialWithScroll)
-                            await sleep(1000)
                             const equipItem = getFor.locateItem(item, getFor.items, { levelGreaterThan: lowestItemLevel, returnHighestLevel: true, statType: stat })
                             await getFor.equip(equipItem, lowestItemSlot)
 
