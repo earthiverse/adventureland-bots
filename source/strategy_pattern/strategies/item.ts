@@ -96,7 +96,6 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
 
                 // Stack the items!
                 await bot.swapItems(j, i).catch(console.error)
-                return
             }
         }
     }
