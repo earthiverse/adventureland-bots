@@ -38,7 +38,7 @@ const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
 const ENABLE_MONSTERHUNTS = true
 const DEFAULT_MONSTER: MonsterName = "snake"
-const SPECIAL_MONSTERS: MonsterName[] = ["crabxx", "cutebee", "franky", "fvampire", "goldenbat", "greenjr", "icegolem", "jr", "mvampire", "skeletor", "snowman", "stompy", "tinyp"]
+const SPECIAL_MONSTERS: MonsterName[] = ["crabxx", "cutebee", "franky", "fvampire", "goldenbat", "greenjr", "icegolem", "jr", "mvampire", "skeletor", "snowman", "stompy", "tinyp", "wabbit"]
 const MAX_PUBLIC_CHARACTERS = 6
 
 const MERCHANT = "earthMer"
@@ -261,6 +261,33 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 priority.push("rgoo")
             }
 
+            // Lunar New Year
+            if (context.bot.S.lunarnewyear) {
+                if ((context.bot.S.dragold as ServerInfoDataLive)?.live) priority.push("dragold")
+                if (
+                    (context.bot.S.tiger as ServerInfoDataLive)?.live
+                    && context.bot.serverData.name == DEFAULT_IDENTIFIER
+                    && context.bot.serverData.region == DEFAULT_REGION
+                ) priority.push("tiger")
+            }
+
+            // Valentines
+            if (context.bot.S.valentines) {
+                if (
+                    (context.bot.S.pinkgoo as ServerInfoDataLive)?.live
+                    && context.bot.serverData.name == DEFAULT_IDENTIFIER
+                    && context.bot.serverData.region == DEFAULT_REGION
+                ) priority.push("pinkgoo")
+            }
+
+            if (context.bot.S.egghunt) {
+                if (
+                    (context.bot.S.wabbit as ServerInfoDataLive)?.live
+                    && context.bot.serverData.name == DEFAULT_IDENTIFIER
+                    && context.bot.serverData.region == DEFAULT_REGION
+                ) priority.push("wabbit")
+            }
+
             // Halloween
             if (context.bot.S.halloween) {
                 if ((context.bot.S.mrgreen as ServerInfoDataLive)?.live) {
@@ -284,25 +311,6 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
             // Christmas
             if (context.bot.S.holidayseason) {
                 if ((context.bot.S.grinch as ServerInfoDataLive)?.live) priority.push("grinch")
-            }
-
-            // Lunar New Year
-            if (context.bot.S.lunarnewyear) {
-                if ((context.bot.S.dragold as ServerInfoDataLive)?.live) priority.push("dragold")
-                if (
-                    (context.bot.S.tiger as ServerInfoDataLive)?.live
-                    && context.bot.serverData.name == DEFAULT_IDENTIFIER
-                    && context.bot.serverData.region == DEFAULT_REGION
-                ) priority.push("tiger")
-            }
-
-            // Valentines
-            if (context.bot.S.valentines) {
-                if (
-                    (context.bot.S.pinkgoo as ServerInfoDataLive)?.live
-                    && context.bot.serverData.name == DEFAULT_IDENTIFIER
-                    && context.bot.serverData.region == DEFAULT_REGION
-                ) priority.push("pinkgoo")
             }
         }
     }
@@ -416,6 +424,16 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
             TARGET_REGION = DEFAULT_REGION
             TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
 
+            // Lunar New Year
+            if (bot1.S.lunarnewyear) {
+                const monster = (await getLunarNewYearMonsterPriority(true))[0]
+                if (monster) {
+                    // We want to switch servers
+                    TARGET_IDENTIFIER = monster.serverIdentifier
+                    TARGET_REGION = monster.serverRegion
+                }
+            }
+
             // Halloween
             if (bot1.S.halloween) {
                 const monster = (await getHalloweenMonsterPriority(true))[0]
@@ -429,16 +447,6 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
             // Christmas
             if (bot1.S.holidayseason) {
                 const monster = (await getHolidaySeasonMonsterPriority(true))[0]
-                if (monster) {
-                    // We want to switch servers
-                    TARGET_IDENTIFIER = monster.serverIdentifier
-                    TARGET_REGION = monster.serverRegion
-                }
-            }
-
-            // Lunar New Year
-            if (bot1.S.lunarnewyear) {
-                const monster = (await getLunarNewYearMonsterPriority(true))[0]
                 if (monster) {
                     // We want to switch servers
                     TARGET_IDENTIFIER = monster.serverIdentifier
