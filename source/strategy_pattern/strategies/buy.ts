@@ -136,7 +136,7 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements BuySt
                 const numToBuy = Math.min(amount - num, item.q, Math.floor(bot.gold / item.price))
                 if (numToBuy <= 0) continue // We don't want to buy any
 
-                await bot.buyFromMerchant(player.id, slot, item.rid, numToBuy)
+                await bot.buyFromMerchant(player.id, slot, item.rid, numToBuy).catch(console.error)
             }
         }
     }
@@ -161,7 +161,7 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements BuySt
             if (AL.Tools.distance(bot, friend) > AL.Constants.NPC_INTERACTION_DISTANCE) continue // Too far away
 
             for (const [item, amount] of this.replenishables) {
-                if (!bot.canBuy(item)) continue // We can't buy this item
+                if (!friend.canBuy(item)) continue // They can't buy this item
 
                 const num = bot.countItem(item)
                 const costPerItem = AL.Game.G.items[item].g
