@@ -114,11 +114,11 @@ export const Trade: Command & { autocomplete: (client: Client, interaction: Auto
 
                     content += `\nI found the following players selling \`${item}\` 🙂\n\`\`\``
                     for (const d of sellingData) {
-                        const quantity = d.q === undefined ? "" : `${d.q}`
-                        const title = d.p ? ` ${d.p}` : ""
-                        const level = d.level === undefined ? "" : ` level ${d.level}`
-                        const price = `${d.price}`
-                        content += `\n${d.id} (${d.serverRegion} ${d.serverIdentifier}) is selling ${quantity}${title}${level} @ ${price}`
+                        const quantity = d.q === undefined ? "" : `${d.q} `
+                        const title = d.p ? `${d.p} ` : ""
+                        const level = d.level === undefined ? "" : `level ${d.level} `
+                        const price = `${d.price.toLocaleString()}`
+                        content += `\n${d.id} (${d.serverRegion} ${d.serverIdentifier}) is selling ${quantity}${title}${level}@ ${price}`
                     }
                     content += "```"
                 }
@@ -142,10 +142,10 @@ export const Trade: Command & { autocomplete: (client: Client, interaction: Auto
 
                     content += `\nI found the following players buying \`${item}\` 🙂\n\`\`\``
                     for (const d of buyingData) {
-                        const quantity = `${d.q}`
-                        const level = d.level === undefined ? "" : ` level ${d.level}`
-                        const price = `${d.price}`
-                        content += `\n${d.id} (${d.serverRegion} ${d.serverIdentifier}) is buying ${quantity}${level} @ ${price}`
+                        const quantity = `${d.q} `
+                        const level = d.level === undefined ? "" : `level ${d.level} `
+                        const price = `${d.price.toLocaleString()}`
+                        content += `\n${d.id} (${d.serverRegion} ${d.serverIdentifier}) is buying ${quantity}${level}@ ${price}`
                     }
                     content += "```"
                 }
