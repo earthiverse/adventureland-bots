@@ -124,6 +124,7 @@ const partyStrategy = new RequestPartyStrategy("earthMer")
 const respawnStrategy = new RespawnStrategy()
 const buyStrategy = new BuyStrategy({
     buyMap: undefined,
+    contexts: CONTEXTS,
     replenishables: REPLENISHABLES
 })
 const sellStrategy = new SellStrategy({

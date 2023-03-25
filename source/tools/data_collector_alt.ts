@@ -18,6 +18,7 @@ const credentials = JSON.parse(fs.readFileSync("../../credentials_attack.json", 
 
 const baseStrategy = new BaseStrategy()
 const buyStrategy = new BuyStrategy({
+    contexts: [],
     buyMap: new Map(),
     replenishables: new Map()
 })

@@ -64,6 +64,7 @@ const ALL_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 const guiStrategy = new GuiStrategy({ port: 8080 })
 const baseStrategy = new BaseStrategy(ALL_CONTEXTS)
 const privateBuyStrategy = new BuyStrategy({
+    contexts: PRIVATE_CONTEXTS,
     buyMap: DEFAULT_ITEMS_TO_BUY,
     enableBuyForProfit: true,
     replenishables: new Map<ItemName, number>([
@@ -73,6 +74,7 @@ const privateBuyStrategy = new BuyStrategy({
     ])
 })
 const publicBuyStrategy = new BuyStrategy({
+    contexts: PUBLIC_CONTEXTS,
     buyMap: undefined,
     replenishables: new Map<ItemName, number>([
         ["hpot1", 2500],

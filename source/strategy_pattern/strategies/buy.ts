@@ -1,7 +1,8 @@
-import AL, { GMap, ItemName, MapName, Character, TradeSlotType, IPosition, ItemDataTrade } from "alclient"
-import { Loop, LoopName, Strategy } from "../context.js"
+import AL, { GMap, ItemName, MapName, TradeSlotType, IPosition, ItemDataTrade, PingCompensatedCharacter } from "alclient"
+import { filterContexts, Loop, LoopName, Strategist, Strategy } from "../context.js"
 
 export type BuyStrategyOptions = {
+    contexts: Strategist<PingCompensatedCharacter>[]
     /**
      * Buy these items if we can buy it for the given price (or less).
      */
@@ -18,6 +19,7 @@ export type BuyStrategyOptions = {
 }
 
 export const RecommendedBuyStrategyOptions: BuyStrategyOptions = {
+    contexts: [],
     buyMap: new Map<ItemName, number>([
         ["t3bow", undefined]
     ]),
@@ -29,11 +31,12 @@ export const RecommendedBuyStrategyOptions: BuyStrategyOptions = {
     ])
 }
 
-export class BuyStrategy<Type extends Character> implements BuyStrategyOptions, Strategy<Type> {
+export class BuyStrategy<Type extends PingCompensatedCharacter> implements BuyStrategyOptions, Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
 
     public buyForProfit = false
     public buyMap: Map<ItemName, number>
+    public contexts: Strategist<PingCompensatedCharacter>[]
     public replenishables: Map<ItemName, number>
 
     public lastPontyCheck: Date
@@ -46,6 +49,7 @@ export class BuyStrategy<Type extends Character> implements BuyStrategyOptions, 
         if (options.buyMap) this.buyMap = options.buyMap
         if (options.replenishables) this.replenishables = options.replenishables
         if (options.enableBuyForProfit) this.buyForProfit = true
+        this.contexts = options.contexts
 
         this.pontyLocations = AL.Pathfinder.locateNPC("secondhands")
 
@@ -145,7 +149,39 @@ export class BuyStrategy<Type extends Character> implements BuyStrategyOptions, 
             const numToBuy = Math.min(amount - num, Math.floor(bot.gold / AL.Game.G.items[item].g))
             if (numToBuy <= 0) continue // We don't want to buy any
 
-            await bot.buy(item, numToBuy)
+            await bot.buy(item, numToBuy).catch(console.error)
+        }
+
+        // Have our friends buy us replenishables if they have a computer and we don't
+        if (bot.hasItem(["computer", "supercomputer"])) return
+        for (const context of filterContexts(this.contexts, { owner: bot.owner, serverData: bot.serverData })) {
+            const friend = context.bot
+            if (friend == bot) continue // Ignore ourself
+            if (!friend.hasItem(["computer", "supercomputer"])) continue // They don't have a computer
+            if (AL.Tools.distance(bot, friend) > AL.Constants.NPC_INTERACTION_DISTANCE) continue // Too far away
+
+            for (const [item, amount] of this.replenishables) {
+                if (!bot.canBuy(item)) continue // We can't buy this item
+
+                const num = bot.countItem(item)
+                const costPerItem = AL.Game.G.items[item].g
+                const numToBuy = Math.min(amount - num, Math.floor(bot.gold / costPerItem))
+                if (numToBuy <= 0) continue // We don't want to buy any
+
+                try {
+                    // Send them the gold
+                    await bot.sendGold(friend.id, numToBuy * costPerItem)
+                    // Have them buy the item
+                    await friend.buy(item, numToBuy)
+                    // Have them send us the item
+                    const itemPos = friend.locateItem(item, friend.items, { quantityGreaterThan: numToBuy - 1 })
+                    if (itemPos !== undefined) {
+                        await friend.sendItem(bot.id, itemPos, numToBuy)
+                    }
+                } catch (e) {
+                    console.error(e)
+                }
+            }
         }
     }
 

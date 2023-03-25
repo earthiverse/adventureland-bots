@@ -38,6 +38,7 @@ const PRIVATE_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 const baseStrategy = new BaseStrategy(PRIVATE_CONTEXTS)
 const privateBuyStrategy = new BuyStrategy({
     buyMap: undefined,
+    contexts: PRIVATE_CONTEXTS,
     replenishables: new Map<ItemName, number>([
         ["hpot1", 2500],
         ["mpot1", 2500],

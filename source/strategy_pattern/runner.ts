@@ -100,6 +100,7 @@ export function startRunner(character: PingCompensatedCharacter, options: Runner
 
     context.applyStrategy(avoidStackingStrategy)
     context.applyStrategy(new BuyStrategy({
+        contexts: CONTEXTS,
         buyMap: options.buyMap,
         replenishables: new Map<ItemName, number>([
             ["hpot1", 2500],

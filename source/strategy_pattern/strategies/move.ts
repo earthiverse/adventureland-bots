@@ -303,6 +303,8 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
     }
 }
 
+// TODO: KiteInCircleMoveStrategy
+
 export type MoveInCircleMoveStrategyOptions = {
     /** The center of the circle to walk */
     center: IPosition

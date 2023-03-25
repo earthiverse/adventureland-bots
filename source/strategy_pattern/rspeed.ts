@@ -86,6 +86,7 @@ const attackStrategy = new BaseAttackStrategy({ contexts: [], typeList: ["bee"] 
 const trackerStrategy = new TrackerStrategy()
 const rspeedStrategy = new GiveRogueSpeedStrategy()
 const buyStrategy = new BuyStrategy({
+    contexts: [],
     buyMap: undefined,
     replenishables: new Map<ItemName, number>([
         ["hpot1", 2500],

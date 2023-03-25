@@ -1506,6 +1506,7 @@ export async function startMerchant(context: Strategist<Merchant>, friends: Stra
     }
 
     context.applyStrategy(new BuyStrategy({
+        contexts: friends,
         buyMap: itemsToBuy,
         enableBuyForProfit: true
     }))

@@ -38,6 +38,7 @@ const FIREHAZARD_SUPPORT_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 const baseStrategy = new BaseStrategy(CONTEXTS)
 const buyStrategy = new BuyStrategy({
     buyMap: undefined,
+    contexts: CONTEXTS,
     replenishables: new Map<ItemName, number>([
         ["hpot1", 2500],
         ["mpot1", 2500],

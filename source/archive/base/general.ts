@@ -612,55 +612,6 @@ export async function goToBankIfFull(bot: Character, itemsToHold = ITEMS_TO_HOLD
     if (bot.gold > goldToHold) await bot.depositGold(bot.gold - goldToHold)
 }
 
-export function goToKiteMonster(bot: Character, options: {
-    kiteDistance?: number
-    stayWithinAttackingRange?: boolean
-    type?: MonsterName
-    typeList?: MonsterName[]
-}): void {
-    // Find the nearest entity
-    let nearest: Entity
-    let distance: number = Number.MAX_VALUE
-    for (const entity of bot.getEntities(options)) {
-        const d = AL.Tools.squaredDistance(bot, entity)
-        if (d < distance) {
-            distance = d
-            nearest = entity
-        }
-    }
-
-    // If we're not near anything, don't move.
-    if (!nearest) return
-
-    // Stop smart moving when we can walk to the monster directly
-    if (bot.smartMoving && (AL.Pathfinder.canWalkPath(bot, nearest) || distance < bot.range)) {
-        bot.stopSmartMove().catch(() => { /* Suppress errors */ })
-    }
-
-    let kiteDistance = nearest.range + nearest.speed
-    if (options?.kiteDistance) kiteDistance = options.kiteDistance
-    if (options?.stayWithinAttackingRange) kiteDistance = Math.min(bot.range, kiteDistance)
-
-    const distanceToMove = distance - kiteDistance
-    const angleFromBotToMonster = Math.atan2(nearest.y - bot.y, nearest.x - bot.x)
-    let potentialSpot: IPosition = { map: bot.map, x: bot.x + distanceToMove * Math.cos(angleFromBotToMonster), y: bot.y + distanceToMove * Math.sin(angleFromBotToMonster) }
-    let angle = 0
-    while (!AL.Pathfinder.canStand(potentialSpot) && angle <= 2 * Math.PI) {
-        if (angle > 0) {
-            angle = -angle
-        } else {
-            angle -= Math.PI / 180 // Increase angle by 1 degree
-            angle = -angle
-        }
-        potentialSpot = { map: bot.map, x: bot.x + distanceToMove * Math.cos(angleFromBotToMonster + angle), y: bot.y + distanceToMove * Math.sin(angleFromBotToMonster + angle) }
-    }
-    if (AL.Pathfinder.canWalkPath(bot, potentialSpot)) {
-        bot.move(potentialSpot.x, potentialSpot.y, { resolveOnStart: true }).catch(() => { /* Suppress errors */ })
-    } else if (AL.Pathfinder.canStand(potentialSpot) && !bot.smartMoving) {
-        bot.smartMove(potentialSpot, { avoidTownWarps: true }).catch(() => { /* Suppress errors */ })
-    }
-}
-
 export type KiteOptions = {
     kiteMonsters?: boolean
     kitePlayers?: boolean
