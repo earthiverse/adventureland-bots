@@ -69,6 +69,10 @@ export const ITEM_UPGRADE_CONF: {
         "stop"?: number
     }
 } = {
+    bcape: {
+        // Level 7 can be used to craft things things
+        stop: 7
+    },
     fury: ULTRA_RARE,
     hboots: COMMON_HIGH,
     harmor: COMMON_HIGH,
