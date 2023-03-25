@@ -1,4 +1,4 @@
-import AL, { ItemName } from "alclient"
+import AL, { ItemDataTrade, ItemName } from "alclient"
 import { CommandInteraction, Client, ApplicationCommandType, ApplicationCommandOptionType, AutocompleteInteraction } from "discord.js"
 import { Command } from "../command.js"
 
@@ -54,45 +54,39 @@ export const Trade: Command & { autocomplete: (client: Client, interaction: Auto
 
             if (getData.status === 200) {
                 const data = await getData.json()
-                const buyingDataAll = []
-                const sellingDataAll = []
+                const buyingData = []
+                const sellingData = []
                 for (const player of data) {
                     if (Date.now() - Date.parse(player.lastSeen) > 8.64e+7) continue // Haven't seen in a day
-                    const buyingData = {
-                        id: player.id,
-                        price: Number.MAX_VALUE,
-                        q: 0,
-                        serverIdentifier: player.serverIdentifier,
-                        serverRegion: player.serverRegion,
-                    }
-                    const sellingData = {
-                        id: player.id,
-                        price: 0,
-                        q: 0,
-                        serverIdentifier: player.serverIdentifier,
-                        serverRegion: player.serverRegion,
-                    }
                     for (const slotName in player.slots) {
-                        const slot = player.slots[slotName]
+                        const slot = player.slots[slotName] as ItemDataTrade
                         if (slot.name !== item) continue
+                        if (slot.giveaway) continue
 
                         if (slot.b) {
-                            buyingData.q += slot.q ?? 1
-                            buyingData.price = Math.min(slot.price, buyingData.price)
+                            buyingData.push({
+                                id: player.id,
+                                level: slot.level,
+                                price: slot.price,
+                                q: slot.q,
+                                serverIdentifier: player.serverIdentifier,
+                                serverRegion: player.serverRegion,
+                            })
                         } else {
-                            sellingData.q += slot.q ?? 1
-                            sellingData.price = Math.max(slot.price, sellingData.price)
+                            sellingData.push({
+                                id: player.id,
+                                level: slot.level,
+                                p: slot.p,
+                                price: slot.price,
+                                q: slot.q,
+                                serverIdentifier: player.serverIdentifier,
+                                serverRegion: player.serverRegion,
+                            })
                         }
                     }
-
-                    if (buyingData.q) {
-                        buyingDataAll.push(buyingData)
-                    }
-                    if (sellingData.q)
-                        sellingDataAll.push(sellingData)
                 }
 
-                if (buyingDataAll.length === 0 && sellingDataAll.length === 0) {
+                if (buyingData.length === 0 && sellingData.length === 0) {
                     return await interaction.followUp({
                         ephemeral: true,
                         content: `I couldn't find anyone trading \`${item}\` 🥲`
@@ -101,18 +95,57 @@ export const Trade: Command & { autocomplete: (client: Client, interaction: Auto
 
                 let content = `The base price, according to \`G\`, is \`${gItem.g}\`.`
 
-                if (sellingDataAll.length) {
+                if (sellingData.length) {
+                    // Sort selling data
+                    sellingData.sort((a, b) => {
+                        // Sort lowest level first
+                        if (a.level && b.level) {
+                            return b.level - a.level
+                        }
+
+                        // Sort titled items first
+                        if (a.p && !b.p) return -1
+                        if (!a.p && b.p) return 1
+                        if (a.p && b.p) return (b.p as string).localeCompare(a.p)
+
+                        // Sort cheapest first
+                        return b.price - a.price
+                    })
+
                     content += `\nI found the following players selling \`${item}\` 🙂\n\`\`\``
-                    for (const d of sellingDataAll) {
-                        content += `\n${d.id} (${d.serverRegion} ${d.serverIdentifier}) is selling ${d.q} @ ${d.price}`
+                    for (const d of sellingData) {
+                        const quantity = d.q === undefined ? "" : `${d.q}`
+                        const title = d.p ? ` ${d.p}` : ""
+                        const level = d.level === undefined ? "" : ` level ${d.level}`
+                        const price = `${d.price}`
+                        content += `\n${d.id} (${d.serverRegion} ${d.serverIdentifier}) is selling ${quantity}${title}${level} @ ${price}`
                     }
                     content += "```"
                 }
 
-                if (buyingDataAll.length) {
+                if (buyingData.length) {
+                    // Sort buying data
+                    buyingData.sort((a, b) => {
+                        // Sort lowest level first
+                        if (a.level && b.level) {
+                            return b.level - a.level
+                        }
+
+                        // Sort titled items first
+                        if (a.p && !b.p) return -1
+                        if (!a.p && b.p) return 1
+                        if (a.p && b.p) return (b.p as string).localeCompare(a.p)
+
+                        // Sort cheapest first
+                        return b.price - a.price
+                    })
+
                     content += `\nI found the following players buying \`${item}\` 🙂\n\`\`\``
-                    for (const d of buyingDataAll) {
-                        content += `\n${d.id} (${d.serverRegion} ${d.serverIdentifier}) is buying ${d.q} @ ${d.price}`
+                    for (const d of buyingData) {
+                        const quantity = `${d.q}`
+                        const level = d.level === undefined ? "" : ` level ${d.level}`
+                        const price = `${d.price}`
+                        content += `\n${d.id} (${d.serverRegion} ${d.serverIdentifier}) is buying ${quantity}${level} @ ${price}`
                     }
                     content += "```"
                 }
