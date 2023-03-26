@@ -189,6 +189,7 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
 
                 const ourPosition = ourStackables.get(item.name)
                 const ourItem = bot.items[ourPosition]
+                if (!ourItem) continue // We no longer have this item
                 if (ourItem.v && !item.v) continue // One is PvP marked, the other isn't
                 if (ourItem.q >= item.q) continue // We have more, don't transfer
                 const gItem: GItem = AL.Game.G.items[item.name]
