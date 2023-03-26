@@ -489,7 +489,6 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             const target = await this.checkGoodData(bot)
             if (target) return bot.smartMove(target, smartMoveOptions)
         }
-        if (this.spawns.length && !AL.Game.G.monsters[this.options.type].roam) return // Don't search all spawns if the monster doesn't roam
 
         // Look through all spawns on the current map for it
         const gMap = bot.G.maps[bot.map] as GMap
