@@ -393,24 +393,24 @@ export class MerchantStrategy implements Strategy<Merchant> {
         this.options = options
 
         this.loops.set("move", {
-            fn: async (bot: Merchant) => { await this.move(bot) },
+            fn: async (bot: Merchant) => { await this.move(bot).catch(console.error) },
             interval: 250
         })
 
         if (this.options.enableMluck) {
             this.loops.set("mluck", {
-                fn: async (bot: Merchant) => { await this.mluck(bot) },
+                fn: async (bot: Merchant) => { await this.mluck(bot).catch(console.error) },
                 interval: ["mluck"]
             })
         }
 
         if (this.options.enableUpgrade) {
             this.loops.set("compound", {
-                fn: async (bot: Merchant) => { await this.compound(bot) },
+                fn: async (bot: Merchant) => { await this.compound(bot).catch(console.error) },
                 interval: 250
             })
             this.loops.set("upgrade", {
-                fn: async (bot: Merchant) => { await this.upgrade(bot) },
+                fn: async (bot: Merchant) => { await this.upgrade(bot).catch(console.error) },
                 interval: 250
             })
         }
