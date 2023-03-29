@@ -122,7 +122,7 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
             if (this.options.itemsToHold.has(item.name)) continue // We want to hold this item
             try {
                 // Send them the item
-                await bot.sendItem(this.options.transferItemsTo, i)
+                await bot.sendItem(this.options.transferItemsTo, i, item.q ?? 1)
             } catch {
                 // Don't send any more items if something went wrong
                 break
@@ -148,7 +148,7 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
                 if (!this.options.itemsToSell.has(item.name)) continue // We don't want to sell it
                 try {
                     // Send them the item so they can sell it
-                    await bot.sendItem(friend.id, i)
+                    await bot.sendItem(friend.id, i, item.q ?? 1)
                 } catch {
                     break
                 }
