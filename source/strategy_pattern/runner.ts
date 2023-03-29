@@ -15,6 +15,7 @@ import { BaseStrategy } from "./strategies/base.js"
 import { BuyStrategy } from "./strategies/buy.js"
 import { ChargeStrategy } from "./strategies/charge.js"
 import { OptimizeItemsStrategy, OptimizeItemsStrategyOptions } from "./strategies/item.js"
+import { MagiportOthersSmartMovingToUsStrategy } from "./strategies/magiport.js"
 import { GetHolidaySpiritStrategy, ImprovedMoveStrategy, ImprovedMoveStrategyOptions } from "./strategies/move.js"
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategies/party.js"
 import { PartyHealStrategy } from "./strategies/partyheal.js"
@@ -36,6 +37,7 @@ const bankStrategy = new MoveToBankAndDepositStuffStrategy({
 const baseStrategy = new BaseStrategy(CONTEXTS)
 const chargeStrategy = new ChargeStrategy()
 const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
+const magiportStrategy = new MagiportOthersSmartMovingToUsStrategy(CONTEXTS)
 const partyHealStrategy = new PartyHealStrategy(CONTEXTS)
 const respawnStrategy = new RespawnStrategy()
 const rSpeedStrategy = new GiveRogueSpeedStrategy()
@@ -65,6 +67,7 @@ export function startRunner(character: PingCompensatedCharacter, options: Runner
         case "mage":
             context = new Strategist<Mage>(character as Mage, baseStrategy)
             attackStrategy = new MageAttackStrategy({ type: options.monster, contexts: CONTEXTS })
+            context.applyStrategy(magiportStrategy)
             break
         case "merchant":
         {
