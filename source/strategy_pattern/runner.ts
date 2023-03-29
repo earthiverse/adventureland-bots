@@ -15,7 +15,7 @@ import { BaseStrategy } from "./strategies/base.js"
 import { BuyStrategy } from "./strategies/buy.js"
 import { ChargeStrategy } from "./strategies/charge.js"
 import { OptimizeItemsStrategy, OptimizeItemsStrategyOptions } from "./strategies/item.js"
-import { GetHolidaySpiritStrategy, ImprovedMoveStrategy } from "./strategies/move.js"
+import { GetHolidaySpiritStrategy, ImprovedMoveStrategy, ImprovedMoveStrategyOptions } from "./strategies/move.js"
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategies/party.js"
 import { PartyHealStrategy } from "./strategies/partyheal.js"
 import { RespawnStrategy } from "./strategies/respawn.js"
@@ -51,6 +51,7 @@ export type RunnerOptions = {
     }
     itemOverrides?: Partial<OptimizeItemsStrategyOptions>
     merchantOverrides?: Partial<MerchantMoveStrategyOptions>
+    moveOverrides?: Partial<ImprovedMoveStrategyOptions>
 }
 
 export function startRunner(character: PingCompensatedCharacter, options: RunnerOptions): Strategist<PingCompensatedCharacter> {
@@ -122,7 +123,7 @@ export function startRunner(character: PingCompensatedCharacter, options: Runner
 
     let moveStrategy: Strategy<PingCompensatedCharacter>
     if (character.ctype !== "merchant") {
-        moveStrategy = new ImprovedMoveStrategy(options.monster)
+        moveStrategy = new ImprovedMoveStrategy(options.monster, { ...(options.moveOverrides ?? {}) })
 
         if (options.partyLeader) {
             if (character.id == options.partyLeader) {
