@@ -1,6 +1,6 @@
 import AL, { ItemName, Merchant, PingCompensatedCharacter, Priest, Mage, Warrior, ServerRegion, ServerIdentifier, MonsterName, ServerInfoDataLive, CharacterType, Paladin, Ranger, Rogue } from "alclient"
 import { DEFAULT_ITEMS_TO_BUY, DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO, startMerchant } from "./merchant/strategy.js"
-import { Strategist, Strategy } from "./strategy_pattern/context.js"
+import { filterContexts, Strategist, Strategy } from "./strategy_pattern/context.js"
 import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "./strategy_pattern/strategies/buy.js"
 import { FinishMonsterHuntStrategy, GetHolidaySpiritStrategy, GetMonsterHuntStrategy } from "./strategy_pattern/strategies/move.js"
@@ -173,17 +173,52 @@ const itemStrategy = new OptimizeItemsStrategy({
     contexts: ALL_CONTEXTS
 })
 
+let OVERRIDE_MONSTER: MonsterName
+let OVERRIDE_REGION: ServerRegion
+let OVERRIDE_IDENTIFIER: ServerIdentifier
+class OverrideStrategy implements Strategy<PingCompensatedCharacter> {
+    private onCodeEval: (data: string) => Promise<void>
+
+    public onApply(bot: PingCompensatedCharacter) {
+        this.onCodeEval = async (data: string) => {
+            data = data.toLowerCase()
+            const args = data.split(" ")
+            switch (args[0]) {
+                case "monster":
+                    if (args[1]) {
+                        OVERRIDE_MONSTER = args[1] as MonsterName
+                        console.log(`Overriding monster to ${OVERRIDE_MONSTER}`)
+                    } else {
+                        OVERRIDE_MONSTER = undefined
+                        console.log("Clearing monster override...")
+                    }
+                    break
+                case "server":
+                    if (args[1] && args[2]) {
+                        OVERRIDE_REGION = args[1] as ServerRegion
+                        OVERRIDE_IDENTIFIER = args[2] as ServerIdentifier
+                        console.log(`Overriding server to ${OVERRIDE_REGION} ${OVERRIDE_IDENTIFIER}`)
+                    } else {
+                        OVERRIDE_REGION = undefined
+                        OVERRIDE_IDENTIFIER = undefined
+                        console.log("Clearing server override...")
+                    }
+                    break
+            }
+        }
+        bot.socket.on("code_eval", this.onCodeEval)
+    }
+
+    public onRemove(bot: PingCompensatedCharacter) {
+        if (this.onCodeEval) bot.socket.removeListener("code_eval", this.onCodeEval)
+    }
+}
+const overrideStrategy = new OverrideStrategy()
+
 const currentSetups = new Map<Strategist<PingCompensatedCharacter>, { attack: Strategy<PingCompensatedCharacter>, move: Strategy<PingCompensatedCharacter> }>()
 const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], setups: Setups) => {
     // Setup a list of ready contexts
-    const setupContexts = [...contexts]
-    for (let i = 0; i < setupContexts.length; i++) {
-        const context = setupContexts[i]
-        if (!context.isReady()) {
-            setupContexts.splice(i, 1)
-            i--
-        }
-    }
+    const setupContexts = filterContexts(contexts)
     if (setupContexts.length == 0) return
 
     const isDoable = (config: Config): Strategist<PingCompensatedCharacter>[] | false => {
@@ -391,6 +426,13 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
         priority.push(DEFAULT_MONSTER)
     }
 
+    // Monster override
+    if (OVERRIDE_MONSTER) {
+        for (const _context of contexts) {
+            priority.unshift(OVERRIDE_MONSTER)
+        }
+    }
+
     for (const id of priority) {
         if (setupContexts.length == 0) break // All set up
         const setup = setups[id]
@@ -421,6 +463,7 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
         // Check for server hop
         const bot1 = contexts[0]?.bot
         if (!bot1) return
+
         if (ENABLE_SERVER_HOPS) {
             // Default
             TARGET_REGION = DEFAULT_REGION
@@ -465,6 +508,12 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
                     TARGET_REGION = monster.serverRegion
                 }
             }
+        }
+
+        // Override
+        if (OVERRIDE_REGION && OVERRIDE_IDENTIFIER) {
+            TARGET_REGION = OVERRIDE_REGION
+            TARGET_IDENTIFIER = OVERRIDE_IDENTIFIER
         }
 
         for (const context of contexts) {
@@ -535,6 +584,7 @@ async function startShared(context: Strategist<PingCompensatedCharacter>, privat
     }
 
     if (privateContext) {
+        context.applyStrategy(overrideStrategy)
         context.applyStrategy(privateBuyStrategy)
         context.applyStrategy(privateSellStrategy)
     } else {
