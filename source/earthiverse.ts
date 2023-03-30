@@ -181,12 +181,11 @@ class OverrideStrategy implements Strategy<PingCompensatedCharacter> {
 
     public onApply(bot: PingCompensatedCharacter) {
         this.onCodeEval = async (data: string) => {
-            data = data.toLowerCase()
             const args = data.split(" ")
-            switch (args[0]) {
+            switch (args[0].toLowerCase()) {
                 case "monster":
                     if (args[1]) {
-                        OVERRIDE_MONSTER = args[1] as MonsterName
+                        OVERRIDE_MONSTER = args[1].toLowerCase() as MonsterName
                         console.log(`Overriding monster to ${OVERRIDE_MONSTER}`)
                     } else {
                         OVERRIDE_MONSTER = undefined
