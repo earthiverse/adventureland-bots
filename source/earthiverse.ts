@@ -194,8 +194,8 @@ class OverrideStrategy implements Strategy<PingCompensatedCharacter> {
                     break
                 case "server":
                     if (args[1] && args[2]) {
-                        OVERRIDE_REGION = args[1] as ServerRegion
-                        OVERRIDE_IDENTIFIER = args[2] as ServerIdentifier
+                        OVERRIDE_REGION = args[1].toUpperCase() as ServerRegion
+                        OVERRIDE_IDENTIFIER = args[2].toUpperCase() as ServerIdentifier
                         console.log(`Overriding server to ${OVERRIDE_REGION} ${OVERRIDE_IDENTIFIER}`)
                     } else {
                         OVERRIDE_REGION = undefined
