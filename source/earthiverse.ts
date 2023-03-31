@@ -704,7 +704,7 @@ const startPriestContext = async () => {
 }
 startPriestContext()
 
-export class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> {
+class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> {
     private onCodeEval: (data: string) => Promise<void>
 
     public onApply(bot: PingCompensatedCharacter) {

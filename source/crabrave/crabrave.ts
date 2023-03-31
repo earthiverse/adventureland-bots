@@ -1,10 +1,9 @@
 import AL, { CharacterType, ItemName, Mage, Paladin, PingCompensatedCharacter, Priest, Ranger, Rogue, ServerIdentifier, ServerRegion, Warrior } from "alclient"
-import { DisconnectOnCommandStrategy } from "../earthiverse.js"
 import { AvoidStackingStrategy } from "../strategy_pattern/strategies/avoid_stacking.js"
 import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
 import { ChargeStrategy } from "../strategy_pattern/strategies/charge.js"
-import { Strategist } from "../strategy_pattern/context.js"
+import { Strategist, Strategy } from "../strategy_pattern/context.js"
 import { ElixirStrategy } from "../strategy_pattern/strategies/elixir.js"
 import { OptimizeItemsStrategy } from "../strategy_pattern/strategies/item.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "../strategy_pattern/strategies/magiport.js"
@@ -19,6 +18,9 @@ import cors from "cors"
 import express from "express"
 import path from "path"
 import { body, validationResult } from "express-validator"
+
+await AL.Game.getGData(true)
+await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 const MAX_CHARS = 9
@@ -37,7 +39,6 @@ const buyStrategy = new BuyStrategy({
     ])
 })
 const chargeStrategy = new ChargeStrategy()
-const disconnectOnCommandStrategy = new DisconnectOnCommandStrategy()
 const elixirStrategy = new ElixirStrategy("elixirluck")
 const itemStrategy = new OptimizeItemsStrategy({ contexts: CONTEXTS })
 const magiportStrategy = new MagiportOthersSmartMovingToUsStrategy(CONTEXTS)
@@ -56,6 +57,26 @@ const sellStrategy = new SellStrategy({
         ["wshoes", undefined],
     ])
 })
+
+class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> {
+    private onCodeEval: (data: string) => Promise<void>
+
+    public onApply(bot: PingCompensatedCharacter) {
+        this.onCodeEval = async (data: string) => {
+            data = data.toLowerCase()
+            if (data == "stop" || data == "disconnect") {
+                stopRaving(bot.characterID).catch(console.error)
+            }
+        }
+
+        bot.socket.on("code_eval", this.onCodeEval)
+    }
+
+    public onRemove(bot: PingCompensatedCharacter) {
+        if (this.onCodeEval) bot.socket.removeListener("code_eval", this.onCodeEval)
+    }
+}
+const disconnectOnCommandStrategy = new DisconnectOnCommandStrategy()
 
 async function startShared(context: Strategist<PingCompensatedCharacter>) {
     context.applyStrategy(partyRequestStrategy)
