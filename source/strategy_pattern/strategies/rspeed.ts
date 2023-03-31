@@ -18,6 +18,7 @@ export class GiveRogueSpeedStrategy implements Strategy<Rogue> {
 
     private async giveRogueSpeedToSelf(bot: Rogue) {
         if (!bot.canUse("rspeed")) return
+        if (bot.s.invis) return // We're invisible
         if (bot.s.rspeed?.ms > 30_000) return // We have rogue speed already
 
         // Give rogue speed to ourself
@@ -26,6 +27,7 @@ export class GiveRogueSpeedStrategy implements Strategy<Rogue> {
 
     private async giveRogueSpeedToOthers(bot: Rogue) {
         if (!bot.canUse("rspeed")) return
+        if (bot.s.invis) return // We're invisible
 
         for (const player of bot.getPlayers({
             isNPC: false,

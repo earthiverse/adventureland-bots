@@ -18,6 +18,13 @@ import cors from "cors"
 import express from "express"
 import path from "path"
 import { body, validationResult } from "express-validator"
+import { MageAttackStrategy } from "../strategy_pattern/strategies/attack_mage.js"
+import { PaladinAttackStrategy } from "../strategy_pattern/strategies/attack_paladin.js"
+import { PriestAttackStrategy } from "../strategy_pattern/strategies/attack_priest.js"
+import { RangerAttackStrategy } from "../strategy_pattern/strategies/attack_ranger.js"
+import { RogueAttackStrategy } from "../strategy_pattern/strategies/attack_rogue.js"
+import { WarriorAttackStrategy } from "../strategy_pattern/strategies/attack_warrior.js"
+import { ImprovedMoveStrategy } from "../strategy_pattern/strategies/move.js"
 
 await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
@@ -42,6 +49,7 @@ const chargeStrategy = new ChargeStrategy()
 const elixirStrategy = new ElixirStrategy("elixirluck")
 const itemStrategy = new OptimizeItemsStrategy({ contexts: CONTEXTS })
 const magiportStrategy = new MagiportOthersSmartMovingToUsStrategy(CONTEXTS)
+const moveStrategy = new ImprovedMoveStrategy("crab")
 const partyHealStrategy = new PartyHealStrategy(CONTEXTS)
 const partyRequestStrategy = new RequestPartyStrategy(PARTY_LEADER)
 const respawnStrategy = new RespawnStrategy()
@@ -87,35 +95,42 @@ async function startShared(context: Strategist<PingCompensatedCharacter>) {
     context.applyStrategy(respawnStrategy)
     context.applyStrategy(elixirStrategy)
     context.applyStrategy(itemStrategy)
+    context.applyStrategy(moveStrategy)
 }
 
 async function startMage(context: Strategist<Mage>) {
     startShared(context)
     context.applyStrategy(magiportStrategy)
+    context.applyStrategy(new MageAttackStrategy({ contexts: CONTEXTS, type: "crab" }))
 }
 
 async function startPaladin(context: Strategist<Paladin>) {
     startShared(context)
+    context.applyStrategy(new PaladinAttackStrategy({ contexts: CONTEXTS, type: "crab" }))
 }
 
 async function startPriest(context: Strategist<Priest>) {
     startShared(context)
     context.applyStrategy(partyHealStrategy)
+    context.applyStrategy(new PriestAttackStrategy({ contexts: CONTEXTS, disableCurse: true, type: "crab" }))
 }
 
 async function startRanger(context: Strategist<Ranger>) {
     startShared(context)
+    context.applyStrategy(new RangerAttackStrategy({ contexts: CONTEXTS, disableHuntersMark: true, type: "crab" }))
 }
 
 async function startRogue(context: Strategist<Rogue>) {
     startShared(context)
     context.applyStrategy(rspeedStrategy)
+    context.applyStrategy(new RogueAttackStrategy({ contexts: CONTEXTS, type: "crab" }))
 }
 
 // Warrior setup
 async function startWarrior(context: Strategist<Warrior>) {
-    context.applyStrategy(chargeStrategy)
     startShared(context)
+    context.applyStrategy(chargeStrategy)
+    context.applyStrategy(new WarriorAttackStrategy({ contexts: CONTEXTS, disableAgitate: true, type: "crab" }))
 }
 
 const stopRaving = async (characterID: string) => {
