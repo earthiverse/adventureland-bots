@@ -96,6 +96,10 @@ async function startShared(context: Strategist<PingCompensatedCharacter>) {
     context.applyStrategy(elixirStrategy)
     context.applyStrategy(itemStrategy)
     context.applyStrategy(moveStrategy)
+
+    context.applyStrategy(disconnectOnCommandStrategy)
+
+    CONTEXTS.push(context)
 }
 
 async function startMage(context: Strategist<Mage>) {
@@ -245,8 +249,6 @@ const startRaving = async (type: CharacterType, userID: string, userAuth: string
             break
         }
     }
-
-    context.applyStrategy(disconnectOnCommandStrategy)
 }
 
 const app = express()
