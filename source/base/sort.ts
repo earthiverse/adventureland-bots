@@ -88,9 +88,15 @@ export function sortPriority(bot: Character, types?: MonsterName[]) {
             const b_1hp = b["1hp"]
             if (!a_1hp && b_1hp) return true
             else if (a_1hp && !b_1hp) return false
+
+            // Prioritize lower evasion
+            const a_evasion = a.evasion
+            const b_evasion = b.evasion
+            if (a_evasion < b_evasion) return true
+            else if (a_evasion > b_evasion) return false
         }
 
-        // Order in array
+        // Lower index in array -> higher priority
         if (types?.length) {
             const a_index = types.indexOf(a.type)
             const b_index = types.indexOf(b.type)
