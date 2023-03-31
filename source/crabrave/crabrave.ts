@@ -241,7 +241,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 const port = 80
 
 app.get("/", (_req, res) => {
-    res.sendFile(path.join(path.resolve(), "/crabrave.html"))
+    res.sendFile(path.join(path.resolve(), "/index.html"))
 })
 
 app.post("/",
