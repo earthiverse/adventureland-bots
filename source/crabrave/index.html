@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>crabrave</title>
+    <style>
+        @font-face {
+            font-family: 'm5x7';
+            src: url('m5x7.ttf') format('truetype');
+        }
+
+        body {
+            background-color: black;
+            font-size: x-large;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        * {
+            font-family: 'm5x7';
+        }
+
+        .content {
+            color: white;
+            position: absolute;
+            left: 0;
+            height: 90%;
+            margin: auto;
+            padding-left: 5%;
+            overflow-y: scroll;
+            top: 5%;
+            width: 95%;
+            z-index: 9999999;
+        }
+
+        .video-container {
+            pointer-events: none;
+            width: 100vw;
+            height: 100vh;
+
+            filter: blur(0.5rem) opacity(0.3);
+            z-index: -1;
+        }
+
+        iframe {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100vw;
+            height: 100vh;
+            transform: translate(-50%, -50%);
+        }
+
+        @media (min-aspect-ratio: 16/9) {
+            .video-container iframe {
+                /* height = 100 * (9 / 16) = 56.25 */
+                height: 56.25vw;
+            }
+        }
+
+        @media (max-aspect-ratio: 16/9) {
+            .video-container iframe {
+                /* width = 100 / (9 / 16) = 177.777777 */
+                width: 177.78vh;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content">
+        <h1>crabrave</h1>
+
+        This is for 
+
+        <h2>notes</h2>
+        <ul>
+            <li>merchants are not supported</li>
+            <ul>
+                <li>starting your bots from your merchant is therefore suggested</li>
+            </ul>
+            <li>your characters will run on <strong>US I</strong></li>
+            <li>your bots will auto buy hpot0 and hpot1</li>
+            <li>your bots will stop running whenever i stop the script, for example when i push updates or fix bugs</li>
+            <li>the following items will be sold to the npc:</li>
+            <ul>
+                <li>cclaw</li>
+                <li>crabclaw</li>
+                <li>ringsj</li>
+                <li>hpamulet</li>
+                <li>hpbelt</li>
+                <li>wcap</li>
+                <li>wshoes</li>
+            </ul>
+        </ul>
+
+        <h2>code</h2>
+        <h3>function</h3>
+        <pre>async function startRaving(name, url = 'https://crabrave.earthiverse.ca/') {
+    if(!parent.X) throw new Error("Couldn't find `X` data!")
+    if(!parent.user_id) throw new Error("Couldn't find `parent.user_id`!")
+    if(!parent.user_auth) throw new Error("Couldn't find `parent.user_auth`!")
+
+    const xData = parent.X.characters.find(x => x.name == name)
+    if(!xData) throw new Error(`Couldn't find a character with the name ${name}!`)
+    if(xData.online) throw new Error(`It looks like ${name} is already online!`)
+
+    const result = await fetch(url, {
+        "credentials": "omit",
+        "headers": {
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        "referrer": url,
+        "body": new URLSearchParams({
+            "user": parent.user_id,
+            "auth": parent.user_auth,
+            "char": xData.id,
+            "char_type": xData.type
+        }),
+        "method": "POST",
+        "mode": "no-cors"
+    })
+    return result.text()
+}</pre>
+        <h3>example use</h3>
+        <pre>show_json(await startRaving("earthiverse"))</pre>
+    </div>
+    <div class="video-container">
+        <iframe
+            src="https://www.youtube.com/embed/LDU_Txk06tM?&controls=0&autoplay=1&mute=1&playsinline=1&loop=1&playlist=LDU_Txk06tM">
+        </iframe>
+    </div>
+</body>
+
+</html>

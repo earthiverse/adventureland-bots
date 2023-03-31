@@ -704,7 +704,7 @@ const startPriestContext = async () => {
 }
 startPriestContext()
 
-class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> {
+export class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> {
     private onCodeEval: (data: string) => Promise<void>
 
     public onApply(bot: PingCompensatedCharacter) {
@@ -931,7 +931,7 @@ app.post("/",
             const userAuth = req.body.auth.trim()
             const characterID = req.body.char.trim()
 
-            startPublicContext(charType, userID, userAuth, characterID).catch(console.error)
+            await startPublicContext(charType, userID, userAuth, characterID)
             return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
         } catch (e) {
             return res.status(500).send(e)
