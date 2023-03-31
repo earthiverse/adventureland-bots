@@ -19,14 +19,14 @@ import express from "express"
 import path from "path"
 import { body, validationResult } from "express-validator"
 
-await AL.Game.getGData(true)
+await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 const MAX_CHARS = 9
 const PARTY_LEADER = "earthMer"
 const SERVER_REGION: ServerRegion = "US"
-const SERVERR_IDENTIFIER: ServerIdentifier = "I"
+const SERVER_IDENTIFIER: ServerIdentifier = "I"
 
 const avoidStackingStrategy = new AvoidStackingStrategy()
 const baseStrategy = new BaseStrategy(CONTEXTS)
@@ -154,27 +154,27 @@ const startRaving = async (type: CharacterType, userID: string, userAuth: string
     try {
         switch (type) {
             case "mage": {
-                bot = new AL.Mage(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVERR_IDENTIFIER])
+                bot = new AL.Mage(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVER_IDENTIFIER])
                 break
             }
             case "paladin": {
-                bot = new AL.Paladin(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVERR_IDENTIFIER])
+                bot = new AL.Paladin(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVER_IDENTIFIER])
                 break
             }
             case "priest": {
-                bot = new AL.Priest(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVERR_IDENTIFIER])
+                bot = new AL.Priest(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVER_IDENTIFIER])
                 break
             }
             case "ranger": {
-                bot = new AL.Ranger(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVERR_IDENTIFIER])
+                bot = new AL.Ranger(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVER_IDENTIFIER])
                 break
             }
             case "rogue": {
-                bot = new AL.Rogue(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVERR_IDENTIFIER])
+                bot = new AL.Rogue(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVER_IDENTIFIER])
                 break
             }
             case "warrior": {
-                bot = new AL.Warrior(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVERR_IDENTIFIER])
+                bot = new AL.Warrior(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVER_IDENTIFIER])
                 break
             }
             default: {
