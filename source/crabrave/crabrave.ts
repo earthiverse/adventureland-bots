@@ -257,9 +257,8 @@ app.use(cors())
 app.use(bodyParser.urlencoded({ extended: true }))
 const port = 80
 
-app.get("/", (_req, res) => {
-    res.sendFile(path.join(path.resolve(), "/index.html"))
-})
+app.get("/", (_req, res) => { res.sendFile(path.join(path.resolve(), "/index.html")) })
+app.get("/m5x7.ttf", (_req, res) => { res.sendFile(path.join(path.resolve(), "/m5x7.ttf")) })
 
 app.post("/",
     body("user").trim().isLength({ max: 16, min: 16 }).withMessage("User IDs are exactly 16 digits."),
