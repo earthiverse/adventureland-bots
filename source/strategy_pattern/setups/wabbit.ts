@@ -1,5 +1,6 @@
 import { MonsterName, PingCompensatedCharacter } from "alclient"
 import { Strategist } from "../context.js"
+import { IDLE_ATTACK_MONSTERS } from "../strategies/attack.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
@@ -10,9 +11,10 @@ import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { PRIEST_LUCK } from "./equipment.js"
 
+const typeList: MonsterName[] = ["wabbit", ...IDLE_ATTACK_MONSTERS]
+
 export function constructWabbitSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const wabbitMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, type: "wabbit" })
-    const typeList: MonsterName[] = ["wabbit"]
 
     return {
         configs: [
@@ -107,7 +109,6 @@ export function constructWabbitSetup(contexts: Strategist<PingCompensatedCharact
 
 export function constructWabbitHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const wabbitMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, type: "wabbit" })
-    const typeList: MonsterName[] = ["wabbit"]
 
     return {
         configs: [

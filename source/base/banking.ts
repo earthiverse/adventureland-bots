@@ -56,6 +56,10 @@ const DEFAULT_COMPOUND_BASE_RARE = {
     offeringp: 1,
     offering: 2
 }
+const PRIMLING_TO_NINE = {
+    offeringp: 9,
+    offering: 10
+}
 const PRIMLING_TO_TEN = {
     offeringp: 10
 }
@@ -69,38 +73,56 @@ export const ITEM_UPGRADE_CONF: {
         "stop"?: number
     }
 } = {
+    // Crafting
     bcape: {
         // Level 7 can be used to craft things things
         stop: 7
     },
-    fury: ULTRA_RARE,
-    hboots: COMMON_HIGH,
-    harmor: COMMON_HIGH,
-    hgloves: COMMON_HIGH,
-    hhelmet: COMMON_HIGH,
-    hpants: COMMON_HIGH,
-    gphelmet: COMMON_HIGH,
-    phelmet: COMMON_HIGH,
     lostearring: {
         // Level 2 is the best for exchanging
         stop: 2
     },
-    starkillers: ULTRA_RARE,
     stick: {
         // We craft with level 9 sticks
         stop: 9
     },
-    suckerpunch: ULTRA_RARE,
-    supermittens: ULTRA_RARE,
-    t3bow: ULTRA_RARE,
-    test_orb: DONT_UPGRADE,
-    tigerhelmet: DEFAULT_UPGRADE_BASE_COMMON,
     throwingstars: DONT_UPGRADE,
     vitring: {
         // We craft with level 2 vit rings
         stop: 2
     },
+
+    // Easter
+    bataxe: COMMON_HIGH,
+    carrotsword: PRIMLING_TO_NINE,
+    ecape: PRIMLING_TO_NINE,
+    eears: PRIMLING_TO_NINE,
+    pyjamas: PRIMLING_TO_NINE,
+
+    // Heavy armor
+    hboots: COMMON_HIGH,
+    harmor: COMMON_HIGH,
+    hgloves: COMMON_HIGH,
+    hhelmet: COMMON_HIGH,
+    hpants: COMMON_HIGH,
+
+    // Halloween
+    gphelmet: COMMON_HIGH,
+    phelmet: COMMON_HIGH,
+
+    // Legendary
+    fury: ULTRA_RARE,
+    starkillers: ULTRA_RARE,
+    suckerpunch: ULTRA_RARE,
+    supermittens: ULTRA_RARE,
+    t3bow: ULTRA_RARE,
+
+    // Useless
+    test_orb: DONT_UPGRADE,
+    tigerhelmet: DEFAULT_UPGRADE_BASE_COMMON,
     vorb: DONT_UPGRADE,
+
+    // Wanderer's
     wattire: PRIMLING_TO_TEN,
     wbreeches: PRIMLING_TO_TEN,
     wcap: PRIMLING_TO_TEN,

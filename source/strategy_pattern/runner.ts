@@ -216,6 +216,8 @@ export function startRunner(character: PingCompensatedCharacter, options: Runner
             }
             if (context.hasStrategy(bankStrategy)) context.removeStrategy(bankStrategy)
 
+            // TODO: Go get replenishables
+
             // Defaults
             if (moveStrategy && moveStrategy !== lastMoveStrategy) {
                 context.applyStrategy(moveStrategy)
