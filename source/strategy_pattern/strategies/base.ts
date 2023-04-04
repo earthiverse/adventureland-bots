@@ -1,4 +1,4 @@
-import { Character, ChestData, PingCompensatedCharacter, Tools } from "alclient"
+import AL, { Character, ChestData, PingCompensatedCharacter, Tools } from "alclient"
 import { filterContexts, Loop, LoopName, Strategist, Strategy } from "../context.js"
 
 export class BaseStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
@@ -79,13 +79,14 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
     }
 
     private async lootChest(bot: Type, chest: ChestData) {
-        if (Tools.distance(chest, bot) > 800) return // It's far away from us
+        if (Tools.squaredDistance(chest, bot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) return // It's far away from us
 
         let goldM = 0
         let best: Character
-        for (const context of filterContexts(this.contexts, { owner: bot.owner, serverData: bot.serverData })) {
+        for (const context of filterContexts(this.contexts, { serverData: bot.serverData })) {
             const friend = context.bot
-            if (Tools.distance(chest, friend) > 800) continue // It's far away from them
+            if (!context.bot.chests.has(chest.id)) continue // They don't have the chest in their drops
+            if (Tools.squaredDistance(chest, friend) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) continue // It's far away from them
             if (friend.goldm > goldM) {
                 goldM = friend.goldm
                 best = friend
