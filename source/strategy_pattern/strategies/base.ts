@@ -95,6 +95,13 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
 
         if (best && best !== bot) return // We're not the best one to loot the chest
 
+        for (const context of filterContexts(this.contexts, { serverData: bot.serverData })) {
+            const friend = context.bot
+
+            // We're going to loot the chest, remove the chest from everyone
+            friend.chests.delete(chest.id)
+        }
+
         // Open the chest
         return bot.openChest(chest.id).catch(console.error)
     }
