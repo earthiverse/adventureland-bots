@@ -1,4 +1,5 @@
 import AL, { Character, ChestData, PingCompensatedCharacter, Tools } from "alclient"
+import LRU from "lru-cache"
 import { filterContexts, Loop, LoopName, Strategist, Strategy } from "../context.js"
 
 export class BaseStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
@@ -6,6 +7,8 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
     private contexts: Strategist<Type>[]
 
     protected lootOnDrop: (data: ChestData) => void
+
+    protected static recentlyLooted = new LRU<string, boolean>({ max: 10 })
 
     public constructor(contexts?: Strategist<Type>[]) {
         this.contexts = contexts ?? []
@@ -80,6 +83,7 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
 
     private async lootChest(bot: Type, chest: ChestData) {
         if (Tools.squaredDistance(chest, bot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) return // It's far away from us
+        if (BaseStrategy.recentlyLooted.has(chest.id)) return // One of our characters is already looting it
 
         let goldM = 0
         let best: Character
@@ -95,14 +99,8 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
 
         if (best && best !== bot) return // We're not the best one to loot the chest
 
-        for (const context of filterContexts(this.contexts, { serverData: bot.serverData })) {
-            const friend = context.bot
-
-            // We're going to loot the chest, remove the chest from everyone
-            friend.chests.delete(chest.id)
-        }
-
         // Open the chest
+        BaseStrategy.recentlyLooted.set(chest.id, true)
         return bot.openChest(chest.id).catch(console.error)
     }
 }
