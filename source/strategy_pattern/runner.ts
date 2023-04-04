@@ -16,7 +16,7 @@ import { BuyStrategy } from "./strategies/buy.js"
 import { ChargeStrategy } from "./strategies/charge.js"
 import { OptimizeItemsStrategy, OptimizeItemsStrategyOptions } from "./strategies/item.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategies/magiport.js"
-import { GetHolidaySpiritStrategy, ImprovedMoveStrategy, ImprovedMoveStrategyOptions } from "./strategies/move.js"
+import { GetHolidaySpiritStrategy, GetReplenishablesStrategy, ImprovedMoveStrategy, ImprovedMoveStrategyOptions } from "./strategies/move.js"
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategies/party.js"
 import { PartyHealStrategy } from "./strategies/partyheal.js"
 import { RespawnStrategy } from "./strategies/respawn.js"
@@ -27,6 +27,11 @@ import { TrackerStrategy } from "./strategies/tracker.js"
 
 // Variables
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
+const REPLENISHABLES = new Map<ItemName, number>([
+    ["hpot1", 9999],
+    ["mpot1", 9999],
+    ["xptome", 1],
+])
 
 // Strategies
 const avoidStackingStrategy = new AvoidStackingStrategy()
@@ -37,6 +42,10 @@ const bankStrategy = new MoveToBankAndDepositStuffStrategy({
 const baseStrategy = new BaseStrategy(CONTEXTS)
 const chargeStrategy = new ChargeStrategy()
 const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
+const getReplenishablesStrategy = new GetReplenishablesStrategy({
+    contexts: CONTEXTS,
+    replenishables: REPLENISHABLES
+})
 const magiportStrategy = new MagiportOthersSmartMovingToUsStrategy(CONTEXTS)
 const partyHealStrategy = new PartyHealStrategy(CONTEXTS)
 const respawnStrategy = new RespawnStrategy()
@@ -106,11 +115,7 @@ export function startRunner(character: PingCompensatedCharacter, options: Runner
     context.applyStrategy(new BuyStrategy({
         contexts: CONTEXTS,
         buyMap: options.buyMap,
-        replenishables: new Map<ItemName, number>([
-            ["hpot1", 2500],
-            ["mpot1", 2500],
-            ["xptome", 1],
-        ])
+        replenishables: REPLENISHABLES
     }))
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(respawnStrategy)
@@ -216,7 +221,27 @@ export function startRunner(character: PingCompensatedCharacter, options: Runner
             }
             if (context.hasStrategy(bankStrategy)) context.removeStrategy(bankStrategy)
 
-            // TODO: Go get replenishables
+            // Check if we need to go get replenishables
+            for (const [item, numHold] of REPLENISHABLES) {
+                const numHas = context.bot.countItem(item, context.bot.items)
+                if (numHas > (numHold / 4)) continue // We have more 25% of the amount we want
+                const numWant = numHold - numHas
+                if (!context.bot.canBuy(item, { ignoreLocation: true, quantity: numWant })) continue // We can't buy enough, don't go to buy them
+
+                if (attackStrategy) {
+                    context.removeStrategy(attackStrategy)
+                    lastAttackStrategy = undefined
+                }
+                if (moveStrategy) {
+                    context.removeStrategy(moveStrategy)
+                    lastMoveStrategy = undefined
+                }
+
+                context.applyStrategy(getReplenishablesStrategy)
+                setTimeout(async () => { logicLoop() }, 1000)
+                return
+            }
+            if (context.hasStrategy(getReplenishablesStrategy)) context.removeStrategy(getReplenishablesStrategy)
 
             // Defaults
             if (moveStrategy && moveStrategy !== lastMoveStrategy) {

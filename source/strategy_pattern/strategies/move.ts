@@ -169,6 +169,60 @@ export class GetMonsterHuntStrategy<Type extends Character> implements Strategy<
     }
 }
 
+export type GetReplenishablesStrategyOptions = {
+    /** If set, we will check other contexts for extra replenishables */
+    contexts?: Strategist<PingCompensatedCharacter>[]
+
+    /** The replenishables we want to keep on ourself */
+    replenishables: Map<ItemName, number>
+}
+
+/**
+ * NOTE: This strategy depends on BuyStrategy also running with a superset of the same replenishables!
+ */
+export class GetReplenishablesStrategy<Type extends Character> implements Strategy<Type> {
+    public loops = new Map<LoopName, Loop<Type>>()
+
+    protected options: GetReplenishablesStrategyOptions
+
+    public constructor(options: GetReplenishablesStrategyOptions) {
+        this.options = options
+
+        this.loops.set("move", {
+            fn: async (bot: Type) => { await this.moveToReplenishable(bot) },
+            interval: 50
+        })
+
+        // Scare if we need
+        this.loops.set("attack", {
+            fn: async (bot: Type) => { await this.scare(bot) },
+            interval: 50
+        })
+    }
+
+    private async moveToReplenishable(bot: Type) {
+        for (const [item, numHold] of this.options.replenishables) {
+            const numHas = bot.countItem(item, bot.items)
+            if (numHas > (numHold / 4)) continue // We have more than half of the amount we want
+            const numWant = numHold - numHas
+            if (!bot.canBuy(item, { ignoreLocation: true, quantity: numWant })) continue // We can't buy enough, don't go to buy them
+
+            await bot.smartMove(item)
+        }
+    }
+
+    protected async scare(bot: Type) {
+        if (bot.targets == 0) return // No targets
+        if (!(bot.hasItem("jacko") || bot.isEquipped("jacko"))) return // No jacko to scare
+        if (!bot.isEquipped("jacko")) {
+            await bot.equip(bot.locateItem("jacko"), "orb")
+            if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
+        }
+        if (!bot.canUse("scare")) return // Can't use scare
+        await bot.scare().catch(console.error)
+    }
+}
+
 export type HoldPositionMoveStrategyOptions = {
     /** If set, we will offset the given location by this amount */
     offset?: {
