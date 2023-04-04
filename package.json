@@ -17,6 +17,7 @@
     "express": "^4.17.3",
     "express-validator": "^6.14.0",
     "fastpriorityqueue": "^0.7.1",
+    "lru-cache": "^8.0.4",
     "node-trilateration": "^1.0.0",
     "queue-promise": "^2.2.1"
   },
