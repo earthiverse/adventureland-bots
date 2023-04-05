@@ -5,6 +5,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
+import { MAGE_SPLASH } from "./equipment.js"
 
 export function constructArmadilloSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const monsters: MonsterName[] = ["armadillo", "phoenix"]
@@ -15,7 +16,11 @@ export function constructArmadilloSetup(contexts: Strategist<PingCompensatedChar
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, typeList: monsters }),
+                        attack: new MageAttackStrategy({
+                            contexts: contexts,
+                            ensureEquipped: { ...MAGE_SPLASH },
+                            typeList: monsters
+                        }),
                         move: new ImprovedMoveStrategy("armadillo")
                     }
                 ]
