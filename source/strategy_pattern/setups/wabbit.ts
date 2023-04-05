@@ -11,7 +11,7 @@ import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { PRIEST_LUCK } from "./equipment.js"
 
-const typeList: MonsterName[] = ["wabbit", ...IDLE_ATTACK_MONSTERS, "wolf", "wolfie", "stompy"]
+const typeList: MonsterName[] = ["wabbit", ...IDLE_ATTACK_MONSTERS, "bbpompom", "wolf", "wolfie", "stompy"]
 
 export function constructWabbitSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const wabbitMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, type: "wabbit" })
