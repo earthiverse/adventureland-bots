@@ -55,7 +55,8 @@ async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentif
     })
 
     // Set up the disconnect for the next server hop
-    setTimeout(()=> {
+    setTimeout(async ()=> {
+        await context.bot.getPontyItems()
         console.log("Stopping!")
         context.stop()
     }, getMsToNextMinute() - BUFFER)

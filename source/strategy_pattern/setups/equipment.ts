@@ -55,7 +55,7 @@ export const MAGE_SPLASH: EnsureEquipped = {
 
 export const MAGE_FAST: EnsureEquipped = {
     ...MAGE_NORMAL,
-    mainhand: { name: "wand", filters: { returnHighestLevel: true } },
+    mainhand: { name: "pinkie", filters: { returnHighestLevel: true } },
 }
 
 export const PRIEST_ARMOR: EnsureEquipped = {

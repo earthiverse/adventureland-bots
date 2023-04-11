@@ -9,6 +9,9 @@ import { MAGE_SPLASH, PRIEST_LUCK, WARRIOR_SPLASH } from "./equipment.js"
 
 export function constructBigBirdSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const spawn = AL.Pathfinder.locateMonster("bigbird")[0]
+    const mageMoveStrategy = new HoldPositionMoveStrategy(spawn, { offset: { x: 5 } })
+    const priestMoveStrategy = new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } })
+    const warriorMoveStrategy = new MoveInCircleMoveStrategy({ center: spawn, radius: 20, sides: 8 })
 
     return {
         configs: [
@@ -23,7 +26,7 @@ export function constructBigBirdSetup(contexts: Strategist<PingCompensatedCharac
                             ensureEquipped: { ...MAGE_SPLASH },
                             type: "bigbird"
                         }),
-                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: 5 } })
+                        move: mageMoveStrategy
                     },
                     {
                         ctype: "priest",
@@ -33,7 +36,7 @@ export function constructBigBirdSetup(contexts: Strategist<PingCompensatedCharac
                             ensureEquipped: { ...PRIEST_LUCK },
                             type: "bigbird",
                         }),
-                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } })
+                        move: priestMoveStrategy
                     },
                     {
                         ctype: "warrior",
@@ -44,7 +47,7 @@ export function constructBigBirdSetup(contexts: Strategist<PingCompensatedCharac
                             enableGreedyAggro: true,
                             type: "bigbird"
                         }),
-                        move: new MoveInCircleMoveStrategy({ center: spawn, radius: 20, sides: 8 })
+                        move: warriorMoveStrategy
                     }
                 ]
             },
@@ -59,7 +62,7 @@ export function constructBigBirdSetup(contexts: Strategist<PingCompensatedCharac
                             ensureEquipped: { ...MAGE_SPLASH },
                             type: "bigbird"
                         }),
-                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: 5 } })
+                        move: mageMoveStrategy
                     },
                     {
                         ctype: "priest",
@@ -69,7 +72,7 @@ export function constructBigBirdSetup(contexts: Strategist<PingCompensatedCharac
                             ensureEquipped: { ...PRIEST_LUCK },
                             type: "bigbird",
                         }),
-                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } })
+                        move: priestMoveStrategy
                     },
                 ]
             },
@@ -84,7 +87,7 @@ export function constructBigBirdSetup(contexts: Strategist<PingCompensatedCharac
                             ensureEquipped: { ...PRIEST_LUCK },
                             type: "bigbird",
                         }),
-                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } })
+                        move: priestMoveStrategy
                     },
                     {
                         ctype: "warrior",
@@ -95,7 +98,7 @@ export function constructBigBirdSetup(contexts: Strategist<PingCompensatedCharac
                             enableGreedyAggro: true,
                             type: "bigbird"
                         }),
-                        move: new MoveInCircleMoveStrategy({ center: spawn, radius: 20, sides: 8 })
+                        move: warriorMoveStrategy
                     }
                 ]
             },

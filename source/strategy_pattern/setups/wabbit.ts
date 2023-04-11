@@ -9,7 +9,7 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { PRIEST_LUCK } from "./equipment.js"
+import { MAGE_FAST, PRIEST_LUCK } from "./equipment.js"
 
 const typeList: MonsterName[] = ["wabbit", ...IDLE_ATTACK_MONSTERS, "bbpompom", "wolf", "wolfie", "stompy"]
 
@@ -25,6 +25,7 @@ export function constructWabbitSetup(contexts: Strategist<PingCompensatedCharact
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
+                            ensureEquipped: { ...MAGE_FAST },
                             typeList: typeList,
                         }),
                         move: wabbitMoveStrategy
@@ -51,7 +52,7 @@ export function constructWabbitSetup(contexts: Strategist<PingCompensatedCharact
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: PRIEST_LUCK,
+                            ensureEquipped: { ...PRIEST_LUCK },
                             typeList: typeList,
                         }),
                         move: wabbitMoveStrategy

@@ -59,15 +59,21 @@ export type RunnerOptions = {
     partyLeader?: string
     ephemeral?: {
         buffer: number
+        check?: () => Promise<boolean>
     }
     itemOverrides?: Partial<OptimizeItemsStrategyOptions>
     merchantOverrides?: Partial<MerchantMoveStrategyOptions>
     moveOverrides?: Partial<ImprovedMoveStrategyOptions>
 }
 
-export function startRunner(character: PingCompensatedCharacter, options: RunnerOptions): Strategist<PingCompensatedCharacter> {
+export async function startRunner(character: PingCompensatedCharacter, options: RunnerOptions): Promise<Strategist<PingCompensatedCharacter>> {
     if (options.ephemeral && options.ephemeral.buffer >= 30_000) {
         throw new Error("Please choose a buffer time for `options.ephemeral.buffer` less than 30_000")
+    }
+    if (options.ephemeral.check && (!(await options.ephemeral.check()))) {
+        // Prevent from starting for a minute
+        setTimeout(() => { startRunner(character, options) }, 60_000)
+        return
     }
 
     let context: Strategist<PingCompensatedCharacter>
@@ -262,6 +268,10 @@ export function startRunner(character: PingCompensatedCharacter, options: Runner
     if (options.ephemeral) {
         const connectLoop = async () => {
             try {
+                if (options.ephemeral.check && (!(await options.ephemeral.check()))) {
+                    // Prevent from starting
+                    return
+                }
                 await context.reconnect()
             } catch (e) {
                 console.error(e)

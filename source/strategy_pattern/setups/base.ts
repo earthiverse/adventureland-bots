@@ -43,9 +43,11 @@ import { constructPlantoidSetup } from "./plantoid.js"
 import { constructPorcupineHelperSetup, constructPorcupineSetup } from "./porcupine.js"
 import { constructPPPomPomSetup } from "./pppompom.js"
 import { constructPRatSetup } from "./prat.js"
+import { constructRatSetup } from "./rat.js"
 import { constructRGooHelperSetup, constructRGooSetup } from "./rgoo.js"
 import { constructRHarpySetup } from "./rharpy.js"
 import { constructSkeletorSetup } from "./skeletor.js"
+import { constructSnakeSetup } from "./snake.js"
 import { constructSnowmanHelperSetup, constructSnowmanSetup } from "./snowman.js"
 import { constructSquigToadHelperSetup, constructSquigToadSetup } from "./squigtoad.js"
 import { constructStompySetup } from "./stompy.js"
@@ -99,6 +101,7 @@ export type Setups = { [T in MonsterName]?: Setup }
 
 export function constructGenericSetup(contexts: Strategist<PingCompensatedCharacter>[], monsters: MonsterName[], privateInstance = false): Setup {
     const id_prefix = monsters.join("+")
+    const moveStrategy = new ImprovedMoveStrategy(monsters[0])
 
     let allMagical = true
     let allPhysical = true
@@ -128,7 +131,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                             ensureEquipped: privateInstance ? (allMagical ? { ...MAGE_SPLASH } : { ...MAGE_NORMAL }) : undefined,
                             typeList: monsters
                         }),
-                        move: new ImprovedMoveStrategy(monsters[0])
+                        move: moveStrategy
                     }
                 ]
             },
@@ -138,7 +141,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                     {
                         ctype: "paladin",
                         attack: new PaladinAttackStrategy({ contexts: contexts, typeList: monsters }),
-                        move: new ImprovedMoveStrategy(monsters[0])
+                        move: moveStrategy
                     }
                 ]
             },
@@ -153,7 +156,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                             typeList: monsters,
                             enableGreedyAggro: (privateInstance && allMagical) ? true : undefined
                         }),
-                        move: new ImprovedMoveStrategy(monsters[0])
+                        move: moveStrategy
                     }
                 ]
             },
@@ -163,7 +166,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                     {
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({ contexts: contexts, typeList: monsters }),
-                        move: new ImprovedMoveStrategy(monsters[0])
+                        move: moveStrategy
                     }
                 ]
             },
@@ -173,7 +176,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                     {
                         ctype: "rogue",
                         attack: new RogueAttackStrategy({ contexts: contexts, typeList: monsters }),
-                        move: new ImprovedMoveStrategy(monsters[0])
+                        move: moveStrategy
                     }
                 ]
             },
@@ -189,7 +192,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                             ensureEquipped: privateInstance ? (allPhysical ? { ...WARRIOR_SPLASH } : { ...WARRIOR_NORMAL }) : undefined,
                             typeList: monsters,
                         }),
-                        move: new ImprovedMoveStrategy(monsters[0])
+                        move: moveStrategy
                     }
                 ]
             }
@@ -199,6 +202,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
 
 export function constructGenericWithPriestSetup(contexts: Strategist<PingCompensatedCharacter>[], monsters: MonsterName[]): Setup {
     const id_prefix = monsters.join("+") + "_w/priest"
+    const moveStrategy = new ImprovedMoveStrategy(monsters[0])
 
     return {
         configs: [
@@ -211,7 +215,7 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
                             contexts: contexts,
                             typeList: monsters
                         }),
-                        move: new ImprovedMoveStrategy(monsters[0])
+                        move: moveStrategy
                     },
                     {
                         ctype: "mage",
@@ -220,7 +224,7 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
                             targetingPartyMember: true,
                             typeList: monsters
                         }),
-                        move: new ImprovedMoveStrategy(monsters[0])
+                        move: moveStrategy
                     }
                 ]
             },
@@ -233,7 +237,7 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
                             contexts: contexts,
                             typeList: monsters
                         }),
-                        move: new ImprovedMoveStrategy(monsters[0])
+                        move: moveStrategy
                     },
                     {
                         ctype: "paladin",
@@ -242,7 +246,7 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
                             targetingPartyMember: true,
                             typeList: monsters
                         }),
-                        move: new ImprovedMoveStrategy(monsters[0])
+                        move: moveStrategy
                     }
                 ]
             },
@@ -255,7 +259,7 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
                             contexts: contexts,
                             typeList: monsters
                         }),
-                        move: new ImprovedMoveStrategy(monsters[0])
+                        move: moveStrategy
                     },
                     {
                         ctype: "ranger",
@@ -264,7 +268,7 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
                             targetingPartyMember: true,
                             typeList: monsters
                         }),
-                        move: new ImprovedMoveStrategy(monsters[0])
+                        move: moveStrategy
                     }
                 ]
             },
@@ -277,7 +281,7 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
                             contexts: contexts,
                             typeList: monsters
                         }),
-                        move: new ImprovedMoveStrategy(monsters[0])
+                        move: moveStrategy
                     },
                     {
                         ctype: "rogue",
@@ -286,7 +290,7 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
                             targetingPartyMember: true,
                             typeList: monsters
                         }),
-                        move: new ImprovedMoveStrategy(monsters[0])
+                        move: moveStrategy
                     }
                 ]
             },
@@ -299,7 +303,7 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
                             contexts: contexts,
                             typeList: monsters
                         }),
-                        move: new ImprovedMoveStrategy(monsters[0])
+                        move: moveStrategy
                     },
                     {
                         ctype: "warrior",
@@ -308,7 +312,7 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
                             targetingPartyMember: true,
                             typeList: monsters,
                         }),
-                        move: new ImprovedMoveStrategy(monsters[0])
+                        move: moveStrategy
                     }
                 ]
             }
@@ -365,12 +369,12 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         porcupine: constructPorcupineSetup(contexts),
         pppompom: constructPPPomPomSetup(contexts),
         prat: constructPRatSetup(contexts),
-        rat: constructGenericSetup(contexts, ["rat"], true),
+        rat: constructRatSetup(contexts),
         rgoo: constructRGooSetup(contexts),
         rharpy: constructRHarpySetup(contexts),
         scorpion: constructGenericSetup(contexts, ["scorpion"], true),
         skeletor: constructSkeletorSetup(contexts),
-        snake: constructGenericSetup(contexts, ["snake", "osnake", "tinyp"], true),
+        snake: constructSnakeSetup(contexts),
         snowman: constructSnowmanSetup(contexts),
         spider: constructGenericSetup(contexts, ["spider"], true),
         squig: constructSquigToadSetup(contexts),

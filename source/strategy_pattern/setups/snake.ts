@@ -1,69 +1,75 @@
-import { PingCompensatedCharacter } from "alclient"
+import { MonsterName, PingCompensatedCharacter } from "alclient"
+import { halloweenSafeSnakes } from "../../base/locations.js"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
+import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_SPLASH, PRIEST_LUCK, WARRIOR_SPLASH } from "./equipment.js"
+import { MAGE_SPLASH, PRIEST_FAST, WARRIOR_SPLASH } from "./equipment.js"
 
-export function constructBBPomPomSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new ImprovedMoveStrategy("bbpompom")
+export function constructSnakeSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const monsters: MonsterName[] = ["snake", "osnake", "tinyp"]
+    const moveStrategy = new ImprovedMoveStrategy(monsters, { idlePosition: halloweenSafeSnakes })
 
     return {
         configs: [
             {
-                id: "bbpompom_mage,priest",
+                id: "snake_mage",
                 characters: [
                     {
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
-                            disableEnergize: true,
                             ensureEquipped: { ...MAGE_SPLASH },
-                            type: "bbpompom"
-                        }),
-                        move: moveStrategy
-                    },
-                    {
-                        ctype: "priest",
-                        attack: new PriestAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_LUCK },
-                            type: "bbpompom",
+                            typeList: monsters
                         }),
                         move: moveStrategy
                     }
                 ]
             },
             {
-                id: "bbpompom_warrior,priest",
+                id: "snake_priest",
                 characters: [
-                    {
-                        ctype: "warrior",
-                        attack: new WarriorAttackStrategy({
-                            contexts: contexts,
-                            enableEquipForCleave: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
-                            type: "bbpompom"
-                        }),
-                        move: moveStrategy
-                    },
                     {
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
-                            disableEnergize: true,
-                            enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_LUCK },
-                            type: "bbpompom",
+                            ensureEquipped: { ...PRIEST_FAST },
+                            typeList: monsters
                         }),
                         move: moveStrategy
                     }
                 ]
             },
+            {
+                id: "snake_ranger",
+                characters: [
+                    {
+                        ctype: "ranger",
+                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: monsters }),
+                        move: moveStrategy
+                    }
+                ]
+            },
+            {
+                id: "snake_warrior",
+                characters: [
+                    {
+                        ctype: "warrior",
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            disableAgitate: true,
+                            enableEquipForCleave: true,
+                            enableGreedyAggro: true,
+                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            typeList: monsters
+                        }),
+                        move: moveStrategy
+                    }
+                ]
+            }
         ]
     }
 }
