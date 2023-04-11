@@ -70,7 +70,7 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
     if (options.ephemeral && options.ephemeral.buffer >= 30_000) {
         throw new Error("Please choose a buffer time for `options.ephemeral.buffer` less than 30_000")
     }
-    if (options.ephemeral.check && (!(await options.ephemeral.check()))) {
+    if (options.ephemeral?.check && (!(await options.ephemeral.check()))) {
         // Prevent from starting for a minute
         setTimeout(() => { startRunner(character, options) }, 60_000)
         return
@@ -268,7 +268,7 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
     if (options.ephemeral) {
         const connectLoop = async () => {
             try {
-                if (options.ephemeral.check && (!(await options.ephemeral.check()))) {
+                if (options.ephemeral?.check && (!(await options.ephemeral.check()))) {
                     // Prevent from starting
                     return
                 }
