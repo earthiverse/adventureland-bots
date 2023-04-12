@@ -37,7 +37,7 @@ const ENABLE_EVENTS = true
 const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
 const ENABLE_MONSTERHUNTS = true
-const DEFAULT_MONSTER: MonsterName = "poisio"
+const DEFAULT_MONSTERS: MonsterName[] = ["xscorpion", "poisio"]
 const SPECIAL_MONSTERS: MonsterName[] = ["crabxx", "cutebee", "franky", "fvampire", "goldenbat", "greenjr", "icegolem", "jr", "mvampire", "skeletor", "snowman", "stompy", "tinyp", "wabbit"]
 const MAX_PUBLIC_CHARACTERS = 6
 
@@ -173,7 +173,7 @@ const itemStrategy = new OptimizeItemsStrategy({
     contexts: ALL_CONTEXTS
 })
 
-let OVERRIDE_MONSTER: MonsterName
+let OVERRIDE_MONSTERS: MonsterName[]
 let OVERRIDE_REGION: ServerRegion
 let OVERRIDE_IDENTIFIER: ServerIdentifier
 class OverrideStrategy implements Strategy<PingCompensatedCharacter> {
@@ -184,11 +184,13 @@ class OverrideStrategy implements Strategy<PingCompensatedCharacter> {
             const args = data.split(" ")
             switch (args[0].toLowerCase()) {
                 case "monster":
-                    if (args[1]) {
-                        OVERRIDE_MONSTER = args[1].toLowerCase() as MonsterName
-                        console.log(`Overriding monster to ${OVERRIDE_MONSTER}`)
+                    OVERRIDE_MONSTERS = []
+                    if (args.length > 1) {
+                        for (let i = 1; i < args.length; i++) {
+                            OVERRIDE_MONSTERS.push(args[i].toLowerCase() as MonsterName)
+                        }
+                        console.log(`Overriding monsters to [${OVERRIDE_MONSTERS.join(", ")}]`)
                     } else {
-                        OVERRIDE_MONSTER = undefined
                         console.log("Clearing monster override...")
                     }
                     break
@@ -422,13 +424,13 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
 
     // Default targets
     for (const _context of contexts) {
-        priority.push(DEFAULT_MONSTER)
+        priority.push(...DEFAULT_MONSTERS)
     }
 
     // Monster override
-    if (OVERRIDE_MONSTER) {
+    if (OVERRIDE_MONSTERS) {
         for (const _context of contexts) {
-            priority.unshift(OVERRIDE_MONSTER)
+            priority.unshift(...OVERRIDE_MONSTERS)
         }
     }
 
