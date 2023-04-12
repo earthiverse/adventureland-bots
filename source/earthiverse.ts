@@ -37,7 +37,7 @@ const ENABLE_EVENTS = true
 const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
 const ENABLE_MONSTERHUNTS = true
-const DEFAULT_MONSTER: MonsterName = "snake"
+const DEFAULT_MONSTER: MonsterName = "poisio"
 const SPECIAL_MONSTERS: MonsterName[] = ["crabxx", "cutebee", "franky", "fvampire", "goldenbat", "greenjr", "icegolem", "jr", "mvampire", "skeletor", "snowman", "stompy", "tinyp", "wabbit"]
 const MAX_PUBLIC_CHARACTERS = 6
 
@@ -50,7 +50,7 @@ const PARTY_LEADER = "earthWar"
 const PARTY_ALLOWLIST = ["earthiverse", "earthMag", "earthPri", "earthWar"]
 
 const DEFAULT_REGION: ServerRegion = "US"
-const DEFAULT_IDENTIFIER: ServerIdentifier = "I"
+const DEFAULT_IDENTIFIER: ServerIdentifier = "III"
 let TARGET_REGION: ServerRegion = DEFAULT_REGION
 let TARGET_IDENTIFIER: ServerIdentifier = DEFAULT_IDENTIFIER
 
