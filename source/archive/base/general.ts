@@ -1767,7 +1767,7 @@ export function startSendStuffAllowlistLoop(bot: Character, sendTo: string, item
                     if (item.l == "l") continue // Don't send locked items
 
                     try {
-                        await bot.sendItem(sendTo, i, item.q)
+                        await bot.sendItem(sendTo, i, item.q ?? 1)
                     } catch (e) {
                         // They're probably full
                         bot.timeouts.set("sendStuffAllowListLoop", setTimeout(sendStuffLoop, 5000))
@@ -1816,7 +1816,7 @@ export function startSendStuffDenylistLoop(bot: Character, sendTo: string[], ite
                     if (itemsToHold.has(item.name)) continue // Don't send important items
 
                     try {
-                        await bot.sendItem(sendToPlayer.id, i, item.q)
+                        await bot.sendItem(sendToPlayer.id, i, item.q ?? 1)
                     } catch (e) {
                         // They're probably full
                         bot.timeouts.set("sendStuffDenyListLoop", setTimeout(sendStuffLoop, 5000))
