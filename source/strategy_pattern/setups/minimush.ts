@@ -1,59 +1,61 @@
-import { PingCompensatedCharacter } from "alclient"
+import { MonsterName, PingCompensatedCharacter } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
-import { Setup } from "./base"
+import { Setup } from "./base.js"
 import { MAGE_FAST, PRIEST_FAST, WARRIOR_SPLASH } from "./equipment.js"
 
-export function constructRatSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new ImprovedMoveStrategy("rat")
+export function constructMinimushSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const moveStrategy = new ImprovedMoveStrategy("minimush")
+    const types: MonsterName[] = ["minimush", "phoenix", "tinyp"]
 
     return {
         configs: [
             {
-                id: "rat_mage",
+                id: "minimush_mage",
                 characters: [
                     {
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             ensureEquipped: { ...MAGE_FAST },
-                            type: "rat"
+                            typeList: types
                         }),
                         move: moveStrategy
                     }
                 ]
             },
             {
-                id: "rat_priest",
+                id: "minimush_priest",
                 characters: [
                     {
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableCurse: true,
+                            enableGreedyAggro: true,
                             ensureEquipped: { ...PRIEST_FAST },
-                            type: "rat"
+                            typeList: types
                         }),
                         move: moveStrategy
                     }
                 ]
             },
             {
-                id: "rat_ranger",
+                id: "minimush_ranger",
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, type: "rat" }),
+                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: types }),
                         move: moveStrategy
                     }
                 ]
             },
             {
-                id: "rat_warrior",
+                id: "minimush_warrior",
                 characters: [
                     {
                         ctype: "warrior",
@@ -61,9 +63,8 @@ export function constructRatSetup(contexts: Strategist<PingCompensatedCharacter>
                             contexts: contexts,
                             disableAgitate: true,
                             enableEquipForCleave: true,
-                            enableGreedyAggro: true,
                             ensureEquipped: { ...WARRIOR_SPLASH },
-                            type: "rat"
+                            typeList: types
                         }),
                         move: moveStrategy
                     }

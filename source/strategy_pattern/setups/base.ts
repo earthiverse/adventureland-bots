@@ -57,6 +57,9 @@ import { constructWabbitHelperSetup, constructWabbitSetup } from "./wabbit.js"
 import { constructWolfSetup } from "./wolf.js"
 import { constructWolfieSetup } from "./wolfie.js"
 import { constructXScorpionSetup } from "./xscorpion.js"
+import { constructGooSetup } from "./goo.js"
+import { constructMinimushSetup } from "./minimush.js"
+import { constructCrabSetup } from "./crab.js"
 
 export type CharacterConfig = {
     ctype: "mage"
@@ -333,7 +336,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         booboo: constructBooBooSetup(contexts),
         bscorpion: constructBScorpionSetup(contexts),
         cgoo: constructCGooSetup(contexts),
-        crab: constructGenericSetup(contexts, ["crab", "phoenix"], true),
+        crab: constructCrabSetup(contexts),
         crabx: constructGenericSetup(contexts, ["crabx"], true),
         crabxx: constructGigaCrabSetup(contexts),
         croc: constructGenericSetup(contexts, ["croc", "phoenix"], true),
@@ -346,7 +349,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         fvampire: constructFVampireSetup(contexts),
         ghost: constructGhostSetup(contexts),
         goldenbat: constructGoldenbatSetup(contexts),
-        goo: constructGenericSetup(contexts, ["goo"], true),
+        goo: constructGooSetup(contexts),
         greenjr: constructGreenJrSetup(contexts),
         grinch: constructGrinchSetup(contexts),
         harpy: constructHarpySetup(contexts),
@@ -354,7 +357,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         iceroamer: constructGenericSetup(contexts, ["iceroamer"], true),
         jr: constructJrSetup(contexts),
         jrat: constructGenericSetup(contexts, ["jrat"], true),
-        minimush: constructGenericSetup(contexts, ["minimush", "phoenix", "tinyp"], true),
+        minimush: constructMinimushSetup(contexts),
         mole: constructMoleSetup(contexts),
         mrgreen: constructMrGreenSetup(contexts),
         mrpumpkin: constructMrPumpkinSetup(contexts),
