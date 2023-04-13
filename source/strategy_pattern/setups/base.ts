@@ -60,6 +60,7 @@ import { constructXScorpionSetup } from "./xscorpion.js"
 import { constructGooSetup } from "./goo.js"
 import { constructMinimushSetup } from "./minimush.js"
 import { constructCrabSetup } from "./crab.js"
+import { constructBeeSetup } from "./bee.js"
 
 export type CharacterConfig = {
     ctype: "mage"
@@ -329,7 +330,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         armadillo: constructArmadilloSetup(contexts),
         bat: constructGenericSetup(contexts, ["goldenbat", "bat"], true),
         bbpompom: constructBBPomPomSetup(contexts),
-        bee: constructGenericSetup(contexts, ["bee"], true),
+        bee: constructBeeSetup(contexts),
         bgoo: constructRGooSetup(contexts),
         bigbird: constructBigBirdSetup(contexts),
         boar: constructBoarSetup(contexts),
