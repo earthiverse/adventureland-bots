@@ -1,5 +1,5 @@
 import AL, { ItemName, Merchant, PingCompensatedCharacter, Priest, Mage, Warrior, ServerRegion, ServerIdentifier, MonsterName, ServerInfoDataLive, CharacterType, Paladin, Ranger, Rogue } from "alclient"
-import { DEFAULT_ITEMS_TO_BUY, DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO, startMerchant } from "./merchant/strategy.js"
+import { DEFAULT_ITEMS_TO_BUY, DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO, MerchantMoveStrategyOptions, startMerchant } from "./merchant/strategy.js"
 import { filterContexts, Strategist, Strategy } from "./strategy_pattern/context.js"
 import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "./strategy_pattern/strategies/buy.js"
@@ -817,7 +817,7 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
         }
         case "merchant": {
             context = new Strategist<Merchant>(bot as Merchant, baseStrategy)
-            startMerchant(context as Strategist<Merchant>, PUBLIC_CONTEXTS, {
+            const merchantOptions: MerchantMoveStrategyOptions = {
                 defaultPosition: {
                     map: "main",
                     x: randomIntFromInterval(-50, 50),
@@ -849,7 +849,15 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
                 enableUpgrade: true,
                 goldToHold: 50_000_000,
                 itemsToHold: DEFAULT_MERCHANT_ITEMS_TO_HOLD,
-            })
+            }
+            if (context.bot.canUse("mluck", { ignoreCooldown: true, ignoreLocation: true, ignoreMP: true })) {
+                merchantOptions.enableMluck = {
+                    contexts: true,
+                    self: true,
+                    travel: true
+                }
+            }
+            startMerchant(context as Strategist<Merchant>, PUBLIC_CONTEXTS, merchantOptions)
             context.applyStrategy(privateSellStrategy)
             context.applyStrategy(itemStrategy)
             break

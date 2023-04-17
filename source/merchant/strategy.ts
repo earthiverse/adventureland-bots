@@ -978,14 +978,14 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     for (const context of filterContexts(this.contexts, { serverData: bot.serverData })) {
                         const friend = context.bot
                         if (
-                            bot.s.mluck // They have mluck
-                            && bot.s.mluck.f == bot.id // It's from us
-                            && bot.s.mluck?.ms > 900_000 // There's 15 minutes or more left
+                            friend.s.mluck // They have mluck
+                            && friend.s.mluck.f == bot.id // It's from us
+                            && friend.s.mluck?.ms > 900_000 // There's 15 minutes or more left
                         ) continue // Ignore
                         if (
-                            bot.s.mluck // They have mluck
-                            && bot.s.mluck.f !== bot.id // It's not from us
-                            && bot.s.mluck.strong // It's strong
+                            friend.s.mluck // They have mluck
+                            && friend.s.mluck.f !== bot.id // It's not from us
+                            && friend.s.mluck.strong // It's strong
                         ) continue // Ignore, because we can't override it
                         this.debug(bot, `Moving to ${friend.name} (context) to mluck them`)
                         await bot.smartMove(friend, { getWithin: AL.Game.G.skills.mluck.range / 2 })
