@@ -61,6 +61,7 @@ import { constructGooSetup } from "./goo.js"
 import { constructMinimushSetup } from "./minimush.js"
 import { constructCrabSetup } from "./crab.js"
 import { constructBeeSetup } from "./bee.js"
+import { constructIceRoamerHelperSetup, constructIceRoamerSetup } from "./iceroamer.js"
 
 export type CharacterConfig = {
     ctype: "mage"
@@ -328,7 +329,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
     return {
         arcticbee: constructGenericSetup(contexts, ["arcticbee", "snowman"], true),
         armadillo: constructArmadilloSetup(contexts),
-        bat: constructGenericSetup(contexts, ["goldenbat", "bat"], true),
+        bat: constructGenericSetup(contexts, ["bat", "goldenbat", "phoenix", "mvampire"], true),
         bbpompom: constructBBPomPomSetup(contexts),
         bee: constructBeeSetup(contexts),
         bgoo: constructRGooSetup(contexts),
@@ -338,7 +339,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         bscorpion: constructBScorpionSetup(contexts),
         cgoo: constructCGooSetup(contexts),
         crab: constructCrabSetup(contexts),
-        crabx: constructGenericSetup(contexts, ["crabx"], true),
+        crabx: constructGenericSetup(contexts, ["crabx", "phoenix"], true),
         crabxx: constructGigaCrabSetup(contexts),
         croc: constructGenericSetup(contexts, ["croc", "phoenix"], true),
         cutebee: constructCuteBeeSetup(contexts),
@@ -355,7 +356,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         grinch: constructGrinchSetup(contexts),
         harpy: constructHarpySetup(contexts),
         icegolem: constructIceGolemSetup(contexts),
-        iceroamer: constructGenericSetup(contexts, ["iceroamer"], true),
+        iceroamer: constructIceRoamerSetup(contexts),
         jr: constructJrSetup(contexts),
         jrat: constructGenericSetup(contexts, ["jrat"], true),
         minimush: constructMinimushSetup(contexts),
@@ -376,11 +377,11 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         rat: constructRatSetup(contexts),
         rgoo: constructRGooSetup(contexts),
         rharpy: constructRHarpySetup(contexts),
-        scorpion: constructGenericSetup(contexts, ["scorpion"], true),
+        scorpion: constructGenericSetup(contexts, ["scorpion", "phoenix"], true),
         skeletor: constructSkeletorSetup(contexts),
         snake: constructSnakeSetup(contexts),
         snowman: constructSnowmanSetup(contexts),
-        spider: constructGenericSetup(contexts, ["spider"], true),
+        spider: constructGenericSetup(contexts, ["spider", "phoenix"], true),
         squig: constructSquigToadSetup(contexts),
         squigtoad: constructSquigToadSetup(contexts),
         stompy: constructStompySetup(contexts),
@@ -404,8 +405,8 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         bee: constructGenericSetup(contexts, ["bee"]),
         bgoo: constructGenericSetup(contexts, ["rgoo", "bgoo"]),
         boar: constructGenericWithPriestSetup(contexts, ["boar"]),
-        crab: constructGenericSetup(contexts, ["phoenix", "crab"]),
-        crabx: constructGenericSetup(contexts, ["crabx"]),
+        crab: constructGenericSetup(contexts, ["crab", "phoenix"]),
+        crabx: constructGenericSetup(contexts, ["crabx", "phoenix"]),
         crabxx: constructGigaCrabHelperSetup(contexts),
         croc: constructGenericSetup(contexts, ["croc"]),
         cutebee: constructCuteBeeHelperSetup(contexts),
@@ -417,6 +418,7 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         greenjr: constructGenericWithPriestSetup(contexts, ["greenjr", "osnake", "snake"]),
         grinch: constructGrinchHelperSetup(contexts),
         icegolem: constructIceGolemHelperSetup(contexts),
+        iceroamer: constructIceRoamerHelperSetup(contexts),
         jr: constructGenericWithPriestSetup(contexts, ["jr"]),
         jrat: constructGenericSetup(contexts, ["jrat"]),
         minimush: constructGenericSetup(contexts, ["minimush", "phoenix", "tinyp"]),

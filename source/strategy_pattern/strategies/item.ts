@@ -40,6 +40,26 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
      * Sort items how I like them to be sorted
      */
     private async organizeItems (bot: Type) {
+        // Sort locked items first
+        for (let i = 0; i < bot.isize - 1; i++) {
+            const item = bot.items[i]
+            if (!item) continue // No item
+            if (item.l) continue // Locked item is already here
+
+            let foundLocked = false
+            for (let j = i + 1; j < bot.isize; j++) {
+                const item2 = bot.items[j]
+                if (!item2) continue
+                if (!item2.l) continue // Item isn't locked
+                if (["computer", "supercomputer", "tracker"].includes(item2.name)) continue // We sort these differently
+                console.debug(`swapping ${i} (${bot.items[i].name}) and ${j} (${bot.items[j].name}) (locked first)`)
+                await bot.swapItems(i, j)
+                foundLocked = true
+                break
+            }
+            if (!foundLocked) break
+        }
+
         const items: {
             name: ItemName
             num: number
@@ -59,6 +79,7 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
          */
         const fixNum = async (find: ItemName[], num: number) => {
             const item = items.find(i => find.includes(i.name))
+            if (item === undefined) return
             if (item?.num && item.num !== num) await bot.swapItems(item.num, num)
         }
 

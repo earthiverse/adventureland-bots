@@ -1,0 +1,123 @@
+import { PingCompensatedCharacter } from "alclient"
+import { Strategist } from "../context.js"
+import { MageAttackStrategy } from "../strategies/attack_mage.js"
+import { PriestAttackStrategy } from "../strategies/attack_priest.js"
+import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
+import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
+import { ImprovedMoveStrategy } from "../strategies/move.js"
+import { Setup } from "./base.js"
+import { MAGE_ARMOR, MAGE_FAST, MAGE_SPLASH, PRIEST_FAST, PRIEST_NORMAL, WARRIOR_NORMAL, WARRIOR_SPLASH } from "./equipment.js"
+import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
+import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
+
+export function constructIceRoamerSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const moveStrategy = new ImprovedMoveStrategy("iceroamer")
+
+    return {
+        configs: [
+            {
+                id: "iceroamer_priest",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            disableCurse: true,
+                            ensureEquipped: { ...PRIEST_NORMAL },
+                            type: "iceroamer"
+                        }),
+                        move: moveStrategy
+                    }
+                ]
+            },
+            {
+                id: "iceroamer_ranger",
+                characters: [
+                    {
+                        ctype: "ranger",
+                        attack: new RangerAttackStrategy({ contexts: contexts, type: "iceroamer" }),
+                        move: moveStrategy
+                    }
+                ]
+            },
+            {
+                id: "iceroamer_warrior",
+                characters: [
+                    {
+                        ctype: "warrior",
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            enableEquipForCleave: true,
+                            ensureEquipped: { ...WARRIOR_NORMAL },
+                            type: "iceroamer"
+                        }),
+                        move: moveStrategy
+                    }
+                ]
+            }
+        ]
+    }
+}
+
+export function constructIceRoamerHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const moveStrategy = new ImprovedMoveStrategy("iceroamer")
+
+    return {
+        configs: [
+            {
+                id: "iceroamer_helper_paladin",
+                characters: [
+                    {
+                        ctype: "paladin",
+                        attack: new PaladinAttackStrategy({ contexts: contexts, type: "iceroamer" }),
+                        move: moveStrategy
+                    }
+                ]
+            },
+            {
+                id: "iceroamer_helper_priest",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            disableCurse: true,
+                            type: "iceroamer"
+                        }),
+                        move: moveStrategy
+                    }
+                ]
+            },
+            {
+                id: "iceroamer_helper_ranger",
+                characters: [
+                    {
+                        ctype: "ranger",
+                        attack: new RangerAttackStrategy({ contexts: contexts, type: "iceroamer" }),
+                        move: moveStrategy
+                    }
+                ]
+            },
+            {
+                id: "iceroamer_helper_rogue",
+                characters: [
+                    {
+                        ctype: "rogue",
+                        attack: new RogueAttackStrategy({ contexts: contexts, type: "iceroamer" }),
+                        move: moveStrategy
+                    }
+                ]
+            },
+            {
+                id: "iceroamer_helper_warrior",
+                characters: [
+                    {
+                        ctype: "warrior",
+                        attack: new WarriorAttackStrategy({ contexts: contexts, type: "iceroamer" }),
+                        move: moveStrategy
+                    }
+                ]
+            }
+        ]
+    }
+}

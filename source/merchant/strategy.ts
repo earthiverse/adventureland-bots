@@ -1,4 +1,4 @@
-import AL, { BankPackName, Character, IPosition, ItemName, LocateItemsFilters, Merchant, PingCompensatedCharacter, SlotType, Tools, TradeSlotType } from "alclient"
+import AL, { BankPackName, Character, IPosition, ItemName, LocateItemsFilters, MapName, Merchant, PingCompensatedCharacter, SlotType, Tools, TradeSlotType } from "alclient"
 import { getItemCountsForEverything, getItemsToCompoundOrUpgrade, getOfferingToUse, IndexesToCompoundOrUpgrade, ItemCount, withdrawItemFromBank } from "../base/banking.js"
 import { checkOnlyEveryMS, sleep } from "../base/general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
@@ -8,6 +8,7 @@ import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
 import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
+import { addCryptMonstersToDB, getKeyForCrypt, refreshCryptMonsters } from "../base/crypt.js"
 
 export const DEFAULT_CRAFTABLES = new Set<ItemName>([
     "armorring",
@@ -275,6 +276,13 @@ export type MerchantMoveStrategyOptions = {
     enableCraft?: {
         items: Set<ItemName>
     },
+    /** If enabled, the merchant will
+     * - check that instances are still available periodically
+     * - open a new instance if there are no monsters in the database from that crypt and we have an item
+     */
+    enableInstanceProvider?: {
+        crypt?: true
+    }
     /** If enabled, the merchant will
      * - Look for merchants with things we want to buy and move to them
      */
@@ -800,7 +808,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         if (!item) continue // No item here
                         if (item.l) continue // Can't send locked items
                         if (this.options.enableOffload.itemsToHold.has(item.name)) continue // We want to hold this item
-                        await friend.sendItem(bot.id, i, item.q)
+                        await friend.sendItem(bot.id, i, item.q ?? 1)
                     }
 
                     // Return so we can deal with a full inventory if we need to
@@ -1316,6 +1324,71 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     const target = merchantsToCheck[0]
                     await bot.smartMove(target, { getWithin: 25 })
                     return
+                }
+            }
+
+            if (this.options.enableInstanceProvider) {
+                for (const key in this.options.enableInstanceProvider) {
+                    if (!checkOnlyEveryMS(`${bot.id}_instance_${key}`, 60_000)) continue // We've checked this recently
+                    const map = key as MapName
+                    const item = getKeyForCrypt(map)
+
+                    const instanceMonster = await AL.EntityModel.findOne({
+                        lastSeen: { $lt: Date.now() - 3.6e+6 },
+                        map: map,
+                        serverIdentifier: bot.serverData.name,
+                        serverRegion: bot.serverData.region,
+                    }).sort({
+                        lastSeen: -1
+                    }).lean().exec()
+
+                    if (instanceMonster) {
+                        // Check if the instance is still valid
+                        try {
+                            await bot.smartMove(instanceMonster)
+                            if (bot.in === instanceMonster.in) {
+                                // Update last seen for all monsters in this instance
+                                await refreshCryptMonsters(bot)
+                            } else {
+                                // We opened a new instance
+                                await addCryptMonstersToDB(bot)
+                            }
+                        } catch (e) {
+                            console.error(e)
+                        }
+                    } else {
+                        // We don't have any data to check
+                        const instanceMonster = await AL.EntityModel.findOne({
+                            map: map
+                        }).sort({
+                            lastSeen: -1
+                        }).lean().exec()
+
+                        if (!instanceMonster) {
+                            // We don't have any instance monsters for this crypt, open one
+                            if (!bot.hasItem(item)) {
+                                // We don't have a key, check our bank for one
+                                const items = new Set<ItemName>([...this.options.itemsToHold, item])
+                                await bot.smartMove(bankingPosition)
+                                await withdrawItemFromBank(bot, item, {}, {
+                                    freeSpaces: bot.esize,
+                                    itemsToHold: items
+                                })
+                            }
+
+                            if (bot.hasItem(item)) {
+                                try {
+                                    // We have a key, let's go open a crypt
+                                    await bot.smartMove(map)
+                                    if (bot.map === map) {
+                                        await addCryptMonstersToDB(bot)
+                                    }
+                                } catch (e) {
+                                    console.error(e)
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
