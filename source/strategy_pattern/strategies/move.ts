@@ -307,7 +307,7 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
         }
     }
 
-    public onApply (bot: Character) {
+    public onApply(bot: Character) {
         this.spawns.sort(sortClosestDistancePathfinder(bot))
         this.sort = sortTypeThenClosest(bot, this.types)
     }
@@ -376,7 +376,7 @@ export class MoveInCircleMoveStrategy implements Strategy<Character> {
     protected options: MoveInCircleMoveStrategyOptions
 
     public constructor(options: MoveInCircleMoveStrategyOptions) {
-        if (options.sides === undefined){
+        if (options.sides === undefined) {
             options.sides = 3
         } else if (options.sides !== undefined && options.sides < 3) {
             console.warn("[MoveInCircleMoveStrategy] # Sides must be a minimum of 3, setting to 3.")
@@ -432,6 +432,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
 
         this.loops.set("move", {
             fn: async (bot: Character) => {
+                if (bot.rip) return // Can't move if we're dead
                 await this.move(bot)
                 await this.kiteToNPC(bot)
             },
@@ -533,11 +534,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             }
 
             // Move to the next spawn
-            try {
-                await bot.smartMove(spawn, smartMoveOptions)
-            } catch (e) {
-                console.error(e)
-            }
+            await bot.smartMove(spawn, smartMoveOptions).catch(console.error)
 
             // If there's good data where it is, stop & smart move there
             const target = await this.checkGoodData(bot)
@@ -581,11 +578,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             }
 
             // Move to the next spawn
-            try {
-                await bot.smartMove(spawn, smartMoveOptions)
-            } catch (e) {
-                console.error(e)
-            }
+            await bot.smartMove(spawn, smartMoveOptions).catch(console.error)
 
             // If there's good data where it is, stop & smart move there
             const target = await this.checkGoodData(bot)

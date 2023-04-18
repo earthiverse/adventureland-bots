@@ -1,5 +1,5 @@
 import AL, { Character, ChestData, PingCompensatedCharacter, Tools } from "alclient"
-import LRU from "lru-cache"
+import { LRUCache } from "lru-cache"
 import { filterContexts, Loop, LoopName, Strategist, Strategy } from "../context.js"
 
 export class BaseStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
@@ -8,7 +8,7 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
 
     protected lootOnDrop: (data: ChestData) => void
 
-    protected static recentlyLooted = new LRU<string, boolean>({ max: 10 })
+    protected static recentlyLooted = new LRUCache<string, boolean>({ max: 10 })
 
     public constructor(contexts?: Strategist<Type>[]) {
         this.contexts = contexts ?? []
