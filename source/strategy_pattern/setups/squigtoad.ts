@@ -8,10 +8,11 @@ import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { MAGE_FAST, WARRIOR_SPLASH } from "./equipment.js"
 
-const types: MonsterName[] = ["squigtoad", "squig", "phoenix"]
+const attackTypes: MonsterName[] = ["squigtoad", "squig", "phoenix"]
+const moveTypes: MonsterName[] = ["squigtoad", "squig"]
 
 export function constructSquigToadSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new ImprovedMoveStrategy(types)
+    const moveStrategy = new ImprovedMoveStrategy(moveTypes)
 
     return {
         configs: [
@@ -23,7 +24,7 @@ export function constructSquigToadSetup(contexts: Strategist<PingCompensatedChar
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             ensureEquipped: { ...MAGE_FAST },
-                            typeList: types
+                            typeList: attackTypes
                         }),
                         move: moveStrategy
                     }
@@ -34,7 +35,7 @@ export function constructSquigToadSetup(contexts: Strategist<PingCompensatedChar
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, typeList: types }),
+                        attack: new PriestAttackStrategy({ contexts: contexts, typeList: attackTypes }),
                         move: moveStrategy
                     }
                 ]
@@ -44,7 +45,7 @@ export function constructSquigToadSetup(contexts: Strategist<PingCompensatedChar
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: types }),
+                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: attackTypes }),
                         move: moveStrategy
                     }
                 ]
@@ -58,7 +59,7 @@ export function constructSquigToadSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             enableGreedyAggro: true,
                             ensureEquipped: { ...WARRIOR_SPLASH },
-                            typeList: types
+                            typeList: attackTypes
                         }),
                         move: moveStrategy
                     }
@@ -69,7 +70,7 @@ export function constructSquigToadSetup(contexts: Strategist<PingCompensatedChar
 }
 
 export function constructSquigToadHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new ImprovedMoveStrategy(types)
+    const moveStrategy = new ImprovedMoveStrategy(moveTypes)
 
     return {
         configs: [
@@ -78,7 +79,7 @@ export function constructSquigToadHelperSetup(contexts: Strategist<PingCompensat
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, typeList: types }),
+                        attack: new MageAttackStrategy({ contexts: contexts, typeList: attackTypes }),
                         move: moveStrategy
                     }
                 ]
@@ -88,7 +89,7 @@ export function constructSquigToadHelperSetup(contexts: Strategist<PingCompensat
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, typeList: types }),
+                        attack: new PriestAttackStrategy({ contexts: contexts, typeList: attackTypes }),
                         move: moveStrategy
                     }
                 ]
@@ -98,7 +99,7 @@ export function constructSquigToadHelperSetup(contexts: Strategist<PingCompensat
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: types }),
+                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: attackTypes }),
                         move: moveStrategy
                     }
                 ]
@@ -108,7 +109,7 @@ export function constructSquigToadHelperSetup(contexts: Strategist<PingCompensat
                 characters: [
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({ contexts: contexts, typeList: types }),
+                        attack: new WarriorAttackStrategy({ contexts: contexts, typeList: attackTypes }),
                         move: moveStrategy
                     }
                 ]

@@ -90,7 +90,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             disableEnergize: true,
                             disableZapper: true,
-                            ensureEquipped: { ... MAGE_NORMAL }
+                            ensureEquipped: { ...MAGE_NORMAL }
                         }),
                         move: moveStrategy
                     },
@@ -142,6 +142,8 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
 }
 
 export function constructMrPumpkinHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const moveStrategy = new ImprovedMoveStrategy("mrpumpkin")
+
     return {
         configs: [
             {
@@ -150,7 +152,7 @@ export function constructMrPumpkinHelperSetup(contexts: Strategist<PingCompensat
                     {
                         ctype: "mage",
                         attack: new MageAttackStrategy({ contexts: contexts, type: "mrpumpkin", hasTarget: true }),
-                        move: new ImprovedMoveStrategy("mrpumpkin")
+                        move: moveStrategy
                     }
                 ]
             },
@@ -160,7 +162,7 @@ export function constructMrPumpkinHelperSetup(contexts: Strategist<PingCompensat
                     {
                         ctype: "paladin",
                         attack: new PaladinAttackStrategy({ contexts: contexts, type: "mrpumpkin", hasTarget: true }),
-                        move: new ImprovedMoveStrategy("mrpumpkin")
+                        move: moveStrategy
                     }
                 ]
             },
@@ -170,7 +172,7 @@ export function constructMrPumpkinHelperSetup(contexts: Strategist<PingCompensat
                     {
                         ctype: "priest",
                         attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, type: "mrpumpkin", hasTarget: true }),
-                        move: new ImprovedMoveStrategy("mrpumpkin")
+                        move: moveStrategy
                     }
                 ]
             },
@@ -180,7 +182,7 @@ export function constructMrPumpkinHelperSetup(contexts: Strategist<PingCompensat
                     {
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({ contexts: contexts, type: "mrpumpkin", hasTarget: true }),
-                        move: new ImprovedMoveStrategy("mrpumpkin")
+                        move: moveStrategy
                     }
                 ]
             },
@@ -190,7 +192,7 @@ export function constructMrPumpkinHelperSetup(contexts: Strategist<PingCompensat
                     {
                         ctype: "rogue",
                         attack: new RogueAttackStrategy({ contexts: contexts, type: "mrpumpkin", hasTarget: true }),
-                        move: new ImprovedMoveStrategy("mrpumpkin")
+                        move: moveStrategy
                     }
                 ]
             },
@@ -200,7 +202,7 @@ export function constructMrPumpkinHelperSetup(contexts: Strategist<PingCompensat
                     {
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, disableCleave: true, type: "mrpumpkin", hasTarget: true }),
-                        move: new ImprovedMoveStrategy("mrpumpkin")
+                        move: moveStrategy
                     }
                 ]
             }

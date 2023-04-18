@@ -6,13 +6,14 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
+import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { MAGE_NORMAL, PRIEST_NORMAL, WARRIOR_NORMAL } from "./equipment.js"
 
+const typeList: MonsterName[] = ["cgoo"]
+
 export function constructCGooSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const cgooMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, type: "cgoo" })
-    const typeList: MonsterName[] = ["cgoo"]
+    const cgooMoveStrategy = new ImprovedMoveStrategy("cgoo")
 
     return {
         configs: [

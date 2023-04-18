@@ -403,13 +403,15 @@ export async function getPriority2Entities(bot: Character): Promise<Entity[] | I
         },
         { $addFields: { __order: { $indexOfArray: [solo, "$type"] } } },
         { $sort: { "__order": 1 } },
-        { $project: {
-            __order: 0,
-            _id: 0,
-            lastSeen: 0,
-            serverIdentifier: 0,
-            serverRegion: 0
-        } }]).exec()
+        {
+            $project: {
+                __order: 0,
+                _id: 0,
+                lastSeen: 0,
+                serverIdentifier: 0,
+                serverRegion: 0
+            }
+        }]).exec()
 }
 
 export async function getMonsterHuntTargets(bot: Character, friends: Character[]): Promise<(MonsterName)[]> {
@@ -725,7 +727,7 @@ export async function goToPriestIfHurt(bot: Character, priest: Character): Promi
     return bot.smartMove(priest, { getWithin: priest.range, stopIfTrue: async () => bot.hp >= bot.max_hp * 0.6 })
 }
 
-export async function goToSpecialMonster(bot: Character, type: MonsterName, options: { requestMagiport?: true} = {}): Promise<unknown> {
+export async function goToSpecialMonster(bot: Character, type: MonsterName, options: { requestMagiport?: true } = {}): Promise<unknown> {
     const stopIfTrue = async (): Promise<boolean> => {
         const target = bot.getEntity({ type: type })
         if (!target) return false // No target, don't stop
@@ -969,13 +971,14 @@ export function requestMagiportService(bot: Character, targetLocation: IPosition
     AL.PlayerModel.find({
         lastSeen: { $gt: Date.now() - 30000 },
         map: targetLocation.map,
-        name: { $in: [
-            "Bjarny", "Clarity", // Public magiport services
-            "lolwutpear", "shoopdawhoop", "ytmnd", // lolwutpear's mages
-            "facilitating", "gratuitously", "hypothesized"] // sesquipedalian's mages
+        name: {
+            $in: [
+                "Bjarny", "Clarity", // Public magiport services
+            ] // sesquipedalian's mages
         },
         serverIdentifier: bot.server.name,
-        serverRegion: bot.server.region }, {
+        serverRegion: bot.server.region
+    }, {
         _id: 0, map: 1, name: 1, x: 1, y: 1
     }).lean().exec().then((players) => {
         for (const player of players) {
@@ -1075,7 +1078,7 @@ export function startBuyLoop(bot: Character, itemsToBuy = ITEMS_TO_BUY, replenis
                     const cost = bot.calculateItemCost(item)
                     if (bot.gold >= item.price &&
                         ((item.price < cost * 0.6) // Item is lower price than G, which means we could sell it to an NPC straight away and make a profit...
-                        || (itemsToBuy.has(item.name) && !buyableFromNPC && item.price <= cost * AL.Constants.PONTY_MARKUP)) // Item is the same, or lower price than Ponty would sell it for, and we want it.
+                            || (itemsToBuy.has(item.name) && !buyableFromNPC && item.price <= cost * AL.Constants.PONTY_MARKUP)) // Item is the same, or lower price than Ponty would sell it for, and we want it.
                     ) {
                         await bot.buyFromMerchant(player.id, slot, item.rid, q)
                         continue
@@ -1493,7 +1496,7 @@ export function startLootLoop(bot: Character, friends: Character[] = []): void {
                         if (id == bot.id) continue // It's us
                         const partyMember = bot.partyData.party[id]
                         if (Tools.distance(partyMember, chest) <= 800) {
-                        // Close enough for them to loot
+                            // Close enough for them to loot
                             nearFriend = true
                             break
                         }

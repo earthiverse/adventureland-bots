@@ -1,4 +1,4 @@
-import { PingCompensatedCharacter } from "alclient"
+import { MonsterName, PingCompensatedCharacter } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
@@ -6,8 +6,11 @@ import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { MAGE_SPLASH, WARRIOR_SPLASH } from "./equipment.js"
 
+const attackTypes: MonsterName[] = ["cutebee", "bee", "crab", "crabx", "croc", "frog", "goo", "phoenix", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise"]
+
 export function constructCuteBeeSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, type: "cutebee" })
+
     return {
         configs: [
             {
@@ -20,7 +23,7 @@ export function constructCuteBeeSetup(contexts: Strategist<PingCompensatedCharac
                             disableZapper: true,
                             enableEquipForCleave: true,
                             ensureEquipped: { ...WARRIOR_SPLASH },
-                            typeList: ["cutebee", "bee", "crab", "crabx", "croc", "frog", "goo", "phoenix", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise"]
+                            typeList: attackTypes
                         }),
                         move: moveStrategy
                     }
@@ -36,7 +39,7 @@ export function constructCuteBeeSetup(contexts: Strategist<PingCompensatedCharac
                             disableEnergize: true,
                             disableZapper: true,
                             ensureEquipped: { ...MAGE_SPLASH },
-                            typeList: ["cutebee", "bee", "crab", "crabx", "croc", "frog", "goo", "phoenix", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise"]
+                            typeList: attackTypes
                         }),
                         move: moveStrategy
                     }
@@ -48,6 +51,7 @@ export function constructCuteBeeSetup(contexts: Strategist<PingCompensatedCharac
 
 export function constructCuteBeeHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, type: "cutebee" })
+
     return {
         configs: [
             {
@@ -59,7 +63,7 @@ export function constructCuteBeeHelperSetup(contexts: Strategist<PingCompensated
                             contexts: contexts,
                             disableZapper: true,
                             enableEquipForCleave: true,
-                            typeList: ["cutebee", "bee", "crab", "crabx", "croc", "frog", "goo", "phoenix", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise"]
+                            typeList: attackTypes
                         }),
                         move: moveStrategy
                     }
@@ -74,7 +78,7 @@ export function constructCuteBeeHelperSetup(contexts: Strategist<PingCompensated
                             contexts: contexts,
                             disableEnergize: true,
                             disableZapper: true,
-                            typeList: ["cutebee", "bee", "crab", "crabx", "croc", "frog", "goo", "phoenix", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise"]
+                            typeList: attackTypes
                         }),
                         move: moveStrategy
                     }

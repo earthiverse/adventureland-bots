@@ -7,10 +7,11 @@ import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { MAGE_SPLASH } from "./equipment.js"
 
-const monsters: MonsterName[] = ["armadillo", "phoenix"]
+const attackTypes: MonsterName[] = ["armadillo", "phoenix"]
+const moveTypes: MonsterName[] = ["armadillo"]
 
 export function constructArmadilloSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new ImprovedMoveStrategy("armadillo")
+    const moveStrategy = new ImprovedMoveStrategy(moveTypes)
 
     return {
         configs: [
@@ -22,7 +23,7 @@ export function constructArmadilloSetup(contexts: Strategist<PingCompensatedChar
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             ensureEquipped: { ...MAGE_SPLASH },
-                            typeList: monsters
+                            typeList: attackTypes
                         }),
                         move: moveStrategy
                     }
@@ -33,7 +34,7 @@ export function constructArmadilloSetup(contexts: Strategist<PingCompensatedChar
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, typeList: monsters }),
+                        attack: new PriestAttackStrategy({ contexts: contexts, typeList: attackTypes }),
                         move: moveStrategy
                     }
                 ]
@@ -43,7 +44,7 @@ export function constructArmadilloSetup(contexts: Strategist<PingCompensatedChar
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: monsters }),
+                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: attackTypes }),
                         move: moveStrategy
                     }
                 ]
@@ -53,7 +54,7 @@ export function constructArmadilloSetup(contexts: Strategist<PingCompensatedChar
 }
 
 export function constructArmadilloHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new ImprovedMoveStrategy("armadillo")
+    const moveStrategy = new ImprovedMoveStrategy(moveTypes)
 
     return {
         configs: [
@@ -62,7 +63,7 @@ export function constructArmadilloHelperSetup(contexts: Strategist<PingCompensat
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, typeList: monsters }),
+                        attack: new MageAttackStrategy({ contexts: contexts, typeList: attackTypes }),
                         move: moveStrategy
                     }
                 ]
@@ -72,7 +73,7 @@ export function constructArmadilloHelperSetup(contexts: Strategist<PingCompensat
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, typeList: monsters }),
+                        attack: new PriestAttackStrategy({ contexts: contexts, typeList: attackTypes }),
                         move: moveStrategy
                     }
                 ]
@@ -82,7 +83,7 @@ export function constructArmadilloHelperSetup(contexts: Strategist<PingCompensat
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: monsters }),
+                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: attackTypes }),
                         move: moveStrategy
                     }
                 ]

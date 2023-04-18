@@ -973,7 +973,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
             if (broom !== undefined) await bot.equip(broom)
 
             // Go travel to mluck players
-            if (this.options.enableMluck?.travel) {
+            if (this.options.enableMluck?.travel && bot.canUse("mluck", { ignoreCooldown: true, ignoreLocation: true, ignoreMP: true })) {
                 if (this.options.enableMluck.contexts) {
                     for (const context of filterContexts(this.contexts, { serverData: bot.serverData })) {
                         const friend = context.bot
