@@ -970,7 +970,11 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
             // Equip items that make you go fast
             const broom = bot.locateItem("broom", bot.items, { returnHighestLevel: true })
-            if (broom !== undefined) await bot.equip(broom)
+            if (broom !== undefined) {
+                if (bot.slots.mainhand?.name == "broom" && bot.items[broom].level > bot.slots.mainhand.level) {
+                    await bot.equip(broom)
+                }
+            }
 
             // Go travel to mluck players
             if (this.options.enableMluck?.travel && bot.canUse("mluck", { ignoreCooldown: true, ignoreLocation: true, ignoreMP: true })) {
@@ -995,21 +999,24 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     }
                 }
                 if (this.options.enableMluck.others) {
-                    const player = await AL.PlayerModel.findOne({
-                        $or: [
-                            { "s.mluck": undefined }, // They don't have mluck
-                            { "s.mluck.f": { "$ne": bot.id }, "s.mluck.strong": undefined } // We can steal mluck
-                        ],
-                        lastSeen: { $gt: Date.now() - 30000 },
-                        serverIdentifier: bot.server.name,
-                        serverRegion: bot.server.region },
-                    {
-                        _id: 0,
-                        map: 1,
-                        name: 1,
-                        x: 1,
-                        y: 1
-                    }).lean().exec()
+                    const player = await AL.PlayerModel.findOne(
+                        {
+                            $or: [
+                                { "s.mluck": undefined }, // They don't have mluck
+                                { "s.mluck.f": { "$ne": bot.id }, "s.mluck.strong": undefined } // We can steal mluck
+                            ],
+                            lastSeen: { $gt: Date.now() - 30000 },
+                            serverIdentifier: bot.server.name,
+                            serverRegion: bot.server.region
+                        },
+                        {
+                            _id: 0,
+                            map: 1,
+                            name: 1,
+                            x: 1,
+                            y: 1
+                        }
+                    ).lean().exec()
                     if (player) {
                         this.debug(bot, `Moving to ${player.name} to mluck them`)
                         await bot.smartMove(player, { getWithin: AL.Game.G.skills.mluck.range / 2 })
@@ -1204,7 +1211,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         if (potentialWithScroll !== undefined) {
                             await bot.smartMove(getFor, { getWithin: 25 })
                             if (AL.Tools.squaredDistance(bot, getFor) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) {
-                            // We're not near them, so they must have moved, return so we can try again next loop
+                                // We're not near them, so they must have moved, return so we can try again next loop
                                 return
                             }
 
@@ -1242,7 +1249,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
                     // Don't upgrade if it's already the level we want
                     if (lowestLevel < lowestItemLevel + 1) {
-                    /** Find the scroll that corresponds with the grade of the item */
+                        /** Find the scroll that corresponds with the grade of the item */
                         const grade = bot.calculateItemGrade(bot.items[lowestLevelPosition])
                         const scroll = `scroll${grade}` as ItemName
 
