@@ -27,6 +27,7 @@ export const DEFAULT_EXCHANGEABLES = new Set<ItemName>([
     "candy0",
     "candy1",
     "candycane",
+    "candypop",
     "gem0",
     "gem1",
     "gemfragment",
