@@ -24,7 +24,10 @@ import { PriestAttackStrategy } from "../strategy_pattern/strategies/attack_prie
 import { RangerAttackStrategy } from "../strategy_pattern/strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategy_pattern/strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategy_pattern/strategies/attack_warrior.js"
-import { ImprovedMoveStrategy } from "../strategy_pattern/strategies/move.js"
+import { GetHolidaySpiritStrategy, GetReplenishablesStrategy, ImprovedMoveStrategy } from "../strategy_pattern/strategies/move.js"
+import { MoveToBankAndDepositStuffStrategy } from "../strategy_pattern/strategies/bank.js"
+import { getMsToNextMinute } from "../base/general.js"
+import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
 
 await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
@@ -34,19 +37,26 @@ const MAX_CHARS = 9
 const PARTY_LEADER = "earthMer"
 const SERVER_REGION: ServerRegion = "US"
 const SERVER_IDENTIFIER: ServerIdentifier = "I"
+const REPLENISHABLES = new Map<ItemName, number>([
+    ["hpot1", 2500],
+    ["mpot1", 2500],
+])
 
 const avoidStackingStrategy = new AvoidStackingStrategy()
+const bankStrategy = new MoveToBankAndDepositStuffStrategy({ map: "bank" })
 const baseStrategy = new BaseStrategy(CONTEXTS)
 const buyStrategy = new BuyStrategy({
     contexts: CONTEXTS,
     buyMap: undefined,
-    replenishables: new Map<ItemName, number>([
-        ["hpot1", 2500],
-        ["mpot1", 2500],
-    ])
+    replenishables: REPLENISHABLES
 })
 const chargeStrategy = new ChargeStrategy()
 const elixirStrategy = new ElixirStrategy("elixirluck")
+const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
+const getReplenishablesStrategy = new GetReplenishablesStrategy({
+    contexts: CONTEXTS,
+    replenishables: REPLENISHABLES
+})
 const itemStrategy = new OptimizeItemsStrategy({ contexts: CONTEXTS })
 const magiportStrategy = new MagiportOthersSmartMovingToUsStrategy(CONTEXTS)
 const moveStrategy = new ImprovedMoveStrategy("crab")
@@ -86,7 +96,7 @@ class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> 
 }
 const disconnectOnCommandStrategy = new DisconnectOnCommandStrategy()
 
-async function startShared(context: Strategist<PingCompensatedCharacter>) {
+async function startShared(context: Strategist<PingCompensatedCharacter>, attackStrategy: BaseAttackStrategy<PingCompensatedCharacter>) {
     context.applyStrategy(partyRequestStrategy)
 
     context.applyStrategy(buyStrategy)
@@ -95,7 +105,80 @@ async function startShared(context: Strategist<PingCompensatedCharacter>) {
     context.applyStrategy(respawnStrategy)
     context.applyStrategy(elixirStrategy)
     context.applyStrategy(itemStrategy)
-    context.applyStrategy(moveStrategy)
+
+    let lastMoveStrategy: Strategy<PingCompensatedCharacter>
+    let lastAttackStrategy: Strategy<PingCompensatedCharacter>
+    const logicLoop = async () => {
+        try {
+            if (!context.isReady() || !context.bot.ready || context.bot.rip) {
+                setTimeout(async () => { logicLoop() }, 1000)
+                return // Not ready
+            }
+            if (context.bot.S.holidayseason && !context.bot.s.holidayspirit) {
+                if (moveStrategy) {
+                    context.removeStrategy(moveStrategy)
+                    lastMoveStrategy = undefined
+                }
+                context.applyStrategy(getHolidaySpiritStrategy)
+                setTimeout(async () => { logicLoop() }, 1000)
+                return
+            }
+            if (context.hasStrategy(getHolidaySpiritStrategy)) context.removeStrategy(getHolidaySpiritStrategy)
+
+            if (context.bot.ctype !== "merchant" && context.bot.esize == 0) {
+                // We're full, go deposit items in the bank
+                if (attackStrategy) {
+                    context.removeStrategy(attackStrategy)
+                    lastAttackStrategy = undefined
+                }
+                if (moveStrategy) {
+                    context.removeStrategy(moveStrategy)
+                    lastMoveStrategy = undefined
+                }
+
+                context.applyStrategy(bankStrategy)
+                setTimeout(async () => { logicLoop() }, getMsToNextMinute() + 60_000)
+                return
+            }
+            if (context.hasStrategy(bankStrategy)) context.removeStrategy(bankStrategy)
+
+            // Check if we need to go get replenishables
+            for (const [item, numHold] of REPLENISHABLES) {
+                const numHas = context.bot.countItem(item, context.bot.items)
+                if (numHas > (numHold / 4)) continue // We have more 25% of the amount we want
+                const numWant = numHold - numHas
+                if (!context.bot.canBuy(item, { ignoreLocation: true, quantity: numWant })) continue // We can't buy enough, don't go to buy them
+
+                if (attackStrategy) {
+                    context.removeStrategy(attackStrategy)
+                    lastAttackStrategy = undefined
+                }
+                if (moveStrategy) {
+                    context.removeStrategy(moveStrategy)
+                    lastMoveStrategy = undefined
+                }
+
+                context.applyStrategy(getReplenishablesStrategy)
+                setTimeout(async () => { logicLoop() }, 1000)
+                return
+            }
+            if (context.hasStrategy(getReplenishablesStrategy)) context.removeStrategy(getReplenishablesStrategy)
+
+            // Defaults
+            if (moveStrategy && moveStrategy !== lastMoveStrategy) {
+                context.applyStrategy(moveStrategy)
+                lastMoveStrategy = moveStrategy
+            }
+            if (attackStrategy && attackStrategy !== lastAttackStrategy) {
+                context.applyStrategy(attackStrategy)
+                lastAttackStrategy = attackStrategy
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        setTimeout(async () => { logicLoop() }, 1000)
+    }
+    logicLoop()
 
     context.applyStrategy(disconnectOnCommandStrategy)
 
@@ -103,38 +186,32 @@ async function startShared(context: Strategist<PingCompensatedCharacter>) {
 }
 
 async function startMage(context: Strategist<Mage>) {
-    startShared(context)
+    startShared(context, new MageAttackStrategy({ contexts: CONTEXTS, type: "crab" }))
     context.applyStrategy(magiportStrategy)
-    context.applyStrategy(new MageAttackStrategy({ contexts: CONTEXTS, type: "crab" }))
 }
 
 async function startPaladin(context: Strategist<Paladin>) {
-    startShared(context)
-    context.applyStrategy(new PaladinAttackStrategy({ contexts: CONTEXTS, type: "crab" }))
+    startShared(context, new PaladinAttackStrategy({ contexts: CONTEXTS, type: "crab" }))
 }
 
 async function startPriest(context: Strategist<Priest>) {
-    startShared(context)
+    startShared(context, new PriestAttackStrategy({ contexts: CONTEXTS, disableCurse: true, type: "crab" }))
     context.applyStrategy(partyHealStrategy)
-    context.applyStrategy(new PriestAttackStrategy({ contexts: CONTEXTS, disableCurse: true, type: "crab" }))
 }
 
 async function startRanger(context: Strategist<Ranger>) {
-    startShared(context)
-    context.applyStrategy(new RangerAttackStrategy({ contexts: CONTEXTS, disableHuntersMark: true, type: "crab" }))
+    startShared(context, new RangerAttackStrategy({ contexts: CONTEXTS, disableHuntersMark: true, type: "crab" }))
 }
 
 async function startRogue(context: Strategist<Rogue>) {
-    startShared(context)
+    startShared(context, new RogueAttackStrategy({ contexts: CONTEXTS, type: "crab" }))
     context.applyStrategy(rspeedStrategy)
-    context.applyStrategy(new RogueAttackStrategy({ contexts: CONTEXTS, type: "crab" }))
 }
 
 // Warrior setup
 async function startWarrior(context: Strategist<Warrior>) {
-    startShared(context)
+    startShared(context, new WarriorAttackStrategy({ contexts: CONTEXTS, disableAgitate: true, type: "crab" }))
     context.applyStrategy(chargeStrategy)
-    context.applyStrategy(new WarriorAttackStrategy({ contexts: CONTEXTS, disableAgitate: true, type: "crab" }))
 }
 
 const stopRaving = async (characterID: string) => {
