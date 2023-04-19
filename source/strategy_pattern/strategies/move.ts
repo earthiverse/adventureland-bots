@@ -357,7 +357,74 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
     }
 }
 
-// TODO: KiteInCircleMoveStrategy
+export type KiteInCircleMoveStrategyOptions = {
+    /** The center of the circle to walk */
+    center: IPosition
+    /** The radius of the circle to walk */
+    radius: number
+    /** Monster that we're kiting */
+    type: MonsterName
+    /** Spawn (will use Pathfinder if none is provided) */
+    spawn?: IPosition
+}
+
+export class KiteInCircleMoveStrategy implements Strategy<Character> {
+    public loops = new Map<LoopName, Loop<Character>>()
+
+    protected options: KiteInCircleMoveStrategyOptions
+
+    public constructor(options: KiteInCircleMoveStrategyOptions) {
+        this.options = options
+
+        this.loops.set("move", {
+            fn: async (bot: Character) => {
+                if (bot.rip) return // Can't move if we're dead
+                await this.move(bot)
+            },
+            interval: 250
+        })
+    }
+
+    private async move(bot: Character) {
+        const center = this.options.center
+        const radius = this.options.radius
+
+        if (AL.Tools.distance(bot, center) > radius * 1.2) {
+            // Get closer to the circle
+            await bot.smartMove(center, { getWithin: radius })
+        }
+
+        const monster = bot.getEntity({ type: this.options.type, returnNearest: true })
+        if (!monster) return // No monster
+
+        const angleFromCenterToBot = Math.atan2(bot.y - center.y, bot.x - center.x)
+
+        const cw = angleFromCenterToBot + (Math.PI / 6)
+        const cwPoint = { x: center.x + (radius * Math.cos(cw)), y: center.y + (radius * Math.sin(cw)) }
+        const distanceFromCwToMonster = AL.Tools.distance(monster, cwPoint)
+        const ccw = angleFromCenterToBot - (Math.PI / 6)
+        const ccwPoint = { x: center.x + (radius * Math.cos(ccw)), y: center.y + (radius * Math.sin(ccw)) }
+        const distanceFromCcwToMonster = AL.Tools.distance(monster, ccwPoint)
+
+        if (distanceFromCwToMonster > bot.range && distanceFromCcwToMonster > bot.range) {
+            // We need to get closer, choose the closer point
+            if (distanceFromCwToMonster > distanceFromCcwToMonster) {
+                return bot.smartMove(ccwPoint, { resolveOnFinalMoveStart: true })
+            } else {
+                return bot.smartMove(cwPoint, { resolveOnFinalMoveStart: true })
+            }
+        } else {
+            // We want to stay as far back as possible, choose the furthest point
+            if (distanceFromCwToMonster <= distanceFromCcwToMonster) {
+                return bot.smartMove(ccwPoint, { resolveOnFinalMoveStart: true })
+            } else {
+                return bot.smartMove(cwPoint, { resolveOnFinalMoveStart: true })
+            }
+        }
+
+
+    }
+}
 
 export type MoveInCircleMoveStrategyOptions = {
     /** The center of the circle to walk */

@@ -1,4 +1,4 @@
-import AL, { ItemName, Merchant, PingCompensatedCharacter, Priest, Mage, Warrior, ServerRegion, ServerIdentifier, MonsterName, ServerInfoDataLive, CharacterType, Paladin, Ranger, Rogue } from "alclient"
+import AL, { ItemName, Merchant, PingCompensatedCharacter, Priest, Mage, Warrior, ServerRegion, ServerIdentifier, MonsterName, ServerInfoDataLive, CharacterType, Paladin, Ranger, Rogue, Attribute } from "alclient"
 import { DEFAULT_ITEMS_TO_BUY, DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO, MerchantMoveStrategyOptions, startMerchant } from "./merchant/strategy.js"
 import { filterContexts, Strategist, Strategy } from "./strategy_pattern/context.js"
 import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
@@ -225,15 +225,22 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
     const isDoable = (config: Config): Strategist<PingCompensatedCharacter>[] | false => {
         const tempContexts = [...setupContexts]
         const doableWith: Strategist<PingCompensatedCharacter>[] = []
-        nextConfig:
+        nextConfigCharacter:
         for (const characterConfig of config.characters) {
+            nextContext:
             for (let i = 0; i < tempContexts.length; i++) {
                 const context = tempContexts[i]
-                if (context.bot.ctype == characterConfig.ctype) {
-                    doableWith.push(context)
-                    tempContexts.splice(i, 1)
-                    continue nextConfig
+                if (context.bot.ctype !== characterConfig.ctype) continue // Wrong character type
+                if (characterConfig.require) {
+                    for (const a in characterConfig.require) {
+                        const attribute = a as Attribute
+                        if (context.bot[attribute] < characterConfig.require[attribute]) continue nextContext // Character doesn't meet requirements
+                    }
                 }
+
+                doableWith.push(context)
+                tempContexts.splice(i, 1)
+                continue nextConfigCharacter // We found a character that works with this setup
             }
             return false // Not doable
         }

@@ -3,12 +3,14 @@ import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { ImprovedMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
+import { ImprovedMoveStrategy, KiteInCircleMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { PRIEST_LUCK } from "./equipment.js"
 
 export function constructBScorpionSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const spawn = AL.Pathfinder.locateMonster("bscorpion")[0]
+    const kiteStrategy = new KiteInCircleMoveStrategy({ center: spawn, type: "bscorpion", radius: 100 })
+    const moveStrategy = new ImprovedMoveStrategy("bscorpion")
 
     return {
         configs: [
@@ -28,7 +30,7 @@ export function constructBScorpionSetup(contexts: Strategist<PingCompensatedChar
                             targetingPartyMember: true,
                             type: "bscorpion"
                         }),
-                        move: new ImprovedMoveStrategy("bscorpion")
+                        move: moveStrategy
                     },
                     {
                         ctype: "priest",
@@ -39,7 +41,7 @@ export function constructBScorpionSetup(contexts: Strategist<PingCompensatedChar
                             ensureEquipped: { ...PRIEST_LUCK },
                             type: "bscorpion",
                         }),
-                        move: new MoveInCircleMoveStrategy({ center: spawn, radius: 100, sides: 16 })
+                        move: kiteStrategy
                     },
                     {
                         ctype: "warrior",
@@ -54,7 +56,7 @@ export function constructBScorpionSetup(contexts: Strategist<PingCompensatedChar
                             targetingPartyMember: true,
                             type: "bscorpion"
                         }),
-                        move: new ImprovedMoveStrategy("bscorpion")
+                        move: moveStrategy
                     }
                 ]
             },
