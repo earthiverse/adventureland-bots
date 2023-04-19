@@ -8,9 +8,15 @@ import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { MAGE_FAST, PRIEST_FAST, WARRIOR_SPLASH } from "./equipment.js"
+import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
+import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
+
+const attackMonsters: MonsterName[] = ["osnake", "snake", "greenjr", "tinyp"]
+const moveMonsters: MonsterName[] = ["osnake", "snake"]
 
 export function constructOSnakeSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const monsters: MonsterName[] = ["greenjr", "osnake", "snake", "tinyp"]
+    const moveStrategy = new ImprovedMoveStrategy(moveMonsters, { idlePosition: halloweenSafeSnakes })
+
     return {
         configs: [
             {
@@ -21,9 +27,9 @@ export function constructOSnakeSetup(contexts: Strategist<PingCompensatedCharact
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             ensureEquipped: { ...MAGE_FAST },
-                            typeList: monsters
+                            typeList: attackMonsters
                         }),
-                        move: new ImprovedMoveStrategy(monsters, { idlePosition: halloweenSafeSnakes })
+                        move: moveStrategy
                     }
                 ]
             },
@@ -32,8 +38,8 @@ export function constructOSnakeSetup(contexts: Strategist<PingCompensatedCharact
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, ensureEquipped: { ...PRIEST_FAST }, typeList: monsters }),
-                        move: new ImprovedMoveStrategy(monsters, { idlePosition: halloweenSafeSnakes })
+                        attack: new PriestAttackStrategy({ contexts: contexts, ensureEquipped: { ...PRIEST_FAST }, typeList: attackMonsters }),
+                        move: moveStrategy
                     }
                 ]
             },
@@ -42,8 +48,8 @@ export function constructOSnakeSetup(contexts: Strategist<PingCompensatedCharact
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: monsters }),
-                        move: new ImprovedMoveStrategy(monsters, { idlePosition: halloweenSafeSnakes })
+                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: attackMonsters }),
+                        move: moveStrategy
                     }
                 ]
             },
@@ -56,9 +62,81 @@ export function constructOSnakeSetup(contexts: Strategist<PingCompensatedCharact
                             contexts: contexts,
                             enableGreedyAggro: true,
                             ensureEquipped: { ...WARRIOR_SPLASH },
-                            typeList: monsters
+                            typeList: attackMonsters
                         }),
-                        move: new ImprovedMoveStrategy(monsters, { idlePosition: halloweenSafeSnakes })
+                        move: moveStrategy
+                    }
+                ]
+            }
+        ]
+    }
+}
+
+export function constructOSnakeHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const moveStrategy = new ImprovedMoveStrategy(moveMonsters, { idlePosition: halloweenSafeSnakes })
+
+    return {
+        configs: [
+            {
+                id: "osnake_helper_mage",
+                characters: [
+                    {
+                        ctype: "mage",
+                        attack: new MageAttackStrategy({ contexts: contexts, typeList: moveMonsters }),
+                        move: moveStrategy
+                    }
+                ]
+            },
+            {
+                id: "osnake_helper_paladin",
+                characters: [
+                    {
+                        ctype: "paladin",
+                        attack: new PaladinAttackStrategy({ contexts: contexts, typeList: moveMonsters }),
+                        move: moveStrategy
+                    }
+                ]
+            },
+            {
+                id: "osnake_helper_priest",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            typeList: moveMonsters,
+                        }),
+                        move: moveStrategy
+                    },
+                ]
+            },
+            {
+                id: "osnake_helper_ranger",
+                characters: [
+                    {
+                        ctype: "ranger",
+                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: moveMonsters }),
+                        move: moveStrategy
+                    }
+                ]
+            },
+            {
+                id: "osnake_helper_rogue",
+                characters: [
+                    {
+                        ctype: "rogue",
+                        attack: new RogueAttackStrategy({ contexts: contexts, typeList: moveMonsters }),
+                        move: moveStrategy
+                    }
+                ]
+            },
+            {
+                id: "osnake_helper_warrior",
+                characters: [
+                    {
+                        ctype: "warrior",
+                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, typeList: moveMonsters }),
+                        move: moveStrategy
                     }
                 ]
             }

@@ -36,7 +36,7 @@ import { constructMrPumpkinHelperSetup, constructMrPumpkinSetup } from "./mrpump
 import { constructMummySetup } from "./mummy.js"
 import { constructMVampireSetup } from "./mvampire.js"
 import { constructOneEyeSetup } from "./oneeye.js"
-import { constructOSnakeSetup } from "./osnake.js"
+import { constructOSnakeHelperSetup, constructOSnakeSetup } from "./osnake.js"
 import { constructPhoenixHelperSetup, constructPhoenixSetup } from "./phoenix.js"
 import { constructPinkGooHelperSetup, constructPinkGooSetup } from "./pinkgoo.js"
 import { constructPlantoidSetup } from "./plantoid.js"
@@ -47,7 +47,6 @@ import { constructRatSetup } from "./rat.js"
 import { constructRGooHelperSetup, constructRGooSetup } from "./rgoo.js"
 import { constructRHarpySetup } from "./rharpy.js"
 import { constructSkeletorSetup } from "./skeletor.js"
-import { constructSnakeSetup } from "./snake.js"
 import { constructSnowmanHelperSetup, constructSnowmanSetup } from "./snowman.js"
 import { constructSquigToadHelperSetup, constructSquigToadSetup } from "./squigtoad.js"
 import { constructStompySetup } from "./stompy.js"
@@ -214,7 +213,7 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
     return {
         configs: [
             {
-                id: `${id_prefix}_mage`,
+                id: `${id_prefix}_priest,mage`,
                 characters: [
                     {
                         ctype: "priest",
@@ -236,7 +235,7 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
                 ]
             },
             {
-                id: `${id_prefix}_paladin`,
+                id: `${id_prefix}_priest,paladin`,
                 characters: [
                     {
                         ctype: "priest",
@@ -258,7 +257,7 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
                 ]
             },
             {
-                id: `${id_prefix}_ranger`,
+                id: `${id_prefix}_priest,ranger`,
                 characters: [
                     {
                         ctype: "priest",
@@ -280,7 +279,7 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
                 ]
             },
             {
-                id: `${id_prefix}_rogue`,
+                id: `${id_prefix}_priest,rogue`,
                 characters: [
                     {
                         ctype: "priest",
@@ -302,7 +301,7 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
                 ]
             },
             {
-                id: `${id_prefix}_warrior`,
+                id: `${id_prefix}_priest,warrior`,
                 characters: [
                     {
                         ctype: "priest",
@@ -381,7 +380,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         rharpy: constructRHarpySetup(contexts),
         scorpion: constructGenericSetup(contexts, ["scorpion", "phoenix"], true),
         skeletor: constructSkeletorSetup(contexts),
-        snake: constructSnakeSetup(contexts),
+        snake: constructOSnakeSetup(contexts),
         snowman: constructSnowmanSetup(contexts),
         spider: constructGenericSetup(contexts, ["spider", "phoenix"], true),
         squig: constructSquigToadSetup(contexts),
@@ -426,7 +425,7 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         minimush: constructGenericSetup(contexts, ["minimush", "phoenix", "tinyp"]),
         mrgreen: constructMrGreenHelperSetup(contexts),
         mrpumpkin: constructMrPumpkinHelperSetup(contexts),
-        osnake: constructGenericSetup(contexts, ["osnake", "snake"]),
+        osnake: constructOSnakeHelperSetup(contexts),
         phoenix: constructPhoenixHelperSetup(contexts),
         pinkgoo: constructPinkGooHelperSetup(contexts),
         poisio: constructGenericSetup(contexts, ["poisio"]),
@@ -434,7 +433,7 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         rat: constructGenericSetup(contexts, ["rat"]),
         rgoo: constructRGooHelperSetup(contexts),
         scorpion: constructGenericSetup(contexts, ["scorpion"]),
-        snake: constructGenericSetup(contexts, ["snake", "osnake"]),
+        snake: constructOSnakeHelperSetup(contexts),
         snowman: constructSnowmanHelperSetup(contexts),
         spider: constructGenericSetup(contexts, ["spider"]),
         squig: constructSquigToadHelperSetup(contexts),

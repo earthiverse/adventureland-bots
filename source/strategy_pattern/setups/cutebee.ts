@@ -62,7 +62,6 @@ export function constructCuteBeeHelperSetup(contexts: Strategist<PingCompensated
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             disableZapper: true,
-                            enableEquipForCleave: true,
                             typeList: attackTypes
                         }),
                         move: moveStrategy
