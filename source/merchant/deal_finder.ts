@@ -17,7 +17,7 @@ let nextDefaultRegion: ServerRegion
 let nextDefaultIdentifier: ServerIdentifier
 function getNextDefaultServer() {
     if (nextDefaultRegion == "US") {
-        if (nextDefaultIdentifier == "I") nextDefaultIdentifier = "III"
+        if (nextDefaultIdentifier == "I") nextDefaultIdentifier = "II"
         else if (nextDefaultIdentifier == "II") nextDefaultIdentifier = "III"
         else if (nextDefaultIdentifier == "III") nextDefaultIdentifier = "PVP"
         else {
@@ -55,7 +55,7 @@ async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentif
     })
 
     // Set up the disconnect for the next server hop
-    setTimeout(async ()=> {
+    setTimeout(async () => {
         await context.bot.getPontyItems()
         console.log("Stopping!")
         context.stop()
@@ -75,7 +75,7 @@ async function checkDeals() {
     const avoidServers = [...online]
         // Return a formatted list of servers to not check
         .map((v) => {
-            const server = /(US|EU|ASIA)(I|II|III|PVP)/.exec(v)
+            const server = /(US|EU|ASIA)([MDCLXVI]+|PVP)/.exec(v)
             const serverRegion: ServerRegion = server[1] as ServerRegion
             const serverIdentifier: ServerIdentifier = server[2] as ServerIdentifier
             return { serverRegion: serverRegion, serverIdentifier: serverIdentifier }
