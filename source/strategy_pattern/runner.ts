@@ -84,8 +84,7 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
             attackStrategy = new MageAttackStrategy({ type: options.monster, contexts: CONTEXTS })
             context.applyStrategy(magiportStrategy)
             break
-        case "merchant":
-        {
+        case "merchant": {
             context = new Strategist<Merchant>(character as Merchant, baseStrategy)
             break
         }
@@ -155,9 +154,6 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
 
         moveStrategy = new MerchantStrategy(CONTEXTS, {
             defaultPosition: defaultPosition,
-            enableBuyAndUpgrade: {
-                upgradeToLevel: 9
-            },
             enableBuyReplenishables: {
                 all: DEFAULT_REPLENISHABLES,
                 merchant: new Map([
