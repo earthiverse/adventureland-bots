@@ -726,3 +726,47 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         }
     }
 }
+
+export type KiteMonsterMoveStrategyOptions = Omit<SpecialMonsterMoveStrategyOptions, "type"> & {
+    typeList: MonsterName[]
+}
+
+export class KiteMonsterMoveStrategy extends SpecialMonsterMoveStrategy {
+    public constructor(options: KiteMonsterMoveStrategyOptions) {
+        const parentOptions: SpecialMonsterMoveStrategyOptions = {
+            disableCheckDB: options.disableCheckDB,
+            contexts: options.contexts,
+            ignoreMaps: options.ignoreMaps,
+            type: options.typeList[0]
+        }
+        super(parentOptions)
+
+        this.loops.set("move", {
+            fn: async (bot: Character) => {
+                if (bot.rip) return // Can't move if we're dead
+                await this.move(bot)
+            },
+            interval: 250
+        })
+    }
+
+    protected async move(bot: Character): Promise<IPosition> {
+        const entity = bot.getEntity({ ...this.options, returnNearest: true })
+        if (!entity) return super.move(bot)
+
+        // Look for a new position
+        const angleFromEntityToBot = Math.atan2(bot.y - entity.y, bot.x - entity.x)
+        const distance = Math.min(bot.range, (entity.charge ?? entity.speed ?? 0) + entity.range + 50)
+        for (let i = 1; i < 20; i++) {
+            const angle = angleFromEntityToBot + ((i % 2 ? 1 : -1) * ((Math.PI) * ((i - (i % 2)) / 20)))
+            const pos: IPosition = { map: bot.map, x: entity.x + (distance * Math.cos(angle)), y: entity.y + (distance * Math.sin(angle)) }
+            if (!AL.Pathfinder.canStand(pos)) continue // Not a valid spot
+            if (AL.Pathfinder.canWalkPath(bot, pos)) {
+                bot.move(pos.x, pos.y, { resolveOnStart: true }).catch(suppress_errors)
+            } else if (!bot.smartMoving) {
+                bot.smartMove(pos, { avoidTownWarps: true, costs: { enter: 9999, transport: 9999 } }).catch(suppress_errors)
+            }
+            break
+        }
+    }
+}

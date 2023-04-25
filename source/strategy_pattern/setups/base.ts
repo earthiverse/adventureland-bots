@@ -50,7 +50,7 @@ import { constructSkeletorSetup } from "./skeletor.js"
 import { constructSnowmanHelperSetup, constructSnowmanSetup } from "./snowman.js"
 import { constructSquigToadHelperSetup, constructSquigToadSetup } from "./squigtoad.js"
 import { constructStompySetup } from "./stompy.js"
-import { constructStoneWormSetup } from "./stoneworm.js"
+import { constructStoneWormHelperSetup, constructStoneWormSetup } from "./stoneworm.js"
 import { constructTigerHelperSetup, constructTigerSetup } from "./tiger.js"
 import { constructWabbitHelperSetup, constructWabbitSetup } from "./wabbit.js"
 import { constructWolfSetup } from "./wolf.js"
@@ -62,8 +62,10 @@ import { constructCrabSetup } from "./crab.js"
 import { constructBeeSetup } from "./bee.js"
 import { constructIceRoamerHelperSetup, constructIceRoamerSetup } from "./iceroamer.js"
 
+export type Requirements = { [T in Attribute]?: number }
+
 export type CharacterConfig = {
-    require?: { [T in Attribute]?: number }
+    require?: Requirements
 } & ({
     ctype: "mage"
     attack: Strategy<Mage>
@@ -438,6 +440,7 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         spider: constructGenericSetup(contexts, ["spider"]),
         squig: constructSquigToadHelperSetup(contexts),
         squigtoad: constructSquigToadHelperSetup(contexts),
+        stoneworm: constructStoneWormHelperSetup(contexts),
         tiger: constructTigerHelperSetup(contexts),
         tortoise: constructGenericSetup(contexts, ["tortoise", "frog", "phoenix"]),
         wabbit: constructWabbitHelperSetup(contexts),
