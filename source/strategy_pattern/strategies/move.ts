@@ -752,9 +752,9 @@ export class KiteMonsterMoveStrategy extends SpecialMonsterMoveStrategy {
 
     protected async move(bot: Character): Promise<IPosition> {
         const entity = bot.getEntity({ ...this.options, returnNearest: true })
-        if (!entity) return super.move(bot)
+        if (!entity) return super.move(bot) // Go find an entity
 
-        // Look for a new position
+        // Look for the best position to kite to
         const angleFromEntityToBot = Math.atan2(bot.y - entity.y, bot.x - entity.x)
         const distance = Math.min(bot.range, (entity.charge ?? entity.speed ?? 0) + entity.range + 50)
         for (let i = 1; i < 20; i++) {

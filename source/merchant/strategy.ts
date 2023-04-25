@@ -974,7 +974,11 @@ export class MerchantStrategy implements Strategy<Merchant> {
             // Equip items that make you go fast
             const broom = bot.locateItem("broom", bot.items, { returnHighestLevel: true })
             if (broom !== undefined) {
-                if (bot.slots.mainhand?.name == "broom" && bot.items[broom].level > bot.slots.mainhand.level) {
+                if (
+                    !bot.slots.mainhand // Nothing equipped in mainhand
+                    || bot.slots.mainhand.name !== "broom" // Broom not equipped in mainhand
+                    || bot.items[broom].level > bot.slots.mainhand.level // It's higher level than the one we have equipped
+                ) {
                     await bot.equip(broom)
                 }
             }
