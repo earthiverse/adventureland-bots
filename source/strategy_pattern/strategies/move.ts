@@ -566,11 +566,18 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             return { map: sInfo.map, x: gInfo.spawns[0][0], y: gInfo.spawns[0][1] }
         }
 
+        const maps = new Set<MapName>(this.spawns.map(s => s.map))
+        if (maps.size > 0 && !maps.has(bot.map)) {
+            // Go to a map that has this monster
+            const gInfo: GMap = AL.Game.G.maps[this.spawns[0].map]
+            return { map: this.spawns[0].map, x: gInfo.spawns[0][0], y: gInfo.spawns[0][1] }
+        }
+
         // Couldn't find a good data source for the monster
         return undefined
     }
 
-    protected async move(bot: Character) {
+    protected async move(bot: Character): Promise<IPosition> {
         const smartMoveOptions: SmartMoveOptions = {
             getWithin: bot.range - 10,
             stopIfTrue: async (): Promise<boolean> => {
