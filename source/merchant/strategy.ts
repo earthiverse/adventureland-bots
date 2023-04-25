@@ -15,6 +15,7 @@ export const DEFAULT_CRAFTABLES = new Set<ItemName>([
     "basketofeggs",
     "bfangamulet",
     "cake",
+    "carrotsword",
     "firestars",
     "pouchbow",
     "resistancering",
@@ -95,6 +96,7 @@ export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
     ["bottleofxp", -AL.Constants.PONTY_MARKUP],
     ["broom", -AL.Constants.PONTY_MARKUP],
     ["bwing", -AL.Constants.PONTY_MARKUP],
+    ["carrot", -AL.Constants.PONTY_MARKUP], // We can craft them in to carrot swords and sell the swords
     ["cdarktristone", -AL.Constants.PONTY_MARKUP],
     ["cearring", 1_000_000],
     ["computer", 100_000_000],

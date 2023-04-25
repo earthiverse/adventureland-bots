@@ -86,6 +86,7 @@ const publicBuyStrategy = new BuyStrategy({
 const privateSellStrategy = new SellStrategy({
     sellMap: new Map<ItemName, [number, number][]>([
         ["cake", undefined],
+        ["carrotsword", undefined],
         ["cclaw", undefined],
         ["coat1", undefined],
         ["dexring", undefined],
@@ -123,6 +124,7 @@ const privateSellStrategy = new SellStrategy({
 const publicSellStrategy = new SellStrategy({
     sellMap: new Map<ItemName, [number, number][]>([
         ["cake", undefined],
+        ["carrotsword", undefined],
         ["coat1", undefined],
         ["gloves1", undefined],
         ["gphelmet", undefined],
