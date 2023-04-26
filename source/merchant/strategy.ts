@@ -1435,7 +1435,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
                 if (!friend.s.mluck) return bot.mluck(friend.id) // They don't have mluck
                 if (friend.s.mluck.strong && friend.s.mluck.f !== bot.id) continue // We can't steal the mluck
-                if (friend.s.mluck.f == "earthMer" && bot.id !== "earthMer") continue // Don't compete with earthMer
+                if (friend.s.mluck.f == "earthMer" && bot.id !== "earthMer" && bot.owner !== friend.owner) continue // Don't compete with earthMer
 
                 if (friend.s.mluck.f == bot.id && friend.s.mluck.ms > (AL.Game.G.skills.mluck.duration / 2)) continue // They still have a lot of time left
 
@@ -1448,7 +1448,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
             for (const player of bot.getPlayers({ isNPC: false, withinRange: "mluck" })) {
                 if (!player.s.mluck) return bot.mluck(player.id) // They don't have mluck
                 if (player.s.mluck.strong && player.s.mluck.f !== bot.id) continue // We can't steal the mluck
-                if (player.s.mluck.f == "earthMer" && bot.id !== "earthMer") continue // Don't compete with earthMer
+                if (player.s.mluck.f == "earthMer" && bot.id !== "earthMer" && bot.owner !== player.owner) continue // Don't compete with earthMer
 
                 if (player.s.mluck.f == bot.id && player.s.mluck.ms > (AL.Game.G.skills.mluck.duration / 2)) continue // They still have a lot of time left
 
