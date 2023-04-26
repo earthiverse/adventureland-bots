@@ -64,6 +64,42 @@ export function constructBBPomPomSetup(contexts: Strategist<PingCompensatedChara
                     }
                 ]
             },
+            {
+                id: "bbpompom_mage,priest,warrior",
+                characters: [
+                    {
+                        ctype: "mage",
+                        attack: new MageAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            ensureEquipped: { ...MAGE_SPLASH },
+                            type: "bbpompom"
+                        }),
+                        move: moveStrategy
+                    },
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            enableGreedyAggro: true,
+                            ensureEquipped: { ...PRIEST_LUCK },
+                            type: "bbpompom",
+                        }),
+                        move: moveStrategy
+                    },
+                    {
+                        ctype: "warrior",
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            enableEquipForCleave: true,
+                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            type: "bbpompom"
+                        }),
+                        move: moveStrategy
+                    },
+                ]
+            },
         ]
     }
 }
