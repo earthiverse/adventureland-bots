@@ -827,7 +827,6 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 if (!bot.hasItem("rod") && !bot.isEquipped("rod")) {
                     this.debug(bot, "Fishing - Looking for a rod in the bank")
                     // We don't have a rod, see if there's one in our bank
-                    await bot.smartMove(bankingPosition)
                     await withdrawItemFromBank(bot, "rod", {}, {
                         freeSpaces: bot.esize,
                         itemsToHold: rodItems

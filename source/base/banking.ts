@@ -345,8 +345,8 @@ export async function withdrawItemFromBank(bot: Character, items: ItemName | Ite
     freeSpaces: number
     itemsToHold: Set<ItemName>
 }) {
-    // TODO: Add options to check more levels?
-    if (bot.map !== "bank") throw new Error("Not in bank")
+    // Move to the bank if we're not here
+    if (!bot.map.startsWith("bank")) await bot.smartMove(bankingPosition)
 
     // Put the single item in an array
     if (typeof items == "string") items = [items]
@@ -361,16 +361,14 @@ export async function withdrawItemFromBank(bot: Character, items: ItemName | Ite
     for (const bP in bot.bank) {
         if (bP == "gold") continue
 
-        // TODO: Add options to check more levels?
-        // Only check the first level
-        const bankPackNum = Number.parseInt(bP.substring(5, 7))
-        if (bankPackNum > 7) continue
-
         const bankPack = bP as BankPackName
         const bankItems = bot.bank[bankPack]
 
         // Locate the items in the bank pack, and withdraw them
         for (const pos of bot.locateItems(items, bankItems, itemFilters)) {
+            // Move to the target bank pack if we need to
+            await bot.smartMove(bankPack, { getWithin: 10000 })
+
             await bot.withdrawItem(bankPack, pos, freeSlots.pop())
             if (bot.esize < options.freeSpaces) break // Limited space in inventory
         }
@@ -588,13 +586,8 @@ export async function getItemsToCompoundOrUpgrade(bot: Character, counts?: ItemC
             }
         }
 
-        // Move to the correct map
-        const bankPackNum = Number.parseInt(pack.substring(5, 7))
-        let targetMap: MapName = "bank"
-        if (bankPackNum <= 7) targetMap = "bank"
-        else if (bankPackNum >= 8 && bankPackNum <= 23) targetMap = "bank_b"
-        else if (bankPackNum >= 24) targetMap = "bank_u"
-        if (bot.map !== targetMap) await bot.smartMove(targetMap, { getWithin: 10000 })
+        // Move to the target bank pack if we need to
+        await bot.smartMove(pack, { getWithin: 10000 })
 
         await bot.withdrawItem(pack, bankIndex, index)
         return index
