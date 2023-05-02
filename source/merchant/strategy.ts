@@ -20,6 +20,7 @@ export const DEFAULT_CRAFTABLES = new Set<ItemName>([
     "pouchbow",
     "resistancering",
     "snowflakes",
+    "wgloves",
 ])
 
 export const DEFAULT_EXCHANGEABLES = new Set<ItemName>([
@@ -34,7 +35,7 @@ export const DEFAULT_EXCHANGEABLES = new Set<ItemName>([
     "gemfragment",
     "leather",
     "seashell",
-    "weaponbox"
+    "weaponbox",
 ])
 export const DEFAULT_GOLD_TO_HOLD = 100_000_000
 export const DEFAULT_ITEMS_TO_HOLD = new Set<ItemName>([
