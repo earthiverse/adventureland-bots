@@ -20,6 +20,8 @@ export const DEFAULT_CRAFTABLES = new Set<ItemName>([
     "pouchbow",
     "resistancering",
     "snowflakes",
+    "wbreeches",
+    "wcap",
     "wgloves",
 ])
 
@@ -101,6 +103,7 @@ export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
     ["cdarktristone", -AL.Constants.PONTY_MARKUP],
     ["cearring", 1_000_000],
     ["computer", 100_000_000],
+    ["crabclaw", -AL.Constants.PONTY_MARKUP], // We can craft them in to wbreeches
     ["cring", 1_000_000],
     ["critscroll", 5_000_000],
     ["crossbow", -AL.Constants.PONTY_MARKUP],
@@ -193,6 +196,7 @@ export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
     ["rod", -AL.Constants.PONTY_MARKUP],
     ["sanguine", -AL.Constants.PONTY_MARKUP],
     ["sbelt", -AL.Constants.PONTY_MARKUP],
+    ["gslime", -AL.Constants.PONTY_MARKUP], // We can craft them in to wcap
     ["scroll3", -AL.Constants.PONTY_MARKUP],
     ["scroll4", -AL.Constants.PONTY_MARKUP],
     ["scythe", -AL.Constants.PONTY_MARKUP],
@@ -202,6 +206,7 @@ export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
     ["snowflakes", -AL.Constants.PONTY_MARKUP],
     ["snring", -AL.Constants.PONTY_MARKUP],
     ["spidersilk", -AL.Constants.PONTY_MARKUP],
+    ["spores", -AL.Constants.PONTY_MARKUP], // We can craft wbreeches or wgloves
     ["starkillers", -AL.Constants.PONTY_MARKUP],
     ["stealthcape", -AL.Constants.PONTY_MARKUP],
     ["suckerpunch", 100_000_000],
