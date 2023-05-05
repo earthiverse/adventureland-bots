@@ -19,6 +19,7 @@ import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strate
 import bodyParser from "body-parser"
 import cors from "cors"
 import express from "express"
+import fs from "fs"
 import path from "path"
 import { body, validationResult } from "express-validator"
 import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
@@ -53,6 +54,9 @@ const DEFAULT_REGION: ServerRegion = "US"
 const DEFAULT_IDENTIFIER: ServerIdentifier = "I"
 let TARGET_REGION: ServerRegion = DEFAULT_REGION
 let TARGET_IDENTIFIER: ServerIdentifier = DEFAULT_IDENTIFIER
+
+const PUBLIC_FIELDS = ["ctype", "owner", "userauth", "characterID"]
+const PUBLIC_CSV = "public.csv"
 
 /** My characters */
 const PRIVATE_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
@@ -217,6 +221,53 @@ class OverrideStrategy implements Strategy<PingCompensatedCharacter> {
     }
 }
 const overrideStrategy = new OverrideStrategy()
+class AdminCommandStrategy implements Strategy<PingCompensatedCharacter> {
+    private onCodeEval: (data: string) => Promise<void>
+
+    public onApply(bot: PingCompensatedCharacter) {
+        this.onCodeEval = async (data: string) => {
+            const args = data.split(" ")
+            switch (args[0].toLowerCase()) {
+                case "restart": {
+                    // Save all the public contexts that are running
+                    const publicData = filterContexts(PUBLIC_CONTEXTS).reduce((acc: string, c) => {
+                        c.bot.characterID
+                        const row = PUBLIC_FIELDS.map(field => c.bot[field]).join(",")
+                        return acc + row + "\n"
+                    }, PUBLIC_FIELDS.join(",") + "\n")
+                    fs.writeFileSync(PUBLIC_CSV, publicData)
+
+                    // Stop the script
+                    process.exit(0)
+                    break
+                }
+                case "stop":
+                    for (let i = 1; i < args.length; i++) {
+                        const name = args[i]
+                        if (PARTY_ALLOWLIST.includes(name)) {
+                            // Don't allow them to party with us anymore
+                            PARTY_ALLOWLIST.splice(PARTY_ALLOWLIST.indexOf(name), 1)
+                        }
+
+                        for (const context of filterContexts(PUBLIC_CONTEXTS)) {
+                            if (context.bot.name === name) {
+                                // Stop the context
+                                stopPublicContext(bot.characterID).catch(console.error)
+                                break
+                            }
+                        }
+                    }
+                    break
+            }
+        }
+        bot.socket.on("code_eval", this.onCodeEval)
+    }
+
+    public onRemove(bot: PingCompensatedCharacter) {
+        if (this.onCodeEval) bot.socket.removeListener("code_eval", this.onCodeEval)
+    }
+}
+const adminCommandStrategy = new AdminCommandStrategy()
 
 const currentSetups = new Map<Strategist<PingCompensatedCharacter>, { attack: Strategy<PingCompensatedCharacter>, move: Strategy<PingCompensatedCharacter> }>()
 const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], setups: Setups) => {
@@ -594,6 +645,7 @@ async function startShared(context: Strategist<PingCompensatedCharacter>, privat
     }
 
     if (privateContext) {
+        context.applyStrategy(adminCommandStrategy)
         context.applyStrategy(overrideStrategy)
         context.applyStrategy(privateBuyStrategy)
         context.applyStrategy(privateSellStrategy)
@@ -659,6 +711,7 @@ const startMerchantContext = async () => {
     }
     const CONTEXT = new Strategist<Merchant>(merchant, baseStrategy)
     startMerchant(CONTEXT, PRIVATE_CONTEXTS, { ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, debug: true, enableUpgrade: true })
+    CONTEXT.applyStrategy(adminCommandStrategy)
     CONTEXT.applyStrategy(guiStrategy)
     CONTEXT.applyStrategy(privateSellStrategy)
     CONTEXT.applyStrategy(itemStrategy)
@@ -902,6 +955,17 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
 
     PUBLIC_CONTEXTS.push(context)
     ALL_CONTEXTS.push(context)
+}
+
+// Load players from the public csv if one exists
+if (fs.existsSync(PUBLIC_CSV)) {
+    for (const line of fs.readFileSync(PUBLIC_CSV, "utf-8").split("/n")) {
+        const data = line.split(",")
+        await startPublicContext(data[0] as CharacterType, data[1], data[2], data[3])
+    }
+
+    // Delete the file after we load the players in
+    fs.unlinkSync(PUBLIC_CSV)
 }
 
 async function stopPublicContext(characterID: string) {
