@@ -364,8 +364,6 @@ export type KiteInCircleMoveStrategyOptions = {
     radius: number
     /** Monster that we're kiting */
     type: MonsterName
-    /** Spawn (will use Pathfinder if none is provided) */
-    spawn?: IPosition
 }
 
 export class KiteInCircleMoveStrategy implements Strategy<Character> {
@@ -386,15 +384,14 @@ export class KiteInCircleMoveStrategy implements Strategy<Character> {
     }
 
     private async move(bot: Character) {
-        const center = this.options.center
-        const radius = this.options.radius
+        const { center, radius, type } = this.options
 
         if (AL.Tools.distance(bot, center) > radius * 1.2) {
             // Get closer to the circle
             await bot.smartMove(center, { getWithin: radius })
         }
 
-        const monster = bot.getEntity({ type: this.options.type, returnNearest: true })
+        const monster = bot.getEntity({ type: type, returnNearest: true })
         if (!monster) return // No monster
 
         const angleFromCenterToBot = Math.atan2(bot.y - center.y, bot.x - center.x)
@@ -421,8 +418,6 @@ export class KiteInCircleMoveStrategy implements Strategy<Character> {
                 return bot.smartMove(cwPoint, { resolveOnFinalMoveStart: true })
             }
         }
-
-
     }
 }
 

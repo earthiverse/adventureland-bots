@@ -193,7 +193,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                         setTimeout(() => switchBots(), 2000 + Number.parseInt(wait[1]) * 1000)
                     } else if (/limits/.test(e)) {
                         setTimeout(() => switchBots(), AL.Constants.RECONNECT_TIMEOUT_MS)
-                    } else if (/ingame/.test(e)){
+                    } else if (/ingame/.test(e)) {
                         setTimeout(() => switchBots(), 500)
                     } else {
                         setTimeout(() => switchBots(), 10000)
@@ -281,7 +281,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                 setTimeout(() => this.reconnect(), 2000 + Number.parseInt(wait[1]) * 1000)
             } else if (/limits/.test(e)) {
                 setTimeout(() => this.reconnect(), AL.Constants.RECONNECT_TIMEOUT_MS)
-            } else if (/ingame/.test(e)){
+            } else if (/ingame/.test(e)) {
                 setTimeout(() => this.reconnect(), 500)
             } else if (/nouser/.test(e)) {
                 this.stop()
