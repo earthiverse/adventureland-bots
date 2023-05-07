@@ -182,7 +182,7 @@ export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
     ["orbofstr", -AL.Constants.PONTY_MARKUP],
     ["oxhelmet", -AL.Constants.PONTY_MARKUP],
     ["pickaxe", -AL.Constants.PONTY_MARKUP],
-    ["pinkie", -AL.Constants.PONTY_MARKUP],
+    ["pinkie", 300_000],
     ["platinumingot", -AL.Constants.PONTY_MARKUP],
     ["platinumnugget", -AL.Constants.PONTY_MARKUP],
     ["poison", -AL.Constants.PONTY_MARKUP],
