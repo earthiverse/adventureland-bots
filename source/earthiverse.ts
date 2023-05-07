@@ -966,7 +966,7 @@ if (fs.existsSync(PUBLIC_CSV)) {
 
     for (const line of lines) {
         const data = line.split(",")
-        await startPublicContext(data[0] as CharacterType, data[1], data[2], data[3])
+        await startPublicContext(data[0] as CharacterType, data[1], data[2], data[3]).catch(console.error)
     }
 
     // Delete the file after we load the players in
