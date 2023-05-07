@@ -757,6 +757,7 @@ export class KiteMonsterMoveStrategy extends SpecialMonsterMoveStrategy {
             const pos: IPosition = { map: bot.map, x: entity.x + (distance * Math.cos(angle)), y: entity.y + (distance * Math.sin(angle)) }
             if (!AL.Pathfinder.canStand(pos)) continue // Not a valid spot
             if (AL.Pathfinder.canWalkPath(bot, pos)) {
+                if (bot.smartMoving) bot.stopSmartMove().catch(suppress_errors)
                 bot.move(pos.x, pos.y, { resolveOnStart: true }).catch(suppress_errors)
             } else if (!bot.smartMoving) {
                 bot.smartMove(pos, { avoidTownWarps: true, costs: { enter: 9999, transport: 9999 } }).catch(suppress_errors)
