@@ -8,7 +8,8 @@ import { Setup } from "./base"
 import { MAGE_NORMAL, PRIEST_LUCK, WARRIOR_NORMAL } from "./equipment.js"
 
 export function constructMVampireSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new SpecialMonsterMoveStrategy({ type: "mvampire" })
+    const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["mvampire"] })
+
     return {
         configs: [
             {
@@ -19,7 +20,7 @@ export function constructMVampireSetup(contexts: Strategist<PingCompensatedChara
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ... MAGE_NORMAL },
+                            ensureEquipped: { ...MAGE_NORMAL },
                             type: "mvampire",
                         }),
                         move: moveStrategy

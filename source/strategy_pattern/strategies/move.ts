@@ -475,8 +475,8 @@ export type SpecialMonsterMoveStrategyOptions = {
     disableCheckDB?: true
     /** If true, we will ignore moving if the monster is on one of these maps */
     ignoreMaps?: MapName[]
-    /** The monster we want to look for */
-    type: MonsterName
+    /** The monsters we want to look for */
+    typeList: MonsterName[]
 }
 
 export class SpecialMonsterMoveStrategy implements Strategy<Character> {
@@ -488,9 +488,14 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
 
     public constructor(options: SpecialMonsterMoveStrategyOptions) {
         this.options = options
-        if (!this.options.ignoreMaps) this.options.ignoreMaps = []
+        if (!this.options.ignoreMaps) this.options.ignoreMaps = ["test"]
 
-        this.spawns = Pathfinder.locateMonster(this.options.type)
+        this.spawns = Pathfinder.locateMonster(this.options.typeList)
+
+        if (this.options.ignoreMaps.length) {
+            // Remove all ignored maps
+            this.spawns = this.spawns.filter(p => !this.options.ignoreMaps.includes(p.map))
+        }
 
         this.loops.set("move", {
             fn: async (bot: Character) => {
@@ -514,7 +519,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
      */
     protected async checkGoodData(bot: Character, disableCheckDB = this.options.disableCheckDB): Promise<{ map: MapName; x: number; y: number }> {
         // Look for it nearby
-        const target = bot.getEntity({ returnNearest: true, type: this.options.type })
+        const target = bot.getEntity({ returnNearest: true, typeList: this.options.typeList })
         if (target) return this.returnUndefinedIfMapIgnored(target)
 
         if (this.options.contexts) {
@@ -522,14 +527,16 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             for (const context of this.options.contexts) {
                 if (!context.isReady()) continue
                 if (bot == context.bot) continue // We've already looked for it around ourself
-                const target = context.bot.getEntity({ returnNearest: true, type: this.options.type })
+                const target = context.bot.getEntity({ returnNearest: true, typeList: this.options.typeList })
                 if (target) return this.returnUndefinedIfMapIgnored(target)
             }
         }
 
         // Look for it in server data
-        const sInfo = bot.S?.[this.options.type] as ServerInfoDataLive
-        if (sInfo?.live && sInfo.map && sInfo.x !== undefined && sInfo.y !== undefined) return this.returnUndefinedIfMapIgnored(sInfo as { map: MapName; x: number; y: number })
+        for (const type of this.options.typeList) {
+            const sInfo = bot.S?.[type] as ServerInfoDataLive
+            if (sInfo?.live && sInfo.map && sInfo.x !== undefined && sInfo.y !== undefined) return this.returnUndefinedIfMapIgnored(sInfo as { map: MapName; x: number; y: number })
+        }
 
         if (!disableCheckDB) {
             // Look for it in our database
@@ -538,7 +545,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                 map: { $nin: this.options.ignoreMaps },
                 serverIdentifier: bot.server.name,
                 serverRegion: bot.server.region,
-                type: this.options.type
+                type: { $in: this.options.typeList }
             }).sort({ lastSeen: -1 }).lean().exec()
             targets:
             for (const target of targets) {
@@ -555,10 +562,13 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             }
         }
 
-        if (sInfo?.live && sInfo.map && bot.map !== sInfo.map) {
-            // We're not on the right map but the default spawn is better than nothing
-            const gInfo: GMap = AL.Game.G.maps[sInfo.map]
-            return { map: sInfo.map, x: gInfo.spawns[0][0], y: gInfo.spawns[0][1] }
+        for (const type of this.options.typeList) {
+            const sInfo = bot.S?.[type] as ServerInfoDataLive
+            if (sInfo?.live && sInfo.map && bot.map !== sInfo.map) {
+                // We're not on the right map but the default spawn is better than nothing
+                const gInfo: GMap = AL.Game.G.maps[sInfo.map]
+                return { map: sInfo.map, x: gInfo.spawns[0][0], y: gInfo.spawns[0][1] }
+            }
         }
 
         const maps = new Set<MapName>(this.spawns.map(s => s.map))
@@ -666,7 +676,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
     }
 
     protected async kiteToNPC(bot: Character) {
-        const target = bot.getEntity({ type: this.options.type })
+        const target = bot.getEntity({ typeList: this.options.typeList })
         if (!target) return // No target to kite to NPC
 
         const targets: IPosition[] = [target]
@@ -722,19 +732,9 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
     }
 }
 
-export type KiteMonsterMoveStrategyOptions = Omit<SpecialMonsterMoveStrategyOptions, "type"> & {
-    typeList: MonsterName[]
-}
-
 export class KiteMonsterMoveStrategy extends SpecialMonsterMoveStrategy {
-    public constructor(options: KiteMonsterMoveStrategyOptions) {
-        const parentOptions: SpecialMonsterMoveStrategyOptions = {
-            disableCheckDB: options.disableCheckDB,
-            contexts: options.contexts,
-            ignoreMaps: options.ignoreMaps,
-            type: options.typeList[0]
-        }
-        super(parentOptions)
+    public constructor(options: SpecialMonsterMoveStrategyOptions) {
+        super(options)
 
         this.loops.set("move", {
             fn: async (bot: Character) => {
@@ -749,6 +749,10 @@ export class KiteMonsterMoveStrategy extends SpecialMonsterMoveStrategy {
         const entity = bot.getEntity({ ...this.options, returnNearest: true })
         if (!entity) return super.move(bot) // Go find an entity
 
+        this.kite(bot, entity)
+    }
+
+    protected async kite(bot: Character, entity: Entity) {
         // Look for the best position to kite to
         const angleFromEntityToBot = Math.atan2(bot.y - entity.y, bot.x - entity.x)
         const distance = Math.min(bot.range, (entity.charge ?? entity.speed ?? 0) + entity.range + 50)

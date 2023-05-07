@@ -14,7 +14,7 @@ import { MAGE_FAST, PRIEST_LUCK } from "./equipment.js"
 const typeList: MonsterName[] = ["wabbit", ...IDLE_ATTACK_MONSTERS, "bbpompom", "wolf", "wolfie", "stompy"]
 
 export function constructWabbitSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const wabbitMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, type: "wabbit" })
+    const wabbitMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["wabbit"] })
 
     return {
         configs: [
@@ -109,7 +109,7 @@ export function constructWabbitSetup(contexts: Strategist<PingCompensatedCharact
 }
 
 export function constructWabbitHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const wabbitMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, type: "wabbit" })
+    const wabbitMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["wabbit"] })
 
     return {
         configs: [

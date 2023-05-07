@@ -31,7 +31,7 @@ class WarriorDragoldAttackStrategy extends WarriorAttackStrategy {
 // TODO: Add a move strategy to attack from the furthest position away to give mages time to blink, or other characters to run and potentially avoid the projectile
 
 export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new SpecialMonsterMoveStrategy({ type: "dragold" })
+    const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["dragold"] })
     const types: MonsterName[] = ["goldenbat", "dragold", "bat"]
 
     return {
@@ -106,7 +106,7 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
 }
 
 export function constructDragoldHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new SpecialMonsterMoveStrategy({ type: "dragold" })
+    const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["dragold"] })
     const types: MonsterName[] = ["dragold", "bat"]
 
     return {

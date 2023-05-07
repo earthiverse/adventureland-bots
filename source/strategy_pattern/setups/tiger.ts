@@ -11,6 +11,8 @@ import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { UNEQUIP_EVERYTHING } from "./equipment.js"
 
+const typeList: MonsterName[] = ["tiger"]
+
 class PriestTigerHealStrategy extends PriestAttackStrategy {
     protected async attack(bot: Priest): Promise<void> {
         await this.healFriendsOrSelf(bot)
@@ -70,8 +72,7 @@ class PriestTigerHealStrategy extends PriestAttackStrategy {
 }
 
 export function constructTigerSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const tigerMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, type: "tiger" })
-    const typeList: MonsterName[] = ["tiger"]
+    const tigerMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: typeList })
 
     return {
         configs: [
@@ -139,8 +140,7 @@ export function constructTigerSetup(contexts: Strategist<PingCompensatedCharacte
 }
 
 export function constructTigerHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const tigerMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, type: "tiger" })
-    const typeList: MonsterName[] = ["tiger"]
+    const tigerMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: typeList })
 
     return {
         configs: [

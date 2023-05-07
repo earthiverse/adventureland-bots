@@ -61,7 +61,7 @@ class WarriorSnowmanAttackStrategy extends WarriorAttackStrategy {
 }
 
 export function constructSnowmanSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const snowmanMoveStrategy = new SpecialMonsterMoveStrategy({ type: "snowman" })
+    const snowmanMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["snowman"] })
 
     return {
         configs: [
@@ -132,7 +132,7 @@ export function constructSnowmanSetup(contexts: Strategist<PingCompensatedCharac
 }
 
 export function constructSnowmanHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const snowmanMoveStrategy = new SpecialMonsterMoveStrategy({ type: "snowman" })
+    const snowmanMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["snowman"] })
 
     return {
         configs: [

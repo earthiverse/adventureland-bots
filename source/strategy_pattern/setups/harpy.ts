@@ -8,7 +8,8 @@ import { Setup } from "./base"
 import { MAGE_ARMOR, PRIEST_ARMOR, WARRIOR_NORMAL } from "./equipment.js"
 
 export function constructHarpySetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, disableCheckDB: true, type: "harpy" })
+    const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, disableCheckDB: true, typeList: ["harpy"] })
+    
     return {
         configs: [
             {

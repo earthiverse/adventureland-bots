@@ -10,9 +10,10 @@ import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { MAGE_FAST, PRIEST_FAST } from "./equipment.js"
 
+const typeList: MonsterName[] = ["pinkgoo"]
+
 export function constructPinkGooSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const pinkgooMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, type: "pinkgoo" })
-    const typeList: MonsterName[] = ["pinkgoo"]
+    const pinkgooMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: typeList })
 
     return {
         configs: [
@@ -89,8 +90,7 @@ export function constructPinkGooSetup(contexts: Strategist<PingCompensatedCharac
 }
 
 export function constructPinkGooHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const pinkgooMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, type: "pinkgoo" })
-    const typeList: MonsterName[] = ["pinkgoo"]
+    const pinkgooMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: typeList })
 
     return {
         configs: [

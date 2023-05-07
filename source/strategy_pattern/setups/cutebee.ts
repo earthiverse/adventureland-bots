@@ -9,7 +9,7 @@ import { MAGE_SPLASH, WARRIOR_SPLASH } from "./equipment.js"
 const attackTypes: MonsterName[] = ["cutebee", "bee", "crab", "crabx", "croc", "frog", "goo", "phoenix", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise"]
 
 export function constructCuteBeeSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, type: "cutebee" })
+    const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["cutebee"] })
 
     return {
         configs: [
@@ -50,7 +50,7 @@ export function constructCuteBeeSetup(contexts: Strategist<PingCompensatedCharac
 }
 
 export function constructCuteBeeHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, type: "cutebee" })
+    const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["cutebee"] })
 
     return {
         configs: [
