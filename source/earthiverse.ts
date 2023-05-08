@@ -224,21 +224,17 @@ const overrideStrategy = new OverrideStrategy()
 class AdminCommandStrategy implements Strategy<PingCompensatedCharacter> {
     private onCodeEval: (data: string) => Promise<void>
 
+    public constructor() {
+        process.on('SIGINT', this.saveAndExit);
+    }
+
     public onApply(bot: PingCompensatedCharacter) {
         this.onCodeEval = async (data: string) => {
             const args = data.split(" ")
             switch (args[0].toLowerCase()) {
                 case "restart": {
                     // Save all the public contexts that are running
-                    const publicData = filterContexts(PUBLIC_CONTEXTS).reduce((acc: string, c) => {
-                        c.bot.characterID
-                        const row = PUBLIC_FIELDS.map(field => c.bot[field]).join(",")
-                        return acc + row + "\n"
-                    }, PUBLIC_FIELDS.join(",") + "\n")
-                    fs.writeFileSync(PUBLIC_CSV, publicData)
-
-                    // Stop the script
-                    process.exit(0)
+                    this.saveAndExit()
                     break
                 }
                 case "stop":
@@ -265,6 +261,18 @@ class AdminCommandStrategy implements Strategy<PingCompensatedCharacter> {
 
     public onRemove(bot: PingCompensatedCharacter) {
         if (this.onCodeEval) bot.socket.removeListener("code_eval", this.onCodeEval)
+    }
+
+    protected saveAndExit() {
+        const publicData = filterContexts(PUBLIC_CONTEXTS).reduce((acc: string, c) => {
+            c.bot.characterID
+            const row = PUBLIC_FIELDS.map(field => c.bot[field]).join(",")
+            return acc + row + "\n"
+        }, PUBLIC_FIELDS.join(",") + "\n")
+        fs.writeFileSync(PUBLIC_CSV, publicData)
+
+        // Stop the script
+        process.exit(0)
     }
 }
 const adminCommandStrategy = new AdminCommandStrategy()
