@@ -41,6 +41,8 @@ export function constructHarpySetup(contexts: Strategist<PingCompensatedCharacte
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
+                            enableEquipForCleave: true,
+                            enableEquipForStomp: true,
                             ensureEquipped: { ...WARRIOR_NORMAL },
                             maximumTargets: 1,
                             type: "harpy",
