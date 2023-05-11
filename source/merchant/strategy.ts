@@ -53,11 +53,9 @@ export const DEFAULT_ITEMS_TO_HOLD = new Set<ItemName>([
 ])
 export const DEFAULT_MERCHANT_ITEMS_TO_HOLD = new Set<ItemName>([
     ...DEFAULT_ITEMS_TO_HOLD,
-    "broom",
     "cscroll0",
     "cscroll1",
     "cscroll2",
-    "dartgun",
     "offering",
     "offeringp",
     "pickaxe",

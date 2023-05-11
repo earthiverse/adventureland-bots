@@ -13,15 +13,11 @@ export const MERCHANT_ITEMS_TO_HOLD: Set<ItemName> = new Set([
     // MH Tokens
     "monstertoken",
     // Scrolls
-    "cscroll0", "cscroll1", "cscroll2", "cscroll3", "scroll0", "scroll1", "scroll2", "scroll3", "scroll4", "strscroll", "intscroll", "dexscroll",
+    "cscroll0", "cscroll1", "cscroll2", "scroll0", "scroll1", "scroll2",
     // Prims
     "offering", "offeringp",
-    // Broom for speed
-    "broom",
     // Fishing Rod and Pickaxe
     "pickaxe", "rod",
-    // Main Items
-    "dartgun", "wbook1"
 ])
 
 export async function attackTheseTypesMerchant(bot: Merchant, types: MonsterName[], friends: Character[] = [], options: {
