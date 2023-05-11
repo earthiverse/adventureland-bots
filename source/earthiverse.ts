@@ -55,7 +55,7 @@ const DEFAULT_IDENTIFIER: ServerIdentifier = "I"
 let TARGET_REGION: ServerRegion = DEFAULT_REGION
 let TARGET_IDENTIFIER: ServerIdentifier = DEFAULT_IDENTIFIER
 
-const PUBLIC_FIELDS = ["ctype", "owner", "userauth", "characterID"]
+const PUBLIC_FIELDS = ["ctype", "owner", "userAuth", "characterID"]
 const PUBLIC_CSV = "public.csv"
 
 /** My characters */
