@@ -9,7 +9,7 @@ import { MAGE_NORMAL, MAGE_SPLASH, PRIEST_ARMOR, PRIEST_FAST, PRIEST_NORMAL, WAR
 import { offsetPositionParty } from "../../base/locations.js"
 import { suppress_errors } from "../logging.js"
 
-const CRYPT_MONSTERS: MonsterName[] = ["zapper0", "vbat", "bat", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8"]
+const CRYPT_MONSTERS: MonsterName[] = ["zapper0", "vbat", "nerfedbat", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8"]
 
 class CryptMoveStratey extends KiteMonsterMoveStrategy {
     public constructor(contexts: Strategist<PingCompensatedCharacter>[]) {
@@ -30,7 +30,7 @@ class CryptMoveStratey extends KiteMonsterMoveStrategy {
         switch (entity.type) {
             case "a1": // Spike
             case "a4": // Orlok
-            case "bat":
+            case "nerfedbat":
             case "zapper0":
                 // Spike spawns bats, stand on top of spike to optimize splash damage
                 // Orlok spawns zappers, stand on top of Orlok to optimize splash damage
@@ -56,7 +56,7 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
             switch (entity.type) {
                 case "a1": // Spike
                 case "a4": // Orlok
-                case "bat":
+                case "nerfedbat":
                 case "zapper0":
                     // Optimize splash damage
                     this.options.ensureEquipped = { ...MAGE_SPLASH }
@@ -85,7 +85,7 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
             switch (entity.type) {
                 case "a1": // Spike
                 case "a4": // Orlok
-                case "bat":
+                case "nerfedbat":
                 case "zapper0":
                     // Optimize damage
                     this.options.ensureEquipped = { ...PRIEST_ARMOR }
@@ -114,7 +114,7 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
             switch (entity.type) {
                 case "a1": // Spike
                 case "a4": // Orlok
-                case "bat":
+                case "nerfedbat":
                 case "zapper0":
                     // Optimize splash damage
                     this.options.ensureEquipped = { ...WARRIOR_SPLASH }

@@ -377,6 +377,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         mrpumpkin: constructMrPumpkinSetup(contexts),
         mummy: constructMummySetup(contexts),
         mvampire: constructMVampireSetup(contexts),
+        nerfedbat: constructCryptSetup(contexts),
         oneeye: constructOneEyeSetup(contexts),
         osnake: constructOSnakeSetup(contexts),
         phoenix: constructPhoenixSetup(contexts),
