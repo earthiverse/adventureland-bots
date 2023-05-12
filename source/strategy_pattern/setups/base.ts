@@ -61,6 +61,7 @@ import { constructMinimushSetup } from "./minimush.js"
 import { constructCrabSetup } from "./crab.js"
 import { constructBeeSetup } from "./bee.js"
 import { constructIceRoamerHelperSetup, constructIceRoamerSetup } from "./iceroamer.js"
+import { constructCryptSetup } from "./crypt.js"
 
 export type Requirements = { [T in Attribute]?: number }
 
@@ -330,6 +331,14 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
 
 export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]): Setups {
     return {
+        a1: constructCryptSetup(contexts),
+        a2: constructCryptSetup(contexts),
+        a3: constructCryptSetup(contexts),
+        a4: constructCryptSetup(contexts),
+        a5: constructCryptSetup(contexts),
+        a6: constructCryptSetup(contexts),
+        a7: constructCryptSetup(contexts),
+        a8: constructCryptSetup(contexts),
         arcticbee: constructGenericSetup(contexts, ["arcticbee", "snowman"], true),
         armadillo: constructArmadilloSetup(contexts),
         bat: constructGenericSetup(contexts, ["bat", "goldenbat", "phoenix", "mvampire"], true),
@@ -392,6 +401,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         tiger: constructTigerSetup(contexts),
         // tinyp: constructTinyPSetup(contexts),
         tortoise: constructGenericSetup(contexts, ["tortoise", "frog", "phoenix"], true),
+        vbat: constructCryptSetup(contexts),
         wabbit: constructWabbitSetup(contexts),
         wolf: constructWolfSetup(contexts),
         wolfie: constructWolfieSetup(contexts),
