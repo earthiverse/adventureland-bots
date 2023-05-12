@@ -569,7 +569,7 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
             }
 
             // Everyday
-            if (TARGET_REGION !== DEFAULT_REGION || TARGET_IDENTIFIER !== DEFAULT_IDENTIFIER) {
+            if (TARGET_REGION == DEFAULT_REGION && TARGET_IDENTIFIER == DEFAULT_IDENTIFIER) {
                 const monster = (await getServerHopMonsterPriority(true)[0])
                 if (monster) {
                     // We want to switch servers
