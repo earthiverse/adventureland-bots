@@ -39,7 +39,7 @@ const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
 const ENABLE_MONSTERHUNTS = true
 const DEFAULT_MONSTERS: MonsterName[] = ["xscorpion", "poisio"]
-const SPECIAL_MONSTERS: MonsterName[] = ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "vbat", "crabxx", "cutebee", "franky", "fvampire", "goldenbat", "greenjr", "icegolem", "jr", "mvampire", "skeletor", "snowman", "stompy", "tinyp", "wabbit"]
+const SPECIAL_MONSTERS: MonsterName[] = ["crabxx", "cutebee", "franky", "fvampire", "goldenbat", "greenjr", "icegolem", "jr", "mvampire", "skeletor", "snowman", "stompy", "tinyp", "wabbit"]
 const MAX_PUBLIC_CHARACTERS = 6
 
 const MERCHANT = "earthMer"
@@ -718,7 +718,7 @@ const startMerchantContext = async () => {
         setTimeout(startMerchantContext, 10_000)
     }
     const CONTEXT = new Strategist<Merchant>(merchant, baseStrategy)
-    startMerchant(CONTEXT, PRIVATE_CONTEXTS, { ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, debug: true, enableInstanceProvider: { crypt: true }, enableUpgrade: true })
+    startMerchant(CONTEXT, PRIVATE_CONTEXTS, { ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, debug: true, enableUpgrade: true })
     CONTEXT.applyStrategy(adminCommandStrategy)
     CONTEXT.applyStrategy(guiStrategy)
     CONTEXT.applyStrategy(privateSellStrategy)
