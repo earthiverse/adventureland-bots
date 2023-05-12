@@ -74,7 +74,7 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
             }
         }
 
-        super.attack(bot)
+        return super.attack(bot)
     }
 }
 
@@ -103,7 +103,7 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
             }
         }
 
-        super.attack(bot)
+        return super.attack(bot)
     }
 }
 
@@ -132,7 +132,7 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
             }
         }
 
-        super.attack(bot)
+        return super.attack(bot)
     }
 }
 
