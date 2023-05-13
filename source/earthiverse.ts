@@ -935,6 +935,7 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
                 }
             }
             startMerchant(context as Strategist<Merchant>, PUBLIC_CONTEXTS, merchantOptions)
+            context.applyStrategy(guiStrategy)
             context.applyStrategy(privateSellStrategy)
             context.applyStrategy(itemStrategy)
             break
