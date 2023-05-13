@@ -568,14 +568,21 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
                 }
             }
 
-            // Everyday
+            // Other servers
             if (TARGET_REGION == DEFAULT_REGION && TARGET_IDENTIFIER == DEFAULT_IDENTIFIER) {
-                const monster = (await getServerHopMonsterPriority(true)[0])
+                const monster = (await getServerHopMonsterPriority(true))[0]
                 if (monster) {
                     // We want to switch servers
                     TARGET_IDENTIFIER = monster.serverIdentifier
                     TARGET_REGION = monster.serverRegion
                 }
+            }
+
+            // Goobrawl
+            if (bot1.S.goobrawl && !bot1.s?.hopsickness) {
+                // Goobrawl is active, stay on the current server
+                TARGET_IDENTIFIER = bot1.serverData.name
+                TARGET_REGION = bot1.serverData.region
             }
         }
 
