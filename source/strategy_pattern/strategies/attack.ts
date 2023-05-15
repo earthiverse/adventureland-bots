@@ -91,7 +91,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (this.options.enableGreedyAggro) {
             this.greedyOnEntities = async (data: EntitiesData) => {
                 if (data.monsters.length == 0) return // No monsters
-                if (this.options.maximumTargets && bot.targets >= this.options.maximumTargets) return // Don't want any more targets
+                if (this.options.maximumTargets !== undefined && bot.targets >= this.options.maximumTargets) return // Don't want any more targets
 
                 if (!this.shouldAttack(bot)) return
                 if (!this.options.disableZapper && bot.canUse("zapperzap")) {
@@ -182,7 +182,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             })
             if (
                 entities.length
-                && !(this.options.maximumTargets && bot.targets >= this.options.maximumTargets)) {
+                && !(this.options.maximumTargets !== undefined && bot.targets >= this.options.maximumTargets)) {
                 // Prioritize the entities
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
@@ -210,7 +210,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
             if (!target.target) {
                 // We're going to be tanking this monster, don't attack if it pushes us over our limit
-                if (bot.targets >= this.options.maximumTargets) continue // We don't want another target
+                if (this.options.maximumTargets !== undefined && bot.targets >= this.options.maximumTargets) continue // We don't want another target
                 switch (target.damage_type) {
                     case "magical":
                         if (bot.mcourage <= targetingMe.magical) continue // We can't tank any more magical monsters
@@ -256,7 +256,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
             if (!target.target) {
                 // We're going to be tanking this monster, don't attack if it pushes us over our limit
-                if (bot.targets >= this.options.maximumTargets) continue // We don't want another target
+                if (this.options.maximumTargets !== undefined && bot.targets >= this.options.maximumTargets) continue // We don't want another target
                 switch (target.damage_type) {
                     case "magical":
                         if (bot.mcourage <= targetingMe.magical) continue // We can't tank any more magical monsters
@@ -337,7 +337,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             })
             if (
                 entities.length
-                && !(this.options.maximumTargets && bot.targets >= this.options.maximumTargets)) {
+                && !(this.options.maximumTargets !== undefined && bot.targets >= this.options.maximumTargets)) {
                 // Prioritize the entities
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
@@ -384,7 +384,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
             if (!entity.target) {
                 // We're going to be tanking this monster, don't attack if it pushes us over our limit
-                if (bot.targets >= this.options.maximumTargets) continue // We don't want another target
+                if (this.options.maximumTargets !== undefined && bot.targets >= this.options.maximumTargets) continue // We don't want another target
                 switch (entity.damage_type) {
                     case "magical":
                         if (bot.mcourage <= targetingMe.magical) continue // We can't tank any more magical monsters
