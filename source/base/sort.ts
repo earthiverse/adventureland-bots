@@ -76,6 +76,10 @@ export function sortHighestHpFirst(a: Entity, b: Entity) {
     return a.hp > b.hp
 }
 
+export function sortHighestLevelFirst(a: Entity, b: Entity) {
+    return a.level > b.level
+}
+
 export function sortPriority(bot: Character, types?: MonsterName[]) {
     return (a: Entity, b: Entity): boolean => {
         const mainhand = AL.Game.G.items[bot.slots.mainhand?.name]
