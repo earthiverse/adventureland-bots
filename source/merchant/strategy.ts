@@ -9,6 +9,7 @@ import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 import { addCryptMonstersToDB, getKeyForCrypt, refreshCryptMonsters } from "../base/crypt.js"
+import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "../earthiverse.js"
 
 export const DEFAULT_CRAFTABLES = new Set<ItemName>([
     "armorring",
@@ -1344,7 +1345,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 }
             }
 
-            if (this.options.enableInstanceProvider) {
+            if (this.options.enableInstanceProvider && bot.serverData.region === DEFAULT_REGION && bot.serverData.name === DEFAULT_IDENTIFIER) {
                 for (const key in this.options.enableInstanceProvider) {
                     if (!checkOnlyEveryMS(`${bot.id}_instance_${key}`, 60_000)) continue // We've checked this recently
                     const map = key as MapName
