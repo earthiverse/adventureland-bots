@@ -5,13 +5,13 @@ import { sortPriority } from "../../base/sort.js"
 import { Loop, LoopName, Strategist, Strategy } from "../context.js"
 import { suppress_errors } from "../logging.js"
 
+export type EnsureEquippedSlot = {
+    name: ItemName
+    filters?: LocateItemFilters
+    unequip?: true
+}
 export type EnsureEquipped = {
-    [T in SlotType]?: {
-        name: ItemName
-        filters?: LocateItemFilters
-        /** If set, we will unequip the slot instead */
-        unequip?: true
-    }
+    [T in SlotType]?: EnsureEquippedSlot
 }
 
 export type BaseAttackStrategyOptions = GetEntitiesFilters & {
@@ -31,7 +31,7 @@ export type BaseAttackStrategyOptions = GetEntitiesFilters & {
 }
 
 export const KILL_STEAL_AVOID_MONSTERS: MonsterName[] = ["kitty1", "kitty2", "kitty3", "kitty4", "puppy1", "puppy2", "puppy3", "puppy4"]
-export const IDLE_ATTACK_MONSTERS: MonsterName[] = ["arcticbee", "armadillo", "bee", "boar", "crab", "crabx", "croc", "cutebee", "frog", "goo", "hen", "iceroamer", "minimush", "osnake", "phoenix", "poisio", "rat", "rooster", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise", "wabbit"]
+export const IDLE_ATTACK_MONSTERS: MonsterName[] = ["arcticbee", "armadillo", "bee", "boar", "crab", "crabx", "croc", "cutebee", "frog", "goo", "hen", "iceroamer", "minimush", "nerfedbat", "osnake", "phoenix", "poisio", "rat", "rooster", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise", "wabbit"]
 
 export class BaseAttackStrategy<Type extends Character> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
@@ -451,7 +451,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
     protected shouldAttack(bot: Character) {
         if (bot.c.town) return false // Don't attack if teleporting
         if (bot.c.fishing || bot.c.mining) return false // Don't attack if mining or fishing
-        if (bot.isOnCooldown("scare")) return false // Don't attack if scare is on cooldown
+        if (!this.options.disableScare && bot.isOnCooldown("scare")) return false // Don't attack if scare is on cooldown
         return true
     }
 
