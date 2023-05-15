@@ -91,6 +91,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (this.options.enableGreedyAggro) {
             this.greedyOnEntities = async (data: EntitiesData) => {
                 if (data.monsters.length == 0) return // No monsters
+                if (this.options.maximumTargets && bot.targets >= this.options.maximumTargets) return // Don't want any more targets
+
                 if (!this.shouldAttack(bot)) return
                 if (!this.options.disableZapper && bot.canUse("zapperzap")) {
                     for (const monster of data.monsters) {
@@ -464,8 +466,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             const targetingMe = bot.getEntities({
                 notTypeList: [...(this.options.typeList ?? []), ...(this.options.disableIdleAttack ? [] : IDLE_ATTACK_MONSTERS)],
                 targetingMe: true,
-                willDieToProjectiles: false }
-            )
+                willDieToProjectiles: false
+            })
             if (targetingMe.length) {
                 return true
             }
