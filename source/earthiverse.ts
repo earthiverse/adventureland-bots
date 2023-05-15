@@ -975,7 +975,7 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
 
 // Load players from the public csv if one exists
 if (fs.existsSync(PUBLIC_CSV)) {
-    const lines = fs.readFileSync(PUBLIC_CSV, "utf-8").split("/n")
+    const lines = fs.readFileSync(PUBLIC_CSV, "utf-8").split("\n")
 
     // Remove the first line of the CSV (headers)
     lines.shift()
