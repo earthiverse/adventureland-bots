@@ -31,7 +31,7 @@ export type BaseAttackStrategyOptions = GetEntitiesFilters & {
 }
 
 export const KILL_STEAL_AVOID_MONSTERS: MonsterName[] = ["kitty1", "kitty2", "kitty3", "kitty4", "puppy1", "puppy2", "puppy3", "puppy4"]
-export const IDLE_ATTACK_MONSTERS: MonsterName[] = ["arcticbee", "armadillo", "bee", "boar", "crab", "crabx", "croc", "cutebee", "frog", "goo", "hen", "iceroamer", "minimush", "nerfedbat", "osnake", "phoenix", "poisio", "rat", "rooster", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise", "wabbit"]
+export const IDLE_ATTACK_MONSTERS: MonsterName[] = ["arcticbee", "armadillo", "bat", "bee", "boar", "crab", "crabx", "croc", "cutebee", "frog", "goo", "hen", "iceroamer", "minimush", "nerfedbat", "osnake", "phoenix", "poisio", "rat", "rooster", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise", "wabbit"]
 
 export class BaseAttackStrategy<Type extends Character> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
