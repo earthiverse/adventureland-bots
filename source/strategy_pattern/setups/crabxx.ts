@@ -203,7 +203,7 @@ export function constructGigaCrabHelperSetup(contexts: Strategist<PingCompensate
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, disableCreditCheck: true, typeList: ["crabx", "crabxx"] }),
+                        attack: new MageAttackStrategy({ contexts: contexts, disableCreditCheck: true, hasTarget: true, typeList: ["crabx", "crabxx"] }),
                         move: moveStrategy
                     }
                 ]
@@ -213,7 +213,7 @@ export function constructGigaCrabHelperSetup(contexts: Strategist<PingCompensate
                 characters: [
                     {
                         ctype: "paladin",
-                        attack: new PaladinAttackStrategy({ contexts: contexts, disableCreditCheck: true, typeList: ["crabx", "crabxx"] }),
+                        attack: new PaladinAttackStrategy({ contexts: contexts, disableCreditCheck: true, hasTarget: true, typeList: ["crabx", "crabxx"] }),
                         move: moveStrategy
                     }
                 ]
@@ -223,7 +223,7 @@ export function constructGigaCrabHelperSetup(contexts: Strategist<PingCompensate
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, disableCreditCheck: true, enableHealStrangers: true, typeList: ["crabx", "crabxx"] }),
+                        attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, disableCreditCheck: true, enableHealStrangers: true, hasTarget: true, typeList: ["crabx", "crabxx"] }),
                         move: moveStrategy
                     }
                 ]
@@ -233,7 +233,7 @@ export function constructGigaCrabHelperSetup(contexts: Strategist<PingCompensate
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, disableCreditCheck: true, typeList: ["crabx", "crabxx"] }),
+                        attack: new RangerAttackStrategy({ contexts: contexts, disableCreditCheck: true, hasTarget: true, typeList: ["crabx", "crabxx"] }),
                         move: moveStrategy
                     }
                 ]
@@ -243,7 +243,7 @@ export function constructGigaCrabHelperSetup(contexts: Strategist<PingCompensate
                 characters: [
                     {
                         ctype: "rogue",
-                        attack: new RogueAttackStrategy({ contexts: contexts, disableCreditCheck: true, typeList: ["crabx", "crabxx"] }),
+                        attack: new RogueAttackStrategy({ contexts: contexts, disableCreditCheck: true, hasTarget: true, typeList: ["crabx", "crabxx"] }),
                         move: moveStrategy
                     }
                 ]
@@ -253,7 +253,7 @@ export function constructGigaCrabHelperSetup(contexts: Strategist<PingCompensate
                 characters: [
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, disableCleave: true, disableCreditCheck: true, enableEquipForStomp: true, typeList: ["crabx", "crabxx"] }),
+                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, disableCleave: true, disableCreditCheck: true, enableEquipForStomp: true, hasTarget: true, typeList: ["crabx", "crabxx"] }),
                         move: moveStrategy
                     }
                 ]
