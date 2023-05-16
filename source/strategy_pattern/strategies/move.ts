@@ -26,7 +26,7 @@ export class BasicMoveStrategy implements Strategy<Character> {
     }
 
     private async move(bot: Character) {
-        const nearest = bot.getEntity({ couldGiveCredit: true, returnNearest: true, typeList: this.types, willDieToProjectiles: false })
+        const nearest = bot.getEntity({ couldGiveCredit: true, returnNearest: true, typeList: this.types, willBurnToDeath: false, willDieToProjectiles: false })
         if (!nearest) {
             if (!bot.smartMoving) {
                 bot.smartMove(this.types[0]).catch(() => { /** Suppress Error */ })

@@ -28,6 +28,7 @@ import { OptimizeItemsStrategy } from "./strategy_pattern/strategies/item.js"
 import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
 import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server.js"
+import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
@@ -150,6 +151,7 @@ const debugStrategy = new DebugStrategy({
     logLimitDCReport: true
 })
 // Movement
+const avoidDeathStrategy = new AvoidDeathStrategy()
 const avoidStackingStrategy = new AvoidStackingStrategy()
 const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
 const finishMonsterHuntStrategy = new FinishMonsterHuntStrategy()
@@ -670,6 +672,7 @@ async function startShared(context: Strategist<PingCompensatedCharacter>, privat
     }
 
     context.applyStrategy(homeServerStrategy)
+    context.applyStrategy(avoidDeathStrategy)
     context.applyStrategy(avoidStackingStrategy)
     context.applyStrategy(respawnStrategy)
     context.applyStrategy(trackerStrategy)

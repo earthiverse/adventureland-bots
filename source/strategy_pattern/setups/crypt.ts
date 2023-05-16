@@ -1,11 +1,11 @@
-import { Character, IPosition, Mage, MonsterName, Pathfinder, PingCompensatedCharacter, Priest, Warrior } from "alclient"
+import { Character, GetEntityFilters, IPosition, Mage, MonsterName, PingCompensatedCharacter, Priest, Warrior } from "alclient"
 import { Strategist } from "../context.js"
-import { MageAttackStrategy } from "../strategies/attack_mage.js"
-import { PriestAttackStrategy } from "../strategies/attack_priest.js"
-import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
+import { MageAttackStrategy, MageAttackStrategyOptions } from "../strategies/attack_mage.js"
+import { PriestAttackStrategy, PriestAttackStrategyOptions } from "../strategies/attack_priest.js"
+import { WarriorAttackStrategy, WarriorAttackStrategyOptions } from "../strategies/attack_warrior.js"
 import { KiteMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base.js"
-import { MAGE_NORMAL, MAGE_SPLASH, PRIEST_ARMOR, PRIEST_FAST, PRIEST_NORMAL, WARRIOR_NORMAL, WARRIOR_SPLASH } from "./equipment.js"
+import { RETURN_HIGHEST } from "./equipment.js"
 import { offsetPositionParty } from "../../base/locations.js"
 import { suppress_errors } from "../logging.js"
 
@@ -24,53 +24,67 @@ class CryptMoveStratey extends KiteMonsterMoveStrategy {
     }
 
     protected async move(bot: Character): Promise<IPosition> {
-        const entity = bot.getEntity({ ...this.options, returnNearest: true })
-        if (!entity) return super.move(bot) // Go find an entity
+        const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
 
-        switch (entity.type) {
-            case "a1": // Spike
-            case "a4": // Orlok
-            case "nerfedbat":
-            case "zapper0":
-                // Spike spawns bats, stand on top of spike to optimize splash damage
-                // Orlok spawns zappers, stand on top of Orlok to optimize splash damage
+        /**
+         * a4 (Orlok) - Spawns zapper0s, stay close to do splash damage
+         * a1 (Spike) - Spawns nerfedbats, stay close to do splash damage
+         */
+        for (const type of ["a4", "a1"]) {
+            filter.type = type as MonsterName
+            const entity = bot.getEntity(filter)
+            if (entity) {
                 bot.smartMove(offsetPositionParty(entity, bot)).catch(suppress_errors)
-                break;
-            case "a2": // Bill
-            case "a3": // Lestat
-            case "a5": // Elena
-            case "a6": // Marceline
-            case "a7": // Lucinda
-            case "a8": // Angel
-            case "vbat":
-                this.kite(bot, entity)
-                break;
+                return
+            }
         }
+
+        for (const type of ["a6", "a8", "a3", "a2", "a7", "a5"]) {
+            filter.type = type as MonsterName
+            const entity = bot.getEntity(filter)
+            if (entity) {
+                this.kite(bot, entity).catch(suppress_errors)
+                return
+            }
+        }
+
+        return super.move(bot) // Go find an entity
     }
 }
 
 class MageCryptAttackStrategy extends MageAttackStrategy {
+    public constructor(options?: MageAttackStrategyOptions) {
+        super(options)
+
+        this.options.ensureEquipped = {
+            amulet: { name: "intamulet", filters: RETURN_HIGHEST },
+            belt: { name: "intbelt", filters: RETURN_HIGHEST },
+            cape: { name: "tigercape", filters: RETURN_HIGHEST },
+            chest: { name: "harmor", filters: RETURN_HIGHEST },
+            earring1: { name: "cearring", filters: RETURN_HIGHEST },
+            earring2: { name: "cearring", filters: RETURN_HIGHEST },
+            gloves: { name: "hgloves", filters: RETURN_HIGHEST },
+            helmet: { name: "hhelmet", filters: RETURN_HIGHEST },
+            mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
+            offhand: { name: "lantern", filters: RETURN_HIGHEST },
+            orb: { name: "orbofint", filters: RETURN_HIGHEST },
+            pants: { name: "hpants", filters: RETURN_HIGHEST },
+            ring1: { name: "cring", filters: RETURN_HIGHEST },
+            ring2: { name: "cring", filters: RETURN_HIGHEST },
+            shoes: { name: "vboots", filters: RETURN_HIGHEST },
+        }
+    }
+
     protected async attack(bot: Mage): Promise<void> {
-        const entity = bot.getEntity({ ...this.options, returnNearest: true })
-        if(entity) {
-            switch (entity.type) {
-                case "a1": // Spike
-                case "a4": // Orlok
-                case "nerfedbat":
-                case "zapper0":
-                    // Optimize splash damage
-                    this.options.ensureEquipped = { ...MAGE_SPLASH }
-                    break;
-                case "a2": // Bill
-                case "a3": // Lestat
-                case "a5": // Elena
-                case "a6": // Marceline
-                case "a7": // Lucinda
-                case "a8": // Angel
-                case "vbat":
-                    // Optimize kiting
-                    this.options.ensureEquipped = { ...MAGE_NORMAL }
-                    break;
+        const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
+
+        for (const type of (["a4", "a1", "a6", "a8", "a3", "a2", "a7", "a5"] as MonsterName[])) {
+            filter.type = type
+            const entity = bot.getEntity(filter)
+            if (entity) {
+                this.options.maximumTargets = (type === "a1" ? undefined: 1)
+                this.options.type = type
+                return super.attack(bot)
             }
         }
 
@@ -79,56 +93,78 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
 }
 
 class PriestCryptAttackStrategy extends PriestAttackStrategy {
+    public constructor(options?: PriestAttackStrategyOptions) {
+        super(options)
+
+        this.options.ensureEquipped = {
+            amulet: { name: "intamulet", filters: RETURN_HIGHEST },
+            belt: { name: "intbelt", filters: RETURN_HIGHEST },
+            cape: { name: "angelwings", filters: RETURN_HIGHEST },
+            chest: { name: "harmor", filters: RETURN_HIGHEST },
+            earring1: { name: "cearring", filters: RETURN_HIGHEST },
+            earring2: { name: "cearring", filters: RETURN_HIGHEST },
+            gloves: { name: "xgloves", filters: RETURN_HIGHEST },
+            helmet: { name: "hhelmet", filters: RETURN_HIGHEST },
+            mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
+            offhand: { name: "tigershield", filters: RETURN_HIGHEST },
+            orb: { name: "tigerstone", filters: RETURN_HIGHEST },
+            pants: { name: "hpants", filters: RETURN_HIGHEST },
+            ring1: { name: "cring", filters: RETURN_HIGHEST },
+            ring2: { name: "cring", filters: RETURN_HIGHEST },
+            shoes: { name: "hboots", filters: RETURN_HIGHEST },
+        }
+    }
+
     protected async attack(bot: Priest): Promise<void> {
-        const entity = bot.getEntity({ ...this.options, returnNearest: true })
-        if(entity) {
-            switch (entity.type) {
-                case "a1": // Spike
-                case "a4": // Orlok
-                case "nerfedbat":
-                case "zapper0":
-                    // Optimize damage
-                    this.options.ensureEquipped = { ...PRIEST_ARMOR }
-                    break;
-                case "a2": // Bill
-                case "a3": // Lestat
-                case "a5": // Elena
-                case "a6": // Marceline
-                case "a7": // Lucinda
-                case "a8": // Angel
-                case "vbat":
-                    // Optimize kiting
-                    this.options.ensureEquipped = { ...PRIEST_ARMOR }
-                    break;
+        const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
+
+        for (const type of (["a4", "a1", "a6", "a8", "a3", "a2", "a7", "a5"] as MonsterName[])) {
+            filter.type = type
+            const entity = bot.getEntity(filter)
+            if (entity) {
+                this.options.maximumTargets = (type === "a1" ? undefined: 1)
+                this.options.type = type
+                return super.attack(bot)
             }
         }
-
+        
         return super.attack(bot)
     }
 }
 
 class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
+    public constructor(options?: WarriorAttackStrategyOptions) {
+        super(options)
+
+        this.options.ensureEquipped = {
+            amulet: { name: "snring", filters: RETURN_HIGHEST },
+            belt: { name: "strbelt", filters: RETURN_HIGHEST },
+            cape: { name: "bcape", filters: RETURN_HIGHEST },
+            chest: { name: "xarmor", filters: RETURN_HIGHEST },
+            earring1: { name: "cearring", filters: RETURN_HIGHEST },
+            earring2: { name: "cearring", filters: RETURN_HIGHEST },
+            gloves: { name: "xgloves", filters: RETURN_HIGHEST },
+            helmet: { name: "xhelmet", filters: RETURN_HIGHEST },
+            mainhand: { name: "vhammer", filters: RETURN_HIGHEST },
+            offhand: { name: "ololipop", filters: RETURN_HIGHEST },
+            orb: { name: "orbofstr", filters: RETURN_HIGHEST },
+            pants: { name: "xpants", filters: RETURN_HIGHEST },
+            ring1: { name: "strring", filters: RETURN_HIGHEST },
+            ring2: { name: "strring", filters: RETURN_HIGHEST },
+            shoes: { name: "vboots", filters: RETURN_HIGHEST },
+        }
+    }
+
     protected async attack(bot: Warrior): Promise<void> {
-        const entity = bot.getEntity({ ...this.options, returnNearest: true })
-        if(entity) {
-            switch (entity.type) {
-                case "a1": // Spike
-                case "a4": // Orlok
-                case "nerfedbat":
-                case "zapper0":
-                    // Optimize splash damage
-                    this.options.ensureEquipped = { ...WARRIOR_SPLASH }
-                    break;
-                case "a2": // Bill
-                case "a3": // Lestat
-                case "a5": // Elena
-                case "a6": // Marceline
-                case "a7": // Lucinda
-                case "a8": // Angel
-                case "vbat":
-                    // Optimize kiting
-                    this.options.ensureEquipped = { ...WARRIOR_NORMAL }
-                    break;
+        const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
+
+        for (const type of (["a4", "a1", "a6", "a8", "a3", "a2", "a7", "a5"] as MonsterName[])) {
+            filter.type = type
+            const entity = bot.getEntity(filter)
+            if (entity) {
+                this.options.maximumTargets = (type === "a1" ? undefined: 1)
+                this.options.type = type
+                return super.attack(bot)
             }
         }
 
@@ -148,8 +184,6 @@ export function constructCryptSetup(contexts: Strategist<PingCompensatedCharacte
                         ctype: "mage",
                         attack: new MageCryptAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...MAGE_SPLASH },
-                            typeList: CRYPT_MONSTERS,
                         }),
                         move: moveStrategy
                     },
@@ -157,9 +191,6 @@ export function constructCryptSetup(contexts: Strategist<PingCompensatedCharacte
                         ctype: "priest",
                         attack: new PriestCryptAttackStrategy({
                             contexts: contexts,
-                            enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_FAST },
-                            typeList: CRYPT_MONSTERS,
                         }),
                         move: moveStrategy
                     },
@@ -169,8 +200,6 @@ export function constructCryptSetup(contexts: Strategist<PingCompensatedCharacte
                             contexts: contexts,
                             enableEquipForCleave: true,
                             enableEquipForStomp: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
-                            typeList: CRYPT_MONSTERS,
                         }),
                         move: moveStrategy
                     }
