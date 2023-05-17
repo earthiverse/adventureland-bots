@@ -95,6 +95,7 @@ const privateSellStrategy = new SellStrategy({
         ["cclaw", undefined],
         ["coat1", undefined],
         ["dexring", undefined],
+        ["frankypants", undefined],
         ["gloves1", undefined],
         ["gphelmet", undefined],
         ["helmet1", undefined],
