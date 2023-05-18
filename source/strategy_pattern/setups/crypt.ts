@@ -29,8 +29,9 @@ class CryptMoveStratey extends KiteMonsterMoveStrategy {
         /**
          * a4 (Orlok) - Spawns zapper0s, stay close to do splash damage
          * a1 (Spike) - Spawns nerfedbats, stay close to do splash damage
+         * a5 (Elena) - Partners up with, and heals other crypt monsters
          */
-        for (const type of ["a4", "a1"]) {
+        for (const type of ["a4", "a1", "a5"]) {
             filter.type = type as MonsterName
             const entity = bot.getEntity(filter)
             if (entity) {
@@ -39,7 +40,7 @@ class CryptMoveStratey extends KiteMonsterMoveStrategy {
             }
         }
 
-        for (const type of ["a6", "a8", "a3", "a2", "a7", "a5"]) {
+        for (const type of ["a6", "a8", "a3", "a2", "a7"]) {
             filter.type = type as MonsterName
             const entity = bot.getEntity(filter)
             if (entity) {
@@ -77,7 +78,7 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
     protected async attack(bot: Mage): Promise<void> {
         const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
 
-        for (const type of (["a4", "a1", "a6", "a8", "a3", "a2", "a7", "a5"] as MonsterName[])) {
+        for (const type of (["a5", "a4", "a1", "a6", "a8", "a3", "a2", "a7"] as MonsterName[])) {
             filter.type = type
             const entity = bot.getEntity(filter)
             if (entity) {
@@ -94,7 +95,7 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
                     this.options.maximumTargets = 0
                     delete this.options.type
                     this.options.typeList = ["zapper0", "a4"]
-                    
+
                     for (const zapper0 of bot.getEntities({ type: "zapper0" })) {
                         if (zapper0.target === bot.id) {
                             await this.scare(bot)
@@ -102,6 +103,17 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
                         }
                     }
                 } else {
+                    if (
+                        type === "a5"
+                        && (
+                            !entity.focus
+                            || entity.focus == entity.id
+                        )
+                    ) {
+                        // We only want to attack a5 (Elena) when it's focusing on (healing) something else
+                        continue
+                    }
+
                     this.options.ensureEquipped.orb = { name: "orbofint", filters: RETURN_HIGHEST }
                     delete this.options.hasTarget
                     this.options.maximumTargets = 1
@@ -141,7 +153,7 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
     protected async attack(bot: Priest): Promise<void> {
         const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
 
-        for (const type of (["a4", "a1", "a6", "a8", "a3", "a2", "a7", "a5"] as MonsterName[])) {
+        for (const type of (["a5", "a4", "a1", "a6", "a8", "a3", "a2", "a7"] as MonsterName[])) {
             filter.type = type
             const entity = bot.getEntity(filter)
             if (entity) {
@@ -187,6 +199,17 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
                         }
                     }
                 } else {
+                    if (
+                        type === "a5"
+                        && (
+                            !entity.focus
+                            || entity.focus == entity.id
+                        )
+                    ) {
+                        // We only want to attack a5 (Elena) when it's focusing on (healing) something else
+                        continue
+                    }
+
                     this.options.ensureEquipped.orb = { name: "tigerstone", filters: RETURN_HIGHEST }
                     this.options.maximumTargets = 1
                     this.options.type = type
@@ -225,7 +248,7 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
     protected async attack(bot: Warrior): Promise<void> {
         const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
 
-        for (const type of (["a4", "a1", "a6", "a8", "a3", "a2", "a7", "a5"] as MonsterName[])) {
+        for (const type of (["a5", "a4", "a1", "a6", "a8", "a3", "a2", "a7"] as MonsterName[])) {
             filter.type = type
             const entity = bot.getEntity(filter)
             if (entity) {
@@ -240,7 +263,7 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
                     this.options.maximumTargets = 1
                     delete this.options.type
                     this.options.typeList = ["zapper0", "a4"]
-                    
+
                     zapper:
                     for (const zapper0 of bot.getEntities({ type: "zapper0" })) {
                         if (zapper0.target === bot.id) {
@@ -271,6 +294,17 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
                         }
                     }
                 } else {
+                    if (
+                        type === "a5"
+                        && (
+                            !entity.focus
+                            || entity.focus == entity.id
+                        )
+                    ) {
+                        // We only want to attack a5 (Elena) when it's focusing on (healing) something else
+                        continue
+                    }
+
                     this.options.ensureEquipped.orb = { name: "orbofstr", filters: RETURN_HIGHEST }
                     this.options.maximumTargets = 1
                     this.options.type = type

@@ -40,7 +40,7 @@ export async function refreshCryptMonsters(bot: Character) {
         map: bot.map,
         in: bot.in
     }, {
-        lastSeen: Date.now()
+        lastSeen: Date.now() + 60_000
     }).lean().exec()
 }
 
