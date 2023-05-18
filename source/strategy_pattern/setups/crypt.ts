@@ -84,12 +84,16 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
             if (entity) {
                 this.options.maximumTargets = (type === "a1" ? undefined : 1)
                 if (type == "a1") {
+                    this.options.ensureEquipped.mainhand = { name: "gstaff", filters: RETURN_HIGHEST }
+                    delete this.options.ensureEquipped.offhand
                     this.options.ensureEquipped.orb = { name: "orbofint", filters: RETURN_HIGHEST }
                     this.options.hasTarget = true
                     delete this.options.maximumTargets
                     delete this.options.type
                     this.options.typeList = ["a1", "nerfedbat"]
                 } else if (type == "a4") {
+                    this.options.ensureEquipped.mainhand = { name: "gstaff", filters: RETURN_HIGHEST }
+                    delete this.options.ensureEquipped.offhand
                     this.options.ensureEquipped.orb = { name: "jacko", filters: RETURN_HIGHEST }
                     this.options.hasTarget = true
                     this.options.maximumTargets = 0
@@ -114,6 +118,8 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
                         continue
                     }
 
+                    this.options.ensureEquipped.mainhand = { name: "firestaff", filters: RETURN_HIGHEST }
+                    this.options.ensureEquipped.offhand = { name: "lantern", filters: RETURN_HIGHEST }
                     this.options.ensureEquipped.orb = { name: "orbofint", filters: RETURN_HIGHEST }
                     delete this.options.hasTarget
                     this.options.maximumTargets = 1
@@ -169,33 +175,37 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
                     delete this.options.type
                     this.options.typeList = ["zapper0", "a4"]
 
+                    const zappers = bot.getEntities({ type: "zapper0" })
                     zapper:
-                    for (const zapper0 of bot.getEntities({ type: "zapper0" })) {
-                        if (zapper0.target === bot.id) {
-                            await this.scare(bot)
-                            break zapper
-                        }
+                    for (const zapper0 of zappers) {
+                        if (bot.canUse("absorb")) {
+                            for (const friendContext of filterContexts(this.options.contexts)) {
+                                const friend = friendContext.bot
+                                if (friend.id === bot.id) continue
+                                if (zapper0.target !== friend.id) continue
+                                if (
+                                    friend.canUse("scare")
+                                    || (
+                                        friend.canUse("scare", { ignoreEquipped: true })
+                                        && friend.hasItem("jacko")
+                                    )
+                                ) {
+                                    // They can scare themselves
+                                    continue
+                                }
 
-                        if (!bot.canUse("absorb")) continue
-
-                        for (const friendContext of filterContexts(this.options.contexts)) {
-                            const friend = friendContext.bot
-                            if (zapper0.target !== friend.id) continue
-                            if (
-                                friend.canUse("scare")
-                                || (
-                                    friend.canUse("scare", { ignoreEquipped: true })
-                                    && friend.hasItem("jacko")
-                                )
-                            ) {
-                                // They can scare themselves
-                                continue
+                                // Take the target and scare
+                                await bot.absorbSins(friend.id)
+                                await this.scare(bot)
+                                break zapper
                             }
+                        }
+                    }
 
-                            // Take the target and scare
-                            await bot.absorbSins(friend.id)
+                    for(const zapper0 of zappers) {
+                        if(zapper0.target === bot.id) {
                             await this.scare(bot)
-                            break zapper
+                            break
                         }
                     }
                 } else {
