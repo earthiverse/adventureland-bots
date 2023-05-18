@@ -1372,6 +1372,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                                 await addCryptMonstersToDB(bot)
                             }
                         } catch (e) {
+                            // TODO: Remove the crypt ID from the database
                             console.error(e)
                         }
                     } else {
