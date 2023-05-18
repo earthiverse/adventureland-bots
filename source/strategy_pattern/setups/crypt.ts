@@ -1,5 +1,5 @@
 import { Character, GetEntityFilters, IPosition, Mage, MonsterName, PingCompensatedCharacter, Priest, Warrior } from "alclient"
-import { Strategist } from "../context.js"
+import { Strategist, filterContexts } from "../context.js"
 import { MageAttackStrategy, MageAttackStrategyOptions } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy, PriestAttackStrategyOptions } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy, WarriorAttackStrategyOptions } from "../strategies/attack_warrior.js"
@@ -67,7 +67,6 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
             helmet: { name: "hhelmet", filters: RETURN_HIGHEST },
             mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
             offhand: { name: "lantern", filters: RETURN_HIGHEST },
-            orb: { name: "orbofint", filters: RETURN_HIGHEST },
             pants: { name: "hpants", filters: RETURN_HIGHEST },
             ring1: { name: "cring", filters: RETURN_HIGHEST },
             ring2: { name: "cring", filters: RETURN_HIGHEST },
@@ -82,16 +81,29 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
             filter.type = type
             const entity = bot.getEntity(filter)
             if (entity) {
-                this.options.maximumTargets = (type === "a1" ? undefined: 1)
-                if(type == "a1") {
+                this.options.maximumTargets = (type === "a1" ? undefined : 1)
+                if (type == "a1") {
+                    this.options.ensureEquipped.orb = { name: "orbofint", filters: RETURN_HIGHEST }
+                    this.options.hasTarget = true
                     delete this.options.maximumTargets
                     delete this.options.type
                     this.options.typeList = ["a1", "nerfedbat"]
-                } else if(type == "a4") {
+                } else if (type == "a4") {
+                    this.options.ensureEquipped.orb = { name: "jacko", filters: RETURN_HIGHEST }
+                    this.options.hasTarget = true
                     this.options.maximumTargets = 0
                     delete this.options.type
                     this.options.typeList = ["zapper0", "a4"]
+                    
+                    for (const zapper0 of bot.getEntities({ type: "zapper0" })) {
+                        if (zapper0.target === bot.id) {
+                            await this.scare(bot)
+                            break
+                        }
+                    }
                 } else {
+                    this.options.ensureEquipped.orb = { name: "orbofint", filters: RETURN_HIGHEST }
+                    delete this.options.hasTarget
                     this.options.maximumTargets = 1
                     this.options.type = type
                     delete this.options.typeList
@@ -119,7 +131,6 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
             helmet: { name: "hhelmet", filters: RETURN_HIGHEST },
             mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
             offhand: { name: "tigershield", filters: RETURN_HIGHEST },
-            orb: { name: "tigerstone", filters: RETURN_HIGHEST },
             pants: { name: "hpants", filters: RETURN_HIGHEST },
             ring1: { name: "cring", filters: RETURN_HIGHEST },
             ring2: { name: "cring", filters: RETURN_HIGHEST },
@@ -134,16 +145,49 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
             filter.type = type
             const entity = bot.getEntity(filter)
             if (entity) {
-                this.options.maximumTargets = (type === "a1" ? undefined: 1)
-                if(type == "a1") {
+                this.options.maximumTargets = (type === "a1" ? undefined : 1)
+                if (type == "a1") {
+                    this.options.ensureEquipped.orb = { name: "tigerstone", filters: RETURN_HIGHEST }
                     delete this.options.maximumTargets
                     delete this.options.type
                     this.options.typeList = ["a1", "nerfedbat"]
-                } else if(type == "a4") {
+                } else if (type == "a4") {
+                    this.options.ensureEquipped.orb = { name: "jacko", filters: RETURN_HIGHEST }
                     this.options.maximumTargets = 1
                     delete this.options.type
                     this.options.typeList = ["zapper0", "a4"]
+
+                    zapper:
+                    for (const zapper0 of bot.getEntities({ type: "zapper0" })) {
+                        if (zapper0.target === bot.id) {
+                            await this.scare(bot)
+                            break zapper
+                        }
+
+                        if (!bot.canUse("absorb")) continue
+
+                        for (const friendContext of filterContexts(this.options.contexts)) {
+                            const friend = friendContext.bot
+                            if (zapper0.target !== friend.id) continue
+                            if (
+                                friend.canUse("scare")
+                                || (
+                                    friend.canUse("scare", { ignoreEquipped: true })
+                                    && friend.hasItem("jacko")
+                                )
+                            ) {
+                                // They can scare themselves
+                                continue
+                            }
+
+                            // Take the target and scare
+                            await bot.absorbSins(friend.id)
+                            await this.scare(bot)
+                            break zapper
+                        }
+                    }
                 } else {
+                    this.options.ensureEquipped.orb = { name: "tigerstone", filters: RETURN_HIGHEST }
                     this.options.maximumTargets = 1
                     this.options.type = type
                     delete this.options.typeList
@@ -151,7 +195,7 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
                 return super.attack(bot)
             }
         }
-        
+
         return super.attack(bot)
     }
 }
@@ -171,7 +215,6 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
             helmet: { name: "xhelmet", filters: RETURN_HIGHEST },
             mainhand: { name: "vhammer", filters: RETURN_HIGHEST },
             offhand: { name: "ololipop", filters: RETURN_HIGHEST },
-            orb: { name: "orbofstr", filters: RETURN_HIGHEST },
             pants: { name: "xpants", filters: RETURN_HIGHEST },
             ring1: { name: "strring", filters: RETURN_HIGHEST },
             ring2: { name: "strring", filters: RETURN_HIGHEST },
@@ -186,16 +229,49 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
             filter.type = type
             const entity = bot.getEntity(filter)
             if (entity) {
-                this.options.maximumTargets = (type === "a1" ? undefined: 1)
-                if(type == "a1") {
+                this.options.maximumTargets = (type === "a1" ? undefined : 1)
+                if (type == "a1") {
+                    this.options.ensureEquipped.orb = { name: "orbofstr", filters: RETURN_HIGHEST }
                     delete this.options.maximumTargets
                     delete this.options.type
                     this.options.typeList = ["a1", "nerfedbat"]
-                } else if(type == "a4") {
+                } else if (type == "a4") {
+                    this.options.ensureEquipped.orb = { name: "jacko", filters: RETURN_HIGHEST }
                     this.options.maximumTargets = 1
                     delete this.options.type
                     this.options.typeList = ["zapper0", "a4"]
+                    
+                    zapper:
+                    for (const zapper0 of bot.getEntities({ type: "zapper0" })) {
+                        if (zapper0.target === bot.id) {
+                            await this.scare(bot)
+                            break zapper
+                        }
+
+                        if (!bot.canUse("agitate")) continue
+
+                        for (const friendContext of filterContexts(this.options.contexts)) {
+                            const friend = friendContext.bot
+                            if (zapper0.target !== friend.id) continue
+                            if (
+                                friend.canUse("scare")
+                                || (
+                                    friend.canUse("scare", { ignoreEquipped: true })
+                                    && friend.hasItem("jacko")
+                                )
+                            ) {
+                                // They can scare themselves
+                                continue
+                            }
+
+                            // Take the target(s) and scare
+                            await bot.agitate()
+                            await this.scare(bot)
+                            break zapper
+                        }
+                    }
                 } else {
+                    this.options.ensureEquipped.orb = { name: "orbofstr", filters: RETURN_HIGHEST }
                     this.options.maximumTargets = 1
                     this.options.type = type
                     delete this.options.typeList

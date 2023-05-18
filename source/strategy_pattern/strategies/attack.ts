@@ -316,7 +316,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
     protected async scare(bot: Type) {
         if (this.options.disableScare) return
         if (!(bot.hasItem("jacko") || bot.isEquipped("jacko"))) return // No jacko to scare
-        if (!bot.isEquipped("jacko")) {
+        if (!bot.isEquipped("jacko") && bot.canUse("scare", { ignoreEquipped: true })) {
             await bot.equip(bot.locateItem("jacko"), "orb")
             if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
         }
