@@ -88,7 +88,7 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
                     delete this.options.type
                     this.options.typeList = ["a1", "nerfedbat"]
                 } else if(type == "a4") {
-                    this.options.maximumTargets = 1
+                    this.options.maximumTargets = 0
                     delete this.options.type
                     this.options.typeList = ["zapper0", "a4"]
                 } else {
