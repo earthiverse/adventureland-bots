@@ -83,7 +83,19 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
             const entity = bot.getEntity(filter)
             if (entity) {
                 this.options.maximumTargets = (type === "a1" ? undefined: 1)
-                this.options.type = type
+                if(type == "a1") {
+                    delete this.options.maximumTargets
+                    delete this.options.type
+                    this.options.typeList = ["a1", "nerfedbat"]
+                } else if(type == "a4") {
+                    this.options.maximumTargets = 1
+                    delete this.options.type
+                    this.options.typeList = ["zapper0", "a4"]
+                } else {
+                    this.options.maximumTargets = 1
+                    this.options.type = type
+                    delete this.options.typeList
+                }
                 return super.attack(bot)
             }
         }
@@ -123,7 +135,19 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
             const entity = bot.getEntity(filter)
             if (entity) {
                 this.options.maximumTargets = (type === "a1" ? undefined: 1)
-                this.options.type = type
+                if(type == "a1") {
+                    delete this.options.maximumTargets
+                    delete this.options.type
+                    this.options.typeList = ["a1", "nerfedbat"]
+                } else if(type == "a4") {
+                    this.options.maximumTargets = 1
+                    delete this.options.type
+                    this.options.typeList = ["zapper0", "a4"]
+                } else {
+                    this.options.maximumTargets = 1
+                    this.options.type = type
+                    delete this.options.typeList
+                }
                 return super.attack(bot)
             }
         }
@@ -163,7 +187,19 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
             const entity = bot.getEntity(filter)
             if (entity) {
                 this.options.maximumTargets = (type === "a1" ? undefined: 1)
-                this.options.type = type
+                if(type == "a1") {
+                    delete this.options.maximumTargets
+                    delete this.options.type
+                    this.options.typeList = ["a1", "nerfedbat"]
+                } else if(type == "a4") {
+                    this.options.maximumTargets = 1
+                    delete this.options.type
+                    this.options.typeList = ["zapper0", "a4"]
+                } else {
+                    this.options.maximumTargets = 1
+                    this.options.type = type
+                    delete this.options.typeList
+                }
                 return super.attack(bot)
             }
         }
