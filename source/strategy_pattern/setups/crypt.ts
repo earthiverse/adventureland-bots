@@ -78,7 +78,7 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
     protected async attack(bot: Mage): Promise<void> {
         const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
 
-        for (const type of (["a5", "a4", "a1", "a6", "a8", "a3", "a2", "a7", "vbat"] as MonsterName[])) {
+        for (const type of (["a5", "a6", "a8", "a3", "a2", "a7", "vbat", "a4", "a1"] as MonsterName[])) {
             filter.type = type
             const entity = bot.getEntity(filter)
             if (entity) {
@@ -159,7 +159,7 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
     protected async attack(bot: Priest): Promise<void> {
         const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
 
-        for (const type of (["a5", "a4", "a1", "a6", "a8", "a3", "a2", "a7", "vbat"] as MonsterName[])) {
+        for (const type of (["a5", "a6", "a8", "a3", "a2", "a7", "vbat", "a4", "a1",] as MonsterName[])) {
             filter.type = type
             const entity = bot.getEntity(filter)
             if (entity) {
@@ -258,7 +258,7 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
     protected async attack(bot: Warrior): Promise<void> {
         const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
 
-        for (const type of (["a5", "a4", "a1", "a6", "a8", "a3", "a2", "a7", "vbat"] as MonsterName[])) {
+        for (const type of (["a5", "a6", "a8", "a3", "a2", "a7", "vbat", "a4", "a1"] as MonsterName[])) {
             filter.type = type
             const entity = bot.getEntity(filter)
             if (entity) {
