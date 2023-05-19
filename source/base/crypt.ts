@@ -2,11 +2,14 @@ import AL, { Character, Entity, IPosition, ItemName, MapName, MonsterName } from
 
 export const CRYPT_MONSTERS: MonsterName[] = ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "vbat"]
 
+/** Used to give us a little bit extra time to find and kill them */
+const ADD_TIME = 3_600_000
+
 export function addCryptMonstersToDB(bot: Character) {
     if (bot.map !== "crypt") throw "Only call this function in a crypt."
 
     const data = []
-    const now = Date.now()
+    const now = Date.now() + ADD_TIME
 
     for (const monster of AL.Game.G.maps[bot.map].monsters) {
         const gMonster = AL.Game.G.monsters[monster.type]
@@ -40,7 +43,7 @@ export async function refreshCryptMonsters(bot: Character) {
         map: bot.map,
         in: bot.in
     }, {
-        lastSeen: Date.now() + 3_600_000 // Set to one hour in the future so we have a chance to find them
+        lastSeen: Date.now() + ADD_TIME
     }).lean().exec()
 }
 
