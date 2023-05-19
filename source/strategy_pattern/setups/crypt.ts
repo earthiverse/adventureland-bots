@@ -10,6 +10,7 @@ import { offsetPositionParty } from "../../base/locations.js"
 import { suppress_errors } from "../logging.js"
 
 const CRYPT_MONSTERS: MonsterName[] = ["zapper0", "vbat", "nerfedbat", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8"]
+const CRYPT_PRIORITY: MonsterName[] = ["a5", "a6", "a8", "a3", "a2", "a7", "a4", "a1", "vbat"]
 
 class CryptMoveStratey extends KiteMonsterMoveStrategy {
     public constructor(contexts: Strategist<PingCompensatedCharacter>[]) {
@@ -26,7 +27,7 @@ class CryptMoveStratey extends KiteMonsterMoveStrategy {
     protected async move(bot: Character): Promise<IPosition> {
         const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
 
-        for (const type of ["a5", "a6", "a8", "a3", "a2", "a7", "a4", "a1", "vbat"]) {
+        for (const type of CRYPT_PRIORITY) {
             filter.type = type as MonsterName
             const entity = bot.getEntity(filter)
             if (!entity) continue
@@ -74,7 +75,7 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
     protected async attack(bot: Mage): Promise<void> {
         const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
 
-        for (const type of (["a5", "a6", "a8", "a3", "a2", "a7", "vbat", "a4", "a1"] as MonsterName[])) {
+        for (const type of (CRYPT_PRIORITY as MonsterName[])) {
             filter.type = type
             const entity = bot.getEntity(filter)
             if (entity) {
@@ -155,7 +156,7 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
     protected async attack(bot: Priest): Promise<void> {
         const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
 
-        for (const type of (["a5", "a6", "a8", "a3", "a2", "a7", "vbat", "a4", "a1",] as MonsterName[])) {
+        for (const type of (CRYPT_PRIORITY as MonsterName[])) {
             filter.type = type
             const entity = bot.getEntity(filter)
             if (entity) {
@@ -254,7 +255,7 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
     protected async attack(bot: Warrior): Promise<void> {
         const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
 
-        for (const type of (["a5", "a6", "a8", "a3", "a2", "a7", "vbat", "a4", "a1"] as MonsterName[])) {
+        for (const type of (CRYPT_PRIORITY as MonsterName[])) {
             filter.type = type
             const entity = bot.getEntity(filter)
             if (entity) {
