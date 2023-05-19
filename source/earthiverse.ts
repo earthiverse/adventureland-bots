@@ -620,7 +620,7 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
             ) {
                 if (
                     !bot.s.monsterhunt // We don't have a monster hunt
-                    && bot.map !== bot.in // We aren't in an instance
+                    && bot.map === bot.in // We aren't in an instance
                 ) {
                     // Get a new monster hunt
                     removeSetup(context)
