@@ -2,7 +2,7 @@ import AL, { ActionData, Character, EntitiesData, Entity, GetEntitiesFilters, It
 import FastPriorityQueue from "fastpriorityqueue"
 import { sleep } from "../../base/general.js"
 import { sortPriority } from "../../base/sort.js"
-import { Loop, LoopName, Strategist, Strategy } from "../context.js"
+import { Loop, LoopName, Strategist, Strategy, filterContexts } from "../context.js"
 import { suppress_errors } from "../logging.js"
 
 export type EnsureEquippedSlot = {
@@ -439,12 +439,11 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
      * @param target The target we will kill
      */
     protected preventOverkill(bot: Character, target: Entity) {
-        for (const context of this.options.contexts) {
-            if (!context.isReady()) continue
-            const char = context.bot
-            if (char == bot) continue // Don't remove it from ourself
+        for (const context of filterContexts(this.options.contexts, { serverData: bot.serverData })) {
+            const friend = context.bot
+            if (friend == bot) continue // Don't remove it from ourself
             if (AL.Constants.SPECIAL_MONSTERS.includes(target.type)) continue // Don't delete special monsters
-            char.deleteEntity(target.id)
+            friend.deleteEntity(target.id)
         }
     }
 

@@ -1,4 +1,4 @@
-import { Character, GetEntityFilters, IPosition, Mage, MonsterName, PingCompensatedCharacter, Priest, Warrior } from "alclient"
+import AL, { Character, GetEntityFilters, IPosition, Mage, MonsterName, PingCompensatedCharacter, Priest, Warrior } from "alclient"
 import { Strategist, filterContexts } from "../context.js"
 import { MageAttackStrategy, MageAttackStrategyOptions } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy, PriestAttackStrategyOptions } from "../strategies/attack_priest.js"
@@ -64,7 +64,8 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
             gloves: { name: "hgloves", filters: RETURN_HIGHEST },
             helmet: { name: "hhelmet", filters: RETURN_HIGHEST },
             mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
-            offhand: { name: "lantern", filters: RETURN_HIGHEST },
+            offhand: { name: "wbookhs", filters: RETURN_HIGHEST },
+            orb: { name: "jacko", filters: RETURN_HIGHEST },
             pants: { name: "hpants", filters: RETURN_HIGHEST },
             ring1: { name: "cring", filters: RETURN_HIGHEST },
             ring2: { name: "cring", filters: RETURN_HIGHEST },
@@ -73,58 +74,60 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
     }
 
     protected async attack(bot: Mage): Promise<void> {
-        const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
+        const nearbyEntities = bot.getEntities()
+        if (nearbyEntities.every(e => (e.type === "a1" || e.type === "nerfedbat"))) {
+            // Disable scare if only a1 is around
+            this.options.disableScare = true
+            delete this.options.maximumTargets
 
-        for (const type of (CRYPT_PRIORITY as MonsterName[])) {
+            // Equip splpash weapon if only a1 is around
+            this.options.ensureEquipped.mainhand = { name: "gstaff", filters: RETURN_HIGHEST }
+            delete this.options.ensureEquipped.offhand
+        } else {
+            // Opposite of what is above
+            delete this.options.disableScare
+            this.options.maximumTargets = 1
+
+            this.options.ensureEquipped.mainhand = { name: "firestaff", filters: RETURN_HIGHEST }
+            this.options.ensureEquipped.offhand = { name: "wbookhs", filters: RETURN_HIGHEST }
+        }
+
+        // Reset options
+        delete this.options.type
+        delete this.options.typeList
+
+        const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
+        for (const type of CRYPT_PRIORITY) {
             filter.type = type
             const entity = bot.getEntity(filter)
-            if (entity) {
-                this.options.maximumTargets = (type === "a1" ? undefined : 1)
-                if (type == "a1") {
-                    this.options.ensureEquipped.mainhand = { name: "gstaff", filters: RETURN_HIGHEST }
-                    delete this.options.ensureEquipped.offhand
-                    this.options.ensureEquipped.orb = { name: "orbofint", filters: RETURN_HIGHEST }
-                    this.options.hasTarget = true
-                    this.options.maximumTargets = 10
-                    delete this.options.type
-                    this.options.typeList = ["a1", "nerfedbat"]
-                } else if (type == "a4") {
-                    this.options.ensureEquipped.mainhand = { name: "gstaff", filters: RETURN_HIGHEST }
-                    delete this.options.ensureEquipped.offhand
-                    this.options.ensureEquipped.orb = { name: "jacko", filters: RETURN_HIGHEST }
-                    this.options.hasTarget = true
-                    this.options.maximumTargets = 0
-                    delete this.options.type
-                    this.options.typeList = ["zapper0", "a4"]
+            if (!entity) continue // This entity isn't around
 
-                    for (const zapper0 of bot.getEntities({ type: "zapper0" })) {
-                        if (zapper0.target === bot.id) {
-                            await this.scare(bot)
-                            break
-                        }
-                    }
-                } else {
-                    if (
-                        type === "a5"
-                        && (
-                            !entity.focus
-                            || entity.focus == entity.id
-                        )
-                    ) {
-                        // We only want to attack a5 (Elena) when it's focusing on (healing) something else
-                        continue
-                    }
-
-                    this.options.ensureEquipped.mainhand = { name: "firestaff", filters: RETURN_HIGHEST }
-                    this.options.ensureEquipped.offhand = { name: "lantern", filters: RETURN_HIGHEST }
-                    this.options.ensureEquipped.orb = { name: "orbofint", filters: RETURN_HIGHEST }
-                    delete this.options.hasTarget
-                    this.options.maximumTargets = 1
-                    this.options.type = type
-                    delete this.options.typeList
-                }
+            if (type == "a1") {
+                this.options.typeList = ["a1", "nerfedbat"]
                 return super.attack(bot)
             }
+
+            if (type == "a4") {
+                this.options.typeList = ["a4", "zapper0"]
+                this.options.maximumTargets = 2
+
+                // Scare zapper0s if they're only targeting us
+                const zapper0s = bot.getEntities({ type: "zapper0" })
+                if (zapper0s.length && zapper0s.every(e => e.target == bot.id) && bot.canUse("scare")) {
+                    for (const zapper0 of zapper0s) this.preventOverkill(bot, zapper0)
+                    await bot.scare()
+                }
+
+                return super.attack(bot)
+            }
+
+            if (type === "a5" && (!entity.focus || entity.focus == entity.id)) {
+                // We only want to attack a5 (Elena) when it's focusing on (healing) something else
+                continue
+            }
+
+            this.options.type = type
+            return super.attack(bot)
         }
 
         return super.attack(bot)
@@ -146,6 +149,7 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
             helmet: { name: "hhelmet", filters: RETURN_HIGHEST },
             mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
             offhand: { name: "tigershield", filters: RETURN_HIGHEST },
+            orb: { name: "jacko", filters: RETURN_HIGHEST },
             pants: { name: "hpants", filters: RETURN_HIGHEST },
             ring1: { name: "cring", filters: RETURN_HIGHEST },
             ring2: { name: "cring", filters: RETURN_HIGHEST },
@@ -154,76 +158,58 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
     }
 
     protected async attack(bot: Priest): Promise<void> {
-        const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
+        const nearbyEntities = bot.getEntities()
+        if (nearbyEntities.every(e => (e.type === "a1" || e.type === "nerfedbat"))) {
+            // Disable scare if only a1 is around
+            this.options.disableScare = true
+            delete this.options.maximumTargets
+        } else {
+            // Opposite of what is above
+            delete this.options.disableScare
+            this.options.maximumTargets = 1
+        }
 
-        for (const type of (CRYPT_PRIORITY as MonsterName[])) {
+        // Reset options
+        delete this.options.type
+        delete this.options.typeList
+
+        const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
+        for (const type of CRYPT_PRIORITY) {
             filter.type = type
             const entity = bot.getEntity(filter)
-            if (entity) {
-                this.options.maximumTargets = (type === "a1" ? undefined : 1)
-                if (type == "a1") {
-                    this.options.ensureEquipped.orb = { name: "tigerstone", filters: RETURN_HIGHEST }
-                    this.options.maximumTargets = 10
-                    delete this.options.type
-                    this.options.typeList = ["a1", "nerfedbat"]
-                } else if (type == "a4") {
-                    this.options.ensureEquipped.orb = { name: "jacko", filters: RETURN_HIGHEST }
-                    this.options.maximumTargets = 1
-                    delete this.options.type
-                    this.options.typeList = ["zapper0", "a4"]
+            if (!entity) continue // This entity isn't around
 
-                    const zappers = bot.getEntities({ type: "zapper0" })
-                    zapper:
-                    for (const zapper0 of zappers) {
-                        if (bot.canUse("absorb")) {
-                            for (const friendContext of filterContexts(this.options.contexts)) {
-                                const friend = friendContext.bot
-                                if (friend.id === bot.id) continue
-                                if (zapper0.target !== friend.id) continue
-                                if (
-                                    friend.canUse("scare")
-                                    || (
-                                        friend.canUse("scare", { ignoreEquipped: true })
-                                        && friend.hasItem("jacko")
-                                    )
-                                ) {
-                                    // They can scare themselves
-                                    continue
-                                }
-
-                                // Take the target and scare
-                                await bot.absorbSins(friend.id)
-                                await this.scare(bot)
-                                break zapper
-                            }
-                        }
-                    }
-
-                    for (const zapper0 of zappers) {
-                        if (zapper0.target === bot.id) {
-                            await this.scare(bot)
-                            break
-                        }
-                    }
-                } else {
-                    if (
-                        type === "a5"
-                        && (
-                            !entity.focus
-                            || entity.focus == entity.id
-                        )
-                    ) {
-                        // We only want to attack a5 (Elena) when it's focusing on (healing) something else
-                        continue
-                    }
-
-                    this.options.ensureEquipped.orb = { name: "tigerstone", filters: RETURN_HIGHEST }
-                    this.options.maximumTargets = 1
-                    this.options.type = type
-                    delete this.options.typeList
-                }
+            if (type == "a1") {
+                this.options.typeList = ["a1", "nerfedbat"]
                 return super.attack(bot)
             }
+
+            if (type == "a4") {
+                this.options.typeList = ["a4", "zapper0"]
+                this.options.maximumTargets = 2
+
+                // Scare zapper0s if they're only targeting us
+                const zapper0s = bot.getEntities({ type: "zapper0" })
+                if (zapper0s.length && bot.canUse("scare")) {
+                    if (zapper0s.every(e => e.target == bot.id)) {
+                        // Every zapper0 is targeting us
+                        for (const zapper0 of zapper0s) this.preventOverkill(bot, zapper0)
+                        await bot.scare()
+                    }
+
+                    // TODO: Add support for absorbing if they're all targeting one other player
+                }
+
+                return super.attack(bot)
+            }
+
+            if (type === "a5" && (!entity.focus || entity.focus == entity.id)) {
+                // We only want to attack a5 (Elena) when it's focusing on (healing) something else
+                continue
+            }
+
+            this.options.type = type
+            return super.attack(bot)
         }
 
         return super.attack(bot)
@@ -253,78 +239,67 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
     }
 
     protected async attack(bot: Warrior): Promise<void> {
-        const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
+        const nearbyEntities = bot.getEntities()
+        if (nearbyEntities.every(e => (e.type === "a1" || e.type === "nerfedbat"))) {
+            // Disable scare if only a1 is around
+            this.options.disableScare = true
+            delete this.options.maximumTargets
 
-        for (const type of (CRYPT_PRIORITY as MonsterName[])) {
+            // Equip splpash weapon if only a1 is around
+            this.options.ensureEquipped.mainhand = { name: "vhammer", filters: RETURN_HIGHEST }
+            this.options.ensureEquipped.offhand = { name: "ololipop", filters: RETURN_HIGHEST }
+        } else {
+            // Opposite of what is above
+            delete this.options.disableScare
+            this.options.maximumTargets = 1
+
+            this.options.ensureEquipped.mainhand = { name: "fireblade", filters: RETURN_HIGHEST }
+            this.options.ensureEquipped.offhand = { name: "fireblade", filters: RETURN_HIGHEST }
+        }
+
+        // Reset options
+        delete this.options.type
+        delete this.options.typeList
+
+        const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
+        for (const type of CRYPT_PRIORITY) {
             filter.type = type
             const entity = bot.getEntity(filter)
-            if (entity) {
-                this.options.maximumTargets = (type === "a1" ? undefined : 1)
-                if (type == "a1") {
-                    this.options.ensureEquipped.mainhand =  { name: "vhammer", filters: RETURN_HIGHEST }
-                    this.options.ensureEquipped.offhand = { name: "ololipop", filters: RETURN_HIGHEST }
-                    this.options.ensureEquipped.orb = { name: "orbofstr", filters: RETURN_HIGHEST }
-                    this.options.maximumTargets = 10
-                    delete this.options.type
-                    this.options.typeList = ["a1", "nerfedbat"]
-                } else if (type == "a4") {
-                    this.options.ensureEquipped.mainhand =  { name: "fireblade", filters: RETURN_HIGHEST }
-                    this.options.ensureEquipped.offhand = { name: "fireblade", filters: RETURN_HIGHEST }
-                    this.options.ensureEquipped.orb = { name: "jacko", filters: RETURN_HIGHEST }
-                    this.options.maximumTargets = 1
-                    delete this.options.type
-                    this.options.typeList = ["zapper0", "a4"]
+            if (!entity) continue // This entity isn't around
 
-                    zapper:
-                    for (const zapper0 of bot.getEntities({ type: "zapper0" })) {
-                        if (zapper0.target === bot.id) {
-                            await this.scare(bot)
-                            break zapper
-                        }
-
-                        if (!bot.canUse("agitate")) continue
-
-                        for (const friendContext of filterContexts(this.options.contexts)) {
-                            const friend = friendContext.bot
-                            if (zapper0.target !== friend.id) continue
-                            if (
-                                friend.canUse("scare")
-                                || (
-                                    friend.canUse("scare", { ignoreEquipped: true })
-                                    && friend.hasItem("jacko")
-                                )
-                            ) {
-                                // They can scare themselves
-                                continue
-                            }
-
-                            // Take the target(s) and scare
-                            await bot.agitate()
-                            await this.scare(bot)
-                            break zapper
-                        }
-                    }
-                } else {
-                    if (
-                        type === "a5"
-                        && (
-                            !entity.focus
-                            || entity.focus == entity.id
-                        )
-                    ) {
-                        // We only want to attack a5 (Elena) when it's focusing on (healing) something else
-                        continue
-                    }
-
-                    this.options.ensureEquipped.mainhand =  { name: "fireblade", filters: RETURN_HIGHEST }
-                    this.options.ensureEquipped.offhand = { name: "fireblade", filters: RETURN_HIGHEST }
-                    this.options.ensureEquipped.orb = { name: "orbofstr", filters: RETURN_HIGHEST }
-                    this.options.maximumTargets = 1
-                    this.options.type = type
-                    delete this.options.typeList
-                }
+            if (type == "a1") {
+                this.options.typeList = ["a1", "nerfedbat"]
                 return super.attack(bot)
             }
+
+            if (type == "a4") {
+                this.options.typeList = ["a4", "zapper0"]
+                this.options.maximumTargets = 2
+
+                // Scare zapper0s if they're only targeting us
+                const zapper0s = bot.getEntities({ type: "zapper0" })
+                if (zapper0s.length && bot.canUse("scare")) {
+                    if (zapper0s.every(e => e.target == bot.id)) {
+                        // Every zapper0 is targeting us
+                        for (const zapper0 of zapper0s) this.preventOverkill(bot, zapper0)
+                        await bot.scare()
+                    } else if (bot.mp > (AL.Game.G.skills.agitate.mp + AL.Game.G.skills.scare.mp)) {
+                        // Get all targets on us, then scare
+                        await bot.agitate()
+                        await bot.scare()
+                    }
+                }
+
+                return super.attack(bot)
+            }
+
+            if (type === "a5" && (!entity.focus || entity.focus == entity.id)) {
+                // We only want to attack a5 (Elena) when it's focusing on (healing) something else
+                continue
+            }
+
+            this.options.type = type
+            return super.attack(bot)
         }
 
         return super.attack(bot)
