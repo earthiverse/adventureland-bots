@@ -26,28 +26,24 @@ class CryptMoveStratey extends KiteMonsterMoveStrategy {
     protected async move(bot: Character): Promise<IPosition> {
         const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
 
-        /**
-         * a4 (Orlok) - Spawns zapper0s, stay close to do splash damage
-         * a1 (Spike) - Spawns nerfedbats, stay close to do splash damage
-         * a5 (Elena) - Partners up with, and heals other crypt monsters
-         */
-        for (const type of ["a4", "a1", "a5"]) {
+        for (const type of ["vbat", "a5", "a6", "a8", "a3", "a2", "a7", "a4", "a1"]) {
             filter.type = type as MonsterName
             const entity = bot.getEntity(filter)
-            if (entity) {
+            if (!entity) continue
+
+            /**
+             * a1 (Spike) - Spawns nerfedbats, stay close to do splash damage
+             * a4 (Orlok) - Spawns zapper0s, stay close to do splash damage
+             * a5 (Elena) - Partners up with, and heals other crypt monsters, stay close to not damage others
+             */
+            if (entity.type == "a1" || entity.type == "a4" || entity.type == "a5") {
                 bot.smartMove(offsetPositionParty(entity, bot)).catch(suppress_errors)
-                return
+            } else {
+                this.kite(bot, entity).catch(suppress_errors)
             }
+            return
         }
 
-        for (const type of ["a6", "a8", "a3", "a2", "a7"]) {
-            filter.type = type as MonsterName
-            const entity = bot.getEntity(filter)
-            if (entity) {
-                this.kite(bot, entity).catch(suppress_errors)
-                return
-            }
-        }
 
         return super.move(bot) // Go find an entity
     }
@@ -202,8 +198,8 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
                         }
                     }
 
-                    for(const zapper0 of zappers) {
-                        if(zapper0.target === bot.id) {
+                    for (const zapper0 of zappers) {
+                        if (zapper0.target === bot.id) {
                             await this.scare(bot)
                             break
                         }
@@ -264,11 +260,15 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
             if (entity) {
                 this.options.maximumTargets = (type === "a1" ? undefined : 1)
                 if (type == "a1") {
+                    this.options.ensureEquipped.mainhand =  { name: "vhammer", filters: RETURN_HIGHEST }
+                    this.options.ensureEquipped.offhand = { name: "ololipop", filters: RETURN_HIGHEST }
                     this.options.ensureEquipped.orb = { name: "orbofstr", filters: RETURN_HIGHEST }
                     this.options.maximumTargets = 10
                     delete this.options.type
                     this.options.typeList = ["a1", "nerfedbat"]
                 } else if (type == "a4") {
+                    this.options.ensureEquipped.mainhand =  { name: "fireblade", filters: RETURN_HIGHEST }
+                    this.options.ensureEquipped.offhand = { name: "fireblade", filters: RETURN_HIGHEST }
                     this.options.ensureEquipped.orb = { name: "jacko", filters: RETURN_HIGHEST }
                     this.options.maximumTargets = 1
                     delete this.options.type
@@ -315,6 +315,8 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
                         continue
                     }
 
+                    this.options.ensureEquipped.mainhand =  { name: "fireblade", filters: RETURN_HIGHEST }
+                    this.options.ensureEquipped.offhand = { name: "fireblade", filters: RETURN_HIGHEST }
                     this.options.ensureEquipped.orb = { name: "orbofstr", filters: RETURN_HIGHEST }
                     this.options.maximumTargets = 1
                     this.options.type = type
