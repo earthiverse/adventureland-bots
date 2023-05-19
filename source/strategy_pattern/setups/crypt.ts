@@ -26,7 +26,7 @@ class CryptMoveStratey extends KiteMonsterMoveStrategy {
     protected async move(bot: Character): Promise<IPosition> {
         const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
 
-        for (const type of ["vbat", "a5", "a6", "a8", "a3", "a2", "a7", "a4", "a1"]) {
+        for (const type of ["a5", "a6", "a8", "a3", "a2", "a7", "a4", "a1", "vbat"]) {
             filter.type = type as MonsterName
             const entity = bot.getEntity(filter)
             if (!entity) continue
