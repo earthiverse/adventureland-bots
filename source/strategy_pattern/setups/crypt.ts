@@ -88,7 +88,7 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
                     delete this.options.ensureEquipped.offhand
                     this.options.ensureEquipped.orb = { name: "orbofint", filters: RETURN_HIGHEST }
                     this.options.hasTarget = true
-                    delete this.options.maximumTargets
+                    this.options.maximumTargets = 10
                     delete this.options.type
                     this.options.typeList = ["a1", "nerfedbat"]
                 } else if (type == "a4") {
@@ -166,7 +166,7 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
                 this.options.maximumTargets = (type === "a1" ? undefined : 1)
                 if (type == "a1") {
                     this.options.ensureEquipped.orb = { name: "tigerstone", filters: RETURN_HIGHEST }
-                    delete this.options.maximumTargets
+                    this.options.maximumTargets = 10
                     delete this.options.type
                     this.options.typeList = ["a1", "nerfedbat"]
                 } else if (type == "a4") {
@@ -265,7 +265,7 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
                 this.options.maximumTargets = (type === "a1" ? undefined : 1)
                 if (type == "a1") {
                     this.options.ensureEquipped.orb = { name: "orbofstr", filters: RETURN_HIGHEST }
-                    delete this.options.maximumTargets
+                    this.options.maximumTargets = 10
                     delete this.options.type
                     this.options.typeList = ["a1", "nerfedbat"]
                 } else if (type == "a4") {
