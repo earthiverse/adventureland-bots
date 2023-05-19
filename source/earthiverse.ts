@@ -40,7 +40,7 @@ const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
 const ENABLE_MONSTERHUNTS = true
 const DEFAULT_MONSTERS: MonsterName[] = ["xscorpion", "poisio"]
-const SPECIAL_MONSTERS: MonsterName[] = ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "crabxx", "cutebee", "franky", "fvampire", "goldenbat", "greenjr", "icegolem", "jr", "mvampire", "skeletor", "snowman", "stompy", "tinyp", "wabbit"]
+const SPECIAL_MONSTERS: MonsterName[] = ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "vbat", "crabxx", "cutebee", "franky", "fvampire", "goldenbat", "greenjr", "icegolem", "jr", "mvampire", "skeletor", "snowman", "stompy", "tinyp", "wabbit"]
 const MAX_PUBLIC_CHARACTERS = 6
 
 const MERCHANT = "earthMer"
