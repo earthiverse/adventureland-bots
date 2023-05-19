@@ -611,16 +611,24 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
 
             if (bot.ctype == "merchant") continue
 
-            if (ENABLE_MONSTERHUNTS && bot.serverData.region == DEFAULT_REGION && bot.serverData.name == DEFAULT_IDENTIFIER) {
-                // Get a monster hunt
-                if (!bot.s.monsterhunt) {
+            if (
+                ENABLE_MONSTERHUNTS
+                // Only monsterhunt on our default server
+                && bot.serverData.region == DEFAULT_REGION
+                && bot.serverData.name == DEFAULT_IDENTIFIER
+            ) {
+                if (
+                    !bot.s.monsterhunt // We don't have a monster hunt
+                    && bot.map !== bot.in // We aren't in an instance
+                ) {
+                    // Get a new monster hunt
                     removeSetup(context)
                     context.applyStrategy(getMonsterHuntStrategy)
                     continue
                 }
 
-                // Turn in our monster hunt
                 if (bot.s.monsterhunt?.c == 0) {
+                    // Turn in our monster hunt
                     const [region, id] = bot.s.monsterhunt.sn.split(" ") as [ServerRegion, ServerIdentifier]
                     if (region == bot.serverData.region && id == bot.serverData.name) {
                         removeSetup(context)
