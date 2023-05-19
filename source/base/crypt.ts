@@ -40,7 +40,7 @@ export async function refreshCryptMonsters(bot: Character) {
         map: bot.map,
         in: bot.in
     }, {
-        lastSeen: Date.now() + 60_000
+        lastSeen: Date.now() + 3_600_000 // Set to one hour in the future so we have a chance to find them
     }).lean().exec()
 }
 
