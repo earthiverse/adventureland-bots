@@ -20,7 +20,10 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
     }
 
     protected async attack(bot: Rogue) {
-        if (!this.shouldAttack(bot)) return
+        if (!this.shouldAttack(bot)) {
+            this.defensiveAttack(bot)
+            return
+        }
 
         const priority = sortPriority(bot, this.options.typeList)
 

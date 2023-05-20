@@ -19,7 +19,10 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
     protected async attack(bot: Paladin): Promise<void> {
         if (!this.options.disableSelfHeal) await this.selfHeal(bot)
 
-        if (!this.shouldAttack(bot)) return
+        if (!this.shouldAttack(bot)) {
+            this.defensiveAttack(bot)
+            return
+        }
 
         const priority = sortPriority(bot, this.options.typeList)
 

@@ -158,7 +158,10 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
     protected async attack(bot: Type) {
         const priority = sortPriority(bot, this.options.typeList)
 
-        if (!this.shouldAttack(bot)) return
+        if (!this.shouldAttack(bot)) {
+            this.defensiveAttack(bot)
+            return
+        }
 
         await this.ensureEquipped(bot)
 
@@ -325,6 +328,24 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         }
         if (!bot.canUse("scare")) return // Can't use scare
         return bot.scare().catch(console.error)
+    }
+
+    /**
+     * Extra attack logic if we "shouldn't attack", but we still have a target
+     */
+    protected async defensiveAttack(bot: Type) {
+        if (!bot.canUse("attack")) return // We can't attack
+
+        const entity = bot.getEntity({
+            ...this.options,
+            canDamage: "attack",
+            targetingMe: true,
+            withinRange: "attack",
+            returnLowestHP: true,
+        })
+        if (!entity) return // No entity
+
+        return bot.basicAttack(entity.id).catch(console.error)
     }
 
     protected async zapperAttack(bot: Type, priority: (a: Entity, b: Entity) => boolean) {

@@ -54,7 +54,10 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
     }
 
     protected async attack(bot: Mage): Promise<void> {
-        if (!this.shouldAttack(bot)) return
+        if (!this.shouldAttack(bot)) {
+            this.defensiveAttack(bot)
+            return
+        }
 
         const priority = sortPriority(bot, this.options.typeList)
 

@@ -47,7 +47,10 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
     protected async attack(bot: Warrior) {
         if (!this.options.disableWarCry) this.applyWarCry(bot)
 
-        if (!this.shouldAttack(bot)) return
+        if (!this.shouldAttack(bot)) {
+            this.defensiveAttack(bot)
+            return
+        }
 
         const priority = sortPriority(bot, this.options.typeList)
 

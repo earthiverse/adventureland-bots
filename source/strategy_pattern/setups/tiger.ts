@@ -18,7 +18,10 @@ class PriestTigerHealStrategy extends PriestAttackStrategy {
         await this.healFriendsOrSelf(bot)
         if (!this.options.disableDarkBlessing) this.applyDarkBlessing(bot)
 
-        if (!this.shouldAttack(bot)) return
+        if (!this.shouldAttack(bot)) {
+            this.defensiveAttack(bot)
+            return
+        }
 
         const priority = sortPriority(bot, this.options.typeList)
 

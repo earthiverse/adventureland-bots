@@ -19,7 +19,10 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
     }
 
     protected async attack(bot: Ranger) {
-        if (!this.shouldAttack(bot)) return
+        if (!this.shouldAttack(bot)) {
+            this.defensiveAttack(bot)
+            return
+        }
 
         const priority = sortPriority(bot, this.options.typeList)
 
