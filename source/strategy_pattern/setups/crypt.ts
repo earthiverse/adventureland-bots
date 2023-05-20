@@ -1,4 +1,4 @@
-import AL, { Character, GetEntityFilters, IPosition, Mage, MonsterName, PingCompensatedCharacter, Priest, Warrior } from "alclient"
+import AL, { Character, Entity, GetEntityFilters, IPosition, Mage, MonsterName, PingCompensatedCharacter, Priest, Warrior } from "alclient"
 import { Strategist, filterContexts } from "../context.js"
 import { MageAttackStrategy, MageAttackStrategyOptions } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy, PriestAttackStrategyOptions } from "../strategies/attack_priest.js"
@@ -29,7 +29,14 @@ class CryptMoveStratey extends KiteMonsterMoveStrategy {
 
         for (const type of CRYPT_PRIORITY) {
             filter.type = type as MonsterName
-            const entity = bot.getEntity(filter)
+
+            // Check for the entity in all of the contexts
+            let entity: Entity
+            for (const context of filterContexts(this.options.contexts, { serverData: bot.serverData })) {
+                const friend = context.bot
+                entity = friend.getEntity(filter)
+                if (entity) break
+            }
             if (!entity) continue
 
             /**
@@ -76,8 +83,8 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
     protected async attack(bot: Mage): Promise<void> {
         const nearbyEntities = bot.getEntities()
         if (nearbyEntities.every(e => (e.type === "a1" || e.type === "nerfedbat"))) {
-            // Disable scare if only a1 is around
-            this.options.disableScare = true
+            // Disable scare if only a1 is around and we have a lot of hp
+            this.options.disableScare = bot.hp > (bot.max_hp / 2) ? true : undefined
             delete this.options.maximumTargets
 
             // Equip splpash weapon if only a1 is around
@@ -160,8 +167,8 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
     protected async attack(bot: Priest): Promise<void> {
         const nearbyEntities = bot.getEntities()
         if (nearbyEntities.every(e => (e.type === "a1" || e.type === "nerfedbat"))) {
-            // Disable scare if only a1 is around
-            this.options.disableScare = true
+            // Disable scare if only a1 is around and we have a lot of hp
+            this.options.disableScare = bot.hp > (bot.max_hp / 2) ? true : undefined
             delete this.options.maximumTargets
         } else {
             // Opposite of what is above
@@ -195,9 +202,15 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
                         // Every zapper0 is targeting us
                         for (const zapper0 of zapper0s) this.preventOverkill(bot, zapper0)
                         await bot.scare()
+                    } else if (
+                        zapper0s.every(e => e.target == zapper0s[0].target)
+                        && bot.mp >= (AL.Game.G.skills.absorb.mp + AL.Game.G.skills.scare.mp)
+                    ) {
+                        // Every zapper0 is targeting one player
+                        for (const zapper0 of zapper0s) this.preventOverkill(bot, zapper0)
+                        await bot.absorbSins(zapper0s[0].target)
+                        await bot.scare()
                     }
-
-                    // TODO: Add support for absorbing if they're all targeting one other player
                 }
 
                 return super.attack(bot)
@@ -241,8 +254,8 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
     protected async attack(bot: Warrior): Promise<void> {
         const nearbyEntities = bot.getEntities()
         if (nearbyEntities.every(e => (e.type === "a1" || e.type === "nerfedbat"))) {
-            // Disable scare if only a1 is around
-            this.options.disableScare = true
+            // Disable scare if only a1 is around and we have a lot of hp
+            this.options.disableScare = bot.hp > (bot.max_hp / 2) ? true : undefined
             delete this.options.maximumTargets
 
             // Equip splpash weapon if only a1 is around
@@ -283,8 +296,9 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
                         // Every zapper0 is targeting us
                         for (const zapper0 of zapper0s) this.preventOverkill(bot, zapper0)
                         await bot.scare()
-                    } else if (bot.mp > (AL.Game.G.skills.agitate.mp + AL.Game.G.skills.scare.mp)) {
+                    } else if (bot.mp >= (AL.Game.G.skills.agitate.mp + AL.Game.G.skills.scare.mp)) {
                         // Get all targets on us, then scare
+                        for (const zapper0 of zapper0s) this.preventOverkill(bot, zapper0)
                         await bot.agitate()
                         await bot.scare()
                     }
