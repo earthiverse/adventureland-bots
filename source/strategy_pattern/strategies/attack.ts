@@ -487,7 +487,19 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (this.options.typeList) {
             // If something else is targeting us, scare
             const targetingMe = bot.getEntities({
-                notTypeList: [...(this.options.typeList ?? []), ...(this.options.disableIdleAttack ? [] : IDLE_ATTACK_MONSTERS)],
+                notTypeList: [...this.options.typeList, ...(this.options.disableIdleAttack ? [] : IDLE_ATTACK_MONSTERS)],
+                targetingMe: true,
+                willDieToProjectiles: false
+            })
+            if (targetingMe.length) {
+                return true
+            }
+        }
+
+        if (this.options.type) {
+            // If something else is targeting us, scare
+            const targetingMe = bot.getEntities({
+                notTypeList: [this.options.type, ...(this.options.disableIdleAttack ? [] : IDLE_ATTACK_MONSTERS)],
                 targetingMe: true,
                 willDieToProjectiles: false
             })
@@ -503,13 +515,20 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
         // If we could die due to attacks from incoming monsters
         let potentialIncomingDamage = 0
+        let multiplier = bot.calculateTargets()
+        multiplier['magical'] -= bot.mcourage
+        multiplier['physical'] -= bot.courage
+        multiplier['pure'] -= bot.pcourage
         for (const entity of bot.getEntities({ targetingMe: true })) {
             if (AL.Tools.distance(bot, entity) > entity.range + entity.speed) continue // Too far away to attack us
-            potentialIncomingDamage += entity.calculateDamageRange(bot)[1]
+            let entityDamage = entity.calculateDamageRange(bot)[1]
+
+            // Calculate additional mobbing damage
+            if (multiplier[entity.damage_type] > 0) entityDamage *= (1 + (0.2 * multiplier[entity.damage_type]))
+
+            potentialIncomingDamage += entityDamage
         }
-        if (potentialIncomingDamage >= bot.hp) {
-            return true
-        }
+        if (potentialIncomingDamage >= bot.hp) return true
 
         // If we have enableGreedyAggro on, we are probably okay with a lot of targets
         if (this.options.enableGreedyAggro) return false
