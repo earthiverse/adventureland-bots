@@ -1,5 +1,5 @@
 import AL, { ItemName, Merchant, PingCompensatedCharacter, Priest, Mage, Warrior, ServerRegion, ServerIdentifier, MonsterName, ServerInfoDataLive, CharacterType, Paladin, Ranger, Rogue, Attribute } from "alclient"
-import { DEFAULT_ITEMS_TO_BUY, DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO, MerchantMoveStrategyOptions, startMerchant } from "./merchant/strategy.js"
+import { DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, MerchantMoveStrategyOptions, startMerchant } from "./merchant/strategy.js"
 import { filterContexts, Strategist, Strategy } from "./strategy_pattern/context.js"
 import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "./strategy_pattern/strategies/buy.js"
@@ -15,6 +15,7 @@ import { getHalloweenMonsterPriority, getHolidaySeasonMonsterPriority, getLunarN
 import { randomIntFromInterval, sleep } from "./base/general.js"
 import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
+import { DEFAULT_ITEMS_TO_BUY, DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO } from "./base/defaults.js"
 
 import bodyParser from "body-parser"
 import cors from "cors"
@@ -29,6 +30,7 @@ import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stack
 import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server.js"
 import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js"
+import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "./base/defaults.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
@@ -51,8 +53,6 @@ const PRIEST = "earthPri"
 const PARTY_LEADER = "earthWar"
 const PARTY_ALLOWLIST = ["earthiverse", "earthMag", "earthPri", "earthWar"]
 
-export const DEFAULT_REGION: ServerRegion = "US"
-export const DEFAULT_IDENTIFIER: ServerIdentifier = "I"
 let TARGET_REGION: ServerRegion = DEFAULT_REGION
 let TARGET_IDENTIFIER: ServerIdentifier = DEFAULT_IDENTIFIER
 
@@ -72,20 +72,12 @@ const privateBuyStrategy = new BuyStrategy({
     contexts: PRIVATE_CONTEXTS,
     buyMap: DEFAULT_ITEMS_TO_BUY,
     enableBuyForProfit: true,
-    replenishables: new Map<ItemName, number>([
-        ["hpot1", 2500],
-        ["mpot1", 2500],
-        ["xptome", 1],
-    ])
+    replenishables: DEFAULT_REPLENISHABLES
 })
 const publicBuyStrategy = new BuyStrategy({
     contexts: PUBLIC_CONTEXTS,
     buyMap: undefined,
-    replenishables: new Map<ItemName, number>([
-        ["hpot1", 2500],
-        ["mpot1", 2500],
-        ["xptome", 1],
-    ])
+    replenishables: DEFAULT_REPLENISHABLES
 })
 
 const privateSellStrategy = new SellStrategy({

@@ -1,5 +1,5 @@
 import AL, { GItem, ItemName, PingCompensatedCharacter, Player } from "alclient"
-import { DEFAULT_ITEMS_TO_HOLD } from "../../merchant/strategy.js"
+import { DEFAULT_ITEMS_TO_HOLD } from "../../base/defaults.js"
 import { Strategy, LoopName, Loop, Strategist, filterContexts } from "../context.js"
 
 export type OptimizeItemsStrategyOptions = {

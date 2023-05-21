@@ -3,7 +3,8 @@ import { getMsToNextMinute } from "../base/general.js"
 import { MERCHANT_ITEMS_TO_HOLD } from "../archive/base/merchant.js"
 import { Strategist } from "../strategy_pattern/context.js"
 import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
-import { DEFAULT_ITEMS_TO_BUY, startMerchant } from "./strategy.js"
+import { startMerchant } from "./strategy.js"
+import { DEFAULT_ITEMS_TO_BUY } from "../base/defaults.js"
 
 await Promise.all([AL.Game.loginJSONFile("../../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)

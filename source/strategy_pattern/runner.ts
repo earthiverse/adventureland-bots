@@ -1,6 +1,6 @@
 import AL, { CharacterType, IPosition, ItemName, Mage, Merchant, MonsterName, Paladin, PingCompensatedCharacter, Priest, Ranger, Rogue, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { getMsToNextMinute, randomIntFromInterval } from "../base/general.js"
-import { DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO, MerchantMoveStrategyOptions, MerchantStrategy } from "../merchant/strategy.js"
+import { MerchantMoveStrategyOptions, MerchantStrategy } from "../merchant/strategy.js"
 import { Strategist, Strategy } from "./context.js"
 import { BaseAttackStrategy } from "./strategies/attack.js"
 import { MageAttackStrategy } from "./strategies/attack_mage.js"
@@ -24,6 +24,7 @@ import { GiveRogueSpeedStrategy } from "./strategies/rspeed.js"
 import { SellStrategy } from "./strategies/sell.js"
 import { ToggleStandStrategy } from "./strategies/stand.js"
 import { TrackerStrategy } from "./strategies/tracker.js"
+import { DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO } from "../base/defaults.js"
 
 // Variables
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
