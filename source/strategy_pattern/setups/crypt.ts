@@ -81,13 +81,21 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
     }
 
     protected async attack(bot: Mage): Promise<void> {
-        const nearbyEntities = bot.getEntities()
+        const nearbyEntities = bot.getEntities({ withinRange: 250 })
         if (nearbyEntities.every(e => (e.type === "a1" || e.type === "nerfedbat"))) {
             // Disable scare if only a1 is around and we have a lot of hp
             this.options.disableScare = bot.hp > (bot.max_hp / 2) ? true : undefined
             delete this.options.maximumTargets
 
             // Equip splpash weapon if only a1 is around
+            this.options.ensureEquipped.mainhand = { name: "gstaff", filters: RETURN_HIGHEST }
+            delete this.options.ensureEquipped.offhand
+        } else if(nearbyEntities.every(e => e.type === "vbat")) {
+            // Disable scare if only vbats are around and we have a lot of hp
+            this.options.disableScare = bot.hp > (bot.max_hp / 2) ? true : undefined
+            delete this.options.maximumTargets
+
+            // Equip splpash weapon if only vbats are around
             this.options.ensureEquipped.mainhand = { name: "gstaff", filters: RETURN_HIGHEST }
             delete this.options.ensureEquipped.offhand
         } else {
@@ -165,9 +173,13 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
     }
 
     protected async attack(bot: Priest): Promise<void> {
-        const nearbyEntities = bot.getEntities()
+        const nearbyEntities = bot.getEntities({ withinRange: 250 })
         if (nearbyEntities.every(e => (e.type === "a1" || e.type === "nerfedbat"))) {
             // Disable scare if only a1 is around and we have a lot of hp
+            this.options.disableScare = bot.hp > (bot.max_hp / 2) ? true : undefined
+            delete this.options.maximumTargets
+        } else if(nearbyEntities.every(e => e.type === "vbat")) {
+            // Disable scare if only vbats are around and we have a lot of hp
             this.options.disableScare = bot.hp > (bot.max_hp / 2) ? true : undefined
             delete this.options.maximumTargets
         } else {
@@ -252,19 +264,30 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
     }
 
     protected async attack(bot: Warrior): Promise<void> {
-        const nearbyEntities = bot.getEntities()
+        const nearbyEntities = bot.getEntities({ withinRange: 250 })
         if (nearbyEntities.every(e => (e.type === "a1" || e.type === "nerfedbat"))) {
             // Disable scare if only a1 is around and we have a lot of hp
             this.options.disableScare = bot.hp > (bot.max_hp / 2) ? true : undefined
             delete this.options.maximumTargets
+            delete this.options.enableGreedyAggro
 
             // Equip splpash weapon if only a1 is around
+            this.options.ensureEquipped.mainhand = { name: "vhammer", filters: RETURN_HIGHEST }
+            this.options.ensureEquipped.offhand = { name: "ololipop", filters: RETURN_HIGHEST }
+        } else if(nearbyEntities.every(e => e.type === "vbat")) {
+            // Disable scare if only vbats are around and we have a lot of hp
+            this.options.disableScare = bot.hp > (bot.max_hp / 2) ? true : undefined
+            delete this.options.maximumTargets
+            this.options.enableGreedyAggro = true
+
+            // Equip splpash weapon if only vbats are around
             this.options.ensureEquipped.mainhand = { name: "vhammer", filters: RETURN_HIGHEST }
             this.options.ensureEquipped.offhand = { name: "ololipop", filters: RETURN_HIGHEST }
         } else {
             // Opposite of what is above
             delete this.options.disableScare
             this.options.maximumTargets = 1
+            delete this.options.enableGreedyAggro
 
             this.options.ensureEquipped.mainhand = { name: "fireblade", filters: RETURN_HIGHEST }
             this.options.ensureEquipped.offhand = { name: "fireblade", filters: RETURN_HIGHEST }
