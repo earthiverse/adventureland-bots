@@ -308,7 +308,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                     if (weaponType && doubleHandTypes && doubleHandTypes[weaponType]) {
                         if (this.options.ensureEquipped.offhand) throw new Error(`'${ensure.name}' is a doublehand for ${bot.ctype}. We can't equip '${this.options.ensureEquipped.offhand}' in our offhand.`)
                         if (bot.slots.offhand) {
-                            if (bot.isize === 0) continue // We don't have enough space to unequip our offhand
+                            if (bot.esize == 0) continue // We don't have enough space to unequip our offhand
                             await bot.unequip("offhand")
                         }
                     }
@@ -435,11 +435,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (this.options.disableEnergize) return
         if (bot.s.energized) return // We're already energized
 
-        for (const context of this.options.contexts) {
-            if (!context.isReady()) continue
+        for (const context of filterContexts(this.options.contexts, { serverData: bot.serverData })) {
             const char = context.bot
-            if (char.serverData.region !== bot.serverData.region || char.serverData.name !== bot.serverData.name) continue // Different server
-            if (!char) continue // Friend is missing
             if (char == bot) continue // Can't energize ourselves
             if (AL.Tools.distance(bot, char) > bot.G.skills.energize.range) continue // Too far away
             if (!char.canUse("energize")) continue // Friend can't use energize

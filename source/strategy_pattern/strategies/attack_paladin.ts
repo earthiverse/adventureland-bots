@@ -110,7 +110,7 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
 
             const canKill = bot.canKillInOneShot(target, "purify")
             if (canKill) this.preventOverkill(bot, target)
-            if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot)
+            else this.getEnergizeFromOther(bot)
             return bot.purify(target.id).catch(console.error)
         }
     }
