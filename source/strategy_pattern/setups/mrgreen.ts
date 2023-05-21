@@ -12,7 +12,7 @@ import { MAGE_NORMAL, PRIEST_ARMOR, WARRIOR_NORMAL } from "./equipment.js"
 
 class WarriorMrGreenAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
-        if (bot.isPVP()) {
+        if (bot.serverData.name === "PVP") {
             // No Splash Damage
             this.options.disableCleave = true
             delete this.options.enableEquipForCleave

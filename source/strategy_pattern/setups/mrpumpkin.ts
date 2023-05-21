@@ -15,7 +15,7 @@ const NON_PVP_MONSTERS: MonsterName[] = ["mrpumpkin", "phoenix", "xscorpion", "m
 class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
     public onApply(bot: Mage): void {
         super.onApply(bot)
-        if (bot.isPVP()) {
+        if (bot.serverData.name === "PVP") {
             // No splash damage
             this.options.ensureEquipped.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
             this.options.ensureEquipped.offhand = { name: "wbookhs", filters: { returnHighestLevel: true } }
@@ -34,7 +34,7 @@ class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
 class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
     public onApply(bot: Priest): void {
         super.onApply(bot)
-        if (bot.isPVP()) {
+        if (bot.serverData.name === "PVP") {
             this.options.ensureEquipped.orb = { name: "jacko", filters: { returnHighestLevel: true } }
             this.options.ensureEquipped.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
             this.options.typeList = ["mrpumpkin"]
@@ -50,7 +50,7 @@ class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
 class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
         super.onApply(bot)
-        if (bot.isPVP()) {
+        if (bot.serverData.name === "PVP") {
             // No Splash Damage
             this.options.disableCleave = true
             this.options.ensureEquipped.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } },

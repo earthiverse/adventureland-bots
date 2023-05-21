@@ -535,6 +535,7 @@ export async function getItemsToCompoundOrUpgrade(bot: Character, counts?: ItemC
     okayToCompoundOrUpgrade.sort((a, b) => {
         if (a.name !== b.name) return a.name.localeCompare(b.name)
         if (a.level !== b.level) return a.level - b.level
+        return 0
     })
 
     // Remove compoundables that we don't have three of

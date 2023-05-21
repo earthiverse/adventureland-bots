@@ -13,7 +13,7 @@ import { MAGE_SPLASH, PRIEST_LUCK, WARRIOR_SPLASH } from "./equipment.js"
 class MageRGooAttackStrategy extends MageAttackStrategy {
     public onApply(bot: Mage): void {
         super.onApply(bot)
-        if (bot.isPVP()) {
+        if (bot.serverData.name === "PVP") {
             // No splash damage
             this.options.ensureEquipped.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
             this.options.ensureEquipped.offhand = { name: "wbookhs", filters: { returnHighestLevel: true } }
@@ -30,7 +30,7 @@ class MageRGooAttackStrategy extends MageAttackStrategy {
 class WarriorRGooAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
         super.onApply(bot)
-        if (bot.isPVP()) {
+        if (bot.serverData.name === "PVP") {
             // No Splash Damage
             this.options.disableCleave = true
             this.options.ensureEquipped.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } },
