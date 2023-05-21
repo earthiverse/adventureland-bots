@@ -9,17 +9,10 @@ import { MAGE_ARMOR, PRIEST_ARMOR, WARRIOR_NORMAL } from "./equipment.js"
 
 class WarriorSkeletorAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
-        if (bot.isPVP()) {
-            // No Splash Damage
-            this.options.disableCleave = true
-            delete this.options.enableEquipForCleave
-            delete this.options.enableGreedyAggro
-        } else {
-            // Additional Cleave Damage
-            delete this.options.disableCleave
-            this.options.enableEquipForCleave = true
-            this.options.enableGreedyAggro = true
-        }
+        // No Splash Damage
+        this.options.disableCleave = true
+        delete this.options.enableEquipForCleave
+        delete this.options.enableGreedyAggro
         super.onApply(bot)
     }
 }
