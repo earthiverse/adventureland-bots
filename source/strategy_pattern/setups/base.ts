@@ -6,7 +6,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { ImprovedMoveStrategy } from "../strategies/move.js"
+import { ImprovedMoveStrategy, SpreadOutImprovedMoveStrategy } from "../strategies/move.js"
 import { constructArmadilloHelperSetup, constructArmadilloSetup } from "./armadillo.js"
 import { constructBBPomPomSetup } from "./bbpompom.js"
 import { constructBigBirdSetup } from "./bigbird.js"
@@ -110,7 +110,7 @@ export type Setups = { [T in MonsterName]?: Setup }
 
 export function constructGenericSetup(contexts: Strategist<PingCompensatedCharacter>[], monsters: MonsterName[], privateInstance = false): Setup {
     const id_prefix = monsters.join("+")
-    const moveStrategy = new ImprovedMoveStrategy(monsters[0])
+    const moveStrategy = new SpreadOutImprovedMoveStrategy(monsters[0])
 
     let allMagical = true
     let allPhysical = true

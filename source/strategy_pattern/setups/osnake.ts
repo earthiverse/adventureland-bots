@@ -5,7 +5,7 @@ import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { ImprovedMoveStrategy } from "../strategies/move.js"
+import { SpreadOutImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { MAGE_FAST, PRIEST_FAST, WARRIOR_SPLASH } from "./equipment.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
@@ -15,7 +15,7 @@ const attackMonsters: MonsterName[] = ["osnake", "snake", "greenjr", "tinyp"]
 const moveMonsters: MonsterName[] = ["osnake", "snake"]
 
 export function constructOSnakeSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new ImprovedMoveStrategy(moveMonsters, { idlePosition: halloweenSafeSnakes })
+    const moveStrategy = new SpreadOutImprovedMoveStrategy(moveMonsters, { idlePosition: halloweenSafeSnakes })
 
     return {
         configs: [
@@ -73,7 +73,7 @@ export function constructOSnakeSetup(contexts: Strategist<PingCompensatedCharact
 }
 
 export function constructOSnakeHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new ImprovedMoveStrategy(moveMonsters, { idlePosition: halloweenSafeSnakes })
+    const moveStrategy = new SpreadOutImprovedMoveStrategy(moveMonsters, { idlePosition: halloweenSafeSnakes })
 
     return {
         configs: [

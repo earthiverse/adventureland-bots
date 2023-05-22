@@ -1,7 +1,7 @@
 import AL, { IPosition, MonsterName, Pathfinder, Character, PingCompensatedCharacter, Entity, ServerInfoDataLive, MapName, GMap, SmartMoveOptions, ItemName } from "alclient"
 import { sleep } from "../../base/general.js"
 import { offsetPositionParty } from "../../base/locations.js"
-import { sortClosestDistance, sortClosestDistancePathfinder, sortTypeThenClosest } from "../../base/sort.js"
+import { sortClosestDistance, sortClosestDistancePathfinder, sortSpreadOut, sortTypeThenClosest } from "../../base/sort.js"
 import { Loop, LoopName, Strategist, Strategy } from "../context.js"
 import { suppress_errors } from "../logging.js"
 
@@ -354,6 +354,13 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
             // No targets nearby, move to spawn
             bot.smartMove(offsetPositionParty(this.spawns[0], bot), { resolveOnFinalMoveStart: true, useBlink: true }).catch(() => { /** Suppress Error */ })
         }
+    }
+}
+
+export class SpreadOutImprovedMoveStrategy extends ImprovedMoveStrategy {
+    public onApply(bot: Character) {
+        this.spawns.sort(sortClosestDistancePathfinder(bot))
+        this.sort = sortSpreadOut(bot, this.types)
     }
 }
 

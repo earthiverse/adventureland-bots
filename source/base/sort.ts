@@ -36,6 +36,8 @@ export function sortClosestDistancePathfinder(from: Character) {
 }
 
 /**
+ * This function will prioritize monsters based on type, then which ones are closest to the character
+ * 
  * This function is meant to be used with `[].sort()`
  *
  * Example: `targets.sort(sortTypeThenClosest(bot, ["osnake", "snake"]))`
@@ -53,6 +55,58 @@ export function sortTypeThenClosest(to: Character, types: MonsterName[]) {
         const d_a = AL.Tools.squaredDistance(to, a)
         const d_b = AL.Tools.squaredDistance(to, b)
         return d_a - d_b
+    }
+}
+
+/**
+ * This function will prioritize monsters based on type, then spread out and try to prioritize
+ * ones that are further away from other party members
+ * 
+ * This function is meant to be used with `[].sort()`
+ * 
+ * Example: `targets.sort(sortTypeThenClosest(bot, ["osnake", "snake"]))`
+ * 
+ * @param to 
+ * @param types 
+ * @returns 
+ */
+export function sortSpreadOut(to: Character, types: MonsterName[]) {
+    return (a: Entity, b: Entity) => {
+        const a_index = types.indexOf(a.type)
+        const b_index = types.indexOf(b.type)
+        if (a_index < b_index) return -1
+        else if (a_index > b_index) return 1
+
+        const players = to.getPlayers({ isPartyMember: true })
+
+        const distanceToA = AL.Tools.squaredDistance(to, a)
+        const distanceToB = AL.Tools.squaredDistance(to, b)
+
+        let minDistanceToA = distanceToA
+        let minDistanceToB = distanceToB
+        if (players.length) {
+            // Check if we're the closest to the monster
+            let weAreClosestToA = true;
+            let weAreClosestToB = true;
+            for (const player of players) {
+                const playerDistanceToA = AL.Tools.squaredDistance(player, a)
+                if (playerDistanceToA < distanceToA) weAreClosestToA = false
+                if (playerDistanceToA < minDistanceToA) minDistanceToA = playerDistanceToA
+                const playerDistanceToB = AL.Tools.squaredDistance(player, b)
+                minDistanceToB += playerDistanceToB
+                if (playerDistanceToB < distanceToB) weAreClosestToB = false
+                if (playerDistanceToB < minDistanceToB) minDistanceToB = playerDistanceToB
+            }
+
+            // Return if we're the closest to one of them
+            if (weAreClosestToA && !weAreClosestToB) return -1
+            if (weAreClosestToB && !weAreClosestToA) return 1
+        }
+
+        // Return the one that's further away from other members of the party
+        if (minDistanceToA > minDistanceToB) return -1
+        if (minDistanceToB > minDistanceToA) return 1
+        return 0
     }
 }
 
