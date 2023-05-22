@@ -357,10 +357,22 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
     }
 }
 
+export type SpreadOutImprovedMoveStrategyOptions = ImprovedMoveStrategyOptions & {
+    /** Used to help spread out our characters */
+    contexts?: Strategist<PingCompensatedCharacter>[]
+}
+
 export class SpreadOutImprovedMoveStrategy extends ImprovedMoveStrategy {
+    protected options: SpreadOutImprovedMoveStrategyOptions
+
+    public constructor(type: MonsterName | MonsterName[], options?: SpreadOutImprovedMoveStrategyOptions) {
+        if (!options.contexts) options.contexts = []
+        super(type, options)
+    }
+
     public onApply(bot: Character) {
         this.spawns.sort(sortClosestDistancePathfinder(bot))
-        this.sort = sortSpreadOut(bot, this.types)
+        this.sort = sortSpreadOut(bot, this.types,)
     }
 }
 

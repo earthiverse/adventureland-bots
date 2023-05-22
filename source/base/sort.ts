@@ -1,4 +1,5 @@
-import AL, { Character, Entity, IPosition, MapName, MonsterName } from "alclient"
+import AL, { Character, Entity, IPosition, MapName, MonsterName, PingCompensatedCharacter, Player } from "alclient"
+import { Strategist, filterContexts } from "../strategy_pattern/context"
 
 /**
  * This function is meant to be used with `[].sort()`
@@ -70,14 +71,25 @@ export function sortTypeThenClosest(to: Character, types: MonsterName[]) {
  * @param types 
  * @returns 
  */
-export function sortSpreadOut(to: Character, types: MonsterName[]) {
+export function sortSpreadOut(to: Character, types: MonsterName[], contexts: Strategist<PingCompensatedCharacter>[] = []) {
     return (a: Entity, b: Entity) => {
         const a_index = types.indexOf(a.type)
         const b_index = types.indexOf(b.type)
         if (a_index < b_index) return -1
         else if (a_index > b_index) return 1
 
-        const players = to.getPlayers({ isPartyMember: true })
+        // Use contexts instead of players if we have the data available
+        const players: (Player | Character)[] = to.getPlayers({ isPartyMember: true })
+        for (let i = 0; i < players.length; i++) {
+            const player = players[i]
+            for (const context of filterContexts(contexts, { serverData: to.serverData })) {
+                const friend = context.bot
+                if (friend.id == player.id) {
+                    players[i] = friend
+                    break
+                }
+            }
+        }
 
         const distanceToA = AL.Tools.squaredDistance({ x: to.x, y: to.y }, { x: a.x, y: a.y })
         const distanceToB = AL.Tools.squaredDistance({ x: to.x, y: to.y }, { x: b.x, y: b.y })
