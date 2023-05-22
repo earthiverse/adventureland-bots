@@ -98,8 +98,8 @@ export function sortSpreadOut(to: Character, types: MonsterName[]) {
             }
 
             // Return if we're the closest to one of them
-            if (weAreClosestToA && !weAreClosestToB) return -1
-            if (weAreClosestToB && !weAreClosestToA) return 1
+            if (weAreClosestToA) return -1
+            if (weAreClosestToB) return 1
         }
 
         // Return the one that's further away from other members of the party
