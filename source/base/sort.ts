@@ -1,5 +1,5 @@
 import AL, { Character, Entity, IPosition, MapName, MonsterName, PingCompensatedCharacter, Player } from "alclient"
-import { Strategist, filterContexts } from "../strategy_pattern/context"
+import { Strategist, filterContexts } from "../strategy_pattern/context.js"
 
 /**
  * This function is meant to be used with `[].sort()`
@@ -110,8 +110,14 @@ export function sortSpreadOut(to: Character, types: MonsterName[], contexts: Str
             }
 
             // Return if we're the closest to one of them
-            if (weAreClosestToA) return -1
-            if (weAreClosestToB) return 1
+            if (weAreClosestToA) {
+                console.log(`"I, ${to.id}, am the closest to ${a.id} of ${players.length} players (A)"`)
+                return -1
+            }
+            if (weAreClosestToB) {
+                console.log(`"I, ${to.id}, am the closest to ${b.id} of ${players.length} players (B)"`)
+                return 1
+            }
         }
 
         // Return the one that's further away from other members of the party

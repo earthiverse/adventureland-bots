@@ -272,7 +272,7 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
     public types: MonsterName[]
     protected spawns: IPosition[] = []
     protected options: ImprovedMoveStrategyOptions
-    protected sort: (a: Entity, b: Entity) => number
+    protected sort = new Map<string, (a: Entity, b: Entity) => number>()
 
     public constructor(type: MonsterName | MonsterName[], options?: ImprovedMoveStrategyOptions) {
         if (!options) options = {}
@@ -309,14 +309,14 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
 
     public onApply(bot: Character) {
         this.spawns.sort(sortClosestDistancePathfinder(bot))
-        this.sort = sortTypeThenClosest(bot, this.types)
+        this.sort.set(bot.id, sortTypeThenClosest(bot, this.types))
     }
 
     private async move(bot: Character) {
         if (!AL.Pathfinder.canStand(bot) && bot.moving) return // We're cheating
 
         const targets = bot.getEntities({ canDamage: true, couldGiveCredit: true, typeList: this.types, willBurnToDeath: false, willDieToProjectiles: false })
-        targets.sort(this.sort)
+        targets.sort(this.sort.get(bot.id))
 
         // Move to next monster
         let lastD = 0
@@ -372,7 +372,7 @@ export class SpreadOutImprovedMoveStrategy extends ImprovedMoveStrategy {
 
     public onApply(bot: Character) {
         this.spawns.sort(sortClosestDistancePathfinder(bot))
-        this.sort = sortSpreadOut(bot, this.types,)
+        this.sort.set(bot.id, sortSpreadOut(bot, this.types ,this.options.contexts))
     }
 }
 
