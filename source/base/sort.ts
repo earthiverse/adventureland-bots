@@ -93,7 +93,6 @@ export function sortSpreadOut(to: Character, types: MonsterName[]) {
                 if (playerDistanceToA < distanceToA) weAreClosestToA = false
                 if (playerDistanceToA < minDistanceToA) minDistanceToA = playerDistanceToA
                 const playerDistanceToB = AL.Tools.squaredDistance(player, b)
-                minDistanceToB += playerDistanceToB
                 if (playerDistanceToB < distanceToB) weAreClosestToB = false
                 if (playerDistanceToB < minDistanceToB) minDistanceToB = playerDistanceToB
             }
