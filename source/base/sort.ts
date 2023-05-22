@@ -79,8 +79,8 @@ export function sortSpreadOut(to: Character, types: MonsterName[]) {
 
         const players = to.getPlayers({ isPartyMember: true })
 
-        const distanceToA = AL.Tools.squaredDistance(to, a)
-        const distanceToB = AL.Tools.squaredDistance(to, b)
+        const distanceToA = AL.Tools.squaredDistance({ x: to.x, y: to.y }, { x: a.x, y: a.y })
+        const distanceToB = AL.Tools.squaredDistance({ x: to.x, y: to.y }, { x: b.x, y: b.y })
 
         let minDistanceToA = distanceToA
         let minDistanceToB = distanceToB
@@ -89,10 +89,10 @@ export function sortSpreadOut(to: Character, types: MonsterName[]) {
             let weAreClosestToA = true;
             let weAreClosestToB = true;
             for (const player of players) {
-                const playerDistanceToA = AL.Tools.squaredDistance(player, a)
+                const playerDistanceToA = AL.Tools.squaredDistance({ x: player.x, y: player.y }, { x: a.x, y: a.y })
                 if (playerDistanceToA < distanceToA) weAreClosestToA = false
                 if (playerDistanceToA < minDistanceToA) minDistanceToA = playerDistanceToA
-                const playerDistanceToB = AL.Tools.squaredDistance(player, b)
+                const playerDistanceToB = AL.Tools.squaredDistance({ x: player.x, y: player.y }, { x: b.x, y: b.y })
                 if (playerDistanceToB < distanceToB) weAreClosestToB = false
                 if (playerDistanceToB < minDistanceToB) minDistanceToB = playerDistanceToB
             }
