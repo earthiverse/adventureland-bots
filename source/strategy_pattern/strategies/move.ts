@@ -366,13 +366,12 @@ export class SpreadOutImprovedMoveStrategy extends ImprovedMoveStrategy {
     protected options: SpreadOutImprovedMoveStrategyOptions
 
     public constructor(type: MonsterName | MonsterName[], options?: SpreadOutImprovedMoveStrategyOptions) {
-        if (!options.contexts) options.contexts = []
         super(type, options)
     }
 
     public onApply(bot: Character) {
         this.spawns.sort(sortClosestDistancePathfinder(bot))
-        this.sort.set(bot.id, sortSpreadOut(bot, this.types ,this.options.contexts))
+        this.sort.set(bot.id, sortSpreadOut(bot, this.types ,this?.options?.contexts ?? []))
     }
 }
 
