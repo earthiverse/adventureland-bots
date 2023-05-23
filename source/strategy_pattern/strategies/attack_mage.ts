@@ -121,7 +121,8 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
         if (!bot.canUse("cburst")) return
 
         // Allow half of our MP to go to killing monsters with cburst
-        let mpPool = (bot.mp - AL.Game.G.skills.cburst.mp) / 2
+
+        let mpPool = (bot.mp - AL.Game.G.skills.cburst.mp - (bot.max_mp / 2))
         if (mpPool <= 0) return
 
         const toCburst = new Map<string, number>()
