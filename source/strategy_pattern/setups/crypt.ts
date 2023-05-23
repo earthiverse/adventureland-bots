@@ -44,7 +44,7 @@ class CryptMoveStratey extends KiteMonsterMoveStrategy {
              * a4 (Orlok) - Spawns zapper0s, stay close to do splash damage
              * a5 (Elena) - Partners up with, and heals other crypt monsters, stay close to not damage others
              */
-            if (entity.type == "a1" || entity.type == "a4" || entity.type == "a5") {
+            if (entity.type == "a1" || entity.type == "a4" || entity.type == "a5" || entity.type == "vbat") {
                 bot.smartMove(offsetPositionParty(entity, bot)).catch(suppress_errors)
             } else {
                 this.kite(bot, entity).catch(suppress_errors)
