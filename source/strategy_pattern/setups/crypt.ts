@@ -35,7 +35,7 @@ class CryptMoveStratey extends KiteMonsterMoveStrategy {
             for (const context of filterContexts(this.options.contexts, { serverData: bot.serverData })) {
                 const friend = context.bot
                 if (friend.map !== bot.map) continue
-                
+
                 entity = friend.getEntity(filter)
                 if (entity) break
             }
@@ -83,23 +83,18 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
     }
 
     protected async attack(bot: Mage): Promise<void> {
-        const nearbyEntities = bot.getEntities({ withinRange: 250 })
-        if (nearbyEntities.every(e => (e.type === "a1" || e.type === "nerfedbat" || e.type == "vbat"))) {
+        const nearbyEntities = bot.getEntities({ withinRange: Math.max(bot.range, 250) })
+        if (nearbyEntities.length && nearbyEntities.every(e => (e.type === "a1" || e.type === "nerfedbat" || e.type == "vbat"))) {
             // Disable scare if only a1 is around and we have a lot of hp
             this.options.disableScare = bot.hp > (bot.max_hp / 2) ? true : undefined
             delete this.options.maximumTargets
-
-            // Equip splpash weapon if only a1 is around
-            this.options.ensureEquipped.mainhand = { name: "gstaff", filters: RETURN_HIGHEST }
-            delete this.options.ensureEquipped.offhand
         } else {
             // Opposite of what is above
             delete this.options.disableScare
             this.options.maximumTargets = 1
-
-            this.options.ensureEquipped.mainhand = { name: "firestaff", filters: RETURN_HIGHEST }
-            this.options.ensureEquipped.offhand = { name: "wbookhs", filters: RETURN_HIGHEST }
         }
+
+        const nearbyPriest = bot.getPlayer({ ctype: "priest", isPartyMember: true, withinRangeOf: bot })
 
         // Reset options
         delete this.options.type
@@ -110,6 +105,15 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
             filter.type = type
             const entity = bot.getEntity(filter)
             if (!entity) continue // This entity isn't around
+
+            if (
+                !nearbyPriest
+                && bot.hp < bot.max_hp / 2
+                && entity.target == bot.id
+            ) {
+                if (bot.canUse("scare")) await bot.scare()
+                return
+            }
 
             if (type == "a1") {
                 this.options.typeList = ["a1", "nerfedbat"]
@@ -167,8 +171,8 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
     }
 
     protected async attack(bot: Priest): Promise<void> {
-        const nearbyEntities = bot.getEntities({ withinRange: 250 })
-        if (nearbyEntities.every(e => (e.type === "a1" || e.type === "nerfedbat" || e.type === "vbat"))) {
+        const nearbyEntities = bot.getEntities({ withinRange: Math.max(bot.range, 250) })
+        if (nearbyEntities.length && nearbyEntities.every(e => (e.type === "a1" || e.type === "nerfedbat" || e.type === "vbat"))) {
             // Disable scare if only a1 is around and we have a lot of hp
             this.options.disableScare = bot.hp > (bot.max_hp / 2) ? true : undefined
             delete this.options.maximumTargets
@@ -254,8 +258,8 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
     }
 
     protected async attack(bot: Warrior): Promise<void> {
-        const nearbyEntities = bot.getEntities({ withinRange: 250 })
-        if (nearbyEntities.every(e => (e.type === "a1" || e.type === "nerfedbat" || e.type === "vbat"))) {
+        const nearbyEntities = bot.getEntities({ withinRange: Math.max(bot.range, 250) })
+        if (nearbyEntities.length && nearbyEntities.every(e => (e.type === "a1" || e.type === "nerfedbat" || e.type === "vbat"))) {
             // Disable scare if only a1 is around and we have a lot of hp
             this.options.disableScare = bot.hp > (bot.max_hp / 2) ? true : undefined
             delete this.options.maximumTargets
@@ -274,6 +278,8 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
             this.options.ensureEquipped.offhand = { name: "fireblade", filters: RETURN_HIGHEST }
         }
 
+        const nearbyPriest = bot.getPlayer({ ctype: "priest", isPartyMember: true, withinRangeOf: bot })
+
         // Reset options
         delete this.options.type
         delete this.options.typeList
@@ -283,6 +289,15 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
             filter.type = type
             const entity = bot.getEntity(filter)
             if (!entity) continue // This entity isn't around
+
+            if (
+                !nearbyPriest
+                && bot.hp < bot.max_hp / 2
+                && entity.target == bot.id
+            ) {
+                if (bot.canUse("scare")) await bot.scare()
+                return
+            }
 
             if (type == "a1") {
                 this.options.typeList = ["a1", "nerfedbat"]
