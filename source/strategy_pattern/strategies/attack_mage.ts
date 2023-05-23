@@ -59,12 +59,11 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
             return
         }
 
-        const priority = sortPriority(bot, this.options.typeList)
+        const priority = this.sort.get(bot.id)
 
         await this.ensureEquipped(bot)
 
-        if (!this.options.disableCburst)
-        {
+        if (!this.options.disableCburst) {
             await this.cburstHumanoids(bot)
             await this.cburstAttack(bot, priority)
         }
@@ -121,11 +120,11 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
     protected async cburstAttack(bot: Mage, priority: (a: Entity, b: Entity) => boolean) {
         if (!bot.canUse("cburst")) return
 
-        const targets = new Map<string, number>()
         // Allow half of our MP to go to killing monsters with cburst
         let mpPool = (bot.mp - AL.Game.G.skills.cburst.mp) / 2
         if (mpPool <= 0) return
 
+        const toCburst = new Map<string, number>()
         if (this.options.enableGreedyAggro) {
             const entities = bot.getEntities({
                 canDamage: "cburst",
@@ -140,7 +139,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
                 for (const entity of entities) {
                     if (mpPool - 5 < 0) break // Not enough MP
                     mpPool -= 5
-                    targets.set(entity.id, 5)
+                    toCburst.set(entity.id, 5)
                 }
             }
         }
@@ -151,30 +150,39 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
             canDamage: "cburst",
             withinRange: "cburst"
         })
+
+        // Prioritize the entities
+        const targets = new FastPriorityQueue<Entity>(priority)
+        for (const entity of entities) targets.add(entity)
+
         // Look for everything we can kill in one shot with cburst
-        for (let i = 0; i < entities.length; i++) {
-            const entity = entities[i]
+        targets.forEach(((entity) => {
             const mpNeededToKill = entity.hp * 1.1 / AL.Game.G.skills.cburst.ratio * AL.Tools.damage_multiplier(bot.rpiercing - entity.resistance)
-            if (mpNeededToKill > mpPool) continue
+            if (mpNeededToKill > mpPool) return // Not enough MP
+            if (toCburst.has(entity.id)) {
+                mpPool += toCburst.get(entity.id)
+                toCburst.set(entity.id, mpNeededToKill)
+            } else {
+                toCburst.set(entity.id, mpNeededToKill)
+            }
             mpPool -= mpNeededToKill
-            targets.set(entity.id, mpNeededToKill)
-            entities.splice(i, 1)
-            i--
-        }
+        }))
+
         // Look for a single target to spend mp attacking
-        if (targets.size == 0 && bot.mp > bot.max_mp - 500 && mpPool >= 0) {
-            const priorityTargets = new FastPriorityQueue<Entity>(priority)
-            for (const entity of entities) {
-                priorityTargets.add(entity)
-            }
-            const priorityTarget = priorityTargets.peek()
-            if (priorityTarget) {
-                targets.set(priorityTarget.id, mpPool)
+        if (mpPool >= 0) {
+            while (targets.size) {
+                const target = targets.poll()
+                if (toCburst.has(target.id)) continue // Already cbursting
+
+                // Use the rest of our pool (if we were to kill it, it would have already been set in toCburst)
+                toCburst.set(target.id, mpPool)
+                break
             }
         }
-        if (targets.size == 0) return // No targets to attack
+
+        if (toCburst.size == 0) return // No targets to attack
 
         // cburst everything in our list
-        await bot.cburst([...targets.entries()])
+        await bot.cburst([...toCburst.entries()])
     }
 }

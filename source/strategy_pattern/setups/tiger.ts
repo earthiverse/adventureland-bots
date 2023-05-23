@@ -23,7 +23,7 @@ class PriestTigerHealStrategy extends PriestAttackStrategy {
             return
         }
 
-        const priority = sortPriority(bot, this.options.typeList)
+        const priority = this.sort.get(bot.id)
 
         await this.ensureEquipped(bot)
 

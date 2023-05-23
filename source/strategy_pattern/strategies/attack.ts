@@ -39,6 +39,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
     protected greedyOnEntities: (data: EntitiesData) => Promise<unknown>
     protected stealOnAction: (data: ActionData) => Promise<unknown>
 
+    protected sort = new Map<string, (a: Entity, b: Entity) => boolean>()
+
     protected options: BaseAttackStrategyOptions
     protected interval: SkillName[] = ["attack"]
 
@@ -66,6 +68,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
     }
 
     public onApply(bot: Type) {
+        this.sort.set(bot.id, sortPriority(bot, this.options.typeList))
+
         if (!this.options.disableKillSteal && !this.options.disableZapper) {
             this.stealOnAction = async (data: ActionData) => {
                 if (!bot.canUse("zapperzap")) return
@@ -156,7 +160,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
     }
 
     protected async attack(bot: Type) {
-        const priority = sortPriority(bot, this.options.typeList)
+        const priority = this.sort.get(bot.id)
 
         if (!this.shouldAttack(bot)) {
             this.defensiveAttack(bot)
@@ -229,7 +233,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
             const canKill = bot.canKillInOneShot(target)
             if (canKill) this.preventOverkill(bot, target)
-            if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot)
+            else this.getEnergizeFromOther(bot)
             return bot.basicAttack(target.id).catch(console.error)
         }
     }
@@ -376,6 +380,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             canDamage: "zapperzap",
             withinRange: "zapperzap"
         })
+        if (entities.length == 0) return // No targets to attack
+        
         if (bot.mp < bot.max_mp - 500) {
             // When we're not near full mp, only zap if we can kill the entity in one shot
             for (let i = 0; i < entities.length; i++) {
@@ -391,25 +397,17 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
         // Prioritize the entities
         const targets = new FastPriorityQueue<Entity>(priority)
-        for (const entity of entities) {
-            // If we can kill something guaranteed, break early
-            if (bot.canKillInOneShot(entity, "zapperzap")) {
-                this.preventOverkill(bot, entity)
-                return bot.zapperZap(entity.id).catch(console.error)
-            }
-
-            targets.add(entity)
-        }
+        for (const entity of entities) targets.add(entity)
 
         const targetingMe = bot.calculateTargets()
 
         while (targets.size) {
-            const entity = targets.poll()
+            const target = targets.poll()
 
-            if (!entity.target) {
+            if (!target.target) {
                 // We're going to be tanking this monster, don't attack if it pushes us over our limit
                 if (this.options.maximumTargets !== undefined && bot.targets >= this.options.maximumTargets) continue // We don't want another target
-                switch (entity.damage_type) {
+                switch (target.damage_type) {
                     case "magical":
                         if (bot.mcourage <= targetingMe.magical) continue // We can't tank any more magical monsters
                         break
@@ -422,7 +420,9 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 }
             }
 
-            return bot.zapperZap(entity.id).catch(console.error)
+            const canKill = bot.canKillInOneShot(target)
+            if (canKill) this.preventOverkill(bot, target)
+            return bot.zapperZap(target.id).catch(console.error)
         }
     }
 

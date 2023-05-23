@@ -13,10 +13,37 @@ export type PriestAttackStrategyOptions = BaseAttackStrategyOptions & {
 export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
     public options: PriestAttackStrategyOptions
 
+    protected healPriority = new Map<string, (a: PingCompensatedCharacter | Player, b: PingCompensatedCharacter | Player) => boolean>()
+
     public constructor(options?: PriestAttackStrategyOptions) {
         super(options)
 
         if (!this.options.disableDarkBlessing) this.interval.push("darkblessing")
+    }
+
+    public onApply(bot: Priest): void {
+        this.healPriority.set(bot.id, (a: PingCompensatedCharacter | Player, b: PingCompensatedCharacter | Player) => {
+            // Heal our own characters
+            const a_isOurs = a.owner && bot.owner == a.owner
+            const b_isOurs = b.owner && bot.owner == b.owner
+            if (a_isOurs && !b_isOurs) return true
+            else if (b_isOurs && !a_isOurs) return false
+
+            // Heal party members
+            const a_party = a.party && bot.party && bot.party == a.party
+            const b_party = b.party && bot.party && bot.party == b.party
+            if (a_party && !b_party) return true
+            else if (b_party && !a_party) return false
+
+            // Heal lower hp players
+            const a_hpRatio = a.hp / a.max_hp
+            const b_hpRatio = b.hp / b.max_hp
+            if (a_hpRatio < b_hpRatio) return true
+            else if (b_hpRatio < a_hpRatio) return false
+
+            // Heal closer players
+            return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
+        })
     }
 
     protected async attack(bot: Priest): Promise<void> {
@@ -28,7 +55,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
             return
         }
 
-        const priority = sortPriority(bot, this.options.typeList)
+        const priority = this.sort.get(bot.id)
 
         await this.ensureEquipped(bot)
 
@@ -88,29 +115,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
     protected async healFriendsOrSelf(bot: Priest): Promise<unknown> {
         if (!bot.canUse("heal")) return
 
-        const healPriority = (a: PingCompensatedCharacter | Player, b: PingCompensatedCharacter | Player) => {
-            // Heal our own characters
-            const a_isOurs = a.owner && bot.owner == a.owner
-            const b_isOurs = b.owner && bot.owner == b.owner
-            if (a_isOurs && !b_isOurs) return true
-            else if (b_isOurs && !a_isOurs) return false
-
-            // Heal party members
-            const a_party = a.party && bot.party && bot.party == a.party
-            const b_party = b.party && bot.party && bot.party == b.party
-            if (a_party && !b_party) return true
-            else if (b_party && !a_party) return false
-
-            // Heal lower hp players
-            const a_hpRatio = a.hp / a.max_hp
-            const b_hpRatio = b.hp / b.max_hp
-            if (a_hpRatio < b_hpRatio) return true
-            else if (b_hpRatio < a_hpRatio) return false
-
-            // Heal closer players
-            return AL.Tools.distance(a, bot) < AL.Tools.distance(b, bot)
-        }
-
+        const healPriority = this.healPriority.get(bot.id)
         const players = new FastPriorityQueue<PingCompensatedCharacter | Player>(healPriority)
 
         // Potentially heal ourself
