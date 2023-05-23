@@ -371,7 +371,7 @@ export class SpreadOutImprovedMoveStrategy extends ImprovedMoveStrategy {
 
     public onApply(bot: Character) {
         this.spawns.sort(sortClosestDistancePathfinder(bot))
-        this.sort.set(bot.id, sortSpreadOut(bot, this.types ,this?.options?.contexts ?? []))
+        this.sort.set(bot.id, sortSpreadOut(bot, this.types, this?.options?.contexts ?? []))
     }
 }
 
@@ -771,11 +771,18 @@ export class KiteMonsterMoveStrategy extends SpecialMonsterMoveStrategy {
     }
 
     protected async kite(bot: Character, entity: Entity) {
+        if (bot.in !== entity.in) {
+            // We're on different maps
+            if (!bot.smartMoving) bot.smartMove(entity, { getWithin: bot.range })
+            return
+        }
+
         // Look for the best position to kite to
         const angleFromEntityToBot = Math.atan2(bot.y - entity.y, bot.x - entity.x)
         const distance = Math.min(bot.range, (entity.charge ?? entity.speed ?? 0) + entity.range + 50)
-        for (let i = 1; i < 20; i++) {
-            const angle = angleFromEntityToBot + ((i % 2 ? 1 : -1) * ((Math.PI) * ((i - (i % 2)) / 20)))
+        const NUM_ANGLES = 40
+        for (let i = 1; i < NUM_ANGLES; i++) {
+            const angle = angleFromEntityToBot + ((i % 2 ? 1 : -1) * ((Math.PI) * ((i - (i % 2)) / NUM_ANGLES)))
             const pos: IPosition = { map: bot.map, x: entity.x + (distance * Math.cos(angle)), y: entity.y + (distance * Math.sin(angle)) }
             if (!AL.Pathfinder.canStand(pos)) continue // Not a valid spot
             if (AL.Pathfinder.canWalkPath(bot, pos)) {
