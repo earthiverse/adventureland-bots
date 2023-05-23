@@ -170,7 +170,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
         }))
 
         // Look for a single target to spend mp attacking
-        if (mpPool >= 0) {
+        if (bot.mp > (bot.max_mp - 500) && mpPool >= 0) {
             while (targets.size) {
                 const target = targets.poll()
                 if (toCburst.has(target.id)) continue // Already cbursting
