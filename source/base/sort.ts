@@ -112,11 +112,16 @@ export function sortSpreadOut(to: Character, types: MonsterName[], contexts: Str
             // Return if we're the closest to one of them
             if (weAreClosestToA) return -1
             if (weAreClosestToB) return 1
+
+            // Return the one that's further away from other members of the party
+            if (minDistanceToA > minDistanceToB) return -1
+            if (minDistanceToB > minDistanceToA) return 1
+            return 0
         }
 
-        // Return the one that's further away from other members of the party
-        if (minDistanceToA > minDistanceToB) return -1
-        if (minDistanceToB > minDistanceToA) return 1
+        // Return the closest one
+        if (minDistanceToA < minDistanceToB) return -1
+        if (minDistanceToB < minDistanceToA) return 1
         return 0
     }
 }
