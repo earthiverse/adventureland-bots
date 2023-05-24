@@ -2,7 +2,7 @@ import AL, { CharacterType, IPosition, ItemName, Mage, Merchant, MonsterName, Pa
 import { getMsToNextMinute, randomIntFromInterval } from "../base/general.js"
 import { MerchantMoveStrategyOptions, MerchantStrategy } from "../merchant/strategy.js"
 import { Strategist, Strategy } from "./context.js"
-import { BaseAttackStrategy } from "./strategies/attack.js"
+import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./strategies/attack.js"
 import { MageAttackStrategy } from "./strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "./strategies/attack_paladin.js"
 import { PriestAttackStrategy } from "./strategies/attack_priest.js"
@@ -62,6 +62,7 @@ export type RunnerOptions = {
         buffer: number
         check?: () => Promise<boolean>
     }
+    attackOverrides?: Partial<BaseAttackStrategyOptions>
     itemOverrides?: Partial<OptimizeItemsStrategyOptions>
     merchantOverrides?: Partial<MerchantMoveStrategyOptions>
     moveOverrides?: Partial<ImprovedMoveStrategyOptions>
@@ -82,7 +83,7 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
     switch (character.ctype) {
         case "mage":
             context = new Strategist<Mage>(character as Mage, baseStrategy)
-            attackStrategy = new MageAttackStrategy({ type: options.monster, contexts: CONTEXTS })
+            attackStrategy = new MageAttackStrategy({ type: options.monster, contexts: CONTEXTS, ...(options.attackOverrides ?? {}) })
             context.applyStrategy(magiportStrategy)
             break
         case "merchant": {
@@ -91,25 +92,25 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
         }
         case "paladin":
             context = new Strategist<Paladin>(character as Paladin, baseStrategy)
-            attackStrategy = new PaladinAttackStrategy({ type: options.monster, contexts: CONTEXTS })
+            attackStrategy = new PaladinAttackStrategy({ type: options.monster, contexts: CONTEXTS, ...(options.attackOverrides ?? {}) })
             break
         case "priest":
             context = new Strategist<Priest>(character as Priest, baseStrategy)
-            attackStrategy = new PriestAttackStrategy({ type: options.monster, contexts: CONTEXTS })
+            attackStrategy = new PriestAttackStrategy({ type: options.monster, contexts: CONTEXTS, ...(options.attackOverrides ?? {}) })
             context.applyStrategy(partyHealStrategy)
             break
         case "ranger":
             context = new Strategist<Ranger>(character as Ranger, baseStrategy)
-            attackStrategy = new RangerAttackStrategy({ type: options.monster, contexts: CONTEXTS })
+            attackStrategy = new RangerAttackStrategy({ type: options.monster, contexts: CONTEXTS, ...(options.attackOverrides ?? {}) })
             break
         case "rogue":
             context = new Strategist<Rogue>(character as Rogue, baseStrategy)
-            attackStrategy = new RogueAttackStrategy({ type: options.monster, contexts: CONTEXTS })
+            attackStrategy = new RogueAttackStrategy({ type: options.monster, contexts: CONTEXTS, ...(options.attackOverrides ?? {}) })
             context.applyStrategy(rSpeedStrategy)
             break
         case "warrior":
             context = new Strategist<Warrior>(character as Warrior, baseStrategy)
-            attackStrategy = new WarriorAttackStrategy({ type: options.monster, contexts: CONTEXTS })
+            attackStrategy = new WarriorAttackStrategy({ type: options.monster, contexts: CONTEXTS, ...(options.attackOverrides ?? {}) })
             context.applyStrategy(chargeStrategy)
             break
         default:
