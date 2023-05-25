@@ -74,7 +74,7 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
     }
     if (options.ephemeral?.check && (!(await options.ephemeral.check()))) {
         // Prevent from starting for a minute
-        setTimeout(() => { startRunner(character, options) }, 60_000)
+        setTimeout(() => { startRunner(character, options) }, getMsToNextMinute() + options.ephemeral.buffer)
         return
     }
 

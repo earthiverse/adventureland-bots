@@ -1,4 +1,4 @@
-import AL, { Attribute, Mage, Merchant, MonsterName, Paladin, PingCompensatedCharacter, Priest, Ranger, Rogue, Warrior } from "alclient"
+import AL, { Attribute, ItemName, Mage, Merchant, MonsterName, Paladin, PingCompensatedCharacter, Priest, Ranger, Rogue, Warrior } from "alclient"
 import { Strategist, Strategy } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
@@ -63,7 +63,11 @@ import { constructBeeSetup } from "./bee.js"
 import { constructIceRoamerHelperSetup, constructIceRoamerSetup } from "./iceroamer.js"
 import { constructCryptSetup } from "./crypt.js"
 
-export type Requirements = { [T in Attribute]?: number }
+export type Requirements = {
+     [T in Attribute]?: number
+} & {
+    items?: ItemName[]
+}
 
 export type CharacterConfig = {
     require?: Requirements
