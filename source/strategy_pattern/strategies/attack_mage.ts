@@ -166,6 +166,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
             } else {
                 toCburst.set(entity.id, mpNeededToKill)
             }
+            this.preventOverkill(bot, entity)
             mpPool -= mpNeededToKill
         }))
 
@@ -182,7 +183,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
         }
 
         if (toCburst.size == 0) return // No targets to attack
-
+        
         // cburst everything in our list
         await bot.cburst([...toCburst.entries()])
     }
