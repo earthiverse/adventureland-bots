@@ -13,6 +13,7 @@ type ContextLoop<Type> = Loop<Type> & {
 
 export type LoopName =
     | "attack"
+    | "avoid_death"
     | "avoid_stacking"
     | "buy"
     | "charge"
