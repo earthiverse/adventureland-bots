@@ -46,7 +46,15 @@ class CryptMoveStratey extends KiteMonsterMoveStrategy {
              * a4 (Orlok) - Spawns zapper0s, stay close to do splash damage
              * a5 (Elena) - Partners up with, and heals other crypt monsters, stay close to not damage others
              */
-            if (entity.type == "a1" || entity.type == "a4" || entity.type == "a5" || entity.type == "vbat") {
+            if (entity.type == "a5") {
+                if (entity.focus && entity.focus !== entity.id) {
+                    // Stay on a5 to kill
+                    bot.smartMove(offsetPositionParty(entity, bot)).catch(suppress_errors)
+                } else {
+                    // Kite to another monster
+                    this.kite(bot, entity).catch(suppress_errors)
+                }
+            } else if (entity.type == "a1" || entity.type == "a4" || entity.type == "vbat") {
                 bot.smartMove(offsetPositionParty(entity, bot)).catch(suppress_errors)
             } else {
                 this.kite(bot, entity).catch(suppress_errors)
@@ -134,11 +142,6 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
                 return super.attack(bot)
             }
 
-            if (type === "a5" && (!entity.focus || entity.focus == entity.id)) {
-                // We only want to attack a5 (Elena) when it's focusing on (healing) something else
-                continue
-            }
-
             this.options.type = type
             return super.attack(bot)
         }
@@ -220,11 +223,6 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
                 }
 
                 return super.attack(bot)
-            }
-
-            if (type === "a5" && (!entity.focus || entity.focus == entity.id)) {
-                // We only want to attack a5 (Elena) when it's focusing on (healing) something else
-                continue
             }
 
             this.options.type = type
@@ -324,11 +322,6 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
                 }
 
                 return super.attack(bot)
-            }
-
-            if (type === "a5" && (!entity.focus || entity.focus == entity.id)) {
-                // We only want to attack a5 (Elena) when it's focusing on (healing) something else
-                continue
             }
 
             this.options.type = type
