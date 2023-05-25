@@ -56,7 +56,7 @@ export function constructStoneWormSetup(contexts: Strategist<PingCompensatedChar
 export function constructStoneWormHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new KiteMonsterMoveStrategy({ contexts: contexts, disableCheckDB: true, typeList: ["stoneworm"] })
     const requirements: Requirements = {
-        hp: 5000,
+        items: ["jacko"],
         range: AL.Game.G.monsters.stoneworm.range + 50,
         speed: AL.Game.G.monsters.stoneworm.charge
     }

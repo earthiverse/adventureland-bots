@@ -1,5 +1,5 @@
 import AL, { BankPackName, Character, IPosition, ItemName, LocateItemsFilters, MapName, Merchant, PingCompensatedCharacter, SlotType, Tools, TradeSlotType } from "alclient"
-import { getItemCountsForEverything, getItemsToCompoundOrUpgrade, getOfferingToUse, IndexesToCompoundOrUpgrade, ItemCount, withdrawItemFromBank } from "../base/banking.js"
+import { getItemCountsForEverything, getItemsToCompoundOrUpgrade, getOfferingToUse, IndexesToCompoundOrUpgrade, ItemCount, withdrawItemFromBank } from "../base/items.js"
 import { checkOnlyEveryMS, sleep } from "../base/general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
 import { filterContexts, Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"

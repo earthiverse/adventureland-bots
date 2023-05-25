@@ -1,5 +1,5 @@
 import AL from "alclient"
-import { getItemCountsForEverything, getItemsToCompoundOrUpgrade } from "../base/banking.js"
+import { getItemCountsForEverything, getItemsToCompoundOrUpgrade } from "../base/items.js"
 import { startDebugLoop, writeLast1000Events } from "../archive/base/general.js"
 
 async function run() {
