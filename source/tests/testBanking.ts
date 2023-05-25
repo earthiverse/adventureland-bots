@@ -1,5 +1,5 @@
 import AL from "alclient"
-import { getItemCountsForEverything, getItemsToCompoundOrUpgrade } from "../base/items.js"
+import { getItemsToCompoundOrUpgrade } from "../base/items.js"
 import { startDebugLoop, writeLast1000Events } from "../archive/base/general.js"
 
 async function run() {
@@ -11,9 +11,7 @@ async function run() {
     startDebugLoop(earthMer2)
 
     try {
-        const everything = await getItemCountsForEverything(earthMer2.owner)
-
-        const okay = await getItemsToCompoundOrUpgrade(earthMer2, everything)
+        const okay = await getItemsToCompoundOrUpgrade(earthMer2)
         console.log(okay)
 
         earthMer2.disconnect()

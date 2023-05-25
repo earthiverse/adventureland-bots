@@ -1,0 +1,248 @@
+import AL, { BankInfo, BankPackName, ItemData, ItemName, LocateItemsFilters, PingCompensatedCharacter } from "alclient";
+import { getEmptyInventorySlots } from "./items";
+
+/** The bank pack name, followed by the indexes for items */
+type PackItems = [BankPackName, number[]]
+/** An array of pack items */
+type BankItems = PackItems[]
+
+const sortByPackNumberAsc = (a: PackItems, b: PackItems) => {
+    const matchA = /items(\d+)/.exec(a[0])
+    const numA = Number.parseInt(matchA[1])
+    const matchB = /items(\d+)/.exec(b[0])
+    const numB = Number.parseInt(matchB[1])
+
+    // Sort packs by lower indexes first
+    return numA - numB
+}
+
+export async function goAndDepositItem(bot: PingCompensatedCharacter, pack: BankPackName, packPos: number, inventoryPos: number) {
+    await bot.smartMove(pack, { getWithin: 9999 })
+    await bot.depositItem(inventoryPos, pack, packPos)
+}
+
+export async function goAndWithdrawItem(bot: PingCompensatedCharacter, pack: BankPackName, index: number, inventoryPos = bot.getFirstEmptyInventorySlot()) {
+    await bot.smartMove(pack, { getWithin: 9999 })
+    await bot.withdrawItem(pack, index, inventoryPos)
+}
+
+export type DepositInventoryOptions = {
+    /** We will not deposit locked items by default, toggle this to change that */
+    depositLockedItems?: true
+    /** What items should we not be depositing? */
+    itemsToHold?: Set<ItemName>
+}
+
+/**
+ * Dumps (or attempts to, at least) items from our inventory in to our bank
+ * 
+ * @param bot 
+ * @param options 
+ */
+export async function dumpInventoryInBank(bot: PingCompensatedCharacter, options: DepositInventoryOptions) {
+    if (!bot.map.startsWith("bank")) throw new Error("We aren't in the bank")
+    if (!bot.bank) throw new Error("We don't have bank information")
+
+    const emptyBankSlots = locateEmptyBankSlots(bot)
+    function getEmptySlot(): [BankPackName, number] {
+        if (!emptyBankSlots.length) throw new Error("No empty slots")
+
+        const [bankPackName, emptyIndexes] = emptyBankSlots[0]
+
+        // Get an empty slot from the list
+        const emptyIndex = emptyIndexes.shift()
+
+        // Remove the pack if there are no more empty slots
+        if (!emptyIndexes.length) emptyBankSlots.shift()
+
+        // Return the empty slot name with the index of an empty spot
+        return [bankPackName, emptyIndex]
+    }
+
+    for (let i = 0; i < bot.isize; i++) {
+        const item = bot.items[i]
+        if (!item) continue // No item in this slot
+        if (options.itemsToHold?.has(item.name)) continue // We want to hold it
+        if (!options.depositLockedItems && item.l) continue // It's locked (so we probably want to hold it)
+
+        let idealSlot: [BankPackName, number]
+        if (item.q && AL.Game.G.items[item.name].s > item.q) {
+            // See if we can stack it on another stack somewhere
+            const bankItems = locateItemsInBank(bot, item, { quantityLessThan: AL.Game.G.items[item.name].s - item.q + 1 })
+            if (bankItems.length) {
+                // Store it in the slot with the highest quantity
+                let highestQuantity = 0;
+                for (const [packName, indexes] of bankItems) {
+                    for (const i of indexes) {
+                        const item = bot.bank[packName][i]
+                        if (item.q > highestQuantity) {
+                            idealSlot = [packName, i]
+                            highestQuantity = item.q
+                        }
+                    }
+                }
+            }
+        }
+
+        // Use an empty slot if we didn't find a slot for it
+        if (!idealSlot) idealSlot = getEmptySlot()
+
+        // Move to the map then deposit the item
+        await bot.smartMove(idealSlot[0], { getWithin: 9999 })
+        await bot.depositItem(i, idealSlot[0], idealSlot[1])
+    }
+}
+
+export async function tidyBank(bot: PingCompensatedCharacter, options: DepositInventoryOptions) {
+    // Deposit everything first
+    await dumpInventoryInBank(bot, options)
+
+    if (bot.esize == 0) throw new Error("We have no inventory space to tidy our bank!")
+    const emptySlots = getEmptyInventorySlots(bot)
+
+    const itemNames: {
+        [T in ItemName]?: {
+            [T in string]?: [BankPackName, number][]
+        }
+    } = {}
+
+    let bankPackName: keyof BankInfo
+    for (bankPackName in bot.bank) {
+        if (bankPackName == "gold") continue
+
+        for (let i = 0; i < bot.bank[bankPackName].length; i++) {
+            const bankItem = bot.bank[bankPackName][i]
+            if (!bankItem) continue // There's no item here
+
+            const itemPosition: [BankPackName, number] = [bankPackName, i]
+            const itemData = bankItem.p ?? bankItem.data ?? 'generic'
+
+            if (!itemNames[bankItem.name][itemData]) itemNames[bankItem.name][itemData] = [itemPosition]
+            else itemNames[bankItem.name][itemData].push(itemPosition)
+        }
+    }
+
+    // Stack items
+    let itemName: ItemName
+    for (itemName in itemNames) {
+        const gData = AL.Game.G.items[itemName]
+        if (!gData.s) continue // Not stackable
+
+        const itemTypes = itemNames[itemName]
+        for (const type in itemTypes) {
+            const positions = itemTypes[type]
+
+            positions.sort((a, b) => {
+                const itemA = bot.bank[a[0]][a[1]]
+                const itemB = bot.bank[b[0]][b[1]]
+
+                // Sort stacks from highest to lowest quantity
+                return itemB.q - itemA.q
+            })
+
+            for (let i = 1; i < positions.length; i++) {
+                const a = positions[i - 1]
+                const bankPackA = a[0]
+                const positionA = a[1]
+                const itemA = bot.bank[bankPackA][positionA]
+                if (itemA.q >= gData.s) continue // It's already a full stack
+
+                const b = positions[i]
+                const bankPackB = b[0]
+                const positionB = b[1]
+                const itemB = bot.bank[bankPackB][positionB]
+
+                if (itemA.q + itemB.q < gData.s) {
+                    // We can stack them both!
+                    if (bankPackA == bankPackB) {
+                        // We can stack them in the bank
+                        await bot.swapBankItems(positionA, positionB, bankPackA)
+                    } else {
+                        // We can withdraw them to our inventory so they stack, then put them back
+                        await goAndWithdrawItem(bot, bankPackA, positionA)
+                        await goAndWithdrawItem(bot, bankPackB, positionB)
+                        await bot.depositItem(emptySlots[0], bankPackB, positionB)
+                    }
+                    positions.shift()
+                    itemB.q += itemA.q
+                    i -= 1
+                    continue
+                } else if (emptySlots.length >= 3) {
+                    // We can stack one to the max
+                    // Get both items
+                    const inventoryPositionA = emptySlots[0]
+                    const inventoryPositionB = emptySlots[1]
+                    await goAndWithdrawItem(bot, bankPackA, positionA, inventoryPositionA)
+                    await goAndWithdrawItem(bot, bankPackB, positionB, inventoryPositionB)
+
+                    // Split enough from B to stack A to the max
+                    const numToSplit = gData.s - itemA.q
+                    await bot.splitItem(positionB, numToSplit)
+                    const splitItemsPosition = bot.locateItem(itemA.name, bot.items, { quantityGreaterThan: numToSplit - 1, quantityLessThan: numToSplit + 1 })
+                    
+                    // Stack A to the max
+                    await bot.swapItems(splitItemsPosition, inventoryPositionA)
+
+                    // Deposit them back in their original positions
+                    await goAndDepositItem(bot, bankPackA, positionA, inventoryPositionA)
+                    await goAndDepositItem(bot, bankPackB, positionB, inventoryPositionB)
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Gets all empty slots in our bank
+ * 
+ * @param bot 
+ * @returns 
+ */
+export function locateEmptyBankSlots(bot: PingCompensatedCharacter) {
+    if (!bot.map.startsWith("bank")) throw new Error("We aren't in the bank")
+    if (!bot.bank) throw new Error("We don't have bank information")
+
+    const empty: BankItems = []
+
+    let bankPackName: keyof BankInfo
+    for (bankPackName in bot.bank) {
+        if (bankPackName == "gold") continue
+
+        const emptyInSlot = []
+        for (let i = 0; i < bot.bank[bankPackName].length; i++) {
+            const bankItem = bot.bank[bankPackName][i]
+            if (bankItem) continue // There's an item here
+            emptyInSlot.push(i)
+        }
+
+        if (emptyInSlot.length) empty.push([bankPackName, emptyInSlot])
+    }
+
+    // Sort by bank pack name
+    return empty.sort(sortByPackNumberAsc)
+}
+
+/**
+ * Gets all items in the bank with the given item name and optional filters
+ * 
+ * @param bot 
+ * @param itemName 
+ * @param filters 
+ */
+export function locateItemsInBank(bot: PingCompensatedCharacter, item: ItemData, filters?: LocateItemsFilters) {
+    if (!bot.map.startsWith("bank")) throw new Error("We aren't in the bank")
+    if (!bot.bank) throw new Error("We don't have bank information")
+
+    const items: BankItems = []
+
+    let bankPackName: keyof BankInfo
+    for (bankPackName in bot.bank) {
+        if (bankPackName == "gold") continue
+
+        const itemsInSlot = bot.locateItems(item.name, bot.bank[bankPackName], filters)
+
+        if (itemsInSlot.length) items.push([bankPackName, itemsInSlot])
+    }
+
+    return items.sort(sortByPackNumberAsc)
+}

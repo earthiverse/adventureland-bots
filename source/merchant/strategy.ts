@@ -1,5 +1,5 @@
 import AL, { BankPackName, Character, IPosition, ItemName, LocateItemsFilters, MapName, Merchant, PingCompensatedCharacter, SlotType, Tools, TradeSlotType } from "alclient"
-import { getItemCountsForEverything, getItemsToCompoundOrUpgrade, getOfferingToUse, IndexesToCompoundOrUpgrade, ItemCount, withdrawItemFromBank } from "../base/items.js"
+import { getItemsToCompoundOrUpgrade, getOfferingToUse, IndexesToCompoundOrUpgrade, withdrawItemFromBank } from "../base/items.js"
 import { checkOnlyEveryMS, sleep } from "../base/general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
 import { filterContexts, Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
@@ -161,7 +161,6 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
     protected options: MerchantMoveStrategyOptions
 
-    protected itemCounts: ItemCount[] = []
     protected toUpgrade: IndexesToCompoundOrUpgrade = []
 
     public constructor(contexts: Strategist<PingCompensatedCharacter>[], options: MerchantMoveStrategyOptions = DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS) {
@@ -259,11 +258,9 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     }
                 }
 
-                this.itemCounts = await getItemCountsForEverything(bot.owner)
-
                 // Withdraw things that we can upgrade
                 if (this.options.enableUpgrade) {
-                    this.toUpgrade = await getItemsToCompoundOrUpgrade(bot, this.itemCounts)
+                    this.toUpgrade = await getItemsToCompoundOrUpgrade(bot)
                 }
 
                 // Withdraw extra gold
@@ -295,7 +292,6 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 // Then go to the bank to bank things
                 this.toUpgrade = []
                 await bot.smartMove(bankingPosition)
-                this.itemCounts = await getItemCountsForEverything(bot.owner)
 
                 for (let i = 0; i < bot.isize; i++) {
                     const item = bot.items[i]
@@ -308,7 +304,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 // Withdraw things that we can upgrade
                 if (this.options.enableUpgrade) {
                     this.debug(bot, "Looking for items to compound or upgrade...")
-                    this.toUpgrade = await getItemsToCompoundOrUpgrade(bot, this.itemCounts)
+                    this.toUpgrade = await getItemsToCompoundOrUpgrade(bot)
                 }
 
                 // Move back to the first level

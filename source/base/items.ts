@@ -1,7 +1,8 @@
 /* eslint-disable sort-keys */
-import AL, { BankPackName, Character, CharacterType, ItemData, ItemName, LocateItemsFilters, MapName } from "alclient"
+import AL, { BankPackName, Character, CharacterType, ItemData, ItemName, LocateItemsFilters, MapName, PingCompensatedCharacter } from "alclient"
 import { bankingPosition } from "./locations.js"
 import { MERCHANT_ITEMS_TO_HOLD } from "../archive/base/merchant.js"
+import { checkOnlyEveryMS } from "./general.js"
 
 export type ItemCount = {
     name: ItemName
@@ -130,6 +131,7 @@ export const ITEM_UPGRADE_CONF: {
     wshoes: PRIMLING_TO_TEN,
 }
 
+let CACHED_COUNTS = new Map<string, ItemCount[]>()
 /**
  * This function will aggregate the bank, the inventories of all characters,
  * and the items equipped on all characters so we can see how many of each item
@@ -137,7 +139,11 @@ export const ITEM_UPGRADE_CONF: {
  * @param owner The owner to get items for (e.g.: `bot.owner`)
  */
 export async function getItemCountsForEverything(owner: string): Promise<ItemCount[]> {
-    return await AL.BankModel.aggregate([
+    if (!checkOnlyEveryMS(`item_counts_${owner}`, 60_000)) {
+        return CACHED_COUNTS.get(owner)
+    }
+
+    CACHED_COUNTS.set(owner, await AL.BankModel.aggregate([
         {
             /** Find our bank **/
             $match: {
@@ -302,7 +308,9 @@ export async function getItemCountsForEverything(owner: string): Promise<ItemCou
                 q: -1,
             }
         }
-    ])
+    ]))
+
+    return CACHED_COUNTS.get(owner)
 }
 
 /**
@@ -373,6 +381,19 @@ export async function withdrawItemFromBank(bot: Character, items: ItemName | Ite
             if (bot.esize < options.freeSpaces) break // Limited space in inventory
         }
     }
+}
+
+export function getEmptyInventorySlots(bot: PingCompensatedCharacter): number[] {
+    if (bot.esize == 0) return []
+
+    const slots: number[] = []
+
+    for (let i = 0; i < bot.isize; i++) {
+        const item = bot.items[i]
+        if (!item) slots.push(i)
+    }
+
+    return slots
 }
 
 /**
@@ -450,12 +471,12 @@ export function getNumOkayToCompoundOrUpgrade(item: ItemName, currentCount: numb
  * @param counts
  * @returns A nested array of indexes to compound or upgrade. If there are 3 items in the sub array, you should compound. If it's one item, you should upgrade.
  */
-export async function getItemsToCompoundOrUpgrade(bot: Character, counts?: ItemCount[]): Promise<number[][]> {
+export async function getItemsToCompoundOrUpgrade(bot: Character): Promise<number[][]> {
     if (bot.map !== "bank") {
         await bot.closeMerchantStand()
         await bot.smartMove(bankingPosition)
     }
-    if (!counts) counts = await getItemCountsForEverything(bot.owner)
+    const counts = await getItemCountsForEverything(bot.owner)
 
     const hasOffering = bot.hasItem("offering")
     const hasOfferingP = bot.hasItem("offeringp")
