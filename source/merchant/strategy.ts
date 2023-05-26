@@ -10,7 +10,8 @@ import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 import { addCryptMonstersToDB, getKeyForCrypt, refreshCryptMonsters } from "../base/crypt.js"
 import { DEFAULT_CRAFTABLES, DEFAULT_EXCHANGEABLES, DEFAULT_GOLD_TO_HOLD, DEFAULT_IDENTIFIER, DEFAULT_ITEMS_TO_BUY, DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_REPLENISHABLES, DEFAULT_REGION, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO } from "../base/defaults.js"
-import { BankItemPosition, dumpInventoryInBank, goAndWithdrawItem, tidyBank } from "../base/banking.js"
+import { BankItemPosition, goAndWithdrawItem, tidyBank } from "../base/banking.js"
+import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.js"
 
 export type MerchantMoveStrategyOptions = {
     /** If enabled, we will log debug messages */
@@ -556,8 +557,8 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         // We didn't find a staff and/or a blade, but we can go buy one
                         await bot.smartMove("staff", { getWithin: 50 })
                         await sleep(2000) // The game can still think you're in the bank for a while
-                        if (!bot.hasItem("staff")) await bot.buy("staff")
-                        if (!bot.hasItem("blade")) await bot.buy("blade")
+                        if (!bot.hasItem("staff") && bot.canBuy("staff") && bot.canBuy("blade")) await bot.buy("staff")
+                        if (!bot.hasItem("blade") && bot.canBuy("blade")) await bot.buy("blade")
                     }
                 }
 
@@ -665,6 +666,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         // We need to buy some items from the NPCs first
                         const gCraft = AL.Game.G.craft[itemToCraft]
                         for (const [requiredQuantity, requiredItem] of gCraft.items) {
+                            if (!bot.canBuy(requiredItem, { ignoreLocation: true, quantity: requiredQuantity })) break
                             if (!bot.hasItem(["computer", "supercomputer"])) {
                                 this.debug(bot, `Moving to NPC to buy ${requiredItem}x${requiredQuantity} to craft ${itemToCraft}`)
                                 await bot.smartMove(requiredItem)
@@ -673,6 +675,8 @@ export class MerchantStrategy implements Strategy<Merchant> {
                             await bot.buy(requiredItem, requiredQuantity)
                         }
                     }
+
+                    if (!bot.canCraft(itemToCraft, { ignoreLocation: true })) continue // We can't craft it
 
                     if (!bot.hasItem(["computer", "supercomputer"])) {
                         // Walk to the NPC
@@ -826,11 +830,11 @@ export class MerchantStrategy implements Strategy<Merchant> {
                             const numHave = bot.countItem(statScroll, bot.items)
 
                             try {
-                                if (numNeeded > numHave) {
+                                if (numNeeded > numHave && bot.canBuy(statScroll, { quantity: numNeeded - numHave }))
                                     await bot.buy(statScroll, numNeeded - numHave)
-                                }
-                                const statScrollPosition = bot.locateItem(statScroll)
-                                await bot.upgrade(potential, statScrollPosition)
+                                const statScrollPosition = bot.locateItem(statScroll, bot.items, { quantityGreaterThan: numNeeded - 1 })
+                                if (statScrollPosition !== undefined)
+                                    await bot.upgrade(potential, statScrollPosition)
                             } catch (e) {
                                 console.error(e)
                             }
@@ -867,7 +871,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     }
 
                     // Buy if we need
-                    while (bot.canBuy(item) && !bot.hasItem(item)) {
+                    if (bot.canBuy(item) && !bot.hasItem(item)) {
                         await bot.buy(item)
                     }
 
@@ -1229,6 +1233,7 @@ export async function startMerchant(context: Strategist<Merchant>, friends: Stra
         buyMap: itemsToBuy,
         enableBuyForProfit: true
     }))
+    context.applyStrategy(new AvoidDeathStrategy())
     context.applyStrategy(new MerchantStrategy(friends, options))
     context.applyStrategy(new TrackerStrategy())
     context.applyStrategy(new AcceptPartyRequestStrategy())
