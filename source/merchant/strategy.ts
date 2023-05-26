@@ -204,7 +204,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 // Go to bank and get item counts
                 this.toUpgrade = []
                 await bot.smartMove(bankingPosition)
-                await tidyBank(bot, { itemsToHold: this.options.itemsToHold })
+                await tidyBank(bot, { itemsToHold: this.options.itemsToHold }).catch(console.error)
 
                 // Withdraw things that we can upgrade
                 if (this.options.enableUpgrade) {
@@ -240,7 +240,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 // Then go to the bank to bank things
                 this.toUpgrade = []
                 await bot.smartMove(bankingPosition)
-                await tidyBank(bot, { itemsToHold: this.options.itemsToHold })
+                await tidyBank(bot, { itemsToHold: this.options.itemsToHold }).catch(console.error)
 
                 // Withdraw things that we can upgrade
                 if (this.options.enableUpgrade) {
