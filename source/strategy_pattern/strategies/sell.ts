@@ -30,7 +30,7 @@ export class SellStrategy<Type extends Character> implements SellStrategyOptions
                 const GData = AL.Game.G.items[itemName]
                 const npcPrice = GData.g * 0.6
                 if (criteria == undefined) {
-                // Sell it for the NPC price
+                    // Sell it for the NPC price
                     if (GData.upgrade || GData.compound) {
                         options.sellMap.set(itemName, [[0, npcPrice]])
                     } else {
@@ -51,7 +51,7 @@ export class SellStrategy<Type extends Character> implements SellStrategyOptions
                     }
 
                     if (sellFor === undefined) {
-                    // TODO: Make a function that checks the item value
+                        // TODO: Make a function that checks the item value
                         if (level > 0) {
                             console.warn(`Sell price for ${itemName} (level ${level}) is not set. Selling to NPCs only.`)
                         }
@@ -94,7 +94,7 @@ export class SellStrategy<Type extends Character> implements SellStrategyOptions
                     return level == item.level && item.price >= sellFor
                 })) continue // They're not paying enough, or they're buying at a level we're not selling
 
-                const index = bot.locateItem(item.name, bot.items, { level: item.level, locked: false })
+                const index = bot.locateItem(item.name, bot.items, { level: item.level, locked: false, special: false })
                 if (index === undefined) continue // We don't have this item to sell
                 await bot.sellToMerchant(player.id, slot, item.rid, Math.min(bot.items[index].q ?? 1, item.q ?? 1)).catch(console.error)
             }
@@ -108,6 +108,7 @@ export class SellStrategy<Type extends Character> implements SellStrategyOptions
             const item = bot.items[i]
             if (!item) continue // No item
             if (item.l) continue // Can't sell locked items
+            if (item.p) continue // Don't sell special items
 
             const criteria = this.sellMap.get(item.name)
             if (!criteria) continue // We don't want to sell this item
