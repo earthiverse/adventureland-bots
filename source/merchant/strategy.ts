@@ -199,7 +199,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
             if (bot.rip) return bot.respawn()
 
             // Emergency banking if full
-            if (bot.esize == 0) {
+            if (bot.esize <= 0) {
                 this.debug(bot, "Emergency Banking")
                 // Go to bank and get item counts
                 this.toUpgrade = []
@@ -346,7 +346,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     const friend = friendContext.bot
                     for (const [item, numTotal] of this.options.enableBuyReplenishables.all) {
                         const numFriendHas = friend.countItem(item)
-                        if (numFriendHas == 0 && friend.esize == 0) continue // Friend has no space for more items
+                        if (numFriendHas == 0 && friend.esize <= 0) continue // Friend has no space for more items
                         if (numFriendHas > numTotal * this.options.enableBuyReplenishables.ratio) continue // They still have enough
 
                         const numWeHave = bot.countItem(item)

@@ -1104,7 +1104,7 @@ export function startBuyFriendsReplenishablesLoop(bot: Character, friends: Chara
                 const friend = friends[i]
                 if (!friend) continue
 
-                if (bot.esize == 0) break // We are full
+                if (bot.esize <= 0) break // We are full
                 if (friend.hasItem("computer")) continue // They can buy their own potions.
                 if (AL.Tools.distance(bot, friend) > AL.Constants.NPC_INTERACTION_DISTANCE) continue // Friend is too far away
 
@@ -1113,7 +1113,7 @@ export function startBuyFriendsReplenishablesLoop(bot: Character, friends: Chara
                     const holdThisMany = replenishableToBuy[1]
                     const numOnFriend = friend.countItem(item)
                     if (numOnFriend >= holdThisMany) continue // They have enough already
-                    if (numOnFriend == 0 && friend.esize == 0) continue // They don't have any space for this item
+                    if (numOnFriend == 0 && friend.esize <= 0) continue // They don't have any space for this item
                     const numOnUs = bot.countItem(item)
                     const sendThisMany = holdThisMany - numOnFriend
                     const buyThisMany = sendThisMany + holdThisMany - numOnUs

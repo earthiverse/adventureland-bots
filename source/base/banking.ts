@@ -107,7 +107,7 @@ export async function tidyBank(bot: PingCompensatedCharacter, options: BankOptio
     // Deposit everything first
     await dumpInventoryInBank(bot, options)
 
-    if (bot.esize == 0) throw new Error("We have no inventory space to tidy our bank!")
+    if (bot.esize <= 0) throw new Error("We have no inventory space to tidy our bank!")
     const emptySlots = getEmptyInventorySlots(bot)
 
     const itemNames: {

@@ -334,7 +334,7 @@ async function sendStuffLoop(name) {
 
                 if (friendSendTo) {
                     // We're controlling the character to send to
-                    if (friendSendTo.esize == 0) continue // They don't have free space
+                    if (friendSendTo.esize <= 0) continue // They don't have free space
                 }
 
                 await send_item(name, i, item.q ?? 1)

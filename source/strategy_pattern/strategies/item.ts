@@ -131,7 +131,7 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
 
         for (const context of filterContexts(this.options.contexts, { owner: bot.owner, serverData: bot.serverData })) {
             if (context.bot.id == this.options.transferItemsTo) continue // Not the player we want to transfer items to
-            if (context.bot.esize == 0) return // They're full
+            if (context.bot.esize <= 0) return // They're full
             break
         }
 
@@ -158,7 +158,7 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
 
         for (const context of filterContexts(this.options.contexts, { owner: bot.owner, serverData: bot.serverData })) {
             const friend = context.bot
-            if (friend.esize == 0) continue // They have no space
+            if (friend.esize <= 0) continue // They have no space
             if (AL.Tools.distance(bot, friend)) continue // They're too far away
             if (!friend.hasItem(["computer", "supercomputer"])) continue // They don't have a computer to sell the item
 

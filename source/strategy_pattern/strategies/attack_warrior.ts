@@ -171,7 +171,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
             if (!(bot.isEquipped(["bataxe", "scythe"]))) {
                 // Unequip offhand if we have it
                 if (bot.slots.offhand) {
-                    if (bot.esize == 0) return // We don't have an inventory slot to unequip the offhand
+                    if (bot.esize <= 0) return // We don't have an inventory slot to unequip the offhand
                     offhand = { ...bot.slots.offhand }
                     await bot.unequip("offhand")
                 }
@@ -229,7 +229,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
             if (!(bot.isEquipped(["basher", "wbasher"]))) {
                 // Unequip offhand if we have it
                 if (bot.slots.offhand) {
-                    if (bot.esize == 0) return // We don't have an inventory slot to unequip the offhand
+                    if (bot.esize <= 0) return // We don't have an inventory slot to unequip the offhand
                     offhand = { ...bot.slots.offhand }
                     await bot.unequip("offhand")
                 }

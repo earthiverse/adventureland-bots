@@ -386,7 +386,7 @@ export async function withdrawItemFromBank(bot: Character, items: ItemName | Ite
 }
 
 export function getEmptyInventorySlots(bot: PingCompensatedCharacter): number[] {
-    if (bot.esize == 0) return []
+    if (bot.esize <= 0) return []
 
     const slots: number[] = []
 

@@ -312,7 +312,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                     if (weaponType && doubleHandTypes && doubleHandTypes[weaponType]) {
                         if (this.options.ensureEquipped.offhand) throw new Error(`'${ensure.name}' is a doublehand for ${bot.ctype}. We can't equip '${this.options.ensureEquipped.offhand}' in our offhand.`)
                         if (bot.slots.offhand) {
-                            if (bot.esize == 0) continue // We don't have enough space to unequip our offhand
+                            if (bot.esize <= 0) continue // We don't have enough space to unequip our offhand
                             await bot.unequip("offhand")
                         }
                     }
