@@ -10,6 +10,7 @@ import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 import { addCryptMonstersToDB, getKeyForCrypt, refreshCryptMonsters } from "../base/crypt.js"
 import { DEFAULT_CRAFTABLES, DEFAULT_EXCHANGEABLES, DEFAULT_GOLD_TO_HOLD, DEFAULT_IDENTIFIER, DEFAULT_ITEMS_TO_BUY, DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_REPLENISHABLES, DEFAULT_REGION, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO } from "../base/defaults.js"
+import { BankItemPosition, dumpInventoryInBank, goAndWithdrawItem, tidyBank } from "../base/banking.js"
 
 export type MerchantMoveStrategyOptions = {
     /** If enabled, we will log debug messages */
@@ -279,11 +280,11 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 await bot.swapItems(i, free)
             }
 
-            // Do banking if we have a lot of gold, or it's been a while (15 minutes)
+            // Do banking if we have a lot of gold, or it's been a while (10 minutes)
             if (
                 (bot.gold > (this.options.goldToHold * 2))
                 || (bot.esize < 2 && !this.toUpgrade.length)
-                || checkOnlyEveryMS(`${bot.id}_banking`, 900_000)
+                || checkOnlyEveryMS(`${bot.id}_banking`, 600_000)
             ) {
                 this.debug(bot, "Normal Banking")
                 // Move to town first, to have a chance to sell unwanted items
@@ -292,14 +293,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 // Then go to the bank to bank things
                 this.toUpgrade = []
                 await bot.smartMove(bankingPosition)
-
-                for (let i = 0; i < bot.isize; i++) {
-                    const item = bot.items[i]
-                    if (!item) continue // No item
-                    if (item.l) continue // Don't want to bank locked items
-                    if (this.options.itemsToHold.has(item.name)) continue // We want to hold this item
-                    await bot.depositItem(i).catch(console.error)
-                }
+                await tidyBank(bot, { itemsToHold: this.options.itemsToHold })
 
                 // Withdraw things that we can upgrade
                 if (this.options.enableUpgrade) {
@@ -307,83 +301,12 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     this.toUpgrade = await getItemsToCompoundOrUpgrade(bot)
                 }
 
-                // Move back to the first level
-                this.debug(bot, "Moving back to bankingPosition...")
-                await bot.smartMove(bankingPosition)
-
-                //// Optimize bank slots by creating maximum stacks
-                this.debug(bot, "Optimizing bank")
-                // Create the list of duplicate items
-                const stackList: { [T in ItemName]?: [BankPackName, number, number][] } = {}
-                for (const bankSlot in bot.bank) {
-                    // Only get stuff from the packs in the first level
-                    const matches = /items(\d+)/.exec(bankSlot)
-                    if (!matches || Number.parseInt(matches[1]) > 7) continue
-
-                    for (let i = 0; i < bot.bank[bankSlot as BankPackName].length; i++) {
-                        const item = bot.bank[bankSlot as BankPackName][i]
-                        if (!item) continue // Empty slot
-                        if (!item.q) continue // Not stackable
-                        if (item.q >= AL.Game.G.items[item.name].s) continue // Maximum stack quantity already reached
-                        if (!stackList[item.name]) stackList[item.name] = []
-                        stackList[item.name].push([bankSlot as BankPackName, i, item.q])
-                    }
-                }
-
-                // Remove items with only one stack
-                for (const itemName in stackList) {
-                    const items = stackList[itemName]
-                    if (items.length == 1) delete stackList[itemName]
-                }
-
-                for (const itemName in stackList) {
-                    if (bot.esize < 3) break // Not enough space to stack things
-                    const stacks = stackList[itemName as ItemName]
-                    const stackLimit = AL.Game.G.items[itemName as ItemName].s as number
-                    for (let j = 0; j < stacks.length - 1; j++) {
-                        // We can stack!
-                        this.debug(bot, `Optimizing stacks of ${itemName}...`)
-                        const stack1 = stacks[j]
-                        const stack2 = stacks[j + 1]
-
-                        if (j == 0) await bot.withdrawItem(stack1[0], stack1[1]).catch(console.error)
-                        await bot.withdrawItem(stack2[0], stack2[1]).catch(console.error)
-                        const items = bot.locateItems(itemName as ItemName, bot.items, { quantityLessThan: stackLimit })
-                        if (items.length > 1) {
-                            const item1 = bot.items[items[0]]
-                            if (!item1) break
-                            const q1 = item1.q
-                            const item2 = bot.items[items[1]]
-                            if (!item2) break
-                            const q2 = item2.q
-
-                            const split = stackLimit - q1
-                            if (q2 <= split) {
-                                // Just move them to stack them
-                                await bot.swapItems(items[0], items[1])
-                                continue
-                            } else {
-                                // Split the stack so we can make a full stack
-                                await bot.splitItem(items[1], split)
-                                const newStack = await bot.locateItem(itemName as ItemName, bot.items, { quantityGreaterThan: split - 1, quantityLessThan: split + 1 })
-                                if (newStack === undefined) continue
-                                await bot.swapItems(newStack, items[0])
-
-                                // Deposit the full stack
-                                if (!this.options.itemsToHold.has(itemName as ItemName)) await bot.depositItem(items[0])
-                                break
-                            }
-
-                        }
-                    }
-                }
-
                 // Withdraw an item we want to craft
                 if (this.options.enableCraft && bot.esize >= 3) {
                     this.debug(bot, "Looking for craftables in bank...")
                     for (const itemToCraft of this.options.enableCraft.items) {
                         const gCraft = AL.Game.G.craft[itemToCraft]
-                        const itemsToWithdraw: [BankPackName, number][] = []
+                        const itemsToWithdraw: BankItemPosition[] = []
                         let foundAll = true
                         craftItemCheck:
                         for (const [requiredQuantity, requiredItem, requiredItemLevel] of gCraft.items) {
@@ -399,10 +322,6 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
                             // Look in bank
                             for (const bankSlot in bot.bank) {
-                                // Only get stuff from the packs in the first level
-                                const matches = /items(\d+)/.exec(bankSlot)
-                                if (!matches || Number.parseInt(matches[1]) > 7) continue
-
                                 for (let i = 0; i < bot.bank[bankSlot as BankPackName].length; i++) {
                                     const bankItem = bot.bank[bankSlot as BankPackName][i]
                                     if (!bankItem) continue // Empty slot
@@ -424,7 +343,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         }
                         if (foundAll && bot.esize > itemsToWithdraw.length) {
                             for (const [bankPack, i] of itemsToWithdraw) {
-                                await bot.withdrawItem(bankPack, i).catch(console.error)
+                                await goAndWithdrawItem(bot, bankPack, i).catch(console.error)
                             }
                             break
                         }

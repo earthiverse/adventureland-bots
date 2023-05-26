@@ -2,9 +2,14 @@ import AL, { BankInfo, BankPackName, ItemData, ItemName, LocateItemsFilters, Pin
 import { getEmptyInventorySlots } from "./items";
 
 /** The bank pack name, followed by the indexes for items */
-type PackItems = [BankPackName, number[]]
+export type PackItems = [BankPackName, number[]]
 /** An array of pack items */
-type BankItems = PackItems[]
+export type BankItems = PackItems[]
+/** A position in the bank */
+export type BankItemPosition = [BankPackName, number]
+
+/** Items with no `data` (i.e. not a cosmetic) or `p` (i.e. not special) */
+const GENERIC_ITEM = 'generic'
 
 const sortByPackNumberAsc = (a: PackItems, b: PackItems) => {
     const matchA = /items(\d+)/.exec(a[0])
@@ -26,11 +31,13 @@ export async function goAndWithdrawItem(bot: PingCompensatedCharacter, pack: Ban
     await bot.withdrawItem(pack, index, inventoryPos)
 }
 
-export type DepositInventoryOptions = {
+export type BankOptions = {
     /** We will not deposit locked items by default, toggle this to change that */
     depositLockedItems?: true
     /** What items should we not be depositing? */
     itemsToHold?: Set<ItemName>
+    /** What items should we be selling? */
+    itemsToSell?: Map<ItemName, [number, number][]>
 }
 
 /**
@@ -39,12 +46,12 @@ export type DepositInventoryOptions = {
  * @param bot 
  * @param options 
  */
-export async function dumpInventoryInBank(bot: PingCompensatedCharacter, options: DepositInventoryOptions) {
+export async function dumpInventoryInBank(bot: PingCompensatedCharacter, options: BankOptions) {
     if (!bot.map.startsWith("bank")) throw new Error("We aren't in the bank")
     if (!bot.bank) throw new Error("We don't have bank information")
 
     const emptyBankSlots = locateEmptyBankSlots(bot)
-    function getEmptySlot(): [BankPackName, number] {
+    function getEmptySlot(): BankItemPosition {
         if (!emptyBankSlots.length) throw new Error("No empty slots")
 
         const [bankPackName, emptyIndexes] = emptyBankSlots[0]
@@ -65,7 +72,7 @@ export async function dumpInventoryInBank(bot: PingCompensatedCharacter, options
         if (options.itemsToHold?.has(item.name)) continue // We want to hold it
         if (!options.depositLockedItems && item.l) continue // It's locked (so we probably want to hold it)
 
-        let idealSlot: [BankPackName, number]
+        let idealSlot: BankItemPosition
         if (item.q && AL.Game.G.items[item.name].s > item.q) {
             // See if we can stack it on another stack somewhere
             const bankItems = locateItemsInBank(bot, item, { quantityLessThan: AL.Game.G.items[item.name].s - item.q + 1 })
@@ -89,11 +96,14 @@ export async function dumpInventoryInBank(bot: PingCompensatedCharacter, options
 
         // Move to the map then deposit the item
         await bot.smartMove(idealSlot[0], { getWithin: 9999 })
-        await bot.depositItem(i, idealSlot[0], idealSlot[1])
+
+        // NOTE: This will *swap* items, it won't stack. Let's just hope it stacks instead with the next function
+        // await bot.depositItem(i, idealSlot[0], idealSlot[1]).catch(console.error)
+        await bot.depositItem(i, idealSlot[0]).catch(console.error)
     }
 }
 
-export async function tidyBank(bot: PingCompensatedCharacter, options: DepositInventoryOptions) {
+export async function tidyBank(bot: PingCompensatedCharacter, options: BankOptions) {
     // Deposit everything first
     await dumpInventoryInBank(bot, options)
 
@@ -102,7 +112,7 @@ export async function tidyBank(bot: PingCompensatedCharacter, options: DepositIn
 
     const itemNames: {
         [T in ItemName]?: {
-            [T in string]?: [BankPackName, number][]
+            [T in string]?: BankItemPosition[]
         }
     } = {}
 
@@ -114,8 +124,8 @@ export async function tidyBank(bot: PingCompensatedCharacter, options: DepositIn
             const bankItem = bot.bank[bankPackName][i]
             if (!bankItem) continue // There's no item here
 
-            const itemPosition: [BankPackName, number] = [bankPackName, i]
-            const itemData = bankItem.p ?? bankItem.data ?? 'generic'
+            const itemPosition: BankItemPosition = [bankPackName, i]
+            const itemData = bankItem.p ?? bankItem.data ?? GENERIC_ITEM
 
             if (!itemNames[bankItem.name][itemData]) itemNames[bankItem.name][itemData] = [itemPosition]
             else itemNames[bankItem.name][itemData].push(itemPosition)
@@ -179,7 +189,7 @@ export async function tidyBank(bot: PingCompensatedCharacter, options: DepositIn
                     const numToSplit = gData.s - itemA.q
                     await bot.splitItem(positionB, numToSplit)
                     const splitItemsPosition = bot.locateItem(itemA.name, bot.items, { quantityGreaterThan: numToSplit - 1, quantityLessThan: numToSplit + 1 })
-                    
+
                     // Stack A to the max
                     await bot.swapItems(splitItemsPosition, inventoryPositionA)
 
@@ -187,6 +197,23 @@ export async function tidyBank(bot: PingCompensatedCharacter, options: DepositIn
                     await goAndDepositItem(bot, bankPackA, positionA, inventoryPositionA)
                     await goAndDepositItem(bot, bankPackB, positionB, inventoryPositionB)
                 }
+            }
+        }
+    }
+
+    // TODO: Grab items to sell and sell them
+    if (options.itemsToSell) {
+        const toSell = []
+        for (itemName in itemNames) {
+            if (!options.itemsToSell.has(itemName)) continue // We don't want to sell it
+
+            const gData = AL.Game.G.items[itemName]
+
+            const itemTypes = itemNames[itemName]
+            for (const type in itemTypes) {
+                if (type !== GENERIC_ITEM) continue // It's special, don't sell it
+                const positions = itemTypes[type]
+
             }
         }
     }
