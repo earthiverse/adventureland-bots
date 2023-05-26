@@ -1,5 +1,5 @@
 import AL, { BankInfo, BankPackName, ItemData, ItemName, LocateItemsFilters, PingCompensatedCharacter } from "alclient";
-import { getEmptyInventorySlots } from "./items";
+import { getEmptyInventorySlots } from "./items.js";
 
 /** The bank pack name, followed by the indexes for items */
 export type PackItems = [BankPackName, number[]]
