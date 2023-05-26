@@ -3,6 +3,7 @@ import AL, { BankPackName, Character, CharacterType, ItemData, ItemName, LocateI
 import { bankingPosition } from "./locations.js"
 import { MERCHANT_ITEMS_TO_HOLD } from "../archive/base/merchant.js"
 import { checkOnlyEveryMS } from "./general.js"
+import { goAndWithdrawItem } from "./banking.js"
 
 export type ItemCount = {
     name: ItemName
@@ -143,7 +144,7 @@ export async function getItemCountsForEverything(owner: string): Promise<ItemCou
         return CACHED_COUNTS.get(owner)
     }
 
-    CACHED_COUNTS.set(owner, await AL.BankModel.aggregate([
+    const counts = await AL.BankModel.aggregate([
         {
             /** Find our bank **/
             $match: {
@@ -308,9 +309,10 @@ export async function getItemCountsForEverything(owner: string): Promise<ItemCou
                 q: -1,
             }
         }
-    ]))
+    ])
 
-    return CACHED_COUNTS.get(owner)
+    CACHED_COUNTS.set(owner, counts)
+    return counts
 }
 
 /**
@@ -471,8 +473,8 @@ export function getNumOkayToCompoundOrUpgrade(item: ItemName, currentCount: numb
  * @param counts
  * @returns A nested array of indexes to compound or upgrade. If there are 3 items in the sub array, you should compound. If it's one item, you should upgrade.
  */
-export async function getItemsToCompoundOrUpgrade(bot: Character): Promise<number[][]> {
-    if (bot.map !== "bank") {
+export async function getItemsToCompoundOrUpgrade(bot: PingCompensatedCharacter): Promise<number[][]> {
+    if (!bot.map.startsWith("bank")) {
         await bot.closeMerchantStand()
         await bot.smartMove(bankingPosition)
     }
@@ -609,9 +611,7 @@ export async function getItemsToCompoundOrUpgrade(bot: Character): Promise<numbe
         }
 
         // Move to the target bank pack if we need to
-        await bot.smartMove(pack, { getWithin: 10000 })
-
-        await bot.withdrawItem(pack, bankIndex, index)
+        await goAndWithdrawItem(bot, pack, bankIndex, index)
         return index
     }
 

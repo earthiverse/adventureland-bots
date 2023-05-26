@@ -176,7 +176,6 @@ export async function tidyBank(bot: PingCompensatedCharacter, options: BankOptio
                     positions.shift()
                     itemB.q += itemA.q
                     i -= 1
-                    continue
                 } else if (emptySlots.length >= 3) {
                     // We can stack one to the max
                     // Get both items
