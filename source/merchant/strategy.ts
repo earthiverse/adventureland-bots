@@ -365,7 +365,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
                         // Go deliver the item(s)
                         if (bot.id !== friend.id) {
-                            this.debug(bot, `Replenishables - Delivering ${numToBuy}x${item} to ${friend.id}`)
+                            this.debug(bot, `Replenishables - Delivering ${numTotal - numFriendHas}x${item} to ${friend.id}`)
                             await bot.smartMove(friend, { getWithin: 25 })
                             if (AL.Tools.squaredDistance(bot, friend) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) {
                                 // We're not near them, so they must have moved, return so we can try again next loop
