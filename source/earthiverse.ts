@@ -906,6 +906,7 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
         case "merchant": {
             context = new Strategist<Merchant>(bot as Merchant, baseStrategy)
             const merchantOptions: MerchantMoveStrategyOptions = {
+                debug: true,
                 defaultPosition: {
                     map: "main",
                     x: randomIntFromInterval(-50, 50),

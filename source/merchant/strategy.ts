@@ -435,7 +435,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         if (!item) continue // No item here
                         if (item.l) continue // Can't send locked items
                         if (this.options.enableOffload.itemsToHold.has(item.name)) continue // We want to hold this item
-                        await friend.sendItem(bot.id, i, item.q ?? 1)
+                        await friend.sendItem(bot.id, i, item.q ?? 1).catch(console.error)
                     }
 
                     // Return so we can deal with a full inventory if we need to
