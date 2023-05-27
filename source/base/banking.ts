@@ -1,5 +1,6 @@
-import AL, { BankInfo, BankPackName, ItemData, ItemName, LocateItemsFilters, PingCompensatedCharacter } from "alclient";
+import AL, { BankInfo, BankPackName, ItemData, ItemName, LocateItemsFilters, PingCompensatedCharacter, TitleName } from "alclient";
 import { getEmptyInventorySlots } from "./items.js";
+import { bankingPosition } from "./locations.js";
 
 /** The bank pack name, followed by the indexes for items */
 export type PackItems = [BankPackName, number[]]
@@ -200,20 +201,78 @@ export async function tidyBank(bot: PingCompensatedCharacter, options: BankOptio
         }
     }
 
-    // TODO: Grab items to sell and sell them
-    if (options.itemsToSell) {
-        const toSell = []
+    // Grab items if we can stack them on our `toHold` items
+    if (options.itemsToHold) {
         for (itemName in itemNames) {
-            if (!options.itemsToSell.has(itemName)) continue // We don't want to sell it
+            if (!options.itemsToHold.has(itemName)) continue // We don't want to hold it
 
             const gData = AL.Game.G.items[itemName]
+            if (!gData.s) continue // It's not stackable
+
+            const itemTypes = itemNames[itemName]
+            for (const type in itemTypes) {
+                const positions = itemTypes[type]
+
+                for (const position of positions) {
+                    const bankPack = position[0]
+                    const bankIndex = position[1]
+                    const bankItem = bot.bank[bankPack][bankIndex]
+
+                    const indexes = bot.locateItems(itemName, bot.items, { special: bankItem.p })
+
+                    if (indexes.length) {
+                        for (const index of indexes) {
+                            const item = bot.items[index]
+                            if (item.q + bankItem.q <= gData.s) {
+                                // We can stack it, let's do that
+                                await goAndWithdrawItem(bot, bankPack, bankIndex, index)
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Grab items to sell and sell them
+    if (options.itemsToSell) {
+        const toSellIndexes = []
+        item:
+        for (itemName in itemNames) {
+            if (!options.itemsToSell.has(itemName)) continue // We don't want to sell it
+            if (options.itemsToSell.get(itemName) !== undefined) continue // TODO: Selling it is complicated, add better selling later
 
             const itemTypes = itemNames[itemName]
             for (const type in itemTypes) {
                 if (type !== GENERIC_ITEM) continue // It's special, don't sell it
                 const positions = itemTypes[type]
 
+                for (const position of positions) {
+                    const bankPack = position[0]
+                    const bankIndex = position[1]
+                    const emptySlot = emptySlots.shift()
+                    await goAndWithdrawItem(bot, bankPack, bankIndex, emptySlot)
+
+                    toSellIndexes.push(emptySlot)
+                    if (emptySlots.length === 0) break item // We have no more free spaces
+                }
             }
+        }
+
+        if (toSellIndexes.length) {
+            // Move to main and sell them
+            await bot.smartMove("main")
+            for (const toSellIndex of toSellIndexes) {
+                const item = bot.items[toSellIndex]
+                if (!item) continue // No item, we probably already sold it
+                if (!options.itemsToHold.has(item.name)) continue // Different item!?
+
+                await bot.sell(toSellIndex, item.q ?? 1)
+            }
+
+            // Move back to the bank
+            await bot.smartMove(bankingPosition)
         }
     }
 }
