@@ -128,13 +128,51 @@ export async function tidyBank(bot: PingCompensatedCharacter, options: BankOptio
             const itemPosition: BankItemPosition = [bankPackName, i]
             const itemData = bankItem.p ?? bankItem.data ?? GENERIC_ITEM
 
+            if (!itemNames[bankItem.name]) itemNames[bankItem.name] = {}
             if (!itemNames[bankItem.name][itemData]) itemNames[bankItem.name][itemData] = [itemPosition]
             else itemNames[bankItem.name][itemData].push(itemPosition)
         }
     }
+    let itemName: ItemName
+
+    // Grab items if we can stack them on our `toHold` items
+    if (options.itemsToHold) {
+        for (itemName in itemNames) {
+            if (!options.itemsToHold.has(itemName)) continue // We don't want to hold it
+
+            const gData = AL.Game.G.items[itemName]
+            if (!gData.s) continue // It's not stackable
+
+            const itemTypes = itemNames[itemName]
+            for (const type in itemTypes) {
+                const positions = itemTypes[type]
+
+                for (let i = 0; i < positions.length; i++) {
+                    const position = positions[i]
+                    const bankPack = position[0]
+                    const bankIndex = position[1]
+                    const bankItem = bot.bank[bankPack][bankIndex]
+
+                    const indexes = bot.locateItems(itemName, bot.items, { special: bankItem.p })
+
+                    if (indexes.length) {
+                        for (const index of indexes) {
+                            const item = bot.items[index]
+                            if (item.q + bankItem.q <= gData.s) {
+                                console.debug("we can stack to hold")
+                                await goAndWithdrawItem(bot, bankPack, bankIndex, -1)
+                                positions.splice(i, 1)
+                                i -= 1
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     // Stack items
-    let itemName: ItemName
     for (itemName in itemNames) {
         const gData = AL.Game.G.items[itemName]
         if (!gData.s) continue // Not stackable
@@ -166,20 +204,23 @@ export async function tidyBank(bot: PingCompensatedCharacter, options: BankOptio
                 if (itemA.q + itemB.q < gData.s) {
                     // We can stack them both!
                     if (bankPackA == bankPackB) {
+                        console.debug("we can stack both in bank")
                         // We can stack them in the bank
                         await bot.swapBankItems(positionA, positionB, bankPackA)
                     } else {
+                        console.debug("we can stack both in inventory")
                         // We can withdraw them to our inventory so they stack, then put them back
-                        await goAndWithdrawItem(bot, bankPackA, positionA)
-                        await goAndWithdrawItem(bot, bankPackB, positionB)
+                        await goAndWithdrawItem(bot, bankPackA, positionA, emptySlots[0])
+                        await goAndWithdrawItem(bot, bankPackB, positionB, -1)
                         await bot.depositItem(emptySlots[0], bankPackB, positionB)
                     }
-                    positions.shift()
+                    positions.splice(i - 1, 1)
                     itemB.q += itemA.q
                     i -= 1
                 } else if (emptySlots.length >= 3) {
                     // We can stack one to the max
                     // Get both items
+                    console.debug("we can stack to the max")
                     const inventoryPositionA = emptySlots[0]
                     const inventoryPositionB = emptySlots[1]
                     await goAndWithdrawItem(bot, bankPackA, positionA, inventoryPositionA)
@@ -196,40 +237,6 @@ export async function tidyBank(bot: PingCompensatedCharacter, options: BankOptio
                     // Deposit them back in their original positions
                     await goAndDepositItem(bot, bankPackA, positionA, inventoryPositionA)
                     await goAndDepositItem(bot, bankPackB, positionB, inventoryPositionB)
-                }
-            }
-        }
-    }
-
-    // Grab items if we can stack them on our `toHold` items
-    if (options.itemsToHold) {
-        for (itemName in itemNames) {
-            if (!options.itemsToHold.has(itemName)) continue // We don't want to hold it
-
-            const gData = AL.Game.G.items[itemName]
-            if (!gData.s) continue // It's not stackable
-
-            const itemTypes = itemNames[itemName]
-            for (const type in itemTypes) {
-                const positions = itemTypes[type]
-
-                for (const position of positions) {
-                    const bankPack = position[0]
-                    const bankIndex = position[1]
-                    const bankItem = bot.bank[bankPack][bankIndex]
-
-                    const indexes = bot.locateItems(itemName, bot.items, { special: bankItem.p })
-
-                    if (indexes.length) {
-                        for (const index of indexes) {
-                            const item = bot.items[index]
-                            if (item.q + bankItem.q <= gData.s) {
-                                // We can stack it, let's do that
-                                await goAndWithdrawItem(bot, bankPack, bankIndex, index)
-                                break
-                            }
-                        }
-                    }
                 }
             }
         }
