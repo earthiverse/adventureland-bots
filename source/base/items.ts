@@ -527,7 +527,7 @@ export async function getItemsToCompoundOrUpgrade(bot: PingCompensatedCharacter)
                     if (slot.l) continue // It's locked!?
 
                     // Check if we want to upgrade it
-                    if (ITEM_UPGRADE_CONF[slot.name]?.stop && slot.level >= ITEM_UPGRADE_CONF[slot.name].stop) continue
+                    if (ITEM_UPGRADE_CONF[slot.name]?.stop !== undefined && slot.level >= ITEM_UPGRADE_CONF[slot.name].stop) continue
 
                     // Check if we have an offering to upgrade this item with. If we don't, leave it.
                     const offeringToUse = getOfferingToUse(slot)
