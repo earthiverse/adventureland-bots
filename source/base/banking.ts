@@ -159,7 +159,6 @@ export async function tidyBank(bot: PingCompensatedCharacter, options: BankOptio
                         for (const index of indexes) {
                             const item = bot.items[index]
                             if (item.q + bankItem.q <= gData.s) {
-                                console.debug("we can stack to hold")
                                 await goAndWithdrawItem(bot, bankPack, bankIndex, -1)
                                 positions.splice(i, 1)
                                 i -= 1
@@ -204,11 +203,9 @@ export async function tidyBank(bot: PingCompensatedCharacter, options: BankOptio
                 if (itemA.q + itemB.q < gData.s) {
                     // We can stack them both!
                     if (bankPackA == bankPackB) {
-                        console.debug("we can stack both in bank")
                         // We can stack them in the bank
                         await bot.swapBankItems(positionA, positionB, bankPackA)
                     } else {
-                        console.debug("we can stack both in inventory")
                         // We can withdraw them to our inventory so they stack, then put them back
                         await goAndWithdrawItem(bot, bankPackA, positionA, emptySlots[0])
                         await goAndWithdrawItem(bot, bankPackB, positionB, -1)
@@ -220,7 +217,6 @@ export async function tidyBank(bot: PingCompensatedCharacter, options: BankOptio
                 } else if (emptySlots.length >= 3) {
                     // We can stack one to the max
                     // Get both items
-                    console.debug("we can stack to the max")
                     const inventoryPositionA = emptySlots[0]
                     const inventoryPositionB = emptySlots[1]
                     await goAndWithdrawItem(bot, bankPackA, positionA, inventoryPositionA)
