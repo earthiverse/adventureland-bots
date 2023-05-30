@@ -9,7 +9,7 @@ import { PRIEST_LUCK } from "./equipment.js"
 
 export function constructBScorpionSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const spawn = AL.Pathfinder.locateMonster("bscorpion")[0]
-    const kiteStrategy = new KiteInCircleMoveStrategy({ center: spawn, type: "bscorpion", radius: 100 })
+    const kiteStrategy = new KiteInCircleMoveStrategy({ center: spawn, type: "bscorpion", radius: 110 })
     const moveStrategy = new ImprovedMoveStrategy("bscorpion")
 
     return {
