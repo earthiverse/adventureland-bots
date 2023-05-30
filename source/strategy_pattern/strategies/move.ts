@@ -416,10 +416,10 @@ export class KiteInCircleMoveStrategy implements Strategy<Character> {
 
         const cw = angleFromCenterToBot + (Math.PI / 6)
         const cwPoint = { x: center.x + (radius * Math.cos(cw)), y: center.y + (radius * Math.sin(cw)) }
-        const distanceFromCwToMonster = AL.Tools.distance(monster, cwPoint)
+        const distanceFromCwToMonster = AL.Tools.distance({x: monster.x, y: monster.y}, cwPoint)
         const ccw = angleFromCenterToBot - (Math.PI / 6)
         const ccwPoint = { x: center.x + (radius * Math.cos(ccw)), y: center.y + (radius * Math.sin(ccw)) }
-        const distanceFromCcwToMonster = AL.Tools.distance(monster, ccwPoint)
+        const distanceFromCcwToMonster = AL.Tools.distance({x: monster.x, y: monster.y}, ccwPoint)
 
         if (distanceFromCwToMonster > bot.range && distanceFromCcwToMonster > bot.range) {
             // We need to get closer, choose the closer point
