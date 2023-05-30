@@ -93,7 +93,14 @@ export async function dumpInventoryInBank(bot: PingCompensatedCharacter, options
         }
 
         // Use an empty slot if we didn't find a slot for it
-        if (!idealSlot) idealSlot = getEmptySlot()
+        if (!idealSlot) {
+            try {
+                idealSlot = getEmptySlot()
+            } catch (error) {
+                console.error(error)
+                continue
+            }
+        }
 
         // Move to the map then deposit the item
         await bot.smartMove(idealSlot[0], { getWithin: 9999 })
@@ -200,7 +207,7 @@ export async function tidyBank(bot: PingCompensatedCharacter, options: BankOptio
                 const positionB = b[1]
                 const itemB = bot.bank[bankPackB][positionB]
 
-                if (itemA.q + itemB.q < gData.s) {
+                if (itemA.q + itemB.q <= gData.s) {
                     // We can stack them both!
                     if (bankPackA == bankPackB) {
                         // We can stack them in the bank
@@ -224,8 +231,8 @@ export async function tidyBank(bot: PingCompensatedCharacter, options: BankOptio
 
                     // Split enough from B to stack A to the max
                     const numToSplit = gData.s - itemA.q
-                    await bot.splitItem(positionB, numToSplit)
-                    const splitItemsPosition = bot.locateItem(itemA.name, bot.items, { quantityGreaterThan: numToSplit - 1, quantityLessThan: numToSplit + 1 })
+                    await bot.splitItem(inventoryPositionB, numToSplit)
+                    const splitItemsPosition = bot.locateItem(itemName, bot.items, { quantityLessThan: itemA.q, returnHighestQuantity: true })
 
                     // Stack A to the max
                     await bot.swapItems(splitItemsPosition, inventoryPositionA)
