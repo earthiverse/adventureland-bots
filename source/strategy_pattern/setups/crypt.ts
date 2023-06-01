@@ -225,6 +225,14 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
                 return super.attack(bot)
             }
 
+            if (type == "a5" && entity.target) {
+                const player = bot.players.get(entity.target)
+                if (player && player.range < 100) {
+                    // If the current target can't kite very well, get it to follow us instead
+                    await bot.absorbSins(player.id)
+                }
+            }
+
             this.options.type = type
             return super.attack(bot)
         }
