@@ -444,7 +444,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                     $or: [
                         { target: undefined },
                         { target: { $in: PARTY_ALLOWLIST } },
-                        { type: { $in: ["phoenix", "snowman", "wabbit"] } } // Coop monsters will give credit
+                        { type: { $in: ["crabxx", "franky", "icegolem", "phoenix", "snowman", "wabbit"] } } // Coop monsters will give credit
                     ]
                 }, {
                     $or: [
