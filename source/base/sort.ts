@@ -80,14 +80,20 @@ export function sortSpreadOut(to: Character, types: MonsterName[], contexts: Str
 
         // Use contexts instead of players if we have the data available
         const players: (Player | Character)[] = to.getPlayers({ isPartyMember: true })
-        for (let i = 0; i < players.length; i++) {
-            const player = players[i]
-            for (const context of filterContexts(contexts, { serverData: to.serverData })) {
-                const friend = context.bot
+        for (const context of filterContexts(contexts, { serverData: to.serverData })) {
+            const friend = context.bot
+            let found = false
+            for (let i = 0; i < players.length; i++) {
+                const player = players[i]
                 if (friend.id == player.id) {
                     players[i] = friend
+                    found = true
                     break
                 }
+            }
+            if (!found && friend.map === to.map) {
+                // They're on the same map, just far away, add them, too
+                players.push(friend)
             }
         }
 
