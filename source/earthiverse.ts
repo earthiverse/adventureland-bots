@@ -40,7 +40,7 @@ await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 const ENABLE_EVENTS = true
 const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
-const ENABLE_MONSTERHUNTS = true
+let ENABLE_MONSTERHUNTS = true
 const DEFAULT_MONSTERS: MonsterName[] = ["xscorpion", "poisio"]
 const SPECIAL_MONSTERS: MonsterName[] = ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "vbat", "crabxx", "cutebee", "franky", "fvampire", "goldenbat", "greenjr", "icegolem", "jr", "mvampire", "skeletor", "snowman", "stompy", "tinyp", "wabbit"]
 const MAX_PUBLIC_CHARACTERS = 6
@@ -194,6 +194,15 @@ class OverrideStrategy implements Strategy<PingCompensatedCharacter> {
                         console.log(`Overriding monsters to [${OVERRIDE_MONSTERS.join(", ")}]`)
                     } else {
                         console.log("Clearing monster override...")
+                    }
+                    break
+                case "monsterhunt":
+                    if (!ENABLE_MONSTERHUNTS && args[1] == "on" || args[1] == "true") {
+                        console.log("Turning monster hunts on...")
+                        ENABLE_MONSTERHUNTS = true
+                    } else if (ENABLE_MONSTERHUNTS && args[1] == "off" || args[1] == "false") {
+                        console.log("Turning monster hunts off...")
+                        ENABLE_MONSTERHUNTS = false
                     }
                     break
                 case "server":
