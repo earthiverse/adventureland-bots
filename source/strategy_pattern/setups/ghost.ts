@@ -3,7 +3,7 @@ import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { HoldPositionMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
+import { HoldPositionMoveStrategy, ImprovedMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { MAGE_SPLASH, PRIEST_ARMOR, WARRIOR_SPLASH } from "./equipment.js"
 
@@ -30,7 +30,13 @@ class PriestGhostAttackStrategy extends PriestAttackStrategy {
 }
 
 export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const spawn = AL.Pathfinder.locateMonster("ghost")[0]
+    const moveStrategy = new ImprovedMoveStrategy("ghost", {
+        idlePosition: {
+            map: "halloween",
+            x: -80,
+            y: -1440
+        }
+    })
 
     return {
         configs: [
@@ -45,7 +51,7 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                             enableGreedyAggro: true,
                             typeList: ["ghost", "tinyp"],
                         }),
-                        move: new MoveInCircleMoveStrategy({ center: spawn, radius: 20, sides: 8 })
+                        move: moveStrategy
                     },
                     {
                         ctype: "mage",
@@ -55,7 +61,7 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                             ensureEquipped: { ...MAGE_SPLASH },
                             typeList: ["ghost", "tinyp"],
                         }),
-                        move: new HoldPositionMoveStrategy(spawn)
+                        move: moveStrategy
                     }
                 ]
             },
@@ -70,7 +76,7 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                             enableGreedyAggro: true,
                             typeList: ["ghost", "tinyp"],
                         }),
-                        move: new MoveInCircleMoveStrategy({ center: spawn, radius: 20, sides: 8 })
+                        move: moveStrategy
                     },
                     {
                         ctype: "warrior",
@@ -81,7 +87,7 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                             ensureEquipped: { ...WARRIOR_SPLASH },
                             typeList: ["ghost", "tinyp"],
                         }),
-                        move: new HoldPositionMoveStrategy(spawn)
+                        move: moveStrategy
                     }
                 ]
             },
