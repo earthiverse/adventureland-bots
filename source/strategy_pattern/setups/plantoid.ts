@@ -3,15 +3,21 @@ import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { HoldPositionMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
-import { Setup } from "./base"
-import { MAGE_SPLASH, PRIEST_ARMOR, WARRIOR_SPLASH } from "./equipment.js"
+import { HoldPositionMoveStrategy, KiteMonsterMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
+import { Requirements, Setup } from "./base"
+import { MAGE_ARMOR, MAGE_SPLASH, PRIEST_ARMOR, WARRIOR_SPLASH } from "./equipment.js"
+
+const requirements: Requirements = {
+    items: ["jacko"],
+    range: AL.Game.G.monsters.stoneworm.range + 50,
+    speed: AL.Game.G.monsters.stoneworm.charge
+}
 
 export function constructPlantoidSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const kiteMoveStrategy = new KiteMonsterMoveStrategy({ contexts: contexts, disableCheckDB: true, typeList: ["stoneworm"] })
     const spawn = AL.Pathfinder.locateMonster("plantoid")[0]
 
     return {
-        // TODO: This is for farming level 1 plantoids, when doing monsterhunts we probably don't want to do this...
         configs: [
             {
                 id: "greedy_plantoid_mage,priest,warrior",
@@ -53,6 +59,40 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                     }
                 ]
             },
+            {
+                id: "plantoid_mage",
+                characters: [
+                    {
+                        ctype: "mage",
+                        attack: new MageAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            disableZapper: true,
+                            ensureEquipped: { ...MAGE_ARMOR },
+                            targetingPartyMember: true,
+                            type: "plantoid"
+                        }),
+                        move: kiteMoveStrategy,
+                        require: requirements
+                    },
+                ]
+            },
+            {
+                id: "plantoid_priest",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            ensureEquipped: { ...PRIEST_ARMOR },
+                            type: "plantoid",
+                        }),
+                        move: kiteMoveStrategy,
+                        require: requirements
+                    },
+                ]
+            }
         ]
     }
 }
