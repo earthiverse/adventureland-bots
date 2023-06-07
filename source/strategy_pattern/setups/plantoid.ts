@@ -7,13 +7,12 @@ import { HoldPositionMoveStrategy, KiteMonsterMoveStrategy, MoveInCircleMoveStra
 import { Requirements, Setup } from "./base"
 import { MAGE_ARMOR, MAGE_SPLASH, PRIEST_ARMOR, WARRIOR_SPLASH } from "./equipment.js"
 
-const requirements: Requirements = {
-    items: ["jacko"],
-    range: AL.Game.G.monsters.stoneworm.range + 50,
-    speed: AL.Game.G.monsters.stoneworm.charge
-}
-
 export function constructPlantoidSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const requirements: Requirements = {
+        items: ["jacko"],
+        range: AL.Game.G.monsters.stoneworm.range + 50,
+        speed: AL.Game.G.monsters.stoneworm.charge
+    }
     const kiteMoveStrategy = new KiteMonsterMoveStrategy({ contexts: contexts, disableCheckDB: true, typeList: ["stoneworm"] })
     const spawn = AL.Pathfinder.locateMonster("plantoid")[0]
 
