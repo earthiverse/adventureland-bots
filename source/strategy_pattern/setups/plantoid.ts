@@ -10,10 +10,10 @@ import { MAGE_ARMOR, MAGE_SPLASH, PRIEST_ARMOR, WARRIOR_SPLASH } from "./equipme
 export function constructPlantoidSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const requirements: Requirements = {
         items: ["jacko"],
-        range: AL.Game.G.monsters.stoneworm.range + 50,
-        speed: AL.Game.G.monsters.stoneworm.charge
+        range: AL.Game.G.monsters.plantoid.range + 50,
+        speed: AL.Game.G.monsters.plantoid.charge
     }
-    const kiteMoveStrategy = new KiteMonsterMoveStrategy({ contexts: contexts, disableCheckDB: true, typeList: ["stoneworm"] })
+    const kiteMoveStrategy = new KiteMonsterMoveStrategy({ contexts: contexts, disableCheckDB: true, typeList: ["plantoid"] })
     const spawn = AL.Pathfinder.locateMonster("plantoid")[0]
 
     return {
