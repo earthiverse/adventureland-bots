@@ -51,6 +51,61 @@ export function constructHarpySetup(contexts: Strategist<PingCompensatedCharacte
                     }
                 ]
             },
+            {
+                id: "harpy_mage,priest",
+                characters: [
+                    {
+                        ctype: "mage",
+                        attack: new MageAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            ensureEquipped: { ... MAGE_ARMOR },
+                            maximumTargets: 1,
+                            type: "harpy",
+                        }),
+                        move: moveStrategy
+                    },
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            ensureEquipped: { ...PRIEST_ARMOR },
+                            maximumTargets: 1,
+                            type: "harpy",
+                        }),
+                        move: moveStrategy
+                    },
+                ]
+            },
+            {
+                id: "harpy_priest,warrior",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            ensureEquipped: { ...PRIEST_ARMOR },
+                            maximumTargets: 1,
+                            type: "harpy",
+                        }),
+                        move: moveStrategy
+                    },
+                    {
+                        ctype: "warrior",
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            enableEquipForCleave: true,
+                            enableEquipForStomp: true,
+                            ensureEquipped: { ...WARRIOR_NORMAL },
+                            maximumTargets: 1,
+                            type: "harpy",
+                        }),
+                        move: moveStrategy
+                    }
+                ]
+            },
         ]
     }
 }
