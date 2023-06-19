@@ -1,5 +1,5 @@
-import AL, { CharacterType, IPlayerDocument } from "alclient"
-import axios, { AxiosResponse } from "axios"
+import AL from "alclient"
+import axios from "axios"
 import { Client, TextChannel } from "discord.js"
 import fs from "fs"
 import { getOwner, getPlayerInfo } from "./find.js"
@@ -32,7 +32,7 @@ while (message) {
     for (const [id, msg] of messagePage) {
         const match = JOIN_MESSAGE_REGEX.exec(msg.content)
 
-        if (!match[0]) {
+        if (!match) {
             console.log("Couldn't parse:", msg.content)
             continue
         }
