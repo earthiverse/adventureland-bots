@@ -867,6 +867,7 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
             }
             case "merchant": {
                 bot = new AL.Merchant(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER])
+                bot.socket.onAny(e => console.log(e))
                 break
             }
             case "paladin": {
