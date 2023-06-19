@@ -41,7 +41,7 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements BuySt
 
     public lastPontyCheck: Date
     public pontyLocations: IPosition[]
-    public pontyItems: ItemDataTrade[]
+    public pontyItems: ItemDataTrade[] = []
 
     public setOnSecondhands: (data: ItemDataTrade[]) => void
 
