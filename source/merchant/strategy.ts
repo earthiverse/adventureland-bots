@@ -971,7 +971,6 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 for (const key in this.options.enableInstanceProvider) {
                     if (!checkOnlyEveryMS(`${bot.id}_instance_${key}`, 60_000)) continue // We've checked this recently
                     const map = key as MapName
-                    const item = getKeyForCrypt(map)
 
                     const instanceMonster = await AL.EntityModel.findOne({
                         lastSeen: { $lt: Date.now() - 3.6e+6 },
@@ -998,35 +997,27 @@ export class MerchantStrategy implements Strategy<Merchant> {
                             console.error(e)
                         }
                     } else {
-                        // We don't have any data to check
-                        const instanceMonster = await AL.EntityModel.findOne({
-                            map: map
-                        }).sort({
-                            lastSeen: -1
-                        }).lean().exec()
+                        // Open a new crypt
+                        const item = getKeyForCrypt(map)
+                        if (!bot.hasItem(item)) {
+                            // We don't have a key, check our bank for one
+                            const items = new Set<ItemName>([...this.options.itemsToHold, item])
+                            await bot.smartMove(bankingPosition)
+                            await withdrawItemFromBank(bot, item, {}, {
+                                freeSpaces: bot.esize,
+                                itemsToHold: items
+                            })
+                        }
 
-                        if (!instanceMonster) {
-                            // We don't have any instance monsters for this crypt, open one
-                            if (!bot.hasItem(item)) {
-                                // We don't have a key, check our bank for one
-                                const items = new Set<ItemName>([...this.options.itemsToHold, item])
-                                await bot.smartMove(bankingPosition)
-                                await withdrawItemFromBank(bot, item, {}, {
-                                    freeSpaces: bot.esize,
-                                    itemsToHold: items
-                                })
-                            }
-
-                            if (bot.hasItem(item)) {
-                                try {
-                                    // We have a key, let's go open a crypt
-                                    await bot.smartMove(map)
-                                    if (bot.map === map) {
-                                        await addCryptMonstersToDB(bot)
-                                    }
-                                } catch (e) {
-                                    console.error(e)
+                        if (bot.hasItem(item)) {
+                            try {
+                                // We have a key, let's go open a crypt
+                                await bot.smartMove(map)
+                                if (bot.map === map) {
+                                    await addCryptMonstersToDB(bot)
                                 }
+                            } catch (e) {
+                                console.error(e)
                             }
                         }
                     }
