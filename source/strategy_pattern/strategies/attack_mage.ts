@@ -54,7 +54,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
 
     protected async attack(bot: Mage): Promise<void> {
         if (!this.shouldAttack(bot)) {
-            this.defensiveAttack(bot)
+            this.defensiveAttack(bot).catch(suppress_errors)
             return
         }
 
@@ -113,7 +113,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
             mpNeeded += extraMP
         }
 
-        await bot.cburst([...targets.entries()])
+        return await bot.cburst([...targets.entries()])
     }
 
     protected async cburstAttack(bot: Mage, priority: (a: Entity, b: Entity) => boolean) {
@@ -184,6 +184,6 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
         if (toCburst.size == 0) return // No targets to attack
         
         // cburst everything in our list
-        await bot.cburst([...toCburst.entries()])
+        return await bot.cburst([...toCburst.entries()])
     }
 }

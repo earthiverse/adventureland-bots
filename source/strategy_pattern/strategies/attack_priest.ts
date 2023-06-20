@@ -51,7 +51,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
         if (!this.options.disableDarkBlessing) this.applyDarkBlessing(bot)
 
         if (!this.shouldAttack(bot)) {
-            this.defensiveAttack(bot)
+            this.defensiveAttack(bot).catch(suppress_errors)
             return
         }
 
@@ -84,7 +84,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
 
         const targetingMe = bot.calculateTargets()
 
-        if (!this.options.disableCurse) this.applyCurse(bot, targets.peek())
+        if (!this.options.disableCurse) this.applyCurse(bot, targets.peek()).catch(suppress_errors)
 
         while (targets.size) {
             const target = targets.poll()
@@ -108,7 +108,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
             const canKill = bot.canKillInOneShot(target)
             if (canKill) this.preventOverkill(bot, target)
             if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot)
-            return bot.basicAttack(target.id).catch(console.error)
+            return bot.basicAttack(target.id)
         }
     }
 
@@ -136,7 +136,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
 
         const toHeal = players.peek()
         if (toHeal) {
-            return bot.healSkill(toHeal.id).catch(console.error)
+            return bot.healSkill(toHeal.id)
         }
     }
 
@@ -153,7 +153,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
             if (entity) {
                 const player = bot.players.get(entity.target)
                 if (player && AL.Tools.distance(bot, player) < AL.Game.G.skills.absorb.range) {
-                    return bot.absorbSins(player.id).catch(console.error)
+                    return bot.absorbSins(player.id)
                 }
             }
         }
@@ -165,7 +165,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
         if (!bot.canUse("curse")) return
         if (bot.canKillInOneShot(entity) || entity.willBurnToDeath() || entity.willDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)) return // Would be a waste to use if we can kill it right away
 
-        bot.curse(entity.id).catch(console.error)
+        return bot.curse(entity.id)
     }
 
     protected async applyDarkBlessing(bot: Priest) {
@@ -173,6 +173,6 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
         if (bot.s.darkblessing) return // We already have it applied
         if (!bot.getEntity(this.options)) return // We aren't about to attack
 
-        return bot.darkBlessing().catch(console.error)
+        return bot.darkBlessing()
     }
 }

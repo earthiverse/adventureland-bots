@@ -10,6 +10,7 @@ import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { UNEQUIP_EVERYTHING } from "./equipment.js"
+import { suppress_errors } from "../logging.js"
 
 const typeList: MonsterName[] = ["tiger"]
 
@@ -19,7 +20,7 @@ class PriestTigerHealStrategy extends PriestAttackStrategy {
         if (!this.options.disableDarkBlessing) this.applyDarkBlessing(bot)
 
         if (!this.shouldAttack(bot)) {
-            this.defensiveAttack(bot)
+            this.defensiveAttack(bot).catch(suppress_errors)
             return
         }
 

@@ -105,7 +105,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.zapperzap.range) continue
                         if (AL.Game.G.monsters[monster.type].immune) continue // Can't damage immune monsters with zapperzap
                         bot.nextSkill.set("zapperzap", new Date(Date.now() + (bot.ping * 2)))
-                        return bot.zapperZap(monster.id).catch(console.error)
+                        return bot.zapperZap(monster.id)
                     }
                 }
                 // TODO: Refactor so this can be put in attack_warrior
@@ -115,7 +115,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.taunt.range) continue
                         bot.nextSkill.set("taunt", new Date(Date.now() + (bot.ping * 2)))
-                        return (bot as unknown as Warrior).taunt(monster.id).catch(console.error)
+                        return (bot as unknown as Warrior).taunt(monster.id)
                     }
                 }
                 // TODO: Refactor so this can be put in attack_mage
@@ -137,7 +137,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                     }
                     if (cbursts.length) {
                         bot.nextSkill.set("cburst", new Date(Date.now() + (bot.ping * 2)))
-                        return (bot as unknown as Mage).cburst(cbursts).catch(console.error)
+                        return (bot as unknown as Mage).cburst(cbursts)
                     }
                 }
                 if (bot.canUse("attack")) {
@@ -146,7 +146,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > bot.range) continue
                         bot.nextSkill.set("attack", new Date(Date.now() + (bot.ping * 2)))
-                        return bot.basicAttack(monster.id).catch(console.error)
+                        return bot.basicAttack(monster.id)
                     }
                 }
             }
@@ -163,7 +163,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         const priority = this.sort.get(bot.id)
 
         if (!this.shouldAttack(bot)) {
-            this.defensiveAttack(bot)
+            this.defensiveAttack(bot).catch(suppress_errors)
             return
         }
 
@@ -194,7 +194,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
 
-                return bot.basicAttack(targets.peek().id).catch(console.error)
+                return bot.basicAttack(targets.peek().id)
             }
         }
 
@@ -234,7 +234,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             const canKill = bot.canKillInOneShot(target)
             if (canKill) this.preventOverkill(bot, target)
             else this.getEnergizeFromOther(bot)
-            return bot.basicAttack(target.id).catch(console.error)
+            return bot.basicAttack(target.id)
         }
     }
 
@@ -280,7 +280,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             const canKill = bot.canKillInOneShot(target)
             if (canKill) this.preventOverkill(bot, target)
             if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot)
-            return bot.basicAttack(target.id).catch(console.error)
+            return bot.basicAttack(target.id)
         }
     }
 
@@ -331,7 +331,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
         }
         if (!bot.canUse("scare")) return // Can't use scare
-        return bot.scare().catch(console.error)
+        return bot.scare()
     }
 
     /**
@@ -349,7 +349,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         })
         if (!entity) return // No entity
 
-        return bot.basicAttack(entity.id).catch(console.error)
+        return bot.basicAttack(entity.id)
     }
 
     protected async zapperAttack(bot: Type, priority: (a: Entity, b: Entity) => boolean) {
@@ -370,7 +370,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
 
-                return bot.zapperZap(targets.peek().id).catch(console.error)
+                return bot.zapperZap(targets.peek().id)
             }
         }
 
@@ -422,7 +422,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
             const canKill = bot.canKillInOneShot(target)
             if (canKill) this.preventOverkill(bot, target)
-            return bot.zapperZap(target.id).catch(console.error)
+            return bot.zapperZap(target.id)
         }
     }
 
@@ -442,7 +442,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             if (!char.canUse("energize")) continue // Friend can't use energize
 
             // Energize!
-            (char as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp))).catch(console.error)
+            (char as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp))).catch(suppress_errors)
             return
         }
     }

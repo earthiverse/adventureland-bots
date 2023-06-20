@@ -33,8 +33,8 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
         this.loops.set("attack", {
             fn: async (bot: Warrior) => {
-                if (this.shouldHardshell(bot)) await bot.hardshell().catch(console.error)
-                if (this.shouldScare(bot)) await this.scare(bot)
+                if (this.shouldHardshell(bot)) await bot.hardshell().catch(suppress_errors)
+                if (this.shouldScare(bot)) await this.scare(bot).catch(suppress_errors)
                 await this.attack(bot)
             },
             interval: this.interval
@@ -45,10 +45,10 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
     }
 
     protected async attack(bot: Warrior) {
-        if (!this.options.disableWarCry) this.applyWarCry(bot)
+        if (!this.options.disableWarCry) this.applyWarCry(bot).catch(suppress_errors)
 
         if (!this.shouldAttack(bot)) {
-            this.defensiveAttack(bot)
+            this.defensiveAttack(bot).catch(suppress_errors)
             return
         }
 
@@ -82,7 +82,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
                 typeList: this.options.typeList,
                 withinRange: "agitate"
             })
-            if (wantedEntity) return bot.agitate().catch(console.error)
+            if (wantedEntity) return bot.agitate()
         }
     }
 
@@ -181,7 +181,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
             }
         }
 
-        await bot.cleave().catch(console.error)
+        await bot.cleave()
 
         if (this.options.enableEquipForCleave) {
             // Re-equip items
@@ -239,7 +239,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
             }
         }
 
-        await bot.stomp().catch(console.error)
+        await bot.stomp().catch(suppress_errors)
 
         if (this.options.enableEquipForStomp) {
             // Re-equip items
@@ -260,7 +260,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
         if (bot.s.warcry) return // We already have it applied
         if (!bot.getEntity(this.options)) return // We aren't about to attack
 
-        bot.warcry().catch(console.error)
+        return bot.warcry()
     }
 
     protected shouldHardshell(bot: Warrior): boolean {

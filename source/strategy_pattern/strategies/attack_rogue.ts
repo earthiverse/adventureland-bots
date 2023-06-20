@@ -22,7 +22,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
 
     protected async attack(bot: Rogue) {
         if (!this.shouldAttack(bot)) {
-            this.defensiveAttack(bot)
+            this.defensiveAttack(bot).catch(suppress_errors)
             return
         }
 
@@ -66,7 +66,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
         const targets = new FastPriorityQueue<Entity>(sortHighestHpFirst)
         for (const entity of entities) targets.add(entity)
 
-        return bot.mentalBurst(targets.peek().id).catch(console.error)
+        return bot.mentalBurst(targets.peek().id)
     }
 
     protected async quickPunch(bot: Rogue, priority: (a: Entity, b: Entity) => boolean): Promise<unknown> {
@@ -87,7 +87,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
 
-                return bot.quickPunch(targets.peek().id).catch(console.error)
+                return bot.quickPunch(targets.peek().id)
             }
         }
 
@@ -129,7 +129,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
             const canKill = bot.canKillInOneShot(target, "quickpunch")
             if (canKill) this.preventOverkill(bot, target)
             if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot)
-            return bot.quickPunch(target.id).catch(console.error)
+            return bot.quickPunch(target.id)
         }
     }
 
@@ -151,7 +151,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
 
-                return bot.quickStab(targets.peek().id).catch(console.error)
+                return bot.quickStab(targets.peek().id)
             }
         }
 
@@ -193,7 +193,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
             const canKill = bot.canKillInOneShot(target, "quickstab")
             if (canKill) this.preventOverkill(bot, target)
             if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot)
-            return bot.quickStab(target.id).catch(console.error)
+            return bot.quickStab(target.id)
         }
     }
 }

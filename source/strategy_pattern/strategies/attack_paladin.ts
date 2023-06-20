@@ -20,7 +20,7 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
         if (!this.options.disableSelfHeal) await this.selfHeal(bot)
 
         if (!this.shouldAttack(bot)) {
-            this.defensiveAttack(bot)
+            this.defensiveAttack(bot).catch(suppress_errors)
             return
         }
 
@@ -69,7 +69,7 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
 
-                return bot.purify(targets.peek().id).catch(console.error)
+                return bot.purify(targets.peek().id)
             }
         }
 
@@ -111,7 +111,7 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
             const canKill = bot.canKillInOneShot(target, "purify")
             if (canKill) this.preventOverkill(bot, target)
             else this.getEnergizeFromOther(bot)
-            return bot.purify(target.id).catch(console.error)
+            return bot.purify(target.id)
         }
     }
 
@@ -133,7 +133,7 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
 
-                return bot.smash(targets.peek().id).catch(console.error)
+                return bot.smash(targets.peek().id)
             }
         }
 
@@ -175,7 +175,7 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
             const canKill = bot.canKillInOneShot(target, "smash")
             if (canKill) this.preventOverkill(bot, target)
             if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot)
-            return bot.smash(target.id).catch(console.error)
+            return bot.smash(target.id)
         }
     }
 }
