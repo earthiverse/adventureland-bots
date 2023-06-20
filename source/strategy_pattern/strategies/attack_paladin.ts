@@ -1,7 +1,7 @@
 import AL, { Entity, Paladin } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
-import { sortPriority } from "../../base/sort.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
+import { suppress_errors } from "../logging.js"
 
 export type PaladinAttackStrategyOptions = BaseAttackStrategyOptions & {
     disablePurify?: boolean
@@ -28,11 +28,11 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
 
         await this.ensureEquipped(bot)
 
-        if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority)
-        if (!this.options.disablePurify) await this.purify(bot, priority)
-        if (!this.options.disableSmash) await this.smash(bot, priority)
-        if (!this.options.disableZapper) await this.zapperAttack(bot, priority)
-        if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority)
+        if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority).catch(suppress_errors)
+        if (!this.options.disablePurify) await this.purify(bot, priority).catch(suppress_errors)
+        if (!this.options.disableSmash) await this.smash(bot, priority).catch(suppress_errors)
+        if (!this.options.disableZapper) await this.zapperAttack(bot, priority).catch(suppress_errors)
+        if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority).catch(suppress_errors)
 
         await this.ensureEquipped(bot)
     }

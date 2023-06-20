@@ -1,7 +1,7 @@
 import AL, { Entity, Ranger } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
-import { sortPriority } from "../../base/sort.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
+import { suppress_errors } from "../logging.js"
 
 export type RangerAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableHuntersMark?: boolean
@@ -29,9 +29,9 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
         await this.ensureEquipped(bot)
 
         await this.multiAttack(bot, priority)
-        if (!this.options.disableSuperShot) await this.supershot(bot, priority)
-        if (!this.options.disableZapper) await this.zapperAttack(bot, priority)
-        if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority)
+        if (!this.options.disableSuperShot) await this.supershot(bot, priority).catch(suppress_errors)
+        if (!this.options.disableZapper) await this.zapperAttack(bot, priority).catch(suppress_errors)
+        if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority).catch(suppress_errors)
 
         await this.ensureEquipped(bot)
     }

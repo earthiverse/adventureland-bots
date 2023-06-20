@@ -1,7 +1,7 @@
 import AL, { ItemData, Warrior } from "alclient"
 import { sleep } from "../../base/general.js"
-import { sortPriority } from "../../base/sort.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions, IDLE_ATTACK_MONSTERS } from "./attack.js"
+import { suppress_errors } from "../logging.js"
 
 export type WarriorAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableAgitate?: true
@@ -56,12 +56,12 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
         await this.ensureEquipped(bot)
 
-        if (!this.options.disableAgitate) await this.agitateTargets(bot)
-        if (!this.options.disableStomp) await this.stomp(bot)
-        if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority)
-        if (!this.options.disableCleave) await this.cleave(bot)
-        if (!this.options.disableZapper) await this.zapperAttack(bot, priority)
-        if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority)
+        if (!this.options.disableAgitate) await this.agitateTargets(bot).catch(suppress_errors)
+        if (!this.options.disableStomp) await this.stomp(bot).catch(suppress_errors)
+        if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority).catch(suppress_errors)
+        if (!this.options.disableCleave) await this.cleave(bot).catch(suppress_errors)
+        if (!this.options.disableZapper) await this.zapperAttack(bot, priority).catch(suppress_errors)
+        if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority).catch(suppress_errors)
 
         await this.ensureEquipped(bot)
     }

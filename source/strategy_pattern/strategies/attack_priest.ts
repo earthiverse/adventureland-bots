@@ -1,7 +1,7 @@
 import AL, { Entity, PingCompensatedCharacter, Player, Priest } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
-import { sortPriority } from "../../base/sort.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
+import { suppress_errors } from "../logging.js"
 
 export type PriestAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableAbsorb?: true
@@ -59,10 +59,10 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
 
         await this.ensureEquipped(bot)
 
-        if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority)
-        if (!this.options.disableAbsorb) await this.absorbTargets(bot)
-        if (!this.options.disableZapper) await this.zapperAttack(bot, priority)
-        if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority)
+        if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority).catch(suppress_errors)
+        if (!this.options.disableAbsorb) await this.absorbTargets(bot).catch(suppress_errors)
+        if (!this.options.disableZapper) await this.zapperAttack(bot, priority).catch(suppress_errors)
+        if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority).catch(suppress_errors)
 
         await this.ensureEquipped(bot)
     }

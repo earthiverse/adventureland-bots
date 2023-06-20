@@ -1,7 +1,6 @@
 
 import AL, { ActionData, ActionDataRay, Entity, Mage, SlotType, TradeItemInfo, TradeSlotType } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
-import { sortPriority } from "../../base/sort.js"
 import { suppress_errors } from "../logging.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions, KILL_STEAL_AVOID_MONSTERS } from "./attack.js"
 
@@ -64,12 +63,12 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
         await this.ensureEquipped(bot)
 
         if (!this.options.disableCburst) {
-            await this.cburstHumanoids(bot)
-            await this.cburstAttack(bot, priority)
+            await this.cburstHumanoids(bot).catch(suppress_errors)
+            await this.cburstAttack(bot, priority).catch(suppress_errors)
         }
-        if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority)
-        if (!this.options.disableZapper) await this.zapperAttack(bot, priority)
-        if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority)
+        if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority).catch(suppress_errors)
+        if (!this.options.disableZapper) await this.zapperAttack(bot, priority).catch(suppress_errors)
+        if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority).catch(suppress_errors)
         // TODO: Idle cburst
 
         await this.ensureEquipped(bot)

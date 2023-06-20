@@ -1,7 +1,8 @@
 import AL, { Entity, Rogue } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
-import { sortHighestHpFirst, sortPriority } from "../../base/sort.js"
+import { sortHighestHpFirst } from "../../base/sort.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions, KILL_STEAL_AVOID_MONSTERS } from "./attack.js"
+import { suppress_errors } from "../logging.js"
 
 export type RogueAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableMentalBurst?: boolean
@@ -29,17 +30,17 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
 
         await this.ensureEquipped(bot)
 
-        if (!this.options.disableMentalBurst) await this.mentalBurst(bot)
-        if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority)
-        if (!this.options.disableMentalBurst) await this.mentalBurst(bot)
-        if (!this.options.disableQuickPunch) await this.quickPunch(bot, priority)
-        if (!this.options.disableMentalBurst) await this.mentalBurst(bot)
-        if (!this.options.disableQuickStab) await this.quickStab(bot, priority)
-        if (!this.options.disableMentalBurst) await this.mentalBurst(bot)
-        if (!this.options.disableZapper) await this.zapperAttack(bot, priority)
-        if (!this.options.disableMentalBurst) await this.mentalBurst(bot)
-        if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority)
-        if (!this.options.disableMentalBurst) await this.mentalBurst(bot)
+        if (!this.options.disableMentalBurst) await this.mentalBurst(bot).catch(suppress_errors)
+        if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority).catch(suppress_errors)
+        if (!this.options.disableMentalBurst) await this.mentalBurst(bot).catch(suppress_errors)
+        if (!this.options.disableQuickPunch) await this.quickPunch(bot, priority).catch(suppress_errors)
+        if (!this.options.disableMentalBurst) await this.mentalBurst(bot).catch(suppress_errors)
+        if (!this.options.disableQuickStab) await this.quickStab(bot, priority).catch(suppress_errors)
+        if (!this.options.disableMentalBurst) await this.mentalBurst(bot).catch(suppress_errors)
+        if (!this.options.disableZapper) await this.zapperAttack(bot, priority).catch(suppress_errors)
+        if (!this.options.disableMentalBurst) await this.mentalBurst(bot).catch(suppress_errors)
+        if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority).catch(suppress_errors)
+        if (!this.options.disableMentalBurst) await this.mentalBurst(bot).catch(suppress_errors)
 
         await this.ensureEquipped(bot)
     }
