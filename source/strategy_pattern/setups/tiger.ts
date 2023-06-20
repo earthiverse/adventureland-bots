@@ -17,7 +17,7 @@ const typeList: MonsterName[] = ["tiger"]
 class PriestTigerHealStrategy extends PriestAttackStrategy {
     protected async attack(bot: Priest): Promise<void> {
         await this.healFriendsOrSelf(bot)
-        if (!this.options.disableDarkBlessing) this.applyDarkBlessing(bot)
+        if (!this.options.disableDarkBlessing) this.applyDarkBlessing(bot).catch(suppress_errors)
 
         if (!this.shouldAttack(bot)) {
             this.defensiveAttack(bot).catch(suppress_errors)
@@ -28,8 +28,8 @@ class PriestTigerHealStrategy extends PriestAttackStrategy {
 
         await this.ensureEquipped(bot)
 
-        if (!this.options.disableBasicAttack) await this.basicHeal(bot, priority)
-        if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority)
+        if (!this.options.disableBasicAttack) await this.basicHeal(bot, priority).catch(suppress_errors)
+        if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority).catch(suppress_errors)
 
         await this.ensureEquipped(bot)
     }
@@ -70,7 +70,7 @@ class PriestTigerHealStrategy extends PriestAttackStrategy {
                 }
             }
 
-            return bot.healSkill(target.id).catch(console.error)
+            return bot.healSkill(target.id)
         }
     }
 }

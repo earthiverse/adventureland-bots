@@ -20,7 +20,7 @@ class PriestGhostAttackStrategy extends PriestAttackStrategy {
                         continue entity // There is a healing projectile already going towards this entity
                     }
 
-                    await bot.healSkill(entity.id)
+                    await bot.healSkill(entity.id).catch(console.error)
                 }
             }
         }

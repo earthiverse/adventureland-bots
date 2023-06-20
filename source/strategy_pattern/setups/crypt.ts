@@ -119,7 +119,7 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
                 && bot.hp < bot.max_hp / 2
                 && entity.target == bot.id
             ) {
-                if (bot.canUse("scare")) await bot.scare()
+                if (bot.canUse("scare")) await bot.scare().catch(suppress_errors)
                 return
             }
 
@@ -189,7 +189,7 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
         delete this.options.type
         delete this.options.typeList
 
-        const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
+        const filter: GetEntityFilters = { ...this.options, returnNearest: true }
         for (const type of CRYPT_PRIORITY) {
             filter.type = type
             const entity = bot.getEntity(filter)
@@ -197,7 +197,7 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
 
             if (type == "a1") {
                 this.options.typeList = ["a1", "nerfedbat"]
-                return super.attack(bot)
+                break
             }
 
             if (type == "a4") {
@@ -210,31 +210,30 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
                     if (zapper0s.every(e => e.target == bot.id)) {
                         // Every zapper0 is targeting us
                         for (const zapper0 of zapper0s) this.preventOverkill(bot, zapper0)
-                        await bot.scare()
+                        await bot.scare().catch(suppress_errors)
                     } else if (
                         zapper0s.every(e => e.target == zapper0s[0].target)
                         && bot.mp >= (AL.Game.G.skills.absorb.mp + AL.Game.G.skills.scare.mp)
                     ) {
                         // Every zapper0 is targeting one player
                         for (const zapper0 of zapper0s) this.preventOverkill(bot, zapper0)
-                        await bot.absorbSins(zapper0s[0].target)
-                        await bot.scare()
+                        await bot.absorbSins(zapper0s[0].target).catch(suppress_errors)
+                        await bot.scare().catch(suppress_errors)
                     }
                 }
-
-                return super.attack(bot)
+                break
             }
 
             if (type == "a5" && entity.target) {
                 const player = bot.players.get(entity.target)
                 if (player && player.range < 100) {
                     // If the current target can't kite very well, get it to follow us instead
-                    await bot.absorbSins(player.id)
+                    await bot.absorbSins(player.id).catch(suppress_errors)
                 }
             }
 
             this.options.type = type
-            return super.attack(bot)
+            break
         }
 
         return super.attack(bot)
