@@ -107,7 +107,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
 
             const canKill = bot.canKillInOneShot(target)
             if (canKill) this.preventOverkill(bot, target)
-            if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot)
+            if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot).catch(suppress_errors)
             return bot.basicAttack(target.id)
         }
     }
@@ -159,7 +159,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
         }
     }
 
-    protected applyCurse(bot: Priest, entity: Entity) {
+    protected async applyCurse(bot: Priest, entity: Entity) {
         if (!entity) return // No entity
         if (entity.immune && !AL.Game.G.skills.curse.pierces_immunity) return // Can't curse
         if (!bot.canUse("curse")) return

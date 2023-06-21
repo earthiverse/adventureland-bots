@@ -115,7 +115,7 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
                 if (bot.canKillInOneShot(entity, "5shot")) this.preventOverkill(bot, entity)
             }
 
-            this.getEnergizeFromOther(bot)
+            this.getEnergizeFromOther(bot).catch(suppress_errors)
             return bot.fiveShot(entities[0].id, entities[1].id, entities[2].id, entities[3].id, entities[4].id)
         } else if (!this.options.disableMultiShot && threeShotTargets.size >= 3 && bot.canUse("3shot")) {
             const entities: Entity[] = []
@@ -125,7 +125,7 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
                 if (bot.canKillInOneShot(entity, "3shot")) this.preventOverkill(bot, entity)
             }
 
-            this.getEnergizeFromOther(bot)
+            this.getEnergizeFromOther(bot).catch(suppress_errors)
             return bot.threeShot(entities[0].id, entities[1].id, entities[2].id)
         }
 
@@ -138,13 +138,13 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
 
             if (bot.canKillInOneShot(entity)) {
                 this.preventOverkill(bot, entity)
-                this.getEnergizeFromOther(bot)
+                this.getEnergizeFromOther(bot).catch(suppress_errors)
                 return bot.basicAttack(entity.id)
             }
 
             if (canUsePiercingShot && bot.canKillInOneShot(entity, "piercingshot")) {
                 this.preventOverkill(bot, entity)
-                this.getEnergizeFromOther(bot)
+                this.getEnergizeFromOther(bot).catch(suppress_errors)
                 return bot.piercingShot(entity.id)
             }
 
@@ -165,14 +165,14 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
             }
 
             if (!canUsePiercingShot) {
-                this.getEnergizeFromOther(bot)
+                this.getEnergizeFromOther(bot).catch(suppress_errors)
                 return bot.basicAttack(entity.id)
             }
 
             // Use the attack that will do more damage
             const damage = bot.calculateDamageRange(entity)
             const piercingDamage = bot.canUse("piercingshot") ? bot.calculateDamageRange(entity, "piercingshot") : [0, 0]
-            this.getEnergizeFromOther(bot)
+            this.getEnergizeFromOther(bot).catch(suppress_errors)
             if (damage[0] >= piercingDamage[0]) return bot.basicAttack(entity.id)
             else return bot.piercingShot(entity.id)
         }
@@ -226,7 +226,7 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
         }
     }
 
-    protected applyHuntersMark(bot: Ranger, entity: Entity) {
+    protected async applyHuntersMark(bot: Ranger, entity: Entity) {
         if (!entity) return // No entity
         if (entity.immune && !AL.Game.G.skills.huntersmark.pierces_immunity) return // Can't mark
         if (!bot.canUse("huntersmark")) return

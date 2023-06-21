@@ -233,7 +233,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
             const canKill = bot.canKillInOneShot(target)
             if (canKill) this.preventOverkill(bot, target)
-            else this.getEnergizeFromOther(bot)
+            else this.getEnergizeFromOther(bot).catch(suppress_errors)
             return bot.basicAttack(target.id)
         }
     }
@@ -279,7 +279,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
             const canKill = bot.canKillInOneShot(target)
             if (canKill) this.preventOverkill(bot, target)
-            if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot)
+            if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot).catch(suppress_errors)
             return bot.basicAttack(target.id)
         }
     }
@@ -431,7 +431,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
      *
      * @param bot The bot to energize
      */
-    protected getEnergizeFromOther(bot: Character) {
+    protected async getEnergizeFromOther(bot: Character) {
         if (this.options.disableEnergize) return
         if (bot.s.energized) return // We're already energized
 
@@ -442,8 +442,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             if (!char.canUse("energize")) continue // Friend can't use energize
 
             // Energize!
-            (char as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp))).catch(suppress_errors)
-            return
+            return (char as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp)))
         }
     }
 
