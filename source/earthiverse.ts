@@ -174,12 +174,28 @@ const publicSetups = constructHelperSetups(ALL_CONTEXTS)
 const elixirStrategy = new ElixirStrategy("elixirluck")
 const homeServerStrategy = new HomeServerStrategy(DEFAULT_REGION, DEFAULT_IDENTIFIER)
 const privateItemStrategy = new OptimizeItemsStrategy({
-    contexts: PRIVATE_CONTEXTS
+    contexts: PRIVATE_CONTEXTS,
+    itemsToUpgradeOrCompound: new Map([
+        ["dexamulet", 0],
+        ["intamulet", 0],
+        ["wattire", 4],
+        ["wbreeches", 4],
+        ["wcap", 4],
+        ["wgloves", 4],
+        ["wshoes", 4],
+    ])
 })
 const publicItemStrategy = new OptimizeItemsStrategy({
     contexts: PUBLIC_CONTEXTS,
     itemsToUpgradeOrCompound: new Map([
-        ["ringsj", 0]
+        ["dexamulet", 0],
+        ["intamulet", 0],
+        ["ringsj", 0],
+        ["wattire", 4],
+        ["wbreeches", 4],
+        ["wcap", 4],
+        ["wgloves", 4],
+        ["wshoes", 4],
     ])
 })
 
