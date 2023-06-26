@@ -7,6 +7,9 @@ export type OptimizeItemsStrategyOptions = {
     itemsToHold?: Set<ItemName>
     itemsToSell?: Set<ItemName>
 
+    /** If set, we will upgrade or compound these items up to the level specified */
+    itemsToUpgradeOrCompound?: Map<ItemName, number>
+
     /** If set, we will transfer items to this player if we see them and they have space */
     transferItemsTo?: string
 }
@@ -31,6 +34,7 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
                 await this.transferItems(bot)
                 await this.transferSellableItems(bot)
                 await this.transferStackableItems(bot)
+                await this.upgradeOrCompoundItems(bot)
             },
             interval: 5_000
         })
@@ -39,7 +43,7 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
     /**
      * Sort items how I like them to be sorted
      */
-    private async organizeItems (bot: Type) {
+    private async organizeItems(bot: Type) {
         // Sort locked items first
         for (let i = 0; i < bot.isize - 1; i++) {
             const item = bot.items[i]
@@ -186,7 +190,7 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
 
         // Look for items that we both have that are stackable
         const ourStackables = new Map<ItemName, number>()
-        for (let i = 0 ; i < bot.isize; i++) {
+        for (let i = 0; i < bot.isize; i++) {
             const item = bot.items[i]
             if (!item) continue // No item
             if (!item.q) continue // It's not stackable
@@ -201,7 +205,7 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
             if (friend == bot) continue // Skip ourself
             if (AL.Tools.squaredDistance(bot, friend) >= AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) continue // Too far away
 
-            for (let i = 0 ; i < friend.isize; i++) {
+            for (let i = 0; i < friend.isize; i++) {
                 const item = friend.items[i]
                 if (!item) continue // No item
                 if (!item.q) continue // It's not stackable
@@ -233,6 +237,30 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
                 if (item2) continue // Item in normal inventory slot
                 await bot.swapItems(i, j).catch(console.error) // Swap the item from overflow in to our normal inventory
                 break
+            }
+        }
+    }
+
+    private async upgradeOrCompoundItems(bot: Type) {
+        if (!this.options.itemsToUpgradeOrCompound) return
+
+        for (const [itemName, level] of this.options.itemsToUpgradeOrCompound) {
+            const items = bot.locateItems(itemName, bot.items, { levelLessThan: level + 1 })
+            if (items.length === 0) continue // We don't have any of those items
+
+            const gItem = bot.G.items[itemName]
+            if (gItem.upgrade && !bot.q.upgrade) {
+                const item = bot.items[items[0]]
+                const grade = bot.calculateItemGrade(item)
+                const scroll = `scroll${grade}` as ItemName
+                if (!bot.hasItem(scroll) && bot.canBuy(scroll)) await bot.buy(scroll)
+                if (bot.hasItem(scroll)) return bot.upgrade(items[0], bot.locateItem(scroll))
+            } else if (gItem.compound && items.length >= 3 && !bot.q.compound) {
+                const item = bot.items[items[0]]
+                const grade = bot.calculateItemGrade(item)
+                const scroll = `cscroll${grade}` as ItemName
+                if (!bot.hasItem(scroll) && bot.canBuy(scroll)) await bot.buy(scroll)
+                if (bot.hasItem(scroll)) return bot.compound(items[0], items[1], items[2], bot.locateItem(scroll))
             }
         }
     }

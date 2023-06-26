@@ -80,63 +80,65 @@ const publicBuyStrategy = new BuyStrategy({
     replenishables: DEFAULT_REPLENISHABLES
 })
 
+const privateItemsToSell = new Map<ItemName, [number, number][]>([
+    ["cake", undefined],
+    ["carrotsword", undefined],
+    ["cclaw", undefined],
+    ["coat1", undefined],
+    ["dexring", undefined],
+    ["fieldgen0", undefined],
+    ["frankypants", undefined],
+    ["gloves1", undefined],
+    ["gphelmet", undefined],
+    ["helmet1", undefined],
+    ["hpamulet", undefined],
+    ["hpbelt", undefined],
+    ["iceskates", undefined],
+    ["intring", undefined],
+    ["intearring", undefined],
+    ["monstertoken", [
+        [undefined, 300_000]
+    ]],
+    ["mushroomstaff", undefined],
+    ["pants1", undefined],
+    ["phelmet", undefined],
+    ["pickaxe", [
+        [0, 1_000_000]
+    ]],
+    ["ringsj", undefined],
+    ["rod", [
+        [0, 1_000_000]
+    ]],
+    ["shoes1", undefined],
+    ["slimestaff", undefined],
+    ["snowball", undefined],
+    ["stand0", undefined],
+    ["stramulet", undefined],
+    ["strearring", undefined],
+    ["vitearring", undefined],
+    ["xmace", undefined],
+])
 const privateSellStrategy = new SellStrategy({
-    sellMap: new Map<ItemName, [number, number][]>([
-        ["cake", undefined],
-        ["carrotsword", undefined],
-        ["cclaw", undefined],
-        ["coat1", undefined],
-        ["dexring", undefined],
-        ["fieldgen0", undefined],
-        ["frankypants", undefined],
-        ["gloves1", undefined],
-        ["gphelmet", undefined],
-        ["helmet1", undefined],
-        ["hpamulet", undefined],
-        ["hpbelt", undefined],
-        ["iceskates", undefined],
-        ["intring", undefined],
-        ["intearring", undefined],
-        ["monstertoken", [
-            [undefined, 300_000]
-        ]],
-        ["mushroomstaff", undefined],
-        ["pants1", undefined],
-        ["phelmet", undefined],
-        ["pickaxe", [
-            [0, 1_000_000]
-        ]],
-        ["ringsj", undefined],
-        ["rod", [
-            [0, 1_000_000]
-        ]],
-        ["shoes1", undefined],
-        ["slimestaff", undefined],
-        ["snowball", undefined],
-        ["stand0", undefined],
-        ["stramulet", undefined],
-        ["strearring", undefined],
-        ["vitearring", undefined],
-        ["xmace", undefined],
-    ])
+    sellMap: privateItemsToSell
 })
+const PUBLIC_ITEMS_TO_SELL = new Map<ItemName, [number, number][]>([
+    ["cake", undefined],
+    ["carrotsword", undefined],
+    ["coat1", undefined],
+    ["gloves1", undefined],
+    ["gphelmet", undefined],
+    ["helmet1", undefined],
+    ["hpamulet", undefined],
+    ["hpbelt", undefined],
+    ["iceskates", undefined],
+    ["pants1", undefined],
+    ["phelmet", undefined],
+    ["shoes1", undefined],
+    ["stramulet", undefined],
+    ["vitearring", undefined],
+])
 const publicSellStrategy = new SellStrategy({
-    sellMap: new Map<ItemName, [number, number][]>([
-        ["cake", undefined],
-        ["carrotsword", undefined],
-        ["coat1", undefined],
-        ["gloves1", undefined],
-        ["gphelmet", undefined],
-        ["helmet1", undefined],
-        ["hpamulet", undefined],
-        ["hpbelt", undefined],
-        ["iceskates", undefined],
-        ["pants1", undefined],
-        ["phelmet", undefined],
-        ["shoes1", undefined],
-        ["stramulet", undefined],
-        ["vitearring", undefined],
-    ])
+    sellMap: PUBLIC_ITEMS_TO_SELL
 })
 
 //// Strategies
@@ -171,8 +173,14 @@ const publicSetups = constructHelperSetups(ALL_CONTEXTS)
 // Etc.
 const elixirStrategy = new ElixirStrategy("elixirluck")
 const homeServerStrategy = new HomeServerStrategy(DEFAULT_REGION, DEFAULT_IDENTIFIER)
-const itemStrategy = new OptimizeItemsStrategy({
-    contexts: ALL_CONTEXTS
+const privateItemStrategy = new OptimizeItemsStrategy({
+    contexts: PRIVATE_CONTEXTS
+})
+const publicItemStrategy = new OptimizeItemsStrategy({
+    contexts: PUBLIC_CONTEXTS,
+    itemsToUpgradeOrCompound: new Map([
+        ["ringsj", 0]
+    ])
 })
 
 let OVERRIDE_MONSTERS: MonsterName[]
@@ -683,9 +691,11 @@ async function startShared(context: Strategist<PingCompensatedCharacter>, privat
         context.applyStrategy(overrideStrategy)
         context.applyStrategy(privateBuyStrategy)
         context.applyStrategy(privateSellStrategy)
+        context.applyStrategy(privateItemStrategy)
     } else {
         context.applyStrategy(publicBuyStrategy)
         context.applyStrategy(publicSellStrategy)
+        context.applyStrategy(publicItemStrategy)
     }
 
     context.applyStrategy(homeServerStrategy)
@@ -694,7 +704,6 @@ async function startShared(context: Strategist<PingCompensatedCharacter>, privat
     context.applyStrategy(respawnStrategy)
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(elixirStrategy)
-    context.applyStrategy(itemStrategy)
 }
 
 async function startMage(context: Strategist<Mage>, privateContext = false) {
@@ -749,7 +758,7 @@ const startMerchantContext = async () => {
     CONTEXT.applyStrategy(adminCommandStrategy)
     CONTEXT.applyStrategy(guiStrategy)
     CONTEXT.applyStrategy(privateSellStrategy)
-    CONTEXT.applyStrategy(itemStrategy)
+    CONTEXT.applyStrategy(privateItemStrategy)
     PRIVATE_CONTEXTS.push(CONTEXT)
     ALL_CONTEXTS.push(CONTEXT)
 }
@@ -957,8 +966,8 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
             }
             startMerchant(context as Strategist<Merchant>, PUBLIC_CONTEXTS, merchantOptions)
             context.applyStrategy(guiStrategy)
-            context.applyStrategy(privateSellStrategy)
-            context.applyStrategy(itemStrategy)
+            context.applyStrategy(publicSellStrategy)
+            context.applyStrategy(publicItemStrategy)
             break
         }
         case "paladin": {
