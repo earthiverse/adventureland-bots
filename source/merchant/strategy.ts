@@ -313,6 +313,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     }
                 }
 
+                if (bot.map !== "bank") await bot.smartMove("bank")
                 if (bot.gold > this.options.goldToHold) {
                     await bot.depositGold(bot.gold - this.options.goldToHold)
                 } else if (bot.gold < this.options.goldToHold) {
