@@ -41,6 +41,43 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
     return {
         configs: [
             {
+                id: "ghost_priest,mage,warrior",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestGhostAttackStrategy({
+                            contexts: contexts,
+                            ensureEquipped: { ...PRIEST_ARMOR },
+                            enableGreedyAggro: true,
+                            typeList: ["ghost", "tinyp"],
+                        }),
+                        move: moveStrategy
+                    },
+                    {
+                        ctype: "mage",
+                        attack: new MageAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            ensureEquipped: { ...MAGE_SPLASH },
+                            typeList: ["ghost", "tinyp"],
+                        }),
+                        move: moveStrategy
+                    },
+                    {
+                        ctype: "warrior",
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            disableAgitate: true,
+                            disableZapper: true,
+                            enableEquipForCleave: true,
+                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            typeList: ["ghost", "tinyp"],
+                        }),
+                        move: moveStrategy
+                    }
+                ]
+            },
+            {
                 id: "ghost_priest,mage",
                 characters: [
                     {
@@ -82,6 +119,7 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
+                            disableAgitate: true,
                             disableZapper: true,
                             enableEquipForCleave: true,
                             ensureEquipped: { ...WARRIOR_SPLASH },
