@@ -176,6 +176,8 @@ const homeServerStrategy = new HomeServerStrategy(DEFAULT_REGION, DEFAULT_IDENTI
 const privateItemStrategy = new OptimizeItemsStrategy({
     contexts: PRIVATE_CONTEXTS,
     itemsToUpgradeOrCompound: new Map([
+        ["cring", 0],
+        ["cearring", 0],
         ["dexamulet", 0],
         ["intamulet", 0],
         ["wattire", 4],
@@ -188,6 +190,8 @@ const privateItemStrategy = new OptimizeItemsStrategy({
 const publicItemStrategy = new OptimizeItemsStrategy({
     contexts: PUBLIC_CONTEXTS,
     itemsToUpgradeOrCompound: new Map([
+        ["cring", 0],
+        ["cearring", 0],
         ["dexamulet", 0],
         ["intamulet", 0],
         ["ringsj", 0],
