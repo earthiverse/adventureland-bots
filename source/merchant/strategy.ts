@@ -994,7 +994,13 @@ export class MerchantStrategy implements Strategy<Merchant> {
                                 await addCryptMonstersToDB(bot)
                             }
                         } catch (e) {
-                            // TODO: Remove the crypt ID from the database
+                            // Remove the Crypt ID from the database
+                            await AL.EntityModel.deleteMany({
+                                serverIdentifier: bot.serverData.name,
+                                serverRegion: bot.serverData.region,
+                                map: map,
+                                in: instanceMonster.in
+                            })
                             console.error(e)
                         }
                     } else {
