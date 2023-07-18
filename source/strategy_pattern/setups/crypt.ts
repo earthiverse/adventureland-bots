@@ -62,7 +62,6 @@ class CryptMoveStratey extends KiteMonsterMoveStrategy {
             return
         }
 
-
         return super.move(bot) // Go find an entity
     }
 }
