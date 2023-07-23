@@ -98,7 +98,7 @@ export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
     ["cring", 1_000_000],
     ["critscroll", 5_000_000],
     ["crossbow", -AL.Constants.PONTY_MARKUP],
-    ["cryptkey", 1_000_000],
+    ["cryptkey", 5_000_000],
     ["cscroll3", -AL.Constants.PONTY_MARKUP],
     ["ctristone", -AL.Constants.PONTY_MARKUP],
     ["cxjar", 1_000_000],
