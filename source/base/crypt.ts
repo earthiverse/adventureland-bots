@@ -5,7 +5,7 @@ export const CRYPT_MONSTERS: MonsterName[] = ["a1", "a2", "a3", "a4", "a5", "a6"
 /** Used to give us a little bit extra time to find and kill them */
 const ADD_TIME = 3_600_000
 
-export function addCryptMonstersToDB(bot: Character) {
+export async function addCryptMonstersToDB(bot: Character) {
     if (bot.map !== "crypt") throw "Only call this function in a crypt."
 
     const data = []
@@ -24,7 +24,7 @@ export function addCryptMonstersToDB(bot: Character) {
         })
     }
 
-    AL.EntityModel.bulkWrite(data)
+    await AL.EntityModel.bulkWrite(data)
 }
 
 export function getKeyForCrypt(map: MapName): ItemName {
