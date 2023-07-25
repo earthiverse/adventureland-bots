@@ -24,6 +24,10 @@ const ULTRA_RARE = {
     offeringp: 1,
     offering: 2
 }
+const PRETTY_RARE = {
+    offeringp: 1,
+    offering: 4
+}
 const COMMON_HIGH = {
     offeringp: 7,
     offering: 9
@@ -94,6 +98,22 @@ export const ITEM_UPGRADE_CONF: {
         stop: 2
     },
 
+    // Crypt
+    vattire: PRETTY_RARE,
+    vcape: PRETTY_RARE,
+    vdagger: PRETTY_RARE,
+    vhammer: PRETTY_RARE,
+
+    // Darkforge
+    xarmor: PRETTY_RARE,
+    xboots: PRETTY_RARE,
+    xgloves: PRETTY_RARE,
+    xhelmet: PRETTY_RARE,
+    xpants: PRETTY_RARE,
+
+    // Rare-ish
+    crossbow: DEFAULT_UPGRADE_BASE_RARE,
+
     // Easter
     bataxe: COMMON_HIGH,
     carrotsword: PRIMLING_TO_NINE,
@@ -122,7 +142,6 @@ export const ITEM_UPGRADE_CONF: {
     // Useless
     test_orb: DONT_UPGRADE,
     tigerhelmet: DEFAULT_UPGRADE_BASE_COMMON,
-    vorb: DONT_UPGRADE,
 
     // Wanderer's
     wattire: PRIMLING_TO_TEN,
