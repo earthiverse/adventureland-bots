@@ -86,7 +86,6 @@ const privateItemsToSell = new Map<ItemName, [number, number][]>([
     ["cclaw", undefined],
     ["coat1", undefined],
     ["dexring", undefined],
-    ["fieldgen0", undefined],
     ["frankypants", undefined],
     ["gloves1", undefined],
     ["gphelmet", undefined],
