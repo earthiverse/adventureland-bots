@@ -2,7 +2,7 @@ import AL from "alclient"
 import { sleep } from "../base/general.js"
 
 AL.Game.loginJSONFile("../../credentials.json").then(async () => {
-    const merchant = await AL.Game.startMerchant("earthMer3", "US", "I")
+    const merchant = await AL.Game.startMerchant("earthMer2", "ASIA", "I")
 
     const unknownOwners = await AL.PlayerModel.find({
         owner: undefined

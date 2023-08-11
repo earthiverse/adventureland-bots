@@ -12,6 +12,7 @@ import { addCryptMonstersToDB, getKeyForCrypt, refreshCryptMonsters } from "../b
 import { DEFAULT_CRAFTABLES, DEFAULT_EXCHANGEABLES, DEFAULT_GOLD_TO_HOLD, DEFAULT_IDENTIFIER, DEFAULT_ITEMS_TO_BUY, DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_REPLENISHABLES, DEFAULT_REGION, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO } from "../base/defaults.js"
 import { BankItemPosition, goAndWithdrawItem, tidyBank } from "../base/banking.js"
 import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.js"
+import { suppress_errors } from "../strategy_pattern/logging.js"
 
 export type MerchantMoveStrategyOptions = {
     /** If enabled, we will log debug messages */
@@ -1017,14 +1018,10 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         }
 
                         if (bot.hasItem(item)) {
-                            try {
-                                // We have a key, let's go open a crypt
-                                await bot.smartMove(map)
-                                if (bot.map === map) {
-                                    await addCryptMonstersToDB(bot)
-                                }
-                            } catch (e) {
-                                console.error(e)
+                            // We have a key, let's go open a crypt
+                            await bot.smartMove(map).catch(console.error)
+                            if (bot.map === map) {
+                                await addCryptMonstersToDB(bot)
                             }
                         }
                     }

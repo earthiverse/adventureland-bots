@@ -40,6 +40,8 @@ while (message) {
         const player = match[1]
         const serverName = match[2]
         const serverIdentifier = match[3]
+        
+        //  console.log(player, ',', serverName, ',', serverIdentifier, ',', msg.createdTimestamp)
 
         console.log(`Researching ${player}...`)
         const data = await axios.get(`http://adventure.land/player/${player}`)

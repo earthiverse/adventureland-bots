@@ -13,9 +13,9 @@ export type BankItemPosition = [BankPackName, number]
 const GENERIC_ITEM = 'generic'
 
 const sortByPackNumberAsc = (a: PackItems, b: PackItems) => {
-    const matchA = /items(\d+)/.exec(a[0])
+    const matchA = /^items(\d+)$/.exec(a[0])
     const numA = Number.parseInt(matchA[1])
-    const matchB = /items(\d+)/.exec(b[0])
+    const matchB = /^items(\d+)$/.exec(b[0])
     const numB = Number.parseInt(matchB[1])
 
     // Sort packs by lower indexes first

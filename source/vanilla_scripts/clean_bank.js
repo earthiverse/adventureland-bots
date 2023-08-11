@@ -11,7 +11,7 @@ const stackList = {}
 
 // Create the list of duplicate items
 for (const bankSlot in character.bank) {
-    const matches = /items(\d+)/.exec(bankSlot)
+    const matches = /^items(\d+)$/.exec(bankSlot)
     // Only get stuff from the packs in the current level
     if (character.map == "bank") {
         if (!matches || Number.parseInt(matches[1]) > 7) continue

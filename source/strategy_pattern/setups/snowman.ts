@@ -137,7 +137,7 @@ export function constructSnowmanHelperSetup(contexts: Strategist<PingCompensated
     return {
         configs: [
             {
-                id: "snowman_mage",
+                id: "snowman_helper_mage",
                 characters: [
                     {
                         ctype: "mage",
@@ -147,7 +147,7 @@ export function constructSnowmanHelperSetup(contexts: Strategist<PingCompensated
                 ]
             },
             {
-                id: "snowman_paladin",
+                id: "snowman_helper_paladin",
                 characters: [
                     {
                         ctype: "paladin",
@@ -157,7 +157,7 @@ export function constructSnowmanHelperSetup(contexts: Strategist<PingCompensated
                 ]
             },
             {
-                id: "snowman_priest",
+                id: "snowman_helper_priest",
                 characters: [
                     {
                         ctype: "priest",
@@ -167,7 +167,7 @@ export function constructSnowmanHelperSetup(contexts: Strategist<PingCompensated
                 ]
             },
             {
-                id: "snowman_ranger",
+                id: "snowman_helper_ranger",
                 characters: [
                     {
                         ctype: "ranger",
@@ -177,7 +177,7 @@ export function constructSnowmanHelperSetup(contexts: Strategist<PingCompensated
                 ]
             },
             {
-                id: "snowman_rogue",
+                id: "snowman_helper_rogue",
                 characters: [
                     {
                         ctype: "rogue",
@@ -187,7 +187,7 @@ export function constructSnowmanHelperSetup(contexts: Strategist<PingCompensated
                 ]
             },
             {
-                id: "snowman_warrior",
+                id: "snowman_helper_warrior",
                 characters: [
                     {
                         ctype: "warrior",

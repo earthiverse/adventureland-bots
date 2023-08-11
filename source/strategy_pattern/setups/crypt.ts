@@ -16,7 +16,6 @@ class CryptMoveStratey extends KiteMonsterMoveStrategy {
     public constructor(contexts: Strategist<PingCompensatedCharacter>[]) {
         super({
             contexts: contexts,
-            ignoreMaps: ["cave"],
             typeList: CRYPT_MONSTERS
         })
 

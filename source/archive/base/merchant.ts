@@ -185,7 +185,7 @@ export async function doEmergencyBanking(bot: Merchant, itemsToHold = MERCHANT_I
 
     // Create the list of duplicate items
     for (const bankSlot in bot.bank) {
-        const matches = /items(\d+)/.exec(bankSlot)
+        const matches = /^items(\d+)$/.exec(bankSlot)
         // Only get stuff from the packs in the current level
         if (bot.map == "bank") {
             if (!matches || Number.parseInt(matches[1]) > 7) continue
@@ -239,7 +239,7 @@ export async function doEmergencyBanking(bot: Merchant, itemsToHold = MERCHANT_I
     // Find things we can sell
     const sellThese: number[] = []
     for (const bankSlot in bot.bank) {
-        const matches = /items(\d+)/.exec(bankSlot)
+        const matches = /^items(\d+)$/.exec(bankSlot)
         // Only get stuff from the packs in the current level
         if (bot.map == "bank") {
             if (!matches || Number.parseInt(matches[1]) > 7) continue
