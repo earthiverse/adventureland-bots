@@ -985,16 +985,14 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
                     if (instanceMonster) {
                         // Check if the instance is still valid
-                        try {
-                            await bot.smartMove(instanceMonster)
-                            if (bot.in === instanceMonster.in) {
-                                // Update last seen for all monsters in this instance
-                                await refreshCryptMonsters(bot)
-                            } else {
-                                // We opened a new instance
-                                await addCryptMonstersToDB(bot)
-                            }
-                        } catch (e) {
+                        await bot.smartMove(instanceMonster).catch(suppress_errors)
+                        if (bot.in === instanceMonster.in) {
+                            // Update last seen for all monsters in this instance
+                            await refreshCryptMonsters(bot)
+                        } else if (bot.map === instanceMonster.map) {
+                            // We opened a new instance
+                            await addCryptMonstersToDB(bot)
+                        } else {
                             // Remove the Crypt ID from the database
                             await AL.EntityModel.deleteMany({
                                 serverIdentifier: bot.serverData.name,
@@ -1002,7 +1000,6 @@ export class MerchantStrategy implements Strategy<Merchant> {
                                 map: map,
                                 in: instanceMonster.in
                             })
-                            console.error(e)
                         }
                     } else {
                         // Open a new crypt
