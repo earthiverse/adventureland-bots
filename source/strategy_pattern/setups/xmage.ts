@@ -73,6 +73,8 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
             return
         }
 
+        // TODO: Place Field gen if we have one and it's time to use it
+
         for (const type of XMAGE_MONSTERS) {
             filter.type = type as MonsterName
 
@@ -155,6 +157,8 @@ class PriestXMageAttackStrategy extends PriestAttackStrategy {
     }
 
     protected async attack(bot: Priest): Promise<void> {
+        // TODO: Heal the fieldgen0
+
         // TODO: Should we scare if we're being targeted?
 
         return super.attack(bot)
