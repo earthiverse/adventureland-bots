@@ -102,7 +102,7 @@ export const ITEM_UPGRADE_CONF: {
     vattire: PRETTY_RARE,
     vcape: PRETTY_RARE,
     vdagger: PRETTY_RARE,
-    vhammer: PRETTY_RARE,
+    vhammer: DONT_UPGRADE,
 
     // Darkforge
     xarmor: PRETTY_RARE,
