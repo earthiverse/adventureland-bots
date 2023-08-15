@@ -100,7 +100,7 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
             this.options.maximumTargets = 1
         }
 
-        const nearbyPriest = bot.getPlayer({ ctype: "priest", isPartyMember: true, withinRange: "attack", withinRangeOf: bot })
+        const nearbyPriest = bot.getPlayer({ ctype: "priest", isPartyMember: true, withinRange: "heal", withinRangeOf: bot })
 
         // Reset options
         delete this.options.type
@@ -116,6 +116,7 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
                 !nearbyPriest
                 && bot.hp < bot.max_hp / 2
                 && entity.target == bot.id
+                && !entity.immune
             ) {
                 if (bot.canUse("scare")) await bot.scare().catch(suppress_errors)
                 return
@@ -281,7 +282,7 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
             this.options.ensureEquipped.offhand = { name: "fireblade", filters: RETURN_HIGHEST }
         }
 
-        const nearbyPriest = bot.getPlayer({ ctype: "priest", isPartyMember: true, withinRange: "attack", withinRangeOf: bot })
+        const nearbyPriest = bot.getPlayer({ ctype: "priest", isPartyMember: true, withinRange: "heal", withinRangeOf: bot })
 
         // Reset options
         delete this.options.type
@@ -297,6 +298,7 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
                 !nearbyPriest
                 && bot.hp < bot.max_hp / 2
                 && entity.target == bot.id
+                && !entity.immune
             ) {
                 if (bot.canUse("scare")) await bot.scare()
                 return

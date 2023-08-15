@@ -1,8 +1,8 @@
-import { Character, Entity, GetEntityFilters, IPosition, Mage, MonsterName, PingCompensatedCharacter, Priest, Tools, Warrior } from "alclient";
-import { KiteMonsterMoveStrategy } from "../strategies/move.js";
+import { Entity, GetEntityFilters, IPosition, Mage, MonsterName, PingCompensatedCharacter, Priest, Tools, Warrior } from "alclient";
+import { SpecialMonsterMoveStrategy } from "../strategies/move.js";
 import { Strategist, filterContexts } from "../context.js";
 import { suppress_errors } from "../logging.js";
-import { bankingPosition, getClosestBotToPosition } from "../../base/locations.js";
+import { bankingPosition, getClosestBotToPosition, offsetPositionParty } from "../../base/locations.js";
 import { NodeData } from "alclient/build/definitions/pathfinder.js";
 import { goAndWithdrawItem, locateItemsInBank } from "../../base/banking.js";
 import { MageAttackStrategy, MageAttackStrategyOptions } from "../strategies/attack_mage.js";
@@ -14,7 +14,7 @@ import { Setup } from "./base.js";
 const XMAGE_MONSTERS: MonsterName[] = ["xmagefz", "xmagefi", "xmagen", "xmagex"]
 const CRYPT_ENTRANCE: IPosition = { x: 1064.28, y: -2017.79, map: "winterland" }
 
-class XMageMoveStrategy extends KiteMonsterMoveStrategy {
+class XMageMoveStrategy extends SpecialMonsterMoveStrategy {
     public constructor(contexts: Strategist<PingCompensatedCharacter>[]) {
         super({
             contexts: contexts,
@@ -59,6 +59,7 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
                 return
             } else {
                 // Have the rest farm arctic bees until we get a field gen
+                // TODO: Improve this a bit
                 if (!bot.smartMoving) {
                     bot.smartMove("arcticbee").catch(suppress_errors)
                 }
@@ -89,11 +90,12 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
             }
             if (!entity) continue
 
-            this.kite(bot, entity).catch(suppress_errors)
+            bot.smartMove(offsetPositionParty(entity, bot)).catch(suppress_errors)
             return
         }
 
-        return super.move(bot) // Go find an entity
+        // Go find an xmage
+        return super.move(bot)
     }
 }
 
@@ -124,7 +126,20 @@ class MageXMageAttackStrategy extends MageAttackStrategy {
     }
 
     protected async attack(bot: Mage): Promise<void> {
-        // TODO: Should we scare if we're being targeted?
+        const entity = bot.getEntity({ typeList: XMAGE_MONSTERS })
+        if (!entity) return super.attack(bot)
+
+        // TODO: Choose equipment based on what we're fighting
+        switch (entity.type) {
+            case "xmagefi":
+                break
+            case "xmagefz":
+                break
+            case "xmagen":
+                break
+            case "xmagex":
+                break
+        }
 
         return super.attack(bot)
     }
@@ -157,9 +172,26 @@ class PriestXMageAttackStrategy extends PriestAttackStrategy {
     }
 
     protected async attack(bot: Priest): Promise<void> {
-        // TODO: Heal the fieldgen0
+        // If there's a fieldgen and it needs healing, heal it
+        const fieldGen = bot.getEntity({ type: "fieldgen0", withinRange: "heal" })
+        if (fieldGen && fieldGen.hp < (fieldGen.max_hp * 0.75)) {
+            await bot.healSkill(fieldGen.id)
+        }
 
-        // TODO: Should we scare if we're being targeted?
+        const entity = bot.getEntity({ typeList: XMAGE_MONSTERS })
+        if (!entity) return super.attack(bot)
+
+        // TODO: Choose equipment based on what we're fighting
+        switch (entity.type) {
+            case "xmagefi":
+                break
+            case "xmagefz":
+                break
+            case "xmagen":
+                break
+            case "xmagex":
+                break
+        }
 
         return super.attack(bot)
     }
@@ -191,7 +223,20 @@ class WarriorXMageAttackStrategy extends WarriorAttackStrategy {
     }
 
     protected async attack(bot: Warrior): Promise<void> {
-        // TODO: Should we scare if we're being targeted?
+        const entity = bot.getEntity({ typeList: XMAGE_MONSTERS })
+        if (!entity) return super.attack(bot)
+
+        // TODO: Choose equipment based on what we're fighting
+        switch (entity.type) {
+            case "xmagefi":
+                break
+            case "xmagefz":
+                break
+            case "xmagen":
+                break
+            case "xmagex":
+                break
+        }
 
         return super.attack(bot)
     }
