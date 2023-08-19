@@ -989,7 +989,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
                     if (instanceMonster) {
                         // Check if the instance is still valid
-                        await bot.smartMove(instanceMonster).catch(suppress_errors)
+                        await bot.smartMove(instanceMonster, { numAttempts: 1 }).catch(suppress_errors)
                         if (bot.in === instanceMonster.in) {
                             // Update last seen for all monsters in this instance
                             await refreshCryptMonsters(bot)
@@ -1020,7 +1020,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
                         if (bot.hasItem(item)) {
                             // We have a key, let's go open a crypt
-                            await bot.smartMove(map).catch(console.error)
+                            await bot.smartMove(map, { numAttempts: 1 }).catch(console.error)
                             if (bot.map === map) {
                                 await addCryptMonstersToDB(bot)
                             }
