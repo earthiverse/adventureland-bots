@@ -504,11 +504,11 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 priority.push(specialMonster.type)
             }
 
-            for (const specialMonster of context.bot.getEntities({
+            for (const cryptMonster of context.bot.getEntities({
                 couldGiveCredit: true,
                 typeList: CRYPT_MONSTERS
             })) {
-                priority.push(specialMonster.type)
+                priority.push(cryptMonster.type)
             }
 
             for (const cryptMonster of await AL.EntityModel.find({
