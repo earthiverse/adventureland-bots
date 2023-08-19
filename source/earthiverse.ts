@@ -31,6 +31,7 @@ import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server.js"
 import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "./base/defaults.js"
+import { CRYPT_MONSTERS, CRYPT_WAIT_TIME } from "./base/crypt.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
@@ -42,7 +43,7 @@ const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
 let ENABLE_MONSTERHUNTS = true
 const DEFAULT_MONSTERS: MonsterName[] = ["crab", "bat"]
-const SPECIAL_MONSTERS: MonsterName[] = ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "vbat", "crabxx", "cutebee", "franky", "fvampire", "goldenbat", "greenjr", "icegolem", "jr", "mvampire", "skeletor", "snowman", "stompy", "tinyp", "wabbit"]
+const SPECIAL_MONSTERS: MonsterName[] = ["crabxx", "cutebee", "franky", "fvampire", "goldenbat", "greenjr", "icegolem", "jr", "mvampire", "skeletor", "snowman", "stompy", "tinyp", "wabbit"]
 const MAX_PUBLIC_CHARACTERS = 6
 
 const MERCHANT = "earthMer"
@@ -501,6 +502,28 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 type: 1
             }).lean().exec()) {
                 priority.push(specialMonster.type)
+            }
+
+            for (const specialMonster of context.bot.getEntities({
+                couldGiveCredit: true,
+                typeList: CRYPT_MONSTERS
+            })) {
+                priority.push(specialMonster.type)
+            }
+
+            for (const cryptMonster of await AL.EntityModel.find({
+                $or: [
+                    { firstSeen: null },
+                    { firstSeen: { $gt: Date.now() - CRYPT_WAIT_TIME } }
+                ],
+                lastSeen: { $gt: Date.now() - 30000 },
+                serverIdentifier: context.bot.serverData.name,
+                serverRegion: context.bot.serverData.region,
+                type: { $in: CRYPT_MONSTERS }
+            }, {
+                type: 1
+            }).lean().exec()) {
+                priority.push(cryptMonster.type)
             }
         }
     }

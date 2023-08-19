@@ -2,14 +2,17 @@ import AL, { Character, Entity, IPosition, ItemName, MapName, MonsterName } from
 
 export const CRYPT_MONSTERS: MonsterName[] = ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "vbat"]
 
+/** Used to wait until crypt monsters have levelled a bit */
+export const CRYPT_WAIT_TIME = 1.728e+8
+
 /** Used to give us a little bit extra time to find and kill them */
-const ADD_TIME = 3_600_000
+export const CRYPT_ADD_TIME = 3_600_000
 
 export async function addCryptMonstersToDB(bot: Character) {
     if (bot.map !== "crypt") throw "Only call this function in a crypt."
 
     const data = []
-    const now = Date.now() + ADD_TIME
+    const now = Date.now() + CRYPT_ADD_TIME
 
     for (const monster of AL.Game.G.maps[bot.map].monsters) {
         const gMonster = AL.Game.G.monsters[monster.type]
@@ -18,7 +21,7 @@ export async function addCryptMonstersToDB(bot: Character) {
         data.push({
             updateOne: {
                 filter: { in: bot.in, map: bot.map, serverIdentifier: bot.serverData.name, serverRegion: bot.serverData.region, type: monster.type },
-                update: { hp: gMonster.hp, lastSeen: now, target: null, x: x, y: y },
+                update: { hp: gMonster.hp, firstSeen: now, lastSeen: now, target: null, x: x, y: y },
                 upsert: true
             }
         })
@@ -43,34 +46,6 @@ export async function refreshCryptMonsters(bot: Character) {
         map: bot.map,
         in: bot.in
     }, {
-        lastSeen: Date.now() + ADD_TIME
+        lastSeen: Date.now() + CRYPT_ADD_TIME
     }).lean().exec()
-}
-
-export function getNearestCryptMonster(bot: Character): Entity {
-    const nearby = bot.getEntity({ returnNearest: true, typeList: CRYPT_MONSTERS })
-    if (nearby) {
-        if (nearby.type == "a8") {
-            if (nearby.level <= 2) return nearby
-        } else {
-            return nearby
-        }
-    }
-}
-
-export async function getCryptMonsterLocation(bot: Character): Promise<IPosition> {
-    const nearby = getNearestCryptMonster(bot)
-    if (nearby) return nearby
-
-    const db = await AL.EntityModel.find({
-        $or: [{
-            $or: [{ level: null }, { level: { $lte: 2 } }],
-            type: "a8",
-        }, {
-            type: { $in: CRYPT_MONSTERS, $nin: ["a8"] }
-        }],
-    }).sort({
-        lastSeen: -1
-    }).lean().exec()
-    return db[0]
 }

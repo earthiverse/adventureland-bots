@@ -8,7 +8,7 @@ import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
 import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
-import { addCryptMonstersToDB, getKeyForCrypt, refreshCryptMonsters } from "../base/crypt.js"
+import { CRYPT_WAIT_TIME, addCryptMonstersToDB, getKeyForCrypt, refreshCryptMonsters } from "../base/crypt.js"
 import { DEFAULT_CRAFTABLES, DEFAULT_EXCHANGEABLES, DEFAULT_GOLD_TO_HOLD, DEFAULT_IDENTIFIER, DEFAULT_ITEMS_TO_BUY, DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_REPLENISHABLES, DEFAULT_REGION, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO } from "../base/defaults.js"
 import { BankItemPosition, goAndWithdrawItem, tidyBank } from "../base/banking.js"
 import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.js"
@@ -975,6 +975,10 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     const map = key as MapName
 
                     const instanceMonster = await AL.EntityModel.findOne({
+                        $or: [
+                            { firstSeen: null },
+                            { firstSeen: { $gt: Date.now() - CRYPT_WAIT_TIME } }
+                        ],
                         lastSeen: { $lt: Date.now() - 3.6e+6 },
                         map: map,
                         serverIdentifier: bot.serverData.name,
