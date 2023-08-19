@@ -971,7 +971,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
             if (this.options.enableInstanceProvider && bot.serverData.region === DEFAULT_REGION && bot.serverData.name === DEFAULT_IDENTIFIER) {
                 for (const key in this.options.enableInstanceProvider) {
-                    if (!checkOnlyEveryMS(`${bot.id}_instance_${key}`, 60_000)) continue // We've checked this recently
+                    if (!checkOnlyEveryMS(`${bot.id}_instance_${key}`, 300_000)) continue // We've checked this recently
                     const map = key as MapName
 
                     const instanceMonster = await AL.EntityModel.findOne({
