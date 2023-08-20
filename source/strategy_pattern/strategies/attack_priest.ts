@@ -171,6 +171,8 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
                 }
             }
         }
+
+        // TODO: If there are bots in our contexts that are scared, and we can safely tank all of their targets, absorb their targets
     }
 
     protected async applyCurse(bot: Priest, entity: Entity) {

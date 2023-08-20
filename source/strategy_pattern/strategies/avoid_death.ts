@@ -1,4 +1,4 @@
-import AL, { ActionData, Character, HitData } from "alclient"
+import AL, { ActionData, Character, HitData, Mage } from "alclient"
 import { Loop, LoopName, Strategy } from "../context.js"
 
 // TODO: Add things to do if we will burn to death
@@ -17,10 +17,20 @@ export class AvoidDeathStrategy<Type extends Character> implements Strategy<Type
     public onApply(bot: Type) {
         this.onAction = async (data: ActionData) => {
             if (data.target !== bot.id) return // Not for us
+
+            if (data.source === "multi_burn" && bot.ctype === "mage" && bot.canUse("blink")) {
+                try {
+                    console.info(`Blinking ${bot.id} to avoid multi_burn (onAction)!`)
+                    await (bot as unknown as Mage).blink(bot.x, bot.y)
+                    return
+                } catch (e) {
+                    console.error(e)
+                }
+            }
             if (!bot.couldDieToProjectiles()) return // No chance of dying
 
             console.info(`Warping ${bot.id} to jail to avoid death (onAction)!`)
-            await bot.warpToJail()
+            await bot.warpToJail().catch(console.error)
         }
 
         bot.socket.on("action", this.onAction)
