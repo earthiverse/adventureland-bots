@@ -318,8 +318,15 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
         const targets = bot.getEntities({ canDamage: true, couldGiveCredit: true, typeList: this.types, willBurnToDeath: false, willDieToProjectiles: false })
         targets.sort(this.sort.get(bot.id))
 
-        // Move for healing
-        if (bot.hp < bot.max_hp * 0.50) {
+        if (bot.ctype === "priest") {
+            // Move to heal nearby friends
+            const friend = bot.getPlayer({ isDead: false, isPartyMember: true, returnLowestHP: true })
+            if (friend && friend.hp < friend.max_hp * 0.50 && bot.range > Tools.distance(bot, friend)) {
+                bot.smartMove(friend, { getWithin: bot.range - 25 }).catch(console.error)
+                return
+            }
+        } else if (bot.hp < bot.max_hp * 0.50) {
+            // Move to nearby priest to get healing
             const priest = bot.getPlayer({ isDead: false, isPartyMember: true, ctype: "priest", returnNearest: true })
             if (priest && priest.range > Tools.distance(bot, priest)) {
                 bot.smartMove(priest, { getWithin: priest.range - 25 }).catch(console.error)
