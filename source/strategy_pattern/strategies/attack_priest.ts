@@ -7,6 +7,7 @@ export type PriestAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableAbsorb?: true
     disableCurse?: true
     disableDarkBlessing?: true
+    enableAbsorbToTank?: true
     enableHealStrangers?: true
 }
 
@@ -146,9 +147,22 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
         if (this.options.enableGreedyAggro) {
             // Absorb the sins of other players attacking coop monsters
             const entity = bot.getEntity({
-                couldGiveCredit: true,
+                ...this.options,
                 targetingPartyMember: false,
-                typeList: this.options.typeList,
+            })
+            if (entity) {
+                const player = bot.players.get(entity.target)
+                if (player && AL.Tools.distance(bot, player) < AL.Game.G.skills.absorb.range) {
+                    return bot.absorbSins(player.id)
+                }
+            }
+        }
+
+        if (this.options.enableAbsorbToTank) {
+            const entity = bot.getEntity({
+                ...this.options,
+                targetingMe: false,
+                targetingPartyMember: true
             })
             if (entity) {
                 const player = bot.players.get(entity.target)
