@@ -1,4 +1,4 @@
-import AL, { IPosition, MonsterName, Pathfinder, Character, PingCompensatedCharacter, Entity, ServerInfoDataLive, MapName, GMap, SmartMoveOptions, ItemName } from "alclient"
+import AL, { IPosition, MonsterName, Pathfinder, Character, PingCompensatedCharacter, Entity, ServerInfoDataLive, MapName, GMap, SmartMoveOptions, ItemName, Tools } from "alclient"
 import { sleep } from "../../base/general.js"
 import { offsetPositionParty } from "../../base/locations.js"
 import { sortClosestDistance, sortClosestDistancePathfinder, sortSpreadOut, sortTypeThenClosest } from "../../base/sort.js"
@@ -318,6 +318,15 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
         const targets = bot.getEntities({ canDamage: true, couldGiveCredit: true, typeList: this.types, willBurnToDeath: false, willDieToProjectiles: false })
         targets.sort(this.sort.get(bot.id))
 
+        // Move for healing
+        if (bot.hp < bot.max_hp * 0.50) {
+            const priest = bot.getPlayer({ isDead: false, isPartyMember: true, ctype: "priest", returnNearest: true })
+            if (priest && priest.range > Tools.distance(bot, priest) && !bot.smartMoving) {
+                bot.smartMove(priest, { getWithin: priest.range - 25 }).catch(console.error)
+                return
+            }
+        }
+
         // Move to next monster
         let lastD = 0
         for (const target of targets) {
@@ -416,10 +425,10 @@ export class KiteInCircleMoveStrategy implements Strategy<Character> {
 
         const cw = angleFromCenterToBot + (Math.PI / 6)
         const cwPoint = { x: center.x + (radius * Math.cos(cw)), y: center.y + (radius * Math.sin(cw)) }
-        const distanceFromCwToMonster = AL.Tools.distance({x: monster.x, y: monster.y}, cwPoint)
+        const distanceFromCwToMonster = AL.Tools.distance({ x: monster.x, y: monster.y }, cwPoint)
         const ccw = angleFromCenterToBot - (Math.PI / 6)
         const ccwPoint = { x: center.x + (radius * Math.cos(ccw)), y: center.y + (radius * Math.sin(ccw)) }
-        const distanceFromCcwToMonster = AL.Tools.distance({x: monster.x, y: monster.y}, ccwPoint)
+        const distanceFromCcwToMonster = AL.Tools.distance({ x: monster.x, y: monster.y }, ccwPoint)
 
         if (distanceFromCwToMonster > bot.range && distanceFromCcwToMonster > bot.range) {
             // We need to get closer, choose the closer point
