@@ -321,7 +321,7 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
         // Move for healing
         if (bot.hp < bot.max_hp * 0.50) {
             const priest = bot.getPlayer({ isDead: false, isPartyMember: true, ctype: "priest", returnNearest: true })
-            if (priest && priest.range > Tools.distance(bot, priest) && !bot.smartMoving) {
+            if (priest && priest.range > Tools.distance(bot, priest)) {
                 bot.smartMove(priest, { getWithin: priest.range - 25 }).catch(console.error)
                 return
             }
