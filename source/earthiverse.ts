@@ -528,6 +528,13 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
         }
     }
 
+    // Monster override
+    if (OVERRIDE_MONSTERS) {
+        for (const _context of contexts) {
+            priority.push(...OVERRIDE_MONSTERS)
+        }
+    }
+
     if (ENABLE_MONSTERHUNTS && TARGET_REGION == DEFAULT_REGION && TARGET_IDENTIFIER == DEFAULT_IDENTIFIER) {
         for (const _context of contexts) {
             for (const contexts2 of [PRIVATE_CONTEXTS, PUBLIC_CONTEXTS]) {
@@ -554,13 +561,6 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
     // Default targets
     for (const _context of contexts) {
         priority.push(...DEFAULT_MONSTERS)
-    }
-
-    // Monster override
-    if (OVERRIDE_MONSTERS) {
-        for (const _context of contexts) {
-            priority.unshift(...OVERRIDE_MONSTERS)
-        }
     }
 
     for (const id of priority) {
