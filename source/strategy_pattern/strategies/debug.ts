@@ -197,7 +197,7 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
         console.debug(output)
 
         if (this.options.writeToFile) {
-            fs.appendFileSync(`./${bot.id}_debug`, output)
+            fs.appendFileSync(`./${bot.id}_debug`, `${output}\n`)
         }
     }
 
