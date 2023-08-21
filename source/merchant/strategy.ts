@@ -1,4 +1,4 @@
-import AL, { BankPackName, Character, IPosition, ItemName, LocateItemsFilters, MapName, Merchant, PingCompensatedCharacter, SlotType, Tools, TradeSlotType } from "alclient"
+import AL, { BankPackName, Character, IPosition, ItemName, LocateItemsFilters, MapName, Merchant, NewMapData, PingCompensatedCharacter, SlotType, Tools, TradeSlotType } from "alclient"
 import { getItemsToCompoundOrUpgrade, getOfferingToUse, IndexesToCompoundOrUpgrade, withdrawItemFromBank } from "../base/items.js"
 import { checkOnlyEveryMS, sleep } from "../base/general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
@@ -988,23 +988,28 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     }).lean().exec()
 
                     if (instanceMonster) {
+                        const cryptListener = async (data: NewMapData) => {
+                            if (data.name !== map) return
+                            if (data.in == instanceMonster.in) {
+                                await refreshCryptMonsters(bot, map, data.in)
+                            } else if (data.name == map) {
+                                await addCryptMonstersToDB(bot, map, data.in)
+                            }
+                        }
+                        bot.socket.on("new_map", cryptListener)
+
                         // Check if the instance is still valid
                         await bot.smartMove(instanceMonster, { numAttempts: 1 }).catch(suppress_errors)
-                        if (bot.in === instanceMonster.in) {
-                            // Update last seen for all monsters in this instance
-                            await refreshCryptMonsters(bot)
-                        } else if (bot.map === instanceMonster.map) {
-                            // We opened a new instance
-                            await addCryptMonstersToDB(bot)
-                        } else {
+                        if (bot.map !== instanceMonster.map) {
                             // Remove the Crypt ID from the database
                             await AL.EntityModel.deleteMany({
                                 serverIdentifier: bot.serverData.name,
                                 serverRegion: bot.serverData.region,
                                 map: map,
                                 in: instanceMonster.in
-                            })
+                            }).catch(console.error)
                         }
+                        bot.socket.off("new_map", cryptListener)
                     } else {
                         // Open a new crypt
                         const item = getKeyForCrypt(map)
@@ -1019,11 +1024,16 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         }
 
                         if (bot.hasItem(item)) {
+                            const cryptListener = async (data: NewMapData) => {
+                                if (data.name !== map) return
+                                await addCryptMonstersToDB(bot, map, data.in)
+                            }
+                            bot.socket.on("new_map", cryptListener)
+
                             // We have a key, let's go open a crypt
                             await bot.smartMove(map, { numAttempts: 1 }).catch(console.error)
-                            if (bot.map === map) {
-                                await addCryptMonstersToDB(bot)
-                            }
+
+                            bot.socket.off("new_map", cryptListener)
                         }
                     }
                 }
