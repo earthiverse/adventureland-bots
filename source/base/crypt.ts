@@ -1,4 +1,4 @@
-import AL, { Character, ItemName, MapName, MonsterName } from "alclient"
+import AL, { Character, ItemName, MapName, MonsterName, NewMapData } from "alclient"
 
 export const CRYPT_MONSTERS: MonsterName[] = ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "vbat"]
 
@@ -8,19 +8,19 @@ export const CRYPT_WAIT_TIME = 1.728e+8
 /** Used to give us a little bit extra time to find and kill them */
 export const CRYPT_ADD_TIME = 3_600_000
 
-export async function addCryptMonstersToDB(bot: Character) {
-    if (bot.map !== "crypt") throw "Only call this function in a crypt."
+export async function addCryptMonstersToDB(bot: Character, map = bot.map, instance: string = bot.in) {
+    if (map !== "crypt") throw "Only call this function in a crypt."
 
     const data = []
     const now = Date.now() + CRYPT_ADD_TIME
 
-    for (const monster of AL.Game.G.maps[bot.map].monsters) {
+    for (const monster of AL.Game.G.maps[map].monsters) {
         const gMonster = AL.Game.G.monsters[monster.type]
         const x = (monster.boundary[0] + monster.boundary[2]) / 2
         const y = (monster.boundary[1] + monster.boundary[3]) / 2
         data.push({
             updateOne: {
-                filter: { in: bot.in, map: bot.map, serverIdentifier: bot.serverData.name, serverRegion: bot.serverData.region, type: monster.type },
+                filter: { in: instance, map: map, serverIdentifier: bot.serverData.name, serverRegion: bot.serverData.region, type: monster.type },
                 update: { hp: gMonster.hp, firstSeen: now, lastSeen: now, target: null, x: x, y: y },
                 upsert: true
             }
@@ -39,12 +39,12 @@ export function getKeyForCrypt(map: MapName): ItemName {
     }
 }
 
-export async function refreshCryptMonsters(bot: Character) {
+export async function refreshCryptMonsters(bot: Character, map = bot.map, instance = bot.in) {
     return AL.EntityModel.updateMany({
         serverIdentifier: bot.serverData.name,
         serverRegion: bot.serverData.region,
-        map: bot.map,
-        in: bot.in
+        map: map,
+        in: instance
     }, {
         lastSeen: Date.now() + CRYPT_ADD_TIME
     }).lean().exec()
