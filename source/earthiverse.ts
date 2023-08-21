@@ -799,6 +799,7 @@ const startMerchantContext = async () => {
     }
     const CONTEXT = new Strategist<Merchant>(merchant, baseStrategy)
     startMerchant(CONTEXT, PRIVATE_CONTEXTS, { ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, debug: true, enableInstanceProvider: { crypt: true }, enableUpgrade: true })
+    CONTEXT.applyStrategy(debugStrategy)
     CONTEXT.applyStrategy(adminCommandStrategy)
     CONTEXT.applyStrategy(guiStrategy)
     CONTEXT.applyStrategy(privateSellStrategy)
