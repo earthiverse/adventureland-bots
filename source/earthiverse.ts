@@ -144,6 +144,7 @@ const publicSellStrategy = new SellStrategy({
 //// Strategies
 // Debug
 const debugStrategy = new DebugStrategy({
+    writeToFile: true,
     logInstances: true,
     logLimitDCReport: true
 })

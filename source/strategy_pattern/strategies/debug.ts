@@ -43,7 +43,8 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
     private logAchievementProgress: (data: AchievementProgressData) => void
     private logAttacks: (name: string, data: unknown) => void
     private logEquips: (name: string, data: unknown) => void
-    private logInstances: (data: NewMapData) => void
+    private logInstances1: (name: string, data: unknown) => void
+    private logInstances2: (data: NewMapData) => void
     private logLimitDCReport: (data: LimitDCReportData) => void
     private logPenalty: (name: string, data: unknown) => void
     private logSkills: (name: string, data: ClientToServerSkillData) => void
@@ -131,11 +132,16 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
         }
 
         if (this.options.logInstances) {
-            this.logInstances = (data: NewMapData) => {
+            this.logInstances1 = (name: string, data: unknown) => {
+                if (name !== "enter") return
+                this.log(bot, "logInstances", JSON.stringify(data))
+            }
+            bot.socket.onAnyOutgoing(this.logInstances1)
+            this.logInstances2 = (data: NewMapData) => {
                 if (data.in === data.name) return
                 this.log(bot, "logInstances", data.in)
             }
-            bot.socket.on("new_map", this.logInstances)
+            bot.socket.on("new_map", this.logInstances2)
         }
 
         if (this.options.logLimitDCReport) {
@@ -179,7 +185,7 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
         if (this.logAchievementProgress) bot.socket.off("achievement_progress", this.logAchievementProgress)
         if (this.logAttacks) bot.socket.offAnyOutgoing(this.logAttacks)
         if (this.logEquips) bot.socket.offAnyOutgoing(this.logEquips)
-        if (this.logInstances) bot.socket.off("new_map", this.logInstances)
+        if (this.logInstances2) bot.socket.off("new_map", this.logInstances2)
         if (this.logLimitDCReport) bot.socket.off("limitdcreport", this.logLimitDCReport)
         if (this.logPenalty) bot.socket.offAny(this.logPenalty)
         if (this.logSkills) bot.socket.offAnyOutgoing(this.logSkills)
