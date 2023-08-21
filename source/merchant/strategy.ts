@@ -977,7 +977,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     const instanceMonster = await AL.EntityModel.findOne({
                         $or: [
                             { firstSeen: null },
-                            { firstSeen: { $gt: Date.now() - CRYPT_WAIT_TIME } }
+                            { firstSeen: { $lt: Date.now() - CRYPT_WAIT_TIME } }
                         ],
                         lastSeen: { $lt: Date.now() - 3.6e+6 },
                         map: map,

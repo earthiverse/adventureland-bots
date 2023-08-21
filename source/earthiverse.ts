@@ -514,7 +514,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
             for (const cryptMonster of await AL.EntityModel.find({
                 $or: [
                     { firstSeen: null },
-                    { firstSeen: { $gt: Date.now() - CRYPT_WAIT_TIME } }
+                    { firstSeen: { $lt: Date.now() - CRYPT_WAIT_TIME } }
                 ],
                 lastSeen: { $gt: Date.now() - 30000 },
                 serverIdentifier: context.bot.serverData.name,
