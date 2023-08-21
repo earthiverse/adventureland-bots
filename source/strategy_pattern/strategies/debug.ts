@@ -1,7 +1,11 @@
-import { AchievementProgressData, Character, ClientToServerSkillData, LimitDCReportData, SkillTimeoutData } from "alclient"
+import { AchievementProgressData, Character, ClientToServerSkillData, LimitDCReportData, NewMapData, SkillTimeoutData } from "alclient"
 import { Strategy } from "../context.js"
+import fs from "fs"
 
 type DebugOptions = {
+    /** If true, we will write to a file for the bot */
+    writeToFile?: boolean
+
     /** The size of the events log (default 500) */
     logEventsSize?: number
 
@@ -16,6 +20,8 @@ type DebugOptions = {
     logAttacks?: boolean
     /** Will log when we equip things */
     logEquips?: boolean
+    /** Will log when we enter an instance */
+    logInstances?: boolean
     /** Will log the report that tells you how many commands you ran when you are disconnected for doing too many code calls */
     logLimitDCReport?: boolean
     /** Will log when we receive a penalty */
@@ -37,6 +43,7 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
     private logAchievementProgress: (data: AchievementProgressData) => void
     private logAttacks: (name: string, data: unknown) => void
     private logEquips: (name: string, data: unknown) => void
+    private logInstances: (data: NewMapData) => void
     private logLimitDCReport: (data: LimitDCReportData) => void
     private logPenalty: (name: string, data: unknown) => void
     private logSkills: (name: string, data: ClientToServerSkillData) => void
@@ -101,7 +108,7 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
         if (this.options.logAchievementProgress) {
             this.logAchievementProgress = (data: AchievementProgressData) => {
                 if ((data as any).count && (data as any).needed) {
-                    console.debug(`[${this.getTimestamp()}] [${bot.id}] [logAchievementProgress] [${data.name}] ${(data as any).count}/${(data as any).needed}`)
+                    this.log(bot, "logAchievementProgress", `${data.name} ${(data as any).count}/${(data as any).needed}`)
                 }
             }
             bot.socket.on("achievement_progress", this.logAchievementProgress)
@@ -110,7 +117,7 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
         if (this.options.logAttacks) {
             this.logAttacks = (name: string, data: unknown) => {
                 if (name !== "attack") return
-                console.debug(`[${this.getTimestamp()}] [${bot.id}] [logAttacks] ${JSON.stringify(data)}`)
+                this.log(bot, "logAttacks", JSON.stringify(data))
             }
             bot.socket.onAnyOutgoing(this.logAttacks)
         }
@@ -118,9 +125,17 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
         if (this.options.logEquips) {
             this.logEquips = (name: string, data: unknown) => {
                 if (name !== "equip") return
-                console.debug(`[${this.getTimestamp()}] [${bot.id}] [logEquips] ${JSON.stringify(data)}`)
+                this.log(bot, "logEquips", JSON.stringify(data))
             }
             bot.socket.onAnyOutgoing(this.logEquips)
+        }
+
+        if (this.options.logInstances) {
+            this.logInstances = (data: NewMapData) => {
+                if (data.in === data.name) return
+                this.log(bot, "logInstances", data.in)
+            }
+            bot.socket.on("new_map", this.logInstances)
         }
 
         if (this.options.logLimitDCReport) {
@@ -136,7 +151,7 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
             this.logPenalty = (name: string, data: unknown) => {
                 if (typeof data !== "object") return
                 if ((data as any).penalty) {
-                    console.debug(`[${this.getTimestamp()}] [${bot.id}] [logPenalties] ${name} ${JSON.stringify(data)}`)
+                    this.log(bot, "logPenalties", `${name} ${JSON.stringify(data)}`)
                 }
             }
             bot.socket.onAny(this.logPenalty)
@@ -145,14 +160,14 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
         if (this.options.logSkills) {
             this.logSkills = (name: string, data: ClientToServerSkillData) => {
                 if (name !== "skill") return
-                console.debug(`[${this.getTimestamp()}] [${bot.id}] [logSkills] ${JSON.stringify(data)}`)
+                this.log(bot, "logSkills", JSON.stringify(data))
             }
             bot.socket.onAnyOutgoing(this.logSkills)
         }
 
         if (this.options.logSkillTimeouts) {
             this.logSkillTimeouts = (data: SkillTimeoutData) => {
-                console.log(`[${this.getTimestamp()}] [${bot.id}] [logSkillTimeouts] ${JSON.stringify(data)}`)
+                this.log(bot, "logSkillTimeouts", JSON.stringify(data))
             }
             bot.socket.on("skill_timeout", this.logSkillTimeouts)
         }
@@ -163,10 +178,21 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
         bot.socket.offAnyOutgoing(this.logAllOutgoing)
         if (this.logAchievementProgress) bot.socket.off("achievement_progress", this.logAchievementProgress)
         if (this.logAttacks) bot.socket.offAnyOutgoing(this.logAttacks)
+        if (this.logEquips) bot.socket.offAnyOutgoing(this.logEquips)
+        if (this.logInstances) bot.socket.off("new_map", this.logInstances)
         if (this.logLimitDCReport) bot.socket.off("limitdcreport", this.logLimitDCReport)
         if (this.logPenalty) bot.socket.offAny(this.logPenalty)
         if (this.logSkills) bot.socket.offAnyOutgoing(this.logSkills)
         if (this.logSkillTimeouts) bot.socket.off("skill_timeout", this.logSkillTimeouts)
+    }
+
+    protected log(bot: Type, name: string, message: string) {
+        const output = `[${this.getTimestamp()}] [${bot.id}] [${name}] ${message}`
+        console.debug(output)
+
+        if (this.options.writeToFile) {
+            fs.appendFileSync(`./${bot.id}_debug`, output)
+        }
     }
 
     protected getTimestamp(): string {

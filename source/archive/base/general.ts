@@ -1176,7 +1176,7 @@ export function startCompoundLoop(bot: Character, itemsToSell: ItemLevelInfo = I
                 for (let dLevel = 7; dLevel >= 0; dLevel--) {
                     const items = itemsByLevel[itemName][dLevel]
                     if (items == undefined) continue // No items of this type at this level
-                    if (dLevel == UPGRADE_COMPOUND_LIMIT[itemName]) continue // We don't want to compound certain items too much. However, if it's already over that level, compound it.
+                    if (dLevel >= UPGRADE_COMPOUND_LIMIT[itemName]) continue // We don't want to compound certain items too much
 
                     const grade = await bot.calculateItemGrade({ level: dLevel, name: itemName })
                     const cscrollName = `cscroll${grade}` as ItemName

@@ -144,6 +144,7 @@ const publicSellStrategy = new SellStrategy({
 //// Strategies
 // Debug
 const debugStrategy = new DebugStrategy({
+    logInstances: true,
     logLimitDCReport: true
 })
 // Movement

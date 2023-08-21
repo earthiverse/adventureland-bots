@@ -1,4 +1,4 @@
-import AL, { Character, Entity, IPosition, ItemName, MapName, MonsterName } from "alclient"
+import AL, { Character, ItemName, MapName, MonsterName } from "alclient"
 
 export const CRYPT_MONSTERS: MonsterName[] = ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "vbat"]
 
