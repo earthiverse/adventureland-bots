@@ -979,7 +979,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                             { firstSeen: null },
                             { firstSeen: { $lt: Date.now() - CRYPT_WAIT_TIME } }
                         ],
-                        lastSeen: { $lt: Date.now() - 3.6e+6 },
+                        lastSeen: { $lt: Date.now() - 30_000 },
                         map: map,
                         serverIdentifier: bot.serverData.name,
                         serverRegion: bot.serverData.region,
@@ -999,7 +999,10 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         bot.socket.on("new_map", cryptListener)
 
                         // Check if the instance is still valid
-                        await bot.smartMove(instanceMonster, { numAttempts: 1 }).catch(suppress_errors)
+                        await bot.smartMove(instanceMonster, {
+                            numAttempts: 1,
+                            stopIfTrue: async () => bot.getEntity({ type: instanceMonster.type }) && bot.in === instanceMonster.in
+                        }).catch(suppress_errors)
                         if (bot.map !== instanceMonster.map) {
                             // Remove the Crypt ID from the database
                             await AL.EntityModel.deleteMany({

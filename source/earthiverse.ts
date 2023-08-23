@@ -488,15 +488,15 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 }, {
                     $or: [
                         { "s.fullguardx": undefined },
-                        { "s.fullguardx.ms": { $lt: 30000 } }
+                        { "s.fullguardx.ms": { $lt: 30_000 } }
                     ],
                 }, {
                     $or: [
                         { "s.fullguard": undefined },
-                        { "s.fullguard.ms": { $lt: 30000 } }
+                        { "s.fullguard.ms": { $lt: 30_000 } }
                     ]
                 }],
-                lastSeen: { $gt: Date.now() - 30000 },
+                lastSeen: { $gt: Date.now() - 30_000 },
                 serverIdentifier: context.bot.serverData.name,
                 serverRegion: context.bot.serverData.region,
                 type: { $in: SPECIAL_MONSTERS }
