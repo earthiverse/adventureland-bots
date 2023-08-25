@@ -66,6 +66,7 @@ const PRIVATE_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 const PUBLIC_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 /** All contexts */
 const ALL_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
+const SETTINGS_CACHE: Record<string, Settings> = {}
 
 const guiStrategy = new GuiStrategy({ port: 8080 })
 const baseStrategy = new BaseStrategy(ALL_CONTEXTS)
@@ -298,8 +299,8 @@ class AdminCommandStrategy implements Strategy<PingCompensatedCharacter> {
     protected saveAndExit() {
         const publicData = filterContexts(PUBLIC_CONTEXTS).reduce((acc: string, c) => {
             c.bot.characterID
-            const row = PUBLIC_FIELDS.map(field => c.bot[field]).join(",")
-            return acc + row + "\n"
+            const row = PUBLIC_FIELDS.map(field => c.bot[field]).join("🔥")
+            return acc + row + "🔥" + (SETTINGS_CACHE[c.bot.id] ?? '{}') + "\n"
         }, PUBLIC_FIELDS.join(",") + "\n")
         fs.writeFileSync(PUBLIC_CSV, publicData)
 
@@ -882,7 +883,7 @@ type Settings = {
 }
 
 // Allow others to join me
-const startPublicContext = async (type: CharacterType, userID: string, userAuth: string, characterID: string, attemptNum = 0, settings: Settings = {}) => {
+const startPublicContext = async (type: CharacterType, userID: string, userAuth: string, characterID: string, settings: Settings, attemptNum = 0) => {
     // Remove stopped contexts
     for (let i = 0; i < ALL_CONTEXTS.length; i++) {
         const context = ALL_CONTEXTS[i]
@@ -953,7 +954,7 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
         }
         attemptNum += 1
         if (attemptNum < 2) {
-            setTimeout(startPublicContext, 10_000, type, userID, userAuth, characterID, attemptNum)
+            setTimeout(startPublicContext, 10_000, type, userID, userAuth, characterID, settings, attemptNum)
         } else {
             throw new Error(`Failed starting ${characterID}! No longer trying to connect...`)
         }
@@ -1045,6 +1046,7 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
 
     context.applyStrategy(new SellStrategy(settings.sell ?? { sellMap: PUBLIC_ITEMS_TO_SELL }))
 
+    SETTINGS_CACHE[characterID] = settings
     PUBLIC_CONTEXTS.push(context)
     ALL_CONTEXTS.push(context)
 }
@@ -1057,8 +1059,8 @@ if (fs.existsSync(PUBLIC_CSV)) {
     lines.shift()
 
     for (const line of lines) {
-        const data = line.split(",")
-        await startPublicContext(data[0] as CharacterType, data[1], data[2], data[3]).catch(console.error)
+        const data = line.split("🔥")
+        await startPublicContext(data[0] as CharacterType, data[1], data[2], data[3], JSON.parse(data[4] ?? '{}')).catch(console.error)
     }
 
     // Delete the file after we load the players in
@@ -1110,8 +1112,9 @@ app.post("/",
             const userID = req.body.user.trim()
             const userAuth = req.body.auth.trim()
             const characterID = req.body.char.trim()
+            const settings = req.body.settings ? JSON.parse(req.body.settings) : {}
 
-            await startPublicContext(charType, userID, userAuth, characterID)
+            await startPublicContext(charType, userID, userAuth, characterID, settings)
             return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
         } catch (e) {
             return res.status(500).send(e)
