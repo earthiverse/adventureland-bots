@@ -13,7 +13,7 @@ import { Config, constructHelperSetups, constructSetups, Setups } from "./strate
 import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
 import { getHalloweenMonsterPriority, getHolidaySeasonMonsterPriority, getLunarNewYearMonsterPriority, getServerHopMonsterPriority } from "./base/serverhop.js"
 import { randomIntFromInterval, sleep } from "./base/general.js"
-import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
+import { SellStrategy, SellStrategyOptions } from "./strategy_pattern/strategies/sell.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
 import { DEFAULT_ITEMS_TO_BUY, DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO } from "./base/defaults.js"
 
@@ -137,9 +137,6 @@ const PUBLIC_ITEMS_TO_SELL = new Map<ItemName, [number, number][]>([
     ["stramulet", undefined],
     ["vitearring", undefined],
 ])
-const publicSellStrategy = new SellStrategy({
-    sellMap: PUBLIC_ITEMS_TO_SELL
-})
 
 //// Strategies
 // Debug
@@ -738,7 +735,6 @@ async function startShared(context: Strategist<PingCompensatedCharacter>, privat
         context.applyStrategy(privateItemStrategy)
     } else {
         context.applyStrategy(publicBuyStrategy)
-        context.applyStrategy(publicSellStrategy)
         context.applyStrategy(publicItemStrategy)
     }
 
@@ -881,8 +877,12 @@ class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> 
 }
 const disconnectOnCommandStrategy = new DisconnectOnCommandStrategy()
 
+type Settings = {
+    sell?: SellStrategyOptions
+}
+
 // Allow others to join me
-const startPublicContext = async (type: CharacterType, userID: string, userAuth: string, characterID: string, attemptNum = 0) => {
+const startPublicContext = async (type: CharacterType, userID: string, userAuth: string, characterID: string, attemptNum = 0, settings: Settings = {}) => {
     // Remove stopped contexts
     for (let i = 0; i < ALL_CONTEXTS.length; i++) {
         const context = ALL_CONTEXTS[i]
@@ -1011,7 +1011,6 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
             }
             startMerchant(context as Strategist<Merchant>, PUBLIC_CONTEXTS, merchantOptions)
             context.applyStrategy(guiStrategy)
-            context.applyStrategy(publicSellStrategy)
             context.applyStrategy(publicItemStrategy)
             break
         }
@@ -1043,6 +1042,8 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
     }
     if (PARTY_ALLOWLIST.indexOf(bot.id) < 0) PARTY_ALLOWLIST.push(bot.id)
     context.applyStrategy(disconnectOnCommandStrategy)
+
+    context.applyStrategy(new SellStrategy(settings.sell ?? { sellMap: PUBLIC_ITEMS_TO_SELL }))
 
     PUBLIC_CONTEXTS.push(context)
     ALL_CONTEXTS.push(context)

@@ -5,7 +5,7 @@ import { suppress_errors } from "./logging.js"
 import { BaseAttackStrategy } from "./strategies/attack.js"
 import { BaseStrategy } from "./strategies/base.js"
 import { BuyStrategy } from "./strategies/buy.js"
-import { BasicMoveStrategy } from "./strategies/move.js"
+import { ImprovedMoveStrategy } from "./strategies/move.js"
 import { RespawnStrategy } from "./strategies/respawn.js"
 import { GiveRogueSpeedStrategy } from "./strategies/rspeed.js"
 import { SellStrategy } from "./strategies/sell.js"
@@ -79,7 +79,7 @@ async function run() {
 }
 run().catch(console.error)
 
-const moveStrategy = new BasicMoveStrategy(["bee"])
+const moveStrategy = new ImprovedMoveStrategy(["bee"])
 const goGiveRogueSpeedStrategy = new GoGiveRogueSpeedStrategy()
 const goSellThingsStrategy = new GoSellThingsStrategy()
 const attackStrategy = new BaseAttackStrategy({ contexts: [], typeList: ["bee"] })
