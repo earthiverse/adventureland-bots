@@ -187,6 +187,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                     if (newBot) {
                         newBot.socket.removeAllListeners("disconnect")
                         newBot.disconnect()
+                        newBot = undefined
                     }
                     console.error(e)
                     const wait = /wait_(\d+)_second/.exec(e)
