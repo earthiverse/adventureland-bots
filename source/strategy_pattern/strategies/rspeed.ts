@@ -33,7 +33,7 @@ export class GiveRogueSpeedStrategy implements Strategy<Rogue> {
             isNPC: false,
             withinRange: "rspeed"
         })) {
-            if (player.s.rspeed?.ms > (AL.Game.G.skills.rspeed.duration * 0.75)) continue // Already has rogue speed
+            if (player.s.rspeed?.ms > (AL.Game.G.skills.rspeed.duration * 0.9)) continue // Already has rogue speed
 
             // Give rogue speed to the player
             await bot.rspeed(player.id).catch(console.error)
