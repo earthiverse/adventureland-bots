@@ -9,7 +9,7 @@ import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 import { CRYPT_WAIT_TIME, addCryptMonstersToDB, getKeyForCrypt, refreshCryptMonsters } from "../base/crypt.js"
-import { DEFAULT_CRAFTABLES, DEFAULT_EXCHANGEABLES, DEFAULT_GOLD_TO_HOLD, DEFAULT_IDENTIFIER, DEFAULT_ITEMS_TO_BUY, DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_REPLENISHABLES, DEFAULT_REGION, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO } from "../base/defaults.js"
+import { DEFAULT_CRAFTABLES, DEFAULT_EXCHANGEABLES, DEFAULT_GOLD_TO_HOLD, DEFAULT_IDENTIFIER, DEFAULT_ITEMS_TO_BUY, DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_REPLENISHABLES, DEFAULT_REGION, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO, EXCESS_ITEMS_SELL } from "../base/defaults.js"
 import { BankItemPosition, goAndWithdrawItem, tidyBank } from "../base/banking.js"
 import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.js"
 import { suppress_errors } from "../strategy_pattern/logging.js"
@@ -205,7 +205,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 // Go to bank and get item counts
                 this.toUpgrade = []
                 await bot.smartMove(bankingPosition)
-                await tidyBank(bot, { itemsToHold: this.options.itemsToHold }).catch(console.error)
+                await tidyBank(bot, { itemsToHold: this.options.itemsToHold, itemsInExcessSell: EXCESS_ITEMS_SELL }).catch(console.error)
 
                 // Withdraw things that we can upgrade
                 if (this.options.enableUpgrade) {

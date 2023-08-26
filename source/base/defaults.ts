@@ -72,6 +72,10 @@ export const DEFAULT_MERCHANT_REPLENISHABLES = new Map<ItemName, number>([
     ["scroll2", 5],
 ])
 export const DEFAULT_REPLENISH_RATIO = 0.5
+export const EXCESS_ITEMS_SELL = new Map<ItemName, number>([
+    ["fieldgen0", 20],
+    ["spookyamulet", 5],
+])
 
 /**
  * Prices set < 0 will be set to `G.items[itemName].g * (-price)`

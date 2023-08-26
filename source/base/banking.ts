@@ -1,4 +1,4 @@
-import AL, { BankInfo, BankPackName, ItemData, ItemName, LocateItemsFilters, PingCompensatedCharacter, TitleName } from "alclient";
+import AL, { BankInfo, BankPackName, ItemData, ItemName, LocateItemsFilters, PingCompensatedCharacter } from "alclient";
 import { getEmptyInventorySlots } from "./items.js";
 import { bankingPosition } from "./locations.js";
 
@@ -39,6 +39,8 @@ export type BankOptions = {
     itemsToHold?: Set<ItemName>
     /** What items should we be selling? */
     itemsToSell?: Map<ItemName, [number, number][]>
+    /** What items should we be selling if we have too many of them? */
+    itemsInExcessSell?: Map<ItemName, number>
 }
 
 /**
@@ -276,7 +278,50 @@ export async function tidyBank(bot: PingCompensatedCharacter, options: BankOptio
             for (const toSellIndex of toSellIndexes) {
                 const item = bot.items[toSellIndex]
                 if (!item) continue // No item, we probably already sold it
-                if (!options.itemsToHold.has(item.name)) continue // Different item!?
+                if (!options.itemsToSell.has(item.name)) continue // Different item!?
+
+                await bot.sell(toSellIndex, item.q ?? 1)
+            }
+
+            // Move back to the bank
+            await bot.smartMove(bankingPosition)
+        }
+    }
+
+    if (options.itemsInExcessSell && emptySlots.length > 0) {
+        const toSellIndexes = []
+        item:
+        for (const [itemName, maxSlots] of options.itemsInExcessSell) {
+            const itemTypes = itemNames[itemName]
+            if (!itemTypes) continue // We don't have any of these items
+
+            for (const type in itemTypes) {
+                const positions = itemTypes[type]
+                if (positions.length > maxSlots) {
+                    for (let num = positions.length - 1; num >= maxSlots; num--) {
+                        const position = positions[num]
+                        const bankPack = position[0]
+                        const bankIndex = position[1]
+
+                        const bankItem = bot.bank[bankPack][bankIndex]
+                        if (!bankItem || bankItem.l) continue // Can't sell locked items
+
+                        const emptySlot = emptySlots.shift()
+                        await goAndWithdrawItem(bot, bankPack, bankIndex, emptySlot)
+
+                        toSellIndexes.push(emptySlot)
+                        if (emptySlots.length === 0) break item // We have no more free spaces
+                    }
+                }
+            }
+        }
+
+        if (toSellIndexes.length) {
+            // Move to main and sell them
+            await bot.smartMove("main")
+            for (const toSellIndex of toSellIndexes) {
+                const item = bot.items[toSellIndex]
+                if (!item) continue // No item, we probably already sold it
 
                 await bot.sell(toSellIndex, item.q ?? 1)
             }
