@@ -76,6 +76,7 @@ export const EXCESS_ITEMS_SELL = new Map<ItemName, number>([
     ["fieldgen0", 20],
     ["spookyamulet", 5],
 ])
+export const TOO_FULL_FALLBACK_ITEMS_TO_SELL: ItemName[] = ["ringsj", "wbook0", "pants", "coat", "shoes", "gloves"]
 
 /**
  * Prices set < 0 will be set to `G.items[itemName].g * (-price)`

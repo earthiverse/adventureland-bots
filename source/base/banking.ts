@@ -1,6 +1,7 @@
 import AL, { BankInfo, BankPackName, ItemData, ItemName, LocateItemsFilters, PingCompensatedCharacter } from "alclient";
 import { getEmptyInventorySlots } from "./items.js";
 import { bankingPosition } from "./locations.js";
+import { TOO_FULL_FALLBACK_ITEMS_TO_SELL } from "./defaults.js";
 
 /** The bank pack name, followed by the indexes for items */
 export type PackItems = [BankPackName, number[]]
@@ -325,6 +326,18 @@ export async function tidyBank(bot: PingCompensatedCharacter, options: BankOptio
 
                 await bot.sell(toSellIndex, item.q ?? 1)
             }
+
+            // Move back to the bank
+            await bot.smartMove(bankingPosition)
+        }
+    }
+
+    if (bot.esize === 0) {
+        const itemToSell = bot.locateItem(TOO_FULL_FALLBACK_ITEMS_TO_SELL, bot.items, { level: 0, locked: false })
+        if (itemToSell !== undefined) {
+            // Move to main and sell them
+            await bot.smartMove("main")
+            await bot.sell(itemToSell, 1)
 
             // Move back to the bank
             await bot.smartMove(bankingPosition)
