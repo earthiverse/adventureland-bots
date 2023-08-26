@@ -227,7 +227,7 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements BuySt
 
                 const willingToPay = this.buyMap.get(item.name)
                 if (willingToPay === undefined) continue // We don't want it
-                if (item.price > willingToPay) continue // They're selling it for more than it's worth
+                if ((item.price + (item.l ? 250_000 : 0)) > willingToPay) continue // They're selling it for more than it's worth
 
                 if (item.q) {
                     // Buy as many as we can
