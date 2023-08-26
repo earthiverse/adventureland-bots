@@ -1017,7 +1017,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 }
 
                 for (const key in this.options.enableInstanceProvider) {
-                    if (!checkOnlyEveryMS(`${bot.id}_instance_open_${key}`, 1.08e+7)) continue // Open a new instance no more than every 3 hours
+                    if (!checkOnlyEveryMS(`${bot.id}_instance_open_${key}`, 3.6e+6)) continue // Open a new instance no more than once an hour
                     const map = key as MapName
 
                     // Open a new crypt
