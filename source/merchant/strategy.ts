@@ -969,7 +969,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 }
             }
 
-            if (this.options.enableInstanceProvider && bot.serverData.region === DEFAULT_REGION && bot.serverData.name === DEFAULT_IDENTIFIER) {
+            if (this.options.enableInstanceProvider) {
                 for (const key in this.options.enableInstanceProvider) {
                     if (!checkOnlyEveryMS(`${bot.id}_instance_check_${key}`, 300_000)) continue // Check every 5 minutes
                     const map = key as MapName
@@ -1016,33 +1016,36 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     }
                 }
 
-                for (const key in this.options.enableInstanceProvider) {
-                    if (!checkOnlyEveryMS(`${bot.id}_instance_open_${key}`, 3.6e+6)) continue // Open a new instance no more than once an hour
-                    const map = key as MapName
+                // Only open crypts on our default server
+                if (bot.serverData.region !== DEFAULT_REGION || bot.serverData.name !== DEFAULT_IDENTIFIER) {
+                    for (const key in this.options.enableInstanceProvider) {
+                        if (!checkOnlyEveryMS(`${bot.id}_instance_open_${key}`, 3.6e+6)) continue // Open a new instance no more than once an hour
+                        const map = key as MapName
 
-                    // Open a new crypt
-                    const item = getKeyForCrypt(map)
-                    if (!bot.hasItem(item)) {
-                        // We don't have a key, check our bank for one
-                        const items = new Set<ItemName>([...this.options.itemsToHold, item])
-                        await bot.smartMove(bankingPosition)
-                        await withdrawItemFromBank(bot, item, {}, {
-                            freeSpaces: bot.esize,
-                            itemsToHold: items
-                        })
-                    }
-
-                    if (bot.hasItem(item)) {
-                        const cryptListener = async (data: NewMapData) => {
-                            if (data.name !== map) return
-                            await addCryptMonstersToDB(bot, map, data.in)
+                        // Open a new crypt
+                        const item = getKeyForCrypt(map)
+                        if (!bot.hasItem(item)) {
+                            // We don't have a key, check our bank for one
+                            const items = new Set<ItemName>([...this.options.itemsToHold, item])
+                            await bot.smartMove(bankingPosition)
+                            await withdrawItemFromBank(bot, item, {}, {
+                                freeSpaces: bot.esize,
+                                itemsToHold: items
+                            })
                         }
-                        bot.socket.on("new_map", cryptListener)
 
-                        // We have a key, let's go open a crypt
-                        await bot.smartMove(map, { numAttempts: 1 }).catch(console.error)
+                        if (bot.hasItem(item)) {
+                            const cryptListener = async (data: NewMapData) => {
+                                if (data.name !== map) return
+                                await addCryptMonstersToDB(bot, map, data.in)
+                            }
+                            bot.socket.on("new_map", cryptListener)
 
-                        bot.socket.off("new_map", cryptListener)
+                            // We have a key, let's go open a crypt
+                            await bot.smartMove(map, { numAttempts: 1 }).catch(console.error)
+
+                            bot.socket.off("new_map", cryptListener)
+                        }
                     }
                 }
             }
