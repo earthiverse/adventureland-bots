@@ -12,7 +12,7 @@ export async function addCryptMonstersToDB(bot: Character, map = bot.map, instan
     if (map !== "crypt") throw "Only call this function in a crypt."
 
     const data = []
-    const now = Date.now() + CRYPT_ADD_TIME
+    const now = Date.now()
 
     for (const monster of AL.Game.G.maps[map].monsters) {
         const gMonster = AL.Game.G.monsters[monster.type]
