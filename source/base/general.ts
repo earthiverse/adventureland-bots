@@ -1,12 +1,16 @@
 const lastCheck = new Map<string, number>()
-export function checkOnlyEveryMS(key: string, msSince = 5000) {
+export function checkOnlyEveryMS(key: string, msSince = 5000, set = true) {
     const last = lastCheck.get(key)
     if (!last || (last < (Date.now() - msSince))) {
         // We haven't checked before, or it's been more than `msSince` since we last checked
-        lastCheck.set(key, Date.now())
+        if (set) lastCheck.set(key, Date.now())
         return true
     }
     return false
+}
+
+export function setLastCheck(key: string, value = Date.now()) {
+    lastCheck.set(key, value)
 }
 
 export function getMsToNextMinute(): number {

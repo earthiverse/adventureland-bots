@@ -1,6 +1,6 @@
 import AL, { BankPackName, Character, IPosition, ItemName, LocateItemsFilters, MapName, Merchant, NewMapData, PingCompensatedCharacter, SlotType, Tools, TradeSlotType } from "alclient"
 import { getItemsToCompoundOrUpgrade, getOfferingToUse, IndexesToCompoundOrUpgrade, withdrawItemFromBank } from "../base/items.js"
-import { checkOnlyEveryMS, sleep } from "../base/general.js"
+import { checkOnlyEveryMS, setLastCheck, sleep } from "../base/general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
 import { filterContexts, Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
 import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
@@ -971,7 +971,8 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
             if (this.options.enableInstanceProvider) {
                 for (const key in this.options.enableInstanceProvider) {
-                    if (!checkOnlyEveryMS(`${bot.id}_instance_check_${key}`, 300_000)) continue // Check every 5 minutes
+                    const checkKey = `${bot.id}_instance_check_${key}`
+                    if (!checkOnlyEveryMS(checkKey, 300_000, false)) continue // Check every 5 minutes
                     const map = key as MapName
 
                     const instanceMonster = await AL.EntityModel.findOne({
@@ -1014,12 +1015,14 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         }
                         bot.socket.off("new_map", cryptListener)
                     }
+                    setLastCheck(checkKey)
                 }
 
                 // Only open crypts on our default server
                 if (bot.serverData.region == DEFAULT_REGION && bot.serverData.name == DEFAULT_IDENTIFIER) {
                     for (const key in this.options.enableInstanceProvider) {
-                        if (!checkOnlyEveryMS(`${bot.id}_instance_open_${key}`, 3.6e+6)) continue // Open a new instance no more than once an hour
+                        const checkKey = `${bot.id}_instance_open_${key}`
+                        if (!checkOnlyEveryMS(checkKey, 3.6e+6, false)) continue // Open a new instance no more than once an hour
                         const map = key as MapName
 
                         // Open a new crypt
@@ -1046,6 +1049,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
                             bot.socket.off("new_map", cryptListener)
                         }
+                        setLastCheck(checkKey)
                     }
                 }
             }

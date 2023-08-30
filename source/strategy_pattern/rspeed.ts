@@ -16,13 +16,12 @@ await Promise.all([AL.Game.loginJSONFile("../../credentials_attack.json"), AL.Ga
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: false })
 
 async function getPlayerWithoutRSpeed(bot: PingCompensatedCharacter) {
-    const noSpeedChars = await AL.PlayerModel.find({
+    return await AL.PlayerModel.findOne({
         lastSeen: { $gt: Date.now() - 60_000 },
         name: { $ne: bot.id },
         $or: [{ "s.rspeed": undefined }, { "s.rspeed.ms": { $lt: 300_000 } }],
         serverIdentifier: bot.server.name, serverRegion: bot.server.region,
     }).lean().exec().catch(console.error)
-    return noSpeedChars[0]
 }
 
 export class GoGiveRogueSpeedStrategy<Type extends Rogue> implements Strategy<Type> {
