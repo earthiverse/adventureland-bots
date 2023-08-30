@@ -1045,11 +1045,16 @@ export class MerchantStrategy implements Strategy<Merchant> {
                             bot.socket.on("new_map", cryptListener)
 
                             // We have a key, let's go open a crypt
-                            await bot.smartMove(map, { numAttempts: 1 }).catch(console.error)
+                            await bot.smartMove("main").catch(console.error)
+                            try {
+                                await bot.smartMove(map, { numAttempts: 1 })
+                                setLastCheck(checkKey)
+                            } catch (e) {
+                                console.error(e)
+                            }
 
                             bot.socket.off("new_map", cryptListener)
                         }
-                        setLastCheck(checkKey)
                     }
                 }
             }
