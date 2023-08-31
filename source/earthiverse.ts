@@ -42,7 +42,7 @@ const ENABLE_EVENTS = true
 const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
 let ENABLE_MONSTERHUNTS = true
-const DEFAULT_MONSTERS: MonsterName[] = ["crab", "bat"]
+const DEFAULT_MONSTERS: MonsterName[] = ["croc", "bat"]
 const SPECIAL_MONSTERS: MonsterName[] = ["crabxx", "cutebee", "franky", "fvampire", "goldenbat", "greenjr", "icegolem", "jr", "mvampire", "skeletor", "snowman", "stompy", "tinyp", "wabbit"]
 const MAX_PUBLIC_CHARACTERS = 6
 
