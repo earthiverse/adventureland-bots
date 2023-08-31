@@ -1047,7 +1047,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                             // We have a key, let's go open a crypt
                             await bot.smartMove("main").catch(console.error)
                             try {
-                                await bot.smartMove(map, { numAttempts: 1 })
+                                await bot.smartMove(map, { numAttempts: 1, showConsole: true })
                                 setLastCheck(checkKey)
                             } catch (e) {
                                 console.error(e)
