@@ -116,6 +116,8 @@ const privateItemsToSell = new Map<ItemName, [number, number][]>([
     ["stand0", undefined],
     ["stramulet", undefined],
     ["strearring", undefined],
+    ["vboots", undefined],
+    ["vgloves", undefined],
     ["vitearring", undefined],
     ["xmace", undefined],
 ])
