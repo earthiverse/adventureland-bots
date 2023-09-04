@@ -128,6 +128,8 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
                 } else {
                     this.options.ensureEquipped.mainhand = { name: "firestaff", filters: RETURN_HIGHEST }
                 }
+            } else {
+                this.options.ensureEquipped.mainhand = { name: "firestaff", filters: RETURN_HIGHEST }
             }
 
             if (type == "a1") {
@@ -208,6 +210,8 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
                 } else {
                     this.options.ensureEquipped.mainhand = { name: "firestaff", filters: RETURN_HIGHEST }
                 }
+            } else {
+                this.options.ensureEquipped.mainhand = { name: "firestaff", filters: RETURN_HIGHEST }
             }
 
             if (type == "a1") {

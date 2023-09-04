@@ -805,7 +805,7 @@ export class KiteMonsterMoveStrategy extends SpecialMonsterMoveStrategy {
                 if (bot.smartMoving) bot.stopSmartMove().catch(suppress_errors)
                 bot.move(pos.x, pos.y, { resolveOnStart: true }).catch(suppress_errors)
             } else if (!bot.smartMoving) {
-                bot.smartMove(pos, { avoidTownWarps: true, costs: { enter: 9999, transport: 9999 } }).catch(suppress_errors)
+                bot.smartMove(pos, { avoidTownWarps: true, costs: { enter: 9999, transport: 9999 }, resolveOnFinalMoveStart: true }).catch(suppress_errors)
             }
             break
         }
