@@ -122,9 +122,17 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
                 return
             }
 
+            if (type == "a6" || type == "a8") {
+                if (bot.isEquipped("froststaff") || bot.hasItem("froststaff")) {
+                    this.options.ensureEquipped.mainhand = { name: "froststaff", filters: RETURN_HIGHEST }
+                } else {
+                    this.options.ensureEquipped.mainhand = { name: "firestaff", filters: RETURN_HIGHEST }
+                }
+            }
+
             if (type == "a1") {
                 this.options.typeList = ["a1", "nerfedbat"]
-                return super.attack(bot)
+                break
             }
 
             if (type == "a4") {
@@ -138,11 +146,11 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
                     await bot.scare()
                 }
 
-                return super.attack(bot)
+                break
             }
 
             this.options.type = type
-            return super.attack(bot)
+            break
         }
 
         return super.attack(bot)
@@ -193,6 +201,14 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
             filter.type = type
             const entity = bot.getEntity(filter)
             if (!entity) continue // This entity isn't around
+
+            if (type == "a6" || type == "a8") {
+                if (bot.isEquipped("froststaff") || bot.hasItem("froststaff")) {
+                    this.options.ensureEquipped.mainhand = { name: "froststaff", filters: RETURN_HIGHEST }
+                } else {
+                    this.options.ensureEquipped.mainhand = { name: "firestaff", filters: RETURN_HIGHEST }
+                }
+            }
 
             if (type == "a1") {
                 this.options.typeList = ["a1", "nerfedbat"]
