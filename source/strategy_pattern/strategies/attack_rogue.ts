@@ -31,17 +31,18 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
 
         await this.ensureEquipped(bot)
 
-        if (!this.options.disableMentalBurst) await this.mentalBurst(bot, priority).catch(suppress_errors)
+        if (!this.options.disableMentalBurst) await this.mentalBurstForRegen(bot).catch(suppress_errors)
         if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority).catch(suppress_errors)
-        if (!this.options.disableMentalBurst) await this.mentalBurst(bot, priority).catch(suppress_errors)
+        if (!this.options.disableMentalBurst) await this.mentalBurstForRegen(bot).catch(suppress_errors)
+        if (!this.options.disableMentalBurst) await this.mentalBurstForDamage(bot, priority).catch(suppress_errors)
         if (!this.options.disableQuickPunch) await this.quickPunch(bot, priority).catch(suppress_errors)
-        if (!this.options.disableMentalBurst) await this.mentalBurst(bot, priority).catch(suppress_errors)
+        if (!this.options.disableMentalBurst) await this.mentalBurstForRegen(bot).catch(suppress_errors)
         if (!this.options.disableQuickStab) await this.quickStab(bot, priority).catch(suppress_errors)
-        if (!this.options.disableMentalBurst) await this.mentalBurst(bot, priority).catch(suppress_errors)
+        if (!this.options.disableMentalBurst) await this.mentalBurstForRegen(bot).catch(suppress_errors)
         if (!this.options.disableZapper) await this.zapperAttack(bot, priority).catch(suppress_errors)
-        if (!this.options.disableMentalBurst) await this.mentalBurst(bot, priority).catch(suppress_errors)
+        if (!this.options.disableMentalBurst) await this.mentalBurstForRegen(bot).catch(suppress_errors)
         if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority).catch(suppress_errors)
-        if (!this.options.disableMentalBurst) await this.mentalBurst(bot, priority).catch(suppress_errors)
+        if (!this.options.disableMentalBurst) await this.mentalBurstForRegen(bot).catch(suppress_errors)
 
         await this.ensureEquipped(bot)
     }
@@ -51,27 +52,36 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
      * @param bot
      * @returns
      */
-    protected async mentalBurst(bot: Rogue, priority: (a: Entity, b: Entity) => boolean) {
+    protected async mentalBurstForRegen(bot: Rogue) {
         if (!bot.canUse("mentalburst")) return // We can't mentalburst
 
-        const canKillEntities = bot.getEntities({
+        const entities = bot.getEntities({
             canDamage: "mentalburst",
             canKillInOneShot: "mentalburst",
             couldGiveCredit: true,
             notTypeList: KILL_STEAL_AVOID_MONSTERS,
             withinRange: "mentalburst"
         })
-        if (canKillEntities.length) {
+        if (entities.length) {
             // We can kill something with mentalburst, which will give us extra mp. Sort highest hp first to get the most MP
             const targets = new FastPriorityQueue<Entity>(sortHighestHpFirst)
-            for (const entity of canKillEntities) targets.add(entity)
+            for (const entity of entities) targets.add(entity)
 
             const target = targets.peek()
 
             this.preventOverkill(bot, target)
             return bot.mentalBurst(target.id)
         }
+    }
 
+    /**
+     * Mental burst for extra damage
+     * 
+     * @param bot 
+     * @param priority 
+     * @returns 
+     */
+    protected async mentalBurstForDamage(bot: Rogue, priority: (a: Entity, b: Entity) => boolean) {
         if (this.options.enableGreedyAggro) {
             // Mental burst an entity that doesn't have a target if we can
             const entities = bot.getEntities({
