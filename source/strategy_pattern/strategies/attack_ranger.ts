@@ -15,6 +15,7 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
     public constructor(options?: RangerAttackStrategyOptions) {
         super(options)
 
+        if (!this.options.disableHuntersMark) this.interval.push("huntersmark")
         if (!this.options.disableSuperShot) this.interval.push("supershot")
     }
 

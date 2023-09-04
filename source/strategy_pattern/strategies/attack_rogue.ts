@@ -16,6 +16,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
     public constructor(options?: RogueAttackStrategyOptions) {
         super(options)
 
+        if (!this.options.disableMentalBurst) this.interval.push("mentalburst")
         if (!this.options.disableQuickPunch) this.interval.push("quickpunch")
         if (!this.options.disableQuickStab) this.interval.push("quickstab")
     }

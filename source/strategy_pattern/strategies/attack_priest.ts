@@ -19,6 +19,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
     public constructor(options?: PriestAttackStrategyOptions) {
         super(options)
 
+        if (!this.options.disableCurse) this.interval.push("curse")
         if (!this.options.disableDarkBlessing) this.interval.push("darkblessing")
     }
 

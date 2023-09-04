@@ -14,6 +14,10 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
 
     public constructor(options?: PaladinAttackStrategyOptions) {
         super(options)
+        
+        if (!this.options.disablePurify) this.interval.push("purify")
+        if (!this.options.disableSelfHeal) this.interval.push("selfheal")
+        if (!this.options.disableSmash) this.interval.push("smash")
     }
 
     protected async attack(bot: Paladin): Promise<void> {
