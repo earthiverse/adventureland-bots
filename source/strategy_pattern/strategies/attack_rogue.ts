@@ -31,17 +31,17 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
 
         await this.ensureEquipped(bot)
 
-        if (!this.options.disableMentalBurst) await this.mentalBurst(bot).catch(suppress_errors)
+        if (!this.options.disableMentalBurst) await this.mentalBurst(bot, priority).catch(suppress_errors)
         if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority).catch(suppress_errors)
-        if (!this.options.disableMentalBurst) await this.mentalBurst(bot).catch(suppress_errors)
+        if (!this.options.disableMentalBurst) await this.mentalBurst(bot, priority).catch(suppress_errors)
         if (!this.options.disableQuickPunch) await this.quickPunch(bot, priority).catch(suppress_errors)
-        if (!this.options.disableMentalBurst) await this.mentalBurst(bot).catch(suppress_errors)
+        if (!this.options.disableMentalBurst) await this.mentalBurst(bot, priority).catch(suppress_errors)
         if (!this.options.disableQuickStab) await this.quickStab(bot, priority).catch(suppress_errors)
-        if (!this.options.disableMentalBurst) await this.mentalBurst(bot).catch(suppress_errors)
+        if (!this.options.disableMentalBurst) await this.mentalBurst(bot, priority).catch(suppress_errors)
         if (!this.options.disableZapper) await this.zapperAttack(bot, priority).catch(suppress_errors)
-        if (!this.options.disableMentalBurst) await this.mentalBurst(bot).catch(suppress_errors)
+        if (!this.options.disableMentalBurst) await this.mentalBurst(bot, priority).catch(suppress_errors)
         if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority).catch(suppress_errors)
-        if (!this.options.disableMentalBurst) await this.mentalBurst(bot).catch(suppress_errors)
+        if (!this.options.disableMentalBurst) await this.mentalBurst(bot, priority).catch(suppress_errors)
 
         await this.ensureEquipped(bot)
     }
@@ -51,23 +51,84 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
      * @param bot
      * @returns
      */
-    protected async mentalBurst(bot: Rogue) {
+    protected async mentalBurst(bot: Rogue, priority: (a: Entity, b: Entity) => boolean) {
         if (!bot.canUse("mentalburst")) return // We can't mentalburst
 
-        const entities = bot.getEntities({
+        const canKillEntities = bot.getEntities({
             canDamage: "mentalburst",
             canKillInOneShot: "mentalburst",
             couldGiveCredit: true,
             notTypeList: KILL_STEAL_AVOID_MONSTERS,
             withinRange: "mentalburst"
         })
-        if (entities.length === 0) return // No entities
+        if (canKillEntities.length) {
+            // We can kill something with mentalburst, which will give us extra mp. Sort highest hp first to get the most MP
+            const targets = new FastPriorityQueue<Entity>(sortHighestHpFirst)
+            for (const entity of canKillEntities) targets.add(entity)
 
-        // Sort highest hp first to get the most MP
-        const targets = new FastPriorityQueue<Entity>(sortHighestHpFirst)
+            const target = targets.peek()
+
+            this.preventOverkill(bot, target)
+            return bot.mentalBurst(target.id)
+        }
+
+        if (this.options.enableGreedyAggro) {
+            // Mental burst an entity that doesn't have a target if we can
+            const entities = bot.getEntities({
+                canDamage: "mentalburst",
+                hasTarget: false,
+                typeList: this.options.typeList,
+                withinRange: "mentalburst"
+            })
+            if (
+                entities.length
+                && !(this.options.maximumTargets && bot.targets >= this.options.maximumTargets)
+            ) {
+                // Prioritize the entities
+                const targets = new FastPriorityQueue<Entity>(priority)
+                for (const entity of entities) targets.add(entity)
+
+                return bot.mentalBurst(targets.peek().id)
+            }
+        }
+
+        if (bot.mp < AL.Game.G.skills.mentalburst.mp * 2) return // Save the MP for use with normal attacks for rogue stack
+
+        // Find all targets we want to mental burst
+        const entities = bot.getEntities({
+            ...this.options,
+            canDamage: "mentalburst",
+            withinRange: "mentalburst"
+        })
+        if (entities.length == 0) return // No targets to mental burst
+
+        // Prioritize the entities
+        const targets = new FastPriorityQueue<Entity>(priority)
         for (const entity of entities) targets.add(entity)
 
-        return bot.mentalBurst(targets.peek().id)
+        const targetingMe = bot.calculateTargets()
+
+        while (targets.size) {
+            const target = targets.poll()
+
+            if (!target.target) {
+                // We're going to be tanking this monster, don't mental burst if it pushes us over our limit
+                if (bot.targets >= this.options.maximumTargets) continue // We don't want another target
+                switch (target.damage_type) {
+                    case "magical":
+                        if (bot.mcourage <= targetingMe.magical) continue // We can't tank any more magical monsters
+                        break
+                    case "physical":
+                        if (bot.courage <= targetingMe.physical) continue // We can't tank any more physical monsters
+                        break
+                    case "pure":
+                        if (bot.courage <= targetingMe.pure) continue // We can't tank any more pure monsters
+                        break
+                }
+            }
+
+            return bot.mentalBurst(target.id)
+        }
     }
 
     protected async quickPunch(bot: Rogue, priority: (a: Entity, b: Entity) => boolean): Promise<unknown> {
@@ -83,12 +144,16 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
             })
             if (
                 entities.length
-                && !(this.options.maximumTargets && bot.targets >= this.options.maximumTargets)) {
+                && !(this.options.maximumTargets && bot.targets >= this.options.maximumTargets)
+            ) {
                 // Prioritize the entities
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
 
-                return bot.quickPunch(targets.peek().id)
+                const target = targets.peek()
+                const canKill = bot.canKillInOneShot(target, "quickpunch")
+                if (canKill) this.preventOverkill(bot, target)
+                return bot.quickPunch(target.id)
             }
         }
 
@@ -152,7 +217,10 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
 
-                return bot.quickStab(targets.peek().id)
+                const target = targets.peek()
+                const canKill = bot.canKillInOneShot(target, "quickstab")
+                if (canKill) this.preventOverkill(bot, target)
+                return bot.quickStab(target.id)
             }
         }
 
