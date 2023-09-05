@@ -97,6 +97,7 @@ const privateItemsToSell = new Map<ItemName, [number, number][]>([
     ["iceskates", undefined],
     ["intring", undefined],
     ["intearring", undefined],
+    ["maceofthedead", undefined],
     ["monstertoken", [
         [undefined, 300_000]
     ]],
@@ -106,6 +107,7 @@ const privateItemsToSell = new Map<ItemName, [number, number][]>([
     ["pickaxe", [
         [0, 1_000_000]
     ]],
+    ["pmaceofthedead", undefined],
     ["ringsj", undefined],
     ["rod", [
         [0, 1_000_000]
