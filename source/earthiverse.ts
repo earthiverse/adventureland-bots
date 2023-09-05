@@ -459,6 +459,21 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
             if (context.bot.S.holidayseason) {
                 if ((context.bot.S.grinch as ServerInfoDataLive)?.live) priority.push("grinch")
             }
+
+            // Franky
+            if (context.bot.S.franky) {
+                if ((context.bot.S.franky as ServerInfoDataLive)?.live) priority.push("franky")
+            }
+
+            // Ice Golem
+            if (context.bot.S.icegolem) {
+                if ((context.bot.S.icegolem as ServerInfoDataLive)?.live) priority.push("icegolem")
+            }
+
+            // Snowman
+            if (context.bot.S.snowman) {
+                if ((context.bot.S.snowman as ServerInfoDataLive)?.live) priority.push("snowman")
+            }
         }
     }
 
