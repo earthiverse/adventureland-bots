@@ -56,7 +56,7 @@ class CryptMoveStratey extends KiteMonsterMoveStrategy {
                     const otherEntity = bot.getEntity({ notTypeList: ["a5", "vbat"], returnNearest: true })
                     if (otherEntity) {
                         // Kite to the other monster
-                        bot.smartMove(offsetPositionParty(otherEntity, bot))
+                        bot.smartMove(offsetPositionParty(otherEntity, bot)).catch(suppress_errors)
                     } else {
                         // Kite until we find another monster
                         this.kite(bot, entity).catch(suppress_errors)
