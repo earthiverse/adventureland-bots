@@ -50,8 +50,14 @@ class CryptMoveStratey extends KiteMonsterMoveStrategy {
                     // Stay on a5 to kill
                     bot.smartMove(offsetPositionParty(entity, bot)).catch(suppress_errors)
                 } else {
-                    // Kite to another monster
+                    const otherEntity = bot.getEntity({ notTypeList: ["a5", "vbat"], returnNearest: true })
+                    if (otherEntity) {
+                        // Kite to the other monster
+                        bot.smartMove(offsetPositionParty(otherEntity, bot))
+                    } else {
+                        // Kite until we find another monster
                     this.kite(bot, entity).catch(suppress_errors)
+                }
                 }
             } else if (entity.type == "a1" || entity.type == "a4" || entity.type == "vbat") {
                 bot.smartMove(offsetPositionParty(entity, bot)).catch(suppress_errors)
@@ -248,6 +254,14 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
                 if (player && player.range < 100) {
                     // If the current target can't kite very well, get it to follow us instead
                     await bot.absorbSins(player.id).catch(suppress_errors)
+                }
+            }
+
+            if (type == "a6" && entity.focus && bot.canUse("curse")) {
+                // Curse Elena's target to allow Elena to follow it better
+                const focusedEntity = bot.entities.get(entity.focus)
+                if (AL.Tools.distance(bot, focusedEntity) < bot.range) {
+                    await bot.curse(focusedEntity.id).catch(suppress_errors)
                 }
             }
 
