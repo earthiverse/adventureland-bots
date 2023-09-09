@@ -73,7 +73,9 @@ export const DEFAULT_MERCHANT_REPLENISHABLES = new Map<ItemName, number>([
 ])
 export const DEFAULT_REPLENISH_RATIO = 0.5
 export const EXCESS_ITEMS_SELL = new Map<ItemName, number>([
+    ["essenceoflife", 5],
     ["fieldgen0", 20],
+    ["snowball", 10],
     ["spookyamulet", 5],
 ])
 export const TOO_FULL_FALLBACK_ITEMS_TO_SELL: ItemName[] = ["ringsj", "wbook0", "pants", "coat", "shoes", "gloves"]
