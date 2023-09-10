@@ -64,12 +64,12 @@ export const winterCaveBBPomPomsNearDoor: NodeData = { map: "winter_cave", x: 51
 export const winterCaveBBPomPomsAbove: NodeData = { map: "winter_cave", x: -82.5, y: -949 }
 
 export function getClosestBotToPosition(position: NodeData, bots: Character[]): Character {
-    let closest: Character;
+    let closest: Character
     let closestScore = Number.MAX_VALUE
-    for(const bot of bots) {
+    for (const bot of bots) {
         const path = Pathfinder.getPath(bot, position)
         const score = Pathfinder.computePathCost(path)
-        if(score < closestScore) {
+        if (score < closestScore) {
             closest = bot
             closestScore = score
         }
@@ -82,41 +82,54 @@ export function offsetPosition(position: IPosition, x: number, y: number): IPosi
 }
 
 export function offsetPositionParty(position: IPosition, bot: Character, offsetAmount = 10): IPosition {
-    const offset = { x: 0, y: 0 }
-    if (bot.party) {
-        switch (bot.partyData?.list?.indexOf(bot.id)) {
+    if (!bot.party) return position // No offset if we're not in a party
+
+    let offsetIndex = bot.partyData?.list?.indexOf(bot.id)
+    if (offsetIndex === 0) return position // We're the leader, we stand in the middle
+
+    // Spiral from the position to get the offset.
+    // Based on https://stackoverflow.com/a/19287714
+    let i = 1
+    let pos: IPosition = { in: position.in, map: position.map, x: position.x, y: position.y }
+    while (i <= offsetIndex) {
+        const r = Math.floor((Math.sqrt(offsetIndex + 1) - 1) / 2) + 1
+        const p = (8 * r * (r - 1)) / 2
+        const en = r * 2
+        const a = (1 + offsetIndex - p) % (r * 8)
+
+        pos.x = position.x
+        pos.y = position.y
+
+        switch (Math.floor(a / (r * 2))) {
+            case 0:
+                {
+                    pos.x += offsetAmount * (a - r)
+                    pos.y += offsetAmount * (-r)
+                }
+                break
             case 1:
-                offset.x = offsetAmount
+                {
+                    pos.x += offsetAmount * (r)
+                    pos.y += offsetAmount * ((a % en) - r)
+
+                }
                 break
             case 2:
-                offset.x = -offsetAmount
+                {
+                    pos.x += offsetAmount * (r - (a % en))
+                    pos.y += offsetAmount * (r)
+                }
                 break
             case 3:
-                offset.y = offsetAmount
-                break
-            case 4:
-                offset.y = -offsetAmount
-                break
-            case 5:
-                offset.x = offsetAmount
-                offset.y = offsetAmount
-                break
-            case 6:
-                offset.x = offsetAmount
-                offset.y = -offsetAmount
-                break
-            case 7:
-                offset.x = -offsetAmount
-                offset.y = offsetAmount
-                break
-            case 8:
-                offset.x = -offsetAmount
-                offset.y = -offsetAmount
-                break
-            case 9:
-                offset.x = 2 * offsetAmount
+                {
+                    pos.x += offsetAmount * (-r)
+                    pos.y += offsetAmount * (r - (a % en))
+                }
                 break
         }
+        if (!Pathfinder.canStand(pos)) offsetIndex++ // This position is not standable, we need another position
+        i++
     }
-    return { in: position.in, map: position.map, x: position.x + offset.x, y: position.y + offset.y }
+
+    return pos
 }
