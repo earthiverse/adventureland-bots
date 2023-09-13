@@ -1,9 +1,9 @@
-import AL, { Character, ItemName, MapName, MonsterName, NewMapData } from "alclient"
+import AL, { Character, ItemName, MapName, MonsterName } from "alclient"
 
 export const CRYPT_MONSTERS: MonsterName[] = ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "vbat"]
 
-/** Used to wait until crypt monsters have levelled a bit */
-export const CRYPT_WAIT_TIME = 1.728e+8
+/** Used to wait until crypt monsters have levelled a bit (1.944e+8ms is 54 hours) */
+export const CRYPT_WAIT_TIME = 1.944e+8
 
 /** Used to give us a little bit extra time to find and kill them */
 export const CRYPT_ADD_TIME = 3_600_000
