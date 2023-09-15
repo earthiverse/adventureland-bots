@@ -263,7 +263,10 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
             if (type == "a5" && entity.focus && bot.canUse("curse")) {
                 // Curse Elena's target to slow it down and allow Elena to follow it better
                 const focusedEntity = bot.entities.get(entity.focus)
-                if (AL.Tools.distance(bot, focusedEntity) < bot.range) {
+                if (
+                    AL.Tools.distance(entity, focusedEntity) > entity.range // It's far away
+                    && AL.Tools.distance(bot, focusedEntity) < bot.range
+                ) {
                     await bot.curse(focusedEntity.id).catch(suppress_errors)
                 }
             }
