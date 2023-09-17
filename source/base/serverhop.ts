@@ -121,6 +121,8 @@ export async function getTargetServerFromPlayer(defaultRegion: ServerRegion, def
 }
 
 export async function getServerHopMonsterPriority(avoidPVP = false) {
+    if (!AL.Database.connection) return []
+
     const monsterPriority: MonsterName[] = ["franky", "crabxx", "icegolem", "goldenbat", "cutebee"]
     const serverPriority = ["EUI", "EUII", "USI", "USII", "USIII", "ASIAI", "EUPVP", "USPVP"]
 
@@ -176,6 +178,8 @@ export async function getServerHopMonsterPriority(avoidPVP = false) {
 }
 
 export async function getLunarNewYearMonsterPriority(avoidPVP = false) {
+    if (!AL.Database.connection) return []
+
     const monsterPriority: MonsterName[] = ["dragold"]
     const serverPriority = ["EUI", "EUII", "USI", "USII", "USIII", "ASIAI", "EUPVP", "USPVP"]
 
@@ -240,6 +244,8 @@ export async function getLunarNewYearMonsterPriority(avoidPVP = false) {
 }
 
 export async function getHalloweenMonsterPriority(avoidPVP = false) {
+    if (!AL.Database.connection) return []
+
     const monsterPriority: MonsterName[] = ["mrpumpkin", "mrgreen"]
     const serverPriority = ["EUI", "EUII", "USI", "USII", "USIII", "ASIAI", "EUPVP", "USPVP"]
 
@@ -290,6 +296,8 @@ export async function getHalloweenMonsterPriority(avoidPVP = false) {
 }
 
 export async function getHolidaySeasonMonsterPriority(avoidPVP = false) {
+    if (!AL.Database.connection) return []
+
     const monsterPriority: MonsterName[] = ["grinch", "snowman"]
     const serverPriority = ["EUI", "EUII", "USI", "USII", "USIII", "ASIAI", "EUPVP", "USPVP"]
 

@@ -495,32 +495,34 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 priority.push(specialMonster.type)
             }
 
-            for (const specialMonster of await AL.EntityModel.find({
-                $and: [{
-                    $or: [
-                        { target: undefined },
-                        { target: { $in: PARTY_ALLOWLIST } },
-                        { type: { $in: ["crabxx", "franky", "icegolem", "phoenix", "snowman", "wabbit"] } } // Coop monsters will give credit
-                    ]
+            if (AL.Database.connection) {
+                for (const specialMonster of await AL.EntityModel.find({
+                    $and: [{
+                        $or: [
+                            { target: undefined },
+                            { target: { $in: PARTY_ALLOWLIST } },
+                            { type: { $in: ["crabxx", "franky", "icegolem", "phoenix", "snowman", "wabbit"] } } // Coop monsters will give credit
+                        ]
+                    }, {
+                        $or: [
+                            { "s.fullguardx": undefined },
+                            { "s.fullguardx.ms": { $lt: 30_000 } }
+                        ],
+                    }, {
+                        $or: [
+                            { "s.fullguard": undefined },
+                            { "s.fullguard.ms": { $lt: 30_000 } }
+                        ]
+                    }],
+                    lastSeen: { $gt: Date.now() - 30_000 },
+                    serverIdentifier: context.bot.serverData.name,
+                    serverRegion: context.bot.serverData.region,
+                    type: { $in: SPECIAL_MONSTERS }
                 }, {
-                    $or: [
-                        { "s.fullguardx": undefined },
-                        { "s.fullguardx.ms": { $lt: 30_000 } }
-                    ],
-                }, {
-                    $or: [
-                        { "s.fullguard": undefined },
-                        { "s.fullguard.ms": { $lt: 30_000 } }
-                    ]
-                }],
-                lastSeen: { $gt: Date.now() - 30_000 },
-                serverIdentifier: context.bot.serverData.name,
-                serverRegion: context.bot.serverData.region,
-                type: { $in: SPECIAL_MONSTERS }
-            }, {
-                type: 1
-            }).lean().exec()) {
-                priority.push(specialMonster.type)
+                    type: 1
+                }).lean().exec()) {
+                    priority.push(specialMonster.type)
+                }
             }
 
             for (const cryptMonster of context.bot.getEntities({
@@ -530,19 +532,21 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 priority.push(cryptMonster.type)
             }
 
-            for (const cryptMonster of await AL.EntityModel.find({
-                $or: [
-                    { firstSeen: null },
-                    { firstSeen: { $lt: Date.now() - CRYPT_WAIT_TIME } }
-                ],
-                lastSeen: { $gt: Date.now() - 30000 },
-                serverIdentifier: context.bot.serverData.name,
-                serverRegion: context.bot.serverData.region,
-                type: { $in: CRYPT_MONSTERS }
-            }, {
-                type: 1
-            }).lean().exec()) {
-                priority.push(cryptMonster.type)
+            if (AL.Database.connection) {
+                for (const cryptMonster of await AL.EntityModel.find({
+                    $or: [
+                        { firstSeen: null },
+                        { firstSeen: { $lt: Date.now() - CRYPT_WAIT_TIME } }
+                    ],
+                    lastSeen: { $gt: Date.now() - 30000 },
+                    serverIdentifier: context.bot.serverData.name,
+                    serverRegion: context.bot.serverData.region,
+                    type: { $in: CRYPT_MONSTERS }
+                }, {
+                    type: 1
+                }).lean().exec()) {
+                    priority.push(cryptMonster.type)
+                }
             }
         }
     }

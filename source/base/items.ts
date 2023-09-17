@@ -159,6 +159,7 @@ let CACHED_COUNTS = new Map<string, ItemCount[]>()
  * @param owner The owner to get items for (e.g.: `bot.owner`)
  */
 export async function getItemCountsForEverything(owner: string): Promise<ItemCount[]> {
+    if (!AL.Database.connection) return []
     if (!checkOnlyEveryMS(`item_counts_${owner}`, 60_000)) {
         return CACHED_COUNTS.get(owner)
     }

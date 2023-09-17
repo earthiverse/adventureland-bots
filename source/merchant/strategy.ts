@@ -630,7 +630,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         return
                     }
                 }
-                if (this.options.enableMluck.others) {
+                if (this.options.enableMluck.others && AL.Database.connection) {
                     const player = await AL.PlayerModel.findOne(
                         {
                             $or: [
@@ -907,7 +907,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 }
             }
 
-            if (this.options.enableDealFinder) {
+            if (this.options.enableDealFinder && AL.Database.connection) {
                 const merchants = await AL.PlayerModel.find({
                     lastSeen: { $gt: Date.now() - 120000 },
                     serverRegion: bot.serverData.region,
@@ -969,7 +969,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 }
             }
 
-            if (this.options.enableInstanceProvider) {
+            if (this.options.enableInstanceProvider && AL.Database.connection) {
                 for (const key in this.options.enableInstanceProvider) {
                     const checkKey = `${bot.id}_instance_check_${key}`
                     if (!checkOnlyEveryMS(checkKey, 300_000, false)) continue // Check every 5 minutes
