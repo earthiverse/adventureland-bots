@@ -86,10 +86,11 @@ export function offsetPositionParty(position: IPosition, bot: Character, offsetA
 
     let offsetIndex = bot.partyData?.list?.indexOf(bot.id)
     if (offsetIndex === 0) return position // We're the leader, we stand in the middle
+    offsetIndex -= 1
 
     // Spiral from the position to get the offset.
     // Based on https://stackoverflow.com/a/19287714
-    let i = 1
+    let i = 0
     let pos: IPosition = { in: position.in, map: position.map, x: position.x, y: position.y }
     while (i <= offsetIndex) {
         const r = Math.floor((Math.sqrt(offsetIndex + 1) - 1) / 2) + 1
