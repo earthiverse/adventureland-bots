@@ -536,7 +536,6 @@ export function constructCryptHelperSetup(contexts: Strategist<PingCompensatedCh
         ]
     }
 
-    
     return {
         configs: [
             {

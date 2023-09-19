@@ -1054,6 +1054,9 @@ export class MerchantStrategy implements Strategy<Merchant> {
                             }
 
                             bot.socket.off("new_map", cryptListener)
+                        } else {
+                            // We don't have a key to use
+                            setLastCheck(checkKey)
                         }
                     }
                 }
