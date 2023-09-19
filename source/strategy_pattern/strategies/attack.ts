@@ -1,9 +1,10 @@
-import AL, { ActionData, Character, EntitiesData, Entity, GetEntitiesFilters, ItemName, LocateItemFilters, Mage, MonsterName, PingCompensatedCharacter, SkillName, SlotType, Warrior } from "alclient"
+import AL, { ActionData, Attribute, Character, EntitiesData, Entity, GetEntitiesFilters, ItemName, LocateItemFilters, Mage, MonsterName, PingCompensatedCharacter, SkillName, SlotType, Warrior } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { sleep } from "../../base/general.js"
 import { sortPriority } from "../../base/sort.js"
 import { Loop, LoopName, Strategist, Strategy, filterContexts } from "../context.js"
 import { suppress_errors } from "../logging.js"
+import { generateEnsureEquippedFromAttribute } from "../setups/equipment.js"
 
 export type EnsureEquippedSlot = {
     name: ItemName
@@ -27,6 +28,11 @@ export type BaseAttackStrategyOptions = GetEntitiesFilters & {
     enableGreedyAggro?: true
     /** If set, we will check if we have the correct items equipped before and after attacking */
     ensureEquipped?: EnsureEquipped
+    /** If set, we will generate a loadout */
+    generateEnsureEquipped?: {
+        attributes: Attribute[]
+        ensure?: EnsureEquipped
+    }
     maximumTargets?: number
 }
 
@@ -68,6 +74,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
     }
 
     public onApply(bot: Type) {
+        if (this.options.generateEnsureEquipped) this.options.ensureEquipped = generateEnsureEquippedFromAttribute(bot, this.options.generateEnsureEquipped.attributes, this.options.generateEnsureEquipped.ensure)
+
         this.sort.set(bot.id, sortPriority(bot, this.options.typeList))
 
         if (!this.options.disableKillSteal && !this.options.disableZapper) {
@@ -286,6 +294,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
     protected async ensureEquipped(bot: Type) {
         if (!this.options.ensureEquipped) return
+        if (typeof this.options.ensureEquipped === "string") this.options.ensureEquipped = generateEnsureEquippedFromAttribute(bot, this.options.ensureEquipped)
         for (const sT in this.options.ensureEquipped) {
             const slotType = sT as SlotType
             const ensure = this.options.ensureEquipped[slotType]
@@ -381,7 +390,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             withinRange: "zapperzap"
         })
         if (entities.length == 0) return // No targets to attack
-        
+
         if (bot.mp < bot.max_mp - 500) {
             // When we're not near full mp, only zap if we can kill the entity in one shot
             for (let i = 0; i < entities.length; i++) {

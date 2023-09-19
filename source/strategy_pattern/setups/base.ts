@@ -61,7 +61,7 @@ import { constructMinimushSetup } from "./minimush.js"
 import { constructCrabSetup } from "./crab.js"
 import { constructBeeSetup } from "./bee.js"
 import { constructIceRoamerHelperSetup, constructIceRoamerSetup } from "./iceroamer.js"
-import { constructCryptSetup } from "./crypt.js"
+import { constructCryptHelperSetup, constructCryptSetup } from "./crypt.js"
 
 export type Requirements = {
      [T in Attribute]?: number
@@ -416,6 +416,14 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
 
 export function constructHelperSetups(contexts: Strategist<PingCompensatedCharacter>[]): Setups {
     return {
+        a1: constructCryptHelperSetup(contexts),
+        a2: constructCryptHelperSetup(contexts),
+        a3: constructCryptHelperSetup(contexts),
+        a4: constructCryptHelperSetup(contexts),
+        a5: constructCryptHelperSetup(contexts),
+        a6: constructCryptHelperSetup(contexts),
+        a7: constructCryptHelperSetup(contexts),
+        a8: constructCryptHelperSetup(contexts),
         arcticbee: constructGenericSetup(contexts, ["arcticbee", "snowman"]),
         armadillo: constructArmadilloHelperSetup(contexts),
         bat: constructGenericSetup(contexts, ["bat"]),
@@ -442,6 +450,7 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         minimush: constructGenericSetup(contexts, ["minimush", "phoenix", "tinyp"]),
         mrgreen: constructMrGreenHelperSetup(contexts),
         mrpumpkin: constructMrPumpkinHelperSetup(contexts),
+        nerfedbat: constructCryptHelperSetup(contexts),
         osnake: constructOSnakeHelperSetup(contexts),
         phoenix: constructPhoenixHelperSetup(contexts),
         pinkgoo: constructPinkGooHelperSetup(contexts),

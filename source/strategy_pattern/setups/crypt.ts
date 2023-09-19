@@ -1,13 +1,14 @@
-import AL, { Character, Entity, GetEntityFilters, IPosition, Mage, MonsterName, PingCompensatedCharacter, Priest, Warrior } from "alclient"
+import AL, { Character, Entity, GetEntityFilters, IPosition, Mage, MonsterName, PingCompensatedCharacter, Priest, Rogue, Warrior } from "alclient"
 import { Strategist, filterContexts } from "../context.js"
 import { MageAttackStrategy, MageAttackStrategyOptions } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy, PriestAttackStrategyOptions } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy, WarriorAttackStrategyOptions } from "../strategies/attack_warrior.js"
 import { KiteMonsterMoveStrategy } from "../strategies/move.js"
-import { Setup } from "./base.js"
+import { Requirements, Setup } from "./base.js"
 import { RETURN_HIGHEST } from "./equipment.js"
 import { offsetPositionParty } from "../../base/locations.js"
 import { suppress_errors } from "../logging.js"
+import { RogueAttackStrategy, RogueAttackStrategyOptions } from "../strategies/attack_rogue.js"
 
 const CRYPT_MONSTERS: MonsterName[] = ["zapper0", "vbat", "nerfedbat", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8"]
 const CRYPT_PRIORITY: MonsterName[] = ["a5", "a6", "a8", "a3", "a2", "a7", "a4", "a1", "vbat"]
@@ -264,7 +265,7 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
                 // Curse Elena's target to slow it down and allow Elena to follow it better
                 const focusedEntity = bot.entities.get(entity.focus)
                 if (
-                    AL.Tools.distance(entity, focusedEntity) > entity.range // It's far away
+                    AL.Tools.distance(entity, focusedEntity) > (entity.range * 0.75) // It's far away
                     && AL.Tools.distance(bot, focusedEntity) < bot.range
                 ) {
                     await bot.curse(focusedEntity.id).catch(suppress_errors)
@@ -409,6 +410,154 @@ export function constructCryptSetup(contexts: Strategist<PingCompensatedCharacte
                             enableEquipForStomp: true,
                         }),
                         move: moveStrategy
+                    }
+                ]
+            }
+        ]
+    }
+}
+
+class CryptHelperMoveStratey extends KiteMonsterMoveStrategy {
+    public constructor(contexts: Strategist<PingCompensatedCharacter>[]) {
+        super({
+            contexts: contexts,
+            typeList: CRYPT_MONSTERS
+        })
+
+        // Only include crypt map positions
+        this.spawns = this.spawns.filter(p => p.map === "crypt")
+    }
+
+    protected async move(bot: Character): Promise<IPosition> {
+        const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
+
+        // Kite any close monster, except a1
+        const closeEntity = bot.getEntity({ typeList: CRYPT_MONSTERS, notTypeList: ["a1"], returnNearest: true, withinRange: bot.range / 2 })
+        if (closeEntity) {
+            this.kite(bot, closeEntity).catch(suppress_errors)
+            return
+        }
+
+        for (const type of CRYPT_PRIORITY) {
+            filter.type = type as MonsterName
+
+            // Check for the entity in all of the contexts
+            let entity: Entity
+            for (const context of filterContexts(this.options.contexts, { serverData: bot.serverData })) {
+                const friend = context.bot
+                if (friend.map !== bot.map) continue
+
+                entity = friend.getEntity(filter)
+                if (entity) break
+            }
+            if (!entity) continue
+
+            /**
+             * a1 (Spike) - Spawns nerfedbats, stay close to do splash damage
+             */
+            if (entity.type === "a1") {
+                bot.smartMove(offsetPositionParty(entity, bot)).catch(suppress_errors)
+            } else {
+                this.kite(bot, entity).catch(suppress_errors)
+            }
+
+            return
+        }
+
+        return super.move(bot) // Go find an entity
+    }
+}
+
+class RogueCryptHelperAttackStrategy extends RogueAttackStrategy {
+    public constructor(options?: RogueAttackStrategyOptions) {
+        super(options)
+    }
+
+    protected async attack(bot: Rogue): Promise<void> {
+        const nearbyPriest = bot.getPlayer({ ctype: "priest", isPartyMember: true, withinRange: "heal", withinRangeOf: bot })
+
+        // Reset options
+        delete this.options.type
+        delete this.options.typeList
+
+        const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
+        for (const type of CRYPT_PRIORITY) {
+            filter.type = type
+            const entity = bot.getEntity(filter)
+            if (!entity) continue // This entity isn't around
+
+            if (
+                !nearbyPriest
+                && bot.hp < bot.max_hp / 2
+                && entity.target == bot.id
+                && !entity.immune
+            ) {
+                if (bot.canUse("scare")) await bot.scare()
+                return
+            }
+
+            if (type == "a1") {
+                this.options.typeList = ["a1", "nerfedbat"]
+                return super.attack(bot)
+            }
+
+            if (type == "a4") {
+                this.options.typeList = ["a4", "zapper0"]
+                this.options.maximumTargets = 2
+
+                // Scare zapper0s if they're only targeting us
+                const zapper0s = bot.getEntities({ type: "zapper0" })
+                if (zapper0s.length && bot.canUse("scare")) {
+                    if (zapper0s.every(e => e.target == bot.id)) {
+                        // Every zapper0 is targeting us
+                        for (const zapper0 of zapper0s) this.preventOverkill(bot, zapper0)
+                        await bot.scare()
+                    }
+                }
+
+                return super.attack(bot)
+            }
+
+            this.options.type = type
+            return super.attack(bot)
+        }
+
+        return super.attack(bot)
+    }
+}
+
+export function constructCryptHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const moveStrategy = new CryptHelperMoveStratey(contexts)
+    const requirements: Requirements = {
+        items: [
+            "firestars", // Needed to attack monsters
+            "jacko", // Needed to scare
+            "snowflakes", // Needed to slow down and kite monsters
+        ]
+    }
+
+    
+    return {
+        configs: [
+            {
+                id: "crypt_helper_rogue",
+                characters: [
+                    {
+                        ctype: "rogue",
+                        attack: new RogueCryptHelperAttackStrategy(
+                            {
+                                contexts: contexts,
+                                generateEnsureEquipped: {
+                                    attributes: ["armor", "str"],
+                                    ensure: {
+                                        mainhand: { name: "firestars", filters: { returnHighestLevel: true } },
+                                        offhand: { name: "snowflakes", filters: { returnHighestLevel: true } },
+                                        orb: { name: "jacko", filters: { returnHighestLevel: true } }
+                                    }
+                                }
+                            }),
+                        move: moveStrategy,
+                        require: requirements
                     }
                 ]
             }
