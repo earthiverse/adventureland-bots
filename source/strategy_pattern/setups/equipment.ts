@@ -245,8 +245,8 @@ export function generateEnsureEquippedFromAttribute(bot: Character, attributes: 
         let sumA = 0
         let sumB = 0
         for (const attribute of attributes) {
-            sumA += itemDataA[attribute]
-            sumB += itemDataB[attribute]
+            sumA += (itemDataA[attribute] ?? 0)
+            sumB += (itemDataB[attribute] ?? 0)
         }
         return sumB - sumA
     }
