@@ -273,11 +273,13 @@ export function generateEnsureEquippedFromAttribute(bot: Character, attributes: 
             // TODO: Add support for doublehand
         } else if (equippableArmor.includes(optionName as ItemType)) {
             if (optionName === "earring") {
-                if (!best["earring1"]) addBest("earring1", bestOption)
-                else if (!best["earring2"]) addBest("earring2", bestOption)
+                addBest("earring1", bestOption)
+                const secondBest = options[optionName as ItemType][1]
+                if (secondBest) addBest("earring2", secondBest)
             } else if (optionName == "ring") {
-                if (!best["ring1"]) addBest("ring1", bestOption)
-                else if (!best["ring2"]) addBest("ring2", bestOption)
+                addBest("ring1", bestOption)
+                const secondBest = options[optionName as ItemType][1]
+                if (secondBest) addBest("ring2", secondBest)
             } else {
                 addBest(optionName as SlotType, bestOption)
             }
