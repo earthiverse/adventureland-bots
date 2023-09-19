@@ -255,34 +255,31 @@ export function generateEnsureEquippedFromAttribute(bot: Character, attributes: 
     const best: { [T in SlotType]?: ItemData } = {}
     const addBest = (slot: SlotType, item: ItemData) => {
         const existing = best[slot]
-        if (existing) {
-            if (sortHighestAttributeFirst(best[slot], item) < 0) {
-                best[slot] = item
-            }
-        } else {
-            best[slot] = item
-        }
+        if (existing && sortHighestAttributeFirst(existing, item) <= 0) return // It's not better
+        best[slot] = item
     }
 
     for (const optionName in options) {
-        for (const option of options[optionName as (ItemType | WeaponType)]) {
-            if (equippableMainhand.includes(optionName as WeaponType)) {
-                addBest("mainhand", option)
-                continue
-            } else if (equippableOffhand.includes(optionName as WeaponType)) {
-                addBest("offhand", option)
-            } else if (equippableDoublehand.includes(optionName as WeaponType)) {
-                // TODO: Add support for doublehand
-            } else if (equippableArmor.includes(optionName as ItemType)) {
-                if (optionName === "earring") {
-                    if (!best["earring1"]) addBest("earring1", option)
-                    else if (!best["earring2"]) addBest("earring2", option)
-                } else if (optionName == "ring") {
-                    if (!best["ring1"]) addBest("ring1", option)
-                    else if (!best["ring2"]) addBest("ring2", option)
-                } else {
-                    addBest(optionName as SlotType, option)
-                }
+        // This is the best option for the given item or weapon type
+        const bestOption = options[optionName as (ItemType | WeaponType)][0]
+
+        if (equippableMainhand.includes(optionName as WeaponType)) {
+            // We can equip different mainhands
+            addBest("mainhand", bestOption)
+        } else if (equippableOffhand.includes(optionName as WeaponType)) {
+            // We can equip different offhands
+            addBest("offhand", bestOption)
+        } else if (equippableDoublehand.includes(optionName as WeaponType)) {
+            // TODO: Add support for doublehand
+        } else if (equippableArmor.includes(optionName as ItemType)) {
+            if (optionName === "earring") {
+                if (!best["earring1"]) addBest("earring1", bestOption)
+                else if (!best["earring2"]) addBest("earring2", bestOption)
+            } else if (optionName == "ring") {
+                if (!best["ring1"]) addBest("ring1", bestOption)
+                else if (!best["ring2"]) addBest("ring2", bestOption)
+            } else {
+                addBest(optionName as SlotType, bestOption)
             }
         }
     }
