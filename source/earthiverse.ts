@@ -332,6 +332,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 if (characterConfig.require) {
                     // Check attributes
                     for (const a in characterConfig.require) {
+                        if (a === "items") continue
                         const attribute = a as Attribute
                         if (context.bot[attribute] < characterConfig.require[attribute]) continue nextContext // Character doesn't meet requirement
                     }
