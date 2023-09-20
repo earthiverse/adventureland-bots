@@ -804,7 +804,7 @@ export class KiteMonsterMoveStrategy extends SpecialMonsterMoveStrategy {
             const angleSin = Math.sin(angle)
             const kitePos: IPosition = { map: bot.map, x: entity.x + (kiteDistance * angleCos), y: entity.y + (kiteDistance * angleSin) }
             const lookPos: IPosition = { map: bot.map, x: entity.x + (lookDistance * angleCos), y: entity.y + (lookDistance * angleSin) }
-            if (!(AL.Pathfinder.canStand(lookPos) || AL.Pathfinder.canStand(kitePos))) continue // Not a valid spot
+            if (!(AL.Pathfinder.canStand(lookPos) && AL.Pathfinder.canStand(kitePos))) continue // Not a valid spot
             if (AL.Pathfinder.canWalkPath(bot, kitePos)) {
                 if (bot.smartMoving) bot.stopSmartMove().catch(suppress_errors)
                 bot.move(kitePos.x, kitePos.y, { resolveOnStart: true }).catch(suppress_errors)
