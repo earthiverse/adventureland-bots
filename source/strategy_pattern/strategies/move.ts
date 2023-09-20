@@ -795,17 +795,21 @@ export class KiteMonsterMoveStrategy extends SpecialMonsterMoveStrategy {
 
         // Look for the best position to kite to
         const angleFromEntityToBot = Math.atan2(bot.y - entity.y, bot.x - entity.x)
-        const distance = Math.min(bot.range, (entity.charge ?? entity.speed ?? 0) + entity.range + 50)
+        const kiteDistance = Math.min(bot.range, (entity.charge ?? entity.speed ?? 0) + entity.range + 50)
+        const lookDistance = kiteDistance * 1.25
         const NUM_ANGLES = 40
         for (let i = 1; i < NUM_ANGLES; i++) {
             const angle = angleFromEntityToBot + ((i % 2 ? 1 : -1) * ((Math.PI) * ((i - (i % 2)) / NUM_ANGLES)))
-            const pos: IPosition = { map: bot.map, x: entity.x + (distance * Math.cos(angle)), y: entity.y + (distance * Math.sin(angle)) }
-            if (!AL.Pathfinder.canStand(pos)) continue // Not a valid spot
-            if (AL.Pathfinder.canWalkPath(bot, pos)) {
+            const angleCos = Math.cos(angle)
+            const angleSin = Math.sin(angle)
+            const kitePos: IPosition = { map: bot.map, x: entity.x + (kiteDistance * angleCos), y: entity.y + (kiteDistance * angleSin) }
+            const lookPos: IPosition = { map: bot.map, x: entity.x + (lookDistance * angleCos), y: entity.y + (lookDistance * angleSin) }
+            if (!(AL.Pathfinder.canStand(lookPos) || AL.Pathfinder.canStand(kitePos))) continue // Not a valid spot
+            if (AL.Pathfinder.canWalkPath(bot, kitePos)) {
                 if (bot.smartMoving) bot.stopSmartMove().catch(suppress_errors)
-                bot.move(pos.x, pos.y, { resolveOnStart: true }).catch(suppress_errors)
+                bot.move(kitePos.x, kitePos.y, { resolveOnStart: true }).catch(suppress_errors)
             } else if (!bot.smartMoving) {
-                bot.smartMove(pos, { avoidTownWarps: true, costs: { enter: 9999, transport: 9999 }, resolveOnFinalMoveStart: true }).catch(suppress_errors)
+                bot.smartMove(kitePos, { avoidTownWarps: true, costs: { enter: 9999, transport: 9999 }, resolveOnFinalMoveStart: true }).catch(suppress_errors)
             }
             break
         }

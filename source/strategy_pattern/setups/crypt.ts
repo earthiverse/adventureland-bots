@@ -432,10 +432,12 @@ class CryptHelperMoveStratey extends KiteMonsterMoveStrategy {
         const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
 
         // Kite any close monster, except a1
-        const closeEntity = bot.getEntity({ typeList: CRYPT_MONSTERS, notTypeList: ["a1"], returnNearest: true, withinRange: bot.range / 2 })
-        if (closeEntity) {
-            this.kite(bot, closeEntity).catch(suppress_errors)
-            return
+        if (!bot.moving) {
+            const closeEntity = bot.getEntity({ typeList: CRYPT_MONSTERS, notTypeList: ["a1"], returnNearest: true, withinRange: bot.range / 2 })
+            if (closeEntity) {
+                this.kite(bot, closeEntity).catch(suppress_errors)
+                return
+            }
         }
 
         for (const type of CRYPT_PRIORITY) {
