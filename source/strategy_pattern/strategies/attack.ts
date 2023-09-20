@@ -294,7 +294,6 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
     protected async ensureEquipped(bot: Type) {
         if (!this.options.ensureEquipped) return
-        if (typeof this.options.ensureEquipped === "string") this.options.ensureEquipped = generateEnsureEquippedFromAttribute(bot, this.options.ensureEquipped)
         for (const sT in this.options.ensureEquipped) {
             const slotType = sT as SlotType
             const ensure = this.options.ensureEquipped[slotType]

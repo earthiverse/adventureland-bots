@@ -290,7 +290,7 @@ export function generateEnsureEquippedFromAttribute(bot: Character, attributes: 
     for (const slotName in best) {
         const slotType = slotName as SlotType
         const item = best[slotType]
-        const filters: LocateItemFilters = {}
+        const filters: LocateItemFilters = { returnHighestLevel: true }
         if (item.stat_type) filters.statType = item.stat_type
         if (item.p) filters.special = item.p
         toEquip[slotType] = { name: item.name, filters: filters }
@@ -303,6 +303,9 @@ export function generateEnsureEquippedFromAttribute(bot: Character, attributes: 
             toEquip[slotType] = ensure[slotType]
         }
     }
+
+    // TODO: Fix earrings / rings / main&offhand if we have them equipped
+    //       already, but in different slots
 
     return toEquip
 }
