@@ -304,8 +304,29 @@ export function generateEnsureEquippedFromAttribute(bot: Character, attributes: 
         }
     }
 
-    // TODO: Fix earrings / rings / main&offhand if we have them equipped
-    //       already, but in different slots
+    // Swap slots if we already have them equipped in different slots
+    for (const [slot1, slot2] of [["earring1", "earring2"], ["ring1", "ring2"], ["mainhand", "offhand"]]) {
+        const slot1Equipped = bot.slots[slot1]
+        const slot2Equipped = bot.slots[slot2]
+        const slot1ToEquip = toEquip[slot1]
+        const slot2ToEquip = toEquip[slot2]
+        if (!slot1Equipped && slot2Equipped && slot1ToEquip && !slot2ToEquip) {
+            // We only have one of the two, and we're already wearing it in slot 2
+            toEquip[slot2] = toEquip[slot1]
+            delete toEquip[slot1]
+        } else if (
+            slot1Equipped && slot2Equipped
+            && slot1ToEquip && slot2ToEquip
+            && slot1ToEquip.name !== slot2ToEquip.name
+            && slot1Equipped.name === slot2ToEquip.name
+            && slot2Equipped.name === slot1ToEquip.name
+        ) {
+            // We have them in their opposite slot
+            const temp = toEquip[slot1]
+            toEquip[slot1] = toEquip[slot2]
+            toEquip[slot2] = temp
+        }
+    }
 
     return toEquip
 }
