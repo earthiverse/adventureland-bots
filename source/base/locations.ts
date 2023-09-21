@@ -93,10 +93,10 @@ export function offsetPositionParty(position: IPosition, bot: Character, offsetA
     let i = 0
     let pos: IPosition = { in: position.in, map: position.map, x: position.x, y: position.y }
     while (i <= offsetIndex) {
-        const r = Math.floor((Math.sqrt(offsetIndex + 1) - 1) / 2) + 1
+        const r = Math.floor((Math.sqrt(i + 1) - 1) / 2) + 1
         const p = (8 * r * (r - 1)) / 2
         const en = r * 2
-        const a = (1 + offsetIndex - p) % (r * 8)
+        const a = (1 + i - p) % (r * 8)
 
         pos.x = position.x
         pos.y = position.y

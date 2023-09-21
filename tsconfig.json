@@ -15,8 +15,7 @@
         "outDir": "build",
         "removeComments": true,
         "rootDir": "source",
-        "sourceMap": false,
-        "watch": false
+        "sourceMap": false
     },
     "include": [
         "source/**/*.ts",
