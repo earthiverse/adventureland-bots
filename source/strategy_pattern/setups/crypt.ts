@@ -498,6 +498,13 @@ class RogueCryptHelperAttackStrategy extends RogueAttackStrategy {
                 return
             }
 
+            // Don't freeze Elena
+            if (type == "a5") {
+                this.options.ensureEquipped.offhand = { name: "claw", filters: RETURN_HIGHEST }
+            } else {
+                this.options.ensureEquipped.offhand = { name: "snowflakes", filters: RETURN_HIGHEST }
+            }
+
             if (type == "a1") {
                 this.options.typeList = ["a1", "nerfedbat"]
                 return super.attack(bot)
@@ -532,6 +539,7 @@ export function constructCryptHelperSetup(contexts: Strategist<PingCompensatedCh
     const moveStrategy = new CryptHelperMoveStratey(contexts)
     const requirements: Requirements = {
         items: [
+            "claw", // Needed to attack monsters when not slowing them
             "firestars", // Needed to attack monsters
             "jacko", // Needed to scare
             "snowflakes", // Needed to slow down and kite monsters
