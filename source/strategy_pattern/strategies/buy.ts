@@ -202,7 +202,10 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements BuySt
             const willingToPay = this.buyMap.get(pontyItem.name)
             if (willingToPay === undefined) continue // We don't want it
 
-            const pontyPrice = AL.Game.G.items[pontyItem.name].g * AL.Constants.PONTY_MARKUP // TODO: Use AL.Game.G.multipliers.secondhands_mult if it ever gets fixed
+            // TODO: Check if we can stack it if we bought it
+            const gItem = AL.Game.G.items[pontyItem.name]
+            if (!gItem.s && bot.esize === 0) continue // No space for this item
+            const pontyPrice = gItem.g * AL.Constants.PONTY_MARKUP // TODO: Use AL.Game.G.multipliers.secondhands_mult if it ever gets fixed
             if (pontyPrice * (pontyItem.q ?? 1) > bot.gold) continue // We can't afford it (with Ponty, we have to buy the whole stack if it's stackable)
             if (pontyPrice > willingToPay) continue // It's too expensive
 
