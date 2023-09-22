@@ -10,9 +10,9 @@ import { MAGE_SPLASH, PRIEST_ARMOR, WARRIOR_SPLASH } from "./equipment.js"
 class PriestFireRoamerAttackStrategy extends PriestAttackStrategy {
     protected attack(bot: Priest): Promise<void> {
         const entity = bot.getEntity({ type: "fireroamer", returnHighestLevel: true })
-        if (entity.level > 10) {
+        if (entity && entity.level > 10) {
             this.options.maximumTargets = 1
-        } else if (entity.level > 5) {
+        } else if (entity && entity.level > 5) {
             this.options.maximumTargets = 2
         } else {
             this.options.maximumTargets = undefined
