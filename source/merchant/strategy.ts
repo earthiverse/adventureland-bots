@@ -332,7 +332,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 }
 
                 // Withdraw an item we want to list
-                if (this.options.enableListings && bot.esize >= 3) {
+                if (this.options.enableListings && bot.esize > 1) {
                     // Open stand to see if we have a free trade slot
                     await bot.openMerchantStand().catch(suppress_errors)
 
@@ -350,7 +350,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                             const gItem = AL.Game.G.items[item]
                             const options: LocateItemsFilters = { locked: false, special: false }
                             if (gItem.upgrade || gItem.compound) options.level = 0
-                            await withdrawItemFromBank(bot, item, options, { freeSpaces: bot.esize - 1, itemsToHold: this.options.itemsToHold })
+                            await withdrawItemFromBank(bot, item, options, { freeSpaces: 0, itemsToHold: this.options.itemsToHold })
                             if (bot.hasItem(item, bot.items, options)) {
                                 // We found an item to list, list it
                                 const itemPosition = bot.locateItem(item, bot.items, options)
