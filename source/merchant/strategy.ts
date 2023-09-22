@@ -333,6 +333,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
                 // Withdraw an item we want to list
                 if (this.options.enableListings && bot.esize > 1) {
+                    this.debug(bot, "Looking for items to list...")
                     // Open stand to see if we have a free trade slot
                     await bot.openMerchantStand().catch(suppress_errors)
 
@@ -344,6 +345,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         // TODO: Check if we can stack the item
 
                         if (slotInfo) continue // Trade slot is already filled
+                        this.debug(bot, `Found an empty trade slot (${slotName}), looking for items...`)
 
                         // Look for an item to trade
                         for (const [item, price] of this.options.enableListings.itemsToList) {
@@ -352,6 +354,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                             if (gItem.upgrade || gItem.compound) options.level = 0
                             await withdrawItemFromBank(bot, item, options, { freeSpaces: 0, itemsToHold: this.options.itemsToHold })
                             if (bot.hasItem(item, bot.items, options)) {
+                                this.debug(bot, `Listing ${item} in ${slotName} for ${price}...`)
                                 // We found an item to list, list it
                                 const itemPosition = bot.locateItem(item, bot.items, options)
                                 await bot.listForSale(itemPosition, price, slotType).catch(console.error)
