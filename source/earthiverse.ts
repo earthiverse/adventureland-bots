@@ -1089,6 +1089,7 @@ if (fs.existsSync(PUBLIC_CSV)) {
 
     for (const line of lines) {
         const data = line.split("🔥")
+        if (!data[0]) continue // empty line
         await startPublicContext(data[0] as CharacterType, data[1], data[2], data[3], JSON.parse(data[4] ?? '{}')).catch(console.error)
     }
 
