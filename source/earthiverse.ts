@@ -819,7 +819,12 @@ const startMerchantContext = async () => {
         setTimeout(startMerchantContext, 10_000)
     }
     const CONTEXT = new Strategist<Merchant>(merchant, baseStrategy)
-    startMerchant(CONTEXT, PRIVATE_CONTEXTS, { ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, debug: true, enableInstanceProvider: { crypt: true }, enableUpgrade: true })
+    startMerchant(CONTEXT, PRIVATE_CONTEXTS, {
+        ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS,
+        debug: true,
+        enableInstanceProvider: { crypt: true },
+        enableUpgrade: true
+    })
     CONTEXT.applyStrategy(debugStrategy)
     CONTEXT.applyStrategy(adminCommandStrategy)
     CONTEXT.applyStrategy(guiStrategy)

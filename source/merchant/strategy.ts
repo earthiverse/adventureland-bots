@@ -1,4 +1,4 @@
-import AL, { BankPackName, Character, IPosition, ItemName, LocateItemsFilters, MapName, Merchant, NewMapData, PingCompensatedCharacter, SlotType, Tools, TradeSlotType } from "alclient"
+import AL, { BankPackName, Character, IPosition, ItemName, LocateItemFilters, LocateItemsFilters, MapName, Merchant, NewMapData, PingCompensatedCharacter, SlotType, Tools, TradeSlotType } from "alclient"
 import { getItemsToCompoundOrUpgrade, getOfferingToUse, IndexesToCompoundOrUpgrade, withdrawItemFromBank } from "../base/items.js"
 import { checkOnlyEveryMS, setLastCheck, sleep } from "../base/general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
@@ -9,7 +9,7 @@ import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 import { CRYPT_WAIT_TIME, addCryptMonstersToDB, getKeyForCrypt, refreshCryptMonsters } from "../base/crypt.js"
-import { DEFAULT_CRAFTABLES, DEFAULT_EXCHANGEABLES, DEFAULT_GOLD_TO_HOLD, DEFAULT_IDENTIFIER, DEFAULT_ITEMS_TO_BUY, DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_REPLENISHABLES, DEFAULT_REGION, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO, EXCESS_ITEMS_SELL } from "../base/defaults.js"
+import { DEFAULT_CRAFTABLES, DEFAULT_EXCHANGEABLES, DEFAULT_GOLD_TO_HOLD, DEFAULT_IDENTIFIER, DEFAULT_ITEMS_TO_BUY, DEFAULT_ITEMS_TO_HOLD, DEFAULT_ITEMS_TO_LIST, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_REPLENISHABLES, DEFAULT_REGION, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO, EXCESS_ITEMS_SELL } from "../base/defaults.js"
 import { BankItemPosition, goAndWithdrawItem, tidyBank } from "../base/banking.js"
 import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.js"
 import { suppress_errors } from "../strategy_pattern/logging.js"
@@ -81,6 +81,13 @@ export type MerchantMoveStrategyOptions = {
      * - make a pickaxe if it doesn't have one
      * - go mining
      */
+    enableListings?: {
+        /**
+         * If set, we will list level 0 items, or items without a level, at the given price
+         */
+        itemsToList: Map<ItemName, number>
+        // TODO: Add itemsToCraftAndList, or something similar
+    }
     enableMining?: true
     /** If enabled, the merchant will
      * - mluck based on the options
@@ -139,6 +146,9 @@ export const DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS: MerchantMoveStrategyOptions
         lostEarring: 2,
     },
     enableFishing: true,
+    enableListings: {
+        itemsToList: DEFAULT_ITEMS_TO_LIST
+    },
     enableJoinGiveaways: true,
     enableMining: true,
     enableMluck: {
@@ -319,6 +329,40 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     await bot.depositGold(bot.gold - this.options.goldToHold)
                 } else if (bot.gold < this.options.goldToHold) {
                     await bot.withdrawGold(this.options.goldToHold - bot.gold)
+                }
+
+                // Withdraw an item we want to list
+                if (this.options.enableListings && bot.esize >= 3) {
+                    // Open stand to see if we have a free trade slot
+                    await bot.openMerchantStand().catch(suppress_errors)
+
+                    for (const slotName in bot.slots) {
+                        if (!slotName.startsWith("trade")) continue
+                        const slotType = slotName as TradeSlotType
+                        const slotInfo = bot.slots[slotType]
+
+                        // TODO: Check if we can stack the item
+
+                        if (slotInfo) continue // Trade slot is already filled
+
+                        // Look for an item to trade
+                        for (const [item, price] of this.options.enableListings.itemsToList) {
+                            const gItem = AL.Game.G.items[item]
+                            const options: LocateItemsFilters = { locked: false, special: false }
+                            if (gItem.upgrade || gItem.compound) options.level = 0
+                            await withdrawItemFromBank(bot, item, options, { freeSpaces: bot.esize - 1, itemsToHold: this.options.itemsToHold })
+                            if (bot.hasItem(item, bot.items, options)) {
+                                // We found an item to list, list it
+                                const itemPosition = bot.locateItem(item, bot.items, options)
+                                await bot.listForSale(itemPosition, price, slotType).catch(console.error)
+                                break
+                            }
+                        }
+                        break
+                    }
+
+                    // Close stand
+                    await bot.closeMerchantStand().catch(suppress_errors)
                 }
 
                 await bot.smartMove("main")

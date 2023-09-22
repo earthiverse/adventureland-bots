@@ -253,3 +253,7 @@ export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
     ["xshield", -AL.Constants.PONTY_MARKUP],
     ["zapper", -AL.Constants.PONTY_MARKUP],
 ])
+
+export const DEFAULT_ITEMS_TO_LIST = new Map<ItemName, number>([
+    ["vhammer", 100_000_000]
+])
