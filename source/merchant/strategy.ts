@@ -431,8 +431,10 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         const numHave = bot.countItem(item)
                         if (numHave >= numTotal) continue // We have enough
                         const numToBuy = numTotal - numHave
-                        if (!bot.canBuy(item, { quantity: numToBuy })) continue // We can't buy them
-                        await bot.buy(item, numToBuy)
+                        if (bot.canBuy(item, { quantity: numToBuy })) {
+                            this.debug(bot, `Replenishables - Buying ${numToBuy}x${item}`)
+                            await bot.buy(item, numToBuy)
+                        }
                     }
                 }
             }
@@ -606,8 +608,14 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         // We didn't find a staff and/or a blade, but we can go buy one
                         await bot.smartMove("staff", { getWithin: 50 })
                         await sleep(2000) // The game can still think you're in the bank for a while
-                        if (!bot.hasItem("staff") && bot.canBuy("staff") && bot.canBuy("blade")) await bot.buy("staff")
-                        if (!bot.hasItem("blade") && bot.canBuy("blade")) await bot.buy("blade")
+                        if (!bot.hasItem("staff") && bot.canBuy("staff") && bot.canBuy("blade")) {
+                            this.debug(bot, "Mining - Buying a staff")
+                            await bot.buy("staff")
+                        }
+                        if (!bot.hasItem("blade") && bot.canBuy("blade")) {
+                            this.debug(bot, "Mining - Buying a blade")
+                            await bot.buy("blade")
+                        }
                     }
                 }
 
@@ -879,8 +887,10 @@ export class MerchantStrategy implements Strategy<Merchant> {
                             const numHave = bot.countItem(statScroll, bot.items)
 
                             try {
-                                if (numNeeded > numHave && bot.canBuy(statScroll, { quantity: numNeeded - numHave }))
+                                if (numNeeded > numHave && bot.canBuy(statScroll, { quantity: numNeeded - numHave })) {
+                                    this.debug(bot, "BuyAndUpgrade - Buying stat scrolls")
                                     await bot.buy(statScroll, numNeeded - numHave)
+                                }
                                 const statScrollPosition = bot.locateItem(statScroll, bot.items, { quantityGreaterThan: numNeeded - 1 })
                                 if (statScrollPosition !== undefined)
                                     await bot.upgrade(potential, statScrollPosition)
@@ -920,7 +930,8 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     }
 
                     // Buy if we need
-                    if (bot.canBuy(item) && !bot.hasItem(item)) {
+                    if (!bot.hasItem(item) && bot.canBuy(item)) {
+                        this.debug(bot, `BuyAndUpgrade - Buying item (${item})`)
                         await bot.buy(item)
                     }
 
@@ -938,6 +949,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         /** Buy a scroll if we don't have one */
                         let scrollPosition = bot.locateItem(scroll)
                         if (scrollPosition == undefined && bot.canBuy(scroll)) {
+                            this.debug(bot, "BuyAndUpgrade - Buying upgrade scroll")
                             await bot.buy(scroll)
                             scrollPosition = bot.locateItem(scroll)
                         }
