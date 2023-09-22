@@ -100,8 +100,8 @@ export async function dumpInventoryInBank(bot: PingCompensatedCharacter, options
             try {
                 idealSlot = getEmptySlot()
             } catch (error) {
-                console.error(error)
-                continue
+                // No empty slots
+                break
             }
         }
 
